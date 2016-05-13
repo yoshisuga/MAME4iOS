@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<FrameLayout android:id="@+id/EmulatorFrame"
+	android:layout_width="fill_parent" android:layout_height="fill_parent"
+	xmlns:android="http://schemas.android.com/apk/res/android" android:background="@color/emu_back_color">
+			
+	<com.seleuco.mame4droid.views.InputView android:id="@+id/InputView"
+		android:soundEffectsEnabled="false" android:visibility="visible"
+		android:adjustViewBounds="false" android:scaleType="fitXY"
+		android:layout_height="fill_parent" android:layout_width="fill_parent"/>
+
+</FrameLayout>

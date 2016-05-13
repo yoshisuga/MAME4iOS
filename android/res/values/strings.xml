@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="menu_vkey_X">Button-X</string>
+    <string name="menu_vkey_Y">Button-Y</string>
+    <string name="menu_vkey_A">Button-A</string>
+    <string name="menu_vkey_B">Button-B</string>
+    <string name="menu_vkey_MENU">MENU</string>
+    <string name="menu_vkey_SELECT">SELECT</string>
+    <string name="menu_vkeys">Virtual Keys</string>
+    <string name="menu_options">Options</string>
+    <string name="menu_quit_game">Exit Game</string>        
+    <string name="menu_quit">Exit App</string>
+    <string name="menu_help">Help</string>
+    <string name="app_name">MAME4droid Reloaded</string>
+</resources>

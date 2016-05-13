@@ -1,0 +1,17 @@
+MAME4iOS for Xcode
+
+How to build MAME4iOS
+
+Build the libmamearmv7.a library file (if desired - a prebuilt one is already included)
+1. Make sure Xcode is installed
+2. Change to the folder where the MAME4iOS makefile resides and type "make"
+3. This should build the libmamearmv7.a library file
+
+Compile and install the app bundle
+4. Launch Xcode
+5. Load the project file xcode/MAME4iOS/MAME4iOS.xcodeproj
+6. Make sure Code Signing Identity is set to use your own
+7. Make sure product bundle identifier is set properly (I use com.lesbird.mame4ios)
+8. Build and install to your device
+
+Copy ROMs to the Documents folder using iTunes.

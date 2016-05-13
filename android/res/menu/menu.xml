@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+	<item android:id="@+id/vkeys" android:title="@string/menu_vkeys" android:icon="@android:drawable/ic_menu_set_as">
+		<menu>
+			<item android:id="@+id/vkey_X" android:title="@string/menu_vkey_X"></item>
+			<item android:id="@+id/vkey_Y" android:title="@string/menu_vkey_Y"></item>
+			<item android:id="@+id/vkey_A" android:title="@string/menu_vkey_A"></item>
+			<item android:id="@+id/vkey_B" android:title="@string/menu_vkey_B"></item>			
+			<item android:id="@+id/vkey_MENU" android:title="@string/menu_vkey_MENU"></item>
+			<item android:id="@+id/vkey_SELECT" android:title="@string/menu_vkey_SELECT"></item>
+		</menu>
+	</item>
+	<item android:id="@+id/menu_options_option" android:title="@string/menu_options" android:icon="@android:drawable/ic_menu_preferences"/>
+	<item android:id="@+id/menu_quit_game_option" android:title="@string/menu_quit_game"   android:icon="@android:drawable/ic_menu_close_clear_cancel" />	
+	<item android:id="@+id/menu_quit_option" android:title="@string/menu_quit"   android:icon="@android:drawable/ic_menu_close_clear_cancel" />
+</menu>

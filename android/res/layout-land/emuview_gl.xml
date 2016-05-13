@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<com.seleuco.mame4droid.views.EmulatorViewGL
+		android:id="@+id/EmulatorViewGL" xmlns:android="http://schemas.android.com/apk/res/android" android:layout_gravity="center"
+		android:layout_height="fill_parent" android:layout_width="fill_parent" />
