@@ -1,2 +1,5 @@
 .DS_Store
 project.xcworkspace
+libmamearmv7.a
+libmamearmv7s.a
+libmamesim.a
