@@ -232,7 +232,6 @@ void* app_Thread_Start(void* args)
     	
 }
 
-#if 0
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
 {
 	if(buttonIndex == 999)
@@ -301,7 +300,6 @@ void* app_Thread_Start(void* args)
     menu = nil;
                           
 }
-#endif
 
 - (void)runMenu
 {
@@ -319,21 +317,6 @@ void* app_Thread_Start(void* args)
 
     actionPending=1;
     
-    {
-        g_menu_option = MENU_OPTIONS;
-        
-        OptionsController *addController =[[OptionsController alloc] init];
-        
-        addController.emuController = self;
-        
-        UINavigationController *navController = [[[UINavigationController alloc] initWithRootViewController:addController] autorelease];
-        
-        [self presentModalViewController:navController animated:YES];
-        
-        [addController release];
-    }
-    
-    /*
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
     g_emulation_paused = 1;
     change_pause(1);
@@ -358,7 +341,6 @@ void* app_Thread_Start(void* args)
     [menu showInView:self.view];
 	   
     [pool release];   
-     */
 }
 
 - (void)endMenu{
