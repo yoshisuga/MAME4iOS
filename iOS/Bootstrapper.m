@@ -271,7 +271,7 @@ unsigned long read_mfi_controller(int n, unsigned long res)
                         joy_analog_y[extraAnalogIndex] = 0.0f;
                     }
                     
-                    printf("Sending analog %i:  %f, %f...\n",extraAnalogIndex, joy_analog_x[extraAnalogIndex],joy_analog_y[extraAnalogIndex] );
+                    //printf("Sending analog %i:  %f, %f...\n",extraAnalogIndex, joy_analog_x[extraAnalogIndex],joy_analog_y[extraAnalogIndex] );
                 }
 
             }
