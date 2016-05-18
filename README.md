@@ -23,5 +23,25 @@ Even if you are not in the paid Apple Developer Program, you can sideload the ap
 
 ## mFi Controller Support
 
-Pair your mFi controller with your iOS device, and it should 'just work'. If you have an extended controller with dual analog sticks and shoulder triggers, you can use them! The shoulder triggers are mapped as analog controls so you can use them for things like pedals or other analog control.
+Pair your mFi controller with your iOS device, and it should 'just work'. 
+
+Up to 4 mfi controllers are supported (this is untested as of 5/18/16).
+
+### Hotkey combinations
+
+The following hotkey combinations are supported:
+
+- Start game (PAUSE)
+- Insert coin (B + PAUSE)
+- Open menu (A + PAUSE)
+- Exit game (R + PAUSE)
+
+### Dual analog support
+
+The right stick on the extended controller profile is supported, but with a caveat:
+
+- 1P right stick is mapped to 3P analog stick
+- 2P right stick is mapped to 4P analog stick
+
+So currently, 2 players can use dual sticks at the same time.
 
