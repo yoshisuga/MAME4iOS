@@ -45,3 +45,9 @@ The right stick on the extended controller profile is supported, but with a cave
 
 So currently, 2 players can use dual sticks at the same time.
 
+### Trigger buttons
+
+The left trigger is mapped to -X values (-1 to 0) on the 3P analog stick, and the right trigger is mapped to +X values (0 to 1) on the 3P analog stick. 
+
+I'm not sure if this is the best setup for it, so suggestions are welcome.
+
