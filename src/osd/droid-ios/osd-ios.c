@@ -90,7 +90,7 @@ int  myosd_speed = 100;
 
 char myosd_selected_game[MAX_GAME_NAME] = {'\0'};
 
-extern "C" unsigned long read_mfi_controller(unsigned long res);
+extern "C" unsigned long read_mfi_controller(int n, unsigned long res);
 
 /*extern */float joy_analog_x[4];
 /*extern */float joy_analog_y[4];
@@ -204,7 +204,7 @@ unsigned long myosd_joystick_read(int n)
         res |= myosd_joy_status[n];
 	}
 
-    res = read_mfi_controller(res);
+    res = read_mfi_controller(n, res);
     
 	return res;
 }

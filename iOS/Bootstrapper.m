@@ -89,15 +89,17 @@ const char* get_documents_path(const char* file)
 
 extern EmulatorController *GetSharedInstance();
 static int mfi_used = 0;
+static int start_button_pressed[4];
+static int start_button_pressed_cycles = 0;
 
-unsigned long read_mfi_controller(unsigned long res)
+unsigned long read_mfi_controller(int n, unsigned long res)
 {
     if ([[GCController controllers] count] > 0)
     {
         if (mfi_used == 0)
         {
             g_joy_used = 1;
-            myosd_num_of_joys = 3;
+            myosd_num_of_joys = 4;
             mfi_used = 1;
             
             EmulatorController *emuController = GetSharedInstance();
@@ -108,8 +110,12 @@ unsigned long read_mfi_controller(unsigned long res)
             }
         }
         
+        if ( n >= [[GCController controllers] count] ) {
+            return res;
+        }
+        
         // read controller and set res variable
-        GCController *controller = [[GCController controllers] objectAtIndex:0];
+        GCController *controller = [[GCController controllers] objectAtIndex:n];
         if (controller != nil)
         {
             GCGamepad *gamepad = controller.gamepad;
@@ -147,12 +153,24 @@ unsigned long read_mfi_controller(unsigned long res)
             }
             if (gamepad.leftShoulder.isPressed)
             {
-                res |= MYOSD_SELECT;
+                res |= MYOSD_L1;
             }
             if (gamepad.rightShoulder.isPressed)
             {
-                res |= MYOSD_START;
+                res |= MYOSD_R1;
             }
+
+            if ( n < 4 && start_button_pressed[n] ) {
+                res |= MYOSD_START;
+                if ( start_button_pressed_cycles++ >= 30 ) {
+                    start_button_pressed[n] = 0;
+                    start_button_pressed_cycles = 0;
+                }
+            }
+
+            controller.controllerPausedHandler = ^(GCController *controller) {
+                start_button_pressed[n] = 1;
+            };
             
             if (controller.extendedGamepad != nil)
             {
@@ -183,84 +201,110 @@ unsigned long read_mfi_controller(unsigned long res)
                 if (controller.extendedGamepad.leftThumbstick.xAxis.value < -deadZone)
                 {
 //                    res |= MYOSD_LEFT;
-                    joy_analog_x[0] = controller.extendedGamepad.leftThumbstick.xAxis.value;
+                    joy_analog_x[n] = controller.extendedGamepad.leftThumbstick.xAxis.value;
                 }
                 if (controller.extendedGamepad.leftThumbstick.xAxis.value > deadZone)
                 {
 //                    res |= MYOSD_RIGHT;
-                    joy_analog_x[0] = controller.extendedGamepad.leftThumbstick.xAxis.value;
+                    joy_analog_x[n] = controller.extendedGamepad.leftThumbstick.xAxis.value;
                 }
                 if ( controller.extendedGamepad.leftThumbstick.xAxis.value <= deadZone &&
                     controller.extendedGamepad.leftThumbstick.xAxis.value >= -deadZone ) {
-                    joy_analog_x[0] = 0.0f;
+                    joy_analog_x[n] = 0.0f;
                 }
                 if (controller.extendedGamepad.leftThumbstick.yAxis.value > deadZone)
                 {
-                    joy_analog_y[0] = controller.extendedGamepad.leftThumbstick.yAxis.value;
+                    joy_analog_y[n] = controller.extendedGamepad.leftThumbstick.yAxis.value;
 //                    res |= MYOSD_UP;
                 }
                 if (controller.extendedGamepad.leftThumbstick.yAxis.value < -deadZone)
                 {
-                    joy_analog_y[0] = controller.extendedGamepad.leftThumbstick.yAxis.value;
+                    joy_analog_y[n] = controller.extendedGamepad.leftThumbstick.yAxis.value;
 //                    res |= MYOSD_DOWN;
                 }
                 if ( controller.extendedGamepad.leftThumbstick.yAxis.value <= deadZone &&
                     controller.extendedGamepad.leftThumbstick.yAxis.value >= -deadZone ) {
-                    joy_analog_y[0] = 0.0f;
+                    joy_analog_y[n] = 0.0f;
                 }
+                
+                int extraAnalogIndex = n == 0 || n == 1 ? n + 2 : -1;
+                
+                if ( extraAnalogIndex != -1 ) {
 
-                if (controller.extendedGamepad.rightThumbstick.xAxis.value < -deadZone)
-                {
-                    //                    res |= MYOSD_LEFT;
-                    joy_analog_x[1] = controller.extendedGamepad.rightThumbstick.xAxis.value;
-                }
-                if (controller.extendedGamepad.rightThumbstick.xAxis.value > deadZone)
-                {
-                    //                    res |= MYOSD_RIGHT;
-                    joy_analog_x[1] = controller.extendedGamepad.rightThumbstick.xAxis.value;
-                }
-                if ( controller.extendedGamepad.rightThumbstick.xAxis.value <= deadZone &&
-                    controller.extendedGamepad.rightThumbstick.xAxis.value >= -deadZone ) {
-                    joy_analog_x[1] = 0.0f;
-                }
-                if (controller.extendedGamepad.rightThumbstick.yAxis.value > deadZone)
-                {
-                    joy_analog_y[1] = controller.extendedGamepad.rightThumbstick.yAxis.value;
-                    //                    res |= MYOSD_UP;
-                }
-                if (controller.extendedGamepad.rightThumbstick.yAxis.value < -deadZone)
-                {
-                    joy_analog_y[1] = controller.extendedGamepad.rightThumbstick.yAxis.value;
-                    //                    res |= MYOSD_DOWN;
-                }
-                if ( controller.extendedGamepad.rightThumbstick.yAxis.value <= deadZone &&
-                    controller.extendedGamepad.rightThumbstick.yAxis.value >= -deadZone ) {
-                    joy_analog_y[1] = 0.0f;
-                }
-                
-                if ( controller.extendedGamepad.leftTrigger.value > 0.0f ) {
-                    joy_analog_x[2] = -controller.extendedGamepad.leftTrigger.value;
-                } else {
-                    joy_analog_x[2] = 0.0f;
-                }
-                
-                if ( controller.extendedGamepad.rightTrigger.value > 0.0f ) {
-                    joy_analog_y[2] = controller.extendedGamepad.rightTrigger.value;
-                } else {
-                    joy_analog_y[2] = 0.0f;
+                    if (controller.extendedGamepad.rightThumbstick.xAxis.value < -deadZone)
+                    {
+                        //                    res |= MYOSD_LEFT;
+                        joy_analog_x[extraAnalogIndex] = controller.extendedGamepad.rightThumbstick.xAxis.value;
+                    }
+                    if (controller.extendedGamepad.rightThumbstick.xAxis.value > deadZone)
+                    {
+                        //                    res |= MYOSD_RIGHT;
+                        joy_analog_x[extraAnalogIndex] = controller.extendedGamepad.rightThumbstick.xAxis.value;
+                    }
+                    if (controller.extendedGamepad.rightThumbstick.yAxis.value > deadZone)
+                    {
+                        joy_analog_y[extraAnalogIndex] = controller.extendedGamepad.rightThumbstick.yAxis.value;
+                        //                    res |= MYOSD_UP;
+                    }
+                    if (controller.extendedGamepad.rightThumbstick.yAxis.value < -deadZone)
+                    {
+                        joy_analog_y[extraAnalogIndex] = controller.extendedGamepad.rightThumbstick.yAxis.value;
+                        //                    res |= MYOSD_DOWN;
+                    }
+
+                    if ( controller.extendedGamepad.leftTrigger.value > 0.0f ) {
+                        joy_analog_x[extraAnalogIndex] = -controller.extendedGamepad.leftTrigger.value;
+                    }
+                    if ( controller.extendedGamepad.rightTrigger.value > 0.0f ) {
+                        joy_analog_x[extraAnalogIndex] = controller.extendedGamepad.rightTrigger.value;
+                    }
+
+                    if ( controller.extendedGamepad.rightThumbstick.xAxis.value <= deadZone &&
+                        controller.extendedGamepad.rightThumbstick.xAxis.value >= -deadZone &&
+                        controller.extendedGamepad.leftTrigger.value == 0.0f &&
+                        controller.extendedGamepad.rightTrigger.value == 0.0f ) {
+                        joy_analog_x[extraAnalogIndex] = 0.0f;
+                    }
+                    
+                    if ( controller.extendedGamepad.rightThumbstick.yAxis.value <= deadZone &&
+                        controller.extendedGamepad.rightThumbstick.yAxis.value >= -deadZone ) {
+                        joy_analog_y[extraAnalogIndex] = 0.0f;
+                    }
+                    
+                    printf("Sending analog %i:  %f, %f...\n",extraAnalogIndex, joy_analog_x[extraAnalogIndex],joy_analog_y[extraAnalogIndex] );
                 }
 
             }
-            
-            if ((res & MYOSD_A) && (res & MYOSD_START))
+
+            // B + START inserts coin
+            if ((res & MYOSD_B) && (res & MYOSD_START))
             {
-                //NSLog(@"ESC detected");
-                res &= ~MYOSD_A;
+                res &= ~MYOSD_B;
+                res &= ~MYOSD_START;
+                res = MYOSD_SELECT;
+            }
+
+            // R shoulder + START exits game
+            if ((res & MYOSD_R1) && (res & MYOSD_START))
+            {
+                res &= ~MYOSD_R1;
                 res &= ~MYOSD_START;
                 res = MYOSD_ESC;
                 
                 myosd_exitGame = 1;
             }
+            
+            // A + START opens menu
+            if ((res & MYOSD_A) && (res & MYOSD_START))
+            {
+                res &= ~MYOSD_A;
+                res &= ~MYOSD_START;
+                res |= MYOSD_SELECT;
+                res |= MYOSD_START;
+            }
+
+
+            
         }
     }
     else
