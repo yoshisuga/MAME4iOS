@@ -25,7 +25,7 @@ Even if you are not in the paid Apple Developer Program, you can sideload the ap
 
 Pair your mFi controller with your iOS device, and it should 'just work'. 
 
-Up to 4 mfi controllers are supported. I've tested it with 2 mfi controllers and it seems to work ok.
+Up to 4 mfi controllers are supported. I've tested it with 2 mfi controllers and it seems to work ok. I was running MAME4iOS on my iPhone 6 Plus with a Gamevice for iPhone 6 controller and a MadCatz C.T.R.L i controller while AirPlay-ing to my Apple TV 4 and it worked great :)
 
 ### Hotkey combinations
 
