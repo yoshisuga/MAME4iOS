@@ -25,7 +25,7 @@ Even if you are not in the paid Apple Developer Program, you can sideload the ap
 
 Pair your mFi controller with your iOS device, and it should 'just work'. 
 
-Up to 4 mfi controllers are supported (this is untested as of 5/18/16).
+Up to 4 mfi controllers are supported. I've tested it with 2 mfi controllers and it seems to work ok.
 
 ### Hotkey combinations
 
