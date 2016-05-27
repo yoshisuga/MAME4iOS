@@ -276,8 +276,13 @@ void* app_Thread_Start(void* args)
        UINavigationController *navController = [[[UINavigationController alloc] initWithRootViewController:addController] autorelease];
         
        //[navController setModalPresentationStyle: /*UIModalPresentationFormSheet*/ UIModalPresentationPageSheet];
-        
-       [self presentModalViewController:navController animated:YES];
+
+        [navController setModalPresentationStyle:UIModalPresentationPageSheet];
+        dispatch_async(dispatch_get_main_queue(), ^ {
+            [self presentViewController:navController animated:YES completion:nil];
+        });
+
+//        [self presentModalViewController:navController animated:YES];
         
        //[self presentModalViewController:addController animated:YES];
 
