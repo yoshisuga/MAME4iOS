@@ -470,6 +470,12 @@
 			attributes = {
 				LastUpgradeCheck = 0450;
 				ORGANIZATIONNAME = Seleuco;
+				TargetAttributes = {
+					CEE680841635BA7000051BC2 = {
+						DevelopmentTeam = R72X3BF4KE;
+						DevelopmentTeamName = "Yoshinobu Sugawara";
+					};
+				};
 			};
 			buildConfigurationList = CEE6807F1635BA6F00051BC2 /* Build configuration list for PBXProject "MAME4iOS" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -737,7 +743,7 @@
 				);
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-lstdc++";
-				PRODUCT_BUNDLE_IDENTIFIER = com.lesbird.mame4ios;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ievo.mame;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				VALID_ARCHS = armv7;
 				WRAPPER_EXTENSION = app;
@@ -761,7 +767,7 @@
 				);
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-lstdc++";
-				PRODUCT_BUNDLE_IDENTIFIER = com.lesbird.mame4ios;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ievo.mame;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				VALID_ARCHS = armv7;
 				WRAPPER_EXTENSION = app;
