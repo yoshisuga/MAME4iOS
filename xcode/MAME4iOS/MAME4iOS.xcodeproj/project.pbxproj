@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0AB466AF1D5B6D20009D288A /* libmamearmv7.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AB466AE1D5B6D20009D288A /* libmamearmv7.a */; };
 		B370F8B01C8549010069377D /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B370F8AF1C8549010069377D /* GameController.framework */; };
 		CE30090116FA47BD000EDCF1 /* cheat.zip in Resources */ = {isa = PBXBuildFile; fileRef = CE30090016FA47BD000EDCF1 /* cheat.zip */; };
 		CE30090216FA47BD000EDCF1 /* cheat.zip in Resources */ = {isa = PBXBuildFile; fileRef = CE30090016FA47BD000EDCF1 /* cheat.zip */; };
@@ -20,7 +21,6 @@
 		CE6D6E1716D8CADF00F265B7 /* LayoutView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE6D6E1316D8CADF00F265B7 /* LayoutView.m */; };
 		CE8D432916AB0D5D00D55884 /* gridlee.zip in Resources */ = {isa = PBXBuildFile; fileRef = CE8D432816AB0D5D00D55884 /* gridlee.zip */; };
 		CE8D87D8164FE4BE00685BC4 /* config_iPhone_5.txt in Resources */ = {isa = PBXBuildFile; fileRef = CE8D87D7164FE4BE00685BC4 /* config_iPhone_5.txt */; };
-		CE8D87DA16501C2200685BC4 /* libmamearmv7.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CE8D87D916501C2200685BC4 /* libmamearmv7.a */; };
 		CE8D87DD1653121200685BC4 /* iCadeView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8D87DC1653121200685BC4 /* iCadeView.m */; };
 		CE8F08841741580100E2D5FB /* InputOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8F08831741580100E2D5FB /* InputOptionController.m */; };
 		CE8F08851741580100E2D5FB /* InputOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8F08831741580100E2D5FB /* InputOptionController.m */; };
@@ -79,7 +79,6 @@
 		CEAC6C6A16AAAB3400AF3275 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE680C9163B13AB00051BC2 /* AudioToolbox.framework */; };
 		CEAC6C6B16AAAB3700AF3275 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE680D1163BE5C400051BC2 /* CoreFoundation.framework */; };
 		CEAC6C6C16AAAB3A00AF3275 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE680A61635BAA400051BC2 /* QuartzCore.framework */; };
-		CEAC6C6F16AAABB800AF3275 /* libmamearmv7.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CE8D87D916501C2200685BC4 /* libmamearmv7.a */; };
 		CEAC6C7516AAAC1D00AF3275 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CEAC6C7216AAAC1C00AF3275 /* Default-568h@2x.png */; };
 		CEAC6C7616AAAC1D00AF3275 /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = CEAC6C7316AAAC1C00AF3275 /* Default.png */; };
 		CEAC6C7716AAAC1D00AF3275 /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CEAC6C7416AAAC1D00AF3275 /* Default@2x.png */; };
@@ -116,6 +115,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0AB466AE1D5B6D20009D288A /* libmamearmv7.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmamearmv7.a; path = MAME4iOS/libmamearmv7.a; sourceTree = "<group>"; };
 		B370F8AF1C8549010069377D /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = System/Library/Frameworks/GameController.framework; sourceTree = SDKROOT; };
 		CE30090016FA47BD000EDCF1 /* cheat.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = cheat.zip; path = "../../iOS-res/Applications/MAME4iOS.app/cheat.zip"; sourceTree = "<group>"; };
 		CE30090316FA47CB000EDCF1 /* Category.ini */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Category.ini; path = "../../iOS-res/Applications/MAME4iOS.app/Category.ini"; sourceTree = "<group>"; };
@@ -129,7 +129,6 @@
 		CE8A4192170F41FC001ADFA4 /* myosd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = myosd.h; path = "../../../src/osd/droid-ios/myosd.h"; sourceTree = "<group>"; };
 		CE8D432816AB0D5D00D55884 /* gridlee.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = gridlee.zip; path = "../../iOS-res/Applications/MAME4iOS.app/gridlee.zip"; sourceTree = "<group>"; };
 		CE8D87D7164FE4BE00685BC4 /* config_iPhone_5.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = config_iPhone_5.txt; path = "../../iOS-res/Applications/MAME4iOS.app/config_iPhone_5.txt"; sourceTree = "<group>"; };
-		CE8D87D916501C2200685BC4 /* libmamearmv7.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmamearmv7.a; path = ../../libmamearmv7.a; sourceTree = "<group>"; };
 		CE8D87DB1653121100685BC4 /* iCadeView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = iCadeView.h; path = ../../iOS/iCadeView.h; sourceTree = "<group>"; };
 		CE8D87DC1653121200685BC4 /* iCadeView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = iCadeView.m; path = ../../iOS/iCadeView.m; sourceTree = "<group>"; };
 		CE8D87DF16541AC400685BC4 /* Globals.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Globals.h; path = ../../iOS/Globals.h; sourceTree = "<group>"; };
@@ -142,7 +141,6 @@
 		CE8F0D7B16585C2A0048D63C /* DebugView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = DebugView.h; path = ../../iOS/DebugView.h; sourceTree = "<group>"; };
 		CE8F0D7C16585C2B0048D63C /* DebugView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = DebugView.m; path = ../../iOS/DebugView.m; sourceTree = "<group>"; };
 		CE8F1C5F1735199400D3F527 /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
-		CE8F768C164D080D009AEDBC /* libmamearmv7s.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmamearmv7s.a; path = ../../libmamearmv7s.a; sourceTree = "<group>"; };
 		CE90575A166A89D000653872 /* ListOptionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ListOptionController.h; path = ../../iOS/ListOptionController.h; sourceTree = "<group>"; };
 		CE90575B166A89D000653872 /* ListOptionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ListOptionController.m; path = ../../iOS/ListOptionController.m; sourceTree = "<group>"; };
 		CE9454C7172BB23100B81C32 /* GameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameKit.framework; path = System/Library/Frameworks/GameKit.framework; sourceTree = SDKROOT; };
@@ -179,7 +177,6 @@
 		CEBFBC1D163C5DA100A05CD0 /* SKIN_1 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SKIN_1; path = "../../iOS-res/Applications/MAME4iOS.app/SKIN_1"; sourceTree = "<group>"; };
 		CEBFBC1E163C5DA100A05CD0 /* SKIN_2 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SKIN_2; path = "../../iOS-res/Applications/MAME4iOS.app/SKIN_2"; sourceTree = "<group>"; };
 		CEBFBC1F163C5DA100A05CD0 /* SKIN_3 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SKIN_3; path = "../../iOS-res/Applications/MAME4iOS.app/SKIN_3"; sourceTree = "<group>"; };
-		CEBFBC30163D634700A05CD0 /* libmamesim.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmamesim.a; path = ../../libmamesim.a; sourceTree = "<group>"; };
 		CEE680851635BA7000051BC2 /* MAME4iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MAME4iOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CEE680891635BA7000051BC2 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		CEE6808B1635BA7000051BC2 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -226,7 +223,6 @@
 				CEAC6C6A16AAAB3400AF3275 /* AudioToolbox.framework in Frameworks */,
 				CEAC6C6B16AAAB3700AF3275 /* CoreFoundation.framework in Frameworks */,
 				CEAC6C6C16AAAB3A00AF3275 /* QuartzCore.framework in Frameworks */,
-				CEAC6C6F16AAABB800AF3275 /* libmamearmv7.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -236,11 +232,11 @@
 			files = (
 				B370F8B01C8549010069377D /* GameController.framework in Frameworks */,
 				CE8F1C601735199400D3F527 /* CoreBluetooth.framework in Frameworks */,
-				CE8D87DA16501C2200685BC4 /* libmamearmv7.a in Frameworks */,
 				CEE680D2163BE5C400051BC2 /* CoreFoundation.framework in Frameworks */,
 				CEE680CA163B13AC00051BC2 /* AudioToolbox.framework in Frameworks */,
 				CEE680A71635BAA400051BC2 /* QuartzCore.framework in Frameworks */,
 				CEE6808A1635BA7000051BC2 /* UIKit.framework in Frameworks */,
+				0AB466AF1D5B6D20009D288A /* libmamearmv7.a in Frameworks */,
 				CEE6808C1635BA7000051BC2 /* Foundation.framework in Frameworks */,
 				CEE6808E1635BA7000051BC2 /* CoreGraphics.framework in Frameworks */,
 				CE9454C8172BB23100B81C32 /* GameKit.framework in Frameworks */,
@@ -349,9 +345,7 @@
 		CEE6807A1635BA6F00051BC2 = {
 			isa = PBXGroup;
 			children = (
-				CE8D87D916501C2200685BC4 /* libmamearmv7.a */,
-				CE8F768C164D080D009AEDBC /* libmamearmv7s.a */,
-				CEBFBC30163D634700A05CD0 /* libmamesim.a */,
+				0AB466AE1D5B6D20009D288A /* libmamearmv7.a */,
 				CEAC6C2716AAA73900AF3275 /* RELOADED */,
 				CEE6808F1635BA7000051BC2 /* MAME4iOS */,
 				CEAC6C3116AAA80400AF3275 /* Gridlee */,
@@ -734,6 +728,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../..\"",
+					"$(PROJECT_DIR)/MAME4iOS",
 				);
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-lstdc++";
@@ -758,6 +753,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../..\"",
+					"$(PROJECT_DIR)/MAME4iOS",
 				);
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-lstdc++";

@@ -115,6 +115,8 @@
   //input debug stuff
   CGRect debug_rects[100];
   int num_debug_rects;
+    
+    NSMutableArray *controllers;
 
 }
 

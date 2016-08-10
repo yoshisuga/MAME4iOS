@@ -90,10 +90,10 @@ int  myosd_speed = 100;
 
 char myosd_selected_game[MAX_GAME_NAME] = {'\0'};
 
-extern "C" unsigned long read_mfi_controller(int n, unsigned long res);
+extern "C" unsigned long read_mfi_controller(unsigned long res);
 
-/*extern */float joy_analog_x[4];
-/*extern */float joy_analog_y[4];
+/*extern */float joy_analog_x[4][2];
+/*extern */float joy_analog_y[4][2];
 
 static int lib_inited = 0;
 static int soundInit = 0;
@@ -203,16 +203,14 @@ unsigned long myosd_joystick_read(int n)
 #endif
         res |= myosd_joy_status[n];
 	}
-
-    res = read_mfi_controller(n, res);
     
 	return res;
 }
 
 float myosd_joystick_read_analog(int n, char axis)
 {
-	float res = 0.0;
-
+    float res = 0.0;
+    
     if(n==0 || myosd_pxasp1 && (myosd_num_of_joys==0 || myosd_num_of_joys==1))
     {
 #ifdef BTJOY
@@ -221,23 +219,23 @@ float myosd_joystick_read_analog(int n, char axis)
             bt_joy_poll(0);
         }
 #endif
-       if(axis=='x')
-		   res = joy_analog_x[0];
-	   else if (axis=='y')
-		   res = joy_analog_y[0];
-	}
-
-	if (n<myosd_num_of_joys)
-	{
+        if(axis=='lx') res = joy_analog_x[0][0];
+        else if (axis=='ly') res = joy_analog_y[0][0];
+        else if(axis=='rx') res = joy_analog_x[0][1];
+        else if (axis=='ry') res = joy_analog_y[0][1];
+    }
+    
+    if (n<myosd_num_of_joys)
+    {
 #ifdef BTJOY
         bt_joy_poll(n);
-#endif        
-	   	if(axis=='x')
-			res = joy_analog_x[n];
-		else if (axis=='y')
-			res = joy_analog_y[n];
-	}
-
+#endif
+        if(axis=='lx') res = joy_analog_x[n][0];
+        else if (axis=='ly') res = joy_analog_y[n][0];
+        else if(axis=='rx') res = joy_analog_x[n][1];
+        else if (axis=='ry') res = joy_analog_y[n][1];
+    }
+    
     return res;
 }
 

@@ -87,8 +87,8 @@ extern int iOS_main (int argc, char **argv);
 
 extern unsigned long myosd_pad_status;
 extern unsigned long myosd_joy_status[4];
-extern float joy_analog_x[4];
-extern float joy_analog_y[4];
+extern float joy_analog_x[4][2];
+extern float joy_analog_y[4][2];
 
 extern int g_isIpad;
 extern int g_isIphone5;
