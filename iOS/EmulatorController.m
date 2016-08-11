@@ -2702,15 +2702,16 @@ void* app_Thread_Start(void* args)
             }
             //Exit Game
             else if (MFIController.gamepad.buttonX.pressed) {
-                myosd_joy_status[index] &= ~MYOSD_START;
-                myosd_joy_status[index] &= ~MYOSD_X;
-                exit_status=2;
-                actionPending=0;
-                [self handle_MENU];
-            }
-            else {
+                if (myosd_inGame && myosd_in_menu == 0) {
+                    myosd_joy_status[index] &= ~MYOSD_START;
+                    myosd_joy_status[index] &= ~MYOSD_X;
+                    exit_status=2;
+                    actionPending=0;
+                    [self handle_MENU];
+                }
                 
             }
+
         };
     }
     
