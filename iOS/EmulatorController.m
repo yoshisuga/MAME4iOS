@@ -2456,63 +2456,46 @@ void* app_Thread_Start(void* args)
 
 -(void)setupMFIControllers{
     
-    
-    /*if(!controllers.count){
-     [self scanForDevices];
-     return;
-     }*/
-    
     g_joy_used = 1;
-    myosd_num_of_joys = 4;
+    myosd_num_of_joys = 8;
     [self removeTouchControllerViews];
     [self.view setNeedsDisplay];
     
-    
-    //NSLog(@"Hello %@", MFIController.vendorName);
-    
     for (int index = 0; index < controllers.count; index++) {
-        //if (MFIController == nil) {
+
         GCController *MFIController = [controllers objectAtIndex:index];
-        //if (MFIController.playerIndex == GCControllerPlayerIndexUnset) {
+        
         [MFIController setPlayerIndex:GCControllerPlayerIndexUnset];
         [MFIController setPlayerIndex:index];
         
         NSLog(@" PlayerIndex: %i", MFIController.playerIndex);
-        //}
         
         MFIController.gamepad.dpad.valueChangedHandler = ^ (GCControllerDirectionPad *directionpad, float xValue, float yValue) {
-            //if (element == gamepad.dpad.up) {
+            
             if (directionpad.up.pressed) {
                 myosd_joy_status[index] |= MYOSD_UP;
             }
             else {
                 myosd_joy_status[index] &= ~MYOSD_UP;
             }
-            //}
-            //if (element == gamepad.dpad.down) {
             if (directionpad.down.pressed) {
                 myosd_joy_status[index] |= MYOSD_DOWN;
             }
             else {
                 myosd_joy_status[index] &= ~MYOSD_DOWN;
             }
-            //}
-            //if (element == gamepad.dpad.left) {
             if (directionpad.left.pressed) {
                 myosd_joy_status[index] |= MYOSD_LEFT;
             }
             else {
                 myosd_joy_status[index] &= ~MYOSD_LEFT;
             }
-            //}
-            //if (element == gamepad.dpad.right) {
             if (directionpad.right.pressed) {
                 myosd_joy_status[index] |= MYOSD_RIGHT;
             }
             else {
                 myosd_joy_status[index] &= ~MYOSD_RIGHT;
             }
-            //}
         };
         
         MFIController.gamepad.valueChangedHandler = ^(GCGamepad* gamepad, GCControllerElement* element) {
@@ -2618,6 +2601,8 @@ void* app_Thread_Start(void* args)
                 }
             }
             
+            
+            //TODO: Something useful with these buttons. Maybe add more buttons?
             if (element == gamepad.leftTrigger) {
                 if (gamepad.leftTrigger.pressed) {
                     myosd_joy_status[index] |= MYOSD_SELECT;
@@ -2626,15 +2611,14 @@ void* app_Thread_Start(void* args)
                     myosd_joy_status[index] &= ~MYOSD_SELECT;
                 }
             }
-            /*if (element == gamepad.rightTrigger) {
-             if (gamepad.rightTrigger.pressed) {
-             myosd_joy_status[index] |= MYOSD_START;
-             }
-             else {
-             myosd_joy_status[index] &= ~MYOSD_START;
-             }
-             }*/
-            
+            if (element == gamepad.rightTrigger) {
+                if (gamepad.rightTrigger.pressed) {
+                    myosd_joy_status[index] |= MYOSD_SELECT;
+                }
+                else {
+                    myosd_joy_status[index] &= ~MYOSD_SELECT;
+                }
+            }
         };
         
         MFIController.extendedGamepad.leftThumbstick.valueChangedHandler = ^ (GCControllerDirectionPad *directionpad, float xValue, float yValue) {
@@ -2644,12 +2628,10 @@ void* app_Thread_Start(void* args)
             
             if (xValue < -deadZone)
             {
-                //                    res |= MYOSD_LEFT;
                 joy_analog_x[index][0] = xValue;
             }
             if (xValue > deadZone)
             {
-                //                    res |= MYOSD_RIGHT;
                 joy_analog_x[index][0] = xValue;
             }
             if ( xValue <= deadZone && xValue >= -deadZone ) {
@@ -2658,12 +2640,10 @@ void* app_Thread_Start(void* args)
             if (yValue > deadZone)
             {
                 joy_analog_y[index][0] = yValue;
-                //                    res |= MYOSD_UP;
             }
             if (yValue < -deadZone)
             {
                 joy_analog_y[index][0] = yValue;
-                //                    res |= MYOSD_DOWN;
             }
             if ( yValue <= deadZone && yValue >= -deadZone ) {
                 joy_analog_y[index][0] = 0.0f;
@@ -2678,12 +2658,10 @@ void* app_Thread_Start(void* args)
             
             if (xValue < -deadZone)
             {
-                //                    res |= MYOSD_LEFT;
                 joy_analog_x[index][1] = xValue;
             }
             if (xValue > deadZone)
             {
-                //                    res |= MYOSD_RIGHT;
                 joy_analog_x[index][1] = xValue;
             }
             if ( xValue <= deadZone && xValue >= -deadZone ) {
@@ -2692,12 +2670,10 @@ void* app_Thread_Start(void* args)
             if (yValue > deadZone)
             {
                 joy_analog_y[index][1] = yValue;
-                //                    res |= MYOSD_UP;
             }
             if (yValue < -deadZone)
             {
                 joy_analog_y[index][1] = yValue;
-                //                    res |= MYOSD_DOWN;
             }
             if ( yValue <= deadZone && yValue >= -deadZone ) {
                 joy_analog_y[index][1] = 0.0f;
@@ -2706,27 +2682,43 @@ void* app_Thread_Start(void* args)
         };
         
         MFIController.controllerPausedHandler = ^(GCController *controller) {
+            //Add Coin
+            myosd_joy_status[index] |= MYOSD_START;
+            [self performSelector:@selector(releaseStart:) withObject:MFIController afterDelay:0.1];
+            
             if (MFIController.gamepad.leftShoulder.pressed) {
+                myosd_joy_status[index] &= ~MYOSD_START;
                 myosd_joy_status[index] &= ~MYOSD_L1;
                 myosd_joy_status[index] |= MYOSD_SELECT;
                 [self performSelector:@selector(releaseCoin:) withObject:MFIController afterDelay:0.1];
             }
-            else if (MFIController.gamepad.rightShoulder.pressed) {
-                //myosd_joy_status[index] |= MYOSD_ESC;
-                myosd_exitGame = 1;
-                //[self performSelector:@selector(releaseExit:) withObject:index afterDelay:0.1];
+            //Show Mame menu (Start + Coin)
+            if (MFIController.gamepad.rightShoulder.pressed) {
+                myosd_joy_status[index] &= ~MYOSD_R1;
+                myosd_joy_status[index] &= ~MYOSD_START;
+                myosd_joy_status[index] |= MYOSD_SELECT;
+                myosd_joy_status[index] |= MYOSD_START;
+                [self performSelector:@selector(releaseMenu:) withObject:MFIController afterDelay:0.1];
+            }
+            //Exit Game
+            else if (MFIController.gamepad.buttonX.pressed) {
+                myosd_joy_status[index] &= ~MYOSD_START;
+                myosd_joy_status[index] &= ~MYOSD_X;
+                exit_status=2;
+                actionPending=0;
+                [self handle_MENU];
             }
             else {
-                myosd_joy_status[index] |= MYOSD_START;
-                [self performSelector:@selector(releaseStart:) withObject:MFIController afterDelay:0.1];
+                
             }
         };
     }
     
 }
 
--(void)releaseExit:(GCController *)controller{
-    myosd_joy_status[controller.playerIndex] &= ~MYOSD_ESC;
+-(void)releaseMenu:(GCController *)controller{
+    myosd_joy_status[controller.playerIndex] &= ~MYOSD_START;
+    myosd_joy_status[controller.playerIndex] &= ~MYOSD_SELECT;
     
 }
 

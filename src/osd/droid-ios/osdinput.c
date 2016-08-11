@@ -385,17 +385,6 @@ void droid_ios_poll_input(running_machine *machine)
 					keyboard_state[KEY_PGUP] = 0;
 					keyboard_state[KEY_PGDN] = 0;
 				}
-                
-                if((_pad_status & MYOSD_START)  &&  (_pad_status & MYOSD_A))
-                {
-                    myosd_savestate = 1;
-                    break;
-                }
-                if((_pad_status & MYOSD_SELECT)  &&  (_pad_status & MYOSD_A))
-                {
-                    myosd_loadstate = 1;
-                    break;
-                }
 			}
 
             // lo cambio de 0 a i...
