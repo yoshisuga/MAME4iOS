@@ -219,8 +219,8 @@ float myosd_joystick_read_analog(int n, char axis)
             bt_joy_poll(0);
         }
 #endif
-        if(axis=='lx') res = joy_analog_x[0][0];
-        else if (axis=='ly') res = joy_analog_y[0][0];
+        if(axis=='x') res = joy_analog_x[0][0];
+        else if (axis=='y') res = joy_analog_y[0][0];
         else if(axis=='rx') res = joy_analog_x[0][1];
         else if (axis=='ry') res = joy_analog_y[0][1];
     }
@@ -230,8 +230,8 @@ float myosd_joystick_read_analog(int n, char axis)
 #ifdef BTJOY
         bt_joy_poll(n);
 #endif
-        if(axis=='lx') res = joy_analog_x[n][0];
-        else if (axis=='ly') res = joy_analog_y[n][0];
+        if(axis=='x') res = joy_analog_x[n][0];
+        else if (axis=='y') res = joy_analog_y[n][0];
         else if(axis=='rx') res = joy_analog_x[n][1];
         else if (axis=='ry') res = joy_analog_y[n][1];
     }

@@ -223,16 +223,16 @@ float joystick_read_analog(int n, char axis)
         if(n==0)
         {
             if(handle->player1)
-                res = (float) (axis=='lx' ? handle->state.analog_x : handle->state.analog_y);
+                res = (float) (axis=='x' ? handle->state.analog_x : handle->state.analog_y);
             else
-                res = (float) (axis=='lx' ? handle->peer_state.analog_x : handle->peer_state.analog_y);
+                res = (float) (axis=='x' ? handle->peer_state.analog_x : handle->peer_state.analog_y);
         }
         else if(n==1)
         {
             if(handle->player1)
-                res = (float) (axis=='lx' ? handle->peer_state.analog_x : handle->peer_state.analog_y);
+                res = (float) (axis=='x' ? handle->peer_state.analog_x : handle->peer_state.analog_y);
             else
-                res = (float) (axis=='lx' ? handle->state.analog_x : handle->state.analog_y);
+                res = (float) (axis=='x' ? handle->state.analog_x : handle->state.analog_y);
         }
         return res;
     }
@@ -399,7 +399,7 @@ void droid_ios_poll_input(running_machine *machine)
 			}
 
             // lo cambio de 0 a i...
-            if(joystick_read_analog(i, 'lx') == 0 && joystick_read_analog(i, 'ly')==0 && joystick_read_analog(i, 'rx') == 0 && joystick_read_analog(i, 'ry')==0)
+            if(joystick_read_analog(i, 'x') == 0 && joystick_read_analog(i, 'y')==0 && joystick_read_analog(i, 'rx') == 0 && joystick_read_analog(i, 'ry')==0)
             {
                 joy_hats[i][0] = ((_pad_status & MYOSD_UP) != 0) ? 0x80 : 0;
                 joy_hats[i][1] = ((_pad_status & MYOSD_DOWN) != 0) ? 0x80 : 0;
@@ -412,8 +412,8 @@ void droid_ios_poll_input(running_machine *machine)
             }
             else
             {
-                joy_axis[i][0] = (int)(joystick_read_analog(i, 'lx') *  32767 *  2 );
-                joy_axis[i][1] = (int)(joystick_read_analog(i, 'ly') *  32767 * -2 );
+                joy_axis[i][0] = (int)(joystick_read_analog(i, 'x') *  32767 *  2 );
+                joy_axis[i][1] = (int)(joystick_read_analog(i, 'y') *  32767 * -2 );
                 joy_axis[i][2] = (int)(joystick_read_analog(i, 'rx') *  32767 *  2 );
                 joy_axis[i][3] = (int)(joystick_read_analog(i, 'ry') *  32767 * -2 );
                 joy_hats[i][0] = 0;
