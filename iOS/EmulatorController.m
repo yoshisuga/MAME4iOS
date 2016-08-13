@@ -2498,6 +2498,8 @@ void* app_Thread_Start(void* args)
             }
         };
         
+        MFIController.extendedGamepad.dpad.valueChangedHandler = MFIController.gamepad.dpad.valueChangedHandler;
+        
         MFIController.gamepad.valueChangedHandler = ^(GCGamepad* gamepad, GCControllerElement* element) {
             
             if (element == gamepad.buttonA) {
