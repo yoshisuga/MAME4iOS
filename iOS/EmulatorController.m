@@ -2603,23 +2603,11 @@ void* app_Thread_Start(void* args)
                 }
             }
             
-            
-            //TODO: Something useful with these buttons. Maybe add more buttons?
             if (element == gamepad.leftTrigger) {
-                if (gamepad.leftTrigger.pressed) {
-                    myosd_joy_status[index] |= MYOSD_SELECT;
-                }
-                else {
-                    myosd_joy_status[index] &= ~MYOSD_SELECT;
-                }
+                joy_analog_x[index][2] = gamepad.leftTrigger.value;
             }
             if (element == gamepad.rightTrigger) {
-                if (gamepad.rightTrigger.pressed) {
-                    myosd_joy_status[index] |= MYOSD_SELECT;
-                }
-                else {
-                    myosd_joy_status[index] &= ~MYOSD_SELECT;
-                }
+                joy_analog_x[index][3] = gamepad.rightTrigger.value;
             }
         };
         

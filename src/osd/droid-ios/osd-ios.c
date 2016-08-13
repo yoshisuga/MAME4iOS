@@ -92,7 +92,7 @@ char myosd_selected_game[MAX_GAME_NAME] = {'\0'};
 
 extern "C" unsigned long read_mfi_controller(unsigned long res);
 
-/*extern */float joy_analog_x[4][2];
+/*extern */float joy_analog_x[4][4];
 /*extern */float joy_analog_y[4][2];
 
 static int lib_inited = 0;
@@ -223,6 +223,8 @@ float myosd_joystick_read_analog(int n, char axis)
         else if (axis=='y') res = joy_analog_y[0][0];
         else if(axis=='rx') res = joy_analog_x[0][1];
         else if (axis=='ry') res = joy_analog_y[0][1];
+        else if(axis=='z') res = joy_analog_x[0][2];
+        else if(axis=='rz') res = joy_analog_x[0][3];
     }
     
     if (n<myosd_num_of_joys)
@@ -234,6 +236,8 @@ float myosd_joystick_read_analog(int n, char axis)
         else if (axis=='y') res = joy_analog_y[n][0];
         else if(axis=='rx') res = joy_analog_x[n][1];
         else if (axis=='ry') res = joy_analog_y[n][1];
+        else if(axis=='z') res = joy_analog_x[n][2];
+        else if(axis=='rz') res = joy_analog_x[n][3];
     }
     
     return res;
