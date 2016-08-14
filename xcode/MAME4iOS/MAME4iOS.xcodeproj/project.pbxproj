@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0AB466AF1D5B6D20009D288A /* libmamearmv7.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AB466AE1D5B6D20009D288A /* libmamearmv7.a */; };
+		0A1A540E1D5FEA0F0053C761 /* libmamearmv7.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0A1A540D1D5FEA0F0053C761 /* libmamearmv7.a */; };
 		B370F8B01C8549010069377D /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B370F8AF1C8549010069377D /* GameController.framework */; };
 		CE30090116FA47BD000EDCF1 /* cheat.zip in Resources */ = {isa = PBXBuildFile; fileRef = CE30090016FA47BD000EDCF1 /* cheat.zip */; };
 		CE30090216FA47BD000EDCF1 /* cheat.zip in Resources */ = {isa = PBXBuildFile; fileRef = CE30090016FA47BD000EDCF1 /* cheat.zip */; };
@@ -115,7 +115,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		0AB466AE1D5B6D20009D288A /* libmamearmv7.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmamearmv7.a; path = MAME4iOS/libmamearmv7.a; sourceTree = "<group>"; };
+		0A1A540D1D5FEA0F0053C761 /* libmamearmv7.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmamearmv7.a; path = ../../libmamearmv7.a; sourceTree = "<group>"; };
 		B370F8AF1C8549010069377D /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = System/Library/Frameworks/GameController.framework; sourceTree = SDKROOT; };
 		CE30090016FA47BD000EDCF1 /* cheat.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = cheat.zip; path = "../../iOS-res/Applications/MAME4iOS.app/cheat.zip"; sourceTree = "<group>"; };
 		CE30090316FA47CB000EDCF1 /* Category.ini */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Category.ini; path = "../../iOS-res/Applications/MAME4iOS.app/Category.ini"; sourceTree = "<group>"; };
@@ -236,7 +236,7 @@
 				CEE680CA163B13AC00051BC2 /* AudioToolbox.framework in Frameworks */,
 				CEE680A71635BAA400051BC2 /* QuartzCore.framework in Frameworks */,
 				CEE6808A1635BA7000051BC2 /* UIKit.framework in Frameworks */,
-				0AB466AF1D5B6D20009D288A /* libmamearmv7.a in Frameworks */,
+				0A1A540E1D5FEA0F0053C761 /* libmamearmv7.a in Frameworks */,
 				CEE6808C1635BA7000051BC2 /* Foundation.framework in Frameworks */,
 				CEE6808E1635BA7000051BC2 /* CoreGraphics.framework in Frameworks */,
 				CE9454C8172BB23100B81C32 /* GameKit.framework in Frameworks */,
@@ -345,7 +345,7 @@
 		CEE6807A1635BA6F00051BC2 = {
 			isa = PBXGroup;
 			children = (
-				0AB466AE1D5B6D20009D288A /* libmamearmv7.a */,
+				0A1A540D1D5FEA0F0053C761 /* libmamearmv7.a */,
 				CEAC6C2716AAA73900AF3275 /* RELOADED */,
 				CEE6808F1635BA7000051BC2 /* MAME4iOS */,
 				CEAC6C3116AAA80400AF3275 /* Gridlee */,

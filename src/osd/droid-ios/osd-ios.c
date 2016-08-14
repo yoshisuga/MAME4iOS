@@ -221,10 +221,10 @@ float myosd_joystick_read_analog(int n, char axis)
 #endif
         if(axis=='x') res = joy_analog_x[0][0];
         else if (axis=='y') res = joy_analog_y[0][0];
-        else if(axis=='rx') res = joy_analog_x[0][1];
-        else if (axis=='ry') res = joy_analog_y[0][1];
+        else if(axis=='X') res = joy_analog_x[0][1];
+        else if (axis=='Y') res = joy_analog_y[0][1];
         else if(axis=='z') res = joy_analog_x[0][2];
-        else if(axis=='rz') res = joy_analog_x[0][3];
+        else if(axis=='Z') res = joy_analog_x[0][3];
     }
     
     if (n<myosd_num_of_joys)
@@ -234,10 +234,10 @@ float myosd_joystick_read_analog(int n, char axis)
 #endif
         if(axis=='x') res = joy_analog_x[n][0];
         else if (axis=='y') res = joy_analog_y[n][0];
-        else if(axis=='rx') res = joy_analog_x[n][1];
-        else if (axis=='ry') res = joy_analog_y[n][1];
+        else if(axis=='X') res = joy_analog_x[n][1];
+        else if (axis=='Y') res = joy_analog_y[n][1];
         else if(axis=='z') res = joy_analog_x[n][2];
-        else if(axis=='rz') res = joy_analog_x[n][3];
+        else if(axis=='Z') res = joy_analog_x[n][3];
     }
     
     return res;
