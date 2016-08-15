@@ -32,8 +32,8 @@ Up to 4 mfi controllers are supported. I've tested it with 2 mfi controllers and
 The following hotkey combinations are supported:
 
 - Start game (PAUSE)
-- Insert coin (Hold LT and press PAUSE)
-- Open menu (Hold RT and press PAUSE)
+- Insert coin (Hold L and press PAUSE)
+- Open menu (Hold R and press PAUSE)
 - Exit game (Hold X and press PAUSE)
 
 ### Dual analog support
