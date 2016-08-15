@@ -763,6 +763,8 @@ void* app_Thread_Start(void* args)
 -(void)viewDidLoad{	
     printf("viewDidLoad\n");
     
+    controllers = [[NSMutableArray alloc] initWithCapacity:4];
+    
    nameImgButton_NotPress[BTN_B] = @"button_NotPress_B.png";
    nameImgButton_NotPress[BTN_X] = @"button_NotPress_X.png";
    nameImgButton_NotPress[BTN_A] = @"button_NotPress_A.png";
@@ -861,12 +863,35 @@ void* app_Thread_Start(void* args)
 			   			      
 		   [loadAlert show];
 	       [loadAlert release];
-	 }      
+	 }
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(MFIControllerConnected:)
+                                                 name:GCControllerDidConnectNotification
+                                               object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(MFIControllerDisconnected:)
+                                                 name:GCControllerDidDisconnectNotification
+                                               object:nil];
+    
+    if ([[GCController controllers] count] != 0) {
+        [self setupMFIControllers];
+    }
+    else {
+        [self scanForDevices];
+    }
 }
 
 - (void)viewDidUnload
 {    
     [super viewDidUnload];
+    
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:GCControllerDidConnectNotification
+                                                  object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:GCControllerDidDisconnectNotification
+                                                  object:nil];
     
     [self removeTouchControllerViews];
     
@@ -898,7 +923,7 @@ void* app_Thread_Start(void* args)
     return change_layout ? NO : YES;
 }
 
--(NSUInteger)supportedInterfaceOrientations
+-(UIInterfaceOrientationMask)supportedInterfaceOrientations
 {
     if(isGridlee)
       return UIInterfaceOrientationMaskLandscape;
@@ -2396,6 +2421,338 @@ void* app_Thread_Start(void* args)
     {
        rStickWindow.size.height *= g_stick_size;
        rStickWindow.size.width *= g_stick_size;
+    }
+}
+
+#pragma mark - MFI Controller
+
+-(float) getDeadZone {
+    float deadZone = 0;
+    
+    switch(g_pref_analog_DZ_value)
+    {
+        case 0:
+            deadZone = 0.01f;
+            break;
+        case 1:
+            deadZone = 0.05f;
+            break;
+        case 2:
+            deadZone = 0.1f;
+            break;
+        case 3:
+            deadZone = 0.15f;
+            break;
+        case 4:
+            deadZone = 0.2f;
+            break;
+        case 5:
+            deadZone = 0.3f;
+            break;
+    }
+    
+    return deadZone;
+}
+
+-(void)setupMFIControllers{
+    
+    g_joy_used = 1;
+    myosd_num_of_joys = 8;
+    [self removeTouchControllerViews];
+    [self.view setNeedsDisplay];
+    
+    for (int index = 0; index < controllers.count; index++) {
+
+        GCController *MFIController = [controllers objectAtIndex:index];
+        
+        [MFIController setPlayerIndex:GCControllerPlayerIndexUnset];
+        [MFIController setPlayerIndex:index];
+        
+        NSLog(@" PlayerIndex: %i", MFIController.playerIndex);
+        
+        MFIController.gamepad.dpad.valueChangedHandler = ^ (GCControllerDirectionPad *directionpad, float xValue, float yValue) {
+            
+            if (directionpad.up.pressed) {
+                myosd_joy_status[index] |= MYOSD_UP;
+            }
+            else {
+                myosd_joy_status[index] &= ~MYOSD_UP;
+            }
+            if (directionpad.down.pressed) {
+                myosd_joy_status[index] |= MYOSD_DOWN;
+            }
+            else {
+                myosd_joy_status[index] &= ~MYOSD_DOWN;
+            }
+            if (directionpad.left.pressed) {
+                myosd_joy_status[index] |= MYOSD_LEFT;
+            }
+            else {
+                myosd_joy_status[index] &= ~MYOSD_LEFT;
+            }
+            if (directionpad.right.pressed) {
+                myosd_joy_status[index] |= MYOSD_RIGHT;
+            }
+            else {
+                myosd_joy_status[index] &= ~MYOSD_RIGHT;
+            }
+        };
+        
+        MFIController.extendedGamepad.dpad.valueChangedHandler = MFIController.gamepad.dpad.valueChangedHandler;
+        
+        MFIController.gamepad.valueChangedHandler = ^(GCGamepad* gamepad, GCControllerElement* element) {
+            
+            if (element == gamepad.buttonA) {
+                if (gamepad.buttonA.pressed) {
+                    myosd_joy_status[index] |= MYOSD_A;
+                }
+                else {
+                    myosd_joy_status[index] &= ~MYOSD_A;
+                }
+            }
+            if (element == gamepad.buttonB) {
+                if (gamepad.buttonB.pressed) {
+                    myosd_joy_status[index] |= MYOSD_B;
+                }
+                else {
+                    myosd_joy_status[index] &= ~MYOSD_B;
+                }
+            }
+            if (element == gamepad.buttonX) {
+                if (gamepad.buttonX.pressed) {
+                    myosd_joy_status[index] |= MYOSD_X;
+                }
+                else {
+                    myosd_joy_status[index] &= ~MYOSD_X;
+                }
+            }
+            if (element == gamepad.buttonY) {
+                if (gamepad.buttonY.pressed) {
+                    myosd_joy_status[index] |= MYOSD_Y;
+                }
+                else {
+                    myosd_joy_status[index] &= ~MYOSD_Y;
+                }
+            }
+            if (element == gamepad.leftShoulder) {
+                if (gamepad.leftShoulder.pressed) {
+                    myosd_joy_status[index] |= MYOSD_L1;
+                }
+                else {
+                    myosd_joy_status[index] &= ~MYOSD_L1;
+                }
+            }
+            if (element == gamepad.rightShoulder) {
+                if (gamepad.rightShoulder.pressed) {
+                    myosd_joy_status[index] |= MYOSD_R1;
+                }
+                else {
+                    myosd_joy_status[index] &= ~MYOSD_R1;
+                }
+            }
+        };
+        
+        MFIController.extendedGamepad.valueChangedHandler = ^(GCExtendedGamepad* gamepad, GCControllerElement* element) {
+            
+            if (element == gamepad.buttonA) {
+                if (gamepad.buttonA.pressed) {
+                    myosd_joy_status[index] |= MYOSD_A;
+                }
+                else {
+                    myosd_joy_status[index] &= ~MYOSD_A;
+                }
+            }
+            if (element == gamepad.buttonB) {
+                if (gamepad.buttonB.pressed) {
+                    myosd_joy_status[index] |= MYOSD_B;
+                }
+                else {
+                    myosd_joy_status[index] &= ~MYOSD_B;
+                }
+            }
+            if (element == gamepad.buttonX) {
+                if (gamepad.buttonX.pressed) {
+                    myosd_joy_status[index] |= MYOSD_X;
+                }
+                else {
+                    myosd_joy_status[index] &= ~MYOSD_X;
+                }
+            }
+            if (element == gamepad.buttonY) {
+                if (gamepad.buttonY.pressed) {
+                    myosd_joy_status[index] |= MYOSD_Y;
+                }
+                else {
+                    myosd_joy_status[index] &= ~MYOSD_Y;
+                }
+            }
+            if (element == gamepad.leftShoulder) {
+                if (gamepad.leftShoulder.pressed) {
+                    myosd_joy_status[index] |= MYOSD_L1;
+                }
+                else {
+                    myosd_joy_status[index] &= ~MYOSD_L1;
+                }
+            }
+            if (element == gamepad.rightShoulder) {
+                if (gamepad.rightShoulder.pressed) {
+                    myosd_joy_status[index] |= MYOSD_R1;
+                }
+                else {
+                    myosd_joy_status[index] &= ~MYOSD_R1;
+                }
+            }
+            
+            if (element == gamepad.leftTrigger) {
+                joy_analog_x[index][2] = gamepad.leftTrigger.value;
+            }
+            if (element == gamepad.rightTrigger) {
+                joy_analog_x[index][3] = gamepad.rightTrigger.value;
+            }
+        };
+        
+        MFIController.extendedGamepad.leftThumbstick.valueChangedHandler = ^ (GCControllerDirectionPad *directionpad, float xValue, float yValue) {
+            
+            float deadZone = [self getDeadZone];
+            
+            
+            if (xValue < -deadZone)
+            {
+                joy_analog_x[index][0] = xValue;
+            }
+            if (xValue > deadZone)
+            {
+                joy_analog_x[index][0] = xValue;
+            }
+            if ( xValue <= deadZone && xValue >= -deadZone ) {
+                joy_analog_x[index][0] = 0.0f;
+            }
+            if (yValue > deadZone)
+            {
+                joy_analog_y[index][0] = yValue;
+            }
+            if (yValue < -deadZone)
+            {
+                joy_analog_y[index][0] = yValue;
+            }
+            if ( yValue <= deadZone && yValue >= -deadZone ) {
+                joy_analog_y[index][0] = 0.0f;
+            }
+            
+        };
+        
+        MFIController.extendedGamepad.rightThumbstick.valueChangedHandler = ^ (GCControllerDirectionPad *directionpad, float xValue, float yValue) {
+            
+            float deadZone = [self getDeadZone];
+            
+            
+            if (xValue < -deadZone)
+            {
+                joy_analog_x[index][1] = xValue;
+            }
+            if (xValue > deadZone)
+            {
+                joy_analog_x[index][1] = xValue;
+            }
+            if ( xValue <= deadZone && xValue >= -deadZone ) {
+                joy_analog_x[index][1] = 0.0f;
+            }
+            if (yValue > deadZone)
+            {
+                joy_analog_y[index][1] = yValue;
+            }
+            if (yValue < -deadZone)
+            {
+                joy_analog_y[index][1] = yValue;
+            }
+            if ( yValue <= deadZone && yValue >= -deadZone ) {
+                joy_analog_y[index][1] = 0.0f;
+            }
+            
+        };
+        
+        MFIController.controllerPausedHandler = ^(GCController *controller) {
+            //Add Coin
+            myosd_joy_status[index] |= MYOSD_START;
+            [self performSelector:@selector(releaseStart:) withObject:MFIController afterDelay:0.1];
+            
+            if (MFIController.gamepad.leftShoulder.pressed) {
+                myosd_joy_status[index] &= ~MYOSD_START;
+                myosd_joy_status[index] &= ~MYOSD_L1;
+                myosd_joy_status[index] |= MYOSD_SELECT;
+                [self performSelector:@selector(releaseCoin:) withObject:MFIController afterDelay:0.1];
+            }
+            //Show Mame menu (Start + Coin)
+            if (MFIController.gamepad.rightShoulder.pressed) {
+                myosd_joy_status[index] &= ~MYOSD_R1;
+                myosd_joy_status[index] &= ~MYOSD_START;
+                myosd_joy_status[index] |= MYOSD_SELECT;
+                myosd_joy_status[index] |= MYOSD_START;
+                [self performSelector:@selector(releaseMenu:) withObject:MFIController afterDelay:0.1];
+            }
+            //Exit Game
+            else if (MFIController.gamepad.buttonX.pressed) {
+                if (myosd_inGame && myosd_in_menu == 0) {
+                    myosd_joy_status[index] &= ~MYOSD_START;
+                    myosd_joy_status[index] &= ~MYOSD_X;
+                    exit_status=2;
+                    actionPending=0;
+                    [self handle_MENU];
+                }
+                
+            }
+
+        };
+    }
+    
+}
+
+-(void)releaseMenu:(GCController *)controller{
+    myosd_joy_status[controller.playerIndex] &= ~MYOSD_START;
+    myosd_joy_status[controller.playerIndex] &= ~MYOSD_SELECT;
+    
+}
+
+-(void)releaseCoin:(GCController *)controller{
+    myosd_joy_status[controller.playerIndex] &= ~MYOSD_SELECT;
+    
+}
+
+-(void)releaseStart:(GCController *)controller{
+    myosd_joy_status[controller.playerIndex] &= ~MYOSD_START;
+    
+}
+
+-(void)scanForDevices{
+    [GCController startWirelessControllerDiscoveryWithCompletionHandler:nil];
+}
+
+-(void)MFIControllerConnected:(NSNotification*)notif{
+    GCController *controller = (GCController *)[notif object];
+    
+    NSLog(@"Hello %@", controller.vendorName);
+    
+    [controller setPlayerIndex:GCControllerPlayerIndexUnset];
+    
+    [controllers addObject:controller];
+    [self setupMFIControllers];
+}
+
+-(void)MFIControllerDisconnected:(NSNotification*)notif{
+    GCController *controller = (GCController *)[notif object];
+    
+    NSLog(@"Goodbye %@", controller.vendorName);
+    
+    [controllers removeObject:controller];
+    
+    if(!controllers.count){
+        g_joy_used = 0;
+        myosd_num_of_joys = 0;
+        
+        [self changeUI];
+    }
+    else {
+        [self setupMFIControllers];
     }
 }
 

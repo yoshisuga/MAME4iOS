@@ -67,11 +67,11 @@
 	{
         if(g_pref_input_touch_type==TOUCH_INPUT_ANALOG)
 		{
-           joy_analog_x[0] = rx;
+           joy_analog_x[0][0] = rx;
            if(!STICK2WAY)
-		      joy_analog_y[0] = ry * -1.0f;
+		      joy_analog_y[0][0] = ry * -1.0f;
            else
-              joy_analog_y[0] = 0;
+              joy_analog_y[0][0] = 0;
            //printf("Sending analog %f, %f...\n",joy_analog_x[0],joy_analog_y[0] );
 		}
 
@@ -187,8 +187,8 @@
 	}
 	else
 	{
-	    joy_analog_x[0]=0.0f;
-	    joy_analog_y[0]=0.0f;
+	    joy_analog_x[0][0]=0.0f;
+	    joy_analog_y[0][0]=0.0f;
         //printf("Sending analog %f, %f...\n",joy_analog_x[0],joy_analog_y[0] );
 	     
 	    myosd_pad_status &= ~MYOSD_UP;

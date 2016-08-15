@@ -56,7 +56,7 @@ static input_device *keyboard_device;
 // the states
 static int keyboard_state[KEY_TOTAL];
 static int joy_buttons[4][8];
-static int joy_axis[4][2];
+static int joy_axis[4][6];
 static int joy_hats[4][4];
 
 static int poll_ports = 0;
@@ -87,18 +87,24 @@ void droid_ios_init_input(running_machine *machine)
 
 		snprintf(name, 10, "Joy %d", i + 1);
 		devinfo = input_device_add(machine, DEVICE_CLASS_JOYSTICK, name, NULL);
-		input_device_item_add(devinfo, "Bt_B", &joy_buttons[i][0], ITEM_ID_BUTTON1, my_get_state);
-		input_device_item_add(devinfo, "Bt_X", &joy_buttons[i][1], ITEM_ID_BUTTON2, my_get_state);
-		input_device_item_add(devinfo, "Bt_A", &joy_buttons[i][2], ITEM_ID_BUTTON3, my_get_state);
-		input_device_item_add(devinfo, "Bt_Y", &joy_buttons[i][3], ITEM_ID_BUTTON4, my_get_state);
-		input_device_item_add(devinfo, "Bt_L", &joy_buttons[i][4], ITEM_ID_BUTTON5, my_get_state);
-		input_device_item_add(devinfo, "Bt_R", &joy_buttons[i][5], ITEM_ID_BUTTON6, my_get_state);
+    
+        input_device_item_add(devinfo, "LX Axis", &joy_axis[i][0], ITEM_ID_XAXIS, my_axis_get_state);
+        input_device_item_add(devinfo, "LY Axis", &joy_axis[i][1], ITEM_ID_YAXIS, my_axis_get_state);
+        input_device_item_add(devinfo, "RX Axis", &joy_axis[i][2], ITEM_ID_RXAXIS, my_axis_get_state);
+        input_device_item_add(devinfo, "RY Axis", &joy_axis[i][3], ITEM_ID_RYAXIS, my_axis_get_state);
+        
+        input_device_item_add(devinfo, "LZ Axis", &joy_axis[i][4], ITEM_ID_ZAXIS, my_axis_get_state);
+        input_device_item_add(devinfo, "RZ Axis", &joy_axis[i][5], ITEM_ID_RZAXIS, my_axis_get_state);
+    
+		input_device_item_add(devinfo, "B", &joy_buttons[i][0], ITEM_ID_BUTTON1, my_get_state);
+		input_device_item_add(devinfo, "X", &joy_buttons[i][1], ITEM_ID_BUTTON2, my_get_state);
+		input_device_item_add(devinfo, "A", &joy_buttons[i][2], ITEM_ID_BUTTON3, my_get_state);
+		input_device_item_add(devinfo, "Y", &joy_buttons[i][3], ITEM_ID_BUTTON4, my_get_state);
+		input_device_item_add(devinfo, "L", &joy_buttons[i][4], ITEM_ID_BUTTON5, my_get_state);
+		input_device_item_add(devinfo, "R", &joy_buttons[i][5], ITEM_ID_BUTTON6, my_get_state);
 
 		input_device_item_add(devinfo, "Coin", &joy_buttons[i][6], ITEM_ID_BUTTON7, my_get_state);
 		input_device_item_add(devinfo, "Start", &joy_buttons[i][7], ITEM_ID_BUTTON8, my_get_state);
-
-		input_device_item_add(devinfo, "X Axis", &joy_axis[i][0], ITEM_ID_XAXIS, my_axis_get_state);
-		input_device_item_add(devinfo, "Y Axis", &joy_axis[i][1], ITEM_ID_YAXIS, my_axis_get_state);
 
 		input_device_item_add(devinfo, "D-Pad Up", &joy_hats[i][0],(input_item_id)( ITEM_ID_HAT1UP+i*4), my_get_state);
 		input_device_item_add(devinfo, "D-Pad Down", &joy_hats[i][1],(input_item_id)( ITEM_ID_HAT1DOWN+i*4), my_get_state);
@@ -383,38 +389,34 @@ void droid_ios_poll_input(running_machine *machine)
 					keyboard_state[KEY_PGUP] = 0;
 					keyboard_state[KEY_PGDN] = 0;
 				}
-                
-                if((_pad_status & MYOSD_START)  &&  (_pad_status & MYOSD_A))
-                {
-                    myosd_savestate = 1;
-                    break;
-                }
-                if((_pad_status & MYOSD_SELECT)  &&  (_pad_status & MYOSD_A))
-                {
-                    myosd_loadstate = 1;
-                    break;
-                }
 			}
 
             // lo cambio de 0 a i...
-			if(joystick_read_analog(i, 'x') == 0 && joystick_read_analog(i, 'y')==0)
-			{
-			   joy_hats[i][0] = ((_pad_status & MYOSD_UP) != 0) ? 0x80 : 0;
-			   joy_hats[i][1] = ((_pad_status & MYOSD_DOWN) != 0) ? 0x80 : 0;
-			   joy_hats[i][2] = ((_pad_status & MYOSD_LEFT) != 0) ? 0x80 : 0;
-			   joy_hats[i][3] = ((_pad_status & MYOSD_RIGHT) != 0) ? 0x80 : 0;
-			   joy_axis[i][0] = 0;
-			   joy_axis[i][1] = 0;
-			}
-			else
-			{
-			   joy_axis[i][0] = (int)(joystick_read_analog(i, 'x') *  32767 *  2 );
-			   joy_axis[i][1] = (int)(joystick_read_analog(i, 'y') *  32767 * -2 );
-			   joy_hats[i][0] = 0;
-			   joy_hats[i][1] = 0;
-			   joy_hats[i][2] = 0;
-			   joy_hats[i][3] = 0;
-			}
+            if(joystick_read_analog(i, 'x') == 0 && joystick_read_analog(i, 'y')==0 && joystick_read_analog(i, 'X') == 0 && joystick_read_analog(i, 'Y')==0)
+            {
+                joy_hats[i][0] = ((_pad_status & MYOSD_UP) != 0) ? 0x80 : 0;
+                joy_hats[i][1] = ((_pad_status & MYOSD_DOWN) != 0) ? 0x80 : 0;
+                joy_hats[i][2] = ((_pad_status & MYOSD_LEFT) != 0) ? 0x80 : 0;
+                joy_hats[i][3] = ((_pad_status & MYOSD_RIGHT) != 0) ? 0x80 : 0;
+                joy_axis[i][0] = 0;
+                joy_axis[i][1] = 0;
+                joy_axis[i][2] = 0;
+                joy_axis[i][3] = 0;
+            }
+            else
+            {
+                joy_axis[i][0] = (int)(joystick_read_analog(i, 'x') *  32767 *  2 );
+                joy_axis[i][1] = (int)(joystick_read_analog(i, 'y') *  32767 * -2 );
+                joy_axis[i][2] = (int)(joystick_read_analog(i, 'X') *  32767 *  2 );
+                joy_axis[i][3] = (int)(joystick_read_analog(i, 'Y') *  32767 * -2 );
+                joy_hats[i][0] = 0;
+                joy_hats[i][1] = 0;
+                joy_hats[i][2] = 0;
+                joy_hats[i][3] = 0;
+            }
+            
+            joy_axis[i][4] = (int)(joystick_read_analog(i, 'z') *  32767 *  2 );
+            joy_axis[i][5] = (int)(joystick_read_analog(i, 'Z') *  32767 * 2 );
             
             if(myosd_inGame && !myosd_in_menu && myosd_autofire && !netplay)
             {
@@ -522,6 +524,8 @@ void droid_ios_poll_input(running_machine *machine)
 //============================================================
 //  osd_customize_inputport_list
 //============================================================
+
+//TODO: Maybe clean up the default input settings
 
 void osd_customize_input_type_list(input_type_desc *typelist)
 {

@@ -28,6 +28,8 @@ extern "C" {
 enum  { MYOSD_UP=0x1,       MYOSD_LEFT=0x4,       MYOSD_DOWN=0x10,  MYOSD_RIGHT=0x40,
         MYOSD_START=1<<8,   MYOSD_SELECT=1<<9,    MYOSD_L1=1<<10,    MYOSD_R1=1<<11,
         MYOSD_A=1<<12,      MYOSD_B=1<<13,        MYOSD_X=1<<14,    MYOSD_Y=1<<15,
+    
+    //These don't seem to be connected.
         MYOSD_VOL_UP=1<<23, MYOSD_VOL_DOWN=1<<22, MYOSD_PUSH=1<<27, MYOSD_ESC=1<<28 };
     
 #define MAX_FILTER_KEYWORD 30
@@ -64,8 +66,8 @@ extern int  myosd_num_buttons;
 
 extern unsigned long myosd_pad_status;
     
-extern float joy_analog_x[4];
-extern float joy_analog_y[4];
+extern float joy_analog_x[4][4];
+extern float joy_analog_y[4][2];
 
 extern unsigned short myosd_ext_status;
     
