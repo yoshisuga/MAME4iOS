@@ -38,7 +38,7 @@ The following hotkey combinations are supported:
 
 ### Dual analog support
 
-The right stick on the extended controller profile is fully supported, with support for 4 players
+The right stick on the extended controller profile is fully supported, with support for 4 players (thank you @DarrenBradford!)
 
 ### Trigger buttons
 
