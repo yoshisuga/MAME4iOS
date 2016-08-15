@@ -10,7 +10,7 @@ It has been updated to compile and run on Xcode 7/iOS 9 by Les Bird (http://www.
 
 Requirements: Mac with Xcode 7
 
-Building MAME4iOS requires a prebuilt MAME binary. It was not included in this repo due to its large size. This is done by running `make` at the root directory of the project. Or, you can download a prebuilt binary [here](https://mega.nz/#!HVYj2Yqa!u7W2zvPLRQ7T4TAoMqGR2NZtjEl90HMTSXUQzD-2gRE). It will work for most modern iOS devices. Place the file in the root directory of the repo.
+Building MAME4iOS requires a prebuilt MAME binary. It was not included in this repo due to its large size. This is done by running `make` at the root directory of the project. Or, you can download a prebuilt binary [here](https://mega.nz/#!DBxg0BAa!xs-roEpruF4vOzJZcPrPBGc_MvIuse3DNfPobdAMDG0). It will work for most modern iOS devices. Place the file in the root directory of the repo.
 
 Even if you are not in the paid Apple Developer Program, you can sideload the app using a Mac with Xcode 7.
 
