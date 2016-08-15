@@ -32,22 +32,15 @@ Up to 4 mfi controllers are supported. I've tested it with 2 mfi controllers and
 The following hotkey combinations are supported:
 
 - Start game (PAUSE)
-- Insert coin (B + PAUSE)
-- Open menu (A + PAUSE)
-- Exit game (R + PAUSE)
+- Insert coin (Hold LT and press PAUSE)
+- Open menu (Hold RT and press PAUSE)
+- Exit game (Hold X and press PAUSE)
 
 ### Dual analog support
 
-The right stick on the extended controller profile is supported, but with a caveat:
-
-- 1P right stick is mapped to 3P analog stick
-- 2P right stick is mapped to 4P analog stick
-
-So currently, 2 players can use dual sticks at the same time.
+The right stick on the extended controller profile is fully supported, with support for 4 players
 
 ### Trigger buttons
 
-The left trigger is mapped to -X values (-1 to 0) on the 3P analog stick, and the right trigger is mapped to +X values (0 to 1) on the 3P analog stick. 
-
-I'm not sure if this is the best setup for it, so suggestions are welcome.
+The trigger buttons are mapped to analog conrols and should be useful in assigning for pedal controls, for example.
 
