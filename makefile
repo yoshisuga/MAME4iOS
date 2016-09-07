@@ -819,22 +819,16 @@ CCOMFLAGS +=  -I$(BASE_DEV)/usr/include
 
 ifndef iOSSIMULATOR
 
-ifndef iOSARMV7S
-CCOMFLAGS += -arch armv7 
-LDFLAGS += -arch armv7
-else
-
 ifdef iOSARM64
 CCOMFLAGS += -arch arm64
 LDFLAGS += -arch arm64
-else
+else ifdef iOSARMV7S
 CCOMFLAGS += -arch armv7s 
 LDFLAGS += -arch armv7s
+else 
+CCOMFLAGS += -arch armv7 
+LDFLAGS += -arch armv7
 endif
-
-endif
-
-
 
 CCOMFLAGS += -miphoneos-version-min=5.0
 

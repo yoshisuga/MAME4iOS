@@ -58,7 +58,10 @@
 @class LayoutView;
 @class NetplayGameKit;
 
-@interface EmulatorController : UIViewController <UIActionSheetDelegate>
+@interface EmulatorController : UIViewController
+#ifndef TARGET_OS_TV
+<UIActionSheetDelegate>
+#endif
 {
 
   UIView			* screenView;
@@ -78,7 +81,11 @@
     
   NetplayGameKit     *netplayHelper;
 
-  UIActionSheet     *menu;
+#ifdef TARGET_OS_TV
+    UIAlertController *menu;
+#else
+    UIActionSheet     *menu;
+#endif
   
   //input rects
   CGRect rInput[INPUT_LAST_VALUE];
