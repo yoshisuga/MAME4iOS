@@ -8,6 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		0A1A540E1D5FEA0F0053C761 /* libmamearmv7.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0A1A540D1D5FEA0F0053C761 /* libmamearmv7.a */; };
+		9235BCE41D807B2000D0962A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 9235BCE31D807B2000D0962A /* main.m */; };
+		9235BCE71D807B2000D0962A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 9235BCE61D807B2000D0962A /* AppDelegate.m */; };
+		9235BCEA1D807B2000D0962A /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9235BCE91D807B2000D0962A /* ViewController.m */; };
+		9235BCED1D807B2000D0962A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9235BCEB1D807B2000D0962A /* Main.storyboard */; };
+		9235BCEF1D807B2000D0962A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9235BCEE1D807B2000D0962A /* Assets.xcassets */; };
+		9235BCF61D807E0A00D0962A /* libmamearm64.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9235BCF51D807E0A00D0962A /* libmamearm64.a */; };
+		9235BCF71D807E1F00D0962A /* libmamearm64.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9235BCF51D807E0A00D0962A /* libmamearm64.a */; };
 		B370F8B01C8549010069377D /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B370F8AF1C8549010069377D /* GameController.framework */; };
 		CE30090116FA47BD000EDCF1 /* cheat.zip in Resources */ = {isa = PBXBuildFile; fileRef = CE30090016FA47BD000EDCF1 /* cheat.zip */; };
 		CE30090216FA47BD000EDCF1 /* cheat.zip in Resources */ = {isa = PBXBuildFile; fileRef = CE30090016FA47BD000EDCF1 /* cheat.zip */; };
@@ -116,6 +123,16 @@
 
 /* Begin PBXFileReference section */
 		0A1A540D1D5FEA0F0053C761 /* libmamearmv7.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmamearmv7.a; path = ../../libmamearmv7.a; sourceTree = "<group>"; };
+		9235BCE01D807B2000D0962A /* MAME4tvOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MAME4tvOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9235BCE31D807B2000D0962A /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		9235BCE51D807B2000D0962A /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		9235BCE61D807B2000D0962A /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		9235BCE81D807B2000D0962A /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
+		9235BCE91D807B2000D0962A /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		9235BCEC1D807B2000D0962A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		9235BCEE1D807B2000D0962A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		9235BCF01D807B2000D0962A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		9235BCF51D807E0A00D0962A /* libmamearm64.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmamearm64.a; path = ../../libmamearm64.a; sourceTree = "<group>"; };
 		B370F8AF1C8549010069377D /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = System/Library/Frameworks/GameController.framework; sourceTree = SDKROOT; };
 		CE30090016FA47BD000EDCF1 /* cheat.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = cheat.zip; path = "../../iOS-res/Applications/MAME4iOS.app/cheat.zip"; sourceTree = "<group>"; };
 		CE30090316FA47CB000EDCF1 /* Category.ini */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Category.ini; path = "../../iOS-res/Applications/MAME4iOS.app/Category.ini"; sourceTree = "<group>"; };
@@ -210,6 +227,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		9235BCDD1D807B2000D0962A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9235BCF71D807E1F00D0962A /* libmamearm64.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		CEAC6C2916AAA80400AF3275 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -240,6 +265,7 @@
 				CEE6808C1635BA7000051BC2 /* Foundation.framework in Frameworks */,
 				CEE6808E1635BA7000051BC2 /* CoreGraphics.framework in Frameworks */,
 				CE9454C8172BB23100B81C32 /* GameKit.framework in Frameworks */,
+				9235BCF61D807E0A00D0962A /* libmamearm64.a in Frameworks */,
 				CEAC6C6716AAAB2D00AF3275 /* libz.dylib in Frameworks */,
 				CEAC6C6816AAAB3000AF3275 /* libstdc++.dylib in Frameworks */,
 			);
@@ -248,6 +274,29 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		9235BCE11D807B2000D0962A /* MAME4tvOS */ = {
+			isa = PBXGroup;
+			children = (
+				9235BCE51D807B2000D0962A /* AppDelegate.h */,
+				9235BCE61D807B2000D0962A /* AppDelegate.m */,
+				9235BCE81D807B2000D0962A /* ViewController.h */,
+				9235BCE91D807B2000D0962A /* ViewController.m */,
+				9235BCEB1D807B2000D0962A /* Main.storyboard */,
+				9235BCEE1D807B2000D0962A /* Assets.xcassets */,
+				9235BCF01D807B2000D0962A /* Info.plist */,
+				9235BCE21D807B2000D0962A /* Supporting Files */,
+			);
+			path = MAME4tvOS;
+			sourceTree = "<group>";
+		};
+		9235BCE21D807B2000D0962A /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				9235BCE31D807B2000D0962A /* main.m */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
 		CEAC6C2716AAA73900AF3275 /* RELOADED */ = {
 			isa = PBXGroup;
 			children = (
@@ -346,10 +395,12 @@
 			isa = PBXGroup;
 			children = (
 				0A1A540D1D5FEA0F0053C761 /* libmamearmv7.a */,
+				9235BCF51D807E0A00D0962A /* libmamearm64.a */,
 				CEAC6C2716AAA73900AF3275 /* RELOADED */,
 				CEE6808F1635BA7000051BC2 /* MAME4iOS */,
 				CEAC6C3116AAA80400AF3275 /* Gridlee */,
 				CEE680C51635BB8500051BC2 /* Includes */,
+				9235BCE11D807B2000D0962A /* MAME4tvOS */,
 				CEE680881635BA7000051BC2 /* Frameworks */,
 				CEE680861635BA7000051BC2 /* Products */,
 			);
@@ -360,6 +411,7 @@
 			children = (
 				CEE680851635BA7000051BC2 /* MAME4iOS.app */,
 				CEAC6C2C16AAA80400AF3275 /* Gridlee.app */,
+				9235BCE01D807B2000D0962A /* MAME4tvOS.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -422,6 +474,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		9235BCDF1D807B2000D0962A /* MAME4tvOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9235BCF31D807B2000D0962A /* Build configuration list for PBXNativeTarget "MAME4tvOS" */;
+			buildPhases = (
+				9235BCDC1D807B2000D0962A /* Sources */,
+				9235BCDD1D807B2000D0962A /* Frameworks */,
+				9235BCDE1D807B2000D0962A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MAME4tvOS;
+			productName = MAME4tvOS;
+			productReference = 9235BCE01D807B2000D0962A /* MAME4tvOS.app */;
+			productType = "com.apple.product-type.application";
+		};
 		CEAC6C2B16AAA80400AF3275 /* Gridlee */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = CEAC6C3D16AAA80500AF3275 /* Build configuration list for PBXNativeTarget "Gridlee" */;
@@ -464,6 +533,12 @@
 			attributes = {
 				LastUpgradeCheck = 0450;
 				ORGANIZATIONNAME = Seleuco;
+				TargetAttributes = {
+					9235BCDF1D807B2000D0962A = {
+						CreatedOnToolsVersion = 7.3.1;
+						DevelopmentTeam = R72X3BF4KE;
+					};
+				};
 			};
 			buildConfigurationList = CEE6807F1635BA6F00051BC2 /* Build configuration list for PBXProject "MAME4iOS" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -471,6 +546,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				Base,
 			);
 			mainGroup = CEE6807A1635BA6F00051BC2;
 			productRefGroup = CEE680861635BA7000051BC2 /* Products */;
@@ -479,11 +555,21 @@
 			targets = (
 				CEE680841635BA7000051BC2 /* MAME4iOS */,
 				CEAC6C2B16AAA80400AF3275 /* Gridlee */,
+				9235BCDF1D807B2000D0962A /* MAME4tvOS */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		9235BCDE1D807B2000D0962A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9235BCEF1D807B2000D0962A /* Assets.xcassets in Resources */,
+				9235BCED1D807B2000D0962A /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		CEAC6C2A16AAA80400AF3275 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -549,6 +635,16 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		9235BCDC1D807B2000D0962A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9235BCEA1D807B2000D0962A /* ViewController.m in Sources */,
+				9235BCE71D807B2000D0962A /* AppDelegate.m in Sources */,
+				9235BCE41D807B2000D0962A /* main.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		CEAC6C2816AAA80400AF3275 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -602,6 +698,14 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
+		9235BCEB1D807B2000D0962A /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				9235BCEC1D807B2000D0962A /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
 		CEAC6C3416AAA80400AF3275 /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -621,6 +725,89 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		9235BCF11D807B2000D0962A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer: Yoshinobu Sugawara (64FU9F98YG)";
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				INFOPLIST_FILE = MAME4tvOS/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../..\"",
+					"$(PROJECT_DIR)/MAME4iOS",
+				);
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = "-lstdc++";
+				PRODUCT_BUNDLE_IDENTIFIER = com.ievo.MAME4tvOS;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 9.2;
+				VALID_ARCHS = arm64;
+			};
+			name = Debug;
+		};
+		9235BCF21D807B2000D0962A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CODE_SIGN_IDENTITY = "iPhone Distribution: Yoshinobu Sugawara (R72X3BF4KE)";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				INFOPLIST_FILE = MAME4tvOS/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../..\"",
+					"$(PROJECT_DIR)/MAME4iOS",
+				);
+				MTL_ENABLE_DEBUG_INFO = NO;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = "-lstdc++";
+				PRODUCT_BUNDLE_IDENTIFIER = com.ievo.MAME4tvOS;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 9.2;
+				VALID_ARCHS = arm64;
+			};
+			name = Release;
+		};
 		CEAC6C3E16AAA80500AF3275 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -767,6 +954,14 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		9235BCF31D807B2000D0962A /* Build configuration list for PBXNativeTarget "MAME4tvOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9235BCF11D807B2000D0962A /* Debug */,
+				9235BCF21D807B2000D0962A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
 		CEAC6C3D16AAA80500AF3275 /* Build configuration list for PBXNativeTarget "Gridlee" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

@@ -39,9 +39,11 @@ iOSNOJAILBREAK = 1
 
 #iOSSIMULATOR = 1
 
-iOSARMV7=1
+#iOSARMV7=1
 
 #iOSARMV7S=1
+
+iOSARM64=1
 
 ################
 
@@ -471,6 +473,9 @@ endif
 ifdef iOSARMV7S
 EMULATOR = libmamearmv7s.a
 endif
+ifdef iOSARM64
+EMULATOR = libmamearm64.a
+endif
 else
 EMULATOR = $(FULLNAME)$(EXE)
 endif
@@ -818,9 +823,18 @@ ifndef iOSARMV7S
 CCOMFLAGS += -arch armv7 
 LDFLAGS += -arch armv7
 else
+
+ifdef iOSARM64
+CCOMFLAGS += -arch arm64
+LDFLAGS += -arch arm64
+else
 CCOMFLAGS += -arch armv7s 
 LDFLAGS += -arch armv7s
 endif
+
+endif
+
+
 
 CCOMFLAGS += -miphoneos-version-min=5.0
 
