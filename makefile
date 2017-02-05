@@ -43,12 +43,15 @@ iOSARMV7=1
 
 #iOSARMV7S=1
 
+iOSARM64=1
+
 ################
 
 CROSS_BUILD = 1
 
 #TARGETOS = android
-PTR64 = 0
+#PTR64 = 0
+PTR64 = 1
 
 X86_MIPS3_DRC =
 X86_PPC_DRC =
@@ -350,6 +353,8 @@ OPTIMIZE = 0
 endif
 endif
 
+OPTIMIZE = 0
+
 # profiler defaults to on for DEBUG builds
 ifdef DEBUG
 ifndef PROFILER
@@ -470,6 +475,9 @@ EMULATOR = libmamearmv7.a
 endif
 ifdef iOSARMV7S
 EMULATOR = libmamearmv7s.a
+endif
+ifdef iOSARM64
+EMULATOR = libmamearm64.a
 endif
 else
 EMULATOR = $(FULLNAME)$(EXE)
@@ -814,9 +822,12 @@ CCOMFLAGS +=  -I$(BASE_DEV)/usr/include
 
 ifndef iOSSIMULATOR
 
-ifndef iOSARMV7S
+ifdef iOSARMV7S
 CCOMFLAGS += -arch armv7 
 LDFLAGS += -arch armv7
+else ifdef iOSARM64
+CCOMFLAGS += -arch arm64 
+LDFLAGS += -arch arm64
 else
 CCOMFLAGS += -arch armv7s 
 LDFLAGS += -arch armv7s
