@@ -57,7 +57,7 @@ X86_MIPS3_DRC =
 X86_PPC_DRC =
 FORCE_DRC_C_BACKEND = 1
 
-#OPTIMIZE = 1
+OPTIMIZE = 1
 
 ifdef ANDROID
 
@@ -353,7 +353,7 @@ OPTIMIZE = 0
 endif
 endif
 
-OPTIMIZE = 0
+OPTIMIZE = 1
 
 # profiler defaults to on for DEBUG builds
 ifdef DEBUG
