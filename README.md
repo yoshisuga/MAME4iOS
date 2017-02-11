@@ -16,12 +16,16 @@ This repo adds support for:
 
 Requirements: Mac with Xcode 7
 
-Building MAME4iOS requires a prebuilt MAME binary. It was not included in this repo due to its large size. This is done by running `make` at the root directory of the project. Or, you can download a prebuilt binary [here](https://mega.nz/#!DBxg0BAa!xs-roEpruF4vOzJZcPrPBGc_MvIuse3DNfPobdAMDG0). It will work for most modern iOS devices. Place the file in the root directory of the repo.
+Building MAME4iOS requires a prebuilt MAME binary. It was not included in this repo due to its large size. This is done by running `make` at the root directory of the project. This will build the 64-bit version of the MAME binary by default and will only work for modern iOS devices (iPhone 5S and above, iPad Air and above, iPad mini 2 and above). To build the 32-bit version, use the command: `make iOSARMV7=1`.
 
-Even if you are not in the paid Apple Developer Program, you can sideload the app using a Mac with Xcode 7.
+Or, you can download a prebuilt binary [here (64-bit)](https://mega.nz/#!WYBx2B5D!cvuyxKehT4LQ7Iiz8kMJeh8uQ-TWWEUJlngBHKfTICo) or [here (32-bit)](https://mega.nz/#!zNYQCaBZ!a7JaLbiQ65kUQZlxxAGOsRHln2F0dDM1Rly_I5t54KE).
+
+Place the file in the root directory of the repo. Choose the appropraite build target (MAME4iOS 64-bit or MAME4iOS 32-bit).
+
+Even if you are not in the paid Apple Developer Program, you can sideload the app using a Mac with Xcode 7/8.
 
 1. Open the Xcode project in `xcode/MAME4iOS/MAME4iOS.xcodeproj`
-2. Make sure you have the `libmamearmv7.a` file in the root of your project (it should not be red).
+2. Make sure you have the `libmamearm64.a` (or `libmamearmv7.a`) file in the root of your project (it should not be red).
 1. If you are a developer, build and run on your device
 1. If you are not a developer, open Preferences and add your Apple ID, select your Personal Team, and create an iOS Development Profile.
 1. Select the project name on the left pane and make sure your personal team is selected
