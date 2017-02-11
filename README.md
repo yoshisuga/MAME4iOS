@@ -6,6 +6,12 @@ This is a port of MAME for iOS. The currently supported rom set version is 0.139
 
 It has been updated to compile and run on Xcode 7/iOS 9 by Les Bird (http://www.lesbird.com/iMame4All/iMame4All_Xcode.html), and he has graciously added support for mFi Controllers.
 
+This repo adds support for:
+
+- 64-bit binary to run on modern and future iOS devices
+- Multiple mFi controllers (up to 4 with dual analog support - @DarrenBranford)
+- Builds in Xcode 8, runs on iOS 10 
+
 ## Installation / Sideloading
 
 Requirements: Mac with Xcode 7
@@ -44,3 +50,6 @@ The right stick on the extended controller profile is fully supported, with supp
 
 The trigger buttons are mapped to analog conrols and should be useful in assigning for pedal controls, for example.
 
+### tvOS
+
+tvOS is not supported yet. The problem is that I can't compile the tvOS version of the MAME binary, as it needs to be linked with `libc++`, not `libstdc++`, which is what this MAME binary depends on. I'm not intimately familiar with the API differences between the two (it looks like it has to do with differing string functions), so I haven't gotten around to fixing it for tvOS. You can, however, run MAME on an iPhone or iPad and mirror the display to an Apple TV.
