@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0A1A540E1D5FEA0F0053C761 /* libmamearmv7.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0A1A540D1D5FEA0F0053C761 /* libmamearmv7.a */; };
-		925ABCA31E46DCBA00997182 /* libmamearm64.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 925ABCA21E46DCBA00997182 /* libmamearm64.a */; };
 		925ABCA61E46DCC500997182 /* iCadeView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8D87DC1653121200685BC4 /* iCadeView.m */; };
 		925ABCA71E46DCC500997182 /* iph_main.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680A81635BAF400051BC2 /* iph_main.m */; };
 		925ABCA81E46DCC500997182 /* ListOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE90575B166A89D000653872 /* ListOptionController.m */; };
@@ -63,6 +61,7 @@
 		925ABCDD1E46DCC500997182 /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = CE30090316FA47CB000EDCF1 /* Category.ini */; };
 		925ABCDE1E46DCC500997182 /* hiscore.dat in Resources */ = {isa = PBXBuildFile; fileRef = CE30090616FA47E4000EDCF1 /* hiscore.dat */; };
 		925ABCE51E46DD6E00997182 /* libmamearm64.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 925ABCE41E46DD6E00997182 /* libmamearm64.a */; };
+		925ABCE81E4E1CE700997182 /* libmamearmv7.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0A1A540D1D5FEA0F0053C761 /* libmamearmv7.a */; };
 		B370F8B01C8549010069377D /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B370F8AF1C8549010069377D /* GameController.framework */; };
 		CE30090116FA47BD000EDCF1 /* cheat.zip in Resources */ = {isa = PBXBuildFile; fileRef = CE30090016FA47BD000EDCF1 /* cheat.zip */; };
 		CE30090216FA47BD000EDCF1 /* cheat.zip in Resources */ = {isa = PBXBuildFile; fileRef = CE30090016FA47BD000EDCF1 /* cheat.zip */; };
@@ -171,7 +170,6 @@
 
 /* Begin PBXFileReference section */
 		0A1A540D1D5FEA0F0053C761 /* libmamearmv7.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmamearmv7.a; path = ../../libmamearmv7.a; sourceTree = "<group>"; };
-		925ABCA21E46DCBA00997182 /* libmamearm64.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libmamearm64.a; sourceTree = "<group>"; };
 		925ABCE21E46DCC500997182 /* MAME4iOS 64-bit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MAME4iOS 64-bit.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		925ABCE31E46DCC600997182 /* MAME4iOS copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "MAME4iOS copy-Info.plist"; path = "/Users/yoshi/Code/MAME4iOSReloaded/xcode/MAME4iOS/MAME4iOS copy-Info.plist"; sourceTree = "<absolute>"; };
 		925ABCE41E46DD6E00997182 /* libmamearm64.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmamearm64.a; path = ../../libmamearm64.a; sourceTree = "<group>"; };
@@ -236,7 +234,7 @@
 		CEBFBC1D163C5DA100A05CD0 /* SKIN_1 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SKIN_1; path = "../../iOS-res/Applications/MAME4iOS.app/SKIN_1"; sourceTree = "<group>"; };
 		CEBFBC1E163C5DA100A05CD0 /* SKIN_2 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SKIN_2; path = "../../iOS-res/Applications/MAME4iOS.app/SKIN_2"; sourceTree = "<group>"; };
 		CEBFBC1F163C5DA100A05CD0 /* SKIN_3 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SKIN_3; path = "../../iOS-res/Applications/MAME4iOS.app/SKIN_3"; sourceTree = "<group>"; };
-		CEE680851635BA7000051BC2 /* MAME4iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MAME4iOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		CEE680851635BA7000051BC2 /* MAME4iOS 32-bit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MAME4iOS 32-bit.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		CEE680891635BA7000051BC2 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		CEE6808B1635BA7000051BC2 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		CEE6808D1635BA7000051BC2 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -308,17 +306,16 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				925ABCE81E4E1CE700997182 /* libmamearmv7.a in Frameworks */,
 				B370F8B01C8549010069377D /* GameController.framework in Frameworks */,
 				CE8F1C601735199400D3F527 /* CoreBluetooth.framework in Frameworks */,
 				CEE680D2163BE5C400051BC2 /* CoreFoundation.framework in Frameworks */,
 				CEE680CA163B13AC00051BC2 /* AudioToolbox.framework in Frameworks */,
 				CEE680A71635BAA400051BC2 /* QuartzCore.framework in Frameworks */,
 				CEE6808A1635BA7000051BC2 /* UIKit.framework in Frameworks */,
-				0A1A540E1D5FEA0F0053C761 /* libmamearmv7.a in Frameworks */,
 				CEE6808C1635BA7000051BC2 /* Foundation.framework in Frameworks */,
 				CEE6808E1635BA7000051BC2 /* CoreGraphics.framework in Frameworks */,
 				CE9454C8172BB23100B81C32 /* GameKit.framework in Frameworks */,
-				925ABCA31E46DCBA00997182 /* libmamearm64.a in Frameworks */,
 				CEAC6C6716AAAB2D00AF3275 /* libz.dylib in Frameworks */,
 				CEAC6C6816AAAB3000AF3275 /* libstdc++.dylib in Frameworks */,
 			);
@@ -425,7 +422,6 @@
 			isa = PBXGroup;
 			children = (
 				0A1A540D1D5FEA0F0053C761 /* libmamearmv7.a */,
-				925ABCA21E46DCBA00997182 /* libmamearm64.a */,
 				CEAC6C2716AAA73900AF3275 /* RELOADED */,
 				CEE6808F1635BA7000051BC2 /* MAME4iOS */,
 				CEAC6C3116AAA80400AF3275 /* Gridlee */,
@@ -439,7 +435,7 @@
 		CEE680861635BA7000051BC2 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				CEE680851635BA7000051BC2 /* MAME4iOS.app */,
+				CEE680851635BA7000051BC2 /* MAME4iOS 32-bit.app */,
 				CEAC6C2C16AAA80400AF3275 /* Gridlee.app */,
 				925ABCE21E46DCC500997182 /* MAME4iOS 64-bit.app */,
 			);
@@ -539,9 +535,9 @@
 			productReference = CEAC6C2C16AAA80400AF3275 /* Gridlee.app */;
 			productType = "com.apple.product-type.application";
 		};
-		CEE680841635BA7000051BC2 /* MAME4iOS */ = {
+		CEE680841635BA7000051BC2 /* MAME4iOS 32-bit */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = CEE680A31635BA7000051BC2 /* Build configuration list for PBXNativeTarget "MAME4iOS" */;
+			buildConfigurationList = CEE680A31635BA7000051BC2 /* Build configuration list for PBXNativeTarget "MAME4iOS 32-bit" */;
 			buildPhases = (
 				CEE680811635BA7000051BC2 /* Sources */,
 				CEE680821635BA7000051BC2 /* Frameworks */,
@@ -551,9 +547,9 @@
 			);
 			dependencies = (
 			);
-			name = MAME4iOS;
+			name = "MAME4iOS 32-bit";
 			productName = MAME4iOS;
-			productReference = CEE680851635BA7000051BC2 /* MAME4iOS.app */;
+			productReference = CEE680851635BA7000051BC2 /* MAME4iOS 32-bit.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -570,7 +566,8 @@
 						ProvisioningStyle = Automatic;
 					};
 					CEE680841635BA7000051BC2 = {
-						ProvisioningStyle = Manual;
+						DevelopmentTeam = R72X3BF4KE;
+						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -586,7 +583,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				CEE680841635BA7000051BC2 /* MAME4iOS */,
+				CEE680841635BA7000051BC2 /* MAME4iOS 32-bit */,
 				CEAC6C2B16AAA80400AF3275 /* Gridlee */,
 				925ABCA41E46DCC500997182 /* MAME4iOS 64-bit */,
 			);
@@ -914,7 +911,7 @@
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
-				VALID_ARCHS = arm64;
+				VALID_ARCHS = "arm64 armv7";
 			};
 			name = Debug;
 		};
@@ -939,7 +936,7 @@
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
-				VALID_ARCHS = arm64;
+				VALID_ARCHS = "arm64 armv7";
 			};
 			name = Release;
 		};
@@ -948,7 +945,8 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD)";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = R72X3BF4KE;
 				ENABLE_BITCODE = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MAME4iOS/MAME4iOS-Prefix.pch";
@@ -961,13 +959,13 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SRCROOT)/../..\"",
+					"$(SRCROOT)/../..",
 					"$(PROJECT_DIR)/MAME4iOS",
 					"$(PROJECT_DIR)",
 				);
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-lstdc++";
-				PRODUCT_BUNDLE_IDENTIFIER = com.lesbird.mame4ios;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ievo.mame4ios;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				VALID_ARCHS = armv7;
 				WRAPPER_EXTENSION = app;
@@ -979,7 +977,7 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD)";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEVELOPMENT_TEAM = R72X3BF4KE;
 				ENABLE_BITCODE = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -989,16 +987,16 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SRCROOT)/../..\"",
+					"$(SRCROOT)/../..",
 					"$(PROJECT_DIR)/MAME4iOS",
 					"$(PROJECT_DIR)",
 				);
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-lstdc++";
-				PRODUCT_BUNDLE_IDENTIFIER = com.lesbird.mame4ios;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ievo.mame4ios;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "eb681fdc-daab-419f-b206-247ea6e78b4a";
-				PROVISIONING_PROFILE_SPECIFIER = AdHocDist2016;
+				PROVISIONING_PROFILE = "";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				VALID_ARCHS = armv7;
 				WRAPPER_EXTENSION = app;
 			};
@@ -1034,7 +1032,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		CEE680A31635BA7000051BC2 /* Build configuration list for PBXNativeTarget "MAME4iOS" */ = {
+		CEE680A31635BA7000051BC2 /* Build configuration list for PBXNativeTarget "MAME4iOS 32-bit" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				CEE680A41635BA7000051BC2 /* Debug */,

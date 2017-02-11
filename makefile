@@ -39,7 +39,7 @@ iOSNOJAILBREAK = 1
 
 #iOSSIMULATOR = 1
 
-iOSARMV7=1
+iOSARMV7=0
 
 #iOSARMV7S=1
 
@@ -51,7 +51,11 @@ CROSS_BUILD = 1
 
 #TARGETOS = android
 #PTR64 = 0
+ifeq ($(iOSARMV7),1)
+PTR64 = 0
+else
 PTR64 = 1
+endif
 
 X86_MIPS3_DRC =
 X86_PPC_DRC =
@@ -470,14 +474,15 @@ ifdef iOSNOJAILBREAK
 ifdef iOSSIMULATOR
 EMULATOR = libmamesim.a
 endif
-ifdef iOSARMV7
+
+ifeq ($(iOSARMV7),1)
 EMULATOR = libmamearmv7.a
+else
+EMULATOR = libmamearm64.a
 endif
+
 ifdef iOSARMV7S
 EMULATOR = libmamearmv7s.a
-endif
-ifdef iOSARM64
-EMULATOR = libmamearm64.a
 endif
 else
 EMULATOR = $(FULLNAME)$(EXE)
@@ -822,10 +827,10 @@ CCOMFLAGS +=  -I$(BASE_DEV)/usr/include
 
 ifndef iOSSIMULATOR
 
-ifdef iOSARMV7S
+ifeq ($(iOSARMV7),1)
 CCOMFLAGS += -arch armv7 
 LDFLAGS += -arch armv7
-else ifdef iOSARM64
+else ifeq ($(iOSARM64),1)
 CCOMFLAGS += -arch arm64 
 LDFLAGS += -arch arm64
 else
