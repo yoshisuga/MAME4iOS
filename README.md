@@ -10,7 +10,7 @@ This repo adds support for:
 
 - 64-bit binary to run on modern and future iOS devices
 - Multiple mFi controllers (up to 4 with dual analog support - @DarrenBranford)
-- Builds in Xcode 8, runs on iOS 10 
+- Builds in Xcode 9, runs on iOS 11 
 
 ## Installation / Sideloading
 
