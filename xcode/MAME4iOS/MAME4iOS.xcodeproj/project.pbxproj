@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		920BBDEE201FC29700AE7D50 /* dpad.png in Resources */ = {isa = PBXBuildFile; fileRef = 920BBDED201FC29700AE7D50 /* dpad.png */; };
 		920BBDEF201FC29700AE7D50 /* dpad.png in Resources */ = {isa = PBXBuildFile; fileRef = 920BBDED201FC29700AE7D50 /* dpad.png */; };
+		920BBDF120210C3800AE7D50 /* menu.png in Resources */ = {isa = PBXBuildFile; fileRef = 920BBDF020210C3700AE7D50 /* menu.png */; };
+		920BBDF220210C3800AE7D50 /* menu.png in Resources */ = {isa = PBXBuildFile; fileRef = 920BBDF020210C3700AE7D50 /* menu.png */; };
 		925ABCA61E46DCC500997182 /* iCadeView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8D87DC1653121200685BC4 /* iCadeView.m */; };
 		925ABCA71E46DCC500997182 /* iph_main.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680A81635BAF400051BC2 /* iph_main.m */; };
 		925ABCA81E46DCC500997182 /* ListOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE90575B166A89D000653872 /* ListOptionController.m */; };
@@ -173,6 +175,7 @@
 /* Begin PBXFileReference section */
 		0A1A540D1D5FEA0F0053C761 /* libmamearmv7.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmamearmv7.a; path = ../../libmamearmv7.a; sourceTree = "<group>"; };
 		920BBDED201FC29700AE7D50 /* dpad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = dpad.png; sourceTree = "<group>"; };
+		920BBDF020210C3700AE7D50 /* menu.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menu.png; sourceTree = "<group>"; };
 		925ABCE21E46DCC500997182 /* MAME4iOS 64-bit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MAME4iOS 64-bit.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		925ABCE31E46DCC600997182 /* MAME4iOS copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "MAME4iOS copy-Info.plist"; path = "/Users/yoshi/Code/MAME4iOSReloaded/xcode/MAME4iOS/MAME4iOS copy-Info.plist"; sourceTree = "<absolute>"; };
 		925ABCE41E46DD6E00997182 /* libmamearm64.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmamearm64.a; path = ../../libmamearm64.a; sourceTree = "<group>"; };
@@ -401,6 +404,7 @@
 			isa = PBXGroup;
 			children = (
 				920BBDED201FC29700AE7D50 /* dpad.png */,
+				920BBDF020210C3700AE7D50 /* menu.png */,
 				CE30090616FA47E4000EDCF1 /* hiscore.dat */,
 				CE30090316FA47CB000EDCF1 /* Category.ini */,
 				CE30090016FA47BD000EDCF1 /* cheat.zip */,
@@ -615,6 +619,7 @@
 				925ABCD31E46DCC500997182 /* SKIN_2 in Resources */,
 				925ABCD41E46DCC500997182 /* SKIN_3 in Resources */,
 				925ABCD51E46DCC500997182 /* config_iPhone_5.txt in Resources */,
+				920BBDF220210C3800AE7D50 /* menu.png in Resources */,
 				925ABCD61E46DCC500997182 /* help.html in Resources */,
 				925ABCD71E46DCC500997182 /* LICENSE in Resources */,
 				925ABCD81E46DCC500997182 /* MAME4iOS72.png in Resources */,
@@ -678,6 +683,7 @@
 				CEBFBC2E163C5DA100A05CD0 /* SKIN_2 in Resources */,
 				CEBFBC2F163C5DA100A05CD0 /* SKIN_3 in Resources */,
 				CE8D87D8164FE4BE00685BC4 /* config_iPhone_5.txt in Resources */,
+				920BBDF120210C3800AE7D50 /* menu.png in Resources */,
 				CEBE455C168862EE00D9C140 /* help.html in Resources */,
 				CEB8E0DC16A3311600A6FEDC /* LICENSE in Resources */,
 				CEC5AD9716AAB47800C7B33D /* MAME4iOS72.png in Resources */,
@@ -815,7 +821,7 @@
 				);
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-lstdc++";
-				PRODUCT_BUNDLE_IDENTIFIER = com.lesbird.mame4ios2;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lesbird.mame4ios;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -845,7 +851,7 @@
 				);
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-lstdc++";
-				PRODUCT_BUNDLE_IDENTIFIER = com.lesbird.mame4ios2;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lesbird.mame4ios;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";

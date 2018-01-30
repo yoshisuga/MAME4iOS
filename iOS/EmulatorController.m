@@ -844,7 +844,23 @@ void* app_Thread_Start(void* args)
 	//self.view.frame = [[UIScreen mainScreen] bounds];//rMainViewFrame;
 		
     [self updateOptions];
-         
+
+    // Button to hide/show onscreen controls for lightgun games
+    // Also functions as a show menu button when a game controller is used
+    hideShowControlsForLightgun = [[UIButton alloc] initWithFrame:CGRectZero];
+    hideShowControlsForLightgun.hidden = YES;
+    [hideShowControlsForLightgun setImage:[UIImage imageNamed:@"dpad"] forState:UIControlStateNormal];
+    [hideShowControlsForLightgun addTarget:self action:@selector(toggleControlsForLightgunButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+    hideShowControlsForLightgun.alpha = 0.2f;
+    hideShowControlsForLightgun.translatesAutoresizingMaskIntoConstraints = NO;
+    [hideShowControlsForLightgun addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:20.0f]];
+    [hideShowControlsForLightgun addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:20.0f]];
+    [self.view addSubview:hideShowControlsForLightgun];
+    [self.view addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeCenterX multiplier:1.0f constant:0.0f]];
+    [self.view addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeTop multiplier:1.0f constant:8.0f]];
+    areControlsHidden = NO;
+
+    
     [self changeUI];
     
     icadeView = [[iCadeView alloc] initWithFrame:CGRectZero withEmuController:self];
@@ -883,18 +899,6 @@ void* app_Thread_Start(void* args)
         [self scanForDevices];
     }
     
-    hideShowControlsForLightgun = [[UIButton alloc] initWithFrame:CGRectZero];
-    hideShowControlsForLightgun.hidden = YES;
-    [hideShowControlsForLightgun setImage:[UIImage imageNamed:@"dpad"] forState:UIControlStateNormal];
-    [hideShowControlsForLightgun addTarget:self action:@selector(toggleControlsForLightgun:) forControlEvents:UIControlEventTouchUpInside];
-    hideShowControlsForLightgun.alpha = 0.5f;
-    hideShowControlsForLightgun.translatesAutoresizingMaskIntoConstraints = NO;
-    [hideShowControlsForLightgun addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:20.0f]];
-    [hideShowControlsForLightgun addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:20.0f]];
-    [self.view addSubview:hideShowControlsForLightgun];
-    [self.view addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeCenterX multiplier:1.0f constant:0.0f]];
-    [self.view addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeTop multiplier:1.0f constant:8.0f]];
-    areControlsHidden = NO;
 }
 
 - (void)viewDidUnload
@@ -963,7 +967,12 @@ void* app_Thread_Start(void* args)
     }        
 }
 
--(void) toggleControlsForLightgun:(id)sender {
+-(void) toggleControlsForLightgunButtonPressed:(id)sender {
+    // hack for when using a game controller - it will display the menu
+    if ( g_joy_used ) {
+        [self runMenu];
+        return;
+    }
     areControlsHidden = !areControlsHidden;
     if(dpadView!=nil)
     {
@@ -1034,6 +1043,12 @@ void* app_Thread_Start(void* args)
        [self buildPortrait];
    }
 
+    if ( g_joy_used ) {
+        [hideShowControlsForLightgun setImage:[UIImage imageNamed:@"menu"] forState:UIControlStateNormal];
+    } else {
+        [hideShowControlsForLightgun setImage:[UIImage imageNamed:@"dpad"] forState:UIControlStateNormal];
+    }
+    
    //self.view.backgroundColor = [UIColor blackColor];
    [self.view setNeedsDisplay];
    	
@@ -1334,7 +1349,8 @@ void* app_Thread_Start(void* args)
    }  
       
    [self buildPortraitImageOverlay];
-     
+
+    hideShowControlsForLightgun.hidden = YES;
 }
 
 - (void)buildLandscapeImageBack {
@@ -1594,6 +1610,11 @@ void* app_Thread_Start(void* args)
     {
         NSSet *allTouches = [event allTouches];
         UITouch *touch = [[allTouches allObjects] objectAtIndex:0];
+        
+        if ( myosd_light_gun == 1 ) {
+            [self handleLightgunTouchesBegan:touches];
+            return;
+        }
         
         if(touch.phase == UITouchPhaseBegan)
 		{
@@ -2553,7 +2574,7 @@ void* app_Thread_Start(void* args)
         [MFIController setPlayerIndex:GCControllerPlayerIndexUnset];
         [MFIController setPlayerIndex:index];
         
-        NSLog(@" PlayerIndex: %i", MFIController.playerIndex);
+        NSLog(@" PlayerIndex: %li", (long)MFIController.playerIndex);
         
         MFIController.gamepad.dpad.valueChangedHandler = ^ (GCControllerDirectionPad *directionpad, float xValue, float yValue) {
             
