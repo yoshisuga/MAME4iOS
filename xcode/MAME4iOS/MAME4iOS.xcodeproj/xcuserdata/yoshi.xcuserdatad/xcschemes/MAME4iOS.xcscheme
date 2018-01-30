@@ -15,8 +15,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "CEE680841635BA7000051BC2"
-               BuildableName = "MAME4iOS.app"
-               BlueprintName = "MAME4iOS"
+               BuildableName = "MAME4iOS 32-bit.app"
+               BlueprintName = "MAME4iOS 32-bit"
                ReferencedContainer = "container:MAME4iOS.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -33,8 +33,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "CEE680841635BA7000051BC2"
-            BuildableName = "MAME4iOS.app"
-            BlueprintName = "MAME4iOS"
+            BuildableName = "MAME4iOS 32-bit.app"
+            BlueprintName = "MAME4iOS 32-bit"
             ReferencedContainer = "container:MAME4iOS.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -56,8 +56,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "CEE680841635BA7000051BC2"
-            BuildableName = "MAME4iOS.app"
-            BlueprintName = "MAME4iOS"
+            BuildableName = "MAME4iOS 32-bit.app"
+            BlueprintName = "MAME4iOS 32-bit"
             ReferencedContainer = "container:MAME4iOS.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -75,8 +75,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "CEE680841635BA7000051BC2"
-            BuildableName = "MAME4iOS.app"
-            BlueprintName = "MAME4iOS"
+            BuildableName = "MAME4iOS 32-bit.app"
+            BlueprintName = "MAME4iOS 32-bit"
             ReferencedContainer = "container:MAME4iOS.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

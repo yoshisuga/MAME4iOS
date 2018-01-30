@@ -117,6 +117,9 @@
   int num_debug_rects;
     
     NSMutableArray *controllers;
+    
+    UIButton *hideShowControlsForLightgun;
+    BOOL areControlsHidden;
 
 }
 

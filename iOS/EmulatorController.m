@@ -148,7 +148,7 @@ EmulatorController *GetSharedInstance()
 {
     return sharedInstance;
 }
-	
+
 void iphone_Reset_Views(void)
 {
    if(sharedInstance==nil) return;
@@ -177,6 +177,7 @@ void* app_Thread_Start(void* args)
 
 @end
 
+
 @implementation EmulatorController
 
 @synthesize dpad_state;
@@ -186,6 +187,7 @@ void* app_Thread_Start(void* args)
 @synthesize stick_radio;
 @synthesize rStickWindow;
 @synthesize rDPadImage;
+
 
 - (int *)getBtnStates{
     return btnStates;
@@ -880,6 +882,19 @@ void* app_Thread_Start(void* args)
     else {
         [self scanForDevices];
     }
+    
+    hideShowControlsForLightgun = [[UIButton alloc] initWithFrame:CGRectZero];
+    hideShowControlsForLightgun.hidden = YES;
+    [hideShowControlsForLightgun setImage:[UIImage imageNamed:@"dpad"] forState:UIControlStateNormal];
+    [hideShowControlsForLightgun addTarget:self action:@selector(toggleControlsForLightgun:) forControlEvents:UIControlEventTouchUpInside];
+    hideShowControlsForLightgun.alpha = 0.5f;
+    hideShowControlsForLightgun.translatesAutoresizingMaskIntoConstraints = NO;
+    [hideShowControlsForLightgun addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:20.0f]];
+    [hideShowControlsForLightgun addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:20.0f]];
+    [self.view addSubview:hideShowControlsForLightgun];
+    [self.view addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeCenterX multiplier:1.0f constant:0.0f]];
+    [self.view addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeTop multiplier:1.0f constant:8.0f]];
+    areControlsHidden = NO;
 }
 
 - (void)viewDidUnload
@@ -948,6 +963,27 @@ void* app_Thread_Start(void* args)
     }        
 }
 
+-(void) toggleControlsForLightgun:(id)sender {
+    areControlsHidden = !areControlsHidden;
+    if(dpadView!=nil)
+    {
+        dpadView.hidden = areControlsHidden;
+    }
+    
+    if(analogStickView!=nil)
+    {
+        analogStickView.hidden = areControlsHidden;
+    }
+    
+    for(int i=0; i<NUM_BUTTONS;i++)
+    {
+        if(buttonViews[i]!=nil)
+        {
+            buttonViews[i].hidden = areControlsHidden;
+        }
+    }
+}
+
 - (void)changeUI{
    NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
     
@@ -1008,7 +1044,7 @@ void* app_Thread_Start(void* args)
 	   g_emulation_paused = 0;
 	   change_pause(0);
    }
-   
+    
    [UIApplication sharedApplication].idleTimerDisabled = (myosd_inGame || g_joy_used) ? YES : NO;//so atract mode dont sleep
     
    [pool release];
@@ -1485,6 +1521,12 @@ void* app_Thread_Start(void* args)
    }   
            
    [self buildLandscapeImageOverlay];
+    
+    if ( g_pref_full_screen_land && myosd_light_gun ) {
+        // make a button to hide/display the controls
+        hideShowControlsForLightgun.hidden = NO;
+        [self.view bringSubviewToFront:hideShowControlsForLightgun];
+    }
 	
 }
 
@@ -1563,6 +1605,32 @@ void* app_Thread_Start(void* args)
         [self touchesController:touches withEvent:event];
     } 
 }
+
+- (void) handleLightgunTouchesBegan:(NSSet *)touches {
+    // Handle light gun touches always? testing - check if game uses lightgun?
+    NSUInteger touchcount = touches.count;
+    if ( screenView != nil && myosd_light_gun == 1 ) {
+        UITouch *touch = [[touches allObjects] objectAtIndex:0];
+        CGPoint touchLoc = [touch locationInView:screenView];
+        CGFloat newX = (touchLoc.x - (screenView.bounds.size.width / 2.0f)) / (screenView.bounds.size.width / 2.0f);
+        CGFloat newY = (touchLoc.y - (screenView.bounds.size.height / 2.0f)) / (screenView.bounds.size.height / 2.0f) * -1.0f;
+        NSLog(@"touch began light gun? loc: %f, %f",touchLoc.x, touchLoc.y);
+        NSLog(@"screen size = %i x %i , view bounds = %f x %f",myosd_video_width,myosd_video_height,screenView.bounds.size.width,screenView.bounds.size.height);
+        NSLog(@"new loc = %f , %f",newX,newY);
+        myosd_joy_status[0] |= MYOSD_B;
+        myosd_pad_status |= MYOSD_B;
+        if ( touchcount > 1 ) {
+            // more than one touch means secondary button press
+            myosd_pad_status |= MYOSD_X;
+            myosd_joy_status[0] |= MYOSD_X;
+            myosd_pad_status &= ~MYOSD_B;
+            myosd_joy_status[0] &= ~MYOSD_B;
+        } else if ( touchcount == 1 ) {
+            lightgun_x[0] = newX;
+            lightgun_y[0] = newY;
+        }
+    }
+}
   		
 - (void)touchesController:(NSSet *)touches withEvent:(UIEvent *)event {	
     
@@ -1572,7 +1640,7 @@ void* app_Thread_Start(void* args)
 	//Get all the touches.
 	NSSet *allTouches = [event allTouches];
 	int touchcount = [allTouches count];
-		
+    
 	//myosd_pad_status = 0;
 	myosd_pad_status &= ~MYOSD_X;
 	myosd_pad_status &= ~MYOSD_Y;
@@ -1586,6 +1654,12 @@ void* app_Thread_Start(void* args)
 	for(i=0; i<NUM_BUTTONS;i++)
     {
        btnStates[i] = BUTTON_NO_PRESS; 
+    }
+    
+
+    if ( areControlsHidden ) {
+        [self handleLightgunTouchesBegan:touches];
+        return;
     }
 						
 	for (i = 0; i < touchcount; i++) 
@@ -1851,9 +1925,11 @@ void* app_Thread_Start(void* args)
 				myosd_pad_status |= MYOSD_START;
 			    btnStates[BTN_START] = BUTTON_PRESS;
                 */
-			}			
-	        			
-		}
+            } else if ( myosd_light_gun == 1 ) {
+                [self handleLightgunTouchesBegan:touches];
+            }
+
+        }
 	    else
 	    {
             if(touch == stickTouch)
@@ -1872,9 +1948,9 @@ void* app_Thread_Start(void* args)
                  }
 				 stickTouch = nil;
 		    }
-            else
+            else if(exit_status==1)
             {
-                if(exit_status==1)exit_status=2;
+                exit_status=2;
             }
 	    }
 	}
@@ -1893,6 +1969,15 @@ void* app_Thread_Start(void* args)
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
 	[self touchesBegan:touches withEvent:event];
+    
+    // light gun release?
+    if ( myosd_light_gun == 1 ) {
+        NSLog(@"light gun release!");
+        myosd_pad_status &= ~MYOSD_B;
+        myosd_joy_status[0] &= ~MYOSD_B;
+        myosd_pad_status &= ~MYOSD_X;
+        myosd_joy_status[0] &= ~MYOSD_X;
+    }
 }
 
 - (void)getControllerCoords:(int)orientation {

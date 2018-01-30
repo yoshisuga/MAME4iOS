@@ -69,6 +69,15 @@ extern unsigned long myosd_pad_status;
 extern float joy_analog_x[4][4];
 extern float joy_analog_y[4][2];
 
+extern float lightgun_x[4];
+extern float lightgun_y[4];
+
+extern float mouse_x[4];
+extern float mouse_y[4];
+
+extern int myosd_mouse;
+extern int myosd_light_gun;
+
 extern unsigned short myosd_ext_status;
     
 extern int myosd_last_game_selected;
@@ -114,7 +123,7 @@ extern const char *myosd_array_main_manufacturers[];
 extern const char *myosd_array_years[];
 extern const char *myosd_array_main_driver_source[];
 extern const char *myosd_array_categories[];
-    
+
 #if defined(__cplusplus)
 }
 #endif

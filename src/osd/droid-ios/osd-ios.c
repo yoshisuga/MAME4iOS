@@ -57,6 +57,8 @@ int  myosd_num_buttons = 0;
 int myosd_video_threaded=-1;
 int myosd_dbl_buffer=1;
 
+int myosd_light_gun = 0;
+
 int myosd_num_of_joys=0;
 
 //int m4all_BplusX = 0;
@@ -94,6 +96,14 @@ extern "C" unsigned long read_mfi_controller(unsigned long res);
 
 /*extern */float joy_analog_x[4][4];
 /*extern */float joy_analog_y[4][2];
+
+float lightgun_x[4];
+float lightgun_y[4];
+
+float mouse_x[4];
+float mouse_y[4];
+
+int myosd_mouse = 0;
 
 static int lib_inited = 0;
 static int soundInit = 0;

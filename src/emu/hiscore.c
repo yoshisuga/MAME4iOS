@@ -61,7 +61,7 @@ static void copy_to_memory (running_machine *machine, int cpu, int addr, const U
 {
 	int i;
 	const address_space *targetspace;
-	if (strstr(machine->gamedrv->source_file,"cinemat.c") > 0)
+	if (strstr(machine->gamedrv->source_file,"cinemat.c") != NULL)
 	{
 		 targetspace = cpu_get_address_space(machine->cpu[cpu], ADDRESS_SPACE_DATA);
 	}
@@ -80,7 +80,7 @@ static void copy_from_memory (running_machine *machine, int cpu, int addr, UINT8
 {
 	int i;
 	const address_space *targetspace;
-	if (strstr(machine->gamedrv->source_file,"cinemat.c") > 0)
+	if (strstr(machine->gamedrv->source_file,"cinemat.c") != NULL)
 	{
 		 targetspace = cpu_get_address_space(machine->cpu[cpu], ADDRESS_SPACE_DATA);
 	}
@@ -179,7 +179,7 @@ static int safe_to_load (running_machine *machine)
 {
 	memory_range *mem_range = state.mem_range;
 	const address_space *srcspace;
-	if (strstr(machine->gamedrv->source_file,"cinemat.c") > 0)
+	if (strstr(machine->gamedrv->source_file,"cinemat.c") != NULL)
 	{
 		srcspace = cpu_get_address_space(machine->cpu[mem_range->cpu], ADDRESS_SPACE_DATA);
 	}
@@ -329,7 +329,7 @@ void hiscore_init (running_machine *machine)
 	while (mem_range)
 	{
 
-		if (strstr(machine->gamedrv->source_file,"cinemat.c") > 0)
+		if (strstr(machine->gamedrv->source_file,"cinemat.c") != NULL)
 		{
 			memory_write_byte(
 				cpu_get_address_space(machine->cpu[mem_range->cpu], ADDRESS_SPACE_DATA),

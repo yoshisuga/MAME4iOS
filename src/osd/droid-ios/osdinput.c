@@ -59,6 +59,10 @@ static int joy_buttons[4][8];
 static int joy_axis[4][6];
 static int joy_hats[4][4];
 
+static int lightgun_axis[4][2];
+
+static int mouse_axis[4][2];
+
 static int poll_ports = 0;
 static int fire[4] = {0,0,0,0};
 
@@ -77,7 +81,7 @@ void droid_ios_init_input(running_machine *machine)
 	memset(joy_hats,0,sizeof(joy_hats));
     
 
-	//input_device_class_enable(machine, DEVICE_CLASS_LIGHTGUN, TRUE);
+	input_device_class_enable(machine, DEVICE_CLASS_LIGHTGUN, TRUE);
 	input_device_class_enable(machine, DEVICE_CLASS_JOYSTICK, TRUE);
 
 	for (int i = 0; i < 4; i++)
@@ -130,6 +134,22 @@ void droid_ios_init_input(running_machine *machine)
 
 	input_device_item_add(keyboard_device, "Service", &keyboard_state[KEY_SERVICE], ITEM_ID_F2, my_get_state);
     
+    for (int i = 0; i < 4; i++)
+    {
+        char name[10];
+            snprintf(name, 10, "Lightgun %d", i + 1);
+
+        input_device *lightgun_device = input_device_add(machine, DEVICE_CLASS_LIGHTGUN, name, NULL);
+        if (lightgun_device == NULL) {
+            fatalerror("Error creating lightgun device");
+        } else {
+            printf("created lightgun device!");
+        }
+
+       input_device_item_add(lightgun_device, "X Axis", &lightgun_axis[i][0], ITEM_ID_XAXIS, my_axis_get_state);
+       input_device_item_add(lightgun_device, "Y Axis", &lightgun_axis[i][1], ITEM_ID_YAXIS, my_axis_get_state);
+    }
+
     poll_ports = 1;
 }
 
@@ -142,6 +162,7 @@ void my_poll_ports(running_machine *machine)
         int way8 = 0;
         int counter = 0;
         myosd_num_buttons = 0;
+        myosd_light_gun = 0;
         for (port = machine->m_portlist.first(); port != NULL; port = port->next())
         {
             for (field = port->fieldlist; field != NULL; field = field->next)
@@ -171,6 +192,8 @@ void my_poll_ports(running_machine *machine)
                 if(field->type == IPT_DIAL || field->type == IPT_PADDLE || field->type == IPT_POSITIONAL ||
                    field->type == IPT_DIAL_V || field->type == IPT_PADDLE_V || field->type == IPT_POSITIONAL_V)
                     counter++;
+                if(field->type == IPT_LIGHTGUN_X)
+                   myosd_light_gun = 1;                
             }
         }
         poll_ports=0;
@@ -402,6 +425,10 @@ void droid_ios_poll_input(running_machine *machine)
                 joy_axis[i][1] = 0;
                 joy_axis[i][2] = 0;
                 joy_axis[i][3] = 0;
+
+                lightgun_axis[i][0] = (int)(lightgun_x[0] *  32767 *  2 );
+                lightgun_axis[i][1] = (int)(lightgun_y[0] *  32767 *  -2 );
+
             }
             else
             {
@@ -413,6 +440,12 @@ void droid_ios_poll_input(running_machine *machine)
                 joy_hats[i][1] = 0;
                 joy_hats[i][2] = 0;
                 joy_hats[i][3] = 0;
+
+                lightgun_x[i] = 0;
+                lightgun_y[i] = 0;
+                lightgun_axis[i][0] = 0;
+                lightgun_axis[i][1] = 0;
+
             }
             
             joy_axis[i][4] = (int)(joystick_read_analog(i, 'z') *  32767 *  2 );
@@ -692,25 +725,29 @@ void osd_customize_input_type_list(input_type_desc *typelist)
 			case IPT_DIAL:
 				if(typedesc->group == IPG_PLAYER1)
 				{
-				   input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(JOYCODE_X,0));
+                   input_seq_set_5(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(GUNCODE_X,0),SEQCODE_OR,INPUT_CODE_SET_DEVINDEX(JOYCODE_X,0),SEQCODE_OR,INPUT_CODE_SET_DEVINDEX(MOUSECODE_X,0));
+				   // input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(JOYCODE_X,0));
                    input_seq_set_1(&typedesc->seq[SEQ_TYPE_DECREMENT],INPUT_CODE_SET_DEVINDEX(STANDARD_CODE(JOYSTICK, 0, SWITCH, NONE, HAT1LEFT),0));
 				   input_seq_set_1(&typedesc->seq[SEQ_TYPE_INCREMENT],INPUT_CODE_SET_DEVINDEX(STANDARD_CODE(JOYSTICK, 0, SWITCH, NONE, HAT1RIGHT),0));
 				}
 				else if(typedesc->group == IPG_PLAYER2)
 				{
-					input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(JOYCODE_X,1));
+                    input_seq_set_3(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(GUNCODE_X,1),SEQCODE_OR,INPUT_CODE_SET_DEVINDEX(JOYCODE_X,1));
+					// input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(JOYCODE_X,1));
 	                input_seq_set_1(&typedesc->seq[SEQ_TYPE_DECREMENT],INPUT_CODE_SET_DEVINDEX(STANDARD_CODE(JOYSTICK, 0, SWITCH, NONE, HAT2LEFT),1));
 					input_seq_set_1(&typedesc->seq[SEQ_TYPE_INCREMENT],INPUT_CODE_SET_DEVINDEX(STANDARD_CODE(JOYSTICK, 0, SWITCH, NONE, HAT2RIGHT),1));
 				}
 				else if(typedesc->group == IPG_PLAYER3)
 				{
-					input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(JOYCODE_X,2));
+					input_seq_set_3(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(GUNCODE_X,2),SEQCODE_OR,INPUT_CODE_SET_DEVINDEX(JOYCODE_X,2));
+                    // input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(JOYCODE_X,2));
 	                input_seq_set_1(&typedesc->seq[SEQ_TYPE_DECREMENT],INPUT_CODE_SET_DEVINDEX(STANDARD_CODE(JOYSTICK, 0, SWITCH, NONE, HAT3LEFT),2));
 					input_seq_set_1(&typedesc->seq[SEQ_TYPE_INCREMENT],INPUT_CODE_SET_DEVINDEX(STANDARD_CODE(JOYSTICK, 0, SWITCH, NONE, HAT3RIGHT),2));
 				}
 				else if(typedesc->group == IPG_PLAYER4)
 				{
-					input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(JOYCODE_X,3));
+                    input_seq_set_3(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(GUNCODE_X,3),SEQCODE_OR,INPUT_CODE_SET_DEVINDEX(JOYCODE_X,3));
+					// input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(JOYCODE_X,3));
 	                input_seq_set_1(&typedesc->seq[SEQ_TYPE_DECREMENT],INPUT_CODE_SET_DEVINDEX(STANDARD_CODE(JOYSTICK, 0, SWITCH, NONE, HAT4LEFT),3));
 					input_seq_set_1(&typedesc->seq[SEQ_TYPE_INCREMENT],INPUT_CODE_SET_DEVINDEX(STANDARD_CODE(JOYSTICK, 0, SWITCH, NONE, HAT4RIGHT),3));
 				}
@@ -723,25 +760,29 @@ void osd_customize_input_type_list(input_type_desc *typelist)
 			case IPT_DIAL_V:
 				if(typedesc->group == IPG_PLAYER1)
 				{
-                    input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(JOYCODE_Y,0));
+                    input_seq_set_5(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(GUNCODE_Y,0),SEQCODE_OR,INPUT_CODE_SET_DEVINDEX(JOYCODE_Y,0),SEQCODE_OR,INPUT_CODE_SET_DEVINDEX(MOUSECODE_Y,0));
+                    // input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(JOYCODE_Y,0));
                     input_seq_set_1(&typedesc->seq[SEQ_TYPE_DECREMENT],INPUT_CODE_SET_DEVINDEX(STANDARD_CODE(JOYSTICK, 0, SWITCH, NONE, HAT1UP),0));
 				    input_seq_set_1(&typedesc->seq[SEQ_TYPE_INCREMENT],INPUT_CODE_SET_DEVINDEX(STANDARD_CODE(JOYSTICK, 0, SWITCH, NONE, HAT1DOWN),0));
 				}
 				else if(typedesc->group == IPG_PLAYER2)
 				{
-                    input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(JOYCODE_Y,1));
+                    input_seq_set_3(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(GUNCODE_Y,1),SEQCODE_OR,INPUT_CODE_SET_DEVINDEX(JOYCODE_Y,1));
+                    // input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(JOYCODE_Y,1));
                     input_seq_set_1(&typedesc->seq[SEQ_TYPE_DECREMENT],INPUT_CODE_SET_DEVINDEX(STANDARD_CODE(JOYSTICK, 0, SWITCH, NONE, HAT2UP),1));
 				    input_seq_set_1(&typedesc->seq[SEQ_TYPE_INCREMENT],INPUT_CODE_SET_DEVINDEX(STANDARD_CODE(JOYSTICK, 0, SWITCH, NONE, HAT2DOWN),1));
 				}
 				else if(typedesc->group == IPG_PLAYER3)
 				{
-                    input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(JOYCODE_Y,2));
+                    input_seq_set_3(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(GUNCODE_Y,2),SEQCODE_OR,INPUT_CODE_SET_DEVINDEX(JOYCODE_Y,2));
+                    // input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(JOYCODE_Y,2));
                     input_seq_set_1(&typedesc->seq[SEQ_TYPE_DECREMENT],INPUT_CODE_SET_DEVINDEX(STANDARD_CODE(JOYSTICK, 0, SWITCH, NONE, HAT3UP),2));
 				    input_seq_set_1(&typedesc->seq[SEQ_TYPE_INCREMENT],INPUT_CODE_SET_DEVINDEX(STANDARD_CODE(JOYSTICK, 0, SWITCH, NONE, HAT3DOWN),2));
 				}
 				else if(typedesc->group == IPG_PLAYER4)
 				{
-                    input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(JOYCODE_Y,3));
+                    input_seq_set_3(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(GUNCODE_Y,3),SEQCODE_OR,INPUT_CODE_SET_DEVINDEX(JOYCODE_Y,3));
+                    // input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(JOYCODE_Y,3));
                     input_seq_set_1(&typedesc->seq[SEQ_TYPE_DECREMENT],INPUT_CODE_SET_DEVINDEX(STANDARD_CODE(JOYSTICK, 0, SWITCH, NONE, HAT4UP),3));
 				    input_seq_set_1(&typedesc->seq[SEQ_TYPE_INCREMENT],INPUT_CODE_SET_DEVINDEX(STANDARD_CODE(JOYSTICK, 0, SWITCH, NONE, HAT4DOWN),3));
 				}
