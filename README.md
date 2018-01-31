@@ -4,17 +4,18 @@ Original Author: David Valdeita (Seleuco)<br/>
 
 This is a port of MAME for iOS. The currently supported rom set version is 0.139.
 
-It has been updated to compile and run on Xcode 7/iOS 9 by Les Bird (http://www.lesbird.com/iMame4All/iMame4All_Xcode.html), and he has graciously added support for mFi Controllers.
+It has been updated to compile and run on Xcode 7+/iOS 9+ by Les Bird (http://www.lesbird.com/iMame4All/iMame4All_Xcode.html), and he has graciously added support for mFi Controllers.
 
 This repo adds support for:
 
 - 64-bit binary to run on modern and future iOS devices
 - Multiple mFi controllers (up to 4 with dual analog support - @DarrenBranford)
+- Supports using the touch screen as a lightgun (new in 2018!)
 - Builds in Xcode 9, runs on iOS 11 
 
 ## Installation / Sideloading
 
-Requirements: Mac with Xcode 7
+Requirements: Mac with Xcode 7 or above
 
 Building MAME4iOS requires a prebuilt MAME binary. It was not included in this repo due to its large size. This is done by running `make` at the root directory of the project. This will build the 64-bit version of the MAME binary by default and will only work for modern iOS devices (iPhone 5S and above, iPad Air and above, iPad mini 2 and above). To build the 32-bit version, use the command: `make iOSARMV7=1`.
 
@@ -53,6 +54,14 @@ The right stick on the extended controller profile is fully supported, with supp
 ### Trigger buttons
 
 The trigger buttons are mapped to analog conrols and should be useful in assigning for pedal controls, for example.
+
+### Touch Screen Lightgun Support (new in 2018)
+
+You can now use the touch screen for lightgun games like Operation Wolf and Lethal Enforcers. Holding down your finger simulates holding down the trigger, which is mapped to the "X" button. Tap with 2 fingers for the secondary fire, or the "B" button.
+
+In full screen landscape mode, you can hide the onscreen controls using the "D-Pad" button at the top of the screen. When using a game controller, the top button of the screen opens the menu to load/save state or access settings.
+
+Tpuch Lightgun setup is in Settings -> Input -> Touch Lightgun, where you can disable it altogether, or use tapping the bottom of the screen to simulate shooting offscreen (for game that make you reload like Lethal Enforcers).
 
 ### tvOS
 
