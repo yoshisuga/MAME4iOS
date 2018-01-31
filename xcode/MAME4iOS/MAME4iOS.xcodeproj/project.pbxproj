@@ -66,6 +66,8 @@
 		925ABCDE1E46DCC500997182 /* hiscore.dat in Resources */ = {isa = PBXBuildFile; fileRef = CE30090616FA47E4000EDCF1 /* hiscore.dat */; };
 		925ABCE51E46DD6E00997182 /* libmamearm64.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 925ABCE41E46DD6E00997182 /* libmamearm64.a */; };
 		925ABCE81E4E1CE700997182 /* libmamearmv7.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0A1A540D1D5FEA0F0053C761 /* libmamearmv7.a */; };
+		92B99F0E2022706600CC44E3 /* UIView+Toast.m in Sources */ = {isa = PBXBuildFile; fileRef = 92B99F0D2022706600CC44E3 /* UIView+Toast.m */; };
+		92B99F0F2022706600CC44E3 /* UIView+Toast.m in Sources */ = {isa = PBXBuildFile; fileRef = 92B99F0D2022706600CC44E3 /* UIView+Toast.m */; };
 		B370F8B01C8549010069377D /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B370F8AF1C8549010069377D /* GameController.framework */; };
 		CE30090116FA47BD000EDCF1 /* cheat.zip in Resources */ = {isa = PBXBuildFile; fileRef = CE30090016FA47BD000EDCF1 /* cheat.zip */; };
 		CE30090216FA47BD000EDCF1 /* cheat.zip in Resources */ = {isa = PBXBuildFile; fileRef = CE30090016FA47BD000EDCF1 /* cheat.zip */; };
@@ -179,6 +181,8 @@
 		925ABCE21E46DCC500997182 /* MAME4iOS 64-bit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MAME4iOS 64-bit.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		925ABCE31E46DCC600997182 /* MAME4iOS copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "MAME4iOS copy-Info.plist"; path = "/Users/yoshi/Code/MAME4iOSReloaded/xcode/MAME4iOS/MAME4iOS copy-Info.plist"; sourceTree = "<absolute>"; };
 		925ABCE41E46DD6E00997182 /* libmamearm64.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmamearm64.a; path = ../../libmamearm64.a; sourceTree = "<group>"; };
+		92B99F0C2022706600CC44E3 /* UIView+Toast.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+Toast.h"; sourceTree = "<group>"; };
+		92B99F0D2022706600CC44E3 /* UIView+Toast.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+Toast.m"; sourceTree = "<group>"; };
 		B370F8AF1C8549010069377D /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = System/Library/Frameworks/GameController.framework; sourceTree = SDKROOT; };
 		CE30090016FA47BD000EDCF1 /* cheat.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = cheat.zip; path = "../../iOS-res/Applications/MAME4iOS.app/cheat.zip"; sourceTree = "<group>"; };
 		CE30090316FA47CB000EDCF1 /* Category.ini */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Category.ini; path = "../../iOS-res/Applications/MAME4iOS.app/Category.ini"; sourceTree = "<group>"; };
@@ -370,6 +374,8 @@
 				CEBFBC0E163C5BD300A05CD0 /* resources */,
 				CEE680C11635BB6100051BC2 /* ScreenView.h */,
 				CEE680C21635BB6100051BC2 /* ScreenView.m */,
+				92B99F0C2022706600CC44E3 /* UIView+Toast.h */,
+				92B99F0D2022706600CC44E3 /* UIView+Toast.m */,
 			);
 			name = RELOADED;
 			sourceTree = "<group>";
@@ -710,6 +716,7 @@
 				925ABCAA1E46DCC500997182 /* DebugView.m in Sources */,
 				925ABCAB1E46DCC500997182 /* ScreenView.m in Sources */,
 				925ABCAC1E46DCC500997182 /* DonateController.m in Sources */,
+				92B99F0F2022706600CC44E3 /* UIView+Toast.m in Sources */,
 				925ABCAD1E46DCC500997182 /* EmulatorController.m in Sources */,
 				925ABCAE1E46DCC500997182 /* HelpController.m in Sources */,
 				925ABCAF1E46DCC500997182 /* AnalogStick.m in Sources */,
@@ -760,6 +767,7 @@
 				CEAC6C4816AAA96100AF3275 /* DebugView.m in Sources */,
 				CEAC6C4A16AAA96500AF3275 /* ScreenView.m in Sources */,
 				CEAC6C4C16AAA96900AF3275 /* DonateController.m in Sources */,
+				92B99F0E2022706600CC44E3 /* UIView+Toast.m in Sources */,
 				CEAC6C4E16AAA96D00AF3275 /* EmulatorController.m in Sources */,
 				CEAC6C5016AAA97100AF3275 /* HelpController.m in Sources */,
 				CEAC6C5216AAA97400AF3275 /* AnalogStick.m in Sources */,

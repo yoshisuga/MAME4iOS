@@ -59,6 +59,7 @@
 #endif
 #import <pthread.h>
 #import "NetplayGameKit.h"
+#import "UIView+Toast.h"
 
 int g_isIpad = 0;
 int g_isIphone5 = 0;
@@ -126,6 +127,7 @@ int video_thread_priority = 46;
 static int main_thread_priority_type = 1;
 int video_thread_priority_type = 1;
 
+int prev_myosd_light_gun = 0;
         
 static pthread_t main_tid;
 
@@ -180,6 +182,10 @@ void* app_Thread_Start(void* args)
 
 @end
 
+@interface EmulatorController() {
+    CSToastStyle *toastStyle;
+}
+@end
 
 @implementation EmulatorController
 
@@ -904,7 +910,9 @@ void* app_Thread_Start(void* args)
     else {
         [self scanForDevices];
     }
-    
+    toastStyle = [[CSToastStyle alloc] initWithDefaultStyle];
+    toastStyle.backgroundColor = [UIColor darkGrayColor];
+    toastStyle.messageColor = [UIColor whiteColor];
 }
 
 - (void)viewDidUnload
@@ -1068,6 +1076,10 @@ void* app_Thread_Start(void* args)
     
    [UIApplication sharedApplication].idleTimerDisabled = (myosd_inGame || g_joy_used) ? YES : NO;//so atract mode dont sleep
 
+    if ( prev_myosd_light_gun == 0 && myosd_light_gun == 1 && g_pref_lightgun_enabled ) {
+        [self.view makeToast:@"Touch Lightgun Mode Enabled!" duration:2.0 position:CSToastPositionCenter style:toastStyle];
+    }
+    prev_myosd_light_gun = myosd_light_gun;
     areControlsHidden = NO;
     
    [pool release];
@@ -1642,9 +1654,8 @@ void* app_Thread_Start(void* args)
         CGPoint touchLoc = [touch locationInView:screenView];
         CGFloat newX = (touchLoc.x - (screenView.bounds.size.width / 2.0f)) / (screenView.bounds.size.width / 2.0f);
         CGFloat newY = (touchLoc.y - (screenView.bounds.size.height / 2.0f)) / (screenView.bounds.size.height / 2.0f) * -1.0f;
-        NSLog(@"touch began light gun? loc: %f, %f",touchLoc.x, touchLoc.y);
-        NSLog(@"screen size = %i x %i , view bounds = %f x %f",myosd_video_width,myosd_video_height,screenView.bounds.size.width,screenView.bounds.size.height);
-        NSLog(@"new loc = %f , %f",newX,newY);
+//        NSLog(@"touch began light gun? loc: %f, %f",touchLoc.x, touchLoc.y);
+//        NSLog(@"new loc = %f , %f",newX,newY);
         myosd_joy_status[0] |= MYOSD_B;
         myosd_pad_status |= MYOSD_B;
         if ( touchcount > 1 ) {
@@ -2002,7 +2013,6 @@ void* app_Thread_Start(void* args)
     
     // light gun release?
     if ( myosd_light_gun == 1 && g_pref_lightgun_enabled ) {
-        NSLog(@"light gun release!");
         myosd_pad_status &= ~MYOSD_B;
         myosd_joy_status[0] &= ~MYOSD_B;
         myosd_pad_status &= ~MYOSD_X;
