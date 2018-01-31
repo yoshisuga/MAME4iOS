@@ -65,6 +65,9 @@
     UISwitch *switchTouchDeadZone;
     NSArray *arrayAnalogDZValue;
     NSArray *arrayBTDZValue;
+    
+    UISwitch *switchLightgunEnabled;
+    UISwitch *switchLightgunBottomScreenReload;
 }
 
 @property (nonatomic, assign) EmulatorController *emuController;

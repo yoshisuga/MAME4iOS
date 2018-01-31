@@ -112,6 +112,9 @@ int g_pref_aplusb = 0;
 int g_pref_nativeTVOUT = 1;
 int g_pref_overscanTVOUT = 1;
 
+int g_pref_lightgun_enabled = 1;
+int g_pref_lightgun_bottom_reload = 0;
+
 int g_skin_data = 1;
 
 float g_buttons_size = 1.0f;
@@ -602,6 +605,9 @@ void* app_Thread_Start(void* args)
         case 15: myosd_speed = 150; break;
     }
     
+    g_pref_lightgun_enabled = [op lightgunEnabled];
+    g_pref_lightgun_bottom_reload = [op lightgunBottomScreenReload];
+    
     [op release];
 }
 
@@ -1061,6 +1067,8 @@ void* app_Thread_Start(void* args)
    }
     
    [UIApplication sharedApplication].idleTimerDisabled = (myosd_inGame || g_joy_used) ? YES : NO;//so atract mode dont sleep
+
+    areControlsHidden = NO;
     
    [pool release];
 }
@@ -1538,7 +1546,7 @@ void* app_Thread_Start(void* args)
            
    [self buildLandscapeImageOverlay];
     
-    if ( g_pref_full_screen_land && myosd_light_gun ) {
+    if ( g_pref_full_screen_land && myosd_light_gun && g_pref_lightgun_enabled) {
         // make a button to hide/display the controls
         hideShowControlsForLightgun.hidden = NO;
         [self.view bringSubviewToFront:hideShowControlsForLightgun];
@@ -1611,7 +1619,7 @@ void* app_Thread_Start(void* args)
         NSSet *allTouches = [event allTouches];
         UITouch *touch = [[allTouches allObjects] objectAtIndex:0];
         
-        if ( myosd_light_gun == 1 ) {
+        if ( myosd_light_gun == 1 && g_pref_lightgun_enabled ) {
             [self handleLightgunTouchesBegan:touches];
             return;
         }
@@ -1628,9 +1636,8 @@ void* app_Thread_Start(void* args)
 }
 
 - (void) handleLightgunTouchesBegan:(NSSet *)touches {
-    // Handle light gun touches always? testing - check if game uses lightgun?
     NSUInteger touchcount = touches.count;
-    if ( screenView != nil && myosd_light_gun == 1 ) {
+    if ( screenView != nil ) {
         UITouch *touch = [[touches allObjects] objectAtIndex:0];
         CGPoint touchLoc = [touch locationInView:screenView];
         CGFloat newX = (touchLoc.x - (screenView.bounds.size.width / 2.0f)) / (screenView.bounds.size.width / 2.0f);
@@ -1647,6 +1654,9 @@ void* app_Thread_Start(void* args)
             myosd_pad_status &= ~MYOSD_B;
             myosd_joy_status[0] &= ~MYOSD_B;
         } else if ( touchcount == 1 ) {
+            if ( g_pref_lightgun_bottom_reload && newY < -0.80 ) {
+                newY = -12.1f;
+            }
             lightgun_x[0] = newX;
             lightgun_y[0] = newY;
         }
@@ -1676,9 +1686,8 @@ void* app_Thread_Start(void* args)
     {
        btnStates[i] = BUTTON_NO_PRESS; 
     }
-    
 
-    if ( areControlsHidden ) {
+    if ( areControlsHidden && g_pref_lightgun_enabled && g_device_is_landscape) {
         [self handleLightgunTouchesBegan:touches];
         return;
     }
@@ -1946,7 +1955,7 @@ void* app_Thread_Start(void* args)
 				myosd_pad_status |= MYOSD_START;
 			    btnStates[BTN_START] = BUTTON_PRESS;
                 */
-            } else if ( myosd_light_gun == 1 ) {
+            } else if ( myosd_light_gun == 1 && g_pref_lightgun_enabled ) {
                 [self handleLightgunTouchesBegan:touches];
             }
 
@@ -1992,7 +2001,7 @@ void* app_Thread_Start(void* args)
 	[self touchesBegan:touches withEvent:event];
     
     // light gun release?
-    if ( myosd_light_gun == 1 ) {
+    if ( myosd_light_gun == 1 && g_pref_lightgun_enabled ) {
         NSLog(@"light gun release!");
         myosd_pad_status &= ~MYOSD_B;
         myosd_joy_status[0] &= ~MYOSD_B;

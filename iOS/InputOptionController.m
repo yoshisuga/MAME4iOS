@@ -77,6 +77,9 @@
         arrayAnalogDZValue = [[NSArray alloc] initWithObjects:@"1", @"2", @"3",@"4", @"5", @"6", nil];
         arrayBTDZValue = [[NSArray alloc] initWithObjects:@"1", @"2", @"3",@"4", @"5", @"6", nil];
         
+        switchLightgunEnabled = nil;
+        switchLightgunBottomScreenReload = nil;
+        
         self.title = @"Input Options";
     }
     return self;
@@ -97,6 +100,8 @@
     [arrayAutofireValue release];
     [arrayButtonSizeValue release];
     [arrayStickSizeValue release];
+    [switchLightgunEnabled release];
+    [switchLightgunBottomScreenReload release];
     
     [super dealloc];
 }
@@ -109,7 +114,7 @@
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     
-    return 7;
+    return 8;
 }
 
 - (void)loadView {
@@ -134,6 +139,7 @@
         case 4: return 2;
         case 5: return 1;
         case 6: return 3-!g_btjoy_available;
+        case 7: return 2;
     }
     return -1;
 }
@@ -149,6 +155,7 @@
         case 4: return @"Touch Layout";
         case 5: return @"";
         case 6: return @"Dead Zone";
+        case 7: return @"Touch Lightgun";
     }
     return @"Error!";
 }
@@ -167,6 +174,9 @@
             style = UITableViewCellStyleDefault;
         else
             style = UITableViewCellStyleValue1;
+        
+        if (indexPath.section == 7 && indexPath.row == 1 )
+            style = UITableViewCellStyleSubtitle;
         
         cell = [[[UITableViewCell alloc] initWithStyle:style
                                        reuseIdentifier:@"CellIdentifier"] autorelease];
@@ -329,6 +339,33 @@
             }
             break;
         }
+        case 7:
+        {
+            switch (indexPath.row)
+            {
+                case 0:
+                {
+                    cell.textLabel.text = @"Enabled";
+                    [switchLightgunEnabled release];
+                    switchLightgunEnabled = [[UISwitch alloc] initWithFrame:CGRectZero];
+                    [switchLightgunEnabled setOn:[op lightgunEnabled]];
+                    [switchLightgunEnabled addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                    cell.accessoryView = switchLightgunEnabled;
+                    break;
+                }
+                case 1:
+                {
+                    cell.textLabel.text = @"Bottom Screen Reload";
+                    cell.detailTextLabel.text = @"Some games require shooting offscreen to reload";
+                    [switchLightgunBottomScreenReload release];
+                    switchLightgunBottomScreenReload = [[UISwitch alloc] initWithFrame:CGRectZero];
+                    [switchLightgunBottomScreenReload setOn:[op lightgunBottomScreenReload]];
+                    [switchLightgunBottomScreenReload addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                    cell.accessoryView = switchLightgunBottomScreenReload;
+                    break;
+                }
+            }
+        }
     }
     
     [op release];
@@ -348,7 +385,11 @@
         op.aplusb = [switchAplusB isOn];
     if(sender == switchP1aspx)
         op.p1aspx = [switchP1aspx isOn];
-    
+    if(sender == switchLightgunEnabled)
+        op.lightgunEnabled = [switchLightgunEnabled isOn];
+    if(sender == switchLightgunBottomScreenReload)
+        op.lightgunBottomScreenReload = [switchLightgunBottomScreenReload isOn];
+        
     [op saveOptions];
 	[op release];
 }

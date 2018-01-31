@@ -74,6 +74,9 @@
 @synthesize fullLand;
 @synthesize fullPort;
 
+@synthesize lightgunEnabled;
+@synthesize lightgunBottomScreenReload;
+
 @synthesize skinValue;
 
 @synthesize btDeadZoneValue;
@@ -260,6 +263,9 @@
         
         mainThreadType = 0;
         videoThreadType = 0;
+        
+        lightgunEnabled = 1;
+        lightgunBottomScreenReload = 0;
 	}
 	else
 	{
@@ -276,7 +282,8 @@
         
         scanlineFilterPort =  [[[optionsArray objectAtIndex:0] objectForKey:@"ScanlineFilterPort"] intValue];
         scanlineFilterLand =  [[[optionsArray objectAtIndex:0] objectForKey:@"ScanlineFilterLand"] intValue];
-
+        lightgunEnabled = [[[optionsArray objectAtIndex:0] objectForKey:@"lightgunEnabled"] intValue];
+        lightgunBottomScreenReload = [[[optionsArray objectAtIndex:0] objectForKey:@"lightgunBottomScreenReload"] intValue];
         showFPS =  [[[optionsArray objectAtIndex:0] objectForKey:@"showFPS"] intValue];
         showINFO =  [[[optionsArray objectAtIndex:0] objectForKey:@"showINFO"] intValue];
         fourButtonsLand =  [[[optionsArray objectAtIndex:0] objectForKey:@"fourButtonsLand"] intValue];
@@ -378,7 +385,9 @@
 							 
 							 [NSString stringWithFormat:@"%d", scanlineFilterPort], @"ScanlineFilterPort",
 							 [NSString stringWithFormat:@"%d", scanlineFilterLand], @"ScanlineFilterLand",
-
+                             [NSString stringWithFormat:@"%d", lightgunEnabled],
+                                 @"lightgunEnabled",
+                             [NSString stringWithFormat:@"%d", lightgunBottomScreenReload], @"lightgunBottomScreenReload",
 							 [NSString stringWithFormat:@"%d", showFPS], @"showFPS",							 
 							 [NSString stringWithFormat:@"%d", showINFO], @"showINFO",							 
 							 [NSString stringWithFormat:@"%d", fourButtonsLand], @"fourButtonsLand",							 
@@ -526,7 +535,6 @@
                                         
         switchThrottle = nil;
         
-
         switchSleep = nil;
         
         switchForcepxa = nil;
@@ -982,7 +990,6 @@
     
     [switchShowFPS release];
     [switchShowINFO release];
-
     
     [switchfullLand release];
     [switchfullPort release];
@@ -1055,7 +1062,7 @@
             
     if(sender == switchLowlsound)
         op.lowlsound = [switchLowlsound isOn];
-        
+    
 	[op saveOptions];
 		
 	[op release];

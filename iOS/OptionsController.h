@@ -129,6 +129,9 @@
     
    @public int emuspeed;
     
+@public int lightgunBottomScreenReload;
+@public int lightgunEnabled;
+    
 }
 
 - (void)loadOptions;
@@ -217,6 +220,9 @@
 
 @property (readwrite,assign) int emuspeed;
 
+@property (readwrite,assign) int lightgunBottomScreenReload;
+@property (readwrite,assign) int lightgunEnabled;
+
 @property (readwrite,assign) int mainThreadType;
 @property (readwrite,assign) int videoThreadType;
 
@@ -302,7 +308,7 @@ enum ListOptionType
     NSArray *arraySkinValue;
     
     UISwitch *switchLowlsound;
-            
+    
     NSArray  *arrayEmuSpeed;
 }
 
