@@ -55,6 +55,9 @@ void iphone_UpdateScreen()
     if(sharedInstance==nil) return;
     
     [sharedInstance performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone:NO];
+    if ( [sharedInstance didUpdateScreenCallback] ) {
+        sharedInstance.didUpdateScreenCallback();
+    }
 }
 
 @implementation ScreenLayer

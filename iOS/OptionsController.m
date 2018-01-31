@@ -266,6 +266,13 @@
         
         lightgunEnabled = 1;
         lightgunBottomScreenReload = 0;
+        
+        _turboXEnabled = 0;
+        _turboYEnabled = 0;
+        _turboAEnabled = 0;
+        _turboBEnabled = 0;
+        _turboLEnabled = 0;
+        _turboREnabled = 0;
 	}
 	else
 	{
@@ -290,6 +297,13 @@
         animatedButtons =  [[[optionsArray objectAtIndex:0] objectForKey:@"animatedButtons"] intValue];	
         fullLand =  [[[optionsArray objectAtIndex:0] objectForKey:@"fullLand"] intValue];
         fullPort =  [[[optionsArray objectAtIndex:0] objectForKey:@"fullPort"] intValue];
+        
+        _turboXEnabled = [[[optionsArray objectAtIndex:0] objectForKey:@"turboXEnabled"] intValue];
+        _turboYEnabled = [[[optionsArray objectAtIndex:0] objectForKey:@"turboYEnabled"] intValue];
+        _turboAEnabled = [[[optionsArray objectAtIndex:0] objectForKey:@"turboAEnabled"] intValue];
+        _turboBEnabled = [[[optionsArray objectAtIndex:0] objectForKey:@"turboBEnabled"] intValue];
+        _turboLEnabled = [[[optionsArray objectAtIndex:0] objectForKey:@"turboLEnabled"] intValue];
+        _turboREnabled = [[[optionsArray objectAtIndex:0] objectForKey:@"turboREnabled"] intValue];
         
         skinValue =  [[[optionsArray objectAtIndex:0] objectForKey:@"skinValue"] intValue];
         
@@ -391,7 +405,15 @@
 							 [NSString stringWithFormat:@"%d", showFPS], @"showFPS",							 
 							 [NSString stringWithFormat:@"%d", showINFO], @"showINFO",							 
 							 [NSString stringWithFormat:@"%d", fourButtonsLand], @"fourButtonsLand",							 
-							 [NSString stringWithFormat:@"%d", animatedButtons], @"animatedButtons",							 							 							 											 
+							 [NSString stringWithFormat:@"%d", animatedButtons], @"animatedButtons",
+                             
+                             [NSString stringWithFormat:@"%d", _turboXEnabled], @"turboXEnabled",
+                             [NSString stringWithFormat:@"%d", _turboYEnabled], @"turboYEnabled",
+                             [NSString stringWithFormat:@"%d", _turboAEnabled], @"turboAEnabled",
+                             [NSString stringWithFormat:@"%d", _turboBEnabled], @"turboBEnabled",
+                             [NSString stringWithFormat:@"%d", _turboLEnabled], @"turboLEnabled",
+                             [NSString stringWithFormat:@"%d", _turboREnabled], @"turboREnabled",
+                             
 							 [NSString stringWithFormat:@"%d", fullLand], @"fullLand",
 							 [NSString stringWithFormat:@"%d", fullPort], @"fullPort",
 							 

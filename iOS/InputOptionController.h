@@ -68,6 +68,13 @@
     
     UISwitch *switchLightgunEnabled;
     UISwitch *switchLightgunBottomScreenReload;
+    
+    UISwitch *switchTurboXButtonEnabled;
+    UISwitch *switchTurboYButtonEnabled;
+    UISwitch *switchTurboAButtonEnabled;
+    UISwitch *switchTurboBButtonEnabled;
+    UISwitch *switchTurboLButtonEnabled;
+    UISwitch *switchTurboRButtonEnabled;
 }
 
 @property (nonatomic, assign) EmulatorController *emuController;

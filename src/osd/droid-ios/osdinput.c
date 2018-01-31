@@ -72,6 +72,8 @@ float joystick_read_analog(int n, char axis);
 static INT32 my_get_state(void *device_internal, void *item_internal);
 static INT32 my_axis_get_state(void *device_internal, void *item_internal);
 
+extern "C" void myosd_handle_turbo(void);
+
 void droid_ios_init_input(running_machine *machine)
 {
 
@@ -272,6 +274,7 @@ float joystick_read_analog(int n, char axis)
 void droid_ios_poll_input(running_machine *machine)
 {    
     my_poll_ports(machine);
+	myosd_handle_turbo();
     
     long _pad_status = joystick_read(0);
     
