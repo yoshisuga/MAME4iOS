@@ -61,4 +61,6 @@
 - (id)initWithFrame:(CGRect)frame;
 - (void)drawRect:(CGRect)rect;
 
+@property (nonatomic, copy) void (^didUpdateScreenCallback)();
+
 @end

@@ -44,7 +44,6 @@
 
 #include "myosd.h"
 #import "EmulatorController.h"
-#import "ScreenView.h"
 #import "HelpController.h"
 #import "OptionsController.h"
 #import "DonateController.h"
@@ -59,6 +58,19 @@
 #endif
 #import <pthread.h>
 #import "NetplayGameKit.h"
+#import "UIView+Toast.h"
+
+// mfi Controllers
+NSMutableArray *controllers;
+int mfiBtnStates[10][NUM_BUTTONS];
+int mfiCyclesAfterButtonPressed[10][NUM_BUTTONS];
+
+// Turbo functionality
+int cyclesAfterButtonPressed[NUM_BUTTONS];
+int turboBtnEnabled[NUM_BUTTONS];
+
+// On-screen touch gamepad button states
+int btnStates[NUM_BUTTONS];
 
 int g_isIpad = 0;
 int g_isIphone5 = 0;
@@ -126,6 +138,7 @@ int video_thread_priority = 46;
 static int main_thread_priority_type = 1;
 int video_thread_priority_type = 1;
 
+int prev_myosd_light_gun = 0;
         
 static pthread_t main_tid;
 
@@ -145,7 +158,12 @@ static int change_layout=0;
 
 static int exit_status = 0;
 
+NSTimeInterval timeSinceLastCheck;
+NSUInteger framesSinceLastCheck;
+
 static EmulatorController *sharedInstance = nil;
+
+static NSUInteger buttonPressReleaseCycles = 2;
 
 EmulatorController *GetSharedInstance()
 {
@@ -180,6 +198,10 @@ void* app_Thread_Start(void* args)
 
 @end
 
+@interface EmulatorController() {
+    CSToastStyle *toastStyle;
+}
+@end
 
 @implementation EmulatorController
 
@@ -608,6 +630,13 @@ void* app_Thread_Start(void* args)
     g_pref_lightgun_enabled = [op lightgunEnabled];
     g_pref_lightgun_bottom_reload = [op lightgunBottomScreenReload];
     
+    turboBtnEnabled[BTN_X] = [op turboXEnabled];
+    turboBtnEnabled[BTN_Y] = [op turboYEnabled];
+    turboBtnEnabled[BTN_A] = [op turboAEnabled];
+    turboBtnEnabled[BTN_B] = [op turboBEnabled];
+    turboBtnEnabled[BTN_L1] = [op turboLEnabled];
+    turboBtnEnabled[BTN_R1] = [op turboREnabled];
+    
     [op release];
 }
 
@@ -904,7 +933,11 @@ void* app_Thread_Start(void* args)
     else {
         [self scanForDevices];
     }
+    toastStyle = [[CSToastStyle alloc] initWithDefaultStyle];
+    toastStyle.backgroundColor = [UIColor darkGrayColor];
+    toastStyle.messageColor = [UIColor whiteColor];
     
+    timeSinceLastCheck = 0.0f;
 }
 
 - (void)viewDidUnload
@@ -1068,9 +1101,113 @@ void* app_Thread_Start(void* args)
     
    [UIApplication sharedApplication].idleTimerDisabled = (myosd_inGame || g_joy_used) ? YES : NO;//so atract mode dont sleep
 
+    if ( prev_myosd_light_gun == 0 && myosd_light_gun == 1 && g_pref_lightgun_enabled ) {
+        [self.view makeToast:@"Touch Lightgun Mode Enabled!" duration:2.0 position:CSToastPositionCenter style:toastStyle];
+    }
+    prev_myosd_light_gun = myosd_light_gun;
     areControlsHidden = NO;
     
+    for (int i = 0; i < NUM_BUTTONS; i++) {
+        cyclesAfterButtonPressed[i] = 0;
+    }
+    for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < NUM_BUTTONS; j++) {
+            mfiCyclesAfterButtonPressed[i][j] = 0;
+            mfiBtnStates[i][j] = 0;
+        }
+    }
+
    [pool release];
+}
+
+void myosd_handle_turbo() {
+    if ( !myosd_inGame ) {
+        return;
+    }
+    NSArray *supportedTurboButtons = @[ @[ [NSNumber numberWithInt:BTN_X], [NSNumber numberWithInt:MYOSD_X] ],
+                                           @[ [NSNumber numberWithInt:BTN_Y], [NSNumber numberWithInt:MYOSD_Y] ],
+                                           @[ [NSNumber numberWithInt:BTN_A], [NSNumber numberWithInt:MYOSD_A] ],
+                                           @[ [NSNumber numberWithInt:BTN_B], [NSNumber numberWithInt:MYOSD_B] ],
+                                           @[ [NSNumber numberWithInt:BTN_L1], [NSNumber numberWithInt:MYOSD_L1] ],
+                                           @[ [NSNumber numberWithInt:BTN_R1], [NSNumber numberWithInt:MYOSD_R1] ]
+                                           ];
+
+    // poll mfi controllers and read state of button presses
+    for (int index = 0; index < controllers.count; index++) {
+        GCController *mfiController = [controllers objectAtIndex:index];
+        GCExtendedGamepad *extendedGamepad = mfiController.extendedGamepad;
+        GCGamepad *gamepad = mfiController.gamepad;
+        if ( extendedGamepad.buttonX.isPressed || gamepad.buttonX.isPressed ) {
+            mfiBtnStates[index][BTN_X] = BUTTON_PRESS;
+        } else {
+            mfiBtnStates[index][BTN_X] = BUTTON_NO_PRESS;
+        }
+        if ( extendedGamepad.buttonY.isPressed || gamepad.buttonY.isPressed ) {
+            mfiBtnStates[index][BTN_Y] = BUTTON_PRESS;
+        } else {
+            mfiBtnStates[index][BTN_Y] = BUTTON_NO_PRESS;
+        }
+        if ( extendedGamepad.buttonA.isPressed || gamepad.buttonA.isPressed ) {
+            mfiBtnStates[index][BTN_A] = BUTTON_PRESS;
+        } else {
+            mfiBtnStates[index][BTN_A] = BUTTON_NO_PRESS;
+        }
+        if ( extendedGamepad.buttonB.isPressed || gamepad.buttonB.isPressed ) {
+            mfiBtnStates[index][BTN_B] = BUTTON_PRESS;
+        } else {
+            mfiBtnStates[index][BTN_B] = BUTTON_NO_PRESS;
+        }
+        if ( extendedGamepad.leftShoulder.isPressed || gamepad.leftShoulder.isPressed ) {
+            mfiBtnStates[index][BTN_L1] = BUTTON_PRESS;
+        } else {
+            mfiBtnStates[index][BTN_L1] = BUTTON_NO_PRESS;
+        }
+        if ( extendedGamepad.rightShoulder.isPressed || gamepad.rightShoulder.isPressed ) {
+            mfiBtnStates[index][BTN_R1] = BUTTON_PRESS;
+        } else {
+            mfiBtnStates[index][BTN_R1] = BUTTON_NO_PRESS;
+        }
+    }
+    
+    
+    for (NSArray *buttonData in supportedTurboButtons) {
+        int button = [(NSNumber*)[buttonData objectAtIndex:0] intValue];
+        int myosdButton = [(NSNumber*)[buttonData objectAtIndex:1] intValue];
+        
+        if ( controllers.count > 0 ) {
+            // For mFi Controllers
+            for (int i = 0; i < controllers.count; i++) {
+                if ( turboBtnEnabled[button] && mfiBtnStates[i][button] == BUTTON_PRESS ) {
+                    if ( mfiCyclesAfterButtonPressed[i][button] > buttonPressReleaseCycles ) {
+                        NSLog(@"Turbo enabled! (mfi)");
+                        if ( myosd_joy_status[i] & myosdButton ) {
+                            myosd_joy_status[i] &= ~myosdButton;
+                        } else {
+                            myosd_joy_status[i] |= myosdButton;
+                        }
+                        mfiCyclesAfterButtonPressed[i][button] = 0;
+                    }
+                    mfiCyclesAfterButtonPressed[i][button]++;
+                }
+            }
+            
+        } else {
+            // For the on-screen touch gamepad
+            if ( turboBtnEnabled[button] && btnStates[button] == BUTTON_PRESS ) {
+                if ( cyclesAfterButtonPressed[button] > buttonPressReleaseCycles ) {
+                    NSLog(@"Turbo enabled!");
+                    if ( myosd_pad_status & myosdButton ) {
+                        myosd_pad_status &= ~myosdButton;
+                    } else {
+                        myosd_pad_status |= myosdButton;
+                    }
+                    cyclesAfterButtonPressed[button] = 0;
+                }
+                cyclesAfterButtonPressed[button]++;
+            }
+            
+        }
+    }
 }
 
 - (void)removeTouchControllerViews{
@@ -1642,9 +1779,8 @@ void* app_Thread_Start(void* args)
         CGPoint touchLoc = [touch locationInView:screenView];
         CGFloat newX = (touchLoc.x - (screenView.bounds.size.width / 2.0f)) / (screenView.bounds.size.width / 2.0f);
         CGFloat newY = (touchLoc.y - (screenView.bounds.size.height / 2.0f)) / (screenView.bounds.size.height / 2.0f) * -1.0f;
-        NSLog(@"touch began light gun? loc: %f, %f",touchLoc.x, touchLoc.y);
-        NSLog(@"screen size = %i x %i , view bounds = %f x %f",myosd_video_width,myosd_video_height,screenView.bounds.size.width,screenView.bounds.size.height);
-        NSLog(@"new loc = %f , %f",newX,newY);
+//        NSLog(@"touch began light gun? loc: %f, %f",touchLoc.x, touchLoc.y);
+//        NSLog(@"new loc = %f , %f",newX,newY);
         myosd_joy_status[0] |= MYOSD_B;
         myosd_pad_status |= MYOSD_B;
         if ( touchcount > 1 ) {
@@ -2002,7 +2138,6 @@ void* app_Thread_Start(void* args)
     
     // light gun release?
     if ( myosd_light_gun == 1 && g_pref_lightgun_enabled ) {
-        NSLog(@"light gun release!");
         myosd_pad_status &= ~MYOSD_B;
         myosd_joy_status[0] &= ~MYOSD_B;
         myosd_pad_status &= ~MYOSD_X;
