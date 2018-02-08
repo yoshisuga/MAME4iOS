@@ -19,6 +19,12 @@ This repo adds support for:
 
 ## Installation / Sideloading
 
+### IPA 
+
+If you can re-sign using your certificate, here is a [link to the IPA](https://mega.nz/#!XII3UTxb!LsCOZIPDwwk35SfPYlMg8I9WQZMFLU_y9VjchGSObCg).
+
+### Xcode
+
 Requirements: Mac with Xcode 7 or above
 
 Building MAME4iOS requires a prebuilt MAME binary. It was not included in this repo due to its large size. This is done by running `make` at the root directory of the project. This will build the 64-bit version of the MAME binary by default and will only work for modern iOS devices (iPhone 5S and above, iPad Air and above, iPad mini 2 and above). To build the 32-bit version, use the command: `make iOSARMV7=1`.
