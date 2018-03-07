@@ -29,7 +29,7 @@ Requirements: Mac with Xcode 7 or above
 
 Building MAME4iOS requires a prebuilt MAME binary. It was not included in this repo due to its large size. This is done by running `make` at the root directory of the project. This will build the 64-bit version of the MAME binary by default and will only work for modern iOS devices (iPhone 5S and above, iPad Air and above, iPad mini 2 and above). To build the 32-bit version, use the command: `make iOSARMV7=1`.
 
-Or, you can download a prebuilt binary [here (64-bit)](https://mega.nz/#!WYBx2B5D!cvuyxKehT4LQ7Iiz8kMJeh8uQ-TWWEUJlngBHKfTICo) or [here (32-bit)](https://mega.nz/#!zNYQCaBZ!a7JaLbiQ65kUQZlxxAGOsRHln2F0dDM1Rly_I5t54KE).
+Or, you can download a prebuilt binary [here (64-bit only)](https://mega.nz/#!GJZH3ShT!XVK53FgH5E8WuuSBD57rSwfidtQ2afxWQq9iaPXR4QE).
 
 Place the file in the root directory of the repo. Choose the appropraite build target (MAME4iOS 64-bit or MAME4iOS 32-bit).
 
