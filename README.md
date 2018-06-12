@@ -72,7 +72,13 @@ You can now use the touch screen for lightgun games like Operation Wolf and Leth
 
 In full screen landscape mode, you can hide the onscreen controls using the "D-Pad" button at the top of the screen. When using a game controller, the top button of the screen opens the menu to load/save state or access settings.
 
-Tpuch Lightgun setup is in Settings -> Input -> Touch Lightgun, where you can disable it altogether, or use tapping the bottom of the screen to simulate shooting offscreen (for game that make you reload like Lethal Enforcers).
+Touch Lightgun setup is in Settings -> Input -> Touch Lightgun, where you can disable it altogether, or use tapping the bottom of the screen to simulate shooting offscreen (for game that make you reload like Lethal Enforcers).
+
+#### Shortcuts while in Touch Screen Lightgun mode
+
+- Touch with 2 fingers: secondary fire ("B" button)
+- Touch with 3 fingers: press start button
+- Touch with 4 fingers: insert coin
 
 ### Turbo Mode Toggle for Buttons (new in 2018)
 
