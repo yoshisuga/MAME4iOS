@@ -45,6 +45,7 @@
 #import <UIKit/UIKit.h>
 
 #import "Globals.h"
+#import "ScreenView.h"
 
 @interface UINavigationController (KeyboardDismiss)
 
@@ -61,7 +62,7 @@
 @interface EmulatorController : UIViewController <UIActionSheetDelegate>
 {
 
-  UIView			* screenView;
+  ScreenView			* screenView;
   UIImageView	    * imageBack;
   UIImageView	    * imageOverlay;
   DebugView         * dview;
@@ -101,7 +102,7 @@
   int dpad_state;
   int old_dpad_state;
     
-  int btnStates[NUM_BUTTONS];
+  
   int old_btnStates[NUM_BUTTONS];
     
   //analog stick stuff
@@ -116,10 +117,8 @@
   CGRect debug_rects[100];
   int num_debug_rects;
     
-    NSMutableArray *controllers;
-    
-    UIButton *hideShowControlsForLightgun;
-    BOOL areControlsHidden;
+  UIButton *hideShowControlsForLightgun;
+  BOOL areControlsHidden;
 
 }
 

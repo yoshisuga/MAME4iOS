@@ -44,7 +44,6 @@
 
 #include "myosd.h"
 #import "EmulatorController.h"
-#import "ScreenView.h"
 #import "HelpController.h"
 #import "OptionsController.h"
 #import "DonateController.h"
@@ -60,6 +59,18 @@
 #import <pthread.h>
 #import "NetplayGameKit.h"
 #import "UIView+Toast.h"
+
+// mfi Controllers
+NSMutableArray *controllers;
+int mfiBtnStates[10][NUM_BUTTONS];
+int mfiCyclesAfterButtonPressed[10][NUM_BUTTONS];
+
+// Turbo functionality
+int cyclesAfterButtonPressed[NUM_BUTTONS];
+int turboBtnEnabled[NUM_BUTTONS];
+
+// On-screen touch gamepad button states
+int btnStates[NUM_BUTTONS];
 
 int g_isIpad = 0;
 int g_isIphone5 = 0;
@@ -148,6 +159,8 @@ static int change_layout=0;
 static int exit_status = 0;
 
 static EmulatorController *sharedInstance = nil;
+
+static NSUInteger buttonPressReleaseCycles = 2;
 
 EmulatorController *GetSharedInstance()
 {
@@ -613,6 +626,13 @@ void* app_Thread_Start(void* args)
     
     g_pref_lightgun_enabled = [op lightgunEnabled];
     g_pref_lightgun_bottom_reload = [op lightgunBottomScreenReload];
+    
+    turboBtnEnabled[BTN_X] = [op turboXEnabled];
+    turboBtnEnabled[BTN_Y] = [op turboYEnabled];
+    turboBtnEnabled[BTN_A] = [op turboAEnabled];
+    turboBtnEnabled[BTN_B] = [op turboBEnabled];
+    turboBtnEnabled[BTN_L1] = [op turboLEnabled];
+    turboBtnEnabled[BTN_R1] = [op turboREnabled];
     
     [op release];
 }
@@ -1082,7 +1102,107 @@ void* app_Thread_Start(void* args)
     prev_myosd_light_gun = myosd_light_gun;
     areControlsHidden = NO;
     
+    for (int i = 0; i < NUM_BUTTONS; i++) {
+        cyclesAfterButtonPressed[i] = 0;
+    }
+    for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < NUM_BUTTONS; j++) {
+            mfiCyclesAfterButtonPressed[i][j] = 0;
+            mfiBtnStates[i][j] = 0;
+        }
+    }
+
    [pool release];
+}
+
+void myosd_handle_turbo() {
+    if ( !myosd_inGame ) {
+        return;
+    }
+    NSArray *supportedTurboButtons = @[ @[ [NSNumber numberWithInt:BTN_X], [NSNumber numberWithInt:MYOSD_X] ],
+                                           @[ [NSNumber numberWithInt:BTN_Y], [NSNumber numberWithInt:MYOSD_Y] ],
+                                           @[ [NSNumber numberWithInt:BTN_A], [NSNumber numberWithInt:MYOSD_A] ],
+                                           @[ [NSNumber numberWithInt:BTN_B], [NSNumber numberWithInt:MYOSD_B] ],
+                                           @[ [NSNumber numberWithInt:BTN_L1], [NSNumber numberWithInt:MYOSD_L1] ],
+                                           @[ [NSNumber numberWithInt:BTN_R1], [NSNumber numberWithInt:MYOSD_R1] ]
+                                           ];
+
+    // poll mfi controllers and read state of button presses
+    for (int index = 0; index < controllers.count; index++) {
+        GCController *mfiController = [controllers objectAtIndex:index];
+        GCExtendedGamepad *extendedGamepad = mfiController.extendedGamepad;
+        GCGamepad *gamepad = mfiController.gamepad;
+        if ( extendedGamepad.buttonX.isPressed || gamepad.buttonX.isPressed ) {
+            mfiBtnStates[index][BTN_X] = BUTTON_PRESS;
+        } else {
+            mfiBtnStates[index][BTN_X] = BUTTON_NO_PRESS;
+        }
+        if ( extendedGamepad.buttonY.isPressed || gamepad.buttonY.isPressed ) {
+            mfiBtnStates[index][BTN_Y] = BUTTON_PRESS;
+        } else {
+            mfiBtnStates[index][BTN_Y] = BUTTON_NO_PRESS;
+        }
+        if ( extendedGamepad.buttonA.isPressed || gamepad.buttonA.isPressed ) {
+            mfiBtnStates[index][BTN_A] = BUTTON_PRESS;
+        } else {
+            mfiBtnStates[index][BTN_A] = BUTTON_NO_PRESS;
+        }
+        if ( extendedGamepad.buttonB.isPressed || gamepad.buttonB.isPressed ) {
+            mfiBtnStates[index][BTN_B] = BUTTON_PRESS;
+        } else {
+            mfiBtnStates[index][BTN_B] = BUTTON_NO_PRESS;
+        }
+        if ( extendedGamepad.leftShoulder.isPressed || gamepad.leftShoulder.isPressed ) {
+            mfiBtnStates[index][BTN_L1] = BUTTON_PRESS;
+        } else {
+            mfiBtnStates[index][BTN_L1] = BUTTON_NO_PRESS;
+        }
+        if ( extendedGamepad.rightShoulder.isPressed || gamepad.rightShoulder.isPressed ) {
+            mfiBtnStates[index][BTN_R1] = BUTTON_PRESS;
+        } else {
+            mfiBtnStates[index][BTN_R1] = BUTTON_NO_PRESS;
+        }
+    }
+    
+    
+    for (NSArray *buttonData in supportedTurboButtons) {
+        int button = [(NSNumber*)[buttonData objectAtIndex:0] intValue];
+        int myosdButton = [(NSNumber*)[buttonData objectAtIndex:1] intValue];
+        
+        if ( controllers.count > 0 ) {
+            // For mFi Controllers
+            for (int i = 0; i < controllers.count; i++) {
+                if ( turboBtnEnabled[button] && mfiBtnStates[i][button] == BUTTON_PRESS ) {
+                    if ( mfiCyclesAfterButtonPressed[i][button] > buttonPressReleaseCycles ) {
+                        NSLog(@"Turbo enabled! (mfi)");
+                        if ( myosd_joy_status[i] & myosdButton ) {
+                            myosd_joy_status[i] &= ~myosdButton;
+                        } else {
+                            myosd_joy_status[i] |= myosdButton;
+                        }
+                        mfiCyclesAfterButtonPressed[i][button] = 0;
+                    }
+                    mfiCyclesAfterButtonPressed[i][button]++;
+                }
+            }
+            
+        } else {
+            // For the on-screen touch gamepad
+            if ( turboBtnEnabled[button] && btnStates[button] == BUTTON_PRESS ) {
+                if ( cyclesAfterButtonPressed[button] > buttonPressReleaseCycles ) {
+                    NSLog(@"Turbo enabled!");
+                    if ( myosd_pad_status & myosdButton ) {
+                        myosd_pad_status &= ~myosdButton;
+                    } else {
+                        myosd_pad_status |= myosdButton;
+                    }
+                    cyclesAfterButtonPressed[button] = 0;
+                }
+                cyclesAfterButtonPressed[button]++;
+            }
+            
+        }
+    }
 }
 
 - (void)removeTouchControllerViews{

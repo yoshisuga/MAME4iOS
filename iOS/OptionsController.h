@@ -129,8 +129,15 @@
     
    @public int emuspeed;
     
-@public int lightgunBottomScreenReload;
-@public int lightgunEnabled;
+   @public int lightgunBottomScreenReload;
+   @public int lightgunEnabled;
+    
+   @public int turboXEnabled;
+   @public int turboYEnabled;
+   @public int turboAEnabled;
+   @public int turboBEnabled;
+   @public int turboLEnabled;
+   @public int turboREnabled;
     
 }
 
@@ -222,6 +229,13 @@
 
 @property (readwrite,assign) int lightgunBottomScreenReload;
 @property (readwrite,assign) int lightgunEnabled;
+
+@property (readwrite,assign) int turboXEnabled;
+@property (readwrite,assign) int turboYEnabled;
+@property (readwrite,assign) int turboAEnabled;
+@property (readwrite,assign) int turboBEnabled;
+@property (readwrite,assign) int turboLEnabled;
+@property (readwrite,assign) int turboREnabled;
 
 @property (readwrite,assign) int mainThreadType;
 @property (readwrite,assign) int videoThreadType;

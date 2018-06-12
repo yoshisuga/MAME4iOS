@@ -80,6 +80,13 @@
         switchLightgunEnabled = nil;
         switchLightgunBottomScreenReload = nil;
         
+        switchTurboAButtonEnabled = nil;
+        switchTurboBButtonEnabled = nil;
+        switchTurboXButtonEnabled = nil;
+        switchTurboYButtonEnabled = nil;
+        switchTurboLButtonEnabled = nil;
+        switchTurboRButtonEnabled = nil;
+        
         self.title = @"Input Options";
     }
     return self;
@@ -101,6 +108,12 @@
     [arrayButtonSizeValue release];
     [arrayStickSizeValue release];
     [switchLightgunEnabled release];
+    [switchTurboAButtonEnabled release];
+    [switchTurboBButtonEnabled release];
+    [switchTurboXButtonEnabled release];
+    [switchTurboYButtonEnabled release];
+    [switchTurboLButtonEnabled release];
+    [switchTurboRButtonEnabled release];
     [switchLightgunBottomScreenReload release];
     
     [super dealloc];
@@ -114,7 +127,7 @@
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     
-    return 8;
+    return 9;
 }
 
 - (void)loadView {
@@ -140,6 +153,7 @@
         case 5: return 1;
         case 6: return 3-!g_btjoy_available;
         case 7: return 2;
+        case 8: return 6;
     }
     return -1;
 }
@@ -156,13 +170,14 @@
         case 5: return @"";
         case 6: return @"Dead Zone";
         case 7: return @"Touch Lightgun";
+        case 8: return @"Turbo Mode Toggle";
     }
     return @"Error!";
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     
-    NSString *cellIdentifier = [NSString stringWithFormat: @"%d:%d", [indexPath indexAtPosition:0], [indexPath indexAtPosition:1]];
+    NSString *cellIdentifier = [NSString stringWithFormat: @"%lu:%lu", (unsigned long)[indexPath indexAtPosition:0], (unsigned long)[indexPath indexAtPosition:1]];
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
     
     if (cell == nil)
@@ -365,6 +380,73 @@
                     break;
                 }
             }
+            break;
+        }
+        case 8:
+        {
+            switch (indexPath.row)
+            {
+                case 0:
+                {
+                    cell.textLabel.text = @"X";
+                    [switchTurboXButtonEnabled release];
+                    switchTurboXButtonEnabled = [[UISwitch alloc] initWithFrame:CGRectZero];
+                    [switchTurboXButtonEnabled setOn:[op turboXEnabled]];
+                    [switchTurboXButtonEnabled addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                    cell.accessoryView = switchTurboXButtonEnabled;
+                    break;
+                }
+                case 1:
+                {
+                    cell.textLabel.text = @"Y";
+                    [switchTurboYButtonEnabled release];
+                    switchTurboYButtonEnabled = [[UISwitch alloc] initWithFrame:CGRectZero];
+                    [switchTurboYButtonEnabled setOn:[op turboYEnabled]];
+                    [switchTurboYButtonEnabled addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                    cell.accessoryView = switchTurboYButtonEnabled;
+                    break;
+                }
+                case 2:
+                {
+                    cell.textLabel.text = @"A";
+                    [switchTurboAButtonEnabled release];
+                    switchTurboAButtonEnabled = [[UISwitch alloc] initWithFrame:CGRectZero];
+                    [switchTurboAButtonEnabled setOn:[op turboAEnabled]];
+                    [switchTurboAButtonEnabled addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                    cell.accessoryView = switchTurboAButtonEnabled;
+                    break;
+                }
+                case 3:
+                {
+                    cell.textLabel.text = @"B";
+                    [switchTurboBButtonEnabled release];
+                    switchTurboBButtonEnabled = [[UISwitch alloc] initWithFrame:CGRectZero];
+                    [switchTurboBButtonEnabled setOn:[op turboBEnabled]];
+                    [switchTurboBButtonEnabled addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                    cell.accessoryView = switchTurboBButtonEnabled;
+                    break;
+                }
+                case 4:
+                {
+                    cell.textLabel.text = @"L";
+                    [switchTurboLButtonEnabled release];
+                    switchTurboLButtonEnabled = [[UISwitch alloc] initWithFrame:CGRectZero];
+                    [switchTurboLButtonEnabled setOn:[op turboLEnabled]];
+                    [switchTurboLButtonEnabled addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                    cell.accessoryView = switchTurboLButtonEnabled;
+                    break;
+                }
+                case 5:
+                {
+                    cell.textLabel.text = @"R";
+                    [switchTurboRButtonEnabled release];
+                    switchTurboRButtonEnabled = [[UISwitch alloc] initWithFrame:CGRectZero];
+                    [switchTurboRButtonEnabled setOn:[op turboREnabled]];
+                    [switchTurboRButtonEnabled addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                    cell.accessoryView = switchTurboRButtonEnabled;
+                    break;
+                }
+            }
         }
     }
     
@@ -389,7 +471,19 @@
         op.lightgunEnabled = [switchLightgunEnabled isOn];
     if(sender == switchLightgunBottomScreenReload)
         op.lightgunBottomScreenReload = [switchLightgunBottomScreenReload isOn];
-        
+    if(sender == switchTurboXButtonEnabled)
+        op.turboXEnabled = [switchTurboXButtonEnabled isOn];
+    if(sender == switchTurboYButtonEnabled)
+        op.turboYEnabled = [switchTurboYButtonEnabled isOn];
+    if(sender == switchTurboAButtonEnabled)
+        op.turboAEnabled = [switchTurboAButtonEnabled isOn];
+    if(sender == switchTurboBButtonEnabled)
+        op.turboBEnabled = [switchTurboBButtonEnabled isOn];
+    if(sender == switchTurboLButtonEnabled)
+        op.turboLEnabled = [switchTurboLButtonEnabled isOn];
+    if(sender == switchTurboRButtonEnabled)
+        op.turboREnabled = [switchTurboRButtonEnabled isOn];
+
     [op saveOptions];
 	[op release];
 }
