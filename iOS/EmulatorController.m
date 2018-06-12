@@ -881,12 +881,13 @@ void* app_Thread_Start(void* args)
     // Also functions as a show menu button when a game controller is used
     hideShowControlsForLightgun = [[UIButton alloc] initWithFrame:CGRectZero];
     hideShowControlsForLightgun.hidden = YES;
+    [hideShowControlsForLightgun.imageView setContentMode:UIViewContentModeScaleAspectFit];
     [hideShowControlsForLightgun setImage:[UIImage imageNamed:@"dpad"] forState:UIControlStateNormal];
     [hideShowControlsForLightgun addTarget:self action:@selector(toggleControlsForLightgunButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     hideShowControlsForLightgun.alpha = 0.2f;
     hideShowControlsForLightgun.translatesAutoresizingMaskIntoConstraints = NO;
-    [hideShowControlsForLightgun addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:20.0f]];
-    [hideShowControlsForLightgun addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:20.0f]];
+    [hideShowControlsForLightgun addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant: UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad ? 30.0f : 20.0f]];
+    [hideShowControlsForLightgun addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad ? 30.0f :20.0f]];
     [self.view addSubview:hideShowControlsForLightgun];
     [self.view addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeCenterX multiplier:1.0f constant:0.0f]];
     [self.view addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeTop multiplier:1.0f constant:8.0f]];
@@ -1778,7 +1779,17 @@ void myosd_handle_turbo() {
 //        NSLog(@"new loc = %f , %f",newX,newY);
         myosd_joy_status[0] |= MYOSD_B;
         myosd_pad_status |= MYOSD_B;
-        if ( touchcount > 1 ) {
+        if ( touchcount > 3 ) {
+            // 4 touches = insert coin
+            myosd_pad_status |= MYOSD_SELECT;
+            myosd_joy_status[0] |= MYOSD_SELECT;
+            [self performSelector:@selector(releaseCoin:) withObject:[NSNumber numberWithInteger:0] afterDelay:0.1];
+        } else if ( touchcount > 2 ) {
+            // 3 touches = press start
+            myosd_pad_status |= MYOSD_START;
+            myosd_joy_status[0] |= MYOSD_START;
+            [self performSelector:@selector(releaseStart:) withObject:[NSNumber numberWithInteger:0] afterDelay:0.1];
+        } else if ( touchcount > 1 ) {
             // more than one touch means secondary button press
             myosd_pad_status |= MYOSD_X;
             myosd_joy_status[0] |= MYOSD_X;
@@ -2919,13 +2930,13 @@ void myosd_handle_turbo() {
         MFIController.controllerPausedHandler = ^(GCController *controller) {
             //Add Coin
             myosd_joy_status[index] |= MYOSD_START;
-            [self performSelector:@selector(releaseStart:) withObject:MFIController afterDelay:0.1];
+            [self performSelector:@selector(releaseStart:) withObject:[NSNumber numberWithInteger:MFIController.playerIndex] afterDelay:0.1];
             
             if (MFIController.gamepad.leftShoulder.pressed) {
                 myosd_joy_status[index] &= ~MYOSD_START;
                 myosd_joy_status[index] &= ~MYOSD_L1;
                 myosd_joy_status[index] |= MYOSD_SELECT;
-                [self performSelector:@selector(releaseCoin:) withObject:MFIController afterDelay:0.1];
+                [self performSelector:@selector(releaseCoin:) withObject:[NSNumber numberWithInteger:MFIController.playerIndex] afterDelay:0.1];
             }
             //Show Mame menu (Start + Coin)
             if (MFIController.gamepad.rightShoulder.pressed) {
@@ -2958,14 +2969,14 @@ void myosd_handle_turbo() {
     
 }
 
--(void)releaseCoin:(GCController *)controller{
-    myosd_joy_status[controller.playerIndex] &= ~MYOSD_SELECT;
-    
+-(void)releaseCoin:(NSNumber*)playerIndex {
+    myosd_joy_status[playerIndex.integerValue] &= ~MYOSD_SELECT;
+    myosd_pad_status &= ~MYOSD_SELECT;
 }
 
--(void)releaseStart:(GCController *)controller{
-    myosd_joy_status[controller.playerIndex] &= ~MYOSD_START;
-    
+-(void)releaseStart:(NSNumber *)playerIndex {
+    myosd_joy_status[playerIndex.integerValue] &= ~MYOSD_START;
+    myosd_pad_status &= ~MYOSD_START;
 }
 
 -(void)scanForDevices{
