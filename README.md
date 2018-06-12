@@ -15,6 +15,7 @@ This repo adds support for:
 - 64-bit binary to run on modern and future iOS devices
 - Multiple mFi controllers (up to 4 with dual analog support - @DarrenBranford)
 - Supports using the touch screen as a lightgun (new in 2018!)
+- Turbo mode toggle for buttons (new in 2018!)
 - Builds in Xcode 9, runs on iOS 11 
 
 ## Installation / Sideloading
@@ -72,6 +73,10 @@ You can now use the touch screen for lightgun games like Operation Wolf and Leth
 In full screen landscape mode, you can hide the onscreen controls using the "D-Pad" button at the top of the screen. When using a game controller, the top button of the screen opens the menu to load/save state or access settings.
 
 Tpuch Lightgun setup is in Settings -> Input -> Touch Lightgun, where you can disable it altogether, or use tapping the bottom of the screen to simulate shooting offscreen (for game that make you reload like Lethal Enforcers).
+
+### Turbo Mode Toggle for Buttons (new in 2018)
+
+Under Settings -> Game Input, there's a section called "Turbo Mode Toggle", that lets you turn on turbo firing for individual buttons. Holding down the button causes the button to fire in turbo mode.
 
 ### tvOS
 
