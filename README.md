@@ -28,20 +28,34 @@ If you can re-sign using your certificate, here is a [link to the IPA](https://m
 
 Requirements: Mac with Xcode 7 or above
 
-Building MAME4iOS requires a prebuilt MAME binary. It was not included in this repo due to its large size. This is done by running `make` at the root directory of the project. This will build the 64-bit version of the MAME binary by default and will only work for modern iOS devices (iPhone 5S and above, iPad Air and above, iPad mini 2 and above). To build the 32-bit version, use the command: `make iOSARMV7=1`.
+Building MAME4iOS requires a prebuilt MAME binary (It was not included in this repo due to its large size): 
 
-Or, you can download a prebuilt binary [here (64-bit only)](https://mega.nz/#!GJZH3ShT!XVK53FgH5E8WuuSBD57rSwfidtQ2afxWQq9iaPXR4QE).
-
-Place the file in the root directory of the repo. Choose the appropraite build target (MAME4iOS 64-bit or MAME4iOS 32-bit).
+1. _Make sure you have the latest version of the Xcode commandline tools installed:_<br> 
+`xcode-select --install`
+2. In Terminal: `cd [path to MAME4iOS root]`<br> 
+  <sup>(alternatively, you can drag & drop a folder on Terminal after `cd` if don't know how to get the directory path)</sup><br> 
+3. Get MAME binary:
+    - Build:
+        - 64-bit version: `make`<br>
+        <sup>For iPhone 5S, iPad Air, iPad mini, and up…</sup><br>
+        - 32-bit version: `make iOSARMV7=1`
+    - Download: 
+        - [64-bit](https://mega.nz/#!GJZH3ShT!XVK53FgH5E8WuuSBD57rSwfidtQ2afxWQq9iaPXR4QE)<br>
+        <sup>Place the file in the root directory of the repo.</sup><br>
+4. Choose the appropriate build target:
+    - `MAME4iOS 64-bit` 
+    - `MAME4iOS 32-bit`
 
 Even if you are not in the paid Apple Developer Program, you can sideload the app using a Mac with Xcode 7/8.
 
-1. Open the Xcode project in `xcode/MAME4iOS/MAME4iOS.xcodeproj`
-2. Make sure you have the `libmamearm64.a` (or `libmamearmv7.a`) file in the root of your project (it should not be red).
-1. If you are a developer, build and run on your device
-1. If you are not a developer, open Preferences and add your Apple ID, select your Personal Team, and create an iOS Development Profile.
-1. Select the project name on the left pane and make sure your personal team is selected
-1. Hit the run button to install on your device
+1. Open the Xcode project in `xcode/MAME4iOS/MAME4iOS.xcodeproj`<br>
+    <sup>Make sure you have the `libmamearm64.a` (or `libmamearmv7.a`) file in the root of your project (it should not be red).</sup><br>
+2. Build:
+    1. If you are a developer: Build and `▶︎` Run on your device. _Done._
+    2. If you are not a developer…
+        1. `File` → `Preferences` add your Apple ID, select your Personal Team, and create an iOS Development Profile.
+        2. Select the project name on the left pane and make sure your personal team is selected
+        3. Hit the `▶︎` Run button to install on your device. _Done._
 
 ## mFi Controller Support
 
