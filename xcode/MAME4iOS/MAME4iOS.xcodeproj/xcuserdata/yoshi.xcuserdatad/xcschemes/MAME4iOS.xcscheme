@@ -32,9 +32,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "CEE680841635BA7000051BC2"
-            BuildableName = "MAME4iOS 32-bit.app"
-            BlueprintName = "MAME4iOS 32-bit"
+            BlueprintIdentifier = "925ABCA41E46DCC500997182"
+            BuildableName = "MAME4iOS 64-bit.app"
+            BlueprintName = "MAME4iOS 64-bit"
             ReferencedContainer = "container:MAME4iOS.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -55,9 +55,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "CEE680841635BA7000051BC2"
-            BuildableName = "MAME4iOS 32-bit.app"
-            BlueprintName = "MAME4iOS 32-bit"
+            BlueprintIdentifier = "925ABCA41E46DCC500997182"
+            BuildableName = "MAME4iOS 64-bit.app"
+            BlueprintName = "MAME4iOS 64-bit"
             ReferencedContainer = "container:MAME4iOS.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

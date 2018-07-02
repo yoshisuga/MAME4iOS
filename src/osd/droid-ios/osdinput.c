@@ -85,6 +85,7 @@ void droid_ios_init_input(running_machine *machine)
 
 	input_device_class_enable(machine, DEVICE_CLASS_LIGHTGUN, TRUE);
 	input_device_class_enable(machine, DEVICE_CLASS_JOYSTICK, TRUE);
+	input_device_class_enable(machine, DEVICE_CLASS_MOUSE, TRUE);
 
 	for (int i = 0; i < 4; i++)
 	{
@@ -150,6 +151,17 @@ void droid_ios_init_input(running_machine *machine)
 
        input_device_item_add(lightgun_device, "X Axis", &lightgun_axis[i][0], ITEM_ID_XAXIS, my_axis_get_state);
        input_device_item_add(lightgun_device, "Y Axis", &lightgun_axis[i][1], ITEM_ID_YAXIS, my_axis_get_state);
+
+	   char mouse_name[10];
+	   snprintf(mouse_name, 10, "Mouse %d", i + 1);
+	   input_device *mouse_device = input_device_add(machine, DEVICE_CLASS_MOUSE, mouse_name, NULL);
+	   if (mouse_device == NULL) {
+		   fatalerror("Error creating mouse device");
+	   } else {
+		   printf("Created Mouse Device!");
+	   }
+	   input_device_item_add(mouse_device, "X Axis", &mouse_axis[i][0], ITEM_ID_XAXIS, my_axis_get_state);
+	   input_device_item_add(mouse_device, "Y Axis", &mouse_axis[i][1], ITEM_ID_YAXIS, my_axis_get_state);
     }
 
     poll_ports = 1;
@@ -193,7 +205,7 @@ void my_poll_ports(running_machine *machine)
                     way8= 1;
                 if(field->type == IPT_DIAL || field->type == IPT_PADDLE || field->type == IPT_POSITIONAL ||
                    field->type == IPT_DIAL_V || field->type == IPT_PADDLE_V || field->type == IPT_POSITIONAL_V)
-                    counter++;
+                    myosd_mouse = 1;
                 if(field->type == IPT_LIGHTGUN_X)
                    myosd_light_gun = 1;                
             }
@@ -432,6 +444,8 @@ void droid_ios_poll_input(running_machine *machine)
                 lightgun_axis[i][0] = (int)(lightgun_x[0] *  32767 *  2 );
                 lightgun_axis[i][1] = (int)(lightgun_y[0] *  32767 *  -2 );
 
+				mouse_axis[i][0] = (int)mouse_x[0];
+				mouse_axis[i][1] = (int)mouse_y[0];
             }
             else
             {
@@ -448,6 +462,9 @@ void droid_ios_poll_input(running_machine *machine)
                 lightgun_y[i] = 0;
                 lightgun_axis[i][0] = 0;
                 lightgun_axis[i][1] = 0;
+
+				mouse_axis[i][0] = 0;
+				mouse_axis[i][1] = 0;
 
             }
             
