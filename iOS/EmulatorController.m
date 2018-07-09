@@ -1777,338 +1777,12 @@ void myosd_handle_turbo() {
     }
     else
     {
-        [self touchesController:touches withEvent:event];
-        if ( myosd_mouse == 1 ) {
+        BOOL touchWasHandled = [self touchesController:touches withEvent:event];
+        if ( myosd_mouse == 1 && !touchWasHandled ) {
             [self handleMouseTouchesBegan:touches];
             return;
         }
     }
-}
-
-- (void)touchesController:(NSSet *)touches withEvent:(UIEvent *)event {
-    
-    int i;
-    static UITouch *stickTouch = nil;
-    
-    //Get all the touches.
-    NSSet *allTouches = [event allTouches];
-    int touchcount = [allTouches count];
-    
-    //myosd_pad_status = 0;
-    myosd_pad_status &= ~MYOSD_X;
-    myosd_pad_status &= ~MYOSD_Y;
-    myosd_pad_status &= ~MYOSD_A;
-    myosd_pad_status &= ~MYOSD_B;
-    myosd_pad_status &= ~MYOSD_SELECT;
-    myosd_pad_status &= ~MYOSD_START;
-    myosd_pad_status &= ~MYOSD_L1;
-    myosd_pad_status &= ~MYOSD_R1;
-    
-    for(i=0; i<NUM_BUTTONS;i++)
-    {
-        btnStates[i] = BUTTON_NO_PRESS;
-    }
-    
-    if ( areControlsHidden && g_pref_lightgun_enabled && g_device_is_landscape) {
-        [self handleLightgunTouchesBegan:touches];
-        return;
-    }
-    
-    for (i = 0; i < touchcount; i++)
-    {
-        UITouch *touch = [[allTouches allObjects] objectAtIndex:i];
-        
-        if(touch == nil)
-        {
-            continue;
-        }
-        
-        if( touch.phase == UITouchPhaseBegan        ||
-           touch.phase == UITouchPhaseMoved        ||
-           touch.phase == UITouchPhaseStationary    )
-        {
-            struct CGPoint point;
-            point = [touch locationInView:self.view];
-            
-            if(g_pref_input_touch_type == TOUCH_INPUT_DPAD)
-            {
-                if (MyCGRectContainsPoint(rInput[DPAD_UP_RECT], point) && !STICK2WAY) {
-                    //NSLog(@"MYOSD_UP");
-                    myosd_pad_status |= MYOSD_UP;
-                    dpad_state = DPAD_UP;
-                    
-                    myosd_pad_status &= ~MYOSD_DOWN;
-                    myosd_pad_status &= ~MYOSD_LEFT;
-                    myosd_pad_status &= ~MYOSD_RIGHT;
-                    
-                    stickTouch = touch;
-                }
-                else if (MyCGRectContainsPoint(rInput[DPAD_DOWN_RECT], point) && !STICK2WAY) {
-                    //NSLog(@"MYOSD_DOWN");
-                    myosd_pad_status |= MYOSD_DOWN;
-                    dpad_state = DPAD_DOWN;
-                    
-                    myosd_pad_status &= ~MYOSD_UP;
-                    myosd_pad_status &= ~MYOSD_LEFT;
-                    myosd_pad_status &= ~MYOSD_RIGHT;
-                    
-                    stickTouch = touch;
-                }
-                else if (MyCGRectContainsPoint(rInput[DPAD_LEFT_RECT], point)) {
-                    //NSLog(@"MYOSD_LEFT");
-                    myosd_pad_status |= MYOSD_LEFT;
-                    dpad_state = DPAD_LEFT;
-                    
-                    myosd_pad_status &= ~MYOSD_UP;
-                    myosd_pad_status &= ~MYOSD_DOWN;
-                    myosd_pad_status &= ~MYOSD_RIGHT;
-                    
-                    stickTouch = touch;
-                }
-                else if (MyCGRectContainsPoint(rInput[DPAD_RIGHT_RECT], point)) {
-                    //NSLog(@"MYOSD_RIGHT");
-                    myosd_pad_status |= MYOSD_RIGHT;
-                    dpad_state = DPAD_RIGHT;
-                    
-                    myosd_pad_status &= ~MYOSD_UP;
-                    myosd_pad_status &= ~MYOSD_DOWN;
-                    myosd_pad_status &= ~MYOSD_LEFT;
-                    
-                    stickTouch = touch;
-                }
-                else if (MyCGRectContainsPoint(rInput[DPAD_UP_LEFT_RECT], point)) {
-                    //NSLog(@"MYOSD_UP | MYOSD_LEFT");
-                    if(!STICK2WAY && !STICK4WAY)
-                    {
-                        myosd_pad_status |= MYOSD_UP | MYOSD_LEFT;
-                        dpad_state = DPAD_UP_LEFT;
-                        
-                        myosd_pad_status &= ~MYOSD_DOWN;
-                        myosd_pad_status &= ~MYOSD_RIGHT;
-                    }
-                    else
-                    {
-                        myosd_pad_status |= MYOSD_LEFT;
-                        dpad_state = DPAD_LEFT;
-                        
-                        myosd_pad_status &= ~MYOSD_UP;
-                        myosd_pad_status &= ~MYOSD_DOWN;
-                        myosd_pad_status &= ~MYOSD_RIGHT;
-                    }
-                    stickTouch = touch;
-                }
-                else if (MyCGRectContainsPoint(rInput[DPAD_UP_RIGHT_RECT], point)) {
-                    //NSLog(@"MYOSD_UP | MYOSD_RIGHT");
-                    
-                    if(!STICK2WAY && !STICK4WAY)
-                    {
-                        myosd_pad_status |= MYOSD_UP | MYOSD_RIGHT;
-                        dpad_state = DPAD_UP_RIGHT;
-                        
-                        myosd_pad_status &= ~MYOSD_DOWN;
-                        myosd_pad_status &= ~MYOSD_LEFT;
-                    }
-                    else
-                    {
-                        myosd_pad_status |= MYOSD_RIGHT;
-                        dpad_state = DPAD_RIGHT;
-                        
-                        myosd_pad_status &= ~MYOSD_UP;
-                        myosd_pad_status &= ~MYOSD_DOWN;
-                        myosd_pad_status &= ~MYOSD_LEFT;
-                    }
-                    stickTouch = touch;
-                }
-                else if (MyCGRectContainsPoint(rInput[DPAD_DOWN_LEFT_RECT], point)) {
-                    //NSLog(@"MYOSD_DOWN | MYOSD_LEFT");
-                    
-                    if(!STICK2WAY && !STICK4WAY)
-                    {
-                        myosd_pad_status |= MYOSD_DOWN | MYOSD_LEFT;
-                        dpad_state = DPAD_DOWN_LEFT;
-                        
-                        myosd_pad_status &= ~MYOSD_UP;
-                        myosd_pad_status &= ~MYOSD_RIGHT;
-                    }
-                    else
-                    {
-                        myosd_pad_status |= MYOSD_LEFT;
-                        dpad_state = DPAD_LEFT;
-                        
-                        myosd_pad_status &= ~MYOSD_DOWN;
-                        myosd_pad_status &= ~MYOSD_UP;
-                        myosd_pad_status &= ~MYOSD_RIGHT;
-                    }
-                    stickTouch = touch;
-                }
-                else if (MyCGRectContainsPoint(rInput[DPAD_DOWN_RIGHT_RECT], point)) {
-                    //NSLog(@"MYOSD_DOWN | MYOSD_RIGHT");
-                    if(!STICK2WAY && !STICK4WAY)
-                    {
-                        myosd_pad_status |= MYOSD_DOWN | MYOSD_RIGHT;
-                        dpad_state = DPAD_DOWN_RIGHT;
-                        
-                        myosd_pad_status &= ~MYOSD_UP;
-                        myosd_pad_status &= ~MYOSD_LEFT;
-                    }
-                    else
-                    {
-                        myosd_pad_status |= MYOSD_RIGHT;
-                        dpad_state = DPAD_RIGHT;
-                        
-                        myosd_pad_status &= ~MYOSD_DOWN;
-                        myosd_pad_status &= ~MYOSD_UP;
-                        myosd_pad_status &= ~MYOSD_LEFT;
-                    }
-                    stickTouch = touch;
-                }
-            }
-            else
-            {
-                if(MyCGRectContainsPoint(analogStickView.frame, point) || stickTouch == touch)
-                {
-                    //if(stickTouch==nil)
-                    stickTouch = touch;
-                    //if(touch == stickTouch)
-                    [analogStickView analogTouches:touch withEvent:event];
-                }
-            }
-            
-            if(touch == stickTouch) continue;
-            
-            if (MyCGRectContainsPoint(rInput[BTN_Y_RECT], point)) {
-                myosd_pad_status |= MYOSD_Y;
-                btnStates[BTN_Y] = BUTTON_PRESS;
-                //NSLog(@"MYOSD_Y");
-            }
-            else if (MyCGRectContainsPoint(rInput[BTN_X_RECT], point)) {
-                myosd_pad_status |= MYOSD_X;
-                btnStates[BTN_X] = BUTTON_PRESS;
-                //NSLog(@"MYOSD_X");
-            }
-            else if (MyCGRectContainsPoint(rInput[BTN_A_RECT], point)) {
-                if(g_pref_BplusX)
-                {
-                    myosd_pad_status |= MYOSD_X | MYOSD_B;
-                    btnStates[BTN_B] = BUTTON_PRESS;
-                    btnStates[BTN_X] = BUTTON_PRESS;
-                    btnStates[BTN_A] = BUTTON_PRESS;
-                }
-                else
-                {
-                    myosd_pad_status |= MYOSD_A;
-                    btnStates[BTN_A] = BUTTON_PRESS;
-                }
-                //NSLog(@"MYOSD_A");
-            }
-            else if (MyCGRectContainsPoint(rInput[BTN_B_RECT], point)) {
-                myosd_pad_status |= MYOSD_B;
-                btnStates[BTN_B] = BUTTON_PRESS;
-                //NSLog(@"MYOSD_B");
-            }
-            else if (MyCGRectContainsPoint(rInput[BTN_A_Y_RECT], point)) {
-                myosd_pad_status |= MYOSD_Y | MYOSD_A;
-                btnStates[BTN_Y] = BUTTON_PRESS;
-                btnStates[BTN_A] = BUTTON_PRESS;
-                //NSLog(@"MYOSD_Y | MYOSD_A");
-            }
-            else if (MyCGRectContainsPoint(rInput[BTN_X_A_RECT], point)) {
-                
-                myosd_pad_status |= MYOSD_X | MYOSD_A;
-                btnStates[BTN_A] = BUTTON_PRESS;
-                btnStates[BTN_X] = BUTTON_PRESS;
-                //NSLog(@"MYOSD_X | MYOSD_A");
-            }
-            else if (MyCGRectContainsPoint(rInput[BTN_B_Y_RECT], point)) {
-                myosd_pad_status |= MYOSD_Y | MYOSD_B;
-                btnStates[BTN_B] = BUTTON_PRESS;
-                btnStates[BTN_Y] = BUTTON_PRESS;
-                //NSLog(@"MYOSD_Y | MYOSD_B");
-            }
-            else if (MyCGRectContainsPoint(rInput[BTN_B_X_RECT], point)) {
-                if(!g_pref_BplusX /*&& g_pref_land_num_buttons>=3*/)
-                {
-                    myosd_pad_status |= MYOSD_X | MYOSD_B;
-                    btnStates[BTN_B] = BUTTON_PRESS;
-                    btnStates[BTN_X] = BUTTON_PRESS;
-                }
-                //NSLog(@"MYOSD_X | MYOSD_B");
-            }
-            else if (MyCGRectContainsPoint(rInput[BTN_SELECT_RECT], point)) {
-                //NSLog(@"MYOSD_SELECT");
-                myosd_pad_status |= MYOSD_SELECT;
-                btnStates[BTN_SELECT] = BUTTON_PRESS;
-                if(isGridlee && (myosd_pad_status & MYOSD_START))
-                    myosd_pad_status &= ~MYOSD_START;
-                
-            }
-            else if (MyCGRectContainsPoint(rInput[BTN_START_RECT], point)) {
-                //NSLog(@"MYOSD_START");
-                myosd_pad_status |= MYOSD_START;
-                btnStates[BTN_START] = BUTTON_PRESS;
-                if(isGridlee && (myosd_pad_status & MYOSD_SELECT))
-                    myosd_pad_status &= ~MYOSD_SELECT;
-            }
-            else if (MyCGRectContainsPoint(rInput[BTN_L1_RECT], point)) {
-                //NSLog(@"MYOSD_L");
-                myosd_pad_status |= MYOSD_L1;
-                btnStates[BTN_L1] = BUTTON_PRESS;
-            }
-            else if (MyCGRectContainsPoint(rInput[BTN_R1_RECT], point)) {
-                //NSLog(@"MYOSD_R");
-                myosd_pad_status |= MYOSD_R1;
-                btnStates[BTN_R1] = BUTTON_PRESS;
-            }
-            else if (MyCGRectContainsPoint(rInput[BTN_L2_RECT], point)) {
-                //NSLog(@"MYOSD_L2");
-                if(isGridlee)continue;
-                btnStates[BTN_L2] = BUTTON_PRESS;
-                exit_status = 1;
-            }
-            else if (MyCGRectContainsPoint(rInput[BTN_R2_RECT], point)) {
-                //NSLog(@"MYOSD_R2");
-                if(isGridlee)continue;
-                btnStates[BTN_R2] = BUTTON_PRESS;
-            }
-            else if (MyCGRectContainsPoint(rInput[BTN_MENU_RECT], point)) {
-                /*
-                 myosd_pad_status |= MYOSD_SELECT;
-                 btnStates[BTN_SELECT] = BUTTON_PRESS;
-                 myosd_pad_status |= MYOSD_START;
-                 btnStates[BTN_START] = BUTTON_PRESS;
-                 */
-            } else if ( myosd_light_gun == 1 && g_pref_lightgun_enabled ) {
-                [self handleLightgunTouchesBegan:touches];
-            }
-            
-        }
-        else
-        {
-            if(touch == stickTouch)
-            {
-                if(g_pref_input_touch_type == TOUCH_INPUT_DPAD)
-                {
-                    myosd_pad_status &= ~MYOSD_UP;
-                    myosd_pad_status &= ~MYOSD_DOWN;
-                    myosd_pad_status &= ~MYOSD_LEFT;
-                    myosd_pad_status &= ~MYOSD_RIGHT;
-                    dpad_state = DPAD_NONE;
-                }
-                else
-                {
-                    [analogStickView analogTouches:touch withEvent:event];
-                }
-                stickTouch = nil;
-            }
-            else if(exit_status==1)
-            {
-                exit_status=2;
-            }
-        }
-    }
-    
-    [self handle_MENU];
-    [self handle_DPAD];
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
@@ -2138,6 +1812,379 @@ void myosd_handle_turbo() {
         mouse_y[0] = 0.0f;
     }
 }
+
+- (BOOL)touchesController:(NSSet *)touches withEvent:(UIEvent *)event {
+    
+    int i;
+    static UITouch *stickTouch = nil;
+    BOOL stickWasTouched = NO;
+    BOOL buttonTouched = NO;
+    
+    //Get all the touches.
+    NSSet *allTouches = [event allTouches];
+    NSUInteger touchcount = [allTouches count];
+    
+    //myosd_pad_status = 0;
+    myosd_pad_status &= ~MYOSD_X;
+    myosd_pad_status &= ~MYOSD_Y;
+    myosd_pad_status &= ~MYOSD_A;
+    myosd_pad_status &= ~MYOSD_B;
+    myosd_pad_status &= ~MYOSD_SELECT;
+    myosd_pad_status &= ~MYOSD_START;
+    myosd_pad_status &= ~MYOSD_L1;
+    myosd_pad_status &= ~MYOSD_R1;
+    
+    for(i=0; i<NUM_BUTTONS;i++)
+    {
+        btnStates[i] = BUTTON_NO_PRESS;
+    }
+    
+    if ( areControlsHidden && g_pref_lightgun_enabled && g_device_is_landscape) {
+        [self handleLightgunTouchesBegan:touches];
+        return NO;
+    }
+    
+    for (i = 0; i < touchcount; i++)
+    {
+        UITouch *touch = [[allTouches allObjects] objectAtIndex:i];
+        
+        if(touch == nil)
+        {
+            continue;
+        }
+        
+        if( touch.phase == UITouchPhaseBegan        ||
+           touch.phase == UITouchPhaseMoved        ||
+           touch.phase == UITouchPhaseStationary    )
+        {
+            struct CGPoint point;
+            point = [touch locationInView:self.view];
+            
+            if(g_pref_input_touch_type == TOUCH_INPUT_DPAD && myosd_mouse != 1 )
+            {
+                if (MyCGRectContainsPoint(rInput[DPAD_UP_RECT], point) && !STICK2WAY) {
+                    //NSLog(@"MYOSD_UP");
+                    myosd_pad_status |= MYOSD_UP;
+                    dpad_state = DPAD_UP;
+                    
+                    myosd_pad_status &= ~MYOSD_DOWN;
+                    myosd_pad_status &= ~MYOSD_LEFT;
+                    myosd_pad_status &= ~MYOSD_RIGHT;
+                    
+                    stickTouch = touch;
+                    stickWasTouched = YES;
+                }
+                else if (MyCGRectContainsPoint(rInput[DPAD_DOWN_RECT], point) && !STICK2WAY) {
+                    //NSLog(@"MYOSD_DOWN");
+                    myosd_pad_status |= MYOSD_DOWN;
+                    dpad_state = DPAD_DOWN;
+                    
+                    myosd_pad_status &= ~MYOSD_UP;
+                    myosd_pad_status &= ~MYOSD_LEFT;
+                    myosd_pad_status &= ~MYOSD_RIGHT;
+                    
+                    stickTouch = touch;
+                    stickWasTouched = YES;
+                }
+                else if (MyCGRectContainsPoint(rInput[DPAD_LEFT_RECT], point)) {
+                    //NSLog(@"MYOSD_LEFT");
+                    myosd_pad_status |= MYOSD_LEFT;
+                    dpad_state = DPAD_LEFT;
+                    
+                    myosd_pad_status &= ~MYOSD_UP;
+                    myosd_pad_status &= ~MYOSD_DOWN;
+                    myosd_pad_status &= ~MYOSD_RIGHT;
+                    
+                    stickTouch = touch;
+                    stickWasTouched = YES;
+                }
+                else if (MyCGRectContainsPoint(rInput[DPAD_RIGHT_RECT], point)) {
+                    //NSLog(@"MYOSD_RIGHT");
+                    myosd_pad_status |= MYOSD_RIGHT;
+                    dpad_state = DPAD_RIGHT;
+                    
+                    myosd_pad_status &= ~MYOSD_UP;
+                    myosd_pad_status &= ~MYOSD_DOWN;
+                    myosd_pad_status &= ~MYOSD_LEFT;
+                    
+                    stickTouch = touch;
+                    stickWasTouched = YES;
+                }
+                else if (MyCGRectContainsPoint(rInput[DPAD_UP_LEFT_RECT], point)) {
+                    //NSLog(@"MYOSD_UP | MYOSD_LEFT");
+                    if(!STICK2WAY && !STICK4WAY)
+                    {
+                        myosd_pad_status |= MYOSD_UP | MYOSD_LEFT;
+                        dpad_state = DPAD_UP_LEFT;
+                        
+                        myosd_pad_status &= ~MYOSD_DOWN;
+                        myosd_pad_status &= ~MYOSD_RIGHT;
+                    }
+                    else
+                    {
+                        myosd_pad_status |= MYOSD_LEFT;
+                        dpad_state = DPAD_LEFT;
+                        
+                        myosd_pad_status &= ~MYOSD_UP;
+                        myosd_pad_status &= ~MYOSD_DOWN;
+                        myosd_pad_status &= ~MYOSD_RIGHT;
+                    }
+                    stickWasTouched = YES;
+                    stickTouch = touch;
+                }
+                else if (MyCGRectContainsPoint(rInput[DPAD_UP_RIGHT_RECT], point)) {
+                    //NSLog(@"MYOSD_UP | MYOSD_RIGHT");
+                    
+                    if(!STICK2WAY && !STICK4WAY)
+                    {
+                        myosd_pad_status |= MYOSD_UP | MYOSD_RIGHT;
+                        dpad_state = DPAD_UP_RIGHT;
+                        
+                        myosd_pad_status &= ~MYOSD_DOWN;
+                        myosd_pad_status &= ~MYOSD_LEFT;
+                    }
+                    else
+                    {
+                        myosd_pad_status |= MYOSD_RIGHT;
+                        dpad_state = DPAD_RIGHT;
+                        
+                        myosd_pad_status &= ~MYOSD_UP;
+                        myosd_pad_status &= ~MYOSD_DOWN;
+                        myosd_pad_status &= ~MYOSD_LEFT;
+                    }
+                    stickWasTouched = YES;
+                    stickTouch = touch;
+                }
+                else if (MyCGRectContainsPoint(rInput[DPAD_DOWN_LEFT_RECT], point)) {
+                    //NSLog(@"MYOSD_DOWN | MYOSD_LEFT");
+                    
+                    if(!STICK2WAY && !STICK4WAY)
+                    {
+                        myosd_pad_status |= MYOSD_DOWN | MYOSD_LEFT;
+                        dpad_state = DPAD_DOWN_LEFT;
+                        
+                        myosd_pad_status &= ~MYOSD_UP;
+                        myosd_pad_status &= ~MYOSD_RIGHT;
+                    }
+                    else
+                    {
+                        myosd_pad_status |= MYOSD_LEFT;
+                        dpad_state = DPAD_LEFT;
+                        
+                        myosd_pad_status &= ~MYOSD_DOWN;
+                        myosd_pad_status &= ~MYOSD_UP;
+                        myosd_pad_status &= ~MYOSD_RIGHT;
+                    }
+                    stickWasTouched = YES;
+                    stickTouch = touch;
+                }
+                else if (MyCGRectContainsPoint(rInput[DPAD_DOWN_RIGHT_RECT], point)) {
+                    //NSLog(@"MYOSD_DOWN | MYOSD_RIGHT");
+                    if(!STICK2WAY && !STICK4WAY)
+                    {
+                        myosd_pad_status |= MYOSD_DOWN | MYOSD_RIGHT;
+                        dpad_state = DPAD_DOWN_RIGHT;
+                        
+                        myosd_pad_status &= ~MYOSD_UP;
+                        myosd_pad_status &= ~MYOSD_LEFT;
+                    }
+                    else
+                    {
+                        myosd_pad_status |= MYOSD_RIGHT;
+                        dpad_state = DPAD_RIGHT;
+                        
+                        myosd_pad_status &= ~MYOSD_DOWN;
+                        myosd_pad_status &= ~MYOSD_UP;
+                        myosd_pad_status &= ~MYOSD_LEFT;
+                    }
+                    stickWasTouched = YES;
+                    stickTouch = touch;
+                }
+            }
+            else if ( myosd_mouse != 1 )
+            {
+                if(MyCGRectContainsPoint(analogStickView.frame, point) || stickTouch == touch)
+                {
+                    //if(stickTouch==nil)
+                    stickTouch = touch;
+                    //if(touch == stickTouch)
+                    [analogStickView analogTouches:touch withEvent:event];
+                }
+            }
+            
+            if(touch == stickTouch) continue;
+            
+            if (buttonViews[BTN_Y] != nil &&
+                !buttonViews[BTN_Y].hidden && MyCGRectContainsPoint(rInput[BTN_Y_RECT], point)) {
+                myosd_pad_status |= MYOSD_Y;
+                btnStates[BTN_Y] = BUTTON_PRESS;
+                buttonTouched = YES;
+                //NSLog(@"MYOSD_Y");
+            }
+            else if (buttonViews[BTN_X] != nil &&
+                     !buttonViews[BTN_X].hidden && MyCGRectContainsPoint(rInput[BTN_X_RECT], point)) {
+                myosd_pad_status |= MYOSD_X;
+                btnStates[BTN_X] = BUTTON_PRESS;
+                buttonTouched = YES;
+                //NSLog(@"MYOSD_X");
+            }
+            else if (buttonViews[BTN_A] != nil &&
+                     !buttonViews[BTN_A].hidden && MyCGRectContainsPoint(rInput[BTN_A_RECT], point)) {
+                if(g_pref_BplusX)
+                {
+                    myosd_pad_status |= MYOSD_X | MYOSD_B;
+                    btnStates[BTN_B] = BUTTON_PRESS;
+                    btnStates[BTN_X] = BUTTON_PRESS;
+                    btnStates[BTN_A] = BUTTON_PRESS;
+                }
+                else
+                {
+                    myosd_pad_status |= MYOSD_A;
+                    btnStates[BTN_A] = BUTTON_PRESS;
+                }
+                buttonTouched = YES;
+                //NSLog(@"MYOSD_A");
+            }
+            else if (buttonViews[BTN_B] != nil && !buttonViews[BTN_B].hidden && MyCGRectContainsPoint(rInput[BTN_B_RECT], point)) {
+                myosd_pad_status |= MYOSD_B;
+                btnStates[BTN_B] = BUTTON_PRESS;
+                buttonTouched = YES;
+                //NSLog(@"MYOSD_B");
+            }
+            else if (buttonViews[BTN_A] != nil &&
+                     buttonViews[BTN_Y] != nil &&
+                     !buttonViews[BTN_A].hidden &&
+                     !buttonViews[BTN_Y].hidden &&
+                     MyCGRectContainsPoint(rInput[BTN_A_Y_RECT], point)) {
+                myosd_pad_status |= MYOSD_Y | MYOSD_A;
+                btnStates[BTN_Y] = BUTTON_PRESS;
+                btnStates[BTN_A] = BUTTON_PRESS;
+                buttonTouched = YES;
+                //NSLog(@"MYOSD_Y | MYOSD_A");
+            }
+            else if (buttonViews[BTN_X] != nil &&
+                     buttonViews[BTN_A] != nil &&
+                     !buttonViews[BTN_X].hidden &&
+                     !buttonViews[BTN_A].hidden &&
+                     MyCGRectContainsPoint(rInput[BTN_X_A_RECT], point)) {
+                
+                myosd_pad_status |= MYOSD_X | MYOSD_A;
+                btnStates[BTN_A] = BUTTON_PRESS;
+                btnStates[BTN_X] = BUTTON_PRESS;
+                buttonTouched = YES;
+                //NSLog(@"MYOSD_X | MYOSD_A");
+            }
+            else if (buttonViews[BTN_Y] != nil &&
+                     buttonViews[BTN_B] != nil &&
+                     !buttonViews[BTN_Y].hidden &&
+                     !buttonViews[BTN_B].hidden &&
+                     MyCGRectContainsPoint(rInput[BTN_B_Y_RECT], point)) {
+                myosd_pad_status |= MYOSD_Y | MYOSD_B;
+                btnStates[BTN_B] = BUTTON_PRESS;
+                btnStates[BTN_Y] = BUTTON_PRESS;
+                buttonTouched = YES;
+                //NSLog(@"MYOSD_Y | MYOSD_B");
+            }
+            else if (!buttonViews[BTN_B].hidden &&
+                     !buttonViews[BTN_X].hidden &&
+                     MyCGRectContainsPoint(rInput[BTN_B_X_RECT], point)) {
+                if(!g_pref_BplusX /*&& g_pref_land_num_buttons>=3*/)
+                {
+                    myosd_pad_status |= MYOSD_X | MYOSD_B;
+                    btnStates[BTN_B] = BUTTON_PRESS;
+                    btnStates[BTN_X] = BUTTON_PRESS;
+                    buttonTouched = YES;
+                }
+                //NSLog(@"MYOSD_X | MYOSD_B");
+            }
+            else if (MyCGRectContainsPoint(rInput[BTN_SELECT_RECT], point)) {
+                //NSLog(@"MYOSD_SELECT");
+                myosd_pad_status |= MYOSD_SELECT;
+                btnStates[BTN_SELECT] = BUTTON_PRESS;
+                buttonTouched = YES;
+                if(isGridlee && (myosd_pad_status & MYOSD_START))
+                    myosd_pad_status &= ~MYOSD_START;
+                
+            }
+            else if (MyCGRectContainsPoint(rInput[BTN_START_RECT], point)) {
+                //NSLog(@"MYOSD_START");
+                myosd_pad_status |= MYOSD_START;
+                btnStates[BTN_START] = BUTTON_PRESS;
+                buttonTouched = YES;
+                if(isGridlee && (myosd_pad_status & MYOSD_SELECT))
+                    myosd_pad_status &= ~MYOSD_SELECT;
+            }
+            else if (buttonViews[BTN_L1] != nil && !buttonViews[BTN_L1].hidden && MyCGRectContainsPoint(rInput[BTN_L1_RECT], point)) {
+                //NSLog(@"MYOSD_L");
+                myosd_pad_status |= MYOSD_L1;
+                btnStates[BTN_L1] = BUTTON_PRESS;
+                buttonTouched = YES;
+            }
+            else if (buttonViews[BTN_R1] != nil && !buttonViews[BTN_R1].hidden && MyCGRectContainsPoint(rInput[BTN_R1_RECT], point)) {
+                //NSLog(@"MYOSD_R");
+                myosd_pad_status |= MYOSD_R1;
+                btnStates[BTN_R1] = BUTTON_PRESS;
+                buttonTouched = YES;
+            }
+            else if (buttonViews[BTN_L2] != nil && !buttonViews[BTN_L2].hidden && MyCGRectContainsPoint(rInput[BTN_L2_RECT], point)) {
+                //NSLog(@"MYOSD_L2");
+                if(isGridlee)continue;
+                btnStates[BTN_L2] = BUTTON_PRESS;
+                buttonTouched = YES;
+                exit_status = 1;
+            }
+            else if (buttonViews[BTN_R2] != nil && !buttonViews[BTN_R2].hidden && MyCGRectContainsPoint(rInput[BTN_R2_RECT], point)) {
+                //NSLog(@"MYOSD_R2");
+                if(isGridlee)continue;
+                btnStates[BTN_R2] = BUTTON_PRESS;
+                buttonTouched = YES;
+            }
+            else if (MyCGRectContainsPoint(rInput[BTN_MENU_RECT], point)) {
+                /*
+                 myosd_pad_status |= MYOSD_SELECT;
+                 btnStates[BTN_SELECT] = BUTTON_PRESS;
+                 myosd_pad_status |= MYOSD_START;
+                 btnStates[BTN_START] = BUTTON_PRESS;
+                 */
+            } else if ( myosd_light_gun == 1 && g_pref_lightgun_enabled ) {
+                [self handleLightgunTouchesBegan:touches];
+            }
+            
+        }
+        else
+        {
+            if(touch == stickTouch)
+            {
+                if(g_pref_input_touch_type == TOUCH_INPUT_DPAD)
+                {
+                    myosd_pad_status &= ~MYOSD_UP;
+                    myosd_pad_status &= ~MYOSD_DOWN;
+                    myosd_pad_status &= ~MYOSD_LEFT;
+                    myosd_pad_status &= ~MYOSD_RIGHT;
+                    dpad_state = DPAD_NONE;
+                }
+                else
+                {
+                    [analogStickView analogTouches:touch withEvent:event];
+                    stickWasTouched = YES;
+                }
+                stickTouch = nil;
+            }
+            else if(exit_status==1)
+            {
+                exit_status=2;
+            }
+        }
+    }
+    
+    [self handle_MENU];
+    [self handle_DPAD];
+    
+    BOOL touchWasHandled = stickTouch != nil || buttonTouched;
+    NSLog(@"touchController touch stick touch =  %@ , buttonTouched = %@, wasStickTouched = %@",stickTouch != nil ? @"YES" : @"NO",buttonTouched ? @"YES" : @"NO",stickWasTouched ? @"YES" : @"NO");
+    return touchWasHandled;
+}
+
 
 #pragma mark - Lightgun Touch Handler
 

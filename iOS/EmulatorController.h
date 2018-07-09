@@ -156,7 +156,7 @@
 - (void)handle_DPAD;
 - (void)handle_MENU;
 
-- (void)touchesController:(NSSet *)touches withEvent:(UIEvent *)event;
+- (BOOL)touchesController:(NSSet *)touches withEvent:(UIEvent *)event;
 
 - (void)updateOptions;
 
