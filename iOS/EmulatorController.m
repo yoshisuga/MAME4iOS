@@ -1753,7 +1753,14 @@ void myosd_handle_turbo() {
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    
+    NSLog(@"👉👉👉👉👉👉 Touch Began!!! 👉👉👉👉👉👉👉");
+    BOOL wasTouchHandled = [self touchHandler:touches withEvent:event];
+    if ( myosd_mouse == 1 && !wasTouchHandled ) {
+        [self handleMouseTouchesBegan:touches];
+    }
+}
+
+-(BOOL)touchHandler:(NSSet *)touches withEvent:(UIEvent *)event {
     if(change_layout)
     {
         [layoutView handleTouches:touches withEvent: event];
@@ -1767,37 +1774,41 @@ void myosd_handle_turbo() {
         
         if ( myosd_light_gun == 1 && g_pref_lightgun_enabled ) {
             [self handleLightgunTouchesBegan:touches];
-            return;
+            return NO;
         }
         
         if(touch.phase == UITouchPhaseBegan)
-		{
-			[self runMenu];		
-	    }
+        {
+            [self runMenu];
+        }
     }
     else
     {
-        BOOL touchWasHandled = [self touchesController:touches withEvent:event];
-        if ( myosd_mouse == 1 && !touchWasHandled ) {
-            [self handleMouseTouchesBegan:touches];
-            return;
-        }
+        return [self touchesController:touches withEvent:event];
     }
+    return NO;
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
-    if ( myosd_mouse == 1 ) {
+    NSLog(@"👋👋👋👋👋👋👋 Touch Moved!!! 👋👋👋👋👋👋👋👋");
+    BOOL wasTouchHandled = [self touchHandler:touches withEvent:event];
+    if ( myosd_mouse == 1 && !wasTouchHandled ) {
         [self handleMouseTouchesMoved:touches];
     }
-    [self touchesBegan:touches withEvent:event];
+//    [self touchesBegan:touches withEvent:event];
 }
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
-    [self touchesBegan:touches withEvent:event];
+    NSLog(@"👊👊👊👊👊👊 Touch Cancelled!!! 👊👊👊👊👊👊");
+    BOOL wasTouchHandled = [self touchHandler:touches withEvent:event];
+    if ( myosd_mouse == 1 && !wasTouchHandled ) {
+        [self handleMouseTouchesBegan:touches];
+    }
 }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
-    [self touchesBegan:touches withEvent:event];
+    NSLog(@"🖐🖐🖐🖐🖐🖐🖐 Touch Ended!!! 🖐🖐🖐🖐🖐🖐");
+    [self touchHandler:touches withEvent:event];
     
     // light gun release?
     if ( myosd_light_gun == 1 && g_pref_lightgun_enabled ) {
@@ -2229,6 +2240,7 @@ void myosd_handle_turbo() {
 
 -(void) handleMouseTouchesBegan:(NSSet *)touches {
 //    NSUInteger touchcount = touches.count;
+    NSLog(@"🐁🐁🐁🐁🐁 Handle Mouse Touch Began!!! 🐁🐁🐁🐁🐁🐁");
     if ( screenView != nil ) {
         UITouch *touch = [[touches allObjects] objectAtIndex:0];
         mouseTouchStartLocation = [touch locationInView:screenView];
@@ -2237,13 +2249,14 @@ void myosd_handle_turbo() {
 
 - (void) handleMouseTouchesMoved:(NSSet *)touches {
 //    NSUInteger touchcount = touches.count;
+    NSLog(@"🐁🐁🐁🐁🐁 Handle Mouse Touch Moved!!! 🐁🐁🐁🐁🐁🐁🕹🕹🕹🕹🕹");
     if ( screenView != nil && !CGPointEqualToPoint(mouseTouchStartLocation, mouseInitialLocation) ) {
         UITouch *touch = [[touches allObjects] objectAtIndex:0];
         CGPoint currentLocation = [touch locationInView:screenView];
         CGFloat dx = currentLocation.x - mouseTouchStartLocation.x;
         CGFloat dy = currentLocation.y - mouseTouchStartLocation.y;
-        mouse_x[0] = dx * 500.0;
-        mouse_y[0] = dy * 500.0;
+        mouse_x[0] = dx * 100.0;
+        mouse_y[0] = dy * 100.0;
         NSLog(@"mouse x = %f , mouse y = %f",mouse_x[0],mouse_y[0]);
     }
 }
