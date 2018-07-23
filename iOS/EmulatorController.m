@@ -1293,38 +1293,40 @@ void myosd_handle_turbo() {
         }
     }
    
-   for(i=0; i<NUM_BUTTONS;i++)
-   {
-
-      if(!change_layout &&  (g_device_is_landscape || (!g_device_is_landscape && g_pref_full_screen_port)))
-      {
-          if(i==BTN_Y && (g_pref_full_num_buttons < 4 || !myosd_inGame))continue;
-          if(i==BTN_A && (g_pref_full_num_buttons < 3 || !myosd_inGame))continue;
-          if(i==BTN_X && (g_pref_full_num_buttons < 2 && myosd_inGame))continue;
-          if(i==BTN_B && (g_pref_full_num_buttons < 1 && myosd_inGame))continue;
-                            
-          if(i==BTN_L1 && (g_pref_hide_LR || !myosd_inGame))continue;
-          if(i==BTN_R1 && (g_pref_hide_LR || !myosd_inGame))continue;
-      }
-       
-      if(isGridlee && (i==BTN_L2 || i==BTN_R2))
-          continue;
-   
-
-      name = [NSString stringWithFormat:@"./SKIN_%d/%@",g_pref_skin,nameImgButton_NotPress[i]];   
-      buttonViews[i] = [ [ UIImageView alloc ] initWithImage:[self loadImage:name]];
-      buttonViews[i].frame = rButtonImages[i];
-
-      if((g_device_is_landscape && (g_pref_full_screen_land /*|| i==BTN_Y || i==BTN_A*/)) || (!g_device_is_landscape && g_pref_full_screen_port))      
-         [buttonViews[i] setAlpha:((float)g_controller_opacity / 100.0f)];
-
-       if(g_device_is_landscape && !g_pref_full_screen_land && g_isIphone5 /*&& skin_data==1*/ && (i==BTN_Y || i==BTN_A || i==BTN_L1 || i==BTN_R1))
-          [buttonViews[i] setAlpha:((float)g_controller_opacity / 100.0f)];
-       
-      [self.view addSubview: buttonViews[i]];
-      btnStates[i] = old_btnStates[i] = BUTTON_NO_PRESS; 
-   }
-       
+    BOOL touch_buttons_disabled = myosd_mouse == 1 && g_pref_touch_analog_enabled && g_pref_touch_analog_hide_buttons;
+    for(i=0; i<NUM_BUTTONS;i++)
+    {
+        if(!change_layout &&  (g_device_is_landscape || (!g_device_is_landscape && g_pref_full_screen_port)))
+        {
+            if(i==BTN_Y && (g_pref_full_num_buttons < 4 || !myosd_inGame))continue;
+            if(i==BTN_A && (g_pref_full_num_buttons < 3 || !myosd_inGame))continue;
+            if(i==BTN_X && (g_pref_full_num_buttons < 2 && myosd_inGame))continue;
+            if(i==BTN_B && (g_pref_full_num_buttons < 1 && myosd_inGame))continue;
+            
+            if(i==BTN_L1 && (g_pref_hide_LR || !myosd_inGame))continue;
+            if(i==BTN_R1 && (g_pref_hide_LR || !myosd_inGame))continue;
+            
+            if (touch_buttons_disabled && (i != BTN_SELECT && i != BTN_START && i != BTN_L2 && i != BTN_R2 )) continue;
+        }
+        
+        if(isGridlee && (i==BTN_L2 || i==BTN_R2))
+            continue;
+        
+        
+        name = [NSString stringWithFormat:@"./SKIN_%d/%@",g_pref_skin,nameImgButton_NotPress[i]];
+        buttonViews[i] = [ [ UIImageView alloc ] initWithImage:[self loadImage:name]];
+        buttonViews[i].frame = rButtonImages[i];
+        
+        if((g_device_is_landscape && (g_pref_full_screen_land /*|| i==BTN_Y || i==BTN_A*/)) || (!g_device_is_landscape && g_pref_full_screen_port))
+            [buttonViews[i] setAlpha:((float)g_controller_opacity / 100.0f)];
+        
+        if(g_device_is_landscape && !g_pref_full_screen_land && g_isIphone5 /*&& skin_data==1*/ && (i==BTN_Y || i==BTN_A || i==BTN_L1 || i==BTN_R1))
+            [buttonViews[i] setAlpha:((float)g_controller_opacity / 100.0f)];
+        
+        [self.view addSubview: buttonViews[i]];
+        btnStates[i] = old_btnStates[i] = BUTTON_NO_PRESS;
+    }
+    
 }
 
 - (void)buildPortraitImageBack {
@@ -2039,22 +2041,27 @@ void myosd_handle_turbo() {
             
             if(touch == stickTouch) continue;
             
+            BOOL touch_buttons_disabled = myosd_mouse == 1 && g_pref_touch_analog_enabled && g_pref_touch_analog_hide_buttons;
+            
             if (buttonViews[BTN_Y] != nil &&
-                !buttonViews[BTN_Y].hidden && MyCGRectContainsPoint(rInput[BTN_Y_RECT], point)) {
+                !buttonViews[BTN_Y].hidden && MyCGRectContainsPoint(rInput[BTN_Y_RECT], point) &&
+                !touch_buttons_disabled) {
                 myosd_pad_status |= MYOSD_Y;
                 btnStates[BTN_Y] = BUTTON_PRESS;
                 buttonTouched = YES;
                 //NSLog(@"MYOSD_Y");
             }
             else if (buttonViews[BTN_X] != nil &&
-                     !buttonViews[BTN_X].hidden && MyCGRectContainsPoint(rInput[BTN_X_RECT], point)) {
+                     !buttonViews[BTN_X].hidden && MyCGRectContainsPoint(rInput[BTN_X_RECT], point) &&
+                     !touch_buttons_disabled) {
                 myosd_pad_status |= MYOSD_X;
                 btnStates[BTN_X] = BUTTON_PRESS;
                 buttonTouched = YES;
                 //NSLog(@"MYOSD_X");
             }
             else if (buttonViews[BTN_A] != nil &&
-                     !buttonViews[BTN_A].hidden && MyCGRectContainsPoint(rInput[BTN_A_RECT], point)) {
+                     !buttonViews[BTN_A].hidden && MyCGRectContainsPoint(rInput[BTN_A_RECT], point) &&
+                     !touch_buttons_disabled) {
                 if(g_pref_BplusX)
                 {
                     myosd_pad_status |= MYOSD_X | MYOSD_B;
@@ -2070,7 +2077,8 @@ void myosd_handle_turbo() {
                 buttonTouched = YES;
                 //NSLog(@"MYOSD_A");
             }
-            else if (buttonViews[BTN_B] != nil && !buttonViews[BTN_B].hidden && MyCGRectContainsPoint(rInput[BTN_B_RECT], point)) {
+            else if (buttonViews[BTN_B] != nil && !buttonViews[BTN_B].hidden && MyCGRectContainsPoint(rInput[BTN_B_RECT], point) &&
+                     !touch_buttons_disabled) {
                 myosd_pad_status |= MYOSD_B;
                 btnStates[BTN_B] = BUTTON_PRESS;
                 buttonTouched = YES;
@@ -2080,7 +2088,8 @@ void myosd_handle_turbo() {
                      buttonViews[BTN_Y] != nil &&
                      !buttonViews[BTN_A].hidden &&
                      !buttonViews[BTN_Y].hidden &&
-                     MyCGRectContainsPoint(rInput[BTN_A_Y_RECT], point)) {
+                     MyCGRectContainsPoint(rInput[BTN_A_Y_RECT], point) &&
+                     !touch_buttons_disabled) {
                 myosd_pad_status |= MYOSD_Y | MYOSD_A;
                 btnStates[BTN_Y] = BUTTON_PRESS;
                 btnStates[BTN_A] = BUTTON_PRESS;
@@ -2091,7 +2100,8 @@ void myosd_handle_turbo() {
                      buttonViews[BTN_A] != nil &&
                      !buttonViews[BTN_X].hidden &&
                      !buttonViews[BTN_A].hidden &&
-                     MyCGRectContainsPoint(rInput[BTN_X_A_RECT], point)) {
+                     MyCGRectContainsPoint(rInput[BTN_X_A_RECT], point) &&
+                     !touch_buttons_disabled) {
                 
                 myosd_pad_status |= MYOSD_X | MYOSD_A;
                 btnStates[BTN_A] = BUTTON_PRESS;
@@ -2103,7 +2113,8 @@ void myosd_handle_turbo() {
                      buttonViews[BTN_B] != nil &&
                      !buttonViews[BTN_Y].hidden &&
                      !buttonViews[BTN_B].hidden &&
-                     MyCGRectContainsPoint(rInput[BTN_B_Y_RECT], point)) {
+                     MyCGRectContainsPoint(rInput[BTN_B_Y_RECT], point) &&
+                     !touch_buttons_disabled) {
                 myosd_pad_status |= MYOSD_Y | MYOSD_B;
                 btnStates[BTN_B] = BUTTON_PRESS;
                 btnStates[BTN_Y] = BUTTON_PRESS;
@@ -2112,7 +2123,8 @@ void myosd_handle_turbo() {
             }
             else if (!buttonViews[BTN_B].hidden &&
                      !buttonViews[BTN_X].hidden &&
-                     MyCGRectContainsPoint(rInput[BTN_B_X_RECT], point)) {
+                     MyCGRectContainsPoint(rInput[BTN_B_X_RECT], point) &&
+                     !touch_buttons_disabled) {
                 if(!g_pref_BplusX /*&& g_pref_land_num_buttons>=3*/)
                 {
                     myosd_pad_status |= MYOSD_X | MYOSD_B;
@@ -2139,13 +2151,13 @@ void myosd_handle_turbo() {
                 if(isGridlee && (myosd_pad_status & MYOSD_SELECT))
                     myosd_pad_status &= ~MYOSD_SELECT;
             }
-            else if (buttonViews[BTN_L1] != nil && !buttonViews[BTN_L1].hidden && MyCGRectContainsPoint(rInput[BTN_L1_RECT], point)) {
+            else if (buttonViews[BTN_L1] != nil && !buttonViews[BTN_L1].hidden && MyCGRectContainsPoint(rInput[BTN_L1_RECT], point) && !touch_buttons_disabled) {
                 //NSLog(@"MYOSD_L");
                 myosd_pad_status |= MYOSD_L1;
                 btnStates[BTN_L1] = BUTTON_PRESS;
                 buttonTouched = YES;
             }
-            else if (buttonViews[BTN_R1] != nil && !buttonViews[BTN_R1].hidden && MyCGRectContainsPoint(rInput[BTN_R1_RECT], point)) {
+            else if (buttonViews[BTN_R1] != nil && !buttonViews[BTN_R1].hidden && MyCGRectContainsPoint(rInput[BTN_R1_RECT], point) && !touch_buttons_disabled ) {
                 //NSLog(@"MYOSD_R");
                 myosd_pad_status |= MYOSD_R1;
                 btnStates[BTN_R1] = BUTTON_PRESS;
@@ -2158,7 +2170,7 @@ void myosd_handle_turbo() {
                 buttonTouched = YES;
                 exit_status = 1;
             }
-            else if (buttonViews[BTN_R2] != nil && !buttonViews[BTN_R2].hidden && MyCGRectContainsPoint(rInput[BTN_R2_RECT], point)) {
+            else if (buttonViews[BTN_R2] != nil && !buttonViews[BTN_R2].hidden && MyCGRectContainsPoint(rInput[BTN_R2_RECT], point) ) {
                 //NSLog(@"MYOSD_R2");
                 if(isGridlee)continue;
                 btnStates[BTN_R2] = BUTTON_PRESS;
