@@ -77,6 +77,11 @@
 @synthesize lightgunEnabled;
 @synthesize lightgunBottomScreenReload;
 
+@synthesize touchAnalogEnabled;
+@synthesize touchAnalogSensitivity;
+@synthesize touchAnalogHideTouchButtons;
+@synthesize touchAnalogHideTouchDirectionalPad;
+
 @synthesize skinValue;
 
 @synthesize btDeadZoneValue;
@@ -273,6 +278,11 @@
         _turboBEnabled = 0;
         _turboLEnabled = 0;
         _turboREnabled = 0;
+        
+        touchAnalogEnabled = 1;
+        touchAnalogHideTouchDirectionalPad = 1;
+        touchAnalogHideTouchButtons = 0;
+        touchAnalogSensitivity = 500.0;
 	}
 	else
 	{
@@ -291,6 +301,10 @@
         scanlineFilterLand =  [[[optionsArray objectAtIndex:0] objectForKey:@"ScanlineFilterLand"] intValue];
         lightgunEnabled = [[[optionsArray objectAtIndex:0] objectForKey:@"lightgunEnabled"] intValue];
         lightgunBottomScreenReload = [[[optionsArray objectAtIndex:0] objectForKey:@"lightgunBottomScreenReload"] intValue];
+        touchAnalogEnabled = [[[optionsArray objectAtIndex:0] objectForKey:@"touchAnalogEnabled"] intValue];
+        touchAnalogHideTouchDirectionalPad = [[[optionsArray objectAtIndex:0] objectForKey:@"touchAnalogHideTouchDirectionalPad"] intValue];
+        touchAnalogHideTouchButtons = [[[optionsArray objectAtIndex:0] objectForKey:@"touchAnalogHideTouchButtons"] intValue];
+        touchAnalogSensitivity = [[[optionsArray objectAtIndex:0] objectForKey:@"touchAnalogSensitivity"] floatValue];
         showFPS =  [[[optionsArray objectAtIndex:0] objectForKey:@"showFPS"] intValue];
         showINFO =  [[[optionsArray objectAtIndex:0] objectForKey:@"showINFO"] intValue];
         fourButtonsLand =  [[[optionsArray objectAtIndex:0] objectForKey:@"fourButtonsLand"] intValue];
@@ -402,6 +416,10 @@
                              [NSString stringWithFormat:@"%d", lightgunEnabled],
                                  @"lightgunEnabled",
                              [NSString stringWithFormat:@"%d", lightgunBottomScreenReload], @"lightgunBottomScreenReload",
+                             [NSString stringWithFormat:@"%d", touchAnalogEnabled], @"touchAnalogEnabled",
+                             [NSString stringWithFormat:@"%d", touchAnalogHideTouchDirectionalPad], @"touchAnalogHideTouchDirectionalPad",
+                             [NSString stringWithFormat:@"%d", touchAnalogHideTouchButtons], @"touchAnalogHideTouchButtons",
+                             [NSString stringWithFormat:@"%f", touchAnalogSensitivity], @"touchAnalogSensitivity",
 							 [NSString stringWithFormat:@"%d", showFPS], @"showFPS",							 
 							 [NSString stringWithFormat:@"%d", showINFO], @"showINFO",							 
 							 [NSString stringWithFormat:@"%d", fourButtonsLand], @"fourButtonsLand",							 
@@ -496,7 +514,7 @@
 	plistData = [NSPropertyListSerialization dataFromPropertyList:optionsArray				 
 										     format:NSPropertyListBinaryFormat_v1_0				 
 										     errorDescription:&error];	
-	if(plistData)		
+	if(plistData)
 	{
 	    //NSError*err;
 	

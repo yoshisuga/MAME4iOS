@@ -87,6 +87,11 @@
         switchTurboLButtonEnabled = nil;
         switchTurboRButtonEnabled = nil;
         
+        switchTouchAnalogEnabled = nil;
+        switchTouchAnalogHideTouchButtons = nil;
+        switchTouchAnalogHideTouchDirectionalPad = nil;
+        sliderTouchAnalogSensitivity = nil;
+        
         self.title = @"Input Options";
     }
     return self;
@@ -115,6 +120,10 @@
     [switchTurboLButtonEnabled release];
     [switchTurboRButtonEnabled release];
     [switchLightgunBottomScreenReload release];
+    [switchTouchAnalogEnabled release];
+    [switchTouchAnalogHideTouchDirectionalPad release];
+    [switchTouchAnalogHideTouchButtons release];
+    [sliderTouchAnalogSensitivity release];
     
     [super dealloc];
 }
@@ -127,7 +136,7 @@
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     
-    return 9;
+    return 10;
 }
 
 - (void)loadView {
@@ -154,6 +163,7 @@
         case 6: return 3-!g_btjoy_available;
         case 7: return 2;
         case 8: return 6;
+        case 9: return 4;
     }
     return -1;
 }
@@ -171,6 +181,7 @@
         case 6: return @"Dead Zone";
         case 7: return @"Touch Lightgun";
         case 8: return @"Turbo Mode Toggle";
+        case 9: return @"Touch Analog";
     }
     return @"Error!";
 }
@@ -290,6 +301,7 @@
             cell.detailTextLabel.text = [arrayControlType objectAtIndex:op.controltype];
             break;
         }
+            break;
         case 4:
         {
             switch (indexPath.row)
@@ -447,6 +459,63 @@
                     break;
                 }
             }
+            break;
+        }
+        case 9:
+        {
+            switch (indexPath.row)
+            {
+                case 0:
+                {
+                    cell.textLabel.text = @"Enabled";
+                    [switchTouchAnalogEnabled release];
+                    switchTouchAnalogEnabled = [[UISwitch alloc] initWithFrame:CGRectZero];
+                    [switchTouchAnalogEnabled setOn:[op touchAnalogEnabled]];
+                    [switchTouchAnalogEnabled addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                    cell.accessoryView = switchTouchAnalogEnabled;
+                    break;
+                }
+                case 1:
+                {
+                    cell.textLabel.text = @"Sensitivity";
+                    [sliderTouchAnalogSensitivity release];
+                    sliderTouchAnalogSensitivity = [[UISlider alloc] initWithFrame:CGRectZero];
+                    [sliderTouchAnalogSensitivity setMinimumValue:100.0];
+                    [sliderTouchAnalogSensitivity setMaximumValue:1000.0];
+                    [sliderTouchAnalogSensitivity setValue:[op touchAnalogSensitivity]];
+                    [sliderTouchAnalogSensitivity addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                    sliderTouchAnalogSensitivity.translatesAutoresizingMaskIntoConstraints = NO;
+                    [cell.contentView addSubview:sliderTouchAnalogSensitivity];
+                    UIView *cellContentView = cell.contentView;
+                    NSDictionary *viewBindings = NSDictionaryOfVariableBindings(cellContentView,sliderTouchAnalogSensitivity);
+                    [cell.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:[sliderTouchAnalogSensitivity]-4@750-|" options:0 metrics:nil views:viewBindings]];
+                    [cell.contentView addConstraint:[NSLayoutConstraint constraintWithItem:sliderTouchAnalogSensitivity attribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationEqual toItem:cell.contentView attribute:NSLayoutAttributeCenterY multiplier:1.0 constant:0.0]];
+                    [sliderTouchAnalogSensitivity addConstraint:[NSLayoutConstraint constraintWithItem:sliderTouchAnalogSensitivity attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:100.0]];
+                    break;
+                }
+                case 2:
+                {
+                    cell.textLabel.text = @"Hide Touch D-Pad";
+                    [switchTouchAnalogHideTouchDirectionalPad release];
+                    switchTouchAnalogHideTouchDirectionalPad = [[UISwitch alloc] initWithFrame:CGRectZero];
+                    [switchTouchAnalogHideTouchDirectionalPad setOn:[op touchAnalogHideTouchDirectionalPad]];
+                    [switchTouchAnalogHideTouchDirectionalPad addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                    cell.accessoryView = switchTouchAnalogHideTouchDirectionalPad;
+                    break;
+                }
+                case 3:
+                {
+                    cell.textLabel.text = @"Hide Touch Buttons";
+                    [switchTouchAnalogHideTouchButtons release];
+                    switchTouchAnalogHideTouchButtons = [[UISwitch alloc] initWithFrame:CGRectZero];
+                    [switchTouchAnalogHideTouchButtons setOn:[op touchAnalogHideTouchButtons]];
+                    [switchTouchAnalogHideTouchButtons addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                    cell.accessoryView = switchTouchAnalogHideTouchButtons;
+                    break;
+                }
+                break;
+            }
+            break;
         }
     }
     
@@ -483,6 +552,14 @@
         op.turboLEnabled = [switchTurboLButtonEnabled isOn];
     if(sender == switchTurboRButtonEnabled)
         op.turboREnabled = [switchTurboRButtonEnabled isOn];
+    if (sender == switchTouchAnalogEnabled)
+        op.touchAnalogEnabled = [switchTouchAnalogEnabled isOn];
+    if(sender == sliderTouchAnalogSensitivity)
+        op.touchAnalogSensitivity = [sliderTouchAnalogSensitivity value];
+    if (sender == switchTouchAnalogHideTouchButtons)
+        op.touchAnalogHideTouchButtons = [switchTouchAnalogHideTouchButtons isOn];
+    if (sender == switchTouchAnalogHideTouchDirectionalPad)
+        op.touchAnalogHideTouchDirectionalPad = [switchTouchAnalogHideTouchDirectionalPad isOn];    
 
     [op saveOptions];
 	[op release];

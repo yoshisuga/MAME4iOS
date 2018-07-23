@@ -75,6 +75,11 @@
     UISwitch *switchTurboBButtonEnabled;
     UISwitch *switchTurboLButtonEnabled;
     UISwitch *switchTurboRButtonEnabled;
+    
+    UISwitch *switchTouchAnalogEnabled;
+    UISwitch *switchTouchAnalogHideTouchButtons;
+    UISwitch *switchTouchAnalogHideTouchDirectionalPad;
+    UISlider *sliderTouchAnalogSensitivity;
 }
 
 @property (nonatomic, assign) EmulatorController *emuController;

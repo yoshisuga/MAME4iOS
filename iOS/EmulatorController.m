@@ -127,6 +127,11 @@ int g_pref_overscanTVOUT = 1;
 int g_pref_lightgun_enabled = 1;
 int g_pref_lightgun_bottom_reload = 0;
 
+int g_pref_touch_analog_enabled = 1;
+int g_pref_touch_analog_hide_dpad = 1;
+int g_pref_touch_analog_hide_buttons = 0;
+float g_pref_touch_analog_sensitivity = 500.0;
+
 int g_skin_data = 1;
 
 float g_buttons_size = 1.0f;
@@ -636,6 +641,11 @@ void* app_Thread_Start(void* args)
     turboBtnEnabled[BTN_B] = [op turboBEnabled];
     turboBtnEnabled[BTN_L1] = [op turboLEnabled];
     turboBtnEnabled[BTN_R1] = [op turboREnabled];
+    
+    g_pref_touch_analog_enabled = [op touchAnalogEnabled];
+    g_pref_touch_analog_hide_dpad = [op touchAnalogHideTouchDirectionalPad];
+    g_pref_touch_analog_hide_buttons = [op touchAnalogHideTouchButtons];
+    g_pref_touch_analog_sensitivity = [op touchAnalogSensitivity];
     
     [op release];
 }
@@ -2255,9 +2265,10 @@ void myosd_handle_turbo() {
         CGPoint currentLocation = [touch locationInView:screenView];
         CGFloat dx = currentLocation.x - mouseTouchStartLocation.x;
         CGFloat dy = currentLocation.y - mouseTouchStartLocation.y;
-        mouse_x[0] = dx * 100.0;
-        mouse_y[0] = dy * 100.0;
+        mouse_x[0] = dx * g_pref_touch_analog_sensitivity;
+        mouse_y[0] = dy * g_pref_touch_analog_sensitivity;
         NSLog(@"mouse x = %f , mouse y = %f",mouse_x[0],mouse_y[0]);
+        mouseTouchStartLocation = [touch locationInView:screenView];
     }
 }
   		
