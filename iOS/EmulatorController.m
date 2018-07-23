@@ -1118,8 +1118,9 @@ void* app_Thread_Start(void* args)
     }
     prev_myosd_light_gun = myosd_light_gun;
     
-    if ( prev_myosd_mouse == 0 && myosd_mouse == 1 ) {
+    if ( prev_myosd_mouse == 0 && myosd_mouse == 1 && g_pref_touch_analog_enabled ) {
         [self.view makeToast:@"Touch Mouse Mode Enabled!" duration:2.0 position:CSToastPositionCenter style:toastStyle];
+        [self buildTouchControllerViews];
     }
     
     areControlsHidden = NO;
@@ -1269,25 +1270,28 @@ void myosd_handle_turbo() {
    if(g_joy_used && ((!g_device_is_landscape && g_pref_full_screen_port) || (g_device_is_landscape && g_pref_full_screen_land)))
      return;
    
-   NSString *name;    
-   
-   if(g_pref_input_touch_type == TOUCH_INPUT_DPAD)
-   {
-	   name = [NSString stringWithFormat:@"./SKIN_%d/%@",g_pref_skin,nameImgDPad[DPAD_NONE]];
-	   dpadView = [ [ UIImageView alloc ] initWithImage:[self loadImage:name]];
-	   dpadView.frame = rDPadImage;
-	   if( (!g_device_is_landscape && g_pref_full_screen_port) || (g_device_is_landscape && g_pref_full_screen_land))
-	         [dpadView setAlpha:((float)g_controller_opacity / 100.0f)];  
-	   [self.view addSubview: dpadView];
-	   dpad_state = old_dpad_state = DPAD_NONE;
-   }
-   else
-   {   
-       //analogStickView
-	   analogStickView = [[AnalogStickView alloc] initWithFrame:rStickWindow withEmuController:self];
-	   [self.view addSubview:analogStickView];  
-	   [analogStickView setNeedsDisplay];
-   }
+   NSString *name;
+    
+    BOOL touch_dpad_disabled = myosd_mouse == 1 && g_pref_touch_analog_enabled && g_pref_touch_analog_hide_dpad;
+    if ( !touch_dpad_disabled || !myosd_inGame ) {
+        if(g_pref_input_touch_type == TOUCH_INPUT_DPAD)
+        {
+            name = [NSString stringWithFormat:@"./SKIN_%d/%@",g_pref_skin,nameImgDPad[DPAD_NONE]];
+            dpadView = [ [ UIImageView alloc ] initWithImage:[self loadImage:name]];
+            dpadView.frame = rDPadImage;
+            if( (!g_device_is_landscape && g_pref_full_screen_port) || (g_device_is_landscape && g_pref_full_screen_land))
+                [dpadView setAlpha:((float)g_controller_opacity / 100.0f)];
+            [self.view addSubview: dpadView];
+            dpad_state = old_dpad_state = DPAD_NONE;
+        }
+        else
+        {
+            //analogStickView
+            analogStickView = [[AnalogStickView alloc] initWithFrame:rStickWindow withEmuController:self];
+            [self.view addSubview:analogStickView];
+            [analogStickView setNeedsDisplay];
+        }
+    }
    
    for(i=0; i<NUM_BUTTONS;i++)
    {
@@ -1765,7 +1769,7 @@ void myosd_handle_turbo() {
 {
     NSLog(@"👉👉👉👉👉👉 Touch Began!!! 👉👉👉👉👉👉👉");
     BOOL wasTouchHandled = [self touchHandler:touches withEvent:event];
-    if ( myosd_mouse == 1 && !wasTouchHandled ) {
+    if ( g_pref_touch_analog_enabled && myosd_mouse == 1 && !wasTouchHandled ) {
         [self handleMouseTouchesBegan:touches];
     }
 }
@@ -1802,7 +1806,7 @@ void myosd_handle_turbo() {
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
     NSLog(@"👋👋👋👋👋👋👋 Touch Moved!!! 👋👋👋👋👋👋👋👋");
     BOOL wasTouchHandled = [self touchHandler:touches withEvent:event];
-    if ( myosd_mouse == 1 && !wasTouchHandled ) {
+    if ( g_pref_touch_analog_enabled && myosd_mouse == 1 && !wasTouchHandled ) {
         [self handleMouseTouchesMoved:touches];
     }
 //    [self touchesBegan:touches withEvent:event];
@@ -1811,7 +1815,7 @@ void myosd_handle_turbo() {
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
     NSLog(@"👊👊👊👊👊👊 Touch Cancelled!!! 👊👊👊👊👊👊");
     BOOL wasTouchHandled = [self touchHandler:touches withEvent:event];
-    if ( myosd_mouse == 1 && !wasTouchHandled ) {
+    if ( g_pref_touch_analog_enabled && myosd_mouse == 1 && !wasTouchHandled ) {
         [self handleMouseTouchesBegan:touches];
     }
 }
@@ -1828,7 +1832,7 @@ void myosd_handle_turbo() {
         myosd_joy_status[0] &= ~MYOSD_X;
     }
     
-    if ( myosd_mouse == 1 ) {
+    if ( g_pref_touch_analog_enabled && myosd_mouse == 1 ) {
         mouse_x[0] = 0.0f;
         mouse_y[0] = 0.0f;
     }
@@ -1880,8 +1884,8 @@ void myosd_handle_turbo() {
         {
             struct CGPoint point;
             point = [touch locationInView:self.view];
-            
-            if(g_pref_input_touch_type == TOUCH_INPUT_DPAD && myosd_mouse != 1 )
+            BOOL touch_dpad_disabled = myosd_mouse == 1 && g_pref_touch_analog_enabled && g_pref_touch_analog_hide_dpad;
+            if(g_pref_input_touch_type == TOUCH_INPUT_DPAD && !touch_dpad_disabled )
             {
                 if (MyCGRectContainsPoint(rInput[DPAD_UP_RECT], point) && !STICK2WAY) {
                     //NSLog(@"MYOSD_UP");
@@ -2022,7 +2026,7 @@ void myosd_handle_turbo() {
                     stickTouch = touch;
                 }
             }
-            else if ( myosd_mouse != 1 )
+            else
             {
                 if(MyCGRectContainsPoint(analogStickView.frame, point) || stickTouch == touch)
                 {
