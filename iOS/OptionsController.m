@@ -82,6 +82,8 @@
 @synthesize touchAnalogHideTouchButtons;
 @synthesize touchAnalogHideTouchDirectionalPad;
 
+@synthesize touchDirectionalEnabled;
+
 @synthesize skinValue;
 
 @synthesize btDeadZoneValue;
@@ -283,6 +285,8 @@
         touchAnalogHideTouchDirectionalPad = 1;
         touchAnalogHideTouchButtons = 0;
         touchAnalogSensitivity = 500.0;
+        
+        touchDirectionalEnabled = 0;
 	}
 	else
 	{
@@ -318,6 +322,8 @@
         _turboBEnabled = [[[optionsArray objectAtIndex:0] objectForKey:@"turboBEnabled"] intValue];
         _turboLEnabled = [[[optionsArray objectAtIndex:0] objectForKey:@"turboLEnabled"] intValue];
         _turboREnabled = [[[optionsArray objectAtIndex:0] objectForKey:@"turboREnabled"] intValue];
+        
+        touchDirectionalEnabled = [[[optionsArray objectAtIndex:0] objectForKey:@"touchDirectionalEnabled"] intValue];
         
         skinValue =  [[[optionsArray objectAtIndex:0] objectForKey:@"skinValue"] intValue];
         
@@ -431,6 +437,8 @@
                              [NSString stringWithFormat:@"%d", _turboBEnabled], @"turboBEnabled",
                              [NSString stringWithFormat:@"%d", _turboLEnabled], @"turboLEnabled",
                              [NSString stringWithFormat:@"%d", _turboREnabled], @"turboREnabled",
+                             
+                             [NSString stringWithFormat:@"%d", touchDirectionalEnabled], @"touchDirectionalEnabled",
                              
 							 [NSString stringWithFormat:@"%d", fullLand], @"fullLand",
 							 [NSString stringWithFormat:@"%d", fullPort], @"fullPort",

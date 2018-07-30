@@ -132,10 +132,12 @@
    @public int lightgunBottomScreenReload;
    @public int lightgunEnabled;
     
-@public int touchAnalogEnabled;
-@public CGFloat touchAnalogSensitivity;
-@public int touchAnalogHideTouchDirectionalPad;
-@public int touchAnalogHideTouchButtons;
+   @public int touchAnalogEnabled;
+   @public CGFloat touchAnalogSensitivity;
+   @public int touchAnalogHideTouchDirectionalPad;
+   @public int touchAnalogHideTouchButtons;
+    
+   @public int touchDirectionalEnabled;
     
    @public int turboXEnabled;
    @public int turboYEnabled;
@@ -246,6 +248,8 @@
 @property (readwrite,assign) CGFloat touchAnalogSensitivity;
 @property (readwrite,assign) int touchAnalogHideTouchDirectionalPad;
 @property (readwrite,assign) int touchAnalogHideTouchButtons;
+
+@property (readwrite,assign) int touchDirectionalEnabled;
 
 @property (readwrite,assign) int mainThreadType;
 @property (readwrite,assign) int videoThreadType;

@@ -92,6 +92,8 @@
         switchTouchAnalogHideTouchDirectionalPad = nil;
         sliderTouchAnalogSensitivity = nil;
         
+        switchTouchDirectionalEnabled = nil;
+        
         self.title = @"Input Options";
     }
     return self;
@@ -124,6 +126,7 @@
     [switchTouchAnalogHideTouchDirectionalPad release];
     [switchTouchAnalogHideTouchButtons release];
     [sliderTouchAnalogSensitivity release];
+    [switchTouchDirectionalEnabled release];
     
     [super dealloc];
 }
@@ -136,7 +139,7 @@
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     
-    return 10;
+    return 11;
 }
 
 - (void)loadView {
@@ -164,6 +167,7 @@
         case 7: return 2;
         case 8: return 6;
         case 9: return 4;
+        case 10: return 1;
     }
     return -1;
 }
@@ -182,6 +186,7 @@
         case 7: return @"Touch Lightgun";
         case 8: return @"Turbo Mode Toggle";
         case 9: return @"Touch Analog";
+        case 10: return @"Touch Directional Input";
     }
     return @"Error!";
 }
@@ -517,6 +522,16 @@
             }
             break;
         }
+        case 10:
+        {
+            cell.textLabel.text = @"Enabled";
+            [switchTouchDirectionalEnabled release];
+            switchTouchDirectionalEnabled = [[UISwitch alloc] initWithFrame:CGRectZero];
+            [switchTouchDirectionalEnabled setOn:[op touchDirectionalEnabled]];
+            [switchTouchDirectionalEnabled addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+            cell.accessoryView = switchTouchDirectionalEnabled;
+            break;
+        }
     }
     
     [op release];
@@ -559,7 +574,9 @@
     if (sender == switchTouchAnalogHideTouchButtons)
         op.touchAnalogHideTouchButtons = [switchTouchAnalogHideTouchButtons isOn];
     if (sender == switchTouchAnalogHideTouchDirectionalPad)
-        op.touchAnalogHideTouchDirectionalPad = [switchTouchAnalogHideTouchDirectionalPad isOn];    
+        op.touchAnalogHideTouchDirectionalPad = [switchTouchAnalogHideTouchDirectionalPad isOn];
+    if (sender == switchTouchDirectionalEnabled)
+        op.touchDirectionalEnabled = [switchTouchDirectionalEnabled isOn];
 
     [op saveOptions];
 	[op release];

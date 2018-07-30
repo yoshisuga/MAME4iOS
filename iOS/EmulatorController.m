@@ -132,6 +132,8 @@ int g_pref_touch_analog_hide_dpad = 1;
 int g_pref_touch_analog_hide_buttons = 0;
 float g_pref_touch_analog_sensitivity = 500.0;
 
+int g_pref_touch_directional_enabled = 0;
+
 int g_skin_data = 1;
 
 float g_buttons_size = 1.0f;
@@ -205,6 +207,8 @@ void* app_Thread_Start(void* args)
     CSToastStyle *toastStyle;
     CGPoint mouseTouchStartLocation;
     CGPoint mouseInitialLocation;
+    CGPoint touchDirectionalMoveStartLocation;
+    CGPoint touchDirectionalMoveInitialLocation;
 }
 @end
 
@@ -646,6 +650,8 @@ void* app_Thread_Start(void* args)
     g_pref_touch_analog_hide_dpad = [op touchAnalogHideTouchDirectionalPad];
     g_pref_touch_analog_hide_buttons = [op touchAnalogHideTouchButtons];
     g_pref_touch_analog_sensitivity = [op touchAnalogSensitivity];
+    
+    g_pref_touch_directional_enabled = [op touchDirectionalEnabled];
     
     [op release];
 }
@@ -1272,7 +1278,8 @@ void myosd_handle_turbo() {
    
    NSString *name;
     
-    BOOL touch_dpad_disabled = myosd_mouse == 1 && g_pref_touch_analog_enabled && g_pref_touch_analog_hide_dpad;
+    BOOL touch_dpad_disabled = (myosd_mouse == 1 && g_pref_touch_analog_enabled && g_pref_touch_analog_hide_dpad) ||
+                               (g_pref_touch_directional_enabled && g_pref_touch_analog_hide_dpad);
     if ( !touch_dpad_disabled || !myosd_inGame ) {
         if(g_pref_input_touch_type == TOUCH_INPUT_DPAD)
         {
@@ -1706,7 +1713,11 @@ void myosd_handle_turbo() {
            
    [self buildLandscapeImageOverlay];
     
-    if ( g_pref_full_screen_land && myosd_light_gun && g_pref_lightgun_enabled) {
+    if ( g_pref_full_screen_land &&
+        (
+         (myosd_light_gun && g_pref_lightgun_enabled) ||
+         (myosd_mouse && g_pref_touch_analog_enabled)
+        )) {
         // make a button to hide/display the controls
         hideShowControlsForLightgun.hidden = NO;
         [self.view bringSubviewToFront:hideShowControlsForLightgun];
@@ -1766,31 +1777,32 @@ void myosd_handle_turbo() {
 }
 
 #pragma mark Touch Handling
-
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
-{
-    NSLog(@"👉👉👉👉👉👉 Touch Began!!! 👉👉👉👉👉👉👉");
-    BOOL wasTouchHandled = [self touchHandler:touches withEvent:event];
-    if ( g_pref_touch_analog_enabled && myosd_mouse == 1 && !wasTouchHandled ) {
-        [self handleMouseTouchesBegan:touches];
-    }
-}
-
--(BOOL)touchHandler:(NSSet *)touches withEvent:(UIEvent *)event {
+-(NSSet*)touchHandler:(NSSet *)touches withEvent:(UIEvent *)event {
     if(change_layout)
     {
         [layoutView handleTouches:touches withEvent: event];
     }
-    else if((g_joy_used && ((!g_device_is_landscape && g_pref_full_screen_port) || (g_device_is_landscape && g_pref_full_screen_land))))
+    else if((g_joy_used &&
+             (
+              (!g_device_is_landscape && g_pref_full_screen_port) ||
+              (g_device_is_landscape && g_pref_full_screen_land))
+             )
+            )
     {
         // If controller is connected and display is full screen:
-        // handle lightgun touches, else show the menu if touched
+        // handle lightgun touches or
+        // analog touches
+        // else show the menu if touched
         NSSet *allTouches = [event allTouches];
         UITouch *touch = [[allTouches allObjects] objectAtIndex:0];
         
         if ( myosd_light_gun == 1 && g_pref_lightgun_enabled ) {
             [self handleLightgunTouchesBegan:touches];
-            return NO;
+            return nil;
+        }
+        
+        if ( myosd_mouse == 1 && g_pref_touch_analog_enabled ) {
+            return nil;
         }
         
         if(touch.phase == UITouchPhaseBegan)
@@ -1802,23 +1814,64 @@ void myosd_handle_turbo() {
     {
         return [self touchesController:touches withEvent:event];
     }
-    return NO;
+    return nil;
+}
+
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    NSLog(@"👉👉👉👉👉👉 Touch Began!!! 👉👉👉👉👉👉👉");
+    NSSet *handledTouches = [self touchHandler:touches withEvent:event];
+    NSSet *allTouches = [event allTouches];
+    NSMutableSet *unhandledTouches = [NSMutableSet set];
+    for (int i =0; i < allTouches.count; i++) {
+        UITouch *touch = [[allTouches allObjects] objectAtIndex:i];
+        if ( ![handledTouches containsObject:touch] ) {
+            [unhandledTouches addObject:touch];
+        }
+    }
+    if ( g_pref_touch_analog_enabled && myosd_mouse == 1 && unhandledTouches.count > 0 ) {
+        [self handleMouseTouchesBegan:unhandledTouches];
+    }
+    if ( g_pref_touch_directional_enabled && unhandledTouches.count > 0 ) {
+        [self handleTouchMovementTouchesBegan:unhandledTouches];
+    }
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
     NSLog(@"👋👋👋👋👋👋👋 Touch Moved!!! 👋👋👋👋👋👋👋👋");
-    BOOL wasTouchHandled = [self touchHandler:touches withEvent:event];
-    if ( g_pref_touch_analog_enabled && myosd_mouse == 1 && !wasTouchHandled ) {
-        [self handleMouseTouchesMoved:touches];
+    NSSet *handledTouches = [self touchHandler:touches withEvent:event];
+    NSSet *allTouches = [event allTouches];
+    NSMutableSet *unhandledTouches = [NSMutableSet set];
+    for (int i =0; i < allTouches.count; i++) {
+        UITouch *touch = [[allTouches allObjects] objectAtIndex:i];
+        if ( ![handledTouches containsObject:touch] ) {
+            [unhandledTouches addObject:touch];
+        }
     }
-//    [self touchesBegan:touches withEvent:event];
+    if ( g_pref_touch_analog_enabled && myosd_mouse == 1 && unhandledTouches.count > 0 ) {
+        [self handleMouseTouchesMoved:unhandledTouches];
+    }
+    if ( g_pref_touch_directional_enabled && unhandledTouches.count > 0 ) {
+        [self handleTouchMovementTouchesMoved:unhandledTouches];
+    }
 }
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
     NSLog(@"👊👊👊👊👊👊 Touch Cancelled!!! 👊👊👊👊👊👊");
-    BOOL wasTouchHandled = [self touchHandler:touches withEvent:event];
-    if ( g_pref_touch_analog_enabled && myosd_mouse == 1 && !wasTouchHandled ) {
-        [self handleMouseTouchesBegan:touches];
+    NSSet *handledTouches = [self touchHandler:touches withEvent:event];
+    NSSet *allTouches = [event allTouches];
+    NSMutableSet *unhandledTouches = [NSMutableSet set];
+    for (int i =0; i < allTouches.count; i++) { 
+        UITouch *touch = [[allTouches allObjects] objectAtIndex:i];
+        if ( ![handledTouches containsObject:touch] ) {
+            [unhandledTouches addObject:touch];
+        }
+    }
+    if ( g_pref_touch_analog_enabled && myosd_mouse == 1 && unhandledTouches.count > 0 ) {
+        [self handleMouseTouchesBegan:unhandledTouches];
+    }
+    if ( g_pref_touch_directional_enabled && unhandledTouches.count > 0 ) {
+        [self handleTouchMovementTouchesBegan:unhandledTouches];
     }
 }
 
@@ -1838,14 +1891,22 @@ void myosd_handle_turbo() {
         mouse_x[0] = 0.0f;
         mouse_y[0] = 0.0f;
     }
+    
+    if ( g_pref_touch_directional_enabled ) {
+        myosd_pad_status &= ~MYOSD_DOWN;
+        myosd_pad_status &= ~MYOSD_UP;
+        myosd_pad_status &= ~MYOSD_LEFT;
+        myosd_pad_status &= ~MYOSD_RIGHT;
+    }
 }
 
-- (BOOL)touchesController:(NSSet *)touches withEvent:(UIEvent *)event {
+- (NSSet*)touchesController:(NSSet *)touches withEvent:(UIEvent *)event {
     
     int i;
     static UITouch *stickTouch = nil;
     BOOL stickWasTouched = NO;
     BOOL buttonTouched = NO;
+    NSMutableSet *handledTouches = [NSMutableSet set];
     
     //Get all the touches.
     NSSet *allTouches = [event allTouches];
@@ -1886,7 +1947,11 @@ void myosd_handle_turbo() {
         {
             struct CGPoint point;
             point = [touch locationInView:self.view];
-            BOOL touch_dpad_disabled = myosd_mouse == 1 && g_pref_touch_analog_enabled && g_pref_touch_analog_hide_dpad;
+            BOOL touch_dpad_disabled =
+                // touch mouse is enabled and hiding dpad
+                (myosd_mouse == 1 && g_pref_touch_analog_enabled && g_pref_touch_analog_hide_dpad) ||
+                // OR directional touch is enabled and hiding dpad, and running a game
+                (g_pref_touch_directional_enabled && g_pref_touch_analog_hide_dpad && myosd_inGame);
             if(g_pref_input_touch_type == TOUCH_INPUT_DPAD && !touch_dpad_disabled )
             {
                 if (MyCGRectContainsPoint(rInput[DPAD_UP_RECT], point) && !STICK2WAY) {
@@ -1900,6 +1965,7 @@ void myosd_handle_turbo() {
                     
                     stickTouch = touch;
                     stickWasTouched = YES;
+                    [handledTouches addObject:touch];
                 }
                 else if (MyCGRectContainsPoint(rInput[DPAD_DOWN_RECT], point) && !STICK2WAY) {
                     //NSLog(@"MYOSD_DOWN");
@@ -1912,6 +1978,7 @@ void myosd_handle_turbo() {
                     
                     stickTouch = touch;
                     stickWasTouched = YES;
+                    [handledTouches addObject:touch];
                 }
                 else if (MyCGRectContainsPoint(rInput[DPAD_LEFT_RECT], point)) {
                     //NSLog(@"MYOSD_LEFT");
@@ -1924,6 +1991,7 @@ void myosd_handle_turbo() {
                     
                     stickTouch = touch;
                     stickWasTouched = YES;
+                    [handledTouches addObject:touch];
                 }
                 else if (MyCGRectContainsPoint(rInput[DPAD_RIGHT_RECT], point)) {
                     //NSLog(@"MYOSD_RIGHT");
@@ -1936,6 +2004,7 @@ void myosd_handle_turbo() {
                     
                     stickTouch = touch;
                     stickWasTouched = YES;
+                    [handledTouches addObject:touch];
                 }
                 else if (MyCGRectContainsPoint(rInput[DPAD_UP_LEFT_RECT], point)) {
                     //NSLog(@"MYOSD_UP | MYOSD_LEFT");
@@ -1958,6 +2027,7 @@ void myosd_handle_turbo() {
                     }
                     stickWasTouched = YES;
                     stickTouch = touch;
+                    [handledTouches addObject:touch];
                 }
                 else if (MyCGRectContainsPoint(rInput[DPAD_UP_RIGHT_RECT], point)) {
                     //NSLog(@"MYOSD_UP | MYOSD_RIGHT");
@@ -1981,6 +2051,7 @@ void myosd_handle_turbo() {
                     }
                     stickWasTouched = YES;
                     stickTouch = touch;
+                    [handledTouches addObject:touch];
                 }
                 else if (MyCGRectContainsPoint(rInput[DPAD_DOWN_LEFT_RECT], point)) {
                     //NSLog(@"MYOSD_DOWN | MYOSD_LEFT");
@@ -2004,6 +2075,7 @@ void myosd_handle_turbo() {
                     }
                     stickWasTouched = YES;
                     stickTouch = touch;
+                    [handledTouches addObject:touch];
                 }
                 else if (MyCGRectContainsPoint(rInput[DPAD_DOWN_RIGHT_RECT], point)) {
                     //NSLog(@"MYOSD_DOWN | MYOSD_RIGHT");
@@ -2026,6 +2098,7 @@ void myosd_handle_turbo() {
                     }
                     stickWasTouched = YES;
                     stickTouch = touch;
+                    [handledTouches addObject:touch];
                 }
             }
             else
@@ -2050,6 +2123,7 @@ void myosd_handle_turbo() {
                 btnStates[BTN_Y] = BUTTON_PRESS;
                 buttonTouched = YES;
                 //NSLog(@"MYOSD_Y");
+                [handledTouches addObject:touch];
             }
             else if (buttonViews[BTN_X] != nil &&
                      !buttonViews[BTN_X].hidden && MyCGRectContainsPoint(rInput[BTN_X_RECT], point) &&
@@ -2058,6 +2132,7 @@ void myosd_handle_turbo() {
                 btnStates[BTN_X] = BUTTON_PRESS;
                 buttonTouched = YES;
                 //NSLog(@"MYOSD_X");
+                [handledTouches addObject:touch];
             }
             else if (buttonViews[BTN_A] != nil &&
                      !buttonViews[BTN_A].hidden && MyCGRectContainsPoint(rInput[BTN_A_RECT], point) &&
@@ -2076,12 +2151,14 @@ void myosd_handle_turbo() {
                 }
                 buttonTouched = YES;
                 //NSLog(@"MYOSD_A");
+                [handledTouches addObject:touch];
             }
             else if (buttonViews[BTN_B] != nil && !buttonViews[BTN_B].hidden && MyCGRectContainsPoint(rInput[BTN_B_RECT], point) &&
                      !touch_buttons_disabled) {
                 myosd_pad_status |= MYOSD_B;
                 btnStates[BTN_B] = BUTTON_PRESS;
                 buttonTouched = YES;
+                [handledTouches addObject:touch];
                 //NSLog(@"MYOSD_B");
             }
             else if (buttonViews[BTN_A] != nil &&
@@ -2094,6 +2171,7 @@ void myosd_handle_turbo() {
                 btnStates[BTN_Y] = BUTTON_PRESS;
                 btnStates[BTN_A] = BUTTON_PRESS;
                 buttonTouched = YES;
+                [handledTouches addObject:touch];
                 //NSLog(@"MYOSD_Y | MYOSD_A");
             }
             else if (buttonViews[BTN_X] != nil &&
@@ -2107,6 +2185,7 @@ void myosd_handle_turbo() {
                 btnStates[BTN_A] = BUTTON_PRESS;
                 btnStates[BTN_X] = BUTTON_PRESS;
                 buttonTouched = YES;
+                [handledTouches addObject:touch];
                 //NSLog(@"MYOSD_X | MYOSD_A");
             }
             else if (buttonViews[BTN_Y] != nil &&
@@ -2119,6 +2198,7 @@ void myosd_handle_turbo() {
                 btnStates[BTN_B] = BUTTON_PRESS;
                 btnStates[BTN_Y] = BUTTON_PRESS;
                 buttonTouched = YES;
+                [handledTouches addObject:touch];
                 //NSLog(@"MYOSD_Y | MYOSD_B");
             }
             else if (!buttonViews[BTN_B].hidden &&
@@ -2131,6 +2211,7 @@ void myosd_handle_turbo() {
                     btnStates[BTN_B] = BUTTON_PRESS;
                     btnStates[BTN_X] = BUTTON_PRESS;
                     buttonTouched = YES;
+                    [handledTouches addObject:touch];
                 }
                 //NSLog(@"MYOSD_X | MYOSD_B");
             }
@@ -2139,6 +2220,7 @@ void myosd_handle_turbo() {
                 myosd_pad_status |= MYOSD_SELECT;
                 btnStates[BTN_SELECT] = BUTTON_PRESS;
                 buttonTouched = YES;
+                [handledTouches addObject:touch];
                 if(isGridlee && (myosd_pad_status & MYOSD_START))
                     myosd_pad_status &= ~MYOSD_START;
                 
@@ -2148,6 +2230,7 @@ void myosd_handle_turbo() {
                 myosd_pad_status |= MYOSD_START;
                 btnStates[BTN_START] = BUTTON_PRESS;
                 buttonTouched = YES;
+                [handledTouches addObject:touch];
                 if(isGridlee && (myosd_pad_status & MYOSD_SELECT))
                     myosd_pad_status &= ~MYOSD_SELECT;
             }
@@ -2156,18 +2239,21 @@ void myosd_handle_turbo() {
                 myosd_pad_status |= MYOSD_L1;
                 btnStates[BTN_L1] = BUTTON_PRESS;
                 buttonTouched = YES;
+                [handledTouches addObject:touch];
             }
             else if (buttonViews[BTN_R1] != nil && !buttonViews[BTN_R1].hidden && MyCGRectContainsPoint(rInput[BTN_R1_RECT], point) && !touch_buttons_disabled ) {
                 //NSLog(@"MYOSD_R");
                 myosd_pad_status |= MYOSD_R1;
                 btnStates[BTN_R1] = BUTTON_PRESS;
                 buttonTouched = YES;
+                [handledTouches addObject:touch];
             }
             else if (buttonViews[BTN_L2] != nil && !buttonViews[BTN_L2].hidden && MyCGRectContainsPoint(rInput[BTN_L2_RECT], point)) {
                 //NSLog(@"MYOSD_L2");
                 if(isGridlee)continue;
                 btnStates[BTN_L2] = BUTTON_PRESS;
                 buttonTouched = YES;
+                [handledTouches addObject:touch];
                 exit_status = 1;
             }
             else if (buttonViews[BTN_R2] != nil && !buttonViews[BTN_R2].hidden && MyCGRectContainsPoint(rInput[BTN_R2_RECT], point) ) {
@@ -2175,6 +2261,7 @@ void myosd_handle_turbo() {
                 if(isGridlee)continue;
                 btnStates[BTN_R2] = BUTTON_PRESS;
                 buttonTouched = YES;
+                [handledTouches addObject:touch];
             }
             else if (MyCGRectContainsPoint(rInput[BTN_MENU_RECT], point)) {
                 /*
@@ -2217,9 +2304,9 @@ void myosd_handle_turbo() {
     [self handle_MENU];
     [self handle_DPAD];
     
-    BOOL touchWasHandled = stickTouch != nil || buttonTouched;
-    NSLog(@"touchController touch stick touch =  %@ , buttonTouched = %@, wasStickTouched = %@",stickTouch != nil ? @"YES" : @"NO",buttonTouched ? @"YES" : @"NO",stickWasTouched ? @"YES" : @"NO");
-    return touchWasHandled;
+//    BOOL touchWasHandled = stickTouch != nil || buttonTouched;
+//    NSLog(@"touchController touch stick touch =  %@ , buttonTouched = %@, wasStickTouched = %@",stickTouch != nil ? @"YES" : @"NO",buttonTouched ? @"YES" : @"NO",stickWasTouched ? @"YES" : @"NO");
+    return handledTouches;
 }
 
 
@@ -2265,8 +2352,6 @@ void myosd_handle_turbo() {
 #pragma mark - Mouse Touch Support
 
 -(void) handleMouseTouchesBegan:(NSSet *)touches {
-//    NSUInteger touchcount = touches.count;
-    NSLog(@"🐁🐁🐁🐁🐁 Handle Mouse Touch Began!!! 🐁🐁🐁🐁🐁🐁");
     if ( screenView != nil ) {
         UITouch *touch = [[touches allObjects] objectAtIndex:0];
         mouseTouchStartLocation = [touch locationInView:screenView];
@@ -2274,8 +2359,6 @@ void myosd_handle_turbo() {
 }
 
 - (void) handleMouseTouchesMoved:(NSSet *)touches {
-//    NSUInteger touchcount = touches.count;
-    NSLog(@"🐁🐁🐁🐁🐁 Handle Mouse Touch Moved!!! 🐁🐁🐁🐁🐁🐁🕹🕹🕹🕹🕹");
     if ( screenView != nil && !CGPointEqualToPoint(mouseTouchStartLocation, mouseInitialLocation) ) {
         UITouch *touch = [[touches allObjects] objectAtIndex:0];
         CGPoint currentLocation = [touch locationInView:screenView];
@@ -2287,7 +2370,43 @@ void myosd_handle_turbo() {
         mouseTouchStartLocation = [touch locationInView:screenView];
     }
 }
-  		
+
+#pragma mark - Touch Movement Support
+-(void) handleTouchMovementTouchesBegan:(NSSet *)touches {
+    if ( screenView != nil ) {
+        UITouch *touch = [[touches allObjects] objectAtIndex:0];
+        touchDirectionalMoveStartLocation = [touch locationInView:screenView];
+    }
+}
+
+-(void) handleTouchMovementTouchesMoved:(NSSet *)touches {
+    if ( screenView != nil && !CGPointEqualToPoint(touchDirectionalMoveStartLocation, mouseInitialLocation) ) {
+        myosd_pad_status &= ~MYOSD_DOWN;
+        myosd_pad_status &= ~MYOSD_UP;
+        myosd_pad_status &= ~MYOSD_LEFT;
+        myosd_pad_status &= ~MYOSD_RIGHT;
+        UITouch *touch = [[touches allObjects] objectAtIndex:0];
+        CGPoint currentLocation = [touch locationInView:screenView];
+        CGFloat dx = currentLocation.x - touchDirectionalMoveStartLocation.x;
+        CGFloat dy = currentLocation.y - touchDirectionalMoveStartLocation.y;
+        if ( dx > 0 ) {
+            myosd_pad_status |= MYOSD_RIGHT;
+            myosd_pad_status &= ~MYOSD_LEFT;
+        } else if ( dx < 0 ) {
+            myosd_pad_status &= ~MYOSD_RIGHT;
+            myosd_pad_status |= MYOSD_LEFT;
+        }
+        if ( dy > 0 ) {
+            myosd_pad_status |= MYOSD_DOWN;
+            myosd_pad_status &= ~MYOSD_UP;
+        } else if (dy < 0 ) {
+            myosd_pad_status &= ~MYOSD_DOWN;
+            myosd_pad_status |= MYOSD_UP;
+        }
+        touchDirectionalMoveStartLocation = [touch locationInView:screenView];
+    }
+}
+
 
 - (void)getControllerCoords:(int)orientation {
     char string[256];
@@ -3093,9 +3212,15 @@ void myosd_handle_turbo() {
                     actionPending=0;
                     [self handle_MENU];
                 }
-                
             }
-
+            // Show Action Sheet Menu
+            else if ( MFIController.gamepad.buttonY.pressed) {
+                if (myosd_inGame && myosd_in_menu == 0) {
+                    myosd_joy_status[index] &= ~MYOSD_START;
+                    myosd_joy_status[index] &= ~MYOSD_Y;
+                    [self runMenu];
+                }
+            }
         };
     }
     

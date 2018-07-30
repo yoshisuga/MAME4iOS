@@ -80,6 +80,8 @@
     UISwitch *switchTouchAnalogHideTouchButtons;
     UISwitch *switchTouchAnalogHideTouchDirectionalPad;
     UISlider *sliderTouchAnalogSensitivity;
+    
+    UISwitch *switchTouchDirectionalEnabled;
 }
 
 @property (nonatomic, assign) EmulatorController *emuController;
