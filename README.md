@@ -98,6 +98,7 @@ Touch Lightgun setup is in Settings -> Input -> Touch Lightgun, where you can di
 
 Under Settings -> Game Input, there's a section called "Turbo Mode Toggle", that lets you turn on turbo firing for individual buttons. Holding down the button causes the button to fire in turbo mode.
 
-### tvOS
+### Planned Future Improvements
 
-tvOS is not supported yet. You can, however, run MAME on an iPhone or iPad and mirror the display to an Apple TV.
+- iPhone X/XR/XS/XS Max Display Support
+- tvOS
