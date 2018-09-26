@@ -39,7 +39,6 @@
 		925ABCC11E46DCC500997182 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE6808D1635BA7000051BC2 /* CoreGraphics.framework */; };
 		925ABCC21E46DCC500997182 /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE9454C7172BB23100B81C32 /* GameKit.framework */; };
 		925ABCC41E46DCC500997182 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE680CD163B147100051BC2 /* libz.dylib */; };
-		925ABCC51E46DCC500997182 /* libstdc++.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE680CB163B13E400051BC2 /* libstdc++.dylib */; };
 		925ABCC71E46DCC500997182 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = CEE680921635BA7000051BC2 /* InfoPlist.strings */; };
 		925ABCC81E46DCC500997182 /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = CEE6809B1635BA7000051BC2 /* Default.png */; };
 		925ABCC91E46DCC500997182 /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CEE6809D1635BA7000051BC2 /* Default@2x.png */; };
@@ -68,6 +67,10 @@
 		925ABCE81E4E1CE700997182 /* libmamearmv7.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0A1A540D1D5FEA0F0053C761 /* libmamearmv7.a */; };
 		92B99F0E2022706600CC44E3 /* UIView+Toast.m in Sources */ = {isa = PBXBuildFile; fileRef = 92B99F0D2022706600CC44E3 /* UIView+Toast.m */; };
 		92B99F0F2022706600CC44E3 /* UIView+Toast.m in Sources */ = {isa = PBXBuildFile; fileRef = 92B99F0D2022706600CC44E3 /* UIView+Toast.m */; };
+		92D96574215B03E100EFE3AE /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 92D96573215B03E100EFE3AE /* libc++.tbd */; };
+		92D96578215B048900EFE3AE /* crt1.3.1.o in Frameworks */ = {isa = PBXBuildFile; fileRef = 92D96577215B048900EFE3AE /* crt1.3.1.o */; };
+		92ECDA87215AEF5D00E4303A /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 92ECDA86215AEF5D00E4303A /* Launch Screen.storyboard */; };
+		92ECDA88215AEF5D00E4303A /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 92ECDA86215AEF5D00E4303A /* Launch Screen.storyboard */; };
 		B370F8B01C8549010069377D /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B370F8AF1C8549010069377D /* GameController.framework */; };
 		CE30090116FA47BD000EDCF1 /* cheat.zip in Resources */ = {isa = PBXBuildFile; fileRef = CE30090016FA47BD000EDCF1 /* cheat.zip */; };
 		CE30090216FA47BD000EDCF1 /* cheat.zip in Resources */ = {isa = PBXBuildFile; fileRef = CE30090016FA47BD000EDCF1 /* cheat.zip */; };
@@ -183,6 +186,10 @@
 		925ABCE41E46DD6E00997182 /* libmamearm64.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmamearm64.a; path = ../../libmamearm64.a; sourceTree = "<group>"; };
 		92B99F0C2022706600CC44E3 /* UIView+Toast.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+Toast.h"; sourceTree = "<group>"; };
 		92B99F0D2022706600CC44E3 /* UIView+Toast.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+Toast.m"; sourceTree = "<group>"; };
+		92D96573215B03E100EFE3AE /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
+		92D96575215B041300EFE3AE /* crt1.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; name = crt1.o; path = usr/lib/crt1.o; sourceTree = SDKROOT; };
+		92D96577215B048900EFE3AE /* crt1.3.1.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; name = crt1.3.1.o; path = usr/lib/crt1.3.1.o; sourceTree = SDKROOT; };
+		92ECDA86215AEF5D00E4303A /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		B370F8AF1C8549010069377D /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = System/Library/Frameworks/GameController.framework; sourceTree = SDKROOT; };
 		CE30090016FA47BD000EDCF1 /* cheat.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = cheat.zip; path = "../../iOS-res/Applications/MAME4iOS.app/cheat.zip"; sourceTree = "<group>"; };
 		CE30090316FA47CB000EDCF1 /* Category.ini */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Category.ini; path = "../../iOS-res/Applications/MAME4iOS.app/Category.ini"; sourceTree = "<group>"; };
@@ -281,6 +288,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				92D96578215B048900EFE3AE /* crt1.3.1.o in Frameworks */,
+				92D96574215B03E100EFE3AE /* libc++.tbd in Frameworks */,
 				925ABCE51E46DD6E00997182 /* libmamearm64.a in Frameworks */,
 				925ABCB91E46DCC500997182 /* GameController.framework in Frameworks */,
 				925ABCBA1E46DCC500997182 /* CoreBluetooth.framework in Frameworks */,
@@ -292,7 +301,6 @@
 				925ABCC11E46DCC500997182 /* CoreGraphics.framework in Frameworks */,
 				925ABCC21E46DCC500997182 /* GameKit.framework in Frameworks */,
 				925ABCC41E46DCC500997182 /* libz.dylib in Frameworks */,
-				925ABCC51E46DCC500997182 /* libstdc++.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -435,6 +443,7 @@
 		CEE6807A1635BA6F00051BC2 = {
 			isa = PBXGroup;
 			children = (
+				92ECDA86215AEF5D00E4303A /* Launch Screen.storyboard */,
 				0A1A540D1D5FEA0F0053C761 /* libmamearmv7.a */,
 				CEAC6C2716AAA73900AF3275 /* RELOADED */,
 				CEE6808F1635BA7000051BC2 /* MAME4iOS */,
@@ -459,6 +468,9 @@
 		CEE680881635BA7000051BC2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				92D96577215B048900EFE3AE /* crt1.3.1.o */,
+				92D96575215B041300EFE3AE /* crt1.o */,
+				92D96573215B03E100EFE3AE /* libc++.tbd */,
 				925ABCE41E46DD6E00997182 /* libmamearm64.a */,
 				B370F8AF1C8549010069377D /* GameController.framework */,
 				CEE680CD163B147100051BC2 /* libz.dylib */,
@@ -612,6 +624,7 @@
 				925ABCC71E46DCC500997182 /* InfoPlist.strings in Resources */,
 				925ABCC81E46DCC500997182 /* Default.png in Resources */,
 				925ABCC91E46DCC500997182 /* Default@2x.png in Resources */,
+				92ECDA88215AEF5D00E4303A /* Launch Screen.storyboard in Resources */,
 				925ABCCA1E46DCC500997182 /* Default-568h@2x.png in Resources */,
 				925ABCCB1E46DCC500997182 /* border-iPad.png in Resources */,
 				925ABCCC1E46DCC500997182 /* config_iPad.txt in Resources */,
@@ -676,6 +689,7 @@
 				CEE680941635BA7000051BC2 /* InfoPlist.strings in Resources */,
 				CEE6809C1635BA7000051BC2 /* Default.png in Resources */,
 				CEE6809E1635BA7000051BC2 /* Default@2x.png in Resources */,
+				92ECDA87215AEF5D00E4303A /* Launch Screen.storyboard in Resources */,
 				CEE680A01635BA7000051BC2 /* Default-568h@2x.png in Resources */,
 				CEBFBC20163C5DA100A05CD0 /* border-iPad.png in Resources */,
 				CEBFBC21163C5DA100A05CD0 /* config_iPad.txt in Resources */,
@@ -820,7 +834,7 @@
 				);
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = "MAME4iOS copy-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../..",
@@ -828,7 +842,7 @@
 					"$(PROJECT_DIR)",
 				);
 				ONLY_ACTIVE_ARCH = NO;
-				OTHER_LDFLAGS = "-lstdc++";
+				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.lesbird.mame4ios;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -850,7 +864,7 @@
 				GCC_PREFIX_HEADER = "MAME4iOS/MAME4iOS-Prefix.pch";
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = "MAME4iOS copy-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../..",
@@ -858,7 +872,7 @@
 					"$(PROJECT_DIR)",
 				);
 				ONLY_ACTIVE_ARCH = NO;
-				OTHER_LDFLAGS = "-lstdc++";
+				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.lesbird.mame4ios;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";

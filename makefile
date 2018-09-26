@@ -415,8 +415,8 @@ LD = @$(MYPREFIX)g++
 else
 
 AR = @$(MYPREFIX)ar
-CC = @$(MYPREFIX)gcc
-LD = @$(MYPREFIX)g++
+CC = @$(MYPREFIX)cc
+LD = @$(MYPREFIX)c++
 
 endif
 
@@ -563,7 +563,7 @@ CFLAGS = $(CCOMFLAGS) $(CPPONLYFLAGS)
 # we compile C-only to C89 standard with GNU extensions
 # we compile C++ code to C++98 standard with GNU extensions
 CONLYFLAGS += -std=gnu89
-CPPONLYFLAGS += -x c++ -std=gnu++98
+CPPONLYFLAGS += -x c++ -stdlib=libc++
 #COBJFLAGS += -x objective-c++
 COBJFLAGS += -x objective-c
 
