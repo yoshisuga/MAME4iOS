@@ -18,6 +18,16 @@ This repo adds support for:
 - Turbo mode toggle for buttons (new in 2018!)
 - Builds in Xcode 9, runs on iOS 11 
 
+## Xcode 10 / iOS 12
+
+MAME4iOS does not build on Xcode 10. The binary built using Xcode 9 does, however run on iOS 12.
+
+The reason why it does not build on Xcode 10 is because libstdc++ is not included in Xcode 10. The runtime binary is still included in iOS 12 for backwards compatibility, but there's no way (at least I can find) to build and run the app in Xcode 10 unless the libstdc++ runtime library (dylib) is somehow included in the binary. I've tried to include a libstdc++ dylib that I found for arm64 but could not code sign it for inclusion. I don't know enough to compile libstdc++ to an arm64 dylib :(
+
+The other option is to fix the MAME library to compile using libc++. It would involve a lot of code changes, though.
+
+If anyone has any ideas on how to build this under Xcode 10/iOS 12 please make a PR or log an issue!
+
 ## Installation / Sideloading
 
 ### IPA 
