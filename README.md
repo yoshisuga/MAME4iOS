@@ -80,7 +80,7 @@ The right stick on the extended controller profile is fully supported, with supp
 
 The trigger buttons are mapped to analog conrols and should be useful in assigning for pedal controls, for example.
 
-### Touch Screen Lightgun Support (new in 2018)
+## Touch Screen Lightgun Support (new in 2018)
 
 You can now use the touch screen for lightgun games like Operation Wolf and Lethal Enforcers. Holding down your finger simulates holding down the trigger, which is mapped to the "X" button. Tap with 2 fingers for the secondary fire, or the "B" button.
 
@@ -94,11 +94,11 @@ Touch Lightgun setup is in Settings -> Input -> Touch Lightgun, where you can di
 - Touch with 3 fingers: press start button
 - Touch with 4 fingers: insert coin
 
-### Turbo Mode Toggle for Buttons (new in 2018)
+## Turbo Mode Toggle for Buttons (new in 2018)
 
 Under Settings -> Game Input, there's a section called "Turbo Mode Toggle", that lets you turn on turbo firing for individual buttons. Holding down the button causes the button to fire in turbo mode.
 
-### Planned Future Improvements
+## Planned Future Improvements
 
 - iPhone X/XR/XS/XS Max Display Support
 - tvOS
