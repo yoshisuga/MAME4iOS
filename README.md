@@ -16,17 +16,7 @@ This repo adds support for:
 - Multiple mFi controllers (up to 4 with dual analog support - @DarrenBranford)
 - Supports using the touch screen as a lightgun (new in 2018!)
 - Turbo mode toggle for buttons (new in 2018!)
-- Builds in Xcode 9, runs on iOS 11 
-
-## Xcode 10 / iOS 12
-
-MAME4iOS does not build on Xcode 10. The binary built using Xcode 9 does, however run on iOS 12.
-
-The reason why it does not build on Xcode 10 is because libstdc++ is not included in Xcode 10. The runtime binary is still included in iOS 12 for backwards compatibility, but there's no way (at least I can find) to build and run the app in Xcode 10 unless the libstdc++ runtime library (dylib) is somehow included in the binary. I've tried to include a libstdc++ dylib that I found for arm64 but could not code sign it for inclusion. I don't know enough to compile libstdc++ to an arm64 dylib :(
-
-The other option is to fix the MAME library to compile using libc++. It would involve a lot of code changes, though.
-
-If anyone has any ideas on how to build this under Xcode 10/iOS 12 please make a PR or log an issue!
+- Builds in Xcode 10, runs on iOS 12
 
 ## Installation / Sideloading
 
@@ -56,7 +46,7 @@ Building MAME4iOS requires a prebuilt MAME binary (It was not included in this r
     - `MAME4iOS 64-bit` 
     - `MAME4iOS 32-bit`
 
-Even if you are not in the paid Apple Developer Program, you can sideload the app using a Mac with Xcode 7/8.
+Even if you are not in the paid Apple Developer Program, you can sideload the app using a Mac with Xcode.
 
 1. Open the Xcode project in `xcode/MAME4iOS/MAME4iOS.xcodeproj`<br>
     <sup>Make sure you have the `libmamearm64.a` (or `libmamearmv7.a`) file in the root of your project (it should not be red).</sup><br>
@@ -110,4 +100,4 @@ Under Settings -> Game Input, there's a section called "Turbo Mode Toggle", that
 
 ### tvOS
 
-tvOS is not supported yet. The problem is that I can't compile the tvOS version of the MAME binary, as it needs to be linked with `libc++`, not `libstdc++`, which is what this MAME binary depends on. I'm not intimately familiar with the API differences between the two (it looks like it has to do with differing string functions), so I haven't gotten around to fixing it for tvOS. You can, however, run MAME on an iPhone or iPad and mirror the display to an Apple TV.
+tvOS is not supported yet. You can, however, run MAME on an iPhone or iPad and mirror the display to an Apple TV.
