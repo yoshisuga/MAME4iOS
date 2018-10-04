@@ -59,6 +59,7 @@
 #import <pthread.h>
 #import "NetplayGameKit.h"
 #import "UIView+Toast.h"
+#import "DeviceScreenResolver.h"
 
 // mfi Controllers
 NSMutableArray *controllers;
@@ -2308,14 +2309,28 @@ void myosd_handle_turbo() {
 - (void)getConf{
     char string[256];
     FILE *fp;
+    
+    DeviceScreenType screenType = [DeviceScreenResolver resolve];
 	
-	if(g_isIpad)
+    if ( screenType == IPHONE_XR_XS_MAX ) {
+        fp = [self loadFile:"config_iPhone_xr_xs_max.txt"];
+    } else if ( screenType == IPHONE_X_XS ) {
+        fp = [self loadFile:"config_iPhone_x.txt"];
+    } else if ( screenType == IPHONE_6_7_8_PLUS ) {
+        fp = [self loadFile:"config_iPhone_6_plus.txt"];
+    } else if ( screenType == IPHONE_6_7_8 ) {
+        fp = [self loadFile:"config_iPhone_6.txt"];
+    } else if ( screenType == IPHONE_5 ) {
+        fp = [self loadFile:"config_iPhone_5.txt"];
+    } else if ( screenType == IPHONE_4_OR_LESS ) {
+        fp = [self loadFile:"config_iPhone.txt"];
+    } else if ( g_isIpad ) {
+        // temp for now, add those txt files
        fp = [self loadFile:"config_iPad.txt"];
-    else if(g_isIphone5)
-       fp = [self loadFile:"config_iPhone_5.txt"];
-	else
-	   fp = [self loadFile:"config_iPhone.txt"];
-	   	
+    } else {
+       fp = [self loadFile:"config_iPhone.txt"];
+    }
+    	   	
 	if (fp) 
 	{
 
