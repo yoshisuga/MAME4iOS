@@ -1068,6 +1068,11 @@ void* app_Thread_Start(void* args)
      imageOverlay = nil;
    }
     
+    // Support iCade in external screens
+    if ( externalView != nil && icadeView != nil && ![externalView.subviews containsObject:icadeView] ) {
+        [externalView addSubview:icadeView];
+    }
+    
    [[UIApplication sharedApplication]   setStatusBarOrientation:self.interfaceOrientation];
    
    if((self.interfaceOrientation ==  UIDeviceOrientationLandscapeLeft) || (self.interfaceOrientation == UIDeviceOrientationLandscapeRight)){
