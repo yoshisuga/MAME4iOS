@@ -260,7 +260,67 @@
                 break;
         }
     }
-    
+    NSLog(@"Printing layout for %@",[LayoutData getLayoutFilePath]);
+    [self printAsTextFileFormat:data];
+}
+
++(void)printAsTextFileFormat:(NSMutableArray*)data {
+    NSArray<NSArray*> *fileDataLayoutElements = @[
+                                     @[ @(kType_DPadRect), @(DPAD_DOWN_LEFT_RECT), @"//DownLeft"],    // 1
+                                     @[ @(kType_DPadRect), @(DPAD_DOWN_RECT), @"//Down"],         // 2
+                                     @[ @(kType_DPadRect), @(DPAD_DOWN_RIGHT_RECT), @"//DownRight "],   // 3
+                                     @[ @(kType_DPadRect), @(DPAD_LEFT_RECT), @"//Left"],         // 4
+                                     @[ @(kType_DPadRect), @(DPAD_RIGHT_RECT), @"//Right"],        // 5
+                                     @[ @(kType_DPadRect), @(DPAD_UP_LEFT_RECT), @"//UpLeft"],      // 6
+                                     @[ @(kType_DPadRect), @(DPAD_UP_RECT), @"//Up"],           // 7
+                                     @[ @(kType_DPadRect), @(DPAD_UP_RIGHT_RECT), @"UpRight"],     // 8
+                                     @[ @(kType_DPadRect), @(BTN_SELECT_RECT), @"//Select*"],        // 9
+                                     @[ @(kType_DPadRect), @(BTN_START_RECT), @"//Start*"],         // 10
+                                     @[ @(kType_DPadRect), @(BTN_L1_RECT), @"//LPad"],            // 11
+                                     @[ @(kType_DPadRect), @(BTN_R1_RECT), @"//Rpad"],            // 12
+                                     @[ @(kType_DPadRect), @(BTN_MENU_RECT), @"//menu"],          // 13
+                                     @[ @(kType_DPadRect), @(BTN_X_A_RECT), @"//ButtonDownLeft (X + A)"],           // 14
+                                     @[ @(kType_DPadRect), @(BTN_X_RECT), @"//ButtonDown X*"],             // 15
+                                     @[ @(kType_DPadRect), @(BTN_B_X_RECT), @"//ButtonDownRight (X + B)"],           // 16
+                                     @[ @(kType_DPadRect), @(BTN_A_RECT), @"//ButtonLeft A*"],             // 17
+                                     @[ @(kType_DPadRect), @(BTN_B_RECT), @"//ButtonRight B*"],             // 18
+                                     @[ @(kType_DPadRect), @(BTN_A_Y_RECT), @"//ButtonUpLeft (A + Y)"],           // 19
+                                     @[ @(kType_DPadRect), @(BTN_Y_RECT), @"//ButtonUp Y*"],             // 20
+                                     @[ @(kType_DPadRect), @(BTN_B_Y_RECT), @"//ButtonUpRight (B + Y)"],           // 21
+                                     @[ @(kType_DPadRect), @(BTN_L2_RECT), @"//L2*"],            // 22
+                                     @[ @(kType_DPadRect), @(BTN_R2_RECT), @"//R2*"],            // 23
+                                     @[ @(-1), @(-1), @"//showkyboard"],                          // 24 not used (showkyboard)
+                                     @[ @(kType_ButtonImgRect), @(BTN_B), @"//B img"],             // 25
+                                     @[ @(kType_ButtonImgRect), @(BTN_X), @"//X img"],             // 26
+                                     @[ @(kType_ButtonImgRect), @(BTN_A), @"//A img"],             // 27
+                                     @[ @(kType_ButtonImgRect), @(BTN_Y), @"//Y img"],             // 28
+                                     @[ @(kType_DPadImgRect), @(-1), @"//DPad img"],                  // 29
+                                     @[ @(kType_ButtonImgRect), @(BTN_SELECT), @"//select img*"],        // 30
+                                     @[ @(kType_ButtonImgRect), @(BTN_START), @"//start img*"],         // 31
+                                     @[ @(kType_ButtonImgRect), @(BTN_L1), @"//L1 img"],            // 32
+                                     @[ @(kType_ButtonImgRect), @(BTN_R1), @"//R1 img"],            // 33
+                                     @[ @(kType_ButtonImgRect), @(BTN_L2), @"//L2 img"],            // 34
+                                     @[ @(kType_ButtonImgRect), @(BTN_R2), @"//R2 img"],            // 35
+                                     @[ @(kType_StickRect), @(-1), @"//StickWindow*"],                    // 36
+                                     @[ @(kType_StickRect), @(-1), @"//StickArea*"],                    // 37 stick area, not used - can be anything
+                                     @[ @(-2), @(60), @"//radio_stick"],                                 // 38 radio_stick - -2 means use int in index 1
+                                     @[ @(-2), @(50), @""]                                  // 39 controller opacity: use 50
+                                     ];
+
+    for (NSArray *dataTypeArray in fileDataLayoutElements) {
+        // find in data array
+        NSUInteger coordType = [(NSNumber*) [dataTypeArray objectAtIndex:0] intValue];
+        NSUInteger coordValue = [(NSNumber*) [dataTypeArray objectAtIndex:1] intValue];
+        NSString *comment = (NSString*) [dataTypeArray objectAtIndex:2];
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"type == %lu AND value == %lu",(unsigned long)coordType,(unsigned long)coordValue];
+        NSArray *results = [data filteredArrayUsingPredicate:predicate];
+        if ( results.count == 0 ) {
+            NSLog(@"Could not find layout data for type=%lu and value=%lu",(unsigned long)coordType,(unsigned long)coordValue);
+            continue;
+        }
+        LayoutData *layoutData = results.firstObject;
+        NSLog(@"%i,%i,%i,%i%@",(int)layoutData.rect.origin.x,(int)layoutData.rect.origin.y,(int)layoutData.rect.size.width,(int)layoutData.rect.size.height,comment);
+    }
 }
 
 @end

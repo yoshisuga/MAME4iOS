@@ -60,6 +60,7 @@
 #import "NetplayGameKit.h"
 #import "UIView+Toast.h"
 #import "DeviceScreenResolver.h"
+#import "Bootstrapper.h"
 
 // mfi Controllers
 NSMutableArray *controllers;
@@ -1475,8 +1476,22 @@ void myosd_handle_turbo() {
        r.size.width = tmp_width;
        r.size.height = tmp_height;
    
-   }  
-   
+   }
+    
+    // Handle Safe Area (iPhone X)
+    if ( @available(iOS 11, *) ) {
+        if ( externalView == nil ) {
+            UIEdgeInsets inset = [[UIApplication sharedApplication] keyWindow].safeAreaInsets;
+            NSLog(@"safe area insets: top %f, bottom %f, left %f, right %f", inset.top, inset.bottom, inset.left, inset.right);
+            UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
+            CGRect newFrame = r;
+            if ( orientation == UIInterfaceOrientationPortrait ) {
+                newFrame = CGRectMake(r.origin.x, r.origin.y + inset.top, r.size.width, r.size.height - inset.top);
+            }
+            r = newFrame;
+        }
+    }
+
    rScreenView = r;
        
    screenView = [ [ScreenView alloc] initWithFrame: rScreenView];
