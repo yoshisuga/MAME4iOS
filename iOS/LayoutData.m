@@ -260,11 +260,13 @@
                 break;
         }
     }
-    NSLog(@"Printing layout for %@",[LayoutData getLayoutFilePath]);
+    NSLog(@"---------- Printing layout for %@",[LayoutData getLayoutFilePath]);
     [self printAsTextFileFormat:data];
+    NSLog(@"---------- End Printing layout");
 }
 
 +(void)printAsTextFileFormat:(NSMutableArray*)data {
+    NSMutableArray *layoutTextData = [[[NSMutableArray alloc] init] autorelease];
     NSArray<NSArray*> *fileDataLayoutElements = @[
                                      @[ @(kType_DPadRect), @(DPAD_DOWN_LEFT_RECT), @"//DownLeft"],    // 1
                                      @[ @(kType_DPadRect), @(DPAD_DOWN_RECT), @"//Down"],         // 2
@@ -273,22 +275,22 @@
                                      @[ @(kType_DPadRect), @(DPAD_RIGHT_RECT), @"//Right"],        // 5
                                      @[ @(kType_DPadRect), @(DPAD_UP_LEFT_RECT), @"//UpLeft"],      // 6
                                      @[ @(kType_DPadRect), @(DPAD_UP_RECT), @"//Up"],           // 7
-                                     @[ @(kType_DPadRect), @(DPAD_UP_RIGHT_RECT), @"UpRight"],     // 8
-                                     @[ @(kType_DPadRect), @(BTN_SELECT_RECT), @"//Select*"],        // 9
-                                     @[ @(kType_DPadRect), @(BTN_START_RECT), @"//Start*"],         // 10
-                                     @[ @(kType_DPadRect), @(BTN_L1_RECT), @"//LPad"],            // 11
-                                     @[ @(kType_DPadRect), @(BTN_R1_RECT), @"//Rpad"],            // 12
-                                     @[ @(kType_DPadRect), @(BTN_MENU_RECT), @"//menu"],          // 13
-                                     @[ @(kType_DPadRect), @(BTN_X_A_RECT), @"//ButtonDownLeft (X + A)"],           // 14
-                                     @[ @(kType_DPadRect), @(BTN_X_RECT), @"//ButtonDown X*"],             // 15
-                                     @[ @(kType_DPadRect), @(BTN_B_X_RECT), @"//ButtonDownRight (X + B)"],           // 16
-                                     @[ @(kType_DPadRect), @(BTN_A_RECT), @"//ButtonLeft A*"],             // 17
-                                     @[ @(kType_DPadRect), @(BTN_B_RECT), @"//ButtonRight B*"],             // 18
-                                     @[ @(kType_DPadRect), @(BTN_A_Y_RECT), @"//ButtonUpLeft (A + Y)"],           // 19
-                                     @[ @(kType_DPadRect), @(BTN_Y_RECT), @"//ButtonUp Y*"],             // 20
-                                     @[ @(kType_DPadRect), @(BTN_B_Y_RECT), @"//ButtonUpRight (B + Y)"],           // 21
-                                     @[ @(kType_DPadRect), @(BTN_L2_RECT), @"//L2*"],            // 22
-                                     @[ @(kType_DPadRect), @(BTN_R2_RECT), @"//R2*"],            // 23
+                                     @[ @(kType_DPadRect), @(DPAD_UP_RIGHT_RECT), @"//UpRight"],     // 8
+                                     @[ @(kType_ButtonRect), @(BTN_SELECT_RECT), @"//Select*"],        // 9
+                                     @[ @(kType_ButtonRect), @(BTN_START_RECT), @"//Start*"],         // 10
+                                     @[ @(kType_ButtonRect), @(BTN_L1_RECT), @"//LPad"],            // 11
+                                     @[ @(kType_ButtonRect), @(BTN_R1_RECT), @"//Rpad"],            // 12
+                                     @[ @(kType_ButtonRect), @(BTN_MENU_RECT), @"//menu"],          // 13
+                                     @[ @(kType_ButtonRect), @(BTN_X_A_RECT), @"//ButtonDownLeft (X + A)"],           // 14
+                                     @[ @(kType_ButtonRect), @(BTN_X_RECT), @"//ButtonDown X*"],             // 15
+                                     @[ @(kType_ButtonRect), @(BTN_B_X_RECT), @"//ButtonDownRight (X + B)"],           // 16
+                                     @[ @(kType_ButtonRect), @(BTN_A_RECT), @"//ButtonLeft A*"],             // 17
+                                     @[ @(kType_ButtonRect), @(BTN_B_RECT), @"//ButtonRight B*"],             // 18
+                                     @[ @(kType_ButtonRect), @(BTN_A_Y_RECT), @"//ButtonUpLeft (A + Y)"],           // 19
+                                     @[ @(kType_ButtonRect), @(BTN_Y_RECT), @"//ButtonUp Y*"],             // 20
+                                     @[ @(kType_ButtonRect), @(BTN_B_Y_RECT), @"//ButtonUpRight (B + Y)"],           // 21
+                                     @[ @(kType_ButtonRect), @(BTN_L2_RECT), @"//L2*"],            // 22
+                                     @[ @(kType_ButtonRect), @(BTN_R2_RECT), @"//R2*"],            // 23
                                      @[ @(-1), @(-1), @"//showkyboard"],                          // 24 not used (showkyboard)
                                      @[ @(kType_ButtonImgRect), @(BTN_B), @"//B img"],             // 25
                                      @[ @(kType_ButtonImgRect), @(BTN_X), @"//X img"],             // 26
@@ -309,18 +311,47 @@
 
     for (NSArray *dataTypeArray in fileDataLayoutElements) {
         // find in data array
-        NSUInteger coordType = [(NSNumber*) [dataTypeArray objectAtIndex:0] intValue];
-        NSUInteger coordValue = [(NSNumber*) [dataTypeArray objectAtIndex:1] intValue];
+        NSInteger coordType = [(NSNumber*) [dataTypeArray objectAtIndex:0] intValue];
+        NSInteger coordValue = [(NSNumber*) [dataTypeArray objectAtIndex:1] intValue];
         NSString *comment = (NSString*) [dataTypeArray objectAtIndex:2];
+        
+        // handle special fields
+        // Unused fields?
+        if ( [comment isEqualToString:@"//showkyboard"] ||
+            [comment isEqualToString:@"//StickArea*"] ||
+            [comment isEqualToString:@"//menu"] ) {
+            [layoutTextData addObject:[NSString stringWithFormat:@"0,0,0,0%@",comment]];
+            continue;
+        }
+        
+        if ( [comment isEqualToString:@"//DPad img"] ||
+            [comment isEqualToString:@"//StickWindow*" ]) {
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"type == %lu",(unsigned long)coordType,(unsigned long)coordValue];
+            NSArray *results = [data filteredArrayUsingPredicate:predicate];
+            if ( results.count == 0 ) {
+                [layoutTextData addObject:[NSString stringWithFormat:@"Could not find layout data for type=%lu and value=%lu",(unsigned long)coordType,(unsigned long)coordValue]];
+                continue;
+            }
+            LayoutData *layoutData = results.firstObject;
+            [layoutTextData addObject:[NSString stringWithFormat:@"%i,%i,%i,%i%@",(int)layoutData.rect.origin.x,(int)layoutData.rect.origin.y,(int)layoutData.rect.size.width,(int)layoutData.rect.size.height,comment]];
+            continue;
+        }
+        
+        if ( coordType == -2 ) {
+            [layoutTextData addObject:[NSString stringWithFormat:@"%lu%@",coordValue,comment]];
+            continue;
+        }
+        
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"type == %lu AND value == %lu",(unsigned long)coordType,(unsigned long)coordValue];
         NSArray *results = [data filteredArrayUsingPredicate:predicate];
         if ( results.count == 0 ) {
-            NSLog(@"Could not find layout data for type=%lu and value=%lu",(unsigned long)coordType,(unsigned long)coordValue);
+            [layoutTextData addObject:[NSString stringWithFormat:@"Could not find layout data for type=%lu and value=%lu",(unsigned long)coordType,(unsigned long)coordValue]];
             continue;
         }
         LayoutData *layoutData = results.firstObject;
-        NSLog(@"%i,%i,%i,%i%@",(int)layoutData.rect.origin.x,(int)layoutData.rect.origin.y,(int)layoutData.rect.size.width,(int)layoutData.rect.size.height,comment);
+        [layoutTextData addObject:[NSString stringWithFormat:@"%i,%i,%i,%i%@",(int)layoutData.rect.origin.x,(int)layoutData.rect.origin.y,(int)layoutData.rect.size.width,(int)layoutData.rect.size.height,comment]];
     }
+    NSLog(@"\n%@",[layoutTextData componentsJoinedByString:@"\n"]);
 }
 
 @end
