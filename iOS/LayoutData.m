@@ -231,41 +231,42 @@
         
     data = [NSKeyedUnarchiver unarchiveObjectWithFile:[LayoutData getLayoutFilePath]]; //devuelve un autorelease
     
-    if(data != nil)
-    for(i=0; i<data.count ; i++)
-    {
-        LayoutData *ld = (LayoutData *)[data objectAtIndex:i];
-        
-        switch (ld.type) {
-            case kType_ButtonRect:
-                [emuController getInputRects][ld.value].origin.x = [ld getNewRect].origin.x ;
-                [emuController getInputRects][ld.value].origin.y = [ld getNewRect].origin.y ;
-                break;
-            case kType_ButtonImgRect:
-                [emuController getButtonRects][ld.value].origin.x = [ld getNewRect].origin.x;
-                [emuController getButtonRects][ld.value].origin.y = [ld getNewRect].origin.y;
-                break;
-            case kType_DPadRect:
-                [emuController getInputRects][ld.value].origin.x = [ld getNewRect].origin.x;
-                [emuController getInputRects][ld.value].origin.y = [ld getNewRect].origin.y;
-                break;
-            case kType_DPadImgRect:
-                emuController.rDPadImage = [ld getNewRect];
-                break;
-            case kType_StickRect:
-                emuController.rStickWindow = CGRectMake( [ld getNewRect].origin.x, [ld getNewRect].origin.y, 
-                                                        emuController.rStickWindow.size.width, emuController.rStickWindow.size.height) ;
-                break;
-            default:
-                break;
+    if(data != nil) {
+        for(i=0; i<data.count ; i++)
+        {
+            LayoutData *ld = (LayoutData *)[data objectAtIndex:i];
+            
+            switch (ld.type) {
+                case kType_ButtonRect:
+                    [emuController getInputRects][ld.value].origin.x = [ld getNewRect].origin.x ;
+                    [emuController getInputRects][ld.value].origin.y = [ld getNewRect].origin.y ;
+                    break;
+                case kType_ButtonImgRect:
+                    [emuController getButtonRects][ld.value].origin.x = [ld getNewRect].origin.x;
+                    [emuController getButtonRects][ld.value].origin.y = [ld getNewRect].origin.y;
+                    break;
+                case kType_DPadRect:
+                    [emuController getInputRects][ld.value].origin.x = [ld getNewRect].origin.x;
+                    [emuController getInputRects][ld.value].origin.y = [ld getNewRect].origin.y;
+                    break;
+                case kType_DPadImgRect:
+                    emuController.rDPadImage = [ld getNewRect];
+                    break;
+                case kType_StickRect:
+                    emuController.rStickWindow = CGRectMake( [ld getNewRect].origin.x, [ld getNewRect].origin.y,
+                                                            emuController.rStickWindow.size.width, emuController.rStickWindow.size.height) ;
+                    break;
+                default:
+                    break;
+            }
         }
+        NSLog(@"---------- Printing layout for %@",[LayoutData getLayoutFilePath]);
+        [self printAsTextFileFormat:data emuController:emuController];
+        NSLog(@"---------- End Printing layout");
     }
-    NSLog(@"---------- Printing layout for %@",[LayoutData getLayoutFilePath]);
-    [self printAsTextFileFormat:data];
-    NSLog(@"---------- End Printing layout");
 }
 
-+(void)printAsTextFileFormat:(NSMutableArray*)data {
++(void)printAsTextFileFormat:(NSMutableArray*)data emuController:(EmulatorController*)emuController {
     NSMutableArray *layoutTextData = [[[NSMutableArray alloc] init] autorelease];
     NSArray<NSArray*> *fileDataLayoutElements = @[
                                      @[ @(kType_DPadRect), @(DPAD_DOWN_LEFT_RECT), @"//DownLeft"],    // 1
@@ -304,7 +305,7 @@
                                      @[ @(kType_ButtonImgRect), @(BTN_L2), @"//L2 img"],            // 34
                                      @[ @(kType_ButtonImgRect), @(BTN_R2), @"//R2 img"],            // 35
                                      @[ @(kType_StickRect), @(-1), @"//StickWindow*"],                    // 36
-                                     @[ @(kType_StickRect), @(-1), @"//StickArea*"],                    // 37 stick area, not used - can be anything
+                                     @[ @(kType_StickRect), @(-1), @"//StickArea*"],                    // 37 stick area
                                      @[ @(-2), @(60), @"//radio_stick"],                                 // 38 radio_stick - -2 means use int in index 1
                                      @[ @(-2), @(50), @""]                                  // 39 controller opacity: use 50
                                      ];
@@ -318,9 +319,16 @@
         // handle special fields
         // Unused fields?
         if ( [comment isEqualToString:@"//showkyboard"] ||
-            [comment isEqualToString:@"//StickArea*"] ||
             [comment isEqualToString:@"//menu"] ) {
             [layoutTextData addObject:[NSString stringWithFormat:@"0,0,0,0%@",comment]];
+            continue;
+        }
+        
+        if ( [comment isEqualToString:@"//StickArea*"] ) {
+            [layoutTextData addObject:[NSString stringWithFormat:@"%i,%i,%i,%i//StickArea*",(int)emuController.rStickArea.origin.x,
+                                       (int)emuController.rStickArea.origin.y,
+                                       (int)emuController.rStickArea.size.width,
+                                       (int)emuController.rStickArea.size.height]];
             continue;
         }
         

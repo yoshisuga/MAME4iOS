@@ -178,7 +178,7 @@
 @property (readonly,assign) int num_debug_rects;
 @property (readwrite,assign) CGRect rExternalView;
 @property (readonly,assign) int stick_radio;
-//@property (readonly,assign) CGRect rStickArea;
+@property (readonly,assign) CGRect rStickArea;
 @property (assign) CGRect rStickWindow;
 @property (assign) CGRect rDPadImage;
 

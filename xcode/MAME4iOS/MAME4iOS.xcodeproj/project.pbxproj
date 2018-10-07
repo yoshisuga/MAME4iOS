@@ -11,6 +11,10 @@
 		920BBDEF201FC29700AE7D50 /* dpad.png in Resources */ = {isa = PBXBuildFile; fileRef = 920BBDED201FC29700AE7D50 /* dpad.png */; };
 		920BBDF120210C3800AE7D50 /* menu.png in Resources */ = {isa = PBXBuildFile; fileRef = 920BBDF020210C3700AE7D50 /* menu.png */; };
 		920BBDF220210C3800AE7D50 /* menu.png in Resources */ = {isa = PBXBuildFile; fileRef = 920BBDF020210C3700AE7D50 /* menu.png */; };
+		921CC322216A903600A39154 /* config_iPad_pro_10_5.txt in Resources */ = {isa = PBXBuildFile; fileRef = 921CC321216A903600A39154 /* config_iPad_pro_10_5.txt */; };
+		921CC323216A903600A39154 /* config_iPad_pro_10_5.txt in Resources */ = {isa = PBXBuildFile; fileRef = 921CC321216A903600A39154 /* config_iPad_pro_10_5.txt */; };
+		921CC325216A936800A39154 /* config_iPad_pro_12_9.txt in Resources */ = {isa = PBXBuildFile; fileRef = 921CC324216A936800A39154 /* config_iPad_pro_12_9.txt */; };
+		921CC326216A936800A39154 /* config_iPad_pro_12_9.txt in Resources */ = {isa = PBXBuildFile; fileRef = 921CC324216A936800A39154 /* config_iPad_pro_12_9.txt */; };
 		925ABCA61E46DCC500997182 /* iCadeView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8D87DC1653121200685BC4 /* iCadeView.m */; };
 		925ABCA71E46DCC500997182 /* iph_main.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680A81635BAF400051BC2 /* iph_main.m */; };
 		925ABCA81E46DCC500997182 /* ListOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE90575B166A89D000653872 /* ListOptionController.m */; };
@@ -190,6 +194,8 @@
 /* Begin PBXFileReference section */
 		920BBDED201FC29700AE7D50 /* dpad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = dpad.png; sourceTree = "<group>"; };
 		920BBDF020210C3700AE7D50 /* menu.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menu.png; sourceTree = "<group>"; };
+		921CC321216A903600A39154 /* config_iPad_pro_10_5.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = config_iPad_pro_10_5.txt; sourceTree = "<group>"; };
+		921CC324216A936800A39154 /* config_iPad_pro_12_9.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = config_iPad_pro_12_9.txt; sourceTree = "<group>"; };
 		925ABCE21E46DCC500997182 /* MAME4iOS 64-bit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MAME4iOS 64-bit.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		925ABCE31E46DCC600997182 /* MAME4iOS copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "MAME4iOS copy-Info.plist"; path = "/Users/yoshi/Code/MAME4iOSReloaded/xcode/MAME4iOS/MAME4iOS copy-Info.plist"; sourceTree = "<absolute>"; };
 		925ABCE41E46DD6E00997182 /* libmamearm64.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmamearm64.a; path = ../../libmamearm64.a; sourceTree = "<group>"; };
@@ -446,8 +452,10 @@
 				9268D85121661F1700AB0470 /* config_iPhone_6_plus.txt */,
 				9268D85421661F8E00AB0470 /* config_iPhone_6.txt */,
 				CE8D87D7164FE4BE00685BC4 /* config_iPhone_5.txt */,
-				CEBFBC11163C5DA100A05CD0 /* config_iPad.txt */,
 				CEBFBC12163C5DA100A05CD0 /* config_iPhone.txt */,
+				CEBFBC11163C5DA100A05CD0 /* config_iPad.txt */,
+				921CC321216A903600A39154 /* config_iPad_pro_10_5.txt */,
+				921CC324216A936800A39154 /* config_iPad_pro_12_9.txt */,
 				CEBFBC10163C5DA100A05CD0 /* border-iPad.png */,
 				CEBFBC13163C5DA100A05CD0 /* crt-1.png */,
 				CEBFBC14163C5DA100A05CD0 /* crt-2.png */,
@@ -645,6 +653,7 @@
 			files = (
 				9268D84D21661E3800AB0470 /* config_iPhone_x.txt in Resources */,
 				925ABCC71E46DCC500997182 /* InfoPlist.strings in Resources */,
+				921CC326216A936800A39154 /* config_iPad_pro_12_9.txt in Resources */,
 				925ABCC81E46DCC500997182 /* Default.png in Resources */,
 				925ABCC91E46DCC500997182 /* Default@2x.png in Resources */,
 				92ECDA88215AEF5D00E4303A /* Launch Screen.storyboard in Resources */,
@@ -672,6 +681,7 @@
 				925ABCDA1E46DCC500997182 /* MAME4iOS144.png in Resources */,
 				925ABCDB1E46DCC500997182 /* MAME4iOS57.png in Resources */,
 				925ABCDC1E46DCC500997182 /* cheat.zip in Resources */,
+				921CC323216A903600A39154 /* config_iPad_pro_10_5.txt in Resources */,
 				925ABCDD1E46DCC500997182 /* Category.ini in Resources */,
 				925ABCDE1E46DCC500997182 /* hiscore.dat in Resources */,
 			);
@@ -714,6 +724,7 @@
 			files = (
 				9268D84C21661E3800AB0470 /* config_iPhone_x.txt in Resources */,
 				CEE680941635BA7000051BC2 /* InfoPlist.strings in Resources */,
+				921CC325216A936800A39154 /* config_iPad_pro_12_9.txt in Resources */,
 				CEE6809C1635BA7000051BC2 /* Default.png in Resources */,
 				CEE6809E1635BA7000051BC2 /* Default@2x.png in Resources */,
 				92ECDA87215AEF5D00E4303A /* Launch Screen.storyboard in Resources */,
@@ -741,6 +752,7 @@
 				CEC5AD9916AAB47D00C7B33D /* MAME4iOS144.png in Resources */,
 				CEC5AD9C16AAB79C00C7B33D /* MAME4iOS57.png in Resources */,
 				CE30090116FA47BD000EDCF1 /* cheat.zip in Resources */,
+				921CC322216A903600A39154 /* config_iPad_pro_10_5.txt in Resources */,
 				CE30090416FA47CB000EDCF1 /* Category.ini in Resources */,
 				CE30090716FA47E4000EDCF1 /* hiscore.dat in Resources */,
 			);
