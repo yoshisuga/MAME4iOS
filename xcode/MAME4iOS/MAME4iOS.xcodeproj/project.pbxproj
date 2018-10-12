@@ -11,6 +11,10 @@
 		920BBDEF201FC29700AE7D50 /* dpad.png in Resources */ = {isa = PBXBuildFile; fileRef = 920BBDED201FC29700AE7D50 /* dpad.png */; };
 		920BBDF120210C3800AE7D50 /* menu.png in Resources */ = {isa = PBXBuildFile; fileRef = 920BBDF020210C3700AE7D50 /* menu.png */; };
 		920BBDF220210C3800AE7D50 /* menu.png in Resources */ = {isa = PBXBuildFile; fileRef = 920BBDF020210C3700AE7D50 /* menu.png */; };
+		921CC322216A903600A39154 /* config_iPad_pro_10_5.txt in Resources */ = {isa = PBXBuildFile; fileRef = 921CC321216A903600A39154 /* config_iPad_pro_10_5.txt */; };
+		921CC323216A903600A39154 /* config_iPad_pro_10_5.txt in Resources */ = {isa = PBXBuildFile; fileRef = 921CC321216A903600A39154 /* config_iPad_pro_10_5.txt */; };
+		921CC325216A936800A39154 /* config_iPad_pro_12_9.txt in Resources */ = {isa = PBXBuildFile; fileRef = 921CC324216A936800A39154 /* config_iPad_pro_12_9.txt */; };
+		921CC326216A936800A39154 /* config_iPad_pro_12_9.txt in Resources */ = {isa = PBXBuildFile; fileRef = 921CC324216A936800A39154 /* config_iPad_pro_12_9.txt */; };
 		925ABCA61E46DCC500997182 /* iCadeView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8D87DC1653121200685BC4 /* iCadeView.m */; };
 		925ABCA71E46DCC500997182 /* iph_main.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680A81635BAF400051BC2 /* iph_main.m */; };
 		925ABCA81E46DCC500997182 /* ListOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE90575B166A89D000653872 /* ListOptionController.m */; };
@@ -64,7 +68,16 @@
 		925ABCDD1E46DCC500997182 /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = CE30090316FA47CB000EDCF1 /* Category.ini */; };
 		925ABCDE1E46DCC500997182 /* hiscore.dat in Resources */ = {isa = PBXBuildFile; fileRef = CE30090616FA47E4000EDCF1 /* hiscore.dat */; };
 		925ABCE51E46DD6E00997182 /* libmamearm64.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 925ABCE41E46DD6E00997182 /* libmamearm64.a */; };
-		925ABCE81E4E1CE700997182 /* libmamearmv7.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0A1A540D1D5FEA0F0053C761 /* libmamearmv7.a */; };
+		9268D84921661CA500AB0470 /* config_iPhone_xr_xs_max.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9268D84821661CA500AB0470 /* config_iPhone_xr_xs_max.txt */; };
+		9268D84A21661CA500AB0470 /* config_iPhone_xr_xs_max.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9268D84821661CA500AB0470 /* config_iPhone_xr_xs_max.txt */; };
+		9268D84C21661E3800AB0470 /* config_iPhone_x.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9268D84B21661E3800AB0470 /* config_iPhone_x.txt */; };
+		9268D84D21661E3800AB0470 /* config_iPhone_x.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9268D84B21661E3800AB0470 /* config_iPhone_x.txt */; };
+		9268D85221661F1700AB0470 /* config_iPhone_6_plus.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9268D85121661F1700AB0470 /* config_iPhone_6_plus.txt */; };
+		9268D85321661F1700AB0470 /* config_iPhone_6_plus.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9268D85121661F1700AB0470 /* config_iPhone_6_plus.txt */; };
+		9268D85521661F8E00AB0470 /* config_iPhone_6.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9268D85421661F8E00AB0470 /* config_iPhone_6.txt */; };
+		9268D85621661F8E00AB0470 /* config_iPhone_6.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9268D85421661F8E00AB0470 /* config_iPhone_6.txt */; };
+		9268D8592166841000AB0470 /* DeviceScreenResolver.m in Sources */ = {isa = PBXBuildFile; fileRef = 9268D8582166840F00AB0470 /* DeviceScreenResolver.m */; };
+		9268D85A2166841000AB0470 /* DeviceScreenResolver.m in Sources */ = {isa = PBXBuildFile; fileRef = 9268D8582166840F00AB0470 /* DeviceScreenResolver.m */; };
 		92B99F0E2022706600CC44E3 /* UIView+Toast.m in Sources */ = {isa = PBXBuildFile; fileRef = 92B99F0D2022706600CC44E3 /* UIView+Toast.m */; };
 		92B99F0F2022706600CC44E3 /* UIView+Toast.m in Sources */ = {isa = PBXBuildFile; fileRef = 92B99F0D2022706600CC44E3 /* UIView+Toast.m */; };
 		92D96574215B03E100EFE3AE /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 92D96573215B03E100EFE3AE /* libc++.tbd */; };
@@ -179,12 +192,19 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		0A1A540D1D5FEA0F0053C761 /* libmamearmv7.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmamearmv7.a; path = ../../libmamearmv7.a; sourceTree = "<group>"; };
 		920BBDED201FC29700AE7D50 /* dpad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = dpad.png; sourceTree = "<group>"; };
 		920BBDF020210C3700AE7D50 /* menu.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menu.png; sourceTree = "<group>"; };
+		921CC321216A903600A39154 /* config_iPad_pro_10_5.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = config_iPad_pro_10_5.txt; sourceTree = "<group>"; };
+		921CC324216A936800A39154 /* config_iPad_pro_12_9.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = config_iPad_pro_12_9.txt; sourceTree = "<group>"; };
 		925ABCE21E46DCC500997182 /* MAME4iOS 64-bit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MAME4iOS 64-bit.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		925ABCE31E46DCC600997182 /* MAME4iOS copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "MAME4iOS copy-Info.plist"; path = "/Users/yoshi/Code/MAME4iOSReloaded/xcode/MAME4iOS/MAME4iOS copy-Info.plist"; sourceTree = "<absolute>"; };
 		925ABCE41E46DD6E00997182 /* libmamearm64.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmamearm64.a; path = ../../libmamearm64.a; sourceTree = "<group>"; };
+		9268D84821661CA500AB0470 /* config_iPhone_xr_xs_max.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = config_iPhone_xr_xs_max.txt; sourceTree = "<group>"; };
+		9268D84B21661E3800AB0470 /* config_iPhone_x.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = config_iPhone_x.txt; sourceTree = "<group>"; };
+		9268D85121661F1700AB0470 /* config_iPhone_6_plus.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = config_iPhone_6_plus.txt; sourceTree = "<group>"; };
+		9268D85421661F8E00AB0470 /* config_iPhone_6.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = config_iPhone_6.txt; sourceTree = "<group>"; };
+		9268D8572166840F00AB0470 /* DeviceScreenResolver.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DeviceScreenResolver.h; sourceTree = "<group>"; };
+		9268D8582166840F00AB0470 /* DeviceScreenResolver.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DeviceScreenResolver.m; sourceTree = "<group>"; };
 		92B99F0C2022706600CC44E3 /* UIView+Toast.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+Toast.h"; sourceTree = "<group>"; };
 		92B99F0D2022706600CC44E3 /* UIView+Toast.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+Toast.m"; sourceTree = "<group>"; };
 		92D96573215B03E100EFE3AE /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
@@ -326,7 +346,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				925ABCE81E4E1CE700997182 /* libmamearmv7.a in Frameworks */,
 				B370F8B01C8549010069377D /* GameController.framework in Frameworks */,
 				CE8F1C601735199400D3F527 /* CoreBluetooth.framework in Frameworks */,
 				92D9657D215B0D5D00EFE3AE /* crt1.3.1.o in Frameworks */,
@@ -356,6 +375,8 @@
 				CE8F0D7C16585C2B0048D63C /* DebugView.m */,
 				CE8F088617435C3A00E2D5FB /* DefaultOptionController.h */,
 				CE8F088717435C3A00E2D5FB /* DefaultOptionController.m */,
+				9268D8572166840F00AB0470 /* DeviceScreenResolver.h */,
+				9268D8582166840F00AB0470 /* DeviceScreenResolver.m */,
 				CEE680B01635BB4900051BC2 /* DonateController.h */,
 				CEE680B11635BB4900051BC2 /* DonateController.m */,
 				CEE680B41635BB4900051BC2 /* EmulatorController.h */,
@@ -382,11 +403,11 @@
 				CE9454D31731DE4D00B81C32 /* NetplayGameKit.m */,
 				CEE680BF1635BB6100051BC2 /* OptionsController.h */,
 				CEE680C01635BB6100051BC2 /* OptionsController.m */,
-				CEBFBC0E163C5BD300A05CD0 /* resources */,
 				CEE680C11635BB6100051BC2 /* ScreenView.h */,
 				CEE680C21635BB6100051BC2 /* ScreenView.m */,
 				92B99F0C2022706600CC44E3 /* UIView+Toast.h */,
 				92B99F0D2022706600CC44E3 /* UIView+Toast.m */,
+				CEBFBC0E163C5BD300A05CD0 /* resources */,
 			);
 			name = RELOADED;
 			sourceTree = "<group>";
@@ -426,9 +447,15 @@
 				CE30090316FA47CB000EDCF1 /* Category.ini */,
 				CE30090016FA47BD000EDCF1 /* cheat.zip */,
 				CEBE455B168862EE00D9C140 /* help.html */,
+				9268D84821661CA500AB0470 /* config_iPhone_xr_xs_max.txt */,
+				9268D84B21661E3800AB0470 /* config_iPhone_x.txt */,
+				9268D85121661F1700AB0470 /* config_iPhone_6_plus.txt */,
+				9268D85421661F8E00AB0470 /* config_iPhone_6.txt */,
 				CE8D87D7164FE4BE00685BC4 /* config_iPhone_5.txt */,
-				CEBFBC11163C5DA100A05CD0 /* config_iPad.txt */,
 				CEBFBC12163C5DA100A05CD0 /* config_iPhone.txt */,
+				CEBFBC11163C5DA100A05CD0 /* config_iPad.txt */,
+				921CC321216A903600A39154 /* config_iPad_pro_10_5.txt */,
+				921CC324216A936800A39154 /* config_iPad_pro_12_9.txt */,
 				CEBFBC10163C5DA100A05CD0 /* border-iPad.png */,
 				CEBFBC13163C5DA100A05CD0 /* crt-1.png */,
 				CEBFBC14163C5DA100A05CD0 /* crt-2.png */,
@@ -447,7 +474,6 @@
 			isa = PBXGroup;
 			children = (
 				92ECDA86215AEF5D00E4303A /* Launch Screen.storyboard */,
-				0A1A540D1D5FEA0F0053C761 /* libmamearmv7.a */,
 				92D9657C215B0D5C00EFE3AE /* crt1.3.1.o */,
 				CEAC6C2716AAA73900AF3275 /* RELOADED */,
 				CEE6808F1635BA7000051BC2 /* MAME4iOS */,
@@ -625,11 +651,15 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9268D84D21661E3800AB0470 /* config_iPhone_x.txt in Resources */,
 				925ABCC71E46DCC500997182 /* InfoPlist.strings in Resources */,
+				921CC326216A936800A39154 /* config_iPad_pro_12_9.txt in Resources */,
 				925ABCC81E46DCC500997182 /* Default.png in Resources */,
 				925ABCC91E46DCC500997182 /* Default@2x.png in Resources */,
 				92ECDA88215AEF5D00E4303A /* Launch Screen.storyboard in Resources */,
+				9268D85321661F1700AB0470 /* config_iPhone_6_plus.txt in Resources */,
 				925ABCCA1E46DCC500997182 /* Default-568h@2x.png in Resources */,
+				9268D84A21661CA500AB0470 /* config_iPhone_xr_xs_max.txt in Resources */,
 				925ABCCB1E46DCC500997182 /* border-iPad.png in Resources */,
 				925ABCCC1E46DCC500997182 /* config_iPad.txt in Resources */,
 				925ABCCD1E46DCC500997182 /* config_iPhone.txt in Resources */,
@@ -640,6 +670,7 @@
 				920BBDEF201FC29700AE7D50 /* dpad.png in Resources */,
 				925ABCD21E46DCC500997182 /* SKIN_1 in Resources */,
 				925ABCD31E46DCC500997182 /* SKIN_2 in Resources */,
+				9268D85621661F8E00AB0470 /* config_iPhone_6.txt in Resources */,
 				925ABCD41E46DCC500997182 /* SKIN_3 in Resources */,
 				925ABCD51E46DCC500997182 /* config_iPhone_5.txt in Resources */,
 				920BBDF220210C3800AE7D50 /* menu.png in Resources */,
@@ -650,6 +681,7 @@
 				925ABCDA1E46DCC500997182 /* MAME4iOS144.png in Resources */,
 				925ABCDB1E46DCC500997182 /* MAME4iOS57.png in Resources */,
 				925ABCDC1E46DCC500997182 /* cheat.zip in Resources */,
+				921CC323216A903600A39154 /* config_iPad_pro_10_5.txt in Resources */,
 				925ABCDD1E46DCC500997182 /* Category.ini in Resources */,
 				925ABCDE1E46DCC500997182 /* hiscore.dat in Resources */,
 			);
@@ -690,11 +722,15 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9268D84C21661E3800AB0470 /* config_iPhone_x.txt in Resources */,
 				CEE680941635BA7000051BC2 /* InfoPlist.strings in Resources */,
+				921CC325216A936800A39154 /* config_iPad_pro_12_9.txt in Resources */,
 				CEE6809C1635BA7000051BC2 /* Default.png in Resources */,
 				CEE6809E1635BA7000051BC2 /* Default@2x.png in Resources */,
 				92ECDA87215AEF5D00E4303A /* Launch Screen.storyboard in Resources */,
+				9268D85221661F1700AB0470 /* config_iPhone_6_plus.txt in Resources */,
 				CEE680A01635BA7000051BC2 /* Default-568h@2x.png in Resources */,
+				9268D84921661CA500AB0470 /* config_iPhone_xr_xs_max.txt in Resources */,
 				CEBFBC20163C5DA100A05CD0 /* border-iPad.png in Resources */,
 				CEBFBC21163C5DA100A05CD0 /* config_iPad.txt in Resources */,
 				CEBFBC22163C5DA100A05CD0 /* config_iPhone.txt in Resources */,
@@ -705,6 +741,7 @@
 				920BBDEE201FC29700AE7D50 /* dpad.png in Resources */,
 				CEBFBC2D163C5DA100A05CD0 /* SKIN_1 in Resources */,
 				CEBFBC2E163C5DA100A05CD0 /* SKIN_2 in Resources */,
+				9268D85521661F8E00AB0470 /* config_iPhone_6.txt in Resources */,
 				CEBFBC2F163C5DA100A05CD0 /* SKIN_3 in Resources */,
 				CE8D87D8164FE4BE00685BC4 /* config_iPhone_5.txt in Resources */,
 				920BBDF120210C3800AE7D50 /* menu.png in Resources */,
@@ -715,6 +752,7 @@
 				CEC5AD9916AAB47D00C7B33D /* MAME4iOS144.png in Resources */,
 				CEC5AD9C16AAB79C00C7B33D /* MAME4iOS57.png in Resources */,
 				CE30090116FA47BD000EDCF1 /* cheat.zip in Resources */,
+				921CC322216A903600A39154 /* config_iPad_pro_10_5.txt in Resources */,
 				CE30090416FA47CB000EDCF1 /* Category.ini in Resources */,
 				CE30090716FA47E4000EDCF1 /* hiscore.dat in Resources */,
 			);
@@ -740,6 +778,7 @@
 				925ABCAF1E46DCC500997182 /* AnalogStick.m in Sources */,
 				925ABCB01E46DCC500997182 /* Bootstrapper.m in Sources */,
 				925ABCB11E46DCC500997182 /* LayoutData.m in Sources */,
+				9268D85A2166841000AB0470 /* DeviceScreenResolver.m in Sources */,
 				925ABCB21E46DCC500997182 /* LayoutView.m in Sources */,
 				925ABCB31E46DCC500997182 /* NetplayController.m in Sources */,
 				925ABCB41E46DCC500997182 /* NetplayGameKit.m in Sources */,
@@ -791,6 +830,7 @@
 				CEAC6C5216AAA97400AF3275 /* AnalogStick.m in Sources */,
 				CEAC6C5416AAA97800AF3275 /* Bootstrapper.m in Sources */,
 				CE6D6E1416D8CADF00F265B7 /* LayoutData.m in Sources */,
+				9268D8592166841000AB0470 /* DeviceScreenResolver.m in Sources */,
 				CE6D6E1616D8CADF00F265B7 /* LayoutView.m in Sources */,
 				CE9454CC173160A300B81C32 /* NetplayController.m in Sources */,
 				CE9454D41731DE4E00B81C32 /* NetplayGameKit.m in Sources */,
@@ -847,7 +887,7 @@
 				);
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.lesbird.mame4iosXX;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yoshisuga.mame4ios;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -877,7 +917,7 @@
 				);
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.lesbird.mame4iosXX;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yoshisuga.mame4ios;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";

@@ -59,6 +59,8 @@
 #import <pthread.h>
 #import "NetplayGameKit.h"
 #import "UIView+Toast.h"
+#import "DeviceScreenResolver.h"
+#import "Bootstrapper.h"
 
 // mfi Controllers
 NSMutableArray *controllers;
@@ -208,6 +210,7 @@ void* app_Thread_Start(void* args)
 @synthesize rExternalView;
 @synthesize stick_radio;
 @synthesize rStickWindow;
+@synthesize rStickArea;
 @synthesize rDPadImage;
 
 
@@ -434,7 +437,8 @@ void* app_Thread_Start(void* args)
     
     myosd_pxasp1 = [op p1aspx];
     
-    g_pref_skin = [op skinValue]+1;
+    // always use skin 1
+    g_pref_skin = 1;
     g_skin_data = g_pref_skin;
     if(g_pref_skin == 2 && g_isIpad)
         g_pref_skin = 3;
@@ -1479,8 +1483,22 @@ void myosd_handle_turbo() {
        r.size.width = tmp_width;
        r.size.height = tmp_height;
    
-   }  
-   
+   }
+    
+    // Handle Safe Area (iPhone X)
+    if ( @available(iOS 11, *) ) {
+        if ( externalView == nil ) {
+            UIEdgeInsets inset = [[UIApplication sharedApplication] keyWindow].safeAreaInsets;
+            NSLog(@"safe area insets: top %f, bottom %f, left %f, right %f", inset.top, inset.bottom, inset.left, inset.right);
+            UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
+            CGRect newFrame = r;
+            if ( orientation == UIInterfaceOrientationPortrait ) {
+                newFrame = CGRectMake(r.origin.x, r.origin.y + inset.top, r.size.width, r.size.height - inset.top);
+            }
+            r = newFrame;
+        }
+    }
+
    rScreenView = r;
        
    screenView = [ [ScreenView alloc] initWithFrame: rScreenView];
@@ -2159,54 +2177,50 @@ void myosd_handle_turbo() {
 - (void)getControllerCoords:(int)orientation {
     char string[256];
     FILE *fp;
+    
+    DeviceScreenType screenType = [DeviceScreenResolver resolve];
+    NSString *deviceName = nil;
 	
+    if ( screenType == IPHONE_XR_XS_MAX ) {
+        deviceName = @"iPhone_xr_xs_max";
+    } else if ( screenType == IPHONE_X_XS ) {
+        deviceName = @"iPhone_x";
+    } else if ( screenType == IPHONE_6_7_8_PLUS ) {
+        deviceName = @"iPhone_6_plus";
+    } else if ( screenType == IPHONE_6_7_8 ) {
+        deviceName = @"iPhone_6";
+    } else if ( screenType == IPHONE_5 ) {
+        deviceName = @"iPhone_5";
+    } else if ( screenType == IPHONE_4_OR_LESS ) {
+        deviceName = @"iPhone";
+    } else if ( g_isIpad ) {
+        if ( screenType == IPAD_PRO_12_9 ) {
+            deviceName = @"iPad_pro_12_9";
+        } else if ( screenType == IPAD_PRO_10_5 ) {
+            deviceName = @"iPad_pro_10_5";
+        } else if ( screenType == IPAD ) {
+            deviceName = @"iPad";
+        } else {
+            deviceName = @"config_iPad_pro_12_9";
+        }
+    } else {
+        // default to the largest iPhone if unknown
+        deviceName = @"iPhone_xr_xs_max";
+    }
+    
 	if(!orientation)
 	{
-		if(g_isIpad)
-		{
- 		   if(g_pref_full_screen_port)
-		     fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_portrait_full_iPad.txt", g_skin_data] UTF8String]];
-		   else
-             fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_portrait_iPad.txt", g_skin_data] UTF8String]];
-		}
-		else if(g_isIphone5)
-		{
-            if(g_pref_full_screen_port)
-                fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_portrait_full_iPhone_5.txt", g_skin_data] UTF8String]];                
-            else
-                fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_portrait_iPhone_5.txt", g_skin_data] UTF8String]];
-		}
-		else
-		{
-		   if(g_pref_full_screen_port)
-             fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_portrait_full_iPhone.txt", g_skin_data] UTF8String]];
-		   else
-             fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_portrait_iPhone.txt", g_skin_data] UTF8String]];
-		}
+        if(g_pref_full_screen_port)
+            fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_portrait_full_%@.txt", g_skin_data, deviceName] UTF8String]];
+        else
+            fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_portrait_%@.txt", g_skin_data, deviceName] UTF8String]];
     }
 	else
 	{
-		if(g_isIpad)
-		{
-		   if(g_pref_full_screen_land)
-             fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_landscape_full_iPad.txt", g_skin_data] UTF8String]]; 
-		   else
-             fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_landscape_iPad.txt", g_skin_data] UTF8String]]; 		  
-		}
-		else if(g_isIphone5)
-		{
-            if(g_pref_full_screen_land)
-                fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_landscape_full_iPhone_5.txt", g_skin_data] UTF8String]];                 
-            else
-                fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_landscape_iPhone_5.txt", g_skin_data] UTF8String]];  
-		}
-		else
-		{
-		   if(g_pref_full_screen_land)
-             fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_landscape_full_iPhone.txt", g_skin_data] UTF8String]];  
-		   else
-             fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_landscape_iPhone.txt", g_skin_data] UTF8String]];
-		}
+        if(g_pref_full_screen_land)
+            fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_landscape_full_%@.txt", g_skin_data,deviceName] UTF8String]];
+        else
+            fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_landscape_%@.txt", g_skin_data, deviceName] UTF8String]];
 	}
 	
 	if (fp) 
@@ -2313,17 +2327,38 @@ void myosd_handle_turbo() {
 - (void)getConf{
     char string[256];
     FILE *fp;
+    
+    DeviceScreenType screenType = [DeviceScreenResolver resolve];
 	
-	if(g_isIpad)
-       fp = [self loadFile:"config_iPad.txt"];
-    else if(g_isIphone5)
-       fp = [self loadFile:"config_iPhone_5.txt"];
-	else
-	   fp = [self loadFile:"config_iPhone.txt"];
-	   	
+    if ( screenType == IPHONE_XR_XS_MAX ) {
+        fp = [self loadFile:"config_iPhone_xr_xs_max.txt"];
+    } else if ( screenType == IPHONE_X_XS ) {
+        fp = [self loadFile:"config_iPhone_x.txt"];
+    } else if ( screenType == IPHONE_6_7_8_PLUS ) {
+        fp = [self loadFile:"config_iPhone_6_plus.txt"];
+    } else if ( screenType == IPHONE_6_7_8 ) {
+        fp = [self loadFile:"config_iPhone_6.txt"];
+    } else if ( screenType == IPHONE_5 ) {
+        fp = [self loadFile:"config_iPhone_5.txt"];
+    } else if ( screenType == IPHONE_4_OR_LESS ) {
+        fp = [self loadFile:"config_iPhone.txt"];
+    } else if ( g_isIpad ) {
+        if ( screenType == IPAD_PRO_12_9 ) {
+            fp  = [self loadFile:"config_iPad_pro_12_9.txt"];
+        } else if ( screenType == IPAD_PRO_10_5 ) {
+            fp  = [self loadFile:"config_iPad_pro_10_5.txt"];
+        } else if ( screenType == IPAD ) {
+            fp = [self loadFile:"config_iPad.txt"];
+        } else {
+            fp = [self loadFile:"config_iPad_pro_12_9.txt"];
+        }
+    } else {
+        // default to the largest iPhone if unknown
+       fp = [self loadFile:"config_iPhone_xr_xs_max.txt"];
+    }
+
 	if (fp) 
 	{
-
 		int i = 0;
         while(fgets(string, 256, fp) != NULL && i < 14)
        {
