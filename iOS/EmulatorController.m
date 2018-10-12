@@ -437,7 +437,8 @@ void* app_Thread_Start(void* args)
     
     myosd_pxasp1 = [op p1aspx];
     
-    g_pref_skin = [op skinValue]+1;
+    // always use skin 1
+    g_pref_skin = 1;
     g_skin_data = g_pref_skin;
     if(g_pref_skin == 2 && g_isIpad)
         g_pref_skin = 3;
