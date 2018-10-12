@@ -101,6 +101,5 @@ Under Settings -> Game Input, there's a section called "Turbo Mode Toggle", that
 
 ## Planned Future Improvements
 
-- iPhone X/XR/XS/XS Max Display Support
 - tvOS
 - Touch Analog: in experimental phase, to support touch screen control for games like Arkanoid, as well as vertical shooters to play in portrait mode.
