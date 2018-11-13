@@ -80,6 +80,17 @@
 		9268D85A2166841000AB0470 /* DeviceScreenResolver.m in Sources */ = {isa = PBXBuildFile; fileRef = 9268D8582166840F00AB0470 /* DeviceScreenResolver.m */; };
 		92B99F0E2022706600CC44E3 /* UIView+Toast.m in Sources */ = {isa = PBXBuildFile; fileRef = 92B99F0D2022706600CC44E3 /* UIView+Toast.m */; };
 		92B99F0F2022706600CC44E3 /* UIView+Toast.m in Sources */ = {isa = PBXBuildFile; fileRef = 92B99F0D2022706600CC44E3 /* UIView+Toast.m */; };
+		92B9F52621743210002885CE /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 92B9F52521743210002885CE /* AppDelegate.m */; };
+		92B9F52921743210002885CE /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 92B9F52821743210002885CE /* ViewController.m */; };
+		92B9F52C21743210002885CE /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 92B9F52A21743210002885CE /* Main.storyboard */; };
+		92B9F52E21743212002885CE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92B9F52D21743212002885CE /* Assets.xcassets */; };
+		92B9F53121743212002885CE /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 92B9F53021743212002885CE /* main.m */; };
+		92B9F53B21743212002885CE /* MAMETVTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 92B9F53A21743212002885CE /* MAMETVTests.m */; };
+		92B9F54621743213002885CE /* MAMETVUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 92B9F54521743213002885CE /* MAMETVUITests.m */; };
+		92B9F5522174325D002885CE /* libmamearm64-tvos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 92B9F5512174325D002885CE /* libmamearm64-tvos.a */; };
+		92D90ACB219AAED100DAF430 /* libmamearm64-tvos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 92B9F5512174325D002885CE /* libmamearm64-tvos.a */; };
+		92D90ACD219AAEEF00DAF430 /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 92D90ACC219AAEEF00DAF430 /* libc++.tbd */; };
+		92D90ACF219AAF0B00DAF430 /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92D90ACE219AAF0B00DAF430 /* GameController.framework */; };
 		92D96574215B03E100EFE3AE /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 92D96573215B03E100EFE3AE /* libc++.tbd */; };
 		92D9657D215B0D5D00EFE3AE /* crt1.3.1.o in Frameworks */ = {isa = PBXBuildFile; fileRef = 92D9657C215B0D5C00EFE3AE /* crt1.3.1.o */; };
 		92D9657E215B0D5D00EFE3AE /* crt1.3.1.o in Frameworks */ = {isa = PBXBuildFile; fileRef = 92D9657C215B0D5C00EFE3AE /* crt1.3.1.o */; };
@@ -191,13 +202,29 @@
 		CEE680D2163BE5C400051BC2 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE680D1163BE5C400051BC2 /* CoreFoundation.framework */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		92B9F53721743212002885CE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CEE6807C1635BA6F00051BC2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 92B9F52121743210002885CE;
+			remoteInfo = MAMETV;
+		};
+		92B9F54221743213002885CE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CEE6807C1635BA6F00051BC2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 92B9F52121743210002885CE;
+			remoteInfo = MAMETV;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		920BBDED201FC29700AE7D50 /* dpad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = dpad.png; sourceTree = "<group>"; };
 		920BBDF020210C3700AE7D50 /* menu.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menu.png; sourceTree = "<group>"; };
 		921CC321216A903600A39154 /* config_iPad_pro_10_5.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = config_iPad_pro_10_5.txt; sourceTree = "<group>"; };
 		921CC324216A936800A39154 /* config_iPad_pro_12_9.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = config_iPad_pro_12_9.txt; sourceTree = "<group>"; };
 		925ABCE21E46DCC500997182 /* MAME4iOS 64-bit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MAME4iOS 64-bit.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		925ABCE31E46DCC600997182 /* MAME4iOS copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "MAME4iOS copy-Info.plist"; path = "/Users/yoshi/Code/MAME4iOSReloaded/xcode/MAME4iOS/MAME4iOS copy-Info.plist"; sourceTree = "<absolute>"; };
 		925ABCE41E46DD6E00997182 /* libmamearm64.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmamearm64.a; path = ../../libmamearm64.a; sourceTree = "<group>"; };
 		9268D84821661CA500AB0470 /* config_iPhone_xr_xs_max.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = config_iPhone_xr_xs_max.txt; sourceTree = "<group>"; };
 		9268D84B21661E3800AB0470 /* config_iPhone_x.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = config_iPhone_x.txt; sourceTree = "<group>"; };
@@ -207,6 +234,24 @@
 		9268D8582166840F00AB0470 /* DeviceScreenResolver.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DeviceScreenResolver.m; sourceTree = "<group>"; };
 		92B99F0C2022706600CC44E3 /* UIView+Toast.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+Toast.h"; sourceTree = "<group>"; };
 		92B99F0D2022706600CC44E3 /* UIView+Toast.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+Toast.m"; sourceTree = "<group>"; };
+		92B9F52221743210002885CE /* MAMETV.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MAMETV.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		92B9F52421743210002885CE /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		92B9F52521743210002885CE /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		92B9F52721743210002885CE /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
+		92B9F52821743210002885CE /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		92B9F52B21743210002885CE /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		92B9F52D21743212002885CE /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		92B9F52F21743212002885CE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		92B9F53021743212002885CE /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		92B9F53621743212002885CE /* MAMETVTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MAMETVTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		92B9F53A21743212002885CE /* MAMETVTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MAMETVTests.m; sourceTree = "<group>"; };
+		92B9F53C21743212002885CE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		92B9F54121743212002885CE /* MAMETVUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MAMETVUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		92B9F54521743213002885CE /* MAMETVUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MAMETVUITests.m; sourceTree = "<group>"; };
+		92B9F54721743213002885CE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		92B9F5512174325D002885CE /* libmamearm64-tvos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libmamearm64-tvos.a"; path = "../../libmamearm64-tvos.a"; sourceTree = "<group>"; };
+		92D90ACC219AAEEF00DAF430 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.1.sdk/usr/lib/libc++.tbd"; sourceTree = DEVELOPER_DIR; };
+		92D90ACE219AAF0B00DAF430 /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.1.sdk/System/Library/Frameworks/GameController.framework; sourceTree = DEVELOPER_DIR; };
 		92D96573215B03E100EFE3AE /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 		92D96575215B041300EFE3AE /* crt1.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; name = crt1.o; path = usr/lib/crt1.o; sourceTree = SDKROOT; };
 		92D96577215B048900EFE3AE /* crt1.3.1.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; name = crt1.3.1.o; path = usr/lib/crt1.3.1.o; sourceTree = SDKROOT; };
@@ -326,6 +371,31 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		92B9F51F21743210002885CE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				92D90ACF219AAF0B00DAF430 /* GameController.framework in Frameworks */,
+				92D90ACD219AAEEF00DAF430 /* libc++.tbd in Frameworks */,
+				92D90ACB219AAED100DAF430 /* libmamearm64-tvos.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		92B9F53321743212002885CE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		92B9F53E21743212002885CE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				92B9F5522174325D002885CE /* libmamearm64-tvos.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		CEAC6C2916AAA80400AF3275 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -364,6 +434,39 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		92B9F52321743210002885CE /* MAMETV */ = {
+			isa = PBXGroup;
+			children = (
+				92B9F52421743210002885CE /* AppDelegate.h */,
+				92B9F52521743210002885CE /* AppDelegate.m */,
+				92B9F52721743210002885CE /* ViewController.h */,
+				92B9F52821743210002885CE /* ViewController.m */,
+				92B9F52A21743210002885CE /* Main.storyboard */,
+				92B9F52D21743212002885CE /* Assets.xcassets */,
+				92B9F52F21743212002885CE /* Info.plist */,
+				92B9F53021743212002885CE /* main.m */,
+			);
+			path = MAMETV;
+			sourceTree = "<group>";
+		};
+		92B9F53921743212002885CE /* MAMETVTests */ = {
+			isa = PBXGroup;
+			children = (
+				92B9F53A21743212002885CE /* MAMETVTests.m */,
+				92B9F53C21743212002885CE /* Info.plist */,
+			);
+			path = MAMETVTests;
+			sourceTree = "<group>";
+		};
+		92B9F54421743213002885CE /* MAMETVUITests */ = {
+			isa = PBXGroup;
+			children = (
+				92B9F54521743213002885CE /* MAMETVUITests.m */,
+				92B9F54721743213002885CE /* Info.plist */,
+			);
+			path = MAMETVUITests;
+			sourceTree = "<group>";
+		};
 		CEAC6C2716AAA73900AF3275 /* RELOADED */ = {
 			isa = PBXGroup;
 			children = (
@@ -479,9 +582,11 @@
 				CEE6808F1635BA7000051BC2 /* MAME4iOS */,
 				CEAC6C3116AAA80400AF3275 /* Gridlee */,
 				CEE680C51635BB8500051BC2 /* Includes */,
+				92B9F52321743210002885CE /* MAMETV */,
+				92B9F53921743212002885CE /* MAMETVTests */,
+				92B9F54421743213002885CE /* MAMETVUITests */,
 				CEE680881635BA7000051BC2 /* Frameworks */,
 				CEE680861635BA7000051BC2 /* Products */,
-				925ABCE31E46DCC600997182 /* MAME4iOS copy-Info.plist */,
 			);
 			sourceTree = "<group>";
 		};
@@ -491,6 +596,9 @@
 				CEE680851635BA7000051BC2 /* MAME4iOS 32-bit.app */,
 				CEAC6C2C16AAA80400AF3275 /* Gridlee.app */,
 				925ABCE21E46DCC500997182 /* MAME4iOS 64-bit.app */,
+				92B9F52221743210002885CE /* MAMETV.app */,
+				92B9F53621743212002885CE /* MAMETVTests.xctest */,
+				92B9F54121743212002885CE /* MAMETVUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -498,6 +606,9 @@
 		CEE680881635BA7000051BC2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				92D90ACE219AAF0B00DAF430 /* GameController.framework */,
+				92D90ACC219AAEEF00DAF430 /* libc++.tbd */,
+				92B9F5512174325D002885CE /* libmamearm64-tvos.a */,
 				92D96577215B048900EFE3AE /* crt1.3.1.o */,
 				92D96575215B041300EFE3AE /* crt1.o */,
 				92D96573215B03E100EFE3AE /* libc++.tbd */,
@@ -574,6 +685,59 @@
 			productReference = 925ABCE21E46DCC500997182 /* MAME4iOS 64-bit.app */;
 			productType = "com.apple.product-type.application";
 		};
+		92B9F52121743210002885CE /* MAMETV */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 92B9F54821743213002885CE /* Build configuration list for PBXNativeTarget "MAMETV" */;
+			buildPhases = (
+				92B9F51E21743210002885CE /* Sources */,
+				92B9F51F21743210002885CE /* Frameworks */,
+				92B9F52021743210002885CE /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MAMETV;
+			productName = MAMETV;
+			productReference = 92B9F52221743210002885CE /* MAMETV.app */;
+			productType = "com.apple.product-type.application";
+		};
+		92B9F53521743212002885CE /* MAMETVTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 92B9F54B21743213002885CE /* Build configuration list for PBXNativeTarget "MAMETVTests" */;
+			buildPhases = (
+				92B9F53221743212002885CE /* Sources */,
+				92B9F53321743212002885CE /* Frameworks */,
+				92B9F53421743212002885CE /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				92B9F53821743212002885CE /* PBXTargetDependency */,
+			);
+			name = MAMETVTests;
+			productName = MAMETVTests;
+			productReference = 92B9F53621743212002885CE /* MAMETVTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		92B9F54021743212002885CE /* MAMETVUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 92B9F54E21743213002885CE /* Build configuration list for PBXNativeTarget "MAMETVUITests" */;
+			buildPhases = (
+				92B9F53D21743212002885CE /* Sources */,
+				92B9F53E21743212002885CE /* Frameworks */,
+				92B9F53F21743212002885CE /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				92B9F54321743213002885CE /* PBXTargetDependency */,
+			);
+			name = MAMETVUITests;
+			productName = MAMETVUITests;
+			productReference = 92B9F54121743212002885CE /* MAMETVUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		CEAC6C2B16AAA80400AF3275 /* Gridlee */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = CEAC6C3D16AAA80500AF3275 /* Build configuration list for PBXNativeTarget "Gridlee" */;
@@ -621,6 +785,21 @@
 						DevelopmentTeam = R72X3BF4KE;
 						ProvisioningStyle = Automatic;
 					};
+					92B9F52121743210002885CE = {
+						CreatedOnToolsVersion = 10.0;
+						DevelopmentTeam = R72X3BF4KE;
+						ProvisioningStyle = Automatic;
+					};
+					92B9F53521743212002885CE = {
+						CreatedOnToolsVersion = 10.0;
+						ProvisioningStyle = Automatic;
+						TestTargetID = 92B9F52121743210002885CE;
+					};
+					92B9F54021743212002885CE = {
+						CreatedOnToolsVersion = 10.0;
+						ProvisioningStyle = Automatic;
+						TestTargetID = 92B9F52121743210002885CE;
+					};
 					CEE680841635BA7000051BC2 = {
 						DevelopmentTeam = R72X3BF4KE;
 						ProvisioningStyle = Automatic;
@@ -633,6 +812,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				Base,
 			);
 			mainGroup = CEE6807A1635BA6F00051BC2;
 			productRefGroup = CEE680861635BA7000051BC2 /* Products */;
@@ -642,6 +822,9 @@
 				CEE680841635BA7000051BC2 /* MAME4iOS 32-bit */,
 				CEAC6C2B16AAA80400AF3275 /* Gridlee */,
 				925ABCA41E46DCC500997182 /* MAME4iOS 64-bit */,
+				92B9F52121743210002885CE /* MAMETV */,
+				92B9F53521743212002885CE /* MAMETVTests */,
+				92B9F54021743212002885CE /* MAMETVUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -684,6 +867,29 @@
 				921CC323216A903600A39154 /* config_iPad_pro_10_5.txt in Resources */,
 				925ABCDD1E46DCC500997182 /* Category.ini in Resources */,
 				925ABCDE1E46DCC500997182 /* hiscore.dat in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		92B9F52021743210002885CE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				92B9F52E21743212002885CE /* Assets.xcassets in Resources */,
+				92B9F52C21743210002885CE /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		92B9F53421743212002885CE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		92B9F53F21743212002885CE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -788,6 +994,32 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		92B9F51E21743210002885CE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				92B9F52921743210002885CE /* ViewController.m in Sources */,
+				92B9F53121743212002885CE /* main.m in Sources */,
+				92B9F52621743210002885CE /* AppDelegate.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		92B9F53221743212002885CE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				92B9F53B21743212002885CE /* MAMETVTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		92B9F53D21743212002885CE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				92B9F54621743213002885CE /* MAMETVUITests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		CEAC6C2816AAA80400AF3275 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -842,7 +1074,28 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		92B9F53821743212002885CE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 92B9F52121743210002885CE /* MAMETV */;
+			targetProxy = 92B9F53721743212002885CE /* PBXContainerItemProxy */;
+		};
+		92B9F54321743213002885CE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 92B9F52121743210002885CE /* MAMETV */;
+			targetProxy = 92B9F54221743213002885CE /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin PBXVariantGroup section */
+		92B9F52A21743210002885CE /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				92B9F52B21743210002885CE /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
 		CEAC6C3416AAA80400AF3275 /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -923,6 +1176,338 @@
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				VALID_ARCHS = arm64;
 				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+		92B9F54921743213002885CE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = R72X3BF4KE;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				INFOPLIST_FILE = MAMETV/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(SRCROOT)/../..",
+					"$(inherited)",
+				);
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yoshisuga.MAMETV;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 12.0;
+			};
+			name = Debug;
+		};
+		92B9F54A21743213002885CE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = R72X3BF4KE;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				INFOPLIST_FILE = MAMETV/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(SRCROOT)/../..",
+					"$(inherited)",
+				);
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yoshisuga.MAMETV;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 12.0;
+			};
+			name = Release;
+		};
+		92B9F54C21743213002885CE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				INFOPLIST_FILE = MAMETVTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yoshisuga.MAMETVTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				TARGETED_DEVICE_FAMILY = 3;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MAMETV.app/MAMETV";
+				TVOS_DEPLOYMENT_TARGET = 12.0;
+			};
+			name = Debug;
+		};
+		92B9F54D21743213002885CE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				INFOPLIST_FILE = MAMETVTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yoshisuga.MAMETVTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				TARGETED_DEVICE_FAMILY = 3;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MAMETV.app/MAMETV";
+				TVOS_DEPLOYMENT_TARGET = 12.0;
+			};
+			name = Release;
+		};
+		92B9F54F21743213002885CE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				INFOPLIST_FILE = MAMETVUITests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yoshisuga.MAMETVUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				TARGETED_DEVICE_FAMILY = 3;
+				TEST_TARGET_NAME = MAMETV;
+				TVOS_DEPLOYMENT_TARGET = 12.0;
+			};
+			name = Debug;
+		};
+		92B9F55021743213002885CE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				INFOPLIST_FILE = MAMETVUITests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yoshisuga.MAMETVUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				TARGETED_DEVICE_FAMILY = 3;
+				TEST_TARGET_NAME = MAMETV;
+				TVOS_DEPLOYMENT_TARGET = 12.0;
 			};
 			name = Release;
 		};
@@ -1088,6 +1673,33 @@
 			buildConfigurations = (
 				925ABCE01E46DCC500997182 /* Debug */,
 				925ABCE11E46DCC500997182 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		92B9F54821743213002885CE /* Build configuration list for PBXNativeTarget "MAMETV" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				92B9F54921743213002885CE /* Debug */,
+				92B9F54A21743213002885CE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		92B9F54B21743213002885CE /* Build configuration list for PBXNativeTarget "MAMETVTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				92B9F54C21743213002885CE /* Debug */,
+				92B9F54D21743213002885CE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		92B9F54E21743213002885CE /* Build configuration list for PBXNativeTarget "MAMETVUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				92B9F54F21743213002885CE /* Debug */,
+				92B9F55021743213002885CE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
