@@ -19,7 +19,7 @@
 #define __STATE_H__
 
 #ifdef __GNUC__
-#include <tr1/type_traits>
+#include <type_traits>
 #endif
 
 
@@ -58,8 +58,8 @@ typedef enum _state_save_error state_save_error;
 
 #ifdef __GNUC__
 #define IS_VALID_SAVE_TYPE(_var) \
-	(std::tr1::is_arithmetic<typeof(_var)>::value || std::tr1::is_enum<typeof(_var)>::value || \
-	 std::tr1::is_same<typeof(_var), PAIR>::value || std::tr1::is_same<typeof(_var), PAIR64>::value)
+	(std::is_arithmetic<typeof(_var)>::value || std::is_enum<typeof(_var)>::value || \
+	 std::is_same<typeof(_var), PAIR>::value || std::is_same<typeof(_var), PAIR64>::value)
 #else
 #define IS_VALID_SAVE_TYPE(_var) \
 	(sizeof(_var) == 1 || sizeof(_var) == 2 || sizeof(_var) == 4 || sizeof(_var) == 8)

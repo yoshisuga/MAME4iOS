@@ -920,15 +920,6 @@
                }
                case 9:
                {
-                   cell.textLabel.text   = @"Skin";
-                   
-                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   cell.detailTextLabel.text = [arraySkinValue objectAtIndex:op.skinValue];
-
-                   break;
-               }
-               case 10:
-               {
                    cell.textLabel.text   = @"Overscan TV-OUT";
                    
                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
@@ -1003,7 +994,7 @@
           case kLandscapeSection: return 5;
           case kInputSection: return 1;
           case kDefaultsSection: return 1;
-          case kMiscSection: return 11;
+          case kMiscSection: return 10;
           case kFilterSection: return 1;
           case kMultiplayerSection: return 1;
       }
@@ -1185,12 +1176,6 @@
                 [listController release];
             }
             if (row==9){
-                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
-                                                        type:kTypeSkinValue list:arraySkinValue];  
-                [[self navigationController] pushViewController:listController animated:YES];
-                [listController release];
-            }
-            if (row==10){
                 ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
                                                         type:kTypeOverscanValue list:arrayOverscanValue];
                 [[self navigationController] pushViewController:listController animated:YES];

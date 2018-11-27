@@ -13,10 +13,11 @@ It has been updated to compile and run on Xcode 7+/iOS 9+ by Les Bird (http://ww
 This repo adds support for:
 
 - 64-bit binary to run on modern and future iOS devices
+- Supports modern device screen sizes, including iPhone X/XR/XS/XS Max and iPad Pro (new in 2018!)
 - Multiple mFi controllers (up to 4 with dual analog support - @DarrenBranford)
 - Supports using the touch screen as a lightgun (new in 2018!)
 - Turbo mode toggle for buttons (new in 2018!)
-- Builds in Xcode 9, runs on iOS 11 
+- Builds in Xcode 10, runs on iOS 12
 
 ## Installation / Sideloading
 
@@ -40,13 +41,13 @@ Building MAME4iOS requires a prebuilt MAME binary (It was not included in this r
         <sup>For iPhone 5S, iPad Air, iPad mini, and up…</sup><br>
         - 32-bit version: `make iOSARMV7=1`
     - Download: 
-        - [64-bit](https://mega.nz/#!GJZH3ShT!XVK53FgH5E8WuuSBD57rSwfidtQ2afxWQq9iaPXR4QE)<br>
+        - [64-bit](https://mega.nz/#!7BAzDKiZ!n36DKsGeiw6vzvi6hcuWcAVSiLSd4UKSMfbnWFIhdZI)<br>
         <sup>Place the file in the root directory of the repo.</sup><br>
 4. Choose the appropriate build target:
     - `MAME4iOS 64-bit` 
     - `MAME4iOS 32-bit`
 
-Even if you are not in the paid Apple Developer Program, you can sideload the app using a Mac with Xcode 7/8.
+Even if you are not in the paid Apple Developer Program, you can sideload the app using a Mac with Xcode.
 
 1. Open the Xcode project in `xcode/MAME4iOS/MAME4iOS.xcodeproj`<br>
     <sup>Make sure you have the `libmamearm64.a` (or `libmamearmv7.a`) file in the root of your project (it should not be red).</sup><br>
@@ -80,7 +81,7 @@ The right stick on the extended controller profile is fully supported, with supp
 
 The trigger buttons are mapped to analog conrols and should be useful in assigning for pedal controls, for example.
 
-### Touch Screen Lightgun Support (new in 2018)
+## Touch Screen Lightgun Support (new in 2018)
 
 You can now use the touch screen for lightgun games like Operation Wolf and Lethal Enforcers. Holding down your finger simulates holding down the trigger, which is mapped to the "X" button. Tap with 2 fingers for the secondary fire, or the "B" button.
 
@@ -94,10 +95,11 @@ Touch Lightgun setup is in Settings -> Input -> Touch Lightgun, where you can di
 - Touch with 3 fingers: press start button
 - Touch with 4 fingers: insert coin
 
-### Turbo Mode Toggle for Buttons (new in 2018)
+## Turbo Mode Toggle for Buttons (new in 2018)
 
 Under Settings -> Game Input, there's a section called "Turbo Mode Toggle", that lets you turn on turbo firing for individual buttons. Holding down the button causes the button to fire in turbo mode.
 
-### tvOS
+## Planned Future Improvements
 
-tvOS is not supported yet. The problem is that I can't compile the tvOS version of the MAME binary, as it needs to be linked with `libc++`, not `libstdc++`, which is what this MAME binary depends on. I'm not intimately familiar with the API differences between the two (it looks like it has to do with differing string functions), so I haven't gotten around to fixing it for tvOS. You can, however, run MAME on an iPhone or iPad and mirror the display to an Apple TV.
+- tvOS
+- Touch Analog: in experimental phase, to support touch screen control for games like Arkanoid, as well as vertical shooters to play in portrait mode.
