@@ -940,6 +940,23 @@ void* app_Thread_Start(void* args)
     toastStyle.messageColor = [UIColor whiteColor];
 }
 
+- (UIRectEdge)preferredScreenEdgesDeferringSystemGestures
+{
+    return UIRectEdgeBottom;
+}
+
+-(BOOL)prefersHomeIndicatorAutoHidden
+{
+    return NO;
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    if (@available(iOS 11.0, *)) {
+        [self setNeedsUpdateOfHomeIndicatorAutoHidden];
+    }
+}
+
 - (void)viewDidUnload
 {    
     [super viewDidUnload];
