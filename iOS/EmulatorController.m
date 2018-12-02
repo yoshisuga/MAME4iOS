@@ -271,6 +271,9 @@ void* app_Thread_Start(void* args)
            
     if(pthread_setschedparam(main_tid, policy, &param) != 0)    
              fprintf(stderr, "Error setting pthread priority\n");
+    
+    _impactFeedback = [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleLight];
+    _selectionFeedback = [[UISelectionFeedbackGenerator alloc] init];
     	
 }
 
@@ -1777,7 +1780,6 @@ void myosd_handle_turbo() {
 
     if(dpad_state!=old_dpad_state)
     {
-        
        //printf("cambia depad %d %d\n",old_dpad_state,dpad_state);
        NSString *imgName; 
        imgName = nameImgDPad[dpad_state];
@@ -1790,6 +1792,13 @@ void myosd_handle_turbo() {
          [dpadView setNeedsDisplay];
        }           
        old_dpad_state = dpad_state;
+        
+        NSLog(@"dpad moved");
+        if (dpad_state == DPAD_NONE) {
+            [self.selectionFeedback selectionChanged];
+        } else {
+            [self.impactFeedback impactOccurred];
+        }
     }
     
     int i = 0;
@@ -1800,10 +1809,14 @@ void myosd_handle_turbo() {
            NSString *imgName;
            if(btnStates[i] == BUTTON_PRESS)
            {
+               NSLog(@"button pressed");
+               [self.impactFeedback impactOccurred];
                imgName = nameImgButton_Press[i];
            }
            else
            {
+               NSLog(@"button released");
+               [self.selectionFeedback selectionChanged];
                imgName = nameImgButton_NotPress[i];
            } 
            if(imgName!=nil)

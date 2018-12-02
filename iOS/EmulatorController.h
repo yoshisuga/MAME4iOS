@@ -181,5 +181,8 @@
 @property (readonly,assign) CGRect rStickArea;
 @property (assign) CGRect rStickWindow;
 @property (assign) CGRect rDPadImage;
+@property (retain, nonatomic) UIImpactFeedbackGenerator* impactFeedback;
+@property (retain, nonatomic) UISelectionFeedbackGenerator* selectionFeedback;
+
 
 @end
