@@ -74,6 +74,9 @@ int turboBtnEnabled[NUM_BUTTONS];
 // On-screen touch gamepad button states
 int btnStates[NUM_BUTTONS];
 
+// Touch Directional Input tracking
+int touchDirectionalCyclesAfterMoved = 0;
+
 int g_isIpad = 0;
 int g_isIphone5 = 0;
 
@@ -2429,21 +2432,25 @@ void myosd_handle_turbo() {
         CGPoint currentLocation = [touch locationInView:screenView];
         CGFloat dx = currentLocation.x - touchDirectionalMoveStartLocation.x;
         CGFloat dy = currentLocation.y - touchDirectionalMoveStartLocation.y;
-        if ( dx > 0 ) {
+        int threshold = 2;
+        if ( dx > threshold ) {
             myosd_pad_status |= MYOSD_RIGHT;
             myosd_pad_status &= ~MYOSD_LEFT;
-        } else if ( dx < 0 ) {
+        } else if ( dx < -threshold ) {
             myosd_pad_status &= ~MYOSD_RIGHT;
             myosd_pad_status |= MYOSD_LEFT;
         }
-        if ( dy > 0 ) {
+        if ( dy > threshold ) {
             myosd_pad_status |= MYOSD_DOWN;
             myosd_pad_status &= ~MYOSD_UP;
-        } else if (dy < 0 ) {
+        } else if (dy < -threshold ) {
             myosd_pad_status &= ~MYOSD_DOWN;
             myosd_pad_status |= MYOSD_UP;
         }
-        touchDirectionalMoveStartLocation = [touch locationInView:screenView];
+        if ( touchDirectionalCyclesAfterMoved++ > 5 ) {
+            touchDirectionalMoveStartLocation = [touch locationInView:screenView];
+            touchDirectionalCyclesAfterMoved = 0;
+        }
     }
 }
 
