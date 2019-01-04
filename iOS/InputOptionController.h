@@ -82,6 +82,8 @@
     UISlider *sliderTouchAnalogSensitivity;
     
     UISwitch *switchTouchDirectionalEnabled;
+    
+    UISlider *sliderTouchControlsTransparency;
 }
 
 @property (nonatomic, assign) EmulatorController *emuController;

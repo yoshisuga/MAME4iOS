@@ -660,6 +660,7 @@ void* app_Thread_Start(void* args)
     g_pref_touch_analog_hide_dpad = [op touchAnalogHideTouchDirectionalPad];
     g_pref_touch_analog_hide_buttons = [op touchAnalogHideTouchButtons];
     g_pref_touch_analog_sensitivity = [op touchAnalogSensitivity];
+    g_controller_opacity = [op touchControlsTransparency];
     
     g_pref_touch_directional_enabled = [op touchDirectionalEnabled];
     
@@ -2575,7 +2576,7 @@ void myosd_handle_turbo() {
             case 35:   rStickWindow = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
             case 36:   rStickArea = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); rStickWindow = rStickArea;break;
             case 37:   stick_radio =coords[0]; break;            
-            case 38:   g_controller_opacity= coords[0]; break;
+//            case 38:   g_controller_opacity= coords[0]; break;
 			}
       i++;
     }

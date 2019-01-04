@@ -81,6 +81,7 @@
 @synthesize touchAnalogSensitivity;
 @synthesize touchAnalogHideTouchButtons;
 @synthesize touchAnalogHideTouchDirectionalPad;
+@synthesize touchControlsTransparency;
 
 @synthesize touchDirectionalEnabled;
 
@@ -285,6 +286,7 @@
         touchAnalogHideTouchDirectionalPad = 1;
         touchAnalogHideTouchButtons = 0;
         touchAnalogSensitivity = 500.0;
+        touchControlsTransparency = 50.0;
         
         touchDirectionalEnabled = 0;
 	}
@@ -309,6 +311,12 @@
         touchAnalogHideTouchDirectionalPad = [[[optionsArray objectAtIndex:0] objectForKey:@"touchAnalogHideTouchDirectionalPad"] intValue];
         touchAnalogHideTouchButtons = [[[optionsArray objectAtIndex:0] objectForKey:@"touchAnalogHideTouchButtons"] intValue];
         touchAnalogSensitivity = [[[optionsArray objectAtIndex:0] objectForKey:@"touchAnalogSensitivity"] floatValue];
+        id prefTouchControlTransparency = [[optionsArray objectAtIndex:0] objectForKey:@"touchControlsTransparency"];
+        if ( prefTouchControlTransparency == nil ) {
+            touchControlsTransparency = 50.0;
+        } else {
+            touchControlsTransparency = [prefTouchControlTransparency floatValue];
+        }
         showFPS =  [[[optionsArray objectAtIndex:0] objectForKey:@"showFPS"] intValue];
         showINFO =  [[[optionsArray objectAtIndex:0] objectForKey:@"showINFO"] intValue];
         fourButtonsLand =  [[[optionsArray objectAtIndex:0] objectForKey:@"fourButtonsLand"] intValue];
@@ -426,6 +434,7 @@
                              [NSString stringWithFormat:@"%d", touchAnalogHideTouchDirectionalPad], @"touchAnalogHideTouchDirectionalPad",
                              [NSString stringWithFormat:@"%d", touchAnalogHideTouchButtons], @"touchAnalogHideTouchButtons",
                              [NSString stringWithFormat:@"%f", touchAnalogSensitivity], @"touchAnalogSensitivity",
+                             [NSString stringWithFormat:@"%f", touchControlsTransparency], @"touchControlsTransparency",
 							 [NSString stringWithFormat:@"%d", showFPS], @"showFPS",							 
 							 [NSString stringWithFormat:@"%d", showINFO], @"showINFO",							 
 							 [NSString stringWithFormat:@"%d", fourButtonsLand], @"fourButtonsLand",							 

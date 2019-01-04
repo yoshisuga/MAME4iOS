@@ -94,6 +94,8 @@
         
         switchTouchDirectionalEnabled = nil;
         
+        sliderTouchControlsTransparency = nil;
+        
         self.title = @"Input Options";
     }
     return self;
@@ -127,6 +129,7 @@
     [switchTouchAnalogHideTouchButtons release];
     [sliderTouchAnalogSensitivity release];
     [switchTouchDirectionalEnabled release];
+    [sliderTouchControlsTransparency release];
     
     [super dealloc];
 }
@@ -157,7 +160,7 @@
 {
     switch (section)
     {
-        case 0: return 1;
+        case 0: return 2;
         case 1: return 3;
         case 2: return 4;
         case 3: return 1;
@@ -222,13 +225,31 @@
     {
         case 0:
         {
-            cell.textLabel.text   = @"Animated";
-            [switchAnimatedButtons release];
-            switchAnimatedButtons  = [[UISwitch alloc] initWithFrame:CGRectZero];
-            cell.accessoryView = switchAnimatedButtons ;
-            [switchAnimatedButtons setOn:[op animatedButtons] animated:NO];
-            [switchAnimatedButtons addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
-            break;
+            if ( indexPath.row == 0 ) {
+                cell.textLabel.text   = @"Animated";
+                [switchAnimatedButtons release];
+                switchAnimatedButtons  = [[UISwitch alloc] initWithFrame:CGRectZero];
+                cell.accessoryView = switchAnimatedButtons ;
+                [switchAnimatedButtons setOn:[op animatedButtons] animated:NO];
+                [switchAnimatedButtons addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                break;
+            } else if (indexPath.row == 1 ) {
+                cell.textLabel.text = @"Opacity";
+                [sliderTouchControlsTransparency release];
+                sliderTouchControlsTransparency = [[UISlider alloc] initWithFrame:CGRectZero];
+                [sliderTouchControlsTransparency setMinimumValue:0.0];
+                [sliderTouchControlsTransparency setMaximumValue:100.0];
+                [sliderTouchControlsTransparency setValue:[op touchControlsTransparency]];
+                [sliderTouchControlsTransparency addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                sliderTouchControlsTransparency.translatesAutoresizingMaskIntoConstraints = NO;
+                [cell.contentView addSubview:sliderTouchControlsTransparency];
+                UIView *cellContentView = cell.contentView;
+                NSDictionary *viewBindings = NSDictionaryOfVariableBindings(cellContentView,sliderTouchControlsTransparency);
+                [cell.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:[sliderTouchControlsTransparency]-4@750-|" options:0 metrics:nil views:viewBindings]];
+                [cell.contentView addConstraint:[NSLayoutConstraint constraintWithItem:sliderTouchControlsTransparency attribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationEqual toItem:cell.contentView attribute:NSLayoutAttributeCenterY multiplier:1.0 constant:0.0]];
+                [sliderTouchControlsTransparency addConstraint:[NSLayoutConstraint constraintWithItem:sliderTouchControlsTransparency attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:100.0]];
+                break;
+            }
         }
         case 1:
         {
@@ -577,6 +598,8 @@
         op.touchAnalogHideTouchDirectionalPad = [switchTouchAnalogHideTouchDirectionalPad isOn];
     if (sender == switchTouchDirectionalEnabled)
         op.touchDirectionalEnabled = [switchTouchDirectionalEnabled isOn];
+    if ( sender == sliderTouchControlsTransparency )
+        op.touchControlsTransparency = [sliderTouchControlsTransparency value];
 
     [op saveOptions];
 	[op release];

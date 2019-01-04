@@ -146,6 +146,8 @@
    @public int turboLEnabled;
    @public int turboREnabled;
     
+   @public CGFloat touchControlsTransparency;
+    
 }
 
 - (void)loadOptions;
@@ -250,6 +252,8 @@
 @property (readwrite,assign) int touchAnalogHideTouchButtons;
 
 @property (readwrite,assign) int touchDirectionalEnabled;
+
+@property (readwrite,assign) CGFloat touchControlsTransparency;
 
 @property (readwrite,assign) int mainThreadType;
 @property (readwrite,assign) int videoThreadType;
