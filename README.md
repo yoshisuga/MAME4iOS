@@ -23,7 +23,7 @@ This repo adds support for:
 
 ### IPA 
 
-If you can re-sign using your certificate, here is a [link to the IPA](https://mega.nz/#!TZoASCSR!HIKFsZeEY1x87kDbXx5R6oAlqxIPPhfMqDtLYj2DULc).
+If you can re-sign using your certificate, here is a [link to the IPA](https://mega.nz/#!vMQiBYiL!cSpW3IO0hqYQnqnC7_TTI_zL3LuPHD3UR0Gwkxt5y9U).
 
 ### Xcode
 
