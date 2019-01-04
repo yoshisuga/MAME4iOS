@@ -94,7 +94,7 @@
         
         switchTouchDirectionalEnabled = nil;
         
-        sliderTouchControlsTransparency = nil;
+        sliderTouchControlsOpacity = nil;
         
         self.title = @"Input Options";
     }
@@ -129,7 +129,7 @@
     [switchTouchAnalogHideTouchButtons release];
     [sliderTouchAnalogSensitivity release];
     [switchTouchDirectionalEnabled release];
-    [sliderTouchControlsTransparency release];
+    [sliderTouchControlsOpacity release];
     
     [super dealloc];
 }
@@ -234,20 +234,20 @@
                 [switchAnimatedButtons addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
                 break;
             } else if (indexPath.row == 1 ) {
-                cell.textLabel.text = @"Opacity";
-                [sliderTouchControlsTransparency release];
-                sliderTouchControlsTransparency = [[UISlider alloc] initWithFrame:CGRectZero];
-                [sliderTouchControlsTransparency setMinimumValue:0.0];
-                [sliderTouchControlsTransparency setMaximumValue:100.0];
-                [sliderTouchControlsTransparency setValue:[op touchControlsTransparency]];
-                [sliderTouchControlsTransparency addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
-                sliderTouchControlsTransparency.translatesAutoresizingMaskIntoConstraints = NO;
-                [cell.contentView addSubview:sliderTouchControlsTransparency];
+                cell.textLabel.text = @"Opacity (Full Screen)";
+                [sliderTouchControlsOpacity release];
+                sliderTouchControlsOpacity = [[UISlider alloc] initWithFrame:CGRectZero];
+                [sliderTouchControlsOpacity setMinimumValue:0.0];
+                [sliderTouchControlsOpacity setMaximumValue:100.0];
+                [sliderTouchControlsOpacity setValue:[op touchControlsOpacity]];
+                [sliderTouchControlsOpacity addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                sliderTouchControlsOpacity.translatesAutoresizingMaskIntoConstraints = NO;
+                [cell.contentView addSubview:sliderTouchControlsOpacity];
                 UIView *cellContentView = cell.contentView;
-                NSDictionary *viewBindings = NSDictionaryOfVariableBindings(cellContentView,sliderTouchControlsTransparency);
-                [cell.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:[sliderTouchControlsTransparency]-4@750-|" options:0 metrics:nil views:viewBindings]];
-                [cell.contentView addConstraint:[NSLayoutConstraint constraintWithItem:sliderTouchControlsTransparency attribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationEqual toItem:cell.contentView attribute:NSLayoutAttributeCenterY multiplier:1.0 constant:0.0]];
-                [sliderTouchControlsTransparency addConstraint:[NSLayoutConstraint constraintWithItem:sliderTouchControlsTransparency attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:100.0]];
+                NSDictionary *viewBindings = NSDictionaryOfVariableBindings(cellContentView,sliderTouchControlsOpacity);
+                [cell.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:[sliderTouchControlsOpacity]-8@750-|" options:0 metrics:nil views:viewBindings]];
+                [cell.contentView addConstraint:[NSLayoutConstraint constraintWithItem:sliderTouchControlsOpacity attribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationEqual toItem:cell.contentView attribute:NSLayoutAttributeCenterY multiplier:1.0 constant:0.0]];
+                [sliderTouchControlsOpacity addConstraint:[NSLayoutConstraint constraintWithItem:sliderTouchControlsOpacity attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:100.0]];
                 break;
             }
         }
@@ -514,7 +514,7 @@
                     [cell.contentView addSubview:sliderTouchAnalogSensitivity];
                     UIView *cellContentView = cell.contentView;
                     NSDictionary *viewBindings = NSDictionaryOfVariableBindings(cellContentView,sliderTouchAnalogSensitivity);
-                    [cell.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:[sliderTouchAnalogSensitivity]-4@750-|" options:0 metrics:nil views:viewBindings]];
+                    [cell.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:[sliderTouchAnalogSensitivity]-8@750-|" options:0 metrics:nil views:viewBindings]];
                     [cell.contentView addConstraint:[NSLayoutConstraint constraintWithItem:sliderTouchAnalogSensitivity attribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationEqual toItem:cell.contentView attribute:NSLayoutAttributeCenterY multiplier:1.0 constant:0.0]];
                     [sliderTouchAnalogSensitivity addConstraint:[NSLayoutConstraint constraintWithItem:sliderTouchAnalogSensitivity attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:100.0]];
                     break;
@@ -598,8 +598,8 @@
         op.touchAnalogHideTouchDirectionalPad = [switchTouchAnalogHideTouchDirectionalPad isOn];
     if (sender == switchTouchDirectionalEnabled)
         op.touchDirectionalEnabled = [switchTouchDirectionalEnabled isOn];
-    if ( sender == sliderTouchControlsTransparency )
-        op.touchControlsTransparency = [sliderTouchControlsTransparency value];
+    if ( sender == sliderTouchControlsOpacity )
+        op.touchControlsOpacity = [sliderTouchControlsOpacity value];
 
     [op saveOptions];
 	[op release];

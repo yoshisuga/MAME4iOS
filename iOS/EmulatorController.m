@@ -660,7 +660,7 @@ void* app_Thread_Start(void* args)
     g_pref_touch_analog_hide_dpad = [op touchAnalogHideTouchDirectionalPad];
     g_pref_touch_analog_hide_buttons = [op touchAnalogHideTouchButtons];
     g_pref_touch_analog_sensitivity = [op touchAnalogSensitivity];
-    g_controller_opacity = [op touchControlsTransparency];
+    g_controller_opacity = [op touchControlsOpacity];
     
     g_pref_touch_directional_enabled = [op touchDirectionalEnabled];
     
