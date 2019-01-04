@@ -41,7 +41,7 @@ Building MAME4iOS requires a prebuilt MAME binary (It was not included in this r
         <sup>For iPhone 5S, iPad Air, iPad mini, and up…</sup><br>
         - 32-bit version: `make iOSARMV7=1`
     - Download: 
-        - [64-bit](https://mega.nz/#!7BAzDKiZ!n36DKsGeiw6vzvi6hcuWcAVSiLSd4UKSMfbnWFIhdZI)<br>
+        - [64-bit](https://mega.nz/#!aMQUzSAI!O0JY8_LNIlnB0FDM_siN6iexHITR1bbNUciqVWU4VV8)<br>
         <sup>Place the file in the root directory of the repo.</sup><br>
 4. Choose the appropriate build target:
     - `MAME4iOS 64-bit` 
@@ -99,7 +99,12 @@ Touch Lightgun setup is in Settings -> Input -> Touch Lightgun, where you can di
 
 Under Settings -> Game Input, there's a section called "Turbo Mode Toggle", that lets you turn on turbo firing for individual buttons. Holding down the button causes the button to fire in turbo mode.
 
+## Touch Analog Mode (new in 2019)
+
+Also in Settings -> Game Input, you'll find a section called "Touch Analog" and "Touch Directional Input". "Touch Analog" lets you use your touchscreen as an analog device for games using input controls such as trackballs and knobs. These include games like Arkanoid or Crystal Castles. You can adjust the sensitivity of the analog controls, and also choose to hide the d-pad/analog stick in this mode.
+
+"Touch Directional Input" is rather experimental and is for vertical shooters so you can move around using your finger. It still needs some work so just a word of caution :)
+
 ## Planned Future Improvements
 
 - tvOS
-- Touch Analog: in experimental phase, to support touch screen control for games like Arkanoid, as well as vertical shooters to play in portrait mode.
