@@ -841,7 +841,12 @@ CCOMFLAGS += -arch armv7s
 LDFLAGS += -arch armv7s
 endif
 
+ifdef tvOS
+CCOMFLAGS += -mtvos-version-min=9.0
+CCOMFLAGS += -fembed-bitcode
+else
 CCOMFLAGS += -miphoneos-version-min=5.0
+endif
 
 #LDFLAGS  += -march=armv7s
 #LDFLAGS  += -march=armv7-a

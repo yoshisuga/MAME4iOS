@@ -15,7 +15,6 @@
 		921CC323216A903600A39154 /* config_iPad_pro_10_5.txt in Resources */ = {isa = PBXBuildFile; fileRef = 921CC321216A903600A39154 /* config_iPad_pro_10_5.txt */; };
 		921CC325216A936800A39154 /* config_iPad_pro_12_9.txt in Resources */ = {isa = PBXBuildFile; fileRef = 921CC324216A936800A39154 /* config_iPad_pro_12_9.txt */; };
 		921CC326216A936800A39154 /* config_iPad_pro_12_9.txt in Resources */ = {isa = PBXBuildFile; fileRef = 921CC324216A936800A39154 /* config_iPad_pro_12_9.txt */; };
-		9228643F20E8915800518250 /* crt1.3.1.o in Frameworks */ = {isa = PBXBuildFile; fileRef = 9228643D20E8915700518250 /* crt1.3.1.o */; };
 		925ABCA61E46DCC500997182 /* iCadeView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8D87DC1653121200685BC4 /* iCadeView.m */; };
 		925ABCA71E46DCC500997182 /* iph_main.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680A81635BAF400051BC2 /* iph_main.m */; };
 		925ABCA81E46DCC500997182 /* ListOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE90575B166A89D000653872 /* ListOptionController.m */; };
@@ -79,6 +78,11 @@
 		9268D85621661F8E00AB0470 /* config_iPhone_6.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9268D85421661F8E00AB0470 /* config_iPhone_6.txt */; };
 		9268D8592166841000AB0470 /* DeviceScreenResolver.m in Sources */ = {isa = PBXBuildFile; fileRef = 9268D8582166840F00AB0470 /* DeviceScreenResolver.m */; };
 		9268D85A2166841000AB0470 /* DeviceScreenResolver.m in Sources */ = {isa = PBXBuildFile; fileRef = 9268D8582166840F00AB0470 /* DeviceScreenResolver.m */; };
+		92A5332221EB57F00089FBB9 /* Options.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5332121EB57F00089FBB9 /* Options.m */; };
+		92A5332321EB57F00089FBB9 /* Options.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5332121EB57F00089FBB9 /* Options.m */; };
+		92A5332421EB57F00089FBB9 /* Options.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5332121EB57F00089FBB9 /* Options.m */; };
+		92A5332521EBC7F40089FBB9 /* iCadeView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8D87DC1653121200685BC4 /* iCadeView.m */; };
+		92A5332621EBC8D00089FBB9 /* Bootstrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680AD1635BB2700051BC2 /* Bootstrapper.m */; };
 		92B99F0E2022706600CC44E3 /* UIView+Toast.m in Sources */ = {isa = PBXBuildFile; fileRef = 92B99F0D2022706600CC44E3 /* UIView+Toast.m */; };
 		92B99F0F2022706600CC44E3 /* UIView+Toast.m in Sources */ = {isa = PBXBuildFile; fileRef = 92B99F0D2022706600CC44E3 /* UIView+Toast.m */; };
 		92D96574215B03E100EFE3AE /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 92D96573215B03E100EFE3AE /* libc++.tbd */; };
@@ -87,7 +91,6 @@
 		92ECB8F721EA985000D1E3D0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92ECB8F621EA985000D1E3D0 /* Assets.xcassets */; };
 		92ECB8FF21EA992100D1E3D0 /* libmamearm64-tvos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 92ECB8FE21EA992100D1E3D0 /* libmamearm64-tvos.a */; };
 		92ECB90121EA993E00D1E3D0 /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 92ECB90021EA993E00D1E3D0 /* libc++.tbd */; };
-		92ECB90221EA995F00D1E3D0 /* crt1.3.1.o in Frameworks */ = {isa = PBXBuildFile; fileRef = 92D9657C215B0D5C00EFE3AE /* crt1.3.1.o */; };
 		92ECB90421EA997A00D1E3D0 /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92ECB90321EA997A00D1E3D0 /* GameController.framework */; };
 		92ECB90621EA998000D1E3D0 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92ECB90521EA998000D1E3D0 /* CoreFoundation.framework */; };
 		92ECB90821EA998600D1E3D0 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92ECB90721EA998600D1E3D0 /* AudioToolbox.framework */; };
@@ -97,11 +100,6 @@
 		92ECB91021EA99B600D1E3D0 /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92ECB90F21EA99B600D1E3D0 /* GameKit.framework */; };
 		92ECB91121EA9BBB00D1E3D0 /* iph_main.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680A81635BAF400051BC2 /* iph_main.m */; };
 		92ECB91221EAA1B700D1E3D0 /* EmulatorController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680B51635BB4900051BC2 /* EmulatorController.m */; };
-		92ECB91321EAD50F00D1E3D0 /* DefaultOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8F088717435C3A00E2D5FB /* DefaultOptionController.m */; };
-		92ECB91421EAD52700D1E3D0 /* FilterOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE9454D71731DF2700B81C32 /* FilterOptionController.m */; };
-		92ECB91521EAD53400D1E3D0 /* InputOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8F08831741580100E2D5FB /* InputOptionController.m */; };
-		92ECB91621EAD55C00D1E3D0 /* ListOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE90575B166A89D000653872 /* ListOptionController.m */; };
-		92ECB91721EAD56300D1E3D0 /* OptionsController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680C01635BB6100051BC2 /* OptionsController.m */; };
 		92ECB91821EAD57400D1E3D0 /* ScreenView.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680C21635BB6100051BC2 /* ScreenView.m */; };
 		92ECB91921EAD57900D1E3D0 /* UIView+Toast.m in Sources */ = {isa = PBXBuildFile; fileRef = 92B99F0D2022706600CC44E3 /* UIView+Toast.m */; };
 		92ECDA87215AEF5D00E4303A /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 92ECDA86215AEF5D00E4303A /* Launch Screen.storyboard */; };
@@ -227,6 +225,8 @@
 		9268D85421661F8E00AB0470 /* config_iPhone_6.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = config_iPhone_6.txt; sourceTree = "<group>"; };
 		9268D8572166840F00AB0470 /* DeviceScreenResolver.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DeviceScreenResolver.h; sourceTree = "<group>"; };
 		9268D8582166840F00AB0470 /* DeviceScreenResolver.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DeviceScreenResolver.m; sourceTree = "<group>"; };
+		92A5332021EB57F00089FBB9 /* Options.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Options.h; sourceTree = "<group>"; };
+		92A5332121EB57F00089FBB9 /* Options.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Options.m; sourceTree = "<group>"; };
 		92B99F0C2022706600CC44E3 /* UIView+Toast.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+Toast.h"; sourceTree = "<group>"; };
 		92B99F0D2022706600CC44E3 /* UIView+Toast.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+Toast.m"; sourceTree = "<group>"; };
 		92D96573215B03E100EFE3AE /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
@@ -349,7 +349,6 @@
 				925ABCB91E46DCC500997182 /* GameController.framework in Frameworks */,
 				92D9657E215B0D5D00EFE3AE /* crt1.3.1.o in Frameworks */,
 				925ABCBA1E46DCC500997182 /* CoreBluetooth.framework in Frameworks */,
-				9228643F20E8915800518250 /* crt1.3.1.o in Frameworks */,
 				925ABCBB1E46DCC500997182 /* CoreFoundation.framework in Frameworks */,
 				925ABCBC1E46DCC500997182 /* AudioToolbox.framework in Frameworks */,
 				925ABCBD1E46DCC500997182 /* QuartzCore.framework in Frameworks */,
@@ -372,7 +371,6 @@
 				92ECB90821EA998600D1E3D0 /* AudioToolbox.framework in Frameworks */,
 				92ECB90621EA998000D1E3D0 /* CoreFoundation.framework in Frameworks */,
 				92ECB90421EA997A00D1E3D0 /* GameController.framework in Frameworks */,
-				92ECB90221EA995F00D1E3D0 /* crt1.3.1.o in Frameworks */,
 				92ECB90121EA993E00D1E3D0 /* libc++.tbd in Frameworks */,
 				92ECB8FF21EA992100D1E3D0 /* libmamearm64-tvos.a in Frameworks */,
 			);
@@ -472,6 +470,8 @@
 				CE9454D31731DE4D00B81C32 /* NetplayGameKit.m */,
 				CEE680BF1635BB6100051BC2 /* OptionsController.h */,
 				CEE680C01635BB6100051BC2 /* OptionsController.m */,
+				92A5332021EB57F00089FBB9 /* Options.h */,
+				92A5332121EB57F00089FBB9 /* Options.m */,
 				CEE680C11635BB6100051BC2 /* ScreenView.h */,
 				CEE680C21635BB6100051BC2 /* ScreenView.m */,
 				92B99F0C2022706600CC44E3 /* UIView+Toast.h */,
@@ -898,6 +898,7 @@
 				925ABCB51E46DCC500997182 /* FilterOptionController.m in Sources */,
 				925ABCB61E46DCC500997182 /* InputOptionController.m in Sources */,
 				925ABCB71E46DCC500997182 /* DefaultOptionController.m in Sources */,
+				92A5332321EB57F00089FBB9 /* Options.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -905,15 +906,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				92A5332621EBC8D00089FBB9 /* Bootstrapper.m in Sources */,
 				92ECB91921EAD57900D1E3D0 /* UIView+Toast.m in Sources */,
-				92ECB91721EAD56300D1E3D0 /* OptionsController.m in Sources */,
-				92ECB91521EAD53400D1E3D0 /* InputOptionController.m in Sources */,
 				92ECB91821EAD57400D1E3D0 /* ScreenView.m in Sources */,
 				92ECB91221EAA1B700D1E3D0 /* EmulatorController.m in Sources */,
-				92ECB91621EAD55C00D1E3D0 /* ListOptionController.m in Sources */,
-				92ECB91321EAD50F00D1E3D0 /* DefaultOptionController.m in Sources */,
-				92ECB91421EAD52700D1E3D0 /* FilterOptionController.m in Sources */,
+				92A5332421EB57F00089FBB9 /* Options.m in Sources */,
 				92ECB91121EA9BBB00D1E3D0 /* iph_main.m in Sources */,
+				92A5332521EBC7F40089FBB9 /* iCadeView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -966,6 +965,7 @@
 				CE9454D81731DF2700B81C32 /* FilterOptionController.m in Sources */,
 				CE8F08841741580100E2D5FB /* InputOptionController.m in Sources */,
 				CE8F088817435C3B00E2D5FB /* DefaultOptionController.m in Sources */,
+				92A5332221EB57F00089FBB9 /* Options.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1016,7 +1016,7 @@
 				);
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.yoshisuga.mame4ios;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yoshisuga.mame4ios2;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1046,7 +1046,7 @@
 				);
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.yoshisuga.mame4ios;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yoshisuga.mame4ios2;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";

@@ -43,6 +43,7 @@
  */
 
 #import "ListOptionController.h"
+#import "Options.h"
 #import "OptionsController.h"
 
 @implementation ListOptionController;

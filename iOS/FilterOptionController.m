@@ -43,6 +43,7 @@
  */
 
 #import "FilterOptionController.h"
+#import "Options.h"
 #import "OptionsController.h"
 #import "ListOptionController.h"
 

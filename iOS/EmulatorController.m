@@ -44,23 +44,29 @@
 
 #include "myosd.h"
 #import "EmulatorController.h"
+#import <GameController/GameController.h>
+
+#if TARGET_OS_IOS
 #import "HelpController.h"
 #import "OptionsController.h"
 #import "DonateController.h"
-#import "iCadeView.h"
-#import "DebugView.h"
 #import "AnalogStick.h"
 #import "AnalogStick.h"
 #import "LayoutView.h"
 #import "LayoutData.h"
+#import "NetplayGameKit.h"
+#endif
+
+#import "iCadeView.h"
+#import "DebugView.h"
 #ifdef BTJOY
 #import "BTJoyHelper.h"
 #endif
 #import <pthread.h>
-#import "NetplayGameKit.h"
 #import "UIView+Toast.h"
 #import "DeviceScreenResolver.h"
 #import "Bootstrapper.h"
+#import "Options.h"
 
 // mfi Controllers
 NSMutableArray *controllers;
@@ -233,6 +239,7 @@ void* app_Thread_Start(void* args)
     return btnStates;
 }
 
+#if TARGET_OS_IOS
 - (CGRect *)getInputRects{
     return rInput;
 }
@@ -247,9 +254,11 @@ void* app_Thread_Start(void* args)
 - (UIView *)getDPADView{
     return dpadView;
 }
+
 - (UIView *)getStickView{
     return analogStickView;
 }
+#endif
 
 - (void)startEmulation{
     
@@ -272,7 +281,7 @@ void* app_Thread_Start(void* args)
     if(pthread_setschedparam(main_tid, policy, &param) != 0)    
              fprintf(stderr, "Error setting pthread priority\n");
     
-#ifndef TARGET_OS_TV
+#if TARGET_OS_IOS
     _impactFeedback = [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleLight];
     _selectionFeedback = [[UISelectionFeedbackGenerator alloc] init];
 #endif
@@ -420,22 +429,25 @@ void* app_Thread_Start(void* args)
     }
     [menu addAction:[UIAlertAction actionWithTitle:@"Settings" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
         g_menu_option = MENU_OPTIONS;
-        
+
+#if TARGET_OS_IOS
         OptionsController *addController =[[OptionsController alloc] init];
         
         addController.emuController = self;
         
         UINavigationController *navController = [[[UINavigationController alloc] initWithRootViewController:addController] autorelease];
         
-#ifndef TARGET_OS_TV
         [navController setModalPresentationStyle:UIModalPresentationPageSheet];
-#else
-        [navController setModalPresentationStyle:UIModalPresentationCurrentContext];
-#endif
         dispatch_async(dispatch_get_main_queue(), ^ {
             [self presentViewController:navController animated:YES completion:nil];
         });
         [addController release];
+#elif TARGET_OS_TV
+        UIAlertController *notYet = [UIAlertController alertControllerWithTitle:@"Not available yet in tvOS 💢" message:@"" preferredStyle:UIAlertControllerStyleAlert];
+        [notYet addAction:[UIAlertAction actionWithTitle:@"Ok" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        }]];
+        [self presentViewController:notYet animated:YES completion:nil];
+#endif
     }]];
     // yoshisuga: removing this because its 2019 and no one cares about jailbroken devices anymore
 //    if(g_btjoy_available)
@@ -730,7 +742,7 @@ void* app_Thread_Start(void* args)
 
 	Options *op = [[Options alloc] init];
            
-    
+#if TARGET_OS_IOS
        if(g_pref_overscanTVOUT != [op overscanValue])
        {
            UIAlertController *warnAlert = [UIAlertController alertControllerWithTitle:@"Pending unplug/plug TVOUT!" message:[NSString stringWithFormat: @"You need to unplug/plug TVOUT for the changes to take effect"] preferredStyle:UIAlertControllerStyleAlert];
@@ -745,6 +757,7 @@ void* app_Thread_Start(void* args)
            }]];
            [self presentViewController:warnAlert animated:YES completion:nil];
        }
+#endif
 
     
     int keyword_changed = 0;    
@@ -843,16 +856,23 @@ void* app_Thread_Start(void* args)
             g_emulation_paused = 1;
             change_pause(1);
             
-            UIAlertView* exitAlertView = nil;
-            
-            if(myosd_inGame)
-	              exitAlertView=[[UIAlertView alloc] initWithTitle:nil
-	                                                                  message:@"are you sure you want to exit the game?"
-	                                                                 delegate:self cancelButtonTitle:nil
-	                                                        otherButtonTitles:@"Yes",@"No",nil];
-	                                                        	                                                        
-	        [exitAlertView show];
-	        [exitAlertView release];
+            UIAlertController *exitAlertController = [UIAlertController alertControllerWithTitle:@"" message:@"Are you sure you want to exit the game?" preferredStyle:UIAlertControllerStyleAlert];
+            [exitAlertController addAction:[UIAlertAction actionWithTitle:@"Yes" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                myosd_exitPause = 1;
+                g_emulation_paused = 0;
+                change_pause(0);
+                [self endMenu];
+                myosd_exitGame = 1;
+                actionPending=0;
+                wantExit = 0;
+            }]];
+            [exitAlertController addAction:[UIAlertAction actionWithTitle:@"No" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                myosd_exitPause = 1;
+                g_emulation_paused = 0;
+                change_pause(0);
+                [self endMenu];
+            }]];
+            [self presentViewController:exitAlertController animated:YES completion:nil];
         }
         else
         { 
@@ -916,15 +936,16 @@ void* app_Thread_Start(void* args)
    nameImgDPad[DPAD_DOWN_RIGHT]= @"DPad_DR.png";
       
    dpadView=nil;
+#if TARGET_OS_IOS
    analogStickView = nil;
-      
+   dview = nil;
+#endif
    int i;
    for(i=0; i<NUM_BUTTONS;i++)
       buttonViews[i]=nil;
       
    screenView=nil;
    imageBack=nil;   			
-   dview = nil;
    
    menu = nil;
 
@@ -943,7 +964,7 @@ void* app_Thread_Start(void* args)
 	
 	self.view.userInteractionEnabled = YES;
 
-#ifndef TARGET_OS_TV
+#if TARGET_OS_IOS
 	self.view.multipleTouchEnabled = YES;
 	self.view.exclusiveTouch = NO;
 #endif
@@ -1011,7 +1032,7 @@ void* app_Thread_Start(void* args)
     mouseTouchStartLocation = mouseInitialLocation;
 }
 
-#ifndef TARGET_OS_TV
+#if TARGET_OS_IOS
 - (UIRectEdge)preferredScreenEdgesDeferringSystemGestures
 {
     return UIRectEdgeBottom;
@@ -1068,6 +1089,7 @@ void* app_Thread_Start(void* args)
 {
 }
 
+#if TARGET_OS_IOS
 -(void) toggleControlsForLightgunButtonPressed:(id)sender {
     // hack for when using a game controller - it will display the menu
     if ( g_joy_used ) {
@@ -1093,6 +1115,7 @@ void* app_Thread_Start(void* args)
         }
     }
 }
+#endif
 
 - (void)changeUI{
    NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
@@ -1134,6 +1157,7 @@ void* app_Thread_Start(void* args)
      imageOverlay = nil;
    }
     
+#if TARGET_OS_IOS
     // Support iCade in external screens
     if ( externalView != nil && icadeView != nil && ![externalView.subviews containsObject:icadeView] ) {
         [externalView addSubview:icadeView];
@@ -1148,7 +1172,10 @@ void* app_Thread_Start(void* args)
               
        [self buildPortrait];
    }
-
+#elif TARGET_OS_TV
+    // for tvOS, use "landscape" only
+    [self buildLandscape];
+#endif
     if ( g_joy_used ) {
         [hideShowControlsForLightgun setImage:[UIImage imageNamed:@"menu"] forState:UIControlStateNormal];
     } else {
@@ -1284,7 +1311,9 @@ void myosd_handle_turbo() {
 }
 
 - (void)removeTouchControllerViews{
-   
+#if TARGET_OS_TV
+    return;
+#else
    int i;
    
    if(dpadView!=nil)
@@ -1310,11 +1339,13 @@ void myosd_handle_turbo() {
          buttonViews[i] = nil; 
       }
    }
-      
+#endif
 }
 
 - (void)buildTouchControllerViews {
-
+#if TARGET_OS_TV
+    return;
+#else
    int i;
    
    
@@ -1382,9 +1413,10 @@ void myosd_handle_turbo() {
         [self.view addSubview: buttonViews[i]];
         btnStates[i] = old_btnStates[i] = BUTTON_NO_PRESS;
     }
-    
+#endif
 }
 
+#if TARGET_OS_IOS
 - (void)buildPortraitImageBack {
 
    if(!g_pref_full_screen_port)
@@ -1613,6 +1645,7 @@ void myosd_handle_turbo() {
    }
    
 }
+#endif
 
 - (void)buildLandscapeImageOverlay{
  
@@ -1677,7 +1710,9 @@ void myosd_handle_turbo() {
 	    imageOverlay.frame = r; // Set the frame in which the UIImage should be drawn in.
       
         imageOverlay.userInteractionEnabled = NO;
+#if TARGET_OS_IOS
         imageOverlay.multipleTouchEnabled = NO;
+#endif
         imageOverlay.clearsContextBeforeDrawing = NO;
    
         //[imageBack setOpaque:YES];
@@ -1691,6 +1726,7 @@ void myosd_handle_turbo() {
     /////
   
    //////////////////
+#if TARGET_OS_IOS
    if(g_enable_debug_view)
    {
 	  if(dview!=nil)
@@ -1705,16 +1741,16 @@ void myosd_handle_turbo() {
 	  
 	  [self.view addSubview:dview];   
 	  [dview setNeedsDisplay];
-	  
-	 
   }
+#endif
   /////////////////	
 }
 
 - (void)buildLandscape{
 	
    g_device_is_landscape = 1;
-      
+
+#if TARGET_OS_IOS
    [self getControllerCoords:1 ];
     
    [self adjustSizes];
@@ -1722,6 +1758,7 @@ void myosd_handle_turbo() {
    [LayoutData loadLayoutData:self];
    
    [self buildLandscapeImageBack];
+#endif
         
    CGRect r;
    
@@ -1811,7 +1848,7 @@ void myosd_handle_turbo() {
        old_dpad_state = dpad_state;
         
         NSLog(@"dpad moved");
-#ifndef TARGET_OS_TV
+#if TARGET_OS_IOS
         if (dpad_state == DPAD_NONE) {
             [self.selectionFeedback selectionChanged];
         } else {
@@ -1829,7 +1866,7 @@ void myosd_handle_turbo() {
            if(btnStates[i] == BUTTON_PRESS)
            {
                NSLog(@"button pressed");
-#ifndef TARGET_OS_TV
+#if TARGET_OS_IOS
                [self.impactFeedback impactOccurred];
 #endif
                imgName = nameImgButton_Press[i];
@@ -1837,7 +1874,7 @@ void myosd_handle_turbo() {
            else
            {
                NSLog(@"button released");
-#ifndef TARGET_OS_TV
+#if TARGET_OS_IOS
                [self.selectionFeedback selectionChanged];
 #endif
                imgName = nameImgButton_NotPress[i];
@@ -1855,6 +1892,7 @@ void myosd_handle_turbo() {
     
 }
 
+#if TARGET_OS_IOS
 #pragma mark Touch Handling
 -(NSSet*)touchHandler:(NSSet *)touches withEvent:(UIEvent *)event {
     if(change_layout)
@@ -2710,7 +2748,7 @@ void myosd_handle_turbo() {
     fclose(fp);
   }
 }
-
+#endif
 
 - (void)didReceiveMemoryWarning {
 	//[super didReceiveMemoryWarning]; // Releases the view if it doesn't have a superview
@@ -2736,10 +2774,11 @@ void myosd_handle_turbo() {
     
     [imageOverlay release];
     imageOverlay = nil;
-    
+
+#if TARGET_OS_IOS
     [dview release];
     dview= nil;
-    
+#endif
     [icadeView release];
     icadeView = nil;
     
@@ -2854,14 +2893,14 @@ void myosd_handle_turbo() {
     
     if(count!=0)
     {
-        UIAlertView *progressAlert = [[UIAlertView alloc] initWithTitle: @"Moving Newer ROMs"
-                                                                message: @"Please wait..."
-                                                               delegate: self
-                                                      cancelButtonTitle: nil
-                                                      otherButtonTitles: nil];
-        UIProgressView *progressView = [[UIProgressView alloc] initWithFrame:CGRectMake(30.0f, 80.0f, 225.0f, 90.0f)];
+        UIAlertController *progressAlert = [UIAlertController alertControllerWithTitle:@"Moving Newer ROMs" message:@"Please wait..." preferredStyle:UIAlertControllerStyleAlert];
+                UIProgressView *progressView = [[UIProgressView alloc] initWithFrame:CGRectMake(30.0f, 80.0f, 225.0f, 90.0f)];
         [progressAlert addSubview:progressView];
+#if TARGET_OS_IOS
         [progressView setProgressViewStyle: UIProgressViewStyleBar];
+#elif TARGET_OS_TV
+        [progressView setProgressViewStyle: UIProgressViewStyleDefault];
+#endif
         
         [progressAlert show];
         [progressView setProgress:0.0f];
@@ -2923,7 +2962,8 @@ void myosd_handle_turbo() {
         [romlist release];
     }
 }
-     
+
+#if TARGET_OS_IOS
 -(void)beginCustomizeCurrentLayout{
     
     
@@ -3047,6 +3087,7 @@ void myosd_handle_turbo() {
        rStickWindow.size.width *= g_stick_size;
     }
 }
+#endif
 
 #pragma mark - MFI Controller
 

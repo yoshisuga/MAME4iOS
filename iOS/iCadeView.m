@@ -136,17 +136,6 @@
         g_iCade_used = 1;
         g_joy_used = 1;
         myosd_num_of_joys = 1;
-        /*
-        UIAlertView *warnAlert = [[UIAlertView alloc] initWithTitle:nil
-                     
-                                               message:[NSString stringWithFormat: @"\n\n\niCade or compatible connection?.\nPlease Wait..."]
-                     
-                                              delegate: nil
-                                     cancelButtonTitle: nil
-                                     otherButtonTitles: nil];
-        
-        [self performSelector:@selector(autoDimiss:) withObject:warnAlert afterDelay:1.5f];
-        [warnAlert show];*/
         [emuController changeUI];
     }
     
@@ -662,13 +651,6 @@
 
 - (void)deleteBackward {
     // This space intentionally left blank to complete protocol
-}
-
--(void)autoDimiss:(id)sender {
-    
-    UIAlertView *alert = (UIAlertView *)sender;
-    [alert dismissWithClickedButtonIndex:0 animated:YES];
-    [alert release];    
 }
 
 @end

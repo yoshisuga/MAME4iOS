@@ -53,11 +53,14 @@
 
 @end
 
+#if TARGET_OS_IOS
 @class DebugView;
 @class AnalogStickView;
-@class iCadeView;
 @class LayoutView;
 @class NetplayGameKit;
+#endif
+
+@class iCadeView;
 
 @interface EmulatorController : UIViewController
 {
@@ -65,19 +68,20 @@
   ScreenView			* screenView;
   UIImageView	    * imageBack;
   UIImageView	    * imageOverlay;
+#if TARGET_OS_IOS
   DebugView         * dview;
+  AnalogStickView   * analogStickView;
+    LayoutView        *layoutView;    
+    NetplayGameKit     *netplayHelper;
+#endif
   @public UIView	* externalView;
 
   UIImageView	    * dpadView;
   UIImageView	    * buttonViews[NUM_BUTTONS];
 
-  AnalogStickView   * analogStickView;
     
   iCadeView         *icadeView;
     
-  LayoutView        *layoutView;
-    
-  NetplayGameKit     *netplayHelper;
 
   UIAlertController *menu;
   
@@ -181,7 +185,7 @@
 @property (readonly,assign) CGRect rStickArea;
 @property (assign) CGRect rStickWindow;
 @property (assign) CGRect rDPadImage;
-#ifndef TARGET_OS_TV
+#if TARGET_OS_IOS
 @property (retain, nonatomic) UIImpactFeedbackGenerator* impactFeedback;
 @property (retain, nonatomic) UISelectionFeedbackGenerator* selectionFeedback;
 #endif

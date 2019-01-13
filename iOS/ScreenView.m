@@ -102,28 +102,9 @@ void iphone_UpdateScreen()
             [self setMagnificationFilter:kCAFilterNearest];
             [self setMinificationFilter:kCAFilterNearest];
   	    }
-  	    
-  	    if (0) {
-		    [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
-            [[NSNotificationCenter defaultCenter] addObserver:self
-                                                     selector:@selector(orientationChanged:)
-                                                         name:@"UIDeviceOrientationDidChangeNotification"
-                                                       object:nil];
-		}
-		
+        
 	}
 	return self;
-}
-
-- (void) orientationChanged:(NSNotification *)notification
-{
-    UIDeviceOrientation orientation = [[UIDevice currentDevice] orientation];
-    if (orientation == UIDeviceOrientationLandscapeLeft) {
-        rotateTransform = CGAffineTransformMakeRotation(DEGREE_TO_RAD(90));
-    } else if (orientation == UIDeviceOrientationLandscapeRight) {
-        rotateTransform = CGAffineTransformMakeRotation(DEGREE_TO_RAD(270));
-    }
-    
 }
 
 - (void)display {
@@ -161,7 +142,9 @@ void iphone_UpdateScreen()
         
         self.opaque = YES;
         self.clearsContextBeforeDrawing = NO;
+#ifndef TARGET_OS_TV
         self.multipleTouchEnabled = NO;
+#endif
         self.userInteractionEnabled = NO;
         
         sharedInstance = self;

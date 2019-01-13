@@ -44,6 +44,7 @@
 
 #import "InputOptionController.h"
 #import "Globals.h"
+#import "Options.h"
 #import "OptionsController.h"
 #import "ListOptionController.h"
 #import "EmulatorController.h"

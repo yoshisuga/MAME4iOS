@@ -156,7 +156,9 @@ static const NSString * CSToastQueueKey             = @"CSToastQueueKey";
         UITapGestureRecognizer *recognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(cs_handleToastTapped:)];
         [toast addGestureRecognizer:recognizer];
         toast.userInteractionEnabled = YES;
+#ifndef TARGET_OS_TV
         toast.exclusiveTouch = YES;
+#endif
     }
     
     [[self cs_activeToasts] addObject:toast];
