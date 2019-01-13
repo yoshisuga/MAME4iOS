@@ -272,84 +272,85 @@ void* app_Thread_Start(void* args)
     if(pthread_setschedparam(main_tid, policy, &param) != 0)    
              fprintf(stderr, "Error setting pthread priority\n");
     
+#ifndef TARGET_OS_TV
     _impactFeedback = [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleLight];
     _selectionFeedback = [[UISelectionFeedbackGenerator alloc] init];
-    	
+#endif
 }
 
-- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
-{
-	if(buttonIndex == 999)
-    {
-        return;
-    }
-    
-    int loadsave = myosd_inGame * 2;
-  
-    
-    if(buttonIndex == 0 && enable_menu_exit_option)
-    {
-       g_menu_option = MENU_EXIT;
-       myosd_exitGame = 0;
-       wantExit = 1;	            
-       UIAlertView* exitAlertView=[[UIAlertView alloc] initWithTitle:nil
-                                                              message:@"are you sure you want to exit the game?"
-                                                             delegate:self cancelButtonTitle:nil
-                                                    otherButtonTitles:@"Yes",@"No",nil];                                                        
-       [exitAlertView show];
-       [exitAlertView release];           
-       
-    }   
-    else if((buttonIndex == 0 && !enable_menu_exit_option && loadsave) || (buttonIndex == 1 && enable_menu_exit_option && loadsave))
-    {
-       myosd_loadstate = 1;
-       [self endMenu];
-    }
-    else if((buttonIndex == 1 && !enable_menu_exit_option && loadsave) || (buttonIndex == 2 && enable_menu_exit_option && loadsave))
-    {
-       myosd_savestate = 1;
-       [self endMenu];
-    }     
-    else if(buttonIndex == 0 + enable_menu_exit_option + loadsave)
-    {
-       g_menu_option = MENU_OPTIONS;
-       
-       OptionsController *addController =[[OptionsController alloc] init];
-        
-       addController.emuController = self;
-                               
-       UINavigationController *navController = [[[UINavigationController alloc] initWithRootViewController:addController] autorelease];
-        
-       //[navController setModalPresentationStyle: /*UIModalPresentationFormSheet*/ UIModalPresentationPageSheet];
-
-        [navController setModalPresentationStyle:UIModalPresentationPageSheet];
-        dispatch_async(dispatch_get_main_queue(), ^ {
-            [self presentViewController:navController animated:YES completion:nil];
-        });
-
-//        [self presentModalViewController:navController animated:YES];
-        
-       //[self presentModalViewController:addController animated:YES];
-
-       [addController release];
-    }
-#ifdef BTJOY
-    else if(buttonIndex == 1 + enable_menu_exit_option + loadsave)
-    {
-       g_menu_option = MENU_BTJOY;
-
-       [BTJoyHelper startBTJoy:self];
-    }
-#endif    
-    else   	    
-    {
-       [self endMenu];
-    }
-  	      
-    [menu release];
-    menu = nil;
-                          
-}
+//- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
+//{
+//    if(buttonIndex == 999)
+//    {
+//        return;
+//    }
+//
+//    int loadsave = myosd_inGame * 2;
+//
+//
+//    if(buttonIndex == 0 && enable_menu_exit_option)
+//    {
+//       g_menu_option = MENU_EXIT;
+//       myosd_exitGame = 0;
+//       wantExit = 1;
+//       UIAlertView* exitAlertView=[[UIAlertView alloc] initWithTitle:nil
+//                                                              message:@"are you sure you want to exit the game?"
+//                                                             delegate:self cancelButtonTitle:nil
+//                                                    otherButtonTitles:@"Yes",@"No",nil];
+//       [exitAlertView show];
+//       [exitAlertView release];
+//
+//    }
+//    else if((buttonIndex == 0 && !enable_menu_exit_option && loadsave) || (buttonIndex == 1 && enable_menu_exit_option && loadsave))
+//    {
+//       myosd_loadstate = 1;
+//       [self endMenu];
+//    }
+//    else if((buttonIndex == 1 && !enable_menu_exit_option && loadsave) || (buttonIndex == 2 && enable_menu_exit_option && loadsave))
+//    {
+//       myosd_savestate = 1;
+//       [self endMenu];
+//    }
+//    else if(buttonIndex == 0 + enable_menu_exit_option + loadsave)
+//    {
+//       g_menu_option = MENU_OPTIONS;
+//
+//       OptionsController *addController =[[OptionsController alloc] init];
+//
+//       addController.emuController = self;
+//
+//       UINavigationController *navController = [[[UINavigationController alloc] initWithRootViewController:addController] autorelease];
+//
+//       //[navController setModalPresentationStyle: /*UIModalPresentationFormSheet*/ UIModalPresentationPageSheet];
+//
+//        [navController setModalPresentationStyle:UIModalPresentationPageSheet];
+//        dispatch_async(dispatch_get_main_queue(), ^ {
+//            [self presentViewController:navController animated:YES completion:nil];
+//        });
+//
+////        [self presentModalViewController:navController animated:YES];
+//
+//       //[self presentModalViewController:addController animated:YES];
+//
+//       [addController release];
+//    }
+//#ifdef BTJOY
+//    else if(buttonIndex == 1 + enable_menu_exit_option + loadsave)
+//    {
+//       g_menu_option = MENU_BTJOY;
+//
+//       [BTJoyHelper startBTJoy:self];
+//    }
+//#endif
+//    else
+//    {
+//       [self endMenu];
+//    }
+//
+//    [menu release];
+//    menu = nil;
+//
+//}
 
 - (void)runMenu
 {
@@ -358,7 +359,7 @@ void* app_Thread_Start(void* args)
 
     if(menu!=nil)
     {
-       [menu dismissWithClickedButtonIndex:999 animated:YES];
+       [menu dismissViewControllerAnimated:YES completion:nil];
        [menu release];
        menu = nil;
     }
@@ -373,24 +374,78 @@ void* app_Thread_Start(void* args)
   
     enable_menu_exit_option  = g_iCade_used && myosd_inGame && myosd_in_menu==0;
     
-    menu = [[UIActionSheet alloc] initWithTitle:
-            @"Choose an option from the menu. Press cancel to go back." delegate:self cancelButtonTitle:nil destructiveButtonTitle:nil
-                              otherButtonTitles: nil];
-    if(enable_menu_exit_option)
-       [menu addButtonWithTitle:@"Exit Game"];
+    menu = [UIAlertController alertControllerWithTitle:@"Choose an option from the menu. Press cancel to go back." message:@"" preferredStyle:UIAlertControllerStyleActionSheet];
+    
+    if(enable_menu_exit_option) {
+        [menu addAction:[UIAlertAction
+                            actionWithTitle:@"Exit Game"
+                         style:UIAlertActionStyleDefault
+                         handler:^(UIAlertAction * _Nonnull action) {
+                             g_menu_option = MENU_EXIT;
+                             myosd_exitGame = 0;
+                             wantExit = 1;
+                             UIAlertController *exitAlert = [UIAlertController alertControllerWithTitle:@"" message:@"Are you sure you want to exit the game?" preferredStyle:UIAlertControllerStyleAlert];
+                             [exitAlert addAction:
+                              [UIAlertAction
+                               actionWithTitle:@"Yes"
+                               style:UIAlertActionStyleDefault
+                               handler:^(UIAlertAction * _Nonnull action) {
+                                   myosd_exitPause = 1;
+                                   g_emulation_paused = 0;
+                                   change_pause(0);
+                                   myosd_exitGame = 1;
+                                   actionPending=0;
+                                   wantExit = 0;
+                                   [self endMenu];
+                               }]];
+                             [exitAlert addAction:[UIAlertAction actionWithTitle:@"No" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                                 myosd_exitPause = 1;
+                                 g_emulation_paused = 0;
+                                 change_pause(0);
+                                 [self endMenu];
+                             }]];
+                             [self presentViewController:exitAlert animated:YES completion:nil];
+                         }]];
+    }
     if(myosd_inGame)
     {
-       [menu addButtonWithTitle:@"Load State"];
-       [menu addButtonWithTitle:@"Save State"];
+        [menu addAction:[UIAlertAction actionWithTitle:@"Load State" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            myosd_loadstate = 1;
+            [self endMenu];
+        }]];
+        [menu addAction:[UIAlertAction actionWithTitle:@"Save State" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            myosd_savestate = 1;
+            [self endMenu];
+        }]];
     }
-    [menu addButtonWithTitle:@"Settings"];
-    if(g_btjoy_available)
-       [menu addButtonWithTitle:@"WiiMote/Sixaxis"];
-    [menu addButtonWithTitle:@"Cancel"];
+    [menu addAction:[UIAlertAction actionWithTitle:@"Settings" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        g_menu_option = MENU_OPTIONS;
+        
+        OptionsController *addController =[[OptionsController alloc] init];
+        
+        addController.emuController = self;
+        
+        UINavigationController *navController = [[[UINavigationController alloc] initWithRootViewController:addController] autorelease];
+        
+#ifndef TARGET_OS_TV
+        [navController setModalPresentationStyle:UIModalPresentationPageSheet];
+#else
+        [navController setModalPresentationStyle:UIModalPresentationCurrentContext];
+#endif
+        dispatch_async(dispatch_get_main_queue(), ^ {
+            [self presentViewController:navController animated:YES completion:nil];
+        });
+        [addController release];
+    }]];
+    // yoshisuga: removing this because its 2019 and no one cares about jailbroken devices anymore
+//    if(g_btjoy_available)
+//       [menu addButtonWithTitle:@"WiiMote/Sixaxis"];
+    [menu addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
+        [self endMenu];
+    }]];
+    [self presentViewController:menu animated:YES completion:nil];
     	   
-    [menu showInView:self.view];
-	   
-    [pool release];   
+    [pool release];
 }
 
 - (void)endMenu{
@@ -670,26 +725,25 @@ void* app_Thread_Start(void* args)
 -(void)done:(id)sender {
     
     
-    if(!change_layout)
-      [self dismissModalViewControllerAnimated:YES];
+    if(!change_layout && menu != nil )
+        [menu dismissViewControllerAnimated:YES completion:nil];
 
 	Options *op = [[Options alloc] init];
            
-        
+    
        if(g_pref_overscanTVOUT != [op overscanValue])
        {
+           UIAlertController *warnAlert = [UIAlertController alertControllerWithTitle:@"Pending unplug/plug TVOUT!" message:[NSString stringWithFormat: @"You need to unplug/plug TVOUT for the changes to take effect"] preferredStyle:UIAlertControllerStyleAlert];
+           [warnAlert addAction:[UIAlertAction actionWithTitle:@"Dismiss" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                   if(change_layout)
+                   {
+                       [LayoutData removeLayoutData];
+                       change_layout = 0;
+//                       [self done:self];
+                   }
 
-           UIAlertView *warnAlert = [[UIAlertView alloc] initWithTitle:@"Pending unplug/plug TVOUT!" 
-															  
- 
-           message:[NSString stringWithFormat: @"You need to unplug/plug TVOUT for the changes to take effect"]
-														 
-															 delegate:self 
-													cancelButtonTitle:@"Dismiss" 
-													otherButtonTitles: nil];
-	
-	       [warnAlert show];
-	       [warnAlert release];
+           }]];
+           [self presentViewController:warnAlert animated:YES completion:nil];
        }
 
     
@@ -741,37 +795,37 @@ void* app_Thread_Start(void* args)
     
 }
 
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
-{
-    if(change_layout)
-    {
-        if(buttonIndex == 0)
-           [LayoutData removeLayoutData];
-        
-        change_layout = 0;
-        
-        [self done:self];
-        
-    }
-    else
-    {
-        
-        myosd_exitPause = 1;
-        g_emulation_paused = 0;
-        change_pause(0);
-        if(g_menu_option == MENU_EXIT)
-        {
-            [self endMenu];
-        }
-        
-        if(buttonIndex == 0 && wantExit )
-        {
-            myosd_exitGame = 1;
-        }
-        actionPending=0;
-        wantExit = 0;
-    }
-}
+//- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+//{
+//    if(change_layout)
+//    {
+//        if(buttonIndex == 0)
+//           [LayoutData removeLayoutData];
+//
+//        change_layout = 0;
+//
+//        [self done:self];
+//
+//    }
+//    else
+//    {
+//
+//        myosd_exitPause = 1;
+//        g_emulation_paused = 0;
+//        change_pause(0);
+//        if(g_menu_option == MENU_EXIT)
+//        {
+//            [self endMenu];
+//        }
+//
+//        if(buttonIndex == 0 && wantExit )
+//        {
+//            myosd_exitGame = 1;
+//        }
+//        actionPending=0;
+//        wantExit = 0;
+//    }
+//}
 
 - (void)handle_MENU
 {
@@ -888,9 +942,11 @@ void* app_Thread_Start(void* args)
 	self.view.clearsContextBeforeDrawing = NO; //Performance?
 	
 	self.view.userInteractionEnabled = YES;
-	
+
+#ifndef TARGET_OS_TV
 	self.view.multipleTouchEnabled = YES;
 	self.view.exclusiveTouch = NO;
+#endif
 	
     //self.view.multipleTouchEnabled = NO; investigar porque se queda
 	//self.view.contentMode = UIViewContentModeTopLeft;
@@ -932,20 +988,6 @@ void* app_Thread_Start(void* args)
     if(g_pref_ext_control_type!=EXT_CONTROL_NONE)
        icadeView.active = YES;
     
-    if(0)
-    {
-		   UIAlertView *loadAlert = [[UIAlertView alloc] initWithTitle:nil 
-	   																										
-		           message:[NSString stringWithFormat: @"\n\n\nLoading.\nPlease Wait..."]
-															 
-																 delegate: nil 
-														cancelButtonTitle: nil 
-														otherButtonTitles: nil];
-			   			      
-		   [loadAlert show];
-	       [loadAlert release];
-	 }
-    
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(MFIControllerConnected:)
                                                  name:GCControllerDidConnectNotification
@@ -969,6 +1011,7 @@ void* app_Thread_Start(void* args)
     mouseTouchStartLocation = mouseInitialLocation;
 }
 
+#ifndef TARGET_OS_TV
 - (UIRectEdge)preferredScreenEdgesDeferringSystemGestures
 {
     return UIRectEdgeBottom;
@@ -986,39 +1029,6 @@ void* app_Thread_Start(void* args)
     }
 }
 
-- (void)viewDidUnload
-{    
-    [super viewDidUnload];
-    
-    [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name:GCControllerDidConnectNotification
-                                                  object:nil];
-    [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name:GCControllerDidDisconnectNotification
-                                                  object:nil];
-    
-    [self removeTouchControllerViews];
-    
-    [screenView release];
-    screenView = nil;
-    
-    [imageBack release];
-    imageBack = nil;
-    
-    [imageOverlay release];
-    imageOverlay = nil;
-    
-    [dview release];
-    dview= nil;
-    
-    [icadeView release];
-    icadeView = nil;
-}
-
-- (void)drawRect:(CGRect)rect
-{
-}
-
 -(BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
     return change_layout ? NO : YES;
 }
@@ -1030,26 +1040,32 @@ void* app_Thread_Start(void* args)
 -(UIInterfaceOrientationMask)supportedInterfaceOrientations
 {
     if(isGridlee)
-      return UIInterfaceOrientationMaskLandscape;
+        return UIInterfaceOrientationMaskLandscape;
     else
-      return UIInterfaceOrientationMaskAll;
+        return UIInterfaceOrientationMaskAll;
 }
 
 /*
-- (UIInterfaceOrientation)preferredInterfaceOrientationForPresentation
-{
-    //printf("llaman al preferredInterfaceOrientationForPresentation\n");
-    return UIInterfaceOrientationPortrait;
-}
-*/
+ - (UIInterfaceOrientation)preferredInterfaceOrientationForPresentation
+ {
+ //printf("llaman al preferredInterfaceOrientationForPresentation\n");
+ return UIInterfaceOrientationPortrait;
+ }
+ */
 
 -(void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {
-   
+    
     [self changeUI];
     if(menu!=nil)
-    {         
-         [self runMenu];
-    }        
+    {
+        [self runMenu];
+    }
+}
+
+#endif
+
+- (void)drawRect:(CGRect)rect
+{
 }
 
 -(void) toggleControlsForLightgunButtonPressed:(id)sender {
@@ -1795,11 +1811,13 @@ void myosd_handle_turbo() {
        old_dpad_state = dpad_state;
         
         NSLog(@"dpad moved");
+#ifndef TARGET_OS_TV
         if (dpad_state == DPAD_NONE) {
             [self.selectionFeedback selectionChanged];
         } else {
             [self.impactFeedback impactOccurred];
         }
+#endif
     }
     
     int i = 0;
@@ -1811,13 +1829,17 @@ void myosd_handle_turbo() {
            if(btnStates[i] == BUTTON_PRESS)
            {
                NSLog(@"button pressed");
+#ifndef TARGET_OS_TV
                [self.impactFeedback impactOccurred];
+#endif
                imgName = nameImgButton_Press[i];
            }
            else
            {
                NSLog(@"button released");
+#ifndef TARGET_OS_TV
                [self.selectionFeedback selectionChanged];
+#endif
                imgName = nameImgButton_NotPress[i];
            } 
            if(imgName!=nil)
@@ -2697,19 +2719,30 @@ void myosd_handle_turbo() {
 
 
 - (void)dealloc {
-
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:GCControllerDidConnectNotification
+                                                  object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:GCControllerDidDisconnectNotification
+                                                  object:nil];
+    
     [self removeTouchControllerViews];
-
+    
     [screenView release];
+    screenView = nil;
     
     [imageBack release];
-      
+    imageBack = nil;
+    
     [imageOverlay release];
- 
+    imageOverlay = nil;
+    
     [dview release];
+    dview= nil;
     
     [icadeView release];
-	   
+    icadeView = nil;
+    
 	[super dealloc];
 }
 

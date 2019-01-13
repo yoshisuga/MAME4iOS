@@ -96,6 +96,14 @@
 		92ECB90E21EA99A200D1E3D0 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92ECB90D21EA99A200D1E3D0 /* CoreGraphics.framework */; };
 		92ECB91021EA99B600D1E3D0 /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92ECB90F21EA99B600D1E3D0 /* GameKit.framework */; };
 		92ECB91121EA9BBB00D1E3D0 /* iph_main.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680A81635BAF400051BC2 /* iph_main.m */; };
+		92ECB91221EAA1B700D1E3D0 /* EmulatorController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680B51635BB4900051BC2 /* EmulatorController.m */; };
+		92ECB91321EAD50F00D1E3D0 /* DefaultOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8F088717435C3A00E2D5FB /* DefaultOptionController.m */; };
+		92ECB91421EAD52700D1E3D0 /* FilterOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE9454D71731DF2700B81C32 /* FilterOptionController.m */; };
+		92ECB91521EAD53400D1E3D0 /* InputOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8F08831741580100E2D5FB /* InputOptionController.m */; };
+		92ECB91621EAD55C00D1E3D0 /* ListOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE90575B166A89D000653872 /* ListOptionController.m */; };
+		92ECB91721EAD56300D1E3D0 /* OptionsController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680C01635BB6100051BC2 /* OptionsController.m */; };
+		92ECB91821EAD57400D1E3D0 /* ScreenView.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680C21635BB6100051BC2 /* ScreenView.m */; };
+		92ECB91921EAD57900D1E3D0 /* UIView+Toast.m in Sources */ = {isa = PBXBuildFile; fileRef = 92B99F0D2022706600CC44E3 /* UIView+Toast.m */; };
 		92ECDA87215AEF5D00E4303A /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 92ECDA86215AEF5D00E4303A /* Launch Screen.storyboard */; };
 		92ECDA88215AEF5D00E4303A /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 92ECDA86215AEF5D00E4303A /* Launch Screen.storyboard */; };
 		B370F8B01C8549010069377D /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B370F8AF1C8549010069377D /* GameController.framework */; };
@@ -538,9 +546,9 @@
 				92D9657C215B0D5C00EFE3AE /* crt1.3.1.o */,
 				CEAC6C2716AAA73900AF3275 /* RELOADED */,
 				CEE6808F1635BA7000051BC2 /* MAME4iOS */,
+				92ECB8EC21EA984E00D1E3D0 /* MAME tvOS */,
 				CEAC6C3116AAA80400AF3275 /* Gridlee */,
 				CEE680C51635BB8500051BC2 /* Includes */,
-				92ECB8EC21EA984E00D1E3D0 /* MAME tvOS */,
 				CEE680881635BA7000051BC2 /* Frameworks */,
 				CEE680861635BA7000051BC2 /* Products */,
 				925ABCE31E46DCC600997182 /* MAME4iOS copy-Info.plist */,
@@ -897,6 +905,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				92ECB91921EAD57900D1E3D0 /* UIView+Toast.m in Sources */,
+				92ECB91721EAD56300D1E3D0 /* OptionsController.m in Sources */,
+				92ECB91521EAD53400D1E3D0 /* InputOptionController.m in Sources */,
+				92ECB91821EAD57400D1E3D0 /* ScreenView.m in Sources */,
+				92ECB91221EAA1B700D1E3D0 /* EmulatorController.m in Sources */,
+				92ECB91621EAD55C00D1E3D0 /* ListOptionController.m in Sources */,
+				92ECB91321EAD50F00D1E3D0 /* DefaultOptionController.m in Sources */,
+				92ECB91421EAD52700D1E3D0 /* FilterOptionController.m in Sources */,
 				92ECB91121EA9BBB00D1E3D0 /* iph_main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

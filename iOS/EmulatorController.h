@@ -59,7 +59,7 @@
 @class LayoutView;
 @class NetplayGameKit;
 
-@interface EmulatorController : UIViewController <UIActionSheetDelegate>
+@interface EmulatorController : UIViewController
 {
 
   ScreenView			* screenView;
@@ -79,7 +79,7 @@
     
   NetplayGameKit     *netplayHelper;
 
-  UIActionSheet     *menu;
+  UIAlertController *menu;
   
   //input rects
   CGRect rInput[INPUT_LAST_VALUE];
@@ -181,8 +181,10 @@
 @property (readonly,assign) CGRect rStickArea;
 @property (assign) CGRect rStickWindow;
 @property (assign) CGRect rDPadImage;
+#ifndef TARGET_OS_TV
 @property (retain, nonatomic) UIImpactFeedbackGenerator* impactFeedback;
 @property (retain, nonatomic) UISelectionFeedbackGenerator* selectionFeedback;
+#endif
 
 
 @end
