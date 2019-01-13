@@ -1181,10 +1181,10 @@ void myosd_handle_turbo() {
     if ( !myosd_inGame ) {
         return;
     }
-    NSArray *supportedTurboButtons = @[ @[ [NSNumber numberWithInt:BTN_X], [NSNumber numberWithInt:MYOSD_X] ],
+    NSArray *supportedTurboButtons = @[ @[ [NSNumber numberWithInt:BTN_X], [NSNumber numberWithInt:MYOSD_A] ],
                                            @[ [NSNumber numberWithInt:BTN_Y], [NSNumber numberWithInt:MYOSD_Y] ],
-                                           @[ [NSNumber numberWithInt:BTN_A], [NSNumber numberWithInt:MYOSD_A] ],
-                                           @[ [NSNumber numberWithInt:BTN_B], [NSNumber numberWithInt:MYOSD_B] ],
+                                           @[ [NSNumber numberWithInt:BTN_A], [NSNumber numberWithInt:MYOSD_B] ],
+                                           @[ [NSNumber numberWithInt:BTN_B], [NSNumber numberWithInt:MYOSD_X] ],
                                            @[ [NSNumber numberWithInt:BTN_L1], [NSNumber numberWithInt:MYOSD_L1] ],
                                            @[ [NSNumber numberWithInt:BTN_R1], [NSNumber numberWithInt:MYOSD_R1] ]
                                            ];
@@ -3095,26 +3095,26 @@ void myosd_handle_turbo() {
             
             if (element == gamepad.buttonA) {
                 if (gamepad.buttonA.pressed) {
-                    myosd_joy_status[index] |= MYOSD_A;
-                }
-                else {
-                    myosd_joy_status[index] &= ~MYOSD_A;
-                }
-            }
-            if (element == gamepad.buttonB) {
-                if (gamepad.buttonB.pressed) {
                     myosd_joy_status[index] |= MYOSD_B;
                 }
                 else {
                     myosd_joy_status[index] &= ~MYOSD_B;
                 }
             }
-            if (element == gamepad.buttonX) {
-                if (gamepad.buttonX.pressed) {
+            if (element == gamepad.buttonB) {
+                if (gamepad.buttonB.pressed) {
                     myosd_joy_status[index] |= MYOSD_X;
                 }
                 else {
                     myosd_joy_status[index] &= ~MYOSD_X;
+                }
+            }
+            if (element == gamepad.buttonX) {
+                if (gamepad.buttonX.pressed) {
+                    myosd_joy_status[index] |= MYOSD_A;
+                }
+                else {
+                    myosd_joy_status[index] &= ~MYOSD_A;
                 }
             }
             if (element == gamepad.buttonY) {
@@ -3147,26 +3147,26 @@ void myosd_handle_turbo() {
             
             if (element == gamepad.buttonA) {
                 if (gamepad.buttonA.pressed) {
-                    myosd_joy_status[index] |= MYOSD_A;
-                }
-                else {
-                    myosd_joy_status[index] &= ~MYOSD_A;
-                }
-            }
-            if (element == gamepad.buttonB) {
-                if (gamepad.buttonB.pressed) {
                     myosd_joy_status[index] |= MYOSD_B;
                 }
                 else {
                     myosd_joy_status[index] &= ~MYOSD_B;
                 }
             }
-            if (element == gamepad.buttonX) {
-                if (gamepad.buttonX.pressed) {
+            if (element == gamepad.buttonB) {
+                if (gamepad.buttonB.pressed) {
                     myosd_joy_status[index] |= MYOSD_X;
                 }
                 else {
                     myosd_joy_status[index] &= ~MYOSD_X;
+                }
+            }
+            if (element == gamepad.buttonX) {
+                if (gamepad.buttonX.pressed) {
+                    myosd_joy_status[index] |= MYOSD_A;
+                }
+                else {
+                    myosd_joy_status[index] &= ~MYOSD_A;
                 }
             }
             if (element == gamepad.buttonY) {
