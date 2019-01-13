@@ -46,6 +46,7 @@
 
 #import "Globals.h"
 #import "ScreenView.h"
+#import <GameController/GameController.h>
 
 @interface UINavigationController (KeyboardDismiss)
 
@@ -62,7 +63,11 @@
 
 @class iCadeView;
 
+#if TARGET_OS_IOS
 @interface EmulatorController : UIViewController
+#elif TARGET_OS_TV
+@interface EmulatorController : GCEventViewController
+#endif
 {
 
   ScreenView			* screenView;
