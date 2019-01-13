@@ -949,8 +949,7 @@ void* app_Thread_Start(void* args)
    
    menu = nil;
 
-   
-   [ self getConf];
+   [self getConf];
 
 	//[self.view addSubview:self.imageBack];
  	
@@ -1761,7 +1760,8 @@ void myosd_handle_turbo() {
 #endif
         
    CGRect r;
-   
+
+#if TARGET_OS_IOS
    if(externalView!=nil)
    {
         r = rExternalView;
@@ -1773,7 +1773,10 @@ void myosd_handle_turbo() {
    else
    {
         r = rFrames[LANDSCAPE_VIEW_FULL];
-   }     
+   }
+#elif TARGET_OS_TV
+    r = [[UIScreen mainScreen] bounds];
+#endif
    
    if(g_pref_keep_aspect_ratio_land)
    {
@@ -2679,12 +2682,17 @@ void myosd_handle_turbo() {
   }
 }
 
+#endif
+
 - (void)getConf{
+#if TARGET_OS_TV
+    return;
+#endif
     char string[256];
     FILE *fp;
     
     DeviceScreenType screenType = [DeviceScreenResolver resolve];
-	
+    
     if ( screenType == IPHONE_XR_XS_MAX ) {
         fp = [self loadFile:"config_iPhone_xr_xs_max.txt"];
     } else if ( screenType == IPHONE_X_XS ) {
@@ -2709,46 +2717,45 @@ void myosd_handle_turbo() {
         }
     } else {
         // default to the largest iPhone if unknown
-       fp = [self loadFile:"config_iPhone_xr_xs_max.txt"];
+        fp = [self loadFile:"config_iPhone_xr_xs_max.txt"];
     }
-
-	if (fp) 
-	{
-		int i = 0;
+    
+    if (fp)
+    {
+        int i = 0;
         while(fgets(string, 256, fp) != NULL && i < 14)
-       {
-			char* result = strtok(string, ",");
-			int coords[4];
-			int i2 = 1;
-			while( result != NULL && i2 < 5 )
-			{
-				coords[i2 - 1] = atoi(result);
-				result = strtok(NULL, ",");
-				i2++;
-			}
-						
-			switch(i)
-			{
-	    		case 0:    rFrames[PORTRAIT_VIEW_FULL]     	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-	    		case 1:    rFrames[PORTRAIT_VIEW_NOT_FULL] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-	    		case 2:    rFrames[PORTRAIT_IMAGE_BACK]     	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-	    		case 3:    rFrames[PORTRAIT_IMAGE_OVERLAY]     	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-	    		
-                case 4:    rFrames[LANDSCAPE_VIEW_FULL] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-	    		case 5:    rFrames[LANDSCAPE_VIEW_NOT_FULL] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-	    		case 6:    rFrames[LANDSCAPE_IMAGE_BACK]  	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-	    		case 7:    rFrames[LANDSCAPE_IMAGE_OVERLAY]     	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+        {
+            char* result = strtok(string, ",");
+            int coords[4];
+            int i2 = 1;
+            while( result != NULL && i2 < 5 )
+            {
+                coords[i2 - 1] = atoi(result);
+                result = strtok(NULL, ",");
+                i2++;
+            }
+            
+            switch(i)
+            {
+                case 0:    rFrames[PORTRAIT_VIEW_FULL]         = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+                case 1:    rFrames[PORTRAIT_VIEW_NOT_FULL] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+                case 2:    rFrames[PORTRAIT_IMAGE_BACK]         = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+                case 3:    rFrames[PORTRAIT_IMAGE_OVERLAY]         = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
                     
-	            case 8:    g_enable_debug_view = coords[0]; break;
-	            //case 9:    main_thread_priority_type = coords[0]; break;
-	            //case 10:   video_thread_priority_type = coords[0]; break;
-			}
-      i++;
+                case 4:    rFrames[LANDSCAPE_VIEW_FULL] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+                case 5:    rFrames[LANDSCAPE_VIEW_NOT_FULL] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+                case 6:    rFrames[LANDSCAPE_IMAGE_BACK]      = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+                case 7:    rFrames[LANDSCAPE_IMAGE_OVERLAY]         = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+                    
+                case 8:    g_enable_debug_view = coords[0]; break;
+                    //case 9:    main_thread_priority_type = coords[0]; break;
+                    //case 10:   video_thread_priority_type = coords[0]; break;
+            }
+            i++;
+        }
+        fclose(fp);
     }
-    fclose(fp);
-  }
 }
-#endif
 
 - (void)didReceiveMemoryWarning {
 	//[super didReceiveMemoryWarning]; // Releases the view if it doesn't have a superview

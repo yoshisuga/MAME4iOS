@@ -197,7 +197,9 @@ unsigned long read_mfi_controller(unsigned long res){
 
     [manager release];
     
+#if TARGET_OS_IOS
     [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation : UIStatusBarAnimationNone];
+#endif
     
     g_isIpad = IS_IPAD;
     g_isIphone5 = IS_WIDESCREEN; //Really want to know if widescreen
@@ -261,25 +263,23 @@ unsigned long read_mfi_controller(unsigned long res){
 - (void)prepareScreen
 {
 	 @try
-    {												   										       
+    {
 	    if ([[UIScreen screens] count] > 1 && g_pref_nativeTVOUT) {
-	    											 	        	   					
+#if TARGET_OS_IOS
 			// Internal display is 0, external is 1.
 			externalScreen = [[[UIScreen screens] objectAtIndex:1] retain];			
 			screenModes =  [[externalScreen availableModes] retain];
 					
 			// Allow user to choose from available screen-modes (pixel-sizes).
-			UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:@"External Display Detected!" 
-															 message:@"Choose a size for the external display." 
-															delegate:self 
-												   cancelButtonTitle:nil 
-												   otherButtonTitles:nil] autorelease];
+            UIAlertController *alert =             UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"External Display Detected!" message:@"Choose a size for the external display." preferredStyle:UIAlertControllerStyleAlert];
 			for (UIScreenMode *mode in screenModes) {
 				CGSize modeScreenSize = mode.size;
-				[alert addButtonWithTitle:[NSString stringWithFormat:@"%.0f x %.0f pixels", modeScreenSize.width, modeScreenSize.height]];
+                [alert addAction:[UIAlertAction actionWithTitle:[NSString stringWithFormat:@"%.0f x %.0f pixels", modeScreenSize.width, modeScreenSize.height] style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                    
+                }]];
 			}
-			[alert show];
-			
+            [[[[UIApplication sharedApplication] keyWindow] rootViewController] presentViewController:alert animated:YES completion:nil];
+#endif
 		} else {
 		     if(!g_emulation_initiated)
 		     {
@@ -302,10 +302,10 @@ unsigned long read_mfi_controller(unsigned long res){
     }	
 }
 
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+- (void)setScreenMode:(UIScreenMode*)screenMode
 {
 	
-	[externalScreen setCurrentMode:[screenModes objectAtIndex:buttonIndex]];
+	[externalScreen setCurrentMode:screenMode];
 	[externalWindow setScreen:externalScreen];
 	
 	CGRect rect = CGRectZero;
