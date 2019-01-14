@@ -1071,3 +1071,6 @@ $(OBJ)/%.o: $(SRC)/%.m | $(OSPREBUILD)
 	$(CC) $(CDEFS) $(COBJFLAGS) $(CCOMFLAGS) -c $< -o $@
 endif
 
+# Add empty variable to add flags over command line. i.e -w to reduce error messages. Use as CDBG=-w for instance to remove warnings
+CDBG +=
+CFLAGS += $(CDBG)
