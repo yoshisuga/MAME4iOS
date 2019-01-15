@@ -46,6 +46,7 @@
 
 #import "Globals.h"
 #import "ScreenView.h"
+#import "GCDWebUploader.h"
 #import <GameController/GameController.h>
 
 @interface UINavigationController (KeyboardDismiss)
@@ -64,9 +65,9 @@
 @class iCadeView;
 
 #if TARGET_OS_IOS
-@interface EmulatorController : UIViewController
+@interface EmulatorController : UIViewController<GCDWebUploaderDelegate>
 #elif TARGET_OS_TV
-@interface EmulatorController : GCEventViewController
+@interface EmulatorController : GCEventViewController<GCDWebUploaderDelegate>
 #endif
 {
 

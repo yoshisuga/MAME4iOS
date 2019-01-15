@@ -67,6 +67,7 @@
 #import "DeviceScreenResolver.h"
 #import "Bootstrapper.h"
 #import "Options.h"
+#import "WebServer.h"
 
 // mfi Controllers
 NSMutableArray *controllers;
@@ -1029,7 +1030,27 @@ void* app_Thread_Start(void* args)
     
     mouseInitialLocation = CGPointMake(9111, 9111);
     mouseTouchStartLocation = mouseInitialLocation;
+    
 }
+
+-(void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+#if TARGET_OS_TV
+    [[WebServer sharedInstance] startUploader];
+    [WebServer sharedInstance].webUploader.delegate = self;
+#endif
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+#if TARGET_OS_IOS
+    if (@available(iOS 11.0, *)) {
+        [self setNeedsUpdateOfHomeIndicatorAutoHidden];
+    }
+#endif
+}
+
 
 #if TARGET_OS_IOS
 - (UIRectEdge)preferredScreenEdgesDeferringSystemGestures
@@ -1042,12 +1063,6 @@ void* app_Thread_Start(void* args)
     return NO;
 }
 
-- (void)viewDidAppear:(BOOL)animated
-{
-    if (@available(iOS 11.0, *)) {
-        [self setNeedsUpdateOfHomeIndicatorAutoHidden];
-    }
-}
 
 -(BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
     return change_layout ? NO : YES;
@@ -3432,6 +3447,15 @@ void myosd_handle_turbo() {
     else {
         [self setupMFIControllers];
     }
+}
+
+#pragma mark GCDWebServerDelegate
+- (void)webServerDidCompleteBonjourRegistration:(GCDWebServer*)server {
+#if TARGET_OS_TV
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Welcome to MAME for AppleTV" message:[NSString stringWithFormat:@"To transfer ROMs from your computer, go to this address on your web browser:\n\n%@",server.bonjourServerURL] preferredStyle:UIAlertControllerStyleAlert];
+    [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
+    [self presentViewController:alert animated:YES completion:nil];
+#endif
 }
 
 @end

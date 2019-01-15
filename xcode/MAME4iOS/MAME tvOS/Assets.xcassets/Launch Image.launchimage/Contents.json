@@ -10,6 +10,7 @@
     {
       "orientation" : "landscape",
       "idiom" : "tv",
+      "filename" : "mame.png",
       "extent" : "full-screen",
       "minimum-system-version" : "9.0",
       "scale" : "1x"

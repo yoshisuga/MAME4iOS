@@ -52,8 +52,6 @@
 #import "EmulatorController.h"
 #import <GameController/GameController.h>
 
-#import "GCDWebUploader.h"
-
 #include <sys/stat.h>
 
 #define IS_WIDESCREEN ( fabs( ( double )[ [ UIScreen mainScreen ] bounds ].size.height - ( double )568 ) < DBL_EPSILON )
@@ -98,11 +96,6 @@ const char* get_documents_path(const char* file)
 unsigned long read_mfi_controller(unsigned long res){
     return res;
 }
-
-@interface Bootstrapper() {
-    GCDWebUploader* _webUploader;
-}
-@end
 
 @implementation Bootstrapper
 
@@ -244,15 +237,6 @@ unsigned long read_mfi_controller(unsigned long res){
 														 name:/*@"UIScreenDidDisconnectNotification"*/UIScreenDidDisconnectNotification
 													   object:nil];
 	}	
-    
-#if TARGET_OS_TV
-    // run web uploader for tvos only for now
-    NSString* docsPath = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) firstObject];
-    _webUploader = [[GCDWebUploader alloc] initWithUploadDirectory:docsPath];
-    _webUploader.allowHiddenItems = YES;
-    [_webUploader start];
-    NSLog(@"Visit %@ in your web browser", _webUploader.serverURL);
-#endif
     
     [self prepareScreen];
 }
