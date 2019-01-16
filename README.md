@@ -135,4 +135,5 @@ Also in Settings -> Game Input, you'll find a section called "Touch Analog" and 
 
 ## Planned Future Improvements
 
-- tvOS
+- tvOS: Settings, Siri Remote Support
+- iOS: upload ROMS via web server
