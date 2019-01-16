@@ -221,7 +221,9 @@ void* app_Thread_Start(void* args)
     CGPoint mouseInitialLocation;
     CGPoint touchDirectionalMoveStartLocation;
     CGPoint touchDirectionalMoveInitialLocation;
+#if TARGET_OS_IOS
     OptionsController *optionsController;
+#endif
 }
 @end
 
@@ -734,27 +736,26 @@ void* app_Thread_Start(void* args)
 
 -(void)done:(id)sender {
     
-    
-    if(!change_layout && optionsController != nil )
-        [optionsController dismissViewControllerAnimated:YES completion:nil];
-
 	Options *op = [[Options alloc] init];
            
 #if TARGET_OS_IOS
-       if(g_pref_overscanTVOUT != [op overscanValue])
-       {
-           UIAlertController *warnAlert = [UIAlertController alertControllerWithTitle:@"Pending unplug/plug TVOUT!" message:[NSString stringWithFormat: @"You need to unplug/plug TVOUT for the changes to take effect"] preferredStyle:UIAlertControllerStyleAlert];
-           [warnAlert addAction:[UIAlertAction actionWithTitle:@"Dismiss" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-                   if(change_layout)
-                   {
-                       [LayoutData removeLayoutData];
-                       change_layout = 0;
-//                       [self done:self];
-                   }
-
-           }]];
-           [self presentViewController:warnAlert animated:YES completion:nil];
-       }
+    if(!change_layout && optionsController != nil )
+        [optionsController dismissViewControllerAnimated:YES completion:nil];
+    
+    if(g_pref_overscanTVOUT != [op overscanValue])
+    {
+        UIAlertController *warnAlert = [UIAlertController alertControllerWithTitle:@"Pending unplug/plug TVOUT!" message:[NSString stringWithFormat: @"You need to unplug/plug TVOUT for the changes to take effect"] preferredStyle:UIAlertControllerStyleAlert];
+        [warnAlert addAction:[UIAlertAction actionWithTitle:@"Dismiss" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            if(change_layout)
+            {
+                [LayoutData removeLayoutData];
+                change_layout = 0;
+                //                       [self done:self];
+            }
+            
+        }]];
+        [self presentViewController:warnAlert animated:YES completion:nil];
+    }
 #endif
 
     
@@ -1028,8 +1029,10 @@ void* app_Thread_Start(void* args)
     mouseInitialLocation = CGPointMake(9111, 9111);
     mouseTouchStartLocation = mouseInitialLocation;
 
+#if TARGET_OS_IOS
     optionsController =[[OptionsController alloc] init];
     optionsController.emuController = self;
+#endif
 }
 
 -(void)viewWillAppear:(BOOL)animated {
@@ -2799,12 +2802,13 @@ void myosd_handle_turbo() {
 #if TARGET_OS_IOS
     [dview release];
     dview= nil;
+
+    [optionsController release];
+    optionsController = nil;
 #endif
     [icadeView release];
     icadeView = nil;
     
-    [optionsController release];
-    optionsController = nil;
 	[super dealloc];
 }
 
