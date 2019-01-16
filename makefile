@@ -481,7 +481,13 @@ endif
 ifeq ($(iOSARMV7),1)
 EMULATOR = libmamearmv7.a
 else
+
+ifdef tvOS
+EMULATOR = libmamearm64-tvos.a
+else
 EMULATOR = libmamearm64.a
+endif
+
 endif
 
 ifdef iOSARMV7S
