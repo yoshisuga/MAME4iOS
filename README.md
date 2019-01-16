@@ -24,7 +24,7 @@ This repo adds support for:
 
 ### IPA 
 
-If you can re-sign using your certificate, here is a [link to the IPA](https://mega.nz/#!vMQiBYiL!cSpW3IO0hqYQnqnC7_TTI_zL3LuPHD3UR0Gwkxt5y9U).
+If you can re-sign using your certificate, here is a [link to the IPA (iOS)](https://mega.nz/#!vMQiBYiL!cSpW3IO0hqYQnqnC7_TTI_zL3LuPHD3UR0Gwkxt5y9U).
 
 ### Xcode
 
