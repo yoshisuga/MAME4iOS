@@ -72,11 +72,15 @@ MAME for tvOS support was just added in early 2019, and it currently can run gam
 - Settings screen still needs to be ported to tvOS and is unavailable.
 - An mFi controller needs to be connected to the AppleTV prior to starting MAME
 
-### Adding ROMs to MAME
+## Adding ROMs to MAME
 
-You can upload ROMs to MAME on your AppleTV using a computer. After MAME starts, you'll be shown a welcome screen with the address of the AppleTV that you can enter in your web browser. Add MAME ROMs to the `roms` directory using the provided web uploader.
+### iOS
 
 For iOS users, you can download ROMs using Safari and save them to the `roms` directory by choosing the "Save to Files" (go to "On My iPhone" -> MAME4iOS) option after downloading a ROM. You can also use a third party program like iExplorer or iFunBox to transfer ROMs to the MAME4iOS app directory.
+
+### tvOS
+
+You can upload ROMs to MAME on your AppleTV using a computer. After MAME starts, you'll be shown a welcome screen with the address of the AppleTV that you can enter in your web browser. Add MAME ROMs to the `roms` directory using the provided web uploader.
 
 The web server isn't yet available for iOS yet but will be added soon!
 
