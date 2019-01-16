@@ -71,6 +71,8 @@ MAME for tvOS support was just added in early 2019, and it currently can run gam
 - Only mFi controllers are supported, no Siri remote support yet.
 - Settings screen still needs to be ported to tvOS and is unavailable.
 - An mFi controller needs to be connected to the AppleTV prior to starting MAME
+- Pressing the "Menu" button on the Siri Remote does not exit the application yet (use the TV button and then Menu as a workaround)
+- There's no easy way to access the menu to save and load states
 
 ## Adding ROMs to MAME
 
