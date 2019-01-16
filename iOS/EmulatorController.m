@@ -221,6 +221,7 @@ void* app_Thread_Start(void* args)
     CGPoint mouseInitialLocation;
     CGPoint touchDirectionalMoveStartLocation;
     CGPoint touchDirectionalMoveInitialLocation;
+    OptionsController *optionsController;
 }
 @end
 
@@ -367,12 +368,12 @@ void* app_Thread_Start(void* args)
     if(g_menu_option != MENU_NONE)
        return;
 
-    if(menu!=nil)
-    {
-       [menu dismissViewControllerAnimated:YES completion:nil];
-       [menu release];
-       menu = nil;
-    }
+//    if(menu!=nil)
+//    {
+//       [menu dismissViewControllerAnimated:YES completion:nil];
+//       [menu release];
+//       menu = nil;
+//    }
     
     [UIApplication sharedApplication].idleTimerDisabled = NO;
 
@@ -432,17 +433,13 @@ void* app_Thread_Start(void* args)
         g_menu_option = MENU_OPTIONS;
 
 #if TARGET_OS_IOS
-        OptionsController *addController =[[OptionsController alloc] init];
-        
-        addController.emuController = self;
-        
-        UINavigationController *navController = [[[UINavigationController alloc] initWithRootViewController:addController] autorelease];
+        UINavigationController *navController = [[[UINavigationController alloc] initWithRootViewController:optionsController] autorelease];
         
         [navController setModalPresentationStyle:UIModalPresentationPageSheet];
         dispatch_async(dispatch_get_main_queue(), ^ {
             [self presentViewController:navController animated:YES completion:nil];
         });
-        [addController release];
+//        [optionsController release];
 #elif TARGET_OS_TV
         UIAlertController *notYet = [UIAlertController alertControllerWithTitle:@"Not available yet in tvOS 💢" message:@"" preferredStyle:UIAlertControllerStyleAlert];
         [notYet addAction:[UIAlertAction actionWithTitle:@"Ok" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
@@ -738,8 +735,8 @@ void* app_Thread_Start(void* args)
 -(void)done:(id)sender {
     
     
-    if(!change_layout && menu != nil )
-        [menu dismissViewControllerAnimated:YES completion:nil];
+    if(!change_layout && optionsController != nil )
+        [optionsController dismissViewControllerAnimated:YES completion:nil];
 
 	Options *op = [[Options alloc] init];
            
@@ -1030,7 +1027,9 @@ void* app_Thread_Start(void* args)
     
     mouseInitialLocation = CGPointMake(9111, 9111);
     mouseTouchStartLocation = mouseInitialLocation;
-    
+
+    optionsController =[[OptionsController alloc] init];
+    optionsController.emuController = self;
 }
 
 -(void)viewWillAppear:(BOOL)animated {
@@ -2804,6 +2803,8 @@ void myosd_handle_turbo() {
     [icadeView release];
     icadeView = nil;
     
+    [optionsController release];
+    optionsController = nil;
 	[super dealloc];
 }
 

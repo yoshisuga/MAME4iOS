@@ -111,7 +111,7 @@
     
 
     UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithTitle:@"Done"
-                                                                   style:UIBarButtonItemStyleBordered
+                                                                   style:UIBarButtonItemStyleDone
                                                                   target: emuController  action:  @selector(done:) ];
     self.navigationItem.rightBarButtonItem = backButton;
     [backButton release];

@@ -275,11 +275,55 @@ unsigned long read_mfi_controller(unsigned long res){
 			screenModes =  [[externalScreen availableModes] retain];
 					
 			// Allow user to choose from available screen-modes (pixel-sizes).
-            UIAlertController *alert =             UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"External Display Detected!" message:@"Choose a size for the external display." preferredStyle:UIAlertControllerStyleAlert];
+            UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"External Display Detected!" message:@"Choose a size for the external display." preferredStyle:UIAlertControllerStyleAlert];
 			for (UIScreenMode *mode in screenModes) {
 				CGSize modeScreenSize = mode.size;
                 [alert addAction:[UIAlertAction actionWithTitle:[NSString stringWithFormat:@"%.0f x %.0f pixels", modeScreenSize.width, modeScreenSize.height] style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                    [externalScreen setCurrentMode:mode];
+                    [externalWindow setScreen:externalScreen];
                     
+                    CGRect rect = CGRectZero;
+                    
+                    rect = externalScreen.bounds;
+                    externalWindow.frame = rect;
+                    externalWindow.clipsToBounds = YES;
+                    
+                    int  external_width = externalWindow.frame.size.width;
+                    int  external_height = externalWindow.frame.size.height;
+                    
+                    float overscan = 1 - (g_pref_overscanTVOUT *  0.025f);
+                    
+                    int width=external_width;
+                    int height=external_height;
+                    
+                    width = width * overscan;
+                    height = height * overscan;
+                    int x = (external_width - width)/2;
+                    int y = (external_height - height)/2;
+                    
+                    CGRect rView = CGRectMake( x, y, width, height);
+                    
+                    for (UIView *view in [externalWindow subviews]) {
+                        [view removeFromSuperview];
+                    }
+                    
+                    UIView *view= [[UIView alloc] initWithFrame:rect];
+                    view.backgroundColor = [UIColor blackColor];
+                    [externalWindow addSubview:view];
+                    [view release];
+                    
+                    [hrViewController setExternalView:view];
+                    hrViewController.rExternalView = rView;
+                    
+                    externalWindow.hidden = NO;
+                    //[externalWindow makeKeyAndVisible];
+                    if(g_emulation_initiated)
+                        [hrViewController changeUI];
+                    else
+                        [hrViewController startEmulation];
+                    
+                    [screenModes release];
+                    [externalScreen release];
                 }]];
 			}
             [[[[UIApplication sharedApplication] keyWindow] rootViewController] presentViewController:alert animated:YES completion:nil];
