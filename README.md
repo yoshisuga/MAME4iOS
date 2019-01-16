@@ -36,7 +36,7 @@ Building MAME4iOS requires a prebuilt MAME binary (It was not included in this r
 `xcode-select --install`
 2. In Terminal: `cd [path to MAME4iOS root]`<br> 
   <sup>(alternatively, you can drag & drop a folder on Terminal after `cd` if don't know how to get the directory path)</sup><br> 
-3. Get MAME binary:
+3. Get MAME binary (build yourself or download):
     - Build (choose one of the following depending on your device):
         - iOS 64-bit: `./make-ios.sh`<br>
         <sup>For iPhone 5S, iPad Air, iPad mini, and up…</sup><br>
@@ -44,7 +44,7 @@ Building MAME4iOS requires a prebuilt MAME binary (It was not included in this r
         <sup>AppleTV (4/4k and above)</sup>
         - iOS 32-bit: `make iOSARMV7=1`        
         <sup>For older iOS devices. No longer actively supported.</sup>
-    - Download: 
+    - Download links: 
         - [iOS 64-bit (iPhone/iPad)](https://mega.nz/#!aMQUzSAI!O0JY8_LNIlnB0FDM_siN6iexHITR1bbNUciqVWU4VV8)
         - [tvOS 64-bit (AppleTV)](https://mega.nz/#!2J4HiKiS!mucjdW0L1BGZB-H_1hAMbHsauXhkhwg9WTyscD4_HCI)<br>
         <sup>Place the file in the root directory of the repo.</sup><br>
