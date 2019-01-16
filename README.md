@@ -37,27 +37,48 @@ Building MAME4iOS requires a prebuilt MAME binary (It was not included in this r
 2. In Terminal: `cd [path to MAME4iOS root]`<br> 
   <sup>(alternatively, you can drag & drop a folder on Terminal after `cd` if don't know how to get the directory path)</sup><br> 
 3. Get MAME binary:
-    - Build:
-        - 64-bit version: `make`<br>
+    - Build (choose one of the following depending on your device):
+        - iOS 64-bit: `./make-ios.sh`<br>
         <sup>For iPhone 5S, iPad Air, iPad mini, and up…</sup><br>
-        - 32-bit version: `make iOSARMV7=1`
+        - tvOS: `./make-tvos.sh`<br>
+        <sup>AppleTV (4/4k and above)</sup>
+        - iOS 32-bit: `make iOSARMV7=1`        
+        <sup>For older iOS devices. No longer actively supported.</sup>
     - Download: 
-        - [64-bit](https://mega.nz/#!aMQUzSAI!O0JY8_LNIlnB0FDM_siN6iexHITR1bbNUciqVWU4VV8)<br>
+        - [iOS 64-bit (iPhone/iPad)](https://mega.nz/#!aMQUzSAI!O0JY8_LNIlnB0FDM_siN6iexHITR1bbNUciqVWU4VV8)
+        - [tvOS 64-bit (AppleTV)](https://mega.nz/#!2J4HiKiS!mucjdW0L1BGZB-H_1hAMbHsauXhkhwg9WTyscD4_HCI)<br>
         <sup>Place the file in the root directory of the repo.</sup><br>
-4. Choose the appropriate build target:
-    - `MAME4iOS 64-bit` 
-    - `MAME4iOS 32-bit`
+4. Choose the appropriate build target in Xcode:
+    - `MAME4iOS 64-bit` (iPhone/iPad)
+    - `MAME tvOS` (AppleTV)
+    - `MAME4iOS 32-bit` (iPhone/iPad)
 
 Even if you are not in the paid Apple Developer Program, you can sideload the app using a Mac with Xcode.
 
 1. Open the Xcode project in `xcode/MAME4iOS/MAME4iOS.xcodeproj`<br>
-    <sup>Make sure you have the `libmamearm64.a` (or `libmamearmv7.a`) file in the root of your project (it should not be red).</sup><br>
+    <sup>Make sure you have the `libmamearm64.a` (or `libmamearm64-tvos.a`) file in the root of your project.</sup><br>
 2. Build:
     1. If you are a developer: Build and `▶︎` Run on your device. _Done._
     2. If you are not a developer…
         1. `File` → `Preferences` add your Apple ID, select your Personal Team, and create an iOS Development Profile.
         2. Select the project name on the left pane and make sure your personal team is selected
         3. Hit the `▶︎` Run button to install on your device. _Done._
+
+## tvOS
+
+MAME for tvOS support was just added in early 2019, and it currently can run games, but UI support and controller support is still in-progress. Most notably:
+
+- Only mFi controllers are supported, no Siri remote support yet.
+- Settings screen still needs to be ported to tvOS and is unavailable.
+- An mFi controller needs to be connected to the AppleTV prior to starting MAME
+
+### Adding ROMs to MAME
+
+You can upload ROMs to MAME on your AppleTV using a computer. After MAME starts, you'll be shown a welcome screen with the address of the AppleTV that you can enter in your web browser. Add MAME ROMs to the `roms` directory using the provided web uploader.
+
+For iOS users, you can download ROMs using Safari and save them to the `roms` directory by choosing the "Save to Files" (go to "On My iPhone" -> MAME4iOS) option after downloading a ROM. You can also use a third party program like iExplorer or iFunBox to transfer ROMs to the MAME4iOS app directory.
+
+The web server isn't yet available for iOS yet but will be added soon!
 
 ## mFi Controller Support
 
