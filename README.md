@@ -2,7 +2,7 @@
 
 Original Author: David Valdeita (Seleuco)<br/>
 
-This is a port of MAME for iOS.
+This is a port of MAME for iOS and tvOS.
 
 MAME stands for Multi Arcade Machine Emulator, and lets you play arcade games from the past 30+ years on a device that fits in your pocket! My teenage self from decades ago would be replaying that ["mind blown GIF"](https://media0.giphy.com/media/xT0xeJpnrWC4XWblEk/giphy.gif) over and over again, but that GIF did not exist back then.
 
@@ -14,6 +14,7 @@ This repo adds support for:
 
 - 64-bit binary to run on modern and future iOS devices
 - Supports modern device screen sizes, including iPhone X/XR/XS/XS Max and iPad Pro (new in 2018!)
+- tvOS (in development, new in 2019!)
 - Multiple mFi controllers (up to 4 with dual analog support - @DarrenBranford)
 - Supports using the touch screen as a lightgun (new in 2018!)
 - Turbo mode toggle for buttons (new in 2018!)
