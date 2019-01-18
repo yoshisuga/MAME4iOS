@@ -59,14 +59,14 @@
     [super dealloc];
 }
 
--(UILabel*)labelForOnOffValue:(int)optionValue {
++(UILabel*)labelForOnOffValue:(int)optionValue {
     UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 100.0, 50.0)];
     label.text = optionValue ? @"On" : @"Off";
     [label sizeToFit];
     return [label autorelease];
 }
     
--(void)setOnOffValueForCell:(UITableViewCell*)cell optionValue:(int)optionValue {
++(void)setOnOffValueForCell:(UITableViewCell*)cell optionValue:(int)optionValue {
     UILabel *valueLabel = (UILabel*) cell.accessoryView;
     valueLabel.text = optionValue ? @"On" : @"Off";
     [valueLabel sizeToFit];
@@ -82,6 +82,8 @@
         return 1;
     } else if ( section == kScreenSection ) {
         return 4;
+    } else if ( section == kMiscSection ) {
+        return 8;
     }
     return 0;
 }
@@ -106,16 +108,44 @@
     } else if ( indexPath.section == kScreenSection ) {
         if ( indexPath.row == 0 ) {
             cell.textLabel.text  = @"Smoothed Image";
-            cell.accessoryView = [self labelForOnOffValue:[self.options smoothedLand]];
+            cell.accessoryView = [TVOptionsController labelForOnOffValue:[self.options smoothedLand]];
         } else if ( indexPath.row == 1 ) {
             cell.textLabel.text = @"CRT Effect";
-            cell.accessoryView = [self labelForOnOffValue:[self.options tvFilterLand]];
+            cell.accessoryView = [TVOptionsController labelForOnOffValue:[self.options tvFilterLand]];
         } else if ( indexPath.row == 2 ) {
             cell.textLabel.text = @"Scanline Effect";
-            cell.accessoryView = [self labelForOnOffValue:[self.options scanlineFilterLand]];
+            cell.accessoryView = [TVOptionsController labelForOnOffValue:[self.options scanlineFilterLand]];
         } else if ( indexPath.row == 3 ) {
             cell.textLabel.text = @"Keep Aspect Ratio";
-            cell.accessoryView = [self labelForOnOffValue:self.options.keepAspectRatioLand];
+            cell.accessoryView = [TVOptionsController labelForOnOffValue:self.options.keepAspectRatioLand];
+        }
+    } else if ( indexPath.section == kMiscSection ) {
+        if ( indexPath.row == 0 ) {
+            cell.textLabel.text   = @"Show FPS";
+            cell.accessoryView = [TVOptionsController labelForOnOffValue:self.options.showFPS];
+        } else if ( indexPath.row == 1 ) {
+            cell.textLabel.text   = @"Emulated Resolution";
+            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+        } else if ( indexPath.row == 2 ) {
+            cell.textLabel.text   = @"Emulated Speed";
+            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+            cell.detailTextLabel.text = [arrayEmuSpeed objectAtIndex:self.options.emuspeed];
+        } else if ( indexPath.row == 3 ) {
+            cell.textLabel.text = @"Throttle";
+            cell.accessoryView = [TVOptionsController labelForOnOffValue:self.options.throttle];
+        } else if ( indexPath.row == 4 ) {
+            cell.textLabel.text = @"Frame Skip";
+            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+            cell.detailTextLabel.text = [arrayFSValue objectAtIndex:self.options.fsvalue];
+        } else if ( indexPath.row == 5 ) {
+            cell.textLabel.text   = @"Force Pixel Aspect";
+            cell.accessoryView = [TVOptionsController labelForOnOffValue:self.options.forcepxa];
+        } else if ( indexPath.row == 6 ) {
+            cell.textLabel.text   = @"Show Info/Warnings";
+            cell.accessoryView = [TVOptionsController labelForOnOffValue:self.options.showINFO];
+        } else if ( indexPath.row == 7 ) {
+            cell.textLabel.text = @"Low Latency Audio";
+            cell.accessoryView = [TVOptionsController labelForOnOffValue:self.options.lowlsound];
         }
     }
     return cell;
@@ -130,16 +160,16 @@
         if ( indexPath.row == 0 ) {
             // Smoothed Image
             self.options.smoothedLand = self.options.smoothedLand ? 0 : 1;
-            [self setOnOffValueForCell:cell optionValue:self.options.smoothedLand];
+            [TVOptionsController setOnOffValueForCell:cell optionValue:self.options.smoothedLand];
         } else if ( indexPath.row == 1 ) {
             self.options.tvFilterLand = self.options.tvFilterLand ? 0 : 1;
-            [self setOnOffValueForCell:cell optionValue:self.options.tvFilterLand];
+            [TVOptionsController setOnOffValueForCell:cell optionValue:self.options.tvFilterLand];
         } else if ( indexPath.row == 2 ) {
             self.options.scanlineFilterLand = self.options.scanlineFilterLand ? 0 : 1;
-            [self setOnOffValueForCell:cell optionValue:self.options.scanlineFilterLand];
+            [TVOptionsController setOnOffValueForCell:cell optionValue:self.options.scanlineFilterLand];
         } else if ( indexPath.row == 3 ) {
             self.options.keepAspectRatioLand = self.options.keepAspectRatioLand ? 0 : 1;
-            [self setOnOffValueForCell:cell optionValue:self.options.keepAspectRatioLand];
+            [TVOptionsController setOnOffValueForCell:cell optionValue:self.options.keepAspectRatioLand];
         }
     }
     [self.options saveOptions];

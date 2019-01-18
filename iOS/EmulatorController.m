@@ -1705,18 +1705,27 @@ void myosd_handle_turbo() {
 	   if(g_pref_scanline_filter_land)
 	   {       	       
 	      UIImage *image2;
-	      
+
+#if TARGET_OS_IOS
 	      if(g_isIpad)
 	        image2 =  [self loadImage:[NSString stringWithFormat: @"scanline-2.png"]];
 	      else
 	        image2 =  [self loadImage:[NSString stringWithFormat: @"scanline-1.png"]];
+#elif TARGET_OS_TV
+           image2 =  [self loadImage:[NSString stringWithFormat: @"scanline-2.png"]];
+#endif
 	                        
 	      CGImageRef tile = CGImageRetain(image2.CGImage);
 	      
+#if TARGET_OS_IOS
 	      if(g_isIpad)             
 	         CGContextSetAlpha(uiContext,((float)10 / 100.0f));
 	      else
 	         CGContextSetAlpha(uiContext,((float)22 / 100.0f));
+#elif TARGET_OS_TV
+           CGContextSetAlpha(uiContext,((float)10 / 100.0f));
+
+#endif
 	              
 	      CGContextDrawTiledImage(uiContext, CGRectMake(0, 0, image2.size.width, image2.size.height), tile);
 	       
