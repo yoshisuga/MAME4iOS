@@ -98,33 +98,23 @@ enum ListOptionType
     UISwitch*		  switchKeepAspectLand;
     UISwitch*		  switchSmoothedPort;
     UISwitch*		  switchSmoothedLand;
-    
     UISwitch*		  switchTvFilterPort;
     UISwitch*		  switchScanlineFilterPort;
-    
     UISwitch*		  switchTvFilterLand;
     UISwitch*		  switchScanlineFilterLand;
-    
     UISwitch*		  switchShowFPS;
     UISwitch*		  switchShowINFO;
-    
     UISwitch*		  switchfullLand;
     UISwitch*		  switchfullPort;
-        
     UISwitch *switchThrottle;
-    
     UISwitch *switchSleep;
-    
     UISwitch *switchForcepxa;
-    
+    UISwitch *switchLowlsound;
+
     NSArray *arrayEmuRes;
-    
     NSArray *arrayFSValue;
     NSArray *arrayOverscanValue;
     NSArray *arraySkinValue;
-    
-    UISwitch *switchLowlsound;
-    
     NSArray  *arrayEmuSpeed;
 }
 

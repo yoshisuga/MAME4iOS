@@ -57,6 +57,10 @@
 #import "NetplayGameKit.h"
 #endif
 
+#if TARGET_OS_TV
+#import "TVOptionsController.h"
+#endif
+
 #import "iCadeView.h"
 #import "DebugView.h"
 #ifdef BTJOY
@@ -223,6 +227,8 @@ void* app_Thread_Start(void* args)
     CGPoint touchDirectionalMoveInitialLocation;
 #if TARGET_OS_IOS
     OptionsController *optionsController;
+#elif TARGET_OS_TV
+    TVOptionsController *optionsController;
 #endif
 }
 @end
@@ -384,15 +390,45 @@ void* app_Thread_Start(void* args)
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
     g_emulation_paused = 1;
     change_pause(1);
-  
-    enable_menu_exit_option  = g_iCade_used && myosd_inGame && myosd_in_menu==0;
+
+    enable_menu_exit_option  = myosd_inGame && myosd_in_menu==0;
     
     menu = [UIAlertController alertControllerWithTitle:@"Choose an option from the menu. Press cancel to go back." message:@"" preferredStyle:UIAlertControllerStyleActionSheet];
     
+    if(myosd_inGame)
+    {
+        [menu addAction:[UIAlertAction actionWithTitle:@"Load State" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            myosd_loadstate = 1;
+            [self endMenu];
+        }]];
+        [menu addAction:[UIAlertAction actionWithTitle:@"Save State" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            myosd_savestate = 1;
+            [self endMenu];
+        }]];
+    }
+    [menu addAction:[UIAlertAction actionWithTitle:@"Settings" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        g_menu_option = MENU_OPTIONS;
+
+#if TARGET_OS_IOS
+        UINavigationController *navController = [[[UINavigationController alloc] initWithRootViewController:optionsController] autorelease];
+        
+        [navController setModalPresentationStyle:UIModalPresentationPageSheet];
+        dispatch_async(dispatch_get_main_queue(), ^ {
+            [self presentViewController:navController animated:YES completion:nil];
+        });
+//        [optionsController release];
+#elif TARGET_OS_TV
+        UINavigationController *navController = [[[UINavigationController alloc] initWithRootViewController:optionsController] autorelease];
+        dispatch_async(dispatch_get_main_queue(), ^ {
+            [self presentViewController:navController animated:true completion:nil];
+        });
+#endif
+    }]];
+
     if(enable_menu_exit_option) {
         [menu addAction:[UIAlertAction
-                            actionWithTitle:@"Exit Game"
-                         style:UIAlertActionStyleDefault
+                         actionWithTitle:@"Exit Game"
+                         style:UIAlertActionStyleDestructive
                          handler:^(UIAlertAction * _Nonnull action) {
                              g_menu_option = MENU_EXIT;
                              myosd_exitGame = 0;
@@ -420,35 +456,8 @@ void* app_Thread_Start(void* args)
                              [self presentViewController:exitAlert animated:YES completion:nil];
                          }]];
     }
-    if(myosd_inGame)
-    {
-        [menu addAction:[UIAlertAction actionWithTitle:@"Load State" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-            myosd_loadstate = 1;
-            [self endMenu];
-        }]];
-        [menu addAction:[UIAlertAction actionWithTitle:@"Save State" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-            myosd_savestate = 1;
-            [self endMenu];
-        }]];
-    }
-    [menu addAction:[UIAlertAction actionWithTitle:@"Settings" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        g_menu_option = MENU_OPTIONS;
 
-#if TARGET_OS_IOS
-        UINavigationController *navController = [[[UINavigationController alloc] initWithRootViewController:optionsController] autorelease];
-        
-        [navController setModalPresentationStyle:UIModalPresentationPageSheet];
-        dispatch_async(dispatch_get_main_queue(), ^ {
-            [self presentViewController:navController animated:YES completion:nil];
-        });
-//        [optionsController release];
-#elif TARGET_OS_TV
-        UIAlertController *notYet = [UIAlertController alertControllerWithTitle:@"Not available yet in tvOS 💢" message:@"" preferredStyle:UIAlertControllerStyleAlert];
-        [notYet addAction:[UIAlertAction actionWithTitle:@"Ok" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        }]];
-        [self presentViewController:notYet animated:YES completion:nil];
-#endif
-    }]];
+    
     // yoshisuga: removing this because its 2019 and no one cares about jailbroken devices anymore
 //    if(g_btjoy_available)
 //       [menu addButtonWithTitle:@"WiiMote/Sixaxis"];
@@ -756,6 +765,10 @@ void* app_Thread_Start(void* args)
         }]];
         [self presentViewController:warnAlert animated:YES completion:nil];
     }
+#elif TARGET_OS_TV
+    if ( optionsController != nil ) {
+        [optionsController dismissViewControllerAnimated:YES completion:nil];
+    }
 #endif
 
     
@@ -848,6 +861,9 @@ void* app_Thread_Start(void* args)
         
         if(myosd_in_menu==0 && myosd_inGame)
         {
+#if TARGET_OS_TV
+            [self runMenu];
+#else
             actionPending=1;
             myosd_exitGame = 0;
             wantExit = 1;	
@@ -872,6 +888,7 @@ void* app_Thread_Start(void* args)
                 [self endMenu];
             }]];
             [self presentViewController:exitAlertController animated:YES completion:nil];
+#endif
         }
         else
         { 
@@ -1031,6 +1048,9 @@ void* app_Thread_Start(void* args)
 
 #if TARGET_OS_IOS
     optionsController =[[OptionsController alloc] init];
+    optionsController.emuController = self;
+#elif TARGET_OS_TV
+    optionsController = [[TVOptionsController alloc] init];
     optionsController.emuController = self;
 #endif
 }
@@ -2802,10 +2822,10 @@ void myosd_handle_turbo() {
 #if TARGET_OS_IOS
     [dview release];
     dview= nil;
+#endif
 
     [optionsController release];
     optionsController = nil;
-#endif
     [icadeView release];
     icadeView = nil;
     
@@ -3433,6 +3453,24 @@ void myosd_handle_turbo() {
     [controller setPlayerIndex:GCControllerPlayerIndexUnset];
     
     [controllers addObject:controller];
+    
+    // move any non-game controllers (like the siri remote) to the end
+    if ( controllers.count > 1 ) {
+        NSInteger connectedNonGameControllerIndex = NSNotFound;
+        NSUInteger index = 0;
+        for (GCController *connectedController in controllers) {
+            if ( connectedController.gamepad == nil && connectedController.extendedGamepad == nil ) {
+                connectedNonGameControllerIndex = index;
+            }
+            index++;
+        }
+        if ( connectedNonGameControllerIndex != NSNotFound ) {
+            GCController *nonGameController = [[[controllers objectAtIndex:connectedNonGameControllerIndex] retain] autorelease];
+            [controllers removeObjectAtIndex:connectedNonGameControllerIndex];
+            [controllers addObject:nonGameController];
+        }
+    }
+    
     [self setupMFIControllers];
 }
 
