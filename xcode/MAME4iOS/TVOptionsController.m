@@ -78,10 +78,19 @@
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    if ( section == kScreenSection ) {
+    if ( section == kFilterSection ) {
+        return 1;
+    } else if ( section == kScreenSection ) {
         return 4;
     }
     return 0;
+}
+
+-(NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
+    if ( section == kScreenSection ) {
+        return @"Display Options";
+    }
+    return @"";
 }
     
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -91,7 +100,10 @@
         cell.accessoryType = UITableViewCellAccessoryNone;
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
     }
-    if ( indexPath.section == kScreenSection ) {
+    if ( indexPath.section == kFilterSection ) {
+        cell.textLabel.text = @"Game Filter";
+        cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+    } else if ( indexPath.section == kScreenSection ) {
         if ( indexPath.row == 0 ) {
             cell.textLabel.text  = @"Smoothed Image";
             cell.accessoryView = [self labelForOnOffValue:[self.options smoothedLand]];
@@ -112,7 +124,9 @@
 #pragma mark UITableViewDelegate
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
-    if ( indexPath.section == kScreenSection ) {
+    if ( indexPath.section == kFilterSection ) {
+        // todo: show filter option controller
+    } else if ( indexPath.section == kScreenSection ) {
         if ( indexPath.row == 0 ) {
             // Smoothed Image
             self.options.smoothedLand = self.options.smoothedLand ? 0 : 1;
