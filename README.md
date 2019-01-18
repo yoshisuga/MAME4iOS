@@ -68,11 +68,11 @@ Even if you are not in the paid Apple Developer Program, you can sideload the ap
 
 MAME for tvOS support was just added in early 2019, and it currently can run games, but UI support and controller support is still in-progress. Most notably:
 
-- Only mFi controllers are supported, no Siri remote support yet.
-- Settings screen still needs to be ported to tvOS and is unavailable.
-- An mFi controller needs to be connected to the AppleTV prior to starting MAME
+- mFi controller is currently **required**
+- Hold down and X and press Menu in-game to open the menu to save/load states, access settings, or exit the current game.
+- No Siri remote support yet.
+- Settings screen is incomplete.
 - Pressing the "Menu" button on the Siri Remote does not exit the application yet (use the TV button and then Menu as a workaround)
-- There's no easy way to access the menu to save and load states
 
 ## Adding ROMs to MAME
 
