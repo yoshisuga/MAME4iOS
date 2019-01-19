@@ -19,6 +19,7 @@ This repo adds support for:
 - Multiple mFi controllers (up to 4 with dual analog support - @DarrenBranford)
 - Supports using the touch screen as a lightgun (new in 2018!)
 - Turbo mode toggle for buttons (new in 2018!)
+- Touch analog for games like Arkanoid (new in 2018!)
 - Builds in Xcode 10, runs on iOS 12
 
 ## Installation / Sideloading
