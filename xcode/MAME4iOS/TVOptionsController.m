@@ -64,7 +64,6 @@
 +(UILabel*)labelForOnOffValue:(int)optionValue {
     UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 100.0, 50.0)];
     label.text = optionValue ? @"On" : @"Off";
-    label.textColor = UIColor.whiteColor;
     [label sizeToFit];
     return [label autorelease];
 }
@@ -105,7 +104,6 @@
         cell.accessoryType = UITableViewCellAccessoryNone;
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
     }
-    cell.backgroundColor = UIColor.grayColor;
     if ( indexPath.section == kFilterSection ) {
         cell.textLabel.text = @"Game Filter";
         cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
