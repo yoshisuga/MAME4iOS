@@ -95,10 +95,11 @@ Up to 4 mfi controllers are supported. I've tested it with 2 mfi controllers and
 
 The following hotkey combinations are supported:
 
-- Start game (PAUSE)
-- Insert coin (Hold L and press PAUSE)
-- Open menu (Hold R and press PAUSE)
-- Exit game (Hold X and press PAUSE)
+- Start game (MENU)
+- Insert coin (Hold L and press MENU)
+- Open MAME menu for input remapping, cheats, etc. (Hold R and press MENU)
+- Open app menu for settings, save states (Hold Y and press MENU)
+- Exit game (Hold X and press MENU)
 
 ### Dual analog support
 
