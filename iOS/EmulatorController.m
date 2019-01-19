@@ -427,7 +427,7 @@ void* app_Thread_Start(void* args)
     }]];
 
 #if TARGET_OS_IOS
-    [menu addAction:[UIAlertAction actionWithTitle:@"Transfer ROMs" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+    [menu addAction:[UIAlertAction actionWithTitle:@"Upload Files" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
         [[WebServer sharedInstance] startUploader];
         [WebServer sharedInstance].webUploader.delegate = self;
     }]];
