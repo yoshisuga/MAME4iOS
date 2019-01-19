@@ -212,7 +212,10 @@ unsigned long read_mfi_controller(unsigned long res){
 	hrViewController = [[EmulatorController alloc] init];
 	
 	deviceWindow = [[UIWindow alloc] initWithFrame:rect];
-	deviceWindow.backgroundColor = [UIColor redColor];
+#if TARGET_OS_TV
+    deviceWindow.backgroundColor = UIColor.darkGrayColor;
+#endif
+//    deviceWindow.backgroundColor = [UIColor redColor];
     
 	//[deviceWindow addSubview: hrViewController.view ];//LO CAMBIO PARA QUE GIRE EN iOS 6.0	
     [deviceWindow setRootViewController:hrViewController];

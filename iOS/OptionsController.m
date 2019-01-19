@@ -124,6 +124,9 @@
     tableView.delegate = self;
     tableView.dataSource = self;
     tableView.autoresizesSubviews = YES;
+#if TARGET_OS_TV
+    self.view.backgroundColor = UIColor.darkGrayColor;
+#endif
     self.view = tableView;
     [tableView release];
 }
@@ -500,7 +503,7 @@
 }
 
 -(void)viewDidLoad{	
-
+    [super viewDidLoad];
 }
 
 

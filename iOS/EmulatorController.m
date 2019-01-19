@@ -862,9 +862,6 @@ void* app_Thread_Start(void* args)
         
         if(myosd_in_menu==0 && myosd_inGame)
         {
-#if TARGET_OS_TV
-            [self runMenu];
-#else
             actionPending=1;
             myosd_exitGame = 0;
             wantExit = 1;	
@@ -889,7 +886,6 @@ void* app_Thread_Start(void* args)
                 [self endMenu];
             }]];
             [self presentViewController:exitAlertController animated:YES completion:nil];
-#endif
         }
         else
         { 
@@ -3401,6 +3397,10 @@ void myosd_handle_turbo() {
                 menuButtonOnRemoteWasPressed = YES;
             } else {
                 menuButtonOnRemoteWasPressed = NO;
+                if (!myosd_inGame) {
+                    [self runMenu];
+                    return;
+                }
             }
 #endif
             //Add Coin

@@ -8,6 +8,7 @@
 
 #import "TVOptionsController.h"
 #import "ListOptionController.h"
+#import "FilterOptionController.h"
 
 @interface TVOptionsController ()
 
@@ -101,9 +102,10 @@
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Cell"];
     if ( cell == nil ) {
         cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:@"Cell"] autorelease];
-        cell.accessoryType = UITableViewCellAccessoryNone;
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
     }
+    cell.accessoryType = UITableViewCellAccessoryNone;
+    cell.accessoryView = nil;
     if ( indexPath.section == kFilterSection ) {
         cell.textLabel.text = @"Game Filter";
         cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
@@ -157,7 +159,11 @@
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
     if ( indexPath.section == kFilterSection ) {
-        // todo: show filter option controller
+        FilterOptionController *filterOptController = [[FilterOptionController alloc] init];
+        filterOptController.emuController = self.emuController;
+        [[self navigationController] pushViewController:filterOptController animated:YES];
+        [filterOptController release];
+        [tableView reloadData];
     } else if ( indexPath.section == kScreenSection ) {
         if ( indexPath.row == 0 ) {
             // Smoothed Image
