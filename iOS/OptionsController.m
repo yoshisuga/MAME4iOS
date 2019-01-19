@@ -126,7 +126,6 @@
     tableView.autoresizesSubviews = YES;
     self.view = tableView;
     [tableView release];
-
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {

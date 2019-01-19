@@ -7,6 +7,7 @@
 //
 
 #import "TVOptionsController.h"
+#import "ListOptionController.h"
 
 @interface TVOptionsController ()
 
@@ -34,13 +35,14 @@
 
 - (void)loadView {
     self.view = [[[UIView alloc] initWithFrame:CGRectZero] autorelease];
-    self.view.backgroundColor = UIColor.grayColor;
+    self.view.backgroundColor = UIColor.darkGrayColor;
     UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithTitle:@"Done"
                                                                    style:UIBarButtonItemStyleDone
                                                                   target: emuController  action:  @selector(done:) ];
     self.navigationItem.rightBarButtonItem = backButton;
     [backButton release];
     self.title = NSLocalizedString(@"Settings", @"");
+    self.navigationController.navigationBar.titleTextAttributes = @{NSForegroundColorAttributeName : UIColor.whiteColor};
     self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStyleGrouped];
     self.tableView.delegate = self;
     self.tableView.dataSource = self;
@@ -62,6 +64,7 @@
 +(UILabel*)labelForOnOffValue:(int)optionValue {
     UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 100.0, 50.0)];
     label.text = optionValue ? @"On" : @"Off";
+    label.textColor = UIColor.whiteColor;
     [label sizeToFit];
     return [label autorelease];
 }
@@ -102,6 +105,7 @@
         cell.accessoryType = UITableViewCellAccessoryNone;
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
     }
+    cell.backgroundColor = UIColor.grayColor;
     if ( indexPath.section == kFilterSection ) {
         cell.textLabel.text = @"Game Filter";
         cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
@@ -171,8 +175,55 @@
             self.options.keepAspectRatioLand = self.options.keepAspectRatioLand ? 0 : 1;
             [TVOptionsController setOnOffValueForCell:cell optionValue:self.options.keepAspectRatioLand];
         }
+    } else if ( indexPath.section == kMiscSection ) {
+        if ( indexPath.row == 0 ) {
+            self.options.showFPS = self.options.showFPS ? 0 : 1;
+            [TVOptionsController setOnOffValueForCell:cell optionValue:self.options.showFPS];
+        } else if ( indexPath.row == 1 ) {
+            ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped                                                                                          type:kTypeEmuRes list:arrayEmuRes];
+            [[self navigationController] pushViewController:listController animated:YES];
+            [listController release];
+        } else if ( indexPath.row == 2 ) {
+            ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped                                                                                          type:kTypeEmuSpeed list:arrayEmuSpeed];
+            [[self navigationController] pushViewController:listController animated:YES];
+            [listController release];
+        } else if ( indexPath.row == 3 ) {
+            self.options.throttle = self.options.throttle ? 0 : 1;
+            [TVOptionsController setOnOffValueForCell:cell optionValue:self.options.throttle];
+        } else if ( indexPath.row == 4 ) {
+            ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped                                                                                          type:kTypeFSValue list:arrayFSValue];
+            [[self navigationController] pushViewController:listController animated:YES];
+            [listController release];
+        } else if ( indexPath.row == 5 ) {
+            self.options.forcepxa = self.options.forcepxa ? 0 : 1;
+            [TVOptionsController setOnOffValueForCell:cell optionValue:self.options.forcepxa];
+        } else if ( indexPath.row == 6 ) {
+            self.options.showINFO = self.options.showINFO ? 0 : 1;
+            [TVOptionsController setOnOffValueForCell:cell optionValue:self.options.showINFO];
+        } else if ( indexPath.row == 7 ) {
+            self.options.lowlsound = self.options.lowlsound ? 0 : 1;
+            [TVOptionsController setOnOffValueForCell:cell optionValue:self.options.lowlsound];
+        }
     }
     [self.options saveOptions];
 }
 
+#pragma mark UIEvent handling for button presses
+- (void)pressesBegan:(NSSet<UIPress *> *)presses
+           withEvent:(UIPressesEvent *)event; {
+    BOOL menuPressed = NO;
+    for (UIPress *press in presses) {
+        if ( press.type == UIPressTypeMenu ) {
+            menuPressed = YES;
+        }
+    }
+    NSLog(@"Presses began - was it a menu press? %@",menuPressed ? @"YES" : @"NO");
+    if ( menuPressed && self.emuController != nil ) {
+        [self.emuController done:nil];
+        return;
+    }
+    // not a menu press, delegate to UIKit responder handling
+    [super pressesBegan:presses withEvent:event];
+}
+    
 @end

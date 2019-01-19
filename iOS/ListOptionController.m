@@ -44,7 +44,11 @@
 
 #import "ListOptionController.h"
 #import "Options.h"
+#if TARGET_OS_IOS
 #import "OptionsController.h"
+#elif TARGET_OS_TV
+#import "TVOptionsController.h"
+#endif
 
 @implementation ListOptionController;
 
@@ -80,19 +84,14 @@
 }
 
 - (void)viewDidLoad {
-
     [super viewDidLoad];
-}
-
-- (void)viewDidUnload {
-        
-	[super viewDidUnload];
+#if TARGET_OS_TV
+    self.view.backgroundColor = UIColor.lightGrayColor;
+#endif
 }
 
 - (void)dealloc {
-    
     [sections release];
-    
 	[super dealloc];
 }
 

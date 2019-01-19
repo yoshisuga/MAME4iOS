@@ -229,6 +229,7 @@ void* app_Thread_Start(void* args)
     OptionsController *optionsController;
 #elif TARGET_OS_TV
     TVOptionsController *optionsController;
+    BOOL menuButtonOnRemoteWasPressed;
 #endif
 }
 @end
@@ -1052,6 +1053,7 @@ void* app_Thread_Start(void* args)
 #elif TARGET_OS_TV
     optionsController = [[TVOptionsController alloc] init];
     optionsController.emuController = self;
+    menuButtonOnRemoteWasPressed = NO;
 #endif
 }
 
@@ -3393,6 +3395,14 @@ void myosd_handle_turbo() {
         };
         
         MFIController.controllerPausedHandler = ^(GCController *controller) {
+#if TARGET_OS_TV
+            BOOL isSiriRemote = MFIController.gamepad == nil && MFIController.extendedGamepad == nil && MFIController.microGamepad != nil;
+            if ( isSiriRemote ) {
+                menuButtonOnRemoteWasPressed = YES;
+            } else {
+                menuButtonOnRemoteWasPressed = NO;
+            }
+#endif
             //Add Coin
             myosd_joy_status[index] |= MYOSD_START;
             [self performSelector:@selector(releaseStart:) withObject:[NSNumber numberWithInteger:MFIController.playerIndex] afterDelay:0.1];
@@ -3510,4 +3520,22 @@ void myosd_handle_turbo() {
 #endif
 }
 
+#pragma mark UIEvent
+//- (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
+//    BOOL menuPressed = NO;
+//    for (UIPress *press in presses) {
+//        if ( press.type == UIPressTypeMenu ) {
+//            menuPressed = YES;
+//        }
+//    }
+//    if ( menuPressed && menuButtonOnRemoteWasPressed ) {
+//        self.controllerUserInteractionEnabled = YES;
+//        menuButtonOnRemoteWasPressed = NO;
+//        [super pressesBegan:presses withEvent:event];
+//        self.controllerUserInteractionEnabled = NO;
+//        return;
+//    }
+//    self.controllerUserInteractionEnabled = NO;
+//    menuButtonOnRemoteWasPressed = NO;
+//}
 @end
