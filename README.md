@@ -14,7 +14,7 @@ This repo adds support for:
 
 - 64-bit binary to run on modern and future iOS devices
 - Supports modern device screen sizes, including iPhone X/XR/XS/XS Max and iPad Pro (new in 2018!)
-- tvOS (in development, new in 2019!)
+- tvOS (new in 2019!)
 - Multiple mFi controllers (up to 4 with dual analog support - @DarrenBranford)
 - Supports using the touch screen as a lightgun (new in 2018!)
 - Turbo mode toggle for buttons (new in 2018!)
@@ -28,7 +28,7 @@ If you can re-sign using your certificate, here is a [link to the IPA (iOS)](htt
 
 ### Xcode
 
-Requirements: Mac with Xcode 7 or above
+Requirements: Mac with Xcode 10 or above
 
 Building MAME4iOS requires a prebuilt MAME binary (It was not included in this repo due to its large size): 
 
@@ -69,9 +69,8 @@ Even if you are not in the paid Apple Developer Program, you can sideload the ap
 MAME for tvOS support was just added in early 2019, and it currently can run games, but UI support and controller support is still in-progress. Most notably:
 
 - mFi controller is currently **required**
-- Hold down and X and press Menu in-game to open the menu to save/load states, access settings, or exit the current game.
+- Hold down and Y and press Menu in-game to open the menu to save/load states, access settings, or exit the current game.
 - No Siri remote support yet.
-- Settings screen is incomplete.
 - Pressing the "Menu" button on the Siri Remote does not exit the application yet (use the TV button and then Menu as a workaround)
 
 ## Adding ROMs to MAME
@@ -80,11 +79,11 @@ MAME for tvOS support was just added in early 2019, and it currently can run gam
 
 For iOS users, you can download ROMs using Safari and save them to the `roms` directory by choosing the "Save to Files" (go to "On My iPhone" -> MAME4iOS) option after downloading a ROM. You can also use a third party program like iExplorer or iFunBox to transfer ROMs to the MAME4iOS app directory.
 
+You can also use the "Upload Files" option in the menu (from the options button or pressing Y + Menu in-game) to start the webserver, and enter the address shown on the web browser on your computer.
+
 ### tvOS
 
 You can upload ROMs to MAME on your AppleTV using a computer. After MAME starts, you'll be shown a welcome screen with the address of the AppleTV that you can enter in your web browser. Add MAME ROMs to the `roms` directory using the provided web uploader.
-
-The web server isn't yet available for iOS yet but will be added soon!
 
 ## mFi Controller Support
 
