@@ -426,6 +426,13 @@ void* app_Thread_Start(void* args)
 #endif
     }]];
 
+#if TARGET_OS_IOS
+    [menu addAction:[UIAlertAction actionWithTitle:@"Transfer ROMs" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [[WebServer sharedInstance] startUploader];
+        [WebServer sharedInstance].webUploader.delegate = self;
+    }]];
+#endif
+
     if(enable_menu_exit_option) {
         [menu addAction:[UIAlertAction
                          actionWithTitle:@"Exit Game"
@@ -1050,12 +1057,14 @@ void* app_Thread_Start(void* args)
     optionsController = [[TVOptionsController alloc] init];
     optionsController.emuController = self;
     menuButtonOnRemoteWasPressed = NO;
+    self.controllerUserInteractionEnabled = NO;
 #endif
 }
 
 -(void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
 #if TARGET_OS_TV
+    self.controllerUserInteractionEnabled = NO;
     [[WebServer sharedInstance] startUploader];
     [WebServer sharedInstance].webUploader.delegate = self;
 #endif
@@ -3394,8 +3403,10 @@ void myosd_handle_turbo() {
 #if TARGET_OS_TV
             BOOL isSiriRemote = MFIController.gamepad == nil && MFIController.extendedGamepad == nil && MFIController.microGamepad != nil;
             if ( isSiriRemote ) {
+                self.controllerUserInteractionEnabled = YES;
                 menuButtonOnRemoteWasPressed = YES;
             } else {
+                self.controllerUserInteractionEnabled = NO;
                 menuButtonOnRemoteWasPressed = NO;
                 if (!myosd_inGame) {
                     [self runMenu];
@@ -3517,10 +3528,18 @@ void myosd_handle_turbo() {
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Welcome to MAME for AppleTV" message:[NSString stringWithFormat:@"To transfer ROMs from your computer, go to this address on your web browser:\n\n%@",server.bonjourServerURL] preferredStyle:UIAlertControllerStyleAlert];
     [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
     [self presentViewController:alert animated:YES completion:nil];
+#elif TARGET_OS_IOS
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Web Server Started" message:[NSString stringWithFormat:@"To transfer ROMs from your computer, go to this address on your web browser:\n\n%@",server.bonjourServerURL] preferredStyle:UIAlertControllerStyleAlert];
+    [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [[WebServer sharedInstance] webUploader].delegate = nil;
+        [[WebServer sharedInstance] stopUploader];
+    }]];
+    [self presentViewController:alert animated:YES completion:nil];
 #endif
 }
 
 #pragma mark UIEvent
+#if TARGET_OS_TV
 //- (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
 //    BOOL menuPressed = NO;
 //    for (UIPress *press in presses) {
@@ -3528,9 +3547,9 @@ void myosd_handle_turbo() {
 //            menuPressed = YES;
 //        }
 //    }
-//    if ( menuPressed && menuButtonOnRemoteWasPressed ) {
-//        self.controllerUserInteractionEnabled = YES;
-//        menuButtonOnRemoteWasPressed = NO;
+//    if ( menuPressed && self.controllerUserInteractionEnabled ) {
+////        self.controllerUserInteractionEnabled = YES;
+////        menuButtonOnRemoteWasPressed = NO;
 //        [super pressesBegan:presses withEvent:event];
 //        self.controllerUserInteractionEnabled = NO;
 //        return;
@@ -3538,4 +3557,5 @@ void myosd_handle_turbo() {
 //    self.controllerUserInteractionEnabled = NO;
 //    menuButtonOnRemoteWasPressed = NO;
 //}
+#endif
 @end
