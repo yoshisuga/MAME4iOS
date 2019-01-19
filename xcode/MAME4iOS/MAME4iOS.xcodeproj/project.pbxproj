@@ -85,6 +85,8 @@
 		926C770921F26E0000103EDE /* scanline-2.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC1C163C5DA100A05CD0 /* scanline-2.png */; };
 		926C770A21F271A700103EDE /* ListOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE90575B166A89D000653872 /* ListOptionController.m */; };
 		926C770B21F31B1400103EDE /* FilterOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE9454D71731DF2700B81C32 /* FilterOptionController.m */; };
+		926C771221F39D2500103EDE /* cheat.zip in Resources */ = {isa = PBXBuildFile; fileRef = CE30090016FA47BD000EDCF1 /* cheat.zip */; };
+		926C771321F39D2F00103EDE /* hiscore.dat in Resources */ = {isa = PBXBuildFile; fileRef = CE30090616FA47E4000EDCF1 /* hiscore.dat */; };
 		92A5332221EB57F00089FBB9 /* Options.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5332121EB57F00089FBB9 /* Options.m */; };
 		92A5332321EB57F00089FBB9 /* Options.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5332121EB57F00089FBB9 /* Options.m */; };
 		92A5332421EB57F00089FBB9 /* Options.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5332121EB57F00089FBB9 /* Options.m */; };
@@ -986,12 +988,14 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				926C771221F39D2500103EDE /* cheat.zip in Resources */,
 				926C770721F26DFA00103EDE /* crt-2.png in Resources */,
 				926C770921F26E0000103EDE /* scanline-2.png in Resources */,
 				926C770621F26DEA00103EDE /* crt-1.png in Resources */,
 				92ECB8F721EA985000D1E3D0 /* Assets.xcassets in Resources */,
 				926C770821F26DFD00103EDE /* scanline-1.png in Resources */,
 				92A533D121EBDDF20089FBB9 /* GCDWebUploader.bundle in Resources */,
+				926C771321F39D2F00103EDE /* hiscore.dat in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
