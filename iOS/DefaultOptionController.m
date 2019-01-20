@@ -45,7 +45,11 @@
 #import "DefaultOptionController.h"
 #import "Globals.h"
 #import "Options.h"
+#if TARGET_OS_IOS
 #import "OptionsController.h"
+#elif TARGET_OS_TV
+#import "TVOptionsController.h"
+#endif
 #import "ListOptionController.h"
 #import "EmulatorController.h"
 
@@ -57,20 +61,20 @@
 
 - (id)init {
     if (self = [super initWithStyle:UITableViewStyleGrouped]) {
-        
+#if TARGET_OS_IOS
         switchTvoutNative = nil;
         switchCheats = nil;
-        arraySoundValue = [[NSArray alloc] initWithObjects:@"Off", @"On (11 KHz)", @"On (22 KHz)",@"On (33 KHz)", @"On (44 KHz)", @"On (48 KHz)", nil];
-        arrayMainPriorityValue = [[NSArray alloc] initWithObjects:@"0", @"1", @"2", @"3",@"4", @"5", @"6", @"7", @"8", @"9", @"10",nil];
-        arrayVideoPriorityValue = [[NSArray alloc] initWithObjects:@"0", @"1", @"2", @"3",@"4", @"5", @"6", @"7", @"8", @"9", @"10",nil];
         switchVsync = nil;
         switchThreaded = nil;
         switchDblbuff = nil;
         switchHiscore = nil;
-        
         switchVAntialias = nil;
         switchVBean2x = nil;
         switchVFlicker = nil;
+#endif
+        arraySoundValue = [[NSArray alloc] initWithObjects:@"Off", @"On (11 KHz)", @"On (22 KHz)",@"On (33 KHz)", @"On (44 KHz)", @"On (48 KHz)", nil];
+        arrayMainPriorityValue = [[NSArray alloc] initWithObjects:@"0", @"1", @"2", @"3",@"4", @"5", @"6", @"7", @"8", @"9", @"10",nil];
+        arrayVideoPriorityValue = [[NSArray alloc] initWithObjects:@"0", @"1", @"2", @"3",@"4", @"5", @"6", @"7", @"8", @"9", @"10",nil];
         
         arrayMainThreadTypeValue = [[NSArray alloc] initWithObjects:@"Normal", @"Real Time RR", @"Real Time FIFO",nil];
         arrayVideoThreadTypeValue = [[NSArray alloc] initWithObjects:@"Normal", @"Real Time RR", @"Real Time FIFO",nil];
@@ -81,23 +85,21 @@
 }
 
 - (void)dealloc {
-    
+#if TARGET_OS_IOS
     [switchTvoutNative release];
     [switchCheats release];
-    [arraySoundValue release];
     [switchVsync release];
     [switchThreaded release];
     [switchDblbuff release];
-    
-    [arrayMainPriorityValue release];
-    [arrayVideoPriorityValue release];
-    
     [switchHiscore release];
-    
     [switchVBean2x release];
     [switchVAntialias release];
     [switchVFlicker release];
-    
+#endif
+
+    [arraySoundValue release];
+    [arrayMainPriorityValue release];
+    [arrayVideoPriorityValue release];
     [arrayVideoThreadTypeValue release];
     [arrayMainThreadTypeValue release];
     
@@ -120,7 +122,7 @@
     [super loadView];
     
     UIBarButtonItem *button = [[UIBarButtonItem alloc] initWithTitle:@"Done"
-                                                               style:UIBarButtonItemStyleBordered
+                                                               style:UIBarButtonItemStyleDone
                                                               target: emuController  action:  @selector(done:) ];
     self.navigationItem.rightBarButtonItem = button;
     [button release];
@@ -162,10 +164,10 @@
         
         cell = [[[UITableViewCell alloc] initWithStyle:style
                                        reuseIdentifier:@"CellIdentifier"] autorelease];
-        
-        cell.accessoryType = UITableViewCellAccessoryNone;
-        cell.selectionStyle = UITableViewCellSelectionStyleNone;
     }
+    cell.accessoryType = UITableViewCellAccessoryNone;
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    cell.accessoryView = nil;
     
     Options *op = [[Options alloc] init];
     
@@ -177,32 +179,45 @@
             {   case 0:
                 {
                     cell.textLabel.text  = @"Beam 2x";
+#if TARGET_OS_IOS
                     [switchVBean2x release];
                     switchVBean2x = [[UISwitch alloc] initWithFrame:CGRectZero];
                     cell.accessoryView = switchVBean2x;
                     [switchVBean2x setOn:[op vbean2x] animated:NO];
                     [switchVBean2x addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+#elif TARGET_OS_TV
+                    cell.accessoryView = [TVOptionsController labelForOnOffValue:[op vbean2x]];
+#endif
                     break;
                 }
                     
                 case 1:
                 {
                     cell.textLabel.text   = @"Antialias";
+#if TARGET_OS_IOS
                     [switchVAntialias release];
                     switchVAntialias  = [[UISwitch alloc] initWithFrame:CGRectZero];
                     cell.accessoryView = switchVAntialias ;
                     [switchVAntialias setOn:[op vantialias] animated:NO];
                     [switchVAntialias addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+#elif TARGET_OS_TV
+                    cell.accessoryView = [TVOptionsController labelForOnOffValue:[op vantialias]];
+#endif
+
                     break;
                 }
                 case 2:
                 {
                     cell.textLabel.text   = @"Flicker";
+#if TARGET_OS_IOS
                     [switchVFlicker release];
                     switchVFlicker  = [[UISwitch alloc] initWithFrame:CGRectZero];
                     cell.accessoryView = switchVFlicker ;
                     [switchVFlicker setOn:[op vflicker] animated:NO];
                     [switchVFlicker addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+#elif TARGET_OS_TV
+                    cell.accessoryView = [TVOptionsController labelForOnOffValue:[op vflicker]];
+#endif
                     break;
                 }
             }
@@ -222,31 +237,45 @@
                 case 1:
                 {
                     cell.textLabel.text   = @"Cheats";
+#if TARGET_OS_IOS
                     [switchCheats release];
                     switchCheats  = [[UISwitch alloc] initWithFrame:CGRectZero];
                     cell.accessoryView = switchCheats ;
                     [switchCheats setOn:[op cheats] animated:NO];
                     [switchCheats addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+#elif TARGET_OS_TV
+                    cell.accessoryView = [TVOptionsController labelForOnOffValue:[op vflicker]];
+#endif
+
                     break;
                 }
                 case 2:
                 {
                     cell.textLabel.text   = @"Force 60Hz Sync";
+#if TARGET_OS_IOS
                     [switchVsync release];
                     switchVsync  = [[UISwitch alloc] initWithFrame:CGRectZero];
                     cell.accessoryView = switchVsync ;
                     [switchVsync setOn:[op vsync] animated:NO];
                     [switchVsync addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+#elif TARGET_OS_TV
+                    cell.accessoryView = [TVOptionsController labelForOnOffValue:[op vsync]];
+#endif
                     break;
                 }
                 case 3:
                 {
                     cell.textLabel.text   = @"Save Hiscores";
+#if TARGET_OS_IOS
                     [switchHiscore release];
                     switchHiscore  = [[UISwitch alloc] initWithFrame:CGRectZero];
                     cell.accessoryView = switchHiscore ;
                     [switchHiscore setOn:[op hiscore] animated:NO];
                     [switchHiscore addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+#elif TARGET_OS_TV
+                    cell.accessoryView = [TVOptionsController labelForOnOffValue:[op hiscore]];
+#endif
+
                     break;
                 }
             }
@@ -258,22 +287,30 @@
             {   case 0:
                 {
                     cell.textLabel.text   = @"Native TV-OUT";
+#if TARGET_OS_IOS
                     [switchTvoutNative release];
                     switchTvoutNative  = [[UISwitch alloc] initWithFrame:CGRectZero];
                     cell.accessoryView = switchTvoutNative ;
                     [switchTvoutNative setOn:[op tvoutNative] animated:NO];
                     [switchTvoutNative addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+#elif TARGET_OS_TV
+                    cell.accessoryView = [TVOptionsController labelForOnOffValue:[op tvoutNative]];
+#endif
                     break;
                 }
                     
                 case 1:
                 {
                     cell.textLabel.text   = @"Threaded Video";
+#if TARGET_OS_IOS
                     [switchThreaded release];
                     switchThreaded  = [[UISwitch alloc] initWithFrame:CGRectZero];
                     cell.accessoryView = switchThreaded ;
                     [switchThreaded setOn:[op threaded] animated:NO];
                     [switchThreaded addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+#elif TARGET_OS_TV
+                    cell.accessoryView = [TVOptionsController labelForOnOffValue:[op threaded]];
+#endif
                     break;
                 }
                 case 2:
@@ -293,11 +330,15 @@
                 case 4:
                 {
                     cell.textLabel.text   = @"Double Buffer";
+#if TARGET_OS_IOS
                     [switchDblbuff release];
                     switchDblbuff  = [[UISwitch alloc] initWithFrame:CGRectZero];
                     cell.accessoryView = switchDblbuff ;
                     [switchDblbuff setOn:[op dblbuff] animated:NO];
                     [switchDblbuff addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+#elif TARGET_OS_TV
+                    cell.accessoryView = [TVOptionsController labelForOnOffValue:[op dblbuff]];
+#endif
                     break;
                 }
                 case 5:
@@ -324,10 +365,11 @@
     return cell;
 }
 
+#if TARGET_OS_IOS
 - (void)optionChanged:(id)sender
 {
     Options *op = [[Options alloc] init];
-    
+
 	if(sender == switchTvoutNative)
         op.tvoutNative = [switchTvoutNative isOn];
     
@@ -358,11 +400,52 @@
     [op saveOptions];
 	[op release];
 }
+#endif
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     
     NSUInteger row = [indexPath row];
     NSUInteger section = [indexPath section];
+    
+#if TARGET_OS_TV
+    UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+    Options *op = [[[Options alloc] init] autorelease];
+    if ( section == 0 ) {
+        if ( row == 0 ) {
+            op.vbean2x = op.vbean2x ? 0 : 1;
+            [TVOptionsController setOnOffValueForCell:cell optionValue:op.vbean2x];
+        } else if ( row == 1 ) {
+            op.vantialias = op.vantialias ? 0 : 1;
+            [TVOptionsController setOnOffValueForCell:cell optionValue:op.vantialias];
+        } else if ( row == 2 ) {
+            op.vflicker = op.vflicker ? 0 : 1;
+            [TVOptionsController setOnOffValueForCell:cell optionValue:op.vflicker];
+        }
+    } else if ( section == 1 ) {
+        if ( row == 1 ) {
+            op.cheats = op.cheats ? 0 : 1;
+            [TVOptionsController setOnOffValueForCell:cell optionValue:op.cheats];
+        } else if ( row == 2 ) {
+            op.vsync = op.vsync ? 0 : 1;
+            [TVOptionsController setOnOffValueForCell:cell optionValue:op.vsync];
+        } else if ( row == 3 ) {
+            op.hiscore = op.hiscore ? 0 : 1;
+            [TVOptionsController setOnOffValueForCell:cell optionValue:op.hiscore];
+        }
+    } else if ( section == 2 ) {
+        if ( row == 0 ) {
+            op.tvoutNative = op.tvoutNative ? 0 : 1;
+            [TVOptionsController setOnOffValueForCell:cell optionValue:op.tvoutNative];
+        } else if ( row == 1 ) {
+            op.threaded = op.threaded ? 0 : 1;
+            [TVOptionsController setOnOffValueForCell:cell optionValue:op.threaded];
+        } else if ( row == 4 ) {
+            op.dblbuff = op.dblbuff ? 0 : 1;
+            [TVOptionsController setOnOffValueForCell:cell optionValue:op.dblbuff];
+        }
+    }
+    [op saveOptions];
+#endif
     
     if(section==1 && row==0)
     {

@@ -9,6 +9,7 @@
 #import "TVOptionsController.h"
 #import "ListOptionController.h"
 #import "FilterOptionController.h"
+#import "DefaultOptionController.h"
 
 @interface TVOptionsController ()
 
@@ -101,6 +102,8 @@
         return 4;
     } else if ( section == kMiscSection ) {
         return 8;
+    } else if ( section == kDefaultsSection ) {
+        return 1;
     }
     return 0;
 }
@@ -165,6 +168,9 @@
             cell.textLabel.text = @"Low Latency Audio";
             cell.accessoryView = [TVOptionsController labelForOnOffValue:self.options.lowlsound];
         }
+    } else if ( indexPath.section == kDefaultsSection ) {
+        cell.textLabel.text = @"Defaults";
+        cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     }
     return cell;
 }
@@ -222,6 +228,11 @@
             self.options.lowlsound = self.options.lowlsound ? 0 : 1;
             [TVOptionsController setOnOffValueForCell:cell optionValue:self.options.lowlsound];
         }
+    } else if ( indexPath.section == kDefaultsSection ) {
+        DefaultOptionController *defaultOptController = [[DefaultOptionController alloc] init];
+        defaultOptController.emuController = self.emuController;
+        [[self navigationController] pushViewController:defaultOptController animated:YES];
+        [defaultOptController release];
     }
     [self.options saveOptions];
 }

@@ -47,19 +47,20 @@
 @class EmulatorController;
 
 @interface DefaultOptionController : UITableViewController {
-    
+
+#if TARGET_OS_IOS
     UISwitch*  switchVBean2x;
     UISwitch*  switchVAntialias;
     UISwitch*  switchVFlicker;
-    
-    NSArray  *arraySoundValue;
     UISwitch *switchCheats;
     UISwitch *switchVsync;
     UISwitch *switchHiscore;
-    
     UISwitch *switchTvoutNative;
     UISwitch *switchThreaded;
     UISwitch *switchDblbuff;
+#endif
+    
+    NSArray  *arraySoundValue;
     NSArray  *arrayVideoPriorityValue;
     NSArray  *arrayMainPriorityValue;
     
