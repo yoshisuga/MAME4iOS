@@ -225,6 +225,7 @@ void* app_Thread_Start(void* args)
     CGPoint mouseInitialLocation;
     CGPoint touchDirectionalMoveStartLocation;
     CGPoint touchDirectionalMoveInitialLocation;
+    BOOL isPresentingAlert;
 #if TARGET_OS_IOS
     OptionsController *optionsController;
 #elif TARGET_OS_TV
@@ -298,91 +299,10 @@ void* app_Thread_Start(void* args)
 #endif
 }
 
-//- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
-//{
-//    if(buttonIndex == 999)
-//    {
-//        return;
-//    }
-//
-//    int loadsave = myosd_inGame * 2;
-//
-//
-//    if(buttonIndex == 0 && enable_menu_exit_option)
-//    {
-//       g_menu_option = MENU_EXIT;
-//       myosd_exitGame = 0;
-//       wantExit = 1;
-//       UIAlertView* exitAlertView=[[UIAlertView alloc] initWithTitle:nil
-//                                                              message:@"are you sure you want to exit the game?"
-//                                                             delegate:self cancelButtonTitle:nil
-//                                                    otherButtonTitles:@"Yes",@"No",nil];
-//       [exitAlertView show];
-//       [exitAlertView release];
-//
-//    }
-//    else if((buttonIndex == 0 && !enable_menu_exit_option && loadsave) || (buttonIndex == 1 && enable_menu_exit_option && loadsave))
-//    {
-//       myosd_loadstate = 1;
-//       [self endMenu];
-//    }
-//    else if((buttonIndex == 1 && !enable_menu_exit_option && loadsave) || (buttonIndex == 2 && enable_menu_exit_option && loadsave))
-//    {
-//       myosd_savestate = 1;
-//       [self endMenu];
-//    }
-//    else if(buttonIndex == 0 + enable_menu_exit_option + loadsave)
-//    {
-//       g_menu_option = MENU_OPTIONS;
-//
-//       OptionsController *addController =[[OptionsController alloc] init];
-//
-//       addController.emuController = self;
-//
-//       UINavigationController *navController = [[[UINavigationController alloc] initWithRootViewController:addController] autorelease];
-//
-//       //[navController setModalPresentationStyle: /*UIModalPresentationFormSheet*/ UIModalPresentationPageSheet];
-//
-//        [navController setModalPresentationStyle:UIModalPresentationPageSheet];
-//        dispatch_async(dispatch_get_main_queue(), ^ {
-//            [self presentViewController:navController animated:YES completion:nil];
-//        });
-//
-////        [self presentModalViewController:navController animated:YES];
-//
-//       //[self presentModalViewController:addController animated:YES];
-//
-//       [addController release];
-//    }
-//#ifdef BTJOY
-//    else if(buttonIndex == 1 + enable_menu_exit_option + loadsave)
-//    {
-//       g_menu_option = MENU_BTJOY;
-//
-//       [BTJoyHelper startBTJoy:self];
-//    }
-//#endif
-//    else
-//    {
-//       [self endMenu];
-//    }
-//
-//    [menu release];
-//    menu = nil;
-//
-//}
-
 - (void)runMenu
 {
     if(g_menu_option != MENU_NONE)
        return;
-
-//    if(menu!=nil)
-//    {
-//       [menu dismissViewControllerAnimated:YES completion:nil];
-//       [menu release];
-//       menu = nil;
-//    }
     
     [UIApplication sharedApplication].idleTimerDisabled = NO;
 
@@ -1020,7 +940,7 @@ void* app_Thread_Start(void* args)
     [self.view addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeTop multiplier:1.0f constant:8.0f]];
     areControlsHidden = NO;
 
-    
+    isPresentingAlert = NO;
     [self changeUI];
     
     icadeView = [[iCadeView alloc] initWithFrame:CGRectZero withEmuController:self];
@@ -3231,6 +3151,13 @@ void myosd_handle_turbo() {
         
         MFIController.gamepad.valueChangedHandler = ^(GCGamepad* gamepad, GCControllerElement* element) {
             
+#if TARGET_OS_TV
+            // disable button presses while alert is shown
+            if ( isPresentingAlert ) {
+                return;
+            }
+#endif
+            
             if (element == gamepad.buttonA) {
                 if (gamepad.buttonA.pressed) {
                     myosd_joy_status[index] |= MYOSD_A;
@@ -3282,6 +3209,13 @@ void myosd_handle_turbo() {
         };
         
         MFIController.extendedGamepad.valueChangedHandler = ^(GCExtendedGamepad* gamepad, GCControllerElement* element) {
+
+#if TARGET_OS_TV
+            // disable button presses while alert is shown
+            if ( isPresentingAlert ) {
+                return;
+            }
+#endif
             
             if (element == gamepad.buttonA) {
                 if (gamepad.buttonA.pressed) {
@@ -3527,15 +3461,22 @@ void myosd_handle_turbo() {
 - (void)webServerDidCompleteBonjourRegistration:(GCDWebServer*)server {
 #if TARGET_OS_TV
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Welcome to MAME for AppleTV" message:[NSString stringWithFormat:@"To transfer ROMs from your computer, go to one of these addresses on your web browser:\n\n%@\n\n%@",server.serverURL, server.bonjourServerURL] preferredStyle:UIAlertControllerStyleAlert];
-    [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
-    [self presentViewController:alert animated:YES completion:nil];
+    [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        isPresentingAlert = NO;
+    }]];
+    [self presentViewController:alert animated:YES completion:^{
+        isPresentingAlert = YES;
+    }];
 #elif TARGET_OS_IOS
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Web Server Started" message:[NSString stringWithFormat:@"To transfer ROMs from your computer, go to one of these addresses on your web browser:\n\n%@\n\n%@",server.serverURL, server.bonjourServerURL] preferredStyle:UIAlertControllerStyleAlert];
     [alert addAction:[UIAlertAction actionWithTitle:@"Stop Server" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        isPresentingAlert = NO;
         [[WebServer sharedInstance] webUploader].delegate = nil;
         [[WebServer sharedInstance] stopUploader];
     }]];
-    [self presentViewController:alert animated:YES completion:nil];
+    [self presentViewController:alert animated:YES completion:^{
+        isPresentingAlert = YES;
+    }];
 #endif
 }
 

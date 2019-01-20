@@ -103,10 +103,10 @@ void droid_ios_init_input(running_machine *machine)
         input_device_item_add(devinfo, "LZ Axis", &joy_axis[i][4], ITEM_ID_ZAXIS, my_axis_get_state);
         input_device_item_add(devinfo, "RZ Axis", &joy_axis[i][5], ITEM_ID_RZAXIS, my_axis_get_state);
     
-		input_device_item_add(devinfo, "B", &joy_buttons[i][0], ITEM_ID_BUTTON1, my_get_state);
-		input_device_item_add(devinfo, "X", &joy_buttons[i][1], ITEM_ID_BUTTON2, my_get_state);
-		input_device_item_add(devinfo, "A", &joy_buttons[i][2], ITEM_ID_BUTTON3, my_get_state);
-		input_device_item_add(devinfo, "Y", &joy_buttons[i][3], ITEM_ID_BUTTON4, my_get_state);
+		input_device_item_add(devinfo, "A", &joy_buttons[i][0], ITEM_ID_BUTTON1, my_get_state);
+		input_device_item_add(devinfo, "B", &joy_buttons[i][1], ITEM_ID_BUTTON2, my_get_state);
+		input_device_item_add(devinfo, "Y", &joy_buttons[i][2], ITEM_ID_BUTTON3, my_get_state);
+		input_device_item_add(devinfo, "X", &joy_buttons[i][3], ITEM_ID_BUTTON4, my_get_state);
 		input_device_item_add(devinfo, "L", &joy_buttons[i][4], ITEM_ID_BUTTON5, my_get_state);
 		input_device_item_add(devinfo, "R", &joy_buttons[i][5], ITEM_ID_BUTTON6, my_get_state);
 
@@ -508,11 +508,11 @@ void droid_ios_poll_input(running_machine *machine)
                 
             }
             else
-               joy_buttons[i][0]  = ((_pad_status & MYOSD_B) != 0) ? 0x80 : 0;
+               joy_buttons[i][0]  = ((_pad_status & MYOSD_A) != 0) ? 0x80 : 0;
             
-			joy_buttons[i][1]  = ((_pad_status & MYOSD_X) != 0) ? 0x80 : 0;
-			joy_buttons[i][2]  = ((_pad_status & MYOSD_A) != 0) ? 0x80 : 0;
-			joy_buttons[i][3]  = ((_pad_status & MYOSD_Y) != 0) ? 0x80 : 0;
+			joy_buttons[i][1]  = ((_pad_status & MYOSD_B) != 0) ? 0x80 : 0;
+			joy_buttons[i][2]  = ((_pad_status & MYOSD_Y) != 0) ? 0x80 : 0;
+			joy_buttons[i][3]  = ((_pad_status & MYOSD_X) != 0) ? 0x80 : 0;
 			joy_buttons[i][4]  = ((_pad_status & MYOSD_L1) != 0) ? 0x80 : 0;
 			joy_buttons[i][5]  = ((_pad_status & MYOSD_R1) != 0) ? 0x80 : 0;
 
@@ -666,7 +666,7 @@ void osd_customize_input_type_list(input_type_desc *typelist)
 				input_seq_set_3(&typedesc->seq[SEQ_TYPE_STANDARD],STANDARD_CODE(JOYSTICK, 0, SWITCH, NONE, HAT1RIGHT), SEQCODE_OR, INPUT_CODE_SET_DEVINDEX(JOYCODE_X_RIGHT_SWITCH, 0));
 				break;
 			case IPT_OSD_1:
-				input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD], INPUT_CODE_SET_DEVINDEX(JOYCODE_BUTTON2, 0));
+				input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD], INPUT_CODE_SET_DEVINDEX(JOYCODE_BUTTON4, 0));
 				break;
 			case IPT_JOYSTICK_UP:
 			case IPT_JOYSTICKLEFT_UP:
