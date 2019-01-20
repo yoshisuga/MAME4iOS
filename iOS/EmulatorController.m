@@ -341,7 +341,8 @@ void* app_Thread_Start(void* args)
 #elif TARGET_OS_TV
         UINavigationController *navController = [[[UINavigationController alloc] initWithRootViewController:optionsController] autorelease];
         dispatch_async(dispatch_get_main_queue(), ^ {
-            [self presentViewController:navController animated:true completion:nil];
+            [self presentViewController:navController animated:true completion:^{
+            }];
         });
 #endif
     }]];
@@ -393,46 +394,51 @@ void* app_Thread_Start(void* args)
     [menu addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
         [self endMenu];
     }]];
-    [self presentViewController:menu animated:YES completion:nil];
+    [self presentViewController:menu animated:YES completion:^{
+#if TARGET_OS_TV
+        self.controllerUserInteractionEnabled = YES;
+#endif
+    }];
     	   
     [pool release];
 }
 
 - (void)endMenu{
-	  	
-	  int old = g_joy_used;
-	  g_joy_used = myosd_num_of_joys!=0;
-	    
-	  if(((!g_device_is_landscape && g_pref_full_screen_port) || (g_device_is_landscape && g_pref_full_screen_land)) && g_joy_used && old!=g_joy_used)
-	  {
-	      [self changeUI]; 
-	  }
-	  if(((!g_device_is_landscape && g_pref_full_screen_port) || (g_device_is_landscape && g_pref_full_screen_land)) && !g_joy_used && old!=g_joy_used)
-	  { 
-	      [self changeUI];
-	  }
-	    
-	  actionPending=0;
-	  myosd_exitPause = 1;
-      g_emulation_paused = 0;
-      change_pause(0);
-      g_menu_option = MENU_NONE;
+    int old = g_joy_used;
+    g_joy_used = myosd_num_of_joys!=0;
     
-
-      icadeView.active = FALSE;
-      if(g_pref_ext_control_type != EXT_CONTROL_NONE)
-      {
-         icadeView.active = TRUE;//force renable
-      }
-      else if(g_iCade_used)//ensure is off
-      {
-          g_iCade_used = 0;
-          g_joy_used = 0;
-          myosd_num_of_joys = 0;
-          [self changeUI];
-      }
+    if(((!g_device_is_landscape && g_pref_full_screen_port) || (g_device_is_landscape && g_pref_full_screen_land)) && g_joy_used && old!=g_joy_used)
+    {
+        [self changeUI];
+    }
+    if(((!g_device_is_landscape && g_pref_full_screen_port) || (g_device_is_landscape && g_pref_full_screen_land)) && !g_joy_used && old!=g_joy_used)
+    {
+        [self changeUI];
+    }
     
-      [UIApplication sharedApplication].idleTimerDisabled = (myosd_inGame || g_joy_used) ? YES : NO;//so atract mode dont sleep
+    actionPending=0;
+    myosd_exitPause = 1;
+    g_emulation_paused = 0;
+    change_pause(0);
+    g_menu_option = MENU_NONE;
+    
+    
+    icadeView.active = FALSE;
+    if(g_pref_ext_control_type != EXT_CONTROL_NONE)
+    {
+        icadeView.active = TRUE;//force renable
+    }
+    else if(g_iCade_used)//ensure is off
+    {
+        g_iCade_used = 0;
+        g_joy_used = 0;
+        myosd_num_of_joys = 0;
+        [self changeUI];
+    }
+#if TARGET_OS_TV
+    self.controllerUserInteractionEnabled = !myosd_inGame;
+#endif
+    [UIApplication sharedApplication].idleTimerDisabled = (myosd_inGame || g_joy_used) ? YES : NO;//so atract mode dont sleep
 }
 
 -(void)updateOptions{
@@ -813,7 +819,11 @@ void* app_Thread_Start(void* args)
                 change_pause(0);
                 [self endMenu];
             }]];
-            [self presentViewController:exitAlertController animated:YES completion:nil];
+            [self presentViewController:exitAlertController animated:YES completion:^{
+#if TARGET_OS_TV
+                self.controllerUserInteractionEnabled = YES;
+#endif
+            }];
         }
         else
         { 
@@ -978,14 +988,12 @@ void* app_Thread_Start(void* args)
     optionsController = [[TVOptionsController alloc] init];
     optionsController.emuController = self;
     menuButtonOnRemoteWasPressed = NO;
-//    self.controllerUserInteractionEnabled = NO;
 #endif
 }
 
 -(void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
 #if TARGET_OS_TV
-//    self.controllerUserInteractionEnabled = NO;
     [[WebServer sharedInstance] startUploader];
     [WebServer sharedInstance].webUploader.delegate = self;
 #endif
@@ -1139,6 +1147,7 @@ void* app_Thread_Start(void* args)
 #elif TARGET_OS_TV
     // for tvOS, use "landscape" only
     [self buildLandscape];
+    self.controllerUserInteractionEnabled = !myosd_inGame;
 #endif
     if ( g_joy_used ) {
         [hideShowControlsForLightgun setImage:[UIImage imageNamed:@"menu"] forState:UIControlStateNormal];
@@ -3338,10 +3347,8 @@ void myosd_handle_turbo() {
 #if TARGET_OS_TV
             BOOL isSiriRemote = MFIController.gamepad == nil && MFIController.extendedGamepad == nil && MFIController.microGamepad != nil;
             if ( isSiriRemote ) {
-//                self.controllerUserInteractionEnabled = YES;
                 menuButtonOnRemoteWasPressed = YES;
             } else {
-//                self.controllerUserInteractionEnabled = NO;
                 menuButtonOnRemoteWasPressed = NO;
                 if (!myosd_inGame) {
                     [self runMenu];
@@ -3463,9 +3470,11 @@ void myosd_handle_turbo() {
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Welcome to MAME for AppleTV" message:[NSString stringWithFormat:@"To transfer ROMs from your computer, go to one of these addresses on your web browser:\n\n%@\n\n%@",server.serverURL, server.bonjourServerURL] preferredStyle:UIAlertControllerStyleAlert];
     [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
         isPresentingAlert = NO;
+        self.controllerUserInteractionEnabled = !myosd_inGame;
     }]];
     [self presentViewController:alert animated:YES completion:^{
         isPresentingAlert = YES;
+        self.controllerUserInteractionEnabled = YES;
     }];
 #elif TARGET_OS_IOS
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Web Server Started" message:[NSString stringWithFormat:@"To transfer ROMs from your computer, go to one of these addresses on your web browser:\n\n%@\n\n%@",server.serverURL, server.bonjourServerURL] preferredStyle:UIAlertControllerStyleAlert];
@@ -3480,24 +3489,4 @@ void myosd_handle_turbo() {
 #endif
 }
 
-#pragma mark UIEvent
-#if TARGET_OS_TV
-//- (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
-//    BOOL menuPressed = NO;
-//    for (UIPress *press in presses) {
-//        if ( press.type == UIPressTypeMenu ) {
-//            menuPressed = YES;
-//        }
-//    }
-//    if ( menuPressed && self.controllerUserInteractionEnabled ) {
-////        self.controllerUserInteractionEnabled = YES;
-////        menuButtonOnRemoteWasPressed = NO;
-//        [super pressesBegan:presses withEvent:event];
-//        self.controllerUserInteractionEnabled = NO;
-//        return;
-//    }
-//    self.controllerUserInteractionEnabled = NO;
-//    menuButtonOnRemoteWasPressed = NO;
-//}
-#endif
 @end
