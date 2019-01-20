@@ -430,6 +430,7 @@ void* app_Thread_Start(void* args)
     [menu addAction:[UIAlertAction actionWithTitle:@"Upload Files" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
         [[WebServer sharedInstance] startUploader];
         [WebServer sharedInstance].webUploader.delegate = self;
+        [self done:self];
     }]];
 #endif
 
@@ -1057,14 +1058,14 @@ void* app_Thread_Start(void* args)
     optionsController = [[TVOptionsController alloc] init];
     optionsController.emuController = self;
     menuButtonOnRemoteWasPressed = NO;
-    self.controllerUserInteractionEnabled = NO;
+//    self.controllerUserInteractionEnabled = NO;
 #endif
 }
 
 -(void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
 #if TARGET_OS_TV
-    self.controllerUserInteractionEnabled = NO;
+//    self.controllerUserInteractionEnabled = NO;
     [[WebServer sharedInstance] startUploader];
     [WebServer sharedInstance].webUploader.delegate = self;
 #endif
@@ -3403,10 +3404,10 @@ void myosd_handle_turbo() {
 #if TARGET_OS_TV
             BOOL isSiriRemote = MFIController.gamepad == nil && MFIController.extendedGamepad == nil && MFIController.microGamepad != nil;
             if ( isSiriRemote ) {
-                self.controllerUserInteractionEnabled = YES;
+//                self.controllerUserInteractionEnabled = YES;
                 menuButtonOnRemoteWasPressed = YES;
             } else {
-                self.controllerUserInteractionEnabled = NO;
+//                self.controllerUserInteractionEnabled = NO;
                 menuButtonOnRemoteWasPressed = NO;
                 if (!myosd_inGame) {
                     [self runMenu];
@@ -3525,11 +3526,11 @@ void myosd_handle_turbo() {
 #pragma mark GCDWebServerDelegate
 - (void)webServerDidCompleteBonjourRegistration:(GCDWebServer*)server {
 #if TARGET_OS_TV
-    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Welcome to MAME for AppleTV" message:[NSString stringWithFormat:@"To transfer ROMs from your computer, go to this address on your web browser:\n\n%@",server.bonjourServerURL] preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Welcome to MAME for AppleTV" message:[NSString stringWithFormat:@"To transfer ROMs from your computer, go to one of these addresses on your web browser:\n\n%@\n\n%@",server.serverURL, server.bonjourServerURL] preferredStyle:UIAlertControllerStyleAlert];
     [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
     [self presentViewController:alert animated:YES completion:nil];
 #elif TARGET_OS_IOS
-    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Web Server Started" message:[NSString stringWithFormat:@"To transfer ROMs from your computer, go to this address on your web browser:\n\n%@",server.bonjourServerURL] preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Web Server Started" message:[NSString stringWithFormat:@"To transfer ROMs from your computer, go to one of these addresses on your web browser:\n\n%@\n\n%@",server.serverURL, server.bonjourServerURL] preferredStyle:UIAlertControllerStyleAlert];
     [alert addAction:[UIAlertAction actionWithTitle:@"Stop Server" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
         [[WebServer sharedInstance] webUploader].delegate = nil;
         [[WebServer sharedInstance] stopUploader];
