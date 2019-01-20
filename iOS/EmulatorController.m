@@ -3252,6 +3252,13 @@ void myosd_handle_turbo() {
             }
             if (element == gamepad.buttonY) {
                 if (gamepad.buttonY.pressed) {
+#if TARGET_OS_TV
+                    // Pressing Y while in game selection would show menu
+                    if (!myosd_inGame) {
+                        [self runMenu];
+                        return;
+                    }
+#endif
                     myosd_joy_status[index] |= MYOSD_Y;
                 }
                 else {
@@ -3350,10 +3357,6 @@ void myosd_handle_turbo() {
                 menuButtonOnRemoteWasPressed = YES;
             } else {
                 menuButtonOnRemoteWasPressed = NO;
-                if (!myosd_inGame) {
-                    [self runMenu];
-                    return;
-                }
             }
 #endif
             //Add Coin
