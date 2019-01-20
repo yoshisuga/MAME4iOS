@@ -15,7 +15,7 @@ This repo adds support for:
 - 64-bit binary to run on modern and future iOS devices
 - Supports modern device screen sizes, including iPhone X/XR/XS/XS Max and iPad Pro (new in 2018!)
 - tvOS (new in 2019!)
-- An in-app File Uploader to transfer files from your computer (new in 2019!)
+- An in-app web server to transfer files from your computer (new in 2019!)
 - Multiple mFi controllers (up to 4 with dual analog support - @DarrenBranford)
 - Supports using the touch screen as a lightgun (new in 2018!)
 - Turbo mode toggle for buttons (new in 2018!)
