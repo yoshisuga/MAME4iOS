@@ -56,10 +56,24 @@
     self.options = [[Options alloc] init];
 }
     
+-(void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [self refresh];
+}
+    
 -(void)dealloc {
     [self.tableView release];
     [self.options release];
     [super dealloc];
+}
+    
+-(void)refresh {
+    if ( self.options != nil ) {
+        [self.options release];
+        self.options = nil;
+    }
+    self.options = [[Options alloc] init];
+    [self.tableView reloadData];
 }
 
 +(UILabel*)labelForOnOffValue:(int)optionValue {
