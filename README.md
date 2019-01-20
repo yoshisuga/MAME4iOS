@@ -75,6 +75,23 @@ MAME for tvOS support was just added in early 2019, and it currently can run gam
 - No Siri remote support yet.
 - Pressing the "Menu" button on the Siri Remote does not exit the application yet (use the TV button and then Menu as a workaround)
 
+## Using MAME
+
+When you start MAME, you are presented with the default MAME UI, which is pretty utilitarian and is far from following the Apple Human User Interface Guidelines. But you're not here to nominate Design Awards, you're here to relive some memories!
+
+### MAME UI Controls
+
+- Onscreen D-Pad or mFi Controller D-Pad: Move through the menu
+- A Button: Start Game
+- X Button: Open Game Sub-menu: Add to Favorites or Remove Game
+- Y Button: Open the Settings menu (Apple TV only)
+
+### In-Game
+
+- Coin + Start together: Open MAME in-game menu for input remapping
+- Option: Open the Settings menu
+- Exit: Exit the game
+
 ## Adding ROMs to MAME
 
 ### iOS
@@ -93,7 +110,7 @@ Pair your mFi controller with your iOS device, and it should 'just work'.
 
 Up to 4 mfi controllers are supported.
 
-### Hotkey combinations
+### Hotkey combinations (while in-game)
 
 The following hotkey combinations are supported:
 
