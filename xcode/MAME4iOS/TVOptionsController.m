@@ -10,6 +10,7 @@
 #import "ListOptionController.h"
 #import "FilterOptionController.h"
 #import "DefaultOptionController.h"
+#import "TVInputOptionsController.h"
 
 @interface TVOptionsController ()
 
@@ -104,6 +105,8 @@
         return 8;
     } else if ( section == kDefaultsSection ) {
         return 1;
+    } else if ( section == kInputSection ) {
+        return 1;
     }
     return 0;
 }
@@ -171,6 +174,9 @@
     } else if ( indexPath.section == kDefaultsSection ) {
         cell.textLabel.text = @"Defaults";
         cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+    } else if ( indexPath.section == kInputSection ) {
+        cell.textLabel.text = @"Game Input";
+        cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     }
     return cell;
 }
@@ -233,6 +239,10 @@
         defaultOptController.emuController = self.emuController;
         [[self navigationController] pushViewController:defaultOptController animated:YES];
         [defaultOptController release];
+    } else if ( indexPath.section == kInputSection ) {
+        TVInputOptionsController *inputController = [[[TVInputOptionsController alloc] init] autorelease];
+        inputController.emuController = self.emuController;
+        [self.navigationController pushViewController:inputController animated:YES];
     }
     [self.options saveOptions];
 }
