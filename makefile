@@ -848,11 +848,17 @@ LDFLAGS += -arch armv7s
 endif
 
 ifdef tvOS
-CCOMFLAGS += -mtvos-version-min=9.0
-CCOMFLAGS += -fembed-bitcode
+CCOMFLAGS += -mtvos-version-min=9.0 -fembed-bitcode -ffast-math -fomit-frame-pointer -fstrict-aliasing \
+	-fexpensive-optimizations \
+	-arch=arm64 \
+	-O3 \
+	-fweb -frename-registers -falign-functions=16 -falign-loops -falign-labels -falign-jumps \
+	-finline -finline-functions -fno-common -fno-builtin -fsingle-precision-constant \
+	-Wno-sign-compare -Wunused -Wpointer-arith -Wcast-align -Waggregate-return -Wshadow
 else
 CCOMFLAGS += -miphoneos-version-min=5.0
 endif
+
 
 #LDFLAGS  += -march=armv7s
 #LDFLAGS  += -march=armv7-a
