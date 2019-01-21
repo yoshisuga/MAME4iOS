@@ -9,15 +9,25 @@
 			<key>orderHint</key>
 			<integer>1</integer>
 		</dict>
-		<key>MAME tvOS.xcscheme_^#shared#^_</key>
+		<key>MAME tvOS Debug.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>3</integer>
+			<integer>4</integer>
 		</dict>
-		<key>MAME4iOS 64-bit.xcscheme</key>
+		<key>MAME tvOS Release.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>5</integer>
+		</dict>
+		<key>MAME4iOS 64-bit Debug.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
 			<integer>2</integer>
+		</dict>
+		<key>MAME4iOS 64-bit Release.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>3</integer>
 		</dict>
 		<key>MAME4iOS.xcscheme</key>
 		<dict>
@@ -33,6 +43,11 @@
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
 		<key>925ABCA41E46DCC500997182</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>92ECB8EA21EA984D00D1E3D0</key>
 		<dict>
 			<key>primary</key>
 			<true/>

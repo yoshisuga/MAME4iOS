@@ -3469,8 +3469,18 @@ void myosd_handle_turbo() {
 
 #pragma mark GCDWebServerDelegate
 - (void)webServerDidCompleteBonjourRegistration:(GCDWebServer*)server {
+    NSMutableString *servers = [[[NSMutableString alloc] init] autorelease];
+    if ( server.serverURL != nil ) {
+        [servers appendString:[NSString stringWithFormat:@"%@",server.serverURL]];
+    }
+    if ( servers.length > 0 ) {
+        [servers appendString:@"\n\n"];
+    }
+    if ( server.bonjourServerURL != nil ) {
+        [servers appendString:[NSString stringWithFormat:@"%@",server.bonjourServerURL]];
+    }
 #if TARGET_OS_TV
-    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Welcome to MAME for AppleTV" message:[NSString stringWithFormat:@"To transfer ROMs from your computer, go to one of these addresses on your web browser:\n\n%@\n\n%@",server.serverURL, server.bonjourServerURL] preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Welcome to MAME for AppleTV" message:[NSString stringWithFormat:@"To transfer ROMs from your computer, go to one of these addresses on your web browser:\n\n%@",servers] preferredStyle:UIAlertControllerStyleAlert];
     [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
         isPresentingAlert = NO;
         self.controllerUserInteractionEnabled = !myosd_inGame;
@@ -3480,7 +3490,7 @@ void myosd_handle_turbo() {
         self.controllerUserInteractionEnabled = YES;
     }];
 #elif TARGET_OS_IOS
-    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Web Server Started" message:[NSString stringWithFormat:@"To transfer ROMs from your computer, go to one of these addresses on your web browser:\n\n%@\n\n%@",server.serverURL, server.bonjourServerURL] preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Web Server Started" message:[NSString stringWithFormat:@"To transfer ROMs from your computer, go to one of these addresses on your web browser:\n\n%@",servers] preferredStyle:UIAlertControllerStyleAlert];
     [alert addAction:[UIAlertAction actionWithTitle:@"Stop Server" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
         isPresentingAlert = NO;
         [[WebServer sharedInstance] webUploader].delegate = nil;
