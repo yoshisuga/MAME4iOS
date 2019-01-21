@@ -173,7 +173,7 @@
             value = op.mainPriority;
             break;
         case kTypeAutofireValue:
-            self.title = @"B as Autofire";
+            self.title = @"A as Autofire";
             value = op.autofire;
             break;
         case kTypeButtonSizeValue:

@@ -306,7 +306,7 @@
                 case 2:
                 {
                     
-                    cell.textLabel.text   = @"Button B as Autofire";
+                    cell.textLabel.text   = @"Button A as Autofire";
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                     cell.detailTextLabel.text = [arrayAutofireValue objectAtIndex:op.autofire];
                     break;

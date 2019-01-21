@@ -46,8 +46,8 @@ enum  {
 };
 
 static int mystate = STATE_NORMAL;
-static int B_pressed[4] ={0,0,0,0};
-static int old_B_pressed[4] = {0,0,0,0};
+static int A_pressed[4] ={0,0,0,0};
+static int old_A_pressed[4] = {0,0,0,0};
 static int enabled_autofire[4] = {0,0,0,0};
 
 // a single input device
@@ -473,10 +473,10 @@ void droid_ios_poll_input(running_machine *machine)
             
             if(myosd_inGame && !myosd_in_menu && myosd_autofire && !netplay)
             {
-                old_B_pressed[i] = B_pressed[i];
-                B_pressed[i] = _pad_status & MYOSD_B;
+                old_A_pressed[i] = A_pressed[i];
+                A_pressed[i] = _pad_status & MYOSD_A;
                 
-                if(!old_B_pressed[i] && B_pressed[i])
+                if(!old_A_pressed[i] && A_pressed[i])
                 {
                    enabled_autofire[i] = !enabled_autofire[i];
                 }
