@@ -8,7 +8,7 @@ MAME stands for Multi Arcade Machine Emulator, and lets you play arcade games fr
 
 More than 2000 games are supported, and the currently supported rom set version is 0.139.
 
-It has been updated to compile and run on Xcode 7+/iOS 9+ by Les Bird (http://www.lesbird.com/iMame4All/iMame4All_Xcode.html), and he has graciously added support for mFi Controllers.
+It has been updated to compile and runs on Xcode 10/iOS 9+ by Les Bird (http://www.lesbird.com/iMame4All/iMame4All_Xcode.html), and he has graciously added support for MFI Controllers.
 
 This repo adds support for:
 
@@ -16,28 +16,28 @@ This repo adds support for:
 - Supports modern device screen sizes, including iPhone X/XR/XS/XS Max and iPad Pro (new in 2018!)
 - tvOS (new in 2019!)
 - An in-app web server to transfer files from your computer (new in 2019!)
-- Multiple mFi controllers (up to 4 with dual analog support - @DarrenBranford)
+- Multiple MFI controllers (up to 4 with dual analog support - @DarrenBranford)
 - Supports using the touch screen as a lightgun (new in 2018!)
 - Turbo mode toggle for buttons (new in 2018!)
 - Touch analog for games like Arkanoid (new in 2018!)
-- Builds in Xcode 10, runs on iOS 12
+- Builds in Xcode 10, runs on latest iOS 12 version
 
 ## Installation / Sideloading
 
-### IPA 
+### IPA
 
 If you can re-sign using your certificate, here is a [link to the IPA (iOS)](https://mega.nz/#!vMQiBYiL!cSpW3IO0hqYQnqnC7_TTI_zL3LuPHD3UR0Gwkxt5y9U).
 
 ### Xcode
 
-Requirements: Mac with Xcode 10 or above
+Requirements: Mac 10.13.6 with Xcode 10 or above
 
-Building MAME4iOS requires a prebuilt MAME binary (It was not included in this repo due to its large size): 
+Building MAME4iOS requires a prebuilt MAME binary (It was not included in this repo due to its large size):
 
-1. _Make sure you have the latest version of the Xcode commandline tools installed:_<br> 
+1. _Make sure you have the latest version of the Xcode commandline tools installed:_<br>
 `xcode-select --install`
-2. In Terminal: `cd [path to MAME4iOS root]`<br> 
-  <sup>(alternatively, you can drag & drop a folder on Terminal after `cd` if don't know how to get the directory path)</sup><br> 
+2. In Terminal: `cd [path to MAME4iOS root]`<br>
+  <sup>(alternatively, you can drag & drop a folder on Terminal after `cd` if don't know how to get the directory path)</sup><br>
 3. Get MAME binary (build yourself or download):
     - Build (choose one of the following depending on your device):
         - iOS 64-bit: `./make-ios.sh`<br>
@@ -46,7 +46,7 @@ Building MAME4iOS requires a prebuilt MAME binary (It was not included in this r
         <sup>AppleTV (4/4k and above)</sup>
         - iOS 32-bit: `make iOSARMV7=1`        
         <sup>For older iOS devices. No longer actively supported.</sup>
-    - Download links: 
+    - Download links:
         - [iOS 64-bit (iPhone/iPad)](https://mega.nz/#!aMQUzSAI!O0JY8_LNIlnB0FDM_siN6iexHITR1bbNUciqVWU4VV8)
         - [tvOS 64-bit (AppleTV)](https://mega.nz/#!2J4HiKiS!mucjdW0L1BGZB-H_1hAMbHsauXhkhwg9WTyscD4_HCI)<br>
         <sup>Place the file in the root directory of the repo.</sup><br>
@@ -70,7 +70,7 @@ Even if you are not in the paid Apple Developer Program, you can sideload the ap
 
 MAME for tvOS support was just added in early 2019, and it currently can run games, but UI support and controller support is still in-progress. Most notably:
 
-- mFi controller is currently **required**
+- MFI controller is currently **required**
 - No Siri-remote-as-game-controller support yet
 
 ## Using MAME
@@ -79,7 +79,7 @@ When you start MAME, you are presented with the default MAME UI, which is pretty
 
 ### MAME UI Controls
 
-- Onscreen D-Pad or mFi Controller D-Pad: Move through the menu
+- Onscreen D-Pad or MFI Controller D-Pad: Move through the menu
 - A Button: Start Game
 - X Button: Open Game Sub-menu: Add to Favorites or Remove Game
 - Y Button: Open the Settings menu (Apple TV only)
@@ -102,11 +102,10 @@ You can also use the "Upload Files" option in the menu (from the options button 
 
 You can upload ROMs to MAME on your AppleTV using a computer. After MAME starts, you'll be shown a welcome screen with the address of the AppleTV that you can enter in your web browser. Add MAME ROMs to the `roms` directory using the provided web uploader.
 
-## mFi Controller Support
+## MFI Controller Support
 
-Pair your mFi controller with your iOS device, and it should 'just work'. 
-
-Up to 4 mfi controllers are supported.
+Pair your MFI controller with your iOS device, and it should 'just work'.
+Up to 4 MFI controllers are supported.
 
 ### Hotkey combinations (while in-game)
 
@@ -124,7 +123,7 @@ The right stick on the extended controller profile is fully supported, with supp
 
 ### Trigger buttons
 
-The trigger buttons are mapped to analog conrols and should be useful in assigning for pedal controls, for example.
+The trigger buttons are mapped to analog controls and should be useful in assigning for pedal controls, for example.
 
 ## Touch Screen Lightgun Support (new in 2018)
 
@@ -152,5 +151,5 @@ Also in Settings -> Game Input, you'll find a section called "Touch Analog" and 
 
 ## Planned Future Improvements
 
-- tvOS: Settings, Siri Remote Support
-- iOS: upload ROMS via web server
+- tvOS: Siri Remote Support
+- iOS : Ability to upload ROMS via internal webserver
