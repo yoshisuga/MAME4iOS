@@ -24,7 +24,7 @@ This repo adds support for:
 
 ## Installation / Sideloading
 
-### IPA 
+### IPA
 
 If you can re-sign using your certificate, here is a [link to the IPA (iOS)](https://mega.nz/#!vMQiBYiL!cSpW3IO0hqYQnqnC7_TTI_zL3LuPHD3UR0Gwkxt5y9U).
 
@@ -32,12 +32,12 @@ If you can re-sign using your certificate, here is a [link to the IPA (iOS)](htt
 
 Requirements: Mac with Xcode 10 or above
 
-Building MAME4iOS requires a prebuilt MAME binary (It was not included in this repo due to its large size): 
+Building MAME4iOS requires a prebuilt MAME binary (It was not included in this repo due to its large size):
 
-1. _Make sure you have the latest version of the Xcode commandline tools installed:_<br> 
+1. _Make sure you have the latest version of the Xcode commandline tools installed:_<br>
 `xcode-select --install`
-2. In Terminal: `cd [path to MAME4iOS root]`<br> 
-  <sup>(alternatively, you can drag & drop a folder on Terminal after `cd` if don't know how to get the directory path)</sup><br> 
+2. In Terminal: `cd [path to MAME4iOS root]`<br>
+  <sup>(alternatively, you can drag & drop a folder on Terminal after `cd` if don't know how to get the directory path)</sup><br>
 3. Get MAME binary (build yourself or download):
     - Build (choose one of the following depending on your device):
         - iOS 64-bit: `./make-ios.sh`<br>
@@ -46,7 +46,7 @@ Building MAME4iOS requires a prebuilt MAME binary (It was not included in this r
         <sup>AppleTV (4/4k and above)</sup>
         - iOS 32-bit: `make iOSARMV7=1`        
         <sup>For older iOS devices. No longer actively supported.</sup>
-    - Download links: 
+    - Download links:
         - [iOS 64-bit (iPhone/iPad)](https://mega.nz/#!aMQUzSAI!O0JY8_LNIlnB0FDM_siN6iexHITR1bbNUciqVWU4VV8)
         - [tvOS 64-bit (AppleTV)](https://mega.nz/#!2J4HiKiS!mucjdW0L1BGZB-H_1hAMbHsauXhkhwg9WTyscD4_HCI)<br>
         <sup>Place the file in the root directory of the repo.</sup><br>
@@ -104,7 +104,7 @@ You can upload ROMs to MAME on your AppleTV using a computer. After MAME starts,
 
 ## mFi Controller Support
 
-Pair your mFi controller with your iOS device, and it should 'just work'. 
+Pair your mFi controller with your iOS device, and it should 'just work'.
 
 Up to 4 mfi controllers are supported.
 
@@ -124,7 +124,7 @@ The right stick on the extended controller profile is fully supported, with supp
 
 ### Trigger buttons
 
-The trigger buttons are mapped to analog conrols and should be useful in assigning for pedal controls, for example.
+The trigger buttons are mapped to analog controls and should be useful in assigning for pedal controls, for example.
 
 ## Touch Screen Lightgun Support (new in 2018)
 
