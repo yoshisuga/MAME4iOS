@@ -1054,13 +1054,8 @@ void* app_Thread_Start(void* args)
  }
  */
 
--(void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {
-    
+-(void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {    
     [self changeUI];
-    if(menu!=nil)
-    {
-        [self runMenu];
-    }
 }
 
 #endif
