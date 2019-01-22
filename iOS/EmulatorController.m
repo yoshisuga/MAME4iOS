@@ -394,13 +394,14 @@ void* app_Thread_Start(void* args)
     [menu addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
         [self endMenu];
     }]];
+#ifndef TARGET_OS_TV // UIPopoverPresentationController does not exist on tvOS.	
     UIPopoverPresentationController *popoverController = menu.popoverPresentationController;
     if ( popoverController != nil ) {
         popoverController.sourceView = self.view;
         popoverController.sourceRect = CGRectMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds), 0.0f, 0.0f);
         popoverController.permittedArrowDirections = @[];
     }
-
+#endif
     [self presentViewController:menu animated:YES completion:^{
 #if TARGET_OS_TV
         self.controllerUserInteractionEnabled = YES;
