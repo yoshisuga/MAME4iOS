@@ -2431,8 +2431,8 @@ void myosd_handle_turbo() {
         CGFloat newY = (touchLoc.y - (screenView.bounds.size.height / 2.0f)) / (screenView.bounds.size.height / 2.0f) * -1.0f;
 //        NSLog(@"touch began light gun? loc: %f, %f",touchLoc.x, touchLoc.y);
 //        NSLog(@"new loc = %f , %f",newX,newY);
-        myosd_joy_status[0] |= MYOSD_B;
-        myosd_pad_status |= MYOSD_B;
+        myosd_joy_status[0] |= MYOSD_A;
+        myosd_pad_status |= MYOSD_A;
         if ( touchcount > 3 ) {
             // 4 touches = insert coin
             myosd_pad_status |= MYOSD_SELECT;
@@ -2447,8 +2447,8 @@ void myosd_handle_turbo() {
             // more than one touch means secondary button press
             myosd_pad_status |= MYOSD_X;
             myosd_joy_status[0] |= MYOSD_X;
-            myosd_pad_status &= ~MYOSD_B;
-            myosd_joy_status[0] &= ~MYOSD_B;
+            myosd_pad_status &= ~MYOSD_A;
+            myosd_joy_status[0] &= ~MYOSD_A;
         } else if ( touchcount == 1 ) {
             if ( g_pref_lightgun_bottom_reload && newY < -0.80 ) {
                 newY = -12.1f;
