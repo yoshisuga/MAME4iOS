@@ -1991,10 +1991,10 @@ void myosd_handle_turbo() {
     
     // light gun release?
     if ( myosd_light_gun == 1 && g_pref_lightgun_enabled ) {
+        myosd_pad_status &= ~MYOSD_A;
+        myosd_joy_status[0] &= ~MYOSD_A;
         myosd_pad_status &= ~MYOSD_B;
         myosd_joy_status[0] &= ~MYOSD_B;
-        myosd_pad_status &= ~MYOSD_X;
-        myosd_joy_status[0] &= ~MYOSD_X;
     }
     
     if ( g_pref_touch_analog_enabled && myosd_mouse == 1 ) {
@@ -2445,8 +2445,8 @@ void myosd_handle_turbo() {
             [self performSelector:@selector(releaseStart:) withObject:[NSNumber numberWithInteger:0] afterDelay:0.1];
         } else if ( touchcount > 1 ) {
             // more than one touch means secondary button press
-            myosd_pad_status |= MYOSD_X;
-            myosd_joy_status[0] |= MYOSD_X;
+            myosd_pad_status |= MYOSD_B;
+            myosd_joy_status[0] |= MYOSD_B;
             myosd_pad_status &= ~MYOSD_A;
             myosd_joy_status[0] &= ~MYOSD_A;
         } else if ( touchcount == 1 ) {
