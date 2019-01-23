@@ -12,9 +12,9 @@
 692,621,82,82//r1
 0,0,0,0//menu (select+ start) YO b + up
 830,660,70,70//button down left* X + A
-892,622,82,82//buttondown*  --> X
+792,622,82,82//buton left * --> X
 950,610,70,70//button down right X + B
-792,622,82,82//buton left * --> A
+892,622,82,82//buttondown*  --> A
 932,522,82,82//button right* -> B
 790,595,70,70//button up left* --> Y + A
 827,522,82,82//button up* --> Y
@@ -23,8 +23,8 @@
 915,16,103,43//rpad2
 0,0,0,0//showkyboard*
 920,510,105,105//B img
-880,620,105,105//X img
-780,620,105,105//A img
+780,620,105,105//X img
+880,620,105,105//A img
 815,510,105,105//Y img
 45,517,205,205//DPad img
 0,66,117,58//select img
@@ -37,4 +37,3 @@
 13,487,270,270//StickArea
 55//radio_stick
 50
-
