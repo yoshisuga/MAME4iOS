@@ -1054,7 +1054,7 @@ void* app_Thread_Start(void* args)
  }
  */
 
--(void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {    
+-(void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {
     [self changeUI];
 }
 
@@ -1361,9 +1361,9 @@ void myosd_handle_turbo() {
     {
         if(!change_layout &&  (g_device_is_landscape || (!g_device_is_landscape && g_pref_full_screen_port)))
         {
-            if(i==BTN_Y && (g_pref_full_num_buttons < 4 || !myosd_inGame))continue;
+            if(i==BTN_X && (g_pref_full_num_buttons < 4 && myosd_inGame))continue;
+            if(i==BTN_Y && (g_pref_full_num_buttons < 3 || !myosd_inGame))continue;
             if(i==BTN_B && (g_pref_full_num_buttons < 2 || !myosd_inGame))continue;
-            if(i==BTN_X && (g_pref_full_num_buttons < 3 && myosd_inGame))continue;
             if(i==BTN_A && (g_pref_full_num_buttons < 1 && myosd_inGame))continue;
             
             if(i==BTN_L1 && (g_pref_hide_LR || !myosd_inGame))continue;
