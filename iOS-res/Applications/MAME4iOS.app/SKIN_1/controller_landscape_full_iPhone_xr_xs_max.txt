@@ -37,3 +37,4 @@
 0,182,139,139//StickArea
 60//radio_stick
 45
+
