@@ -12,9 +12,9 @@
 0,0,0,0//RPad
 0,0,0,0//menu
 178,468,57,57//ButtonDownLeft (X + A)
-183,496,57,57//ButtonDown X*
+178,411,57,57//ButtonLeft X*
 244,510,57,57//ButtonDownRight (X + B)
-178,411,57,57//ButtonLeft A*
+183,496,57,57//ButtonDown A*
 252,476,57,57//ButtonRight B*
 188,384,57,57//ButtonUpLeft (A + Y)
 248,391,57,57//ButtonUp Y*
@@ -23,8 +23,8 @@
 158,336,78,36//R2*
 0,0,0,0//showkyboard
 240,462,83,83//B img*
-170,483,83,83//X img*
-165,398,83,83//A img*
+165,398,83,83//X img*
+170,483,83,83//A img*
 235,377,83,83//Y img*
 18,407,130,130//DPad img
 2,341,78,39//select img*
