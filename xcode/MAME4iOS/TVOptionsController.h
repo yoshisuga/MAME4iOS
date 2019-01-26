@@ -62,7 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
     NSArray *arrayEmuRes;
     NSArray *arrayFSValue;
     NSArray *arrayOverscanValue;
-    NSArray  *arrayEmuSpeed;
+    NSArray *arrayEmuSpeed;
 }
 
 @property (nonatomic, assign) EmulatorController *emuController;
