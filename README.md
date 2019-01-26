@@ -51,8 +51,8 @@ Building MAME4iOS requires a prebuilt MAME binary (It was not included in this r
         - [tvOS 64-bit (AppleTV)](https://mega.nz/#!2J4HiKiS!mucjdW0L1BGZB-H_1hAMbHsauXhkhwg9WTyscD4_HCI)<br>
         <sup>Place the file in the root directory of the repo.</sup><br>
 4. Choose the appropriate build target in Xcode:
-    - `MAME4iOS 64-bit` (iPhone/iPad)
-    - `MAME tvOS` (AppleTV)
+    - `MAME4iOS 64-bit Release` (iPhone/iPad)
+    - `MAME tvOS Release` (AppleTV)
     - `MAME4iOS 32-bit` (iPhone/iPad)
 
 Even if you are not in the paid Apple Developer Program, you can sideload the app using a Mac with Xcode.
