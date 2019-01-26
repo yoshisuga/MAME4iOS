@@ -2,7 +2,7 @@
 
 Original Author: David Valdeita (Seleuco)<br/>
 
-This is a port of MAME for iOS and tvOS.
+This is a port of MAME 0.139u1 for iOS and tvOS.
 
 MAME stands for Multi Arcade Machine Emulator, and lets you play arcade games from the past 30+ years on a device that fits in your pocket! My teenage self from decades ago would be replaying that ["mind blown GIF"](https://media0.giphy.com/media/xT0xeJpnrWC4XWblEk/giphy.gif) over and over again, but that GIF did not exist back then.
 
