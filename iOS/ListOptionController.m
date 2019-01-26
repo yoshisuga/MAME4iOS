@@ -226,9 +226,9 @@
         {
             NSString *s = [list objectAtIndex:value];
             NSString *l = [[s substringToIndex:1] lowercaseString];
-            int sec = [sections indexOfObject:l];
+            int sec = (uint32_t)[sections indexOfObject:l];
             NSArray *sectionArray = [list filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF beginswith[c] %@", [sections objectAtIndex: sec]]];
-            int row = [sectionArray indexOfObject:s];
+            int row = (uint32_t)[sectionArray indexOfObject:s];
             scrollIndexPath = [NSIndexPath indexPathForRow:row inSection:sec];
         }
         else
@@ -403,7 +403,7 @@
     }
     else
     {
-       int row = [indexPath row];
+       int row = (uint32_t)[indexPath row];
        if (row != value) {
            value = row;
        }

@@ -1652,7 +1652,7 @@ void myosd_handle_turbo() {
 	      else
 	        image2 =  [self loadImage:[NSString stringWithFormat: @"scanline-1.png"]];
 #elif TARGET_OS_TV
-           image2 =  [self loadImage:[NSString stringWithFormat: @"scanline-2.png"]];
+           image2 =  [self loadImage:[NSString stringWithFormat: @"scanline_tvOS201901.png"]];
 #endif
 	                        
 	      CGImageRef tile = CGImageRetain(image2.CGImage);
@@ -1663,7 +1663,7 @@ void myosd_handle_turbo() {
 	      else
 	         CGContextSetAlpha(uiContext,((float)22 / 100.0f));
 #elif TARGET_OS_TV
-           CGContextSetAlpha(uiContext,((float)10 / 100.0f));
+           CGContextSetAlpha(uiContext,((float)66 / 100.0f));
 
 #endif
 	              

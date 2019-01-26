@@ -2,7 +2,7 @@
 
 Original Author: David Valdeita (Seleuco)<br/>
 
-This is a port of MAME for iOS and tvOS.
+This is a port of MAME 0.139u1 for iOS and tvOS.
 
 MAME stands for Multi Arcade Machine Emulator, and lets you play arcade games from the past 30+ years on a device that fits in your pocket! My teenage self from decades ago would be replaying that ["mind blown GIF"](https://media0.giphy.com/media/xT0xeJpnrWC4XWblEk/giphy.gif) over and over again, but that GIF did not exist back then.
 
@@ -51,8 +51,8 @@ Building MAME4iOS requires a prebuilt MAME binary (It was not included in this r
         - [tvOS 64-bit (AppleTV)](https://mega.nz/#!2J4HiKiS!mucjdW0L1BGZB-H_1hAMbHsauXhkhwg9WTyscD4_HCI)<br>
         <sup>Place the file in the root directory of the repo.</sup><br>
 4. Choose the appropriate build target in Xcode:
-    - `MAME4iOS 64-bit` (iPhone/iPad)
-    - `MAME tvOS` (AppleTV)
+    - `MAME4iOS 64-bit Release` (iPhone/iPad)
+    - `MAME tvOS Release` (AppleTV)
     - `MAME4iOS 32-bit` (iPhone/iPad)
 
 Even if you are not in the paid Apple Developer Program, you can sideload the app using a Mac with Xcode.

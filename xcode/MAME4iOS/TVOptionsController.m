@@ -162,7 +162,7 @@
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
             cell.detailTextLabel.text = [arrayFSValue objectAtIndex:self.options.fsvalue];
         } else if ( indexPath.row == 5 ) {
-            cell.textLabel.text   = @"Force Pixel Aspect";
+            cell.textLabel.text   = @"Fill Screen";
             cell.accessoryView = [TVOptionsController labelForOnOffValue:self.options.forcepxa];
         } else if ( indexPath.row == 6 ) {
             cell.textLabel.text   = @"Show Info/Warnings";
