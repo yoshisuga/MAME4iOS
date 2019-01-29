@@ -394,7 +394,7 @@ void* app_Thread_Start(void* args)
     [menu addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
         [self endMenu];
     }]];
-#if TARGET_OS_IOS // UIPopoverPresentationController does not exist on tvOS.	
+#if TARGET_OS_IOS // UIPopoverPresentationController does not exist on tvOS.
     UIPopoverPresentationController *popoverController = menu.popoverPresentationController;
     if ( popoverController != nil ) {
         popoverController.sourceView = self.view;
@@ -3391,13 +3391,30 @@ void myosd_handle_turbo() {
                 }
             }
             // Show Action Sheet Menu
-            else if ( MFIController.gamepad.buttonY.pressed) {
+            else if ( MFIController.gamepad.buttonB.pressed) {
                 if (myosd_inGame && myosd_in_menu == 0) {
                     myosd_joy_status[index] &= ~MYOSD_START;
                     myosd_joy_status[index] &= ~MYOSD_Y;
                     [self runMenu];
                 }
             }
+            // Load State
+            else if ( MFIController.gamepad.buttonA.pressed ) {
+                myosd_joy_status[index] &= ~MYOSD_START;
+                myosd_joy_status[index] &= ~MYOSD_A;
+                myosd_pad_status &= ~MYOSD_START;
+                myosd_pad_status &= ~MYOSD_A;
+                myosd_loadstate = 1;
+            }
+            // Save State
+            else if ( MFIController.gamepad.buttonY.pressed ) {
+                myosd_joy_status[index] &= ~MYOSD_START;
+                myosd_joy_status[index] &= ~MYOSD_Y;
+                myosd_pad_status &= ~MYOSD_START;
+                myosd_pad_status &= ~MYOSD_Y;
+                myosd_savestate = 1;
+            }
+
         };
     }
     
