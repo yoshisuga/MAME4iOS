@@ -391,7 +391,7 @@ void* app_Thread_Start(void* args)
     // yoshisuga: removing this because its 2019 and no one cares about jailbroken devices anymore
 //    if(g_btjoy_available)
 //       [menu addButtonWithTitle:@"WiiMote/Sixaxis"];
-    [menu addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
+    [menu addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
         [self endMenu];
     }]];
 #if TARGET_OS_IOS // UIPopoverPresentationController does not exist on tvOS.
