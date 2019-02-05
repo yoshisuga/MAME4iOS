@@ -35,6 +35,8 @@
             return IPAD;
         } else if ( maxLength == 1112.0f ) {
             return IPAD_PRO_10_5;
+        } else if ( maxLength == 1194.0f ) {
+            return IPAD_PRO_11;
         } else if ( maxLength == 1366.0f ) {
             return IPAD_PRO_12_9;
         } else {

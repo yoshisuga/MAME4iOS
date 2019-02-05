@@ -2542,6 +2542,8 @@ void myosd_handle_turbo() {
             deviceName = @"iPad_pro_12_9";
         } else if ( screenType == IPAD_PRO_10_5 ) {
             deviceName = @"iPad_pro_10_5";
+        } else if ( screenType == IPAD_PRO_11 ) {
+            deviceName = @"iPad_pro_11";
         } else if ( screenType == IPAD ) {
             deviceName = @"iPad";
         } else {
@@ -2696,6 +2698,8 @@ void myosd_handle_turbo() {
             fp  = [self loadFile:"config_iPad_pro_12_9.txt"];
         } else if ( screenType == IPAD_PRO_10_5 ) {
             fp  = [self loadFile:"config_iPad_pro_10_5.txt"];
+        } else if ( screenType == IPAD_PRO_11 ) {
+            fp  = [self loadFile:"config_iPad_pro_11.txt"];
         } else if ( screenType == IPAD ) {
             fp = [self loadFile:"config_iPad.txt"];
         } else {
