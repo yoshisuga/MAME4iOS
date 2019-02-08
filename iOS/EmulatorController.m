@@ -1854,7 +1854,6 @@ void myosd_handle_turbo() {
            NSString *imgName;
            if(btnStates[i] == BUTTON_PRESS)
            {
-               NSLog(@"button pressed");
 #if TARGET_OS_IOS
                [self.impactFeedback impactOccurred];
 #endif
@@ -1862,7 +1861,6 @@ void myosd_handle_turbo() {
            }
            else
            {
-               NSLog(@"button released");
 #if TARGET_OS_IOS
                [self.selectionFeedback selectionChanged];
 #endif
