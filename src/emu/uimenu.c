@@ -3782,8 +3782,8 @@ static void menu_select_game_populate(running_machine *machine, ui_menu *menu, s
 	if (matchcount == 0)
 	{
 #ifdef IOS
-        ui_menu_item_append(menu, "No games found. Place your MAME-titled zipped roms in to the roms folder.\n\n"
-                                 "You can upload roms files using the integrated web server. Connect your device to a WI-FI network, press Option > Upload Files and follow the instrutions on the display."
+        ui_menu_item_append(menu, "No games found. Place your MAME-titled zipped roms in the roms folder.\n\n"
+                                 "You can upload roms files using the integrated web server. Connect your device to a Wi-Fi network, press Option > Upload Files and follow the instructions on the display."
 								  , NULL, MENU_FLAG_MULTILINE | MENU_FLAG_REDTEXT, NULL);
 #else
        ui_menu_item_append(menu, "No games found. After installing, place your MAME-titled zipped roms in MAME4droid ROMs folder\n\n"
