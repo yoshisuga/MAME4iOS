@@ -7,6 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9205D7CE22AAD30300CDF120 /* GCAlertView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9205D7CD22AAD30300CDF120 /* GCAlertView.xib */; };
+		9205D7CF22AAD30300CDF120 /* GCAlertView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9205D7CD22AAD30300CDF120 /* GCAlertView.xib */; };
+		9205D7D222AAD55100CDF120 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9205D7D122AAD55100CDF120 /* Images.xcassets */; };
+		9205D7D322AAD55100CDF120 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9205D7D122AAD55100CDF120 /* Images.xcassets */; };
+		9205D7D422AAD55100CDF120 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9205D7D122AAD55100CDF120 /* Images.xcassets */; };
+		9205D7D722AADB7A00CDF120 /* GCAlertView.m in Sources */ = {isa = PBXBuildFile; fileRef = 9205D7D622AADB7A00CDF120 /* GCAlertView.m */; };
+		9205D7D822AADB7A00CDF120 /* GCAlertView.m in Sources */ = {isa = PBXBuildFile; fileRef = 9205D7D622AADB7A00CDF120 /* GCAlertView.m */; };
 		920BBDEE201FC29700AE7D50 /* dpad.png in Resources */ = {isa = PBXBuildFile; fileRef = 920BBDED201FC29700AE7D50 /* dpad.png */; };
 		920BBDEF201FC29700AE7D50 /* dpad.png in Resources */ = {isa = PBXBuildFile; fileRef = 920BBDED201FC29700AE7D50 /* dpad.png */; };
 		920BBDF120210C3800AE7D50 /* menu.png in Resources */ = {isa = PBXBuildFile; fileRef = 920BBDF020210C3700AE7D50 /* menu.png */; };
@@ -277,6 +284,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		9205D7CD22AAD30300CDF120 /* GCAlertView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = GCAlertView.xib; sourceTree = "<group>"; };
+		9205D7D122AAD55100CDF120 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		9205D7D522AADB7A00CDF120 /* GCAlertView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GCAlertView.h; sourceTree = "<group>"; };
+		9205D7D622AADB7A00CDF120 /* GCAlertView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GCAlertView.m; sourceTree = "<group>"; };
 		920BBDED201FC29700AE7D50 /* dpad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = dpad.png; sourceTree = "<group>"; };
 		920BBDF020210C3700AE7D50 /* menu.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menu.png; sourceTree = "<group>"; };
 		921CC321216A903600A39154 /* config_iPad_pro_10_5.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = config_iPad_pro_10_5.txt; sourceTree = "<group>"; };
@@ -675,6 +686,10 @@
 				CEBFBC0E163C5BD300A05CD0 /* resources */,
 				92A533D521EE601D0089FBB9 /* WebServer.h */,
 				92A533D621EE601D0089FBB9 /* WebServer.m */,
+				9205D7CD22AAD30300CDF120 /* GCAlertView.xib */,
+				9205D7D122AAD55100CDF120 /* Images.xcassets */,
+				9205D7D522AADB7A00CDF120 /* GCAlertView.h */,
+				9205D7D622AADB7A00CDF120 /* GCAlertView.m */,
 			);
 			name = RELOADED;
 			sourceTree = "<group>";
@@ -940,6 +955,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 				Base,
 			);
@@ -962,11 +978,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				9268D84D21661E3800AB0470 /* config_iPhone_x.txt in Resources */,
+				9205D7CF22AAD30300CDF120 /* GCAlertView.xib in Resources */,
 				925ABCC71E46DCC500997182 /* InfoPlist.strings in Resources */,
 				921CC326216A936800A39154 /* config_iPad_pro_12_9.txt in Resources */,
 				925ABCC81E46DCC500997182 /* Default.png in Resources */,
 				925ABCC91E46DCC500997182 /* Default@2x.png in Resources */,
 				92ECDA88215AEF5D00E4303A /* Launch Screen.storyboard in Resources */,
+				9205D7D322AAD55100CDF120 /* Images.xcassets in Resources */,
 				9268D85321661F1700AB0470 /* config_iPhone_6_plus.txt in Resources */,
 				925ABCCA1E46DCC500997182 /* Default-568h@2x.png in Resources */,
 				9268D84A21661CA500AB0470 /* config_iPhone_xr_xs_max.txt in Resources */,
@@ -1011,6 +1029,7 @@
 				B5FAE31721FCDE0C003F44D0 /* scanline_tvOS201901.png in Resources */,
 				926C770821F26DFD00103EDE /* scanline-1.png in Resources */,
 				92A533D121EBDDF20089FBB9 /* GCDWebUploader.bundle in Resources */,
+				9205D7D422AAD55100CDF120 /* Images.xcassets in Resources */,
 				926C771321F39D2F00103EDE /* hiscore.dat in Resources */,
 				B5FAE31921FCE64D003F44D0 /* MAME_tvOS.lsr in Resources */,
 			);
@@ -1060,6 +1079,7 @@
 				9268D85221661F1700AB0470 /* config_iPhone_6_plus.txt in Resources */,
 				CEE680A01635BA7000051BC2 /* Default-568h@2x.png in Resources */,
 				9268D84921661CA500AB0470 /* config_iPhone_xr_xs_max.txt in Resources */,
+				9205D7D222AAD55100CDF120 /* Images.xcassets in Resources */,
 				CEBFBC20163C5DA100A05CD0 /* border-iPad.png in Resources */,
 				CEBFBC21163C5DA100A05CD0 /* config_iPad.txt in Resources */,
 				CEBFBC22163C5DA100A05CD0 /* config_iPhone.txt in Resources */,
@@ -1070,6 +1090,7 @@
 				920BBDEE201FC29700AE7D50 /* dpad.png in Resources */,
 				CEBFBC2D163C5DA100A05CD0 /* SKIN_1 in Resources */,
 				CEBFBC2E163C5DA100A05CD0 /* SKIN_2 in Resources */,
+				9205D7CE22AAD30300CDF120 /* GCAlertView.xib in Resources */,
 				9268D85521661F8E00AB0470 /* config_iPhone_6.txt in Resources */,
 				CEBFBC2F163C5DA100A05CD0 /* SKIN_3 in Resources */,
 				CE8D87D8164FE4BE00685BC4 /* config_iPhone_5.txt in Resources */,
@@ -1102,6 +1123,7 @@
 				92A533D321EBDDF20089FBB9 /* GCDWebUploader.m in Sources */,
 				92A533C921EBDBAD0089FBB9 /* GCDWebServerFileRequest.m in Sources */,
 				925ABCA81E46DCC500997182 /* ListOptionController.m in Sources */,
+				9205D7D822AADB7A00CDF120 /* GCAlertView.m in Sources */,
 				92A533C621EBDBAD0089FBB9 /* GCDWebServerDataRequest.m in Sources */,
 				92A533A821EBDBAD0089FBB9 /* GCDWebServerRequest.m in Sources */,
 				925ABCA91E46DCC500997182 /* OptionsController.m in Sources */,
@@ -1204,6 +1226,7 @@
 				92A533D221EBDDF20089FBB9 /* GCDWebUploader.m in Sources */,
 				92A533C821EBDBAD0089FBB9 /* GCDWebServerFileRequest.m in Sources */,
 				CEAC6C4416AAA95800AF3275 /* ListOptionController.m in Sources */,
+				9205D7D722AADB7A00CDF120 /* GCAlertView.m in Sources */,
 				92A533C521EBDBAD0089FBB9 /* GCDWebServerDataRequest.m in Sources */,
 				92A533A721EBDBAD0089FBB9 /* GCDWebServerRequest.m in Sources */,
 				CEAC6C4616AAA95D00AF3275 /* OptionsController.m in Sources */,

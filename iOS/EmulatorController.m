@@ -55,6 +55,7 @@
 #import "LayoutView.h"
 #import "LayoutData.h"
 #import "NetplayGameKit.h"
+#import "GCAlertView.h"
 #endif
 
 #if TARGET_OS_TV
@@ -228,6 +229,7 @@ void* app_Thread_Start(void* args)
     BOOL isPresentingAlert;
 #if TARGET_OS_IOS
     OptionsController *optionsController;
+    GCAlertView *gcExitAlertView;
 #elif TARGET_OS_TV
     TVOptionsController *optionsController;
     BOOL menuButtonOnRemoteWasPressed;
@@ -763,37 +765,42 @@ void* app_Thread_Start(void* args)
     
 }
 
-//- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
-//{
-//    if(change_layout)
-//    {
-//        if(buttonIndex == 0)
-//           [LayoutData removeLayoutData];
-//
-//        change_layout = 0;
-//
-//        [self done:self];
-//
-//    }
-//    else
-//    {
-//
-//        myosd_exitPause = 1;
-//        g_emulation_paused = 0;
-//        change_pause(0);
-//        if(g_menu_option == MENU_EXIT)
-//        {
-//            [self endMenu];
-//        }
-//
-//        if(buttonIndex == 0 && wantExit )
-//        {
-//            myosd_exitGame = 1;
-//        }
-//        actionPending=0;
-//        wantExit = 0;
-//    }
-//}
+- (void) exitAlertActionExit {
+    myosd_exitPause = 1;
+    g_emulation_paused = 0;
+    change_pause(0);
+    [self endMenu];
+    myosd_exitGame = 1;
+    actionPending=0;
+    wantExit = 0;
+}
+
+- (void) exitAlertActionCancel {
+    myosd_exitPause = 1;
+    g_emulation_paused = 0;
+    change_pause(0);
+    [self endMenu];
+}
+
+- (void) gameControllerMaybeHandleGCExitAlertWithCommand:(BOOL)doExit {
+#if TARGET_OS_TV
+    return;
+#else
+    if ( gcExitAlertView == nil || gcExitAlertView.hidden == YES ) {
+        return;
+    }
+    if ( doExit ) {
+        [self exitAlertActionExit];
+    } else {
+        [self exitAlertActionCancel];
+    }
+    [UIView animateWithDuration:0.25 animations:^{
+        gcExitAlertView.alpha = 0.0;
+    } completion:^(BOOL finished) {
+        gcExitAlertView.hidden = YES;
+    }];
+#endif
+}
 
 - (void)handle_MENU
 {
@@ -811,21 +818,22 @@ void* app_Thread_Start(void* args)
             g_emulation_paused = 1;
             change_pause(1);
             
+#if TARGET_OS_IOS
+            if ( [GCController controllers].count > 0 ) {
+                gcExitAlertView.hidden = NO;
+                [UIView animateWithDuration:0.5 animations:^{
+                    gcExitAlertView.alpha = 1.0;
+                }];
+                return;
+            }
+#endif
+            
             UIAlertController *exitAlertController = [UIAlertController alertControllerWithTitle:@"" message:@"Are you sure you want to exit the game?" preferredStyle:UIAlertControllerStyleAlert];
             [exitAlertController addAction:[UIAlertAction actionWithTitle:@"Yes" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-                myosd_exitPause = 1;
-                g_emulation_paused = 0;
-                change_pause(0);
-                [self endMenu];
-                myosd_exitGame = 1;
-                actionPending=0;
-                wantExit = 0;
+                [self exitAlertActionExit];
             }]];
             [exitAlertController addAction:[UIAlertAction actionWithTitle:@"No" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-                myosd_exitPause = 1;
-                g_emulation_paused = 0;
-                change_pause(0);
-                [self endMenu];
+                [self exitAlertActionCancel];
             }]];
             [self presentViewController:exitAlertController animated:YES completion:^{
 #if TARGET_OS_TV
@@ -843,7 +851,7 @@ void* app_Thread_Start(void* args)
     {
          [self runMenu];
     }					
-}	
+}
 
 - (void)loadView {
 
@@ -992,6 +1000,17 @@ void* app_Thread_Start(void* args)
 #if TARGET_OS_IOS
     optionsController =[[OptionsController alloc] init];
     optionsController.emuController = self;
+    
+    gcExitAlertView = [[[NSBundle mainBundle] loadNibNamed:@"GCAlertView" owner:self options:nil] firstObject];
+    gcExitAlertView.translatesAutoresizingMaskIntoConstraints = NO;
+    gcExitAlertView.hidden = YES;
+    gcExitAlertView.alpha = 0.0;
+    gcExitAlertView.messageLabel.text = @"Exit Game?";
+    [self.view addSubview:gcExitAlertView];
+    [[self.view.centerXAnchor constraintEqualToAnchor:gcExitAlertView.centerXAnchor] setActive:YES];
+    [[self.view.centerYAnchor constraintEqualToAnchor:gcExitAlertView.centerYAnchor] setActive:YES];
+    [[gcExitAlertView.widthAnchor constraintEqualToConstant:250.0] setActive:YES];
+    [[gcExitAlertView.heightAnchor constraintEqualToConstant:100.0] setActive:YES];
 #elif TARGET_OS_TV
     optionsController = [[TVOptionsController alloc] init];
     optionsController.emuController = self;
@@ -1192,6 +1211,9 @@ void* app_Thread_Start(void* args)
             mfiBtnStates[i][j] = 0;
         }
     }
+#if TARGET_OS_IOS
+    [self.view bringSubviewToFront:gcExitAlertView];
+#endif
 
    [pool release];
 }
@@ -3177,6 +3199,7 @@ void myosd_handle_turbo() {
                     myosd_joy_status[index] |= MYOSD_A;
                 }
                 else {
+                    [self gameControllerMaybeHandleGCExitAlertWithCommand:YES];
                     myosd_joy_status[index] &= ~MYOSD_A;
                 }
             }
@@ -3185,6 +3208,7 @@ void myosd_handle_turbo() {
                     myosd_joy_status[index] |= MYOSD_B;
                 }
                 else {
+                    [self gameControllerMaybeHandleGCExitAlertWithCommand:NO];
                     myosd_joy_status[index] &= ~MYOSD_B;
                 }
             }
@@ -3236,6 +3260,7 @@ void myosd_handle_turbo() {
                     myosd_joy_status[index] |= MYOSD_A;
                 }
                 else {
+                    [self gameControllerMaybeHandleGCExitAlertWithCommand:YES];
                     myosd_joy_status[index] &= ~MYOSD_A;
                 }
             }
@@ -3244,6 +3269,7 @@ void myosd_handle_turbo() {
                     myosd_joy_status[index] |= MYOSD_B;
                 }
                 else {
+                    [self gameControllerMaybeHandleGCExitAlertWithCommand:NO];
                     myosd_joy_status[index] &= ~MYOSD_B;
                 }
             }
@@ -3499,6 +3525,17 @@ void myosd_handle_turbo() {
     if(!controllers.count){
         g_joy_used = 0;
         myosd_num_of_joys = 0;
+
+#if TARGET_OS_IOS
+        if ( gcExitAlertView != nil && !gcExitAlertView.hidden) {
+            [self exitAlertActionCancel];
+            [UIView animateWithDuration:0.25 animations:^{
+                gcExitAlertView.alpha = 0.0;
+            } completion:^(BOOL finished) {
+                gcExitAlertView.hidden = YES;
+            }];
+        }
+#endif
         
         [self changeUI];
     }

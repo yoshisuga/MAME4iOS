@@ -112,8 +112,8 @@ BASE_DEV=/Applications/Xcode.app/Contents/Developer/Platforms/AppleTVOS.platform
 endif
 
 else
-MYPREFIX=/usr/bin/
-#MYPREFIX=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin/
+#MYPREFIX=/usr/bin/
+MYPREFIX=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin/
 BASE_DEV=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk
 
 endif
