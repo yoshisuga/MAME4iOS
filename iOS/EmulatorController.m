@@ -3293,6 +3293,24 @@ void myosd_handle_turbo() {
             if (element == gamepad.rightTrigger) {
                 joy_analog_x[index][3] = gamepad.rightTrigger.value;
             }
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 120100 || __TV_OS_VERSION_MAX_ALLOWED >= 120100
+            if (@available(iOS 12.1, *)) {
+                if ( element == gamepad.leftThumbstickButton ) {
+                    if ( gamepad.leftThumbstickButton.pressed ) {
+                        myosd_joy_status[index] |= MYOSD_L3;
+                    } else {
+                        myosd_joy_status[index] &= ~MYOSD_L3;
+                    }
+                }
+                if ( element == gamepad.rightThumbstickButton ) {
+                    if ( gamepad.rightThumbstickButton.pressed ) {
+                        myosd_joy_status[index] |= MYOSD_R3;
+                    } else {
+                        myosd_joy_status[index] &= ~MYOSD_R3;
+                    }
+                }
+            }
+#endif            
         };
         
         MFIController.extendedGamepad.leftThumbstick.valueChangedHandler = ^ (GCControllerDirectionPad *directionpad, float xValue, float yValue) {
