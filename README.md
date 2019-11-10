@@ -13,14 +13,14 @@ It has been updated to compile and runs on Xcode 10/iOS 9+ by Les Bird (http://w
 This repo adds support for:
 
 - 64-bit binary to run on modern and future iOS devices
-- Supports modern device screen sizes, including iPhone X/XR/XS/XS Max and iPad Pro (new in 2018!)
+- Supports modern device screen sizes, including iPhone X/XR/XS/XS Max and iPad Pro
 - tvOS (new in 2019!)
 - An in-app web server to transfer files from your computer (new in 2019!)
 - Multiple MFI controllers (up to 4 with dual analog support - @DarrenBranford)
-- Supports using the touch screen as a lightgun (new in 2018!)
-- Turbo mode toggle for buttons (new in 2018!)
-- Touch analog for games like Arkanoid (new in 2018!)
-- Builds in Xcode 10, runs on latest iOS 12 version
+- Supports using the touch screen as a lightgun
+- Turbo mode toggle for buttons
+- Touch analog for games like Arkanoid
+- Builds in Xcode 11, runs on latest iOS 13 version
 
 ## Installation / Sideloading
 
