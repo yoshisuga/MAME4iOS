@@ -2915,14 +2915,15 @@ void myosd_handle_turbo() {
     {
         UIAlertController *progressAlert = [UIAlertController alertControllerWithTitle:@"Moving Newer ROMs" message:@"Please wait..." preferredStyle:UIAlertControllerStyleAlert];
                 UIProgressView *progressView = [[UIProgressView alloc] initWithFrame:CGRectMake(30.0f, 80.0f, 225.0f, 90.0f)];
-        [progressAlert addSubview:progressView];
+        [progressAlert.view addSubview:progressView];
 #if TARGET_OS_IOS
         [progressView setProgressViewStyle: UIProgressViewStyleBar];
 #elif TARGET_OS_TV
         [progressView setProgressViewStyle: UIProgressViewStyleDefault];
 #endif
         
-        [progressAlert show];
+//        [progressAlert show];
+        [self presentViewController:progressAlert animated:YES completion:nil];
         [progressView setProgress:0.0f];
         
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -2960,7 +2961,8 @@ void myosd_handle_turbo() {
                 });
             }
             dispatch_async(dispatch_get_main_queue(), ^{
-                [progressAlert dismissWithClickedButtonIndex:0 animated:YES];
+//                [progressAlert dismissWithClickedButtonIndex:0 animated:YES];
+                [progressAlert dismissViewControllerAnimated:YES completion:nil];
                 [progressAlert release];
                 [progressView release];
                 if(err == FALSE)
