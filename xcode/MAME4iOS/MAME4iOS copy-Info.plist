@@ -59,6 +59,8 @@
 	<true/>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>We need bluetooth for peer play</string>
+	<key>NSAllowsArbitraryLoads</key>
+<true/>
 	<key>UIStatusBarHidden~ipad</key>
 	<true/>
 	<key>UISupportedInterfaceOrientations</key>

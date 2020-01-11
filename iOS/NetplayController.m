@@ -147,6 +147,7 @@ static void netplay_warn_callback(char *msg)
                                                               target: emuController  action:  @selector(done:) ];
     self.navigationItem.rightBarButtonItem = button;
     [button release];
+    
 }
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
@@ -360,13 +361,14 @@ static void netplay_warn_callback(char *msg)
             if(![self ensureWIFI])
                 return;
             
-            [self startSocket];
+//            [self startSocket];
+            [self startGamekit];
         }
         else
         {            
             
-            if(![self ensureBluetooth])
-                return;
+//            if(![self ensureBluetooth])
+//                return;
             
             [self startGamekit];
         }
@@ -380,17 +382,18 @@ static void netplay_warn_callback(char *msg)
         {
             if(![self ensureWIFI])
                 return;
+//
+//            if(![self ensurePeerAddr])
+//                return;
             
-            if(![self ensurePeerAddr])
-                return;
-            
-            [self joinSocket];
+//            [self joinSocket];
+            [self joinGamekit];
         }
         else
         {
             
-            if(![self ensureBluetooth])
-                return;
+//            if(![self ensureBluetooth])
+//                return;
 
             [self joinGamekit];
         }
@@ -559,16 +562,15 @@ static void netplay_warn_callback(char *msg)
 }
 
 -(bool)ensureBluetooth{
-    
     bool first = false;
     if(btMgr==nil)
     {
-        btMgr = [[CBCentralManager alloc] initWithDelegate:self queue: dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)];
+//        btMgr = [[CBCentralManager alloc] initWithDelegate:self queue: dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)];
         first = true;
     }
     
-    while (btState==BluetoothNotSet)
-         usleep(100);
+//    while (btState==BluetoothNotSet)
+//         usleep(100);
     
     if(btState == BluetoothOff)
     {

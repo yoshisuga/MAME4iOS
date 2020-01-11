@@ -81,6 +81,9 @@ static int send_pkt_data(netplay_t *handle,netplay_msg_t *msg)
 
 @synthesize session;
 @synthesize connected;
+@synthesize peerId;
+@synthesize browser;
+@synthesize assistant;
 
 +(NetplayGameKit *) sharedInstance{
     @synchronized(self){
@@ -97,6 +100,7 @@ static int send_pkt_data(netplay_t *handle,netplay_msg_t *msg)
         peers=[[NSMutableArray alloc] init];
         session = nil;
         timer = nil;
+        peerId = nil;
         
         /*
         NSNotificationCenter *defaultCenter = [NSNotificationCenter defaultCenter];
@@ -129,20 +133,22 @@ static int send_pkt_data(netplay_t *handle,netplay_msg_t *msg)
     
     [self teardownConnection];
     
-    
-    session = server ? [[GKSession alloc] initWithSessionID:@"com.seleuco.mame4ios" displayName:nil
-                                                sessionMode: GKSessionModeServer] :
-                       [[GKSession alloc] initWithSessionID:@"com.seleuco.mame4ios" displayName:nil
-                             sessionMode: GKSessionModeClient];
-    
-    //session = [[GKSession alloc] initWithSessionID:@"com.seleuco.mame4ios" displayName:nil
-    //                                  sessionMode: GKSessionModePeer];
+    peerId = [[MCPeerID alloc] initWithDisplayName:[NSString stringWithFormat:@"Gamer+%d",server]];
+    session =  [[MCSession alloc] initWithPeer:peerId securityIdentity:nil encryptionPreference:nil];
 
     session.delegate = self;
-    //session.disconnectTimeout = 20;
-    [session setDataReceiveHandler:self withContext:nil];
     
-    session.available = YES;
+    
+//    if(server){
+        assistant = [[MCNearbyServiceAdvertiser alloc] initWithPeer:peerId discoveryInfo:nil serviceType:@"MAME-NET"];
+        assistant.delegate = self;
+        [assistant startAdvertisingPeer];
+
+//    }else{
+        browser = [[MCNearbyServiceBrowser alloc] initWithPeer:peerId serviceType:@"MAME-NET"];
+        browser.delegate = self;
+        [browser startBrowsingForPeers];
+//    }
     
     timer = [NSTimer scheduledTimerWithTimeInterval: 2.0
                                                   target: self
@@ -158,11 +164,27 @@ static int send_pkt_data(netplay_t *handle,netplay_msg_t *msg)
     connected = false;
     handle->has_connection = false;
     
+    if(peerId != nil){
+        [peerId release];
+        peerId = nil;
+    }
+    if(browser != nil){
+        [browser stopBrowsingForPeers];
+        [browser release];
+        browser = nil;
+    }
+    if(assistant != nil){
+        [assistant stopAdvertisingPeer];
+        [assistant release];
+        assistant = nil;
+    }
+//
     if(session != nil)
     {
-        [session disconnectFromAllPeers];
+//        [session disconnectFromAllPeers];
+        [session disconnect];
         [peers removeAllObjects];
-        session.available = NO;
+//        session.available = NO;
         session.delegate = nil;
         [session release];
         session = nil;
@@ -184,63 +206,147 @@ static int send_pkt_data(netplay_t *handle,netplay_msg_t *msg)
 -(void)sendData:(NSData *)data{
    // NSError *error = nil;
    //[session sendDataToAllPeers:data withDataMode:/*GKSendDataReliable*/GKSendDataUnreliable error:&error];
-    [session sendData:data toPeers:peers withDataMode: /*GKSendDataReliable*/ GKSendDataUnreliable error:nil];
+//    [session sendData:data toPeers:peers withDataMode: /*GKSendDataReliable*/ GKSendDataUnreliable error:nil];
     //if(error!=nil)
         //NSLog(@"Send data error: %@", [error localizedDescription]);
+    
+     NSError *error = nil;
+    [session sendData:data toPeers:peers withMode:MCSessionSendDataUnreliable error:&error];
+    if(error != nil){
+        NSLog(@"Send data error: %@", [error localizedDescription]);
+    }
 }
 
-- (void)receiveData:(NSData *)data fromPeer:(NSString *)peer inSession: (GKSession *)session context:(void *)context
-{
+//- (void)receiveData:(NSData *)data fromPeer:(NSString *)peer inSession: (GKSession *)session context:(void *)context
+//{
+//    _data = data;
+//
+//    netplay_t *handle = netplay_get_handle();
+//    netplay_read_data(handle);
+//}
+
+#pragma mark -
+#pragma mark MCSessionDelegate
+- (void) session:(MCSession *)session didReceiveData:(NSData *)data fromPeer:(MCPeerID *)peerID{
     _data = data;
-    
     netplay_t *handle = netplay_get_handle();
     netplay_read_data(handle);
+}
+
+
+- (void) session:(MCSession *)session peer:(MCPeerID *)peerID didChangeState:(MCSessionState)state{
+    NSString *str = [NSString stringWithFormat:@"didChangeState %@",peerID.displayName];
+    NSLog(@"%@", str);
+
+    if(state == MCSessionStateConnected){
+        NSLog(@"Recieved MCSessionStateConnected");
+        if([peers count]==0){
+            netplay_t *handle = netplay_get_handle();
+            handle->has_connection = true;
+            [peers addObject:peerID];
+            connected = true;
+        }
+    }else if (state == MCSessionStateNotConnected){
+//        if([peers count]==0)
+//           [_session connectToPeer:peerID withTimeout:120];
+        NSLog(@"lost connect from %@",peerID.displayName);
+
+    }else if(state == MCSessionStateConnecting){
+        NSLog(@"connection ...");
+
+    }
 }
 
 #pragma mark -
 #pragma mark GKSessionDelegate
 
-- (void)session:(GKSession *)_session peer:(NSString *)peerID didChangeState:(GKPeerConnectionState)state{
-    
-    NSString *str = [NSString stringWithFormat:@"didChangeState %@",[session displayNameForPeer:peerID]];
-    NSLog(@"%@", str);
-    
-    if(state == GKPeerStateConnected){
-        NSLog(@"Recieved GKPeerStateConnected");
+//- (void)session:(GKSession *)_session peer:(NSString *)peerID didChangeState:(GKPeerConnectionState)state{
+//    
+//    NSString *str = [NSString stringWithFormat:@"didChangeState %@",[session displayNameForPeer:peerID]];
+//    NSLog(@"%@", str);
+//    
+//    if(state == GKPeerStateConnected){
+//        NSLog(@"Recieved GKPeerStateConnected");
+//        
+//        if([peers count]==0)
+//        {
+//           netplay_t *handle = netplay_get_handle();
+//           handle->has_connection = true;
+//           [peers addObject:peerID];
+//           connected = true;
+//        }
+//	}
+//    else if(state == GKPeerStateAvailable){
+//        NSLog(@"Recieved GKPeerStateAvailable");
+//        
+//        if([peers count]==0)
+//           [_session connectToPeer:peerID withTimeout:120];
+//        
+//        //session.available = NO;
+//    }
+//    else if(state == GKPeerStateDisconnected)
+//    {
+//        //[self teardownConnection];
+//    }
+//
+//}
+
+//- (void)session:(GKSession *)_session didReceiveConnectionRequestFromPeer:(NSString *)peerID{
+//    NSLog(@"Recieved Connection Request");
+//    NSString *str = [NSString stringWithFormat:@"didChangeState %@",[session displayNameForPeer:peerID]];
+//    NSLog(@"%@", str);;
+//
+//    if([peers count]==0)
+//       [_session acceptConnectionFromPeer:peerID error:nil]; //acepto la conexion sino tengo ningun par
+//    else
+//       [_session denyConnectionFromPeer:peerID];
+//
+//}
+// Required because of an apple bug
+//- (void) session:(MCSession *)session didReceiveCertificate:(NSArray *)certificate fromPeer:(MCPeerID *)peerID certificateHandler:(void (^)(BOOL))certificateHandler{
+//    certificateHandler(YES);
+//    NSLog(@"didReceiveCertificate peerId = %@",peerID.displayName);
+//
+//}
+- (void) session:(MCSession *)session didReceiveStream:(NSInputStream *)stream withName:(NSString *)streamName fromPeer:(MCPeerID *)peerID{
+    NSLog(@"didReceiveStream peerId = %@",peerID.displayName);
+}
+- (void) session:(MCSession *)session didStartReceivingResourceWithName:(NSString *)resourceName fromPeer:(MCPeerID *)peerID withProgress:(NSProgress *)progress{
+    NSLog(@"didStartReceivingResourceWithName peerId = %@ ,resourceName = %@ ",resourceName,peerID.displayName);
+
+}
+-(void) session:(MCSession *)session didFinishReceivingResourceWithName:(NSString *)resourceName fromPeer:(MCPeerID *)peerID atURL:(NSURL *)localURL withError:(NSError *)error{
+       NSLog(@"didFinishReceivingResourceWithName peerId = %@ ,resourceName = %@, error = %@",resourceName,peerID.displayName,error.localizedDescription);
+
+
+}
+#pragma mark - browser delegate
+-(void) browser:(MCNearbyServiceBrowser *)browser foundPeer:(MCPeerID *)peerID withDiscoveryInfo:(NSDictionary<NSString *,NSString *> *)info{
+    NSLog(@"Recieved Connection Request");
+    NSString *str = [NSString stringWithFormat:@"foundPeer %@",peerID.displayName];
+    NSLog(@"%@", str);;
         
-        if([peers count]==0)
-        {
-           netplay_t *handle = netplay_get_handle();
-           handle->has_connection = true;
-           [peers addObject:peerID];
-           connected = true;
-        }
-	}
-    else if(state == GKPeerStateAvailable){
-        NSLog(@"Recieved GKPeerStateAvailable");
-        
-        if([peers count]==0)
-           [_session connectToPeer:peerID withTimeout:120];
-        
-        //session.available = NO;
+    if(peers.count == 0){
+        [browser invitePeer:peerID toSession:session withContext:nil timeout:120];
     }
-    else if(state == GKPeerStateDisconnected)
-    {
-        //[self teardownConnection];
-    }
+}
+- (void)browser:(MCNearbyServiceBrowser *)browser didNotStartBrowsingForPeers:(NSError *)error{
+    NSLog(@"didNotStartBrowsingForPeers error %@",error.localizedDescription);
+
+}
+- (void) browser:(MCNearbyServiceBrowser *)browser lostPeer:(MCPeerID *)peerID {
+    NSLog(@"MCNearbyServiceBrowser lost %@", peerID.displayName);
 
 }
 
-- (void)session:(GKSession *)_session didReceiveConnectionRequestFromPeer:(NSString *)peerID{
-    NSLog(@"Recieved Connection Request");
-    NSString *str = [NSString stringWithFormat:@"didChangeState %@",[session displayNameForPeer:peerID]];
-    NSLog(@"%@", str);;
-    
-    if([peers count]==0)
-       [_session acceptConnectionFromPeer:peerID error:nil]; //acepto la conexion sino tengo ningun par
-    else
-       [_session denyConnectionFromPeer:peerID];
-     
+- (void) advertiser:(MCNearbyServiceAdvertiser *)advertiser didNotStartAdvertisingPeer:(NSError *)error{
+    NSLog(@"didNotStartAdvertisingPeer error %@",error.localizedDescription);
+
+}
+- (void) advertiser:(MCNearbyServiceAdvertiser *)advertiser didReceiveInvitationFromPeer:(MCPeerID *)peerID withContext:(NSData *)context invitationHandler:(void (^)(BOOL, MCSession * _Nullable))invitationHandler{
+    NSLog(@"didReceiveInvitationFromPeer peerID %@", peerID.displayName);
+    invitationHandler(YES, session);
+
 }
 
 -(void)onTick:(NSTimer *)timer {
