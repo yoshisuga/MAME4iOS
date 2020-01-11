@@ -44,7 +44,7 @@
 
 
 #import <UIKit/UIKit.h>
-#import <GameKit/GameKit.h>
+//#import <GameKit/GameKit.h>
 #import <MultipeerConnectivity/MultipeerConnectivity.h>
 #import <MultipeerConnectivity/MCNearbyServiceAdvertiser.h>
 #import <MultipeerConnectivity/MCNearbyServiceBrowser.h>

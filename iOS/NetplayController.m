@@ -79,6 +79,9 @@ static void netplay_warn_callback(char *msg)
 @synthesize emuController;
 
 + (void)showAlert:(NSString *)msg {
+    
+//    UIAlertController *warnAlert = [UIAlertController alertControllerWithTitle:@"Netplay" message:msg preferredStyle:UIAlertControllerStyleAlert];
+    
     UIAlertView *warnAlert = [[UIAlertView alloc] initWithTitle:@"Netplay"
                                                         message:msg//[NSString stringWithFormat: @"\n\n%@",msg]
                                                        delegate:nil
@@ -182,7 +185,7 @@ static void netplay_warn_callback(char *msg)
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     
-    NSString *cellIdentifier = [NSString stringWithFormat: @"%d:%d", [indexPath indexAtPosition:0], [indexPath indexAtPosition:1]];
+    NSString *cellIdentifier = [NSString stringWithFormat: @"%lu:%lu", (unsigned long)[indexPath indexAtPosition:0], (unsigned long)[indexPath indexAtPosition:1]];
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
     
     netplay_t *handle = netplay_get_handle();
@@ -361,14 +364,14 @@ static void netplay_warn_callback(char *msg)
             if(![self ensureWIFI])
                 return;
             
-//            [self startSocket];
-            [self startGamekit];
+            [self startSocket];
+//            [self startGamekit];
         }
         else
         {            
             
-//            if(![self ensureBluetooth])
-//                return;
+            if(![self ensureBluetooth])
+                return;
             
             [self startGamekit];
         }
@@ -382,18 +385,18 @@ static void netplay_warn_callback(char *msg)
         {
             if(![self ensureWIFI])
                 return;
-//
-//            if(![self ensurePeerAddr])
-//                return;
+
+            if(![self ensurePeerAddr])
+                return;
             
-//            [self joinSocket];
-            [self joinGamekit];
+            [self joinSocket];
+//            [self joinGamekit];
         }
         else
         {
             
-//            if(![self ensureBluetooth])
-//                return;
+            if(![self ensureBluetooth])
+                return;
 
             [self joinGamekit];
         }
@@ -565,12 +568,12 @@ static void netplay_warn_callback(char *msg)
     bool first = false;
     if(btMgr==nil)
     {
-//        btMgr = [[CBCentralManager alloc] initWithDelegate:self queue: dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)];
+        btMgr = [[CBCentralManager alloc] initWithDelegate:self queue: dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)];
         first = true;
     }
     
-//    while (btState==BluetoothNotSet)
-//         usleep(100);
+    while (btState==BluetoothNotSet)
+         usleep(100);
     
     if(btState == BluetoothOff)
     {
