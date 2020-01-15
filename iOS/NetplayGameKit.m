@@ -139,16 +139,16 @@ static int send_pkt_data(netplay_t *handle,netplay_msg_t *msg)
     session.delegate = self;
     
     
-//    if(server){
+    if(server){
         assistant = [[MCNearbyServiceAdvertiser alloc] initWithPeer:peerId discoveryInfo:nil serviceType:@"MAME-NET"];
         assistant.delegate = self;
         [assistant startAdvertisingPeer];
 
-//    }else{
+    }else{
         browser = [[MCNearbyServiceBrowser alloc] initWithPeer:peerId serviceType:@"MAME-NET"];
         browser.delegate = self;
         [browser startBrowsingForPeers];
-//    }
+    }
     
     timer = [NSTimer scheduledTimerWithTimeInterval: 2.0
                                                   target: self
@@ -178,13 +178,11 @@ static int send_pkt_data(netplay_t *handle,netplay_msg_t *msg)
         [assistant release];
         assistant = nil;
     }
-//
+
     if(session != nil)
     {
-//        [session disconnectFromAllPeers];
         [session disconnect];
         [peers removeAllObjects];
-//        session.available = NO;
         session.delegate = nil;
         [session release];
         session = nil;
@@ -204,31 +202,22 @@ static int send_pkt_data(netplay_t *handle,netplay_msg_t *msg)
 }
 
 -(void)sendData:(NSData *)data{
-   // NSError *error = nil;
-   //[session sendDataToAllPeers:data withDataMode:/*GKSendDataReliable*/GKSendDataUnreliable error:&error];
-//    [session sendData:data toPeers:peers withDataMode: /*GKSendDataReliable*/ GKSendDataUnreliable error:nil];
-    //if(error!=nil)
-        //NSLog(@"Send data error: %@", [error localizedDescription]);
-    
-     NSError *error = nil;
+
+    NSError *error = nil;
+    NSLog(@"mame -- send data size : %ld B",data.length);
     [session sendData:data toPeers:peers withMode:MCSessionSendDataUnreliable error:&error];
     if(error != nil){
         NSLog(@"Send data error: %@", [error localizedDescription]);
     }
 }
 
-//- (void)receiveData:(NSData *)data fromPeer:(NSString *)peer inSession: (GKSession *)session context:(void *)context
-//{
-//    _data = data;
-//
-//    netplay_t *handle = netplay_get_handle();
-//    netplay_read_data(handle);
-//}
 
 #pragma mark -
 #pragma mark MCSessionDelegate
 - (void) session:(MCSession *)session didReceiveData:(NSData *)data fromPeer:(MCPeerID *)peerID{
     _data = data;
+    NSLog(@"mame -- receive data size : %ld B",data.length);
+
     netplay_t *handle = netplay_get_handle();
     netplay_read_data(handle);
 }
