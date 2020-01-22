@@ -133,7 +133,7 @@ static int send_pkt_data(netplay_t *handle,netplay_msg_t *msg)
     
     [self teardownConnection];
     
-    peerId = [[MCPeerID alloc] initWithDisplayName:[NSString stringWithFormat:@"Gamer+%d",server]];
+    peerId = [[MCPeerID alloc] initWithDisplayName:[NSString stringWithFormat:@"Gamer+%@",server?@"server":@"client"]];
     session =  [[MCSession alloc] initWithPeer:peerId securityIdentity:nil encryptionPreference:nil];
 
     session.delegate = self;
@@ -154,6 +154,7 @@ static int send_pkt_data(netplay_t *handle,netplay_msg_t *msg)
                                                   target: self
                                                 selector:@selector(onTick:)
                                                 userInfo: nil repeats:YES];
+    [[NSRunLoop currentRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
 }
 
 - (void)teardownConnection
@@ -204,7 +205,7 @@ static int send_pkt_data(netplay_t *handle,netplay_msg_t *msg)
 -(void)sendData:(NSData *)data{
 
     NSError *error = nil;
-    NSLog(@"mame -- send data size : %ld B",data.length);
+//    NSLog(@"mame -- send data size : %ld B",data.length);
     [session sendData:data toPeers:peers withMode:MCSessionSendDataUnreliable error:&error];
     if(error != nil){
         NSLog(@"Send data error: %@", [error localizedDescription]);
@@ -216,7 +217,7 @@ static int send_pkt_data(netplay_t *handle,netplay_msg_t *msg)
 #pragma mark MCSessionDelegate
 - (void) session:(MCSession *)session didReceiveData:(NSData *)data fromPeer:(MCPeerID *)peerID{
     _data = data;
-    NSLog(@"mame -- receive data size : %ld B",data.length);
+//    NSLog(@"mame -- receive data size : %ld B",data.length);
 
     netplay_t *handle = netplay_get_handle();
     netplay_read_data(handle);
@@ -239,6 +240,16 @@ static int send_pkt_data(netplay_t *handle,netplay_msg_t *msg)
 //        if([peers count]==0)
 //           [_session connectToPeer:peerID withTimeout:120];
         NSLog(@"lost connect from %@",peerID.displayName);
+        if([peers containsObject:peerID]){
+            
+        }
+        for(MCPeerID *item in peers){
+            if([item.displayName isEqualToString:peerID.displayName]){
+                [peers removeObject:item];
+//                [item release];
+                break;
+            }
+        }
 
     }else if(state == MCSessionStateConnecting){
         NSLog(@"connection ...");
