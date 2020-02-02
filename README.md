@@ -66,11 +66,7 @@ to start playing a game, hit MENU and select "Coin + Start" from the list.
 
 ## Game Controllers
 
-<img src="https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/HNKT2?wid=1144&hei=1144&fmt=jpeg&qlt=95&op_usm=0.5%2C0.5&.v=1573236530750" height=200em>
-
-<img src="https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/HNKS2?wid=1144&hei=1144&fmt=jpeg&qlt=95&op_usm=0.5%2C0.5&.v=1573236454283" height=200em>
-
-<img src="https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/HJ162?wid=1144&hei=1144&fmt=jpeg&qlt=95&op_usm=0.5%2C0.5&.v=1477094888716" height=200em>
+<img src="https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/HNKT2?wid=1144&hei=1144&fmt=jpeg&qlt=95&op_usm=0.5%2C0.5&.v=1573236530750" height=200em><img src="https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/HNKS2?wid=1144&hei=1144&fmt=jpeg&qlt=95&op_usm=0.5%2C0.5&.v=1573236454283" height=200em><img src="https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/HJ162?wid=1144&hei=1144&fmt=jpeg&qlt=95&op_usm=0.5%2C0.5&.v=1477094888716" height=200em>
 
 * supports new controller types on iOS 13
 * new buttons (MENU, OPTIONS) on iOS 13+
