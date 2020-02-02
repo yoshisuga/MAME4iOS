@@ -17,9 +17,7 @@ This is a fork of [yoshisuga/MAME4iOS](https://github.com/yoshisuga/MAME4iOS) by
 ## Choose Game UI
 no need to use the text mode "DOS" MAME UI to select a game, a iOS native (UICollectionView based) UI is all new.
 
-<img src="README.images/screenshot-iphone.png" height=250em>
-<img src="README.images/screenshot-ipad.png" height=250em>
-<img src="README.images/screenshot-atv.png" height=250em>
+<img src="README.images/screenshot-iphone.png" height=250em><img src="README.images/screenshot-ipad.png" height=250em><img src="README.images/screenshot-atv.png" height=250em>
 
 ## Hardware keyboard
 
