@@ -13,6 +13,8 @@ This is a fork of [yoshisuga/MAME4iOS](https://github.com/yoshisuga/MAME4iOS) by
 * [Xbox and DualShock controllers](#Game-Controllers)
 * [8BitDo Zero](#8BitDo-Zero)
 * [Siri Shortcuts and custom URL scheme](Siri-Shortcuts-and-custom-URL-scheme)
+* [Click and hold for a iOS 13 Context Menu](Context-Menu)
+* [Open ZIP files from other apps](Open-in-MAME)
 
 ## Choose Game UI
 no need to use the text mode "DOS" MAME UI to select a game, a iOS native (UICollectionView based) UI is all new.
@@ -106,6 +108,12 @@ You can also open a custom URL to launch MAME4iOS and launch a game.
     mame4iOS://name-of-game
     mame4iOS://dkong
     mame4iOS://pacman
+
+## Context Menu
+<img src="README.images/screenshot-menu.png" height=250em>
+
+## Open in MAME
+<img src="README.images/screenshot-share.png" height=250em>
 
 ------------------------------------------------------------------------
 
