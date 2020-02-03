@@ -341,12 +341,12 @@
                 continue;
             }
             LayoutData *layoutData = results.firstObject;
-            [layoutTextData addObject:[NSString stringWithFormat:@"%i,%i,%i,%i%@",(int)layoutData.rect.origin.x,(int)layoutData.rect.origin.y,(int)layoutData.rect.size.width,(int)layoutData.rect.size.height,comment]];
+            [layoutTextData addObject:[NSString stringWithFormat:@"%i,%i,%i,%i%@",(int)layoutData.rect.origin.x + layoutData.ax,(int)layoutData.rect.origin.y + layoutData.ay,(int)layoutData.rect.size.width,(int)layoutData.rect.size.height,comment]];
             continue;
         }
         
         if ( coordType == -2 ) {
-            [layoutTextData addObject:[NSString stringWithFormat:@"%lu%@",coordValue,comment]];
+            [layoutTextData addObject:[NSString stringWithFormat:@"%lu%@",(unsigned long)coordValue,comment]];
             continue;
         }
         
@@ -357,7 +357,7 @@
             continue;
         }
         LayoutData *layoutData = results.firstObject;
-        [layoutTextData addObject:[NSString stringWithFormat:@"%i,%i,%i,%i%@",(int)layoutData.rect.origin.x,(int)layoutData.rect.origin.y,(int)layoutData.rect.size.width,(int)layoutData.rect.size.height,comment]];
+        [layoutTextData addObject:[NSString stringWithFormat:@"%i,%i,%i,%i%@",(int)layoutData.rect.origin.x + layoutData.ax,(int)layoutData.rect.origin.y + layoutData.ay,(int)layoutData.rect.size.width,(int)layoutData.rect.size.height,comment]];
     }
     NSLog(@"\n%@",[layoutTextData componentsJoinedByString:@"\n"]);
 }
