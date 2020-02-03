@@ -43,8 +43,12 @@
  */
 
 #import "iCadeView.h"
-
 #include "myosd.h"
+
+#define DebugLog 0
+#if DebugLog == 0
+#define NSLog(...) (void)0
+#endif
 
 @implementation iCadeView
 
@@ -118,7 +122,25 @@
 }
 
 - (void)insertText:(NSString *)text {
-    //NSLog(@"%s: %@ %d", __FUNCTION__, text, [text characterAtIndex:0]);
+    
+    if (g_pref_ext_control_type < EXT_CONTROL_ICADE)
+        return;
+
+    [self iCadeKey:text];
+    
+#if 0  // TODO: is this really nessesarry???
+    static int cycleResponder = 0;
+    if (++cycleResponder > 20) {
+        // necessary to clear a buffer that accumulates internally
+        cycleResponder = 0;
+        [self resignFirstResponder];
+        [self becomeFirstResponder];
+    }
+#endif
+}
+
+- (void)iCadeKey:(NSString *)text {
+    
     static int up = 0;
     static int down = 0;
     static int left = 0;
@@ -131,6 +153,13 @@
     
     unichar key = [text characterAtIndex:0];
     
+#if TARGET_OS_TV
+    if ([emuController controllerUserInteractionEnabled])
+        return;
+#endif
+    
+    NSLog(@"%s: %@ (%d)", __FUNCTION__, text.debugDescription, [text characterAtIndex:0]);
+
     if(g_iCade_used == 0)
     {
         g_iCade_used = 1;
@@ -153,7 +182,7 @@
                 myosd_joy_status[0] &= ~MYOSD_LEFT;
                 myosd_joy_status[0] &= ~MYOSD_RIGHT;
             }
-            if(!STICK2WAY)
+            if(!STICK2WAY || g_emulation_paused)
                 myosd_joy_status[0] |= MYOSD_UP;
             up = 1;
             joy1 = 1;
@@ -176,7 +205,7 @@
                 myosd_joy_status[0] &= ~MYOSD_LEFT;
                 myosd_joy_status[0] &= ~MYOSD_RIGHT;
             }
-            if(!STICK2WAY)
+            if(!STICK2WAY || g_emulation_paused)
                 myosd_joy_status[0] |= MYOSD_DOWN;
             down = 1;
             joy1 = 1;
@@ -392,7 +421,7 @@
             
             //L1(iCade) or START (iCP) or 2P LEFT(iMpulse)
         case 'u':   //button down
-            if(g_pref_ext_control_type == EXT_CONTROL_ICADE) {
+            if(g_pref_ext_control_type <= EXT_CONTROL_ICADE) {
                 myosd_joy_status[0] |= MYOSD_L1;
                 ga_btnStates[BTN_L1] = BUTTON_PRESS;
                 joy1 = 1;
@@ -415,7 +444,7 @@
            
             break;
         case 'f':   //button up
-            if(g_pref_ext_control_type == EXT_CONTROL_ICADE) {
+            if(g_pref_ext_control_type <= EXT_CONTROL_ICADE) {
                 myosd_joy_status[0] &= ~MYOSD_L1;
                 ga_btnStates[BTN_L1] = BUTTON_NO_PRESS;
                 joy1 = 1;
@@ -440,7 +469,7 @@
             
             //Start(iCade) or L1(iCP) or Coin / Select(iMpulse)
         case 'h':   //button down
-            if(g_pref_ext_control_type == EXT_CONTROL_ICADE) {
+            if(g_pref_ext_control_type <= EXT_CONTROL_ICADE) {
                 myosd_joy_status[0] |= MYOSD_START;
                 ga_btnStates[BTN_START] = BUTTON_PRESS;
             }
@@ -456,7 +485,7 @@
             joy1 = 1;
             break;
         case 'r':   //button up
-            if(g_pref_ext_control_type == EXT_CONTROL_ICADE) {
+            if(g_pref_ext_control_type <= EXT_CONTROL_ICADE) {
                 myosd_joy_status[0] &= ~MYOSD_START;
                 ga_btnStates[BTN_START] = BUTTON_NO_PRESS;
             }
@@ -509,7 +538,7 @@
                 myosd_joy_status[1] &= ~MYOSD_LEFT;
                 myosd_joy_status[1] &= ~MYOSD_RIGHT;
             }
-            if(!STICK2WAY)
+            if(!STICK2WAY || g_emulation_paused)
                 myosd_joy_status[1] |= MYOSD_UP;
             up2 = 1;
             joy2 = 1;
@@ -532,7 +561,7 @@
                 myosd_joy_status[1] &= ~MYOSD_LEFT;
                 myosd_joy_status[1] &= ~MYOSD_RIGHT;
             }
-            if(!STICK2WAY)
+            if(!STICK2WAY || g_emulation_paused)
                 myosd_joy_status[1] |= MYOSD_DOWN;
             down2 = 1;
             joy2 = 1;
@@ -638,19 +667,223 @@
     
     emuController.dpad_state = dpad_state;
 
-    static int cycleResponder = 0;
-    if (++cycleResponder > 20) {
-        // necessary to clear a buffer that accumulates internally
-        cycleResponder = 0;
-        [self resignFirstResponder];
-        [self becomeFirstResponder];        
-    }
+    // emulate a analog joystick
+    joy_analog_y[0][0] = (myosd_joy_status[0] & MYOSD_UP)    ? +1.0 : (myosd_joy_status[0] & MYOSD_DOWN) ? -1.0 : 0.0;
+    joy_analog_x[0][0] = (myosd_joy_status[0] & MYOSD_RIGHT) ? +1.0 : (myosd_joy_status[0] & MYOSD_LEFT) ? -1.0 : 0.0;
     
+    // also set the pad_status
+    myosd_pad_status = myosd_joy_status[0];
+
     [emuController handle_DPAD];
+    [emuController handle_MENU];
 }
 
 - (void)deleteBackward {
     // This space intentionally left blank to complete protocol
+}
+
+#pragma mark Hardare Keyboard
+
+//
+// HARDWARE KEYBOARD
+//
+// handle input from a hardware keyboard, the following are examples hardware keyboards.
+//
+//      * a USB or Bluetooth keyboard connected to a iOS device or AppleTV
+//      * Apple - Smart Keyboard connected to an iPad
+//      * macOS keyboard when debugging in Xcode simulator
+//
+// we suppoprt a small subset of the keys supported by the command line MAME.
+//
+//      ARROW KEYS      - emulate a dpad or joystick
+//      LEFT CONTROL    - A
+//      LEFT OPTION/ALT - B
+//      SPACE           - Y
+//      LEFT SHIFT      - X
+//      LEFT CMD        - L1
+//      RIGHT CMD       - R1
+//
+//      1               - Player 1 START
+//      2               - Player 2 START
+//      5               - Player 1 COIN
+//      6               - Player 2 COIN
+//
+//      TAB             - MAME UI MENU
+//      ESC             - MAME UI EXIT
+//      RETURN          - MAME UI SELECT    (aka A)
+//      DELETE          - MAME UI BACK      (aka B)
+//
+//      BQUOTE          - MAME4iOS MENU
+//
+// iCade keys
+//        we      yt uf im og
+//      aq  dc    hr jn kp lv
+//        xz
+//
+// 8BitDo keys
+//       k     m
+//    c           h
+//   e f         i g
+//    d    n o    j
+//
+
+#define KEY_RARROW   79
+#define KEY_LARROW   80
+#define KEY_DARROW   81
+#define KEY_UARROW   82
+
+#define KEY_LCONTROL 224
+#define KEY_LSHIFT   225
+#define KEY_LALT     226
+#define KEY_LCMD     227
+
+#define KEY_RCONTROL 228
+#define KEY_RSHIFT   229
+#define KEY_RALT     230
+#define KEY_RCMD     231
+
+#define KEY_RETURN   40
+#define KEY_ESCAPE   41
+#define KEY_DELETE   42
+#define KEY_TAB      43
+#define KEY_SPACE    44
+#define KEY_BQUOTE   53
+
+#define KEY_A        4
+#define KEY_(c)      (KEY_A + ((c) - 'a'))
+
+#define KEY_1        30
+#define KEY_2        31
+#define KEY_3        32
+#define KEY_4        33
+#define KEY_5        34
+#define KEY_6        35
+#define KEY_7        36
+#define KEY_8        37
+#define KEY_9        38
+#define KEY_0        39
+
+#define KEY_DOWN     0x8000
+
+// Overloaded _keyCommandForEvent (UIResponder.h) // Only exists in iOS 9+
+-(UIKeyCommand *)_keyCommandForEvent:(UIEvent *)event { // UIPhysicalKeyboardEvent
+    
+    if (g_pref_ext_control_type != EXT_CONTROL_NONE)
+        return nil;
+    
+    static BOOL g_keyboard_state[256];
+    
+    int keyCode = [[event valueForKey:@"_keyCode"] intValue];
+    BOOL isKeyDown = [[event valueForKey:@"_isKeyDown"] boolValue];
+
+    if (keyCode <= 0 || keyCode > 255 || g_keyboard_state[keyCode] == isKeyDown)
+        return nil;
+    
+    g_keyboard_state[keyCode] = isKeyDown;
+
+    NSLog(@"_keyCommandForEvent:'%@' '%@' keyCode:%@ isKeyDown:%@ time:%f", [event valueForKey:@"_unmodifiedInput"], [event valueForKey:@"_modifiedInput"], [event valueForKey:@"_keyCode"], [event valueForKey:@"_isKeyDown"], [event timestamp]);
+
+    NSString* iCadeKey = nil;
+    switch (keyCode + (isKeyDown ? KEY_DOWN : 0)) {
+            
+        // DPAD
+        case KEY_RARROW:            iCadeKey = @"c"; break;
+        case KEY_RARROW+KEY_DOWN:   iCadeKey = @"d"; break;
+        case KEY_LARROW:            iCadeKey = @"q"; break;
+        case KEY_LARROW+KEY_DOWN:   iCadeKey = @"a"; break;
+        case KEY_UARROW:            iCadeKey = @"e"; break;
+        case KEY_UARROW+KEY_DOWN:   iCadeKey = @"w"; break;
+        case KEY_DARROW:            iCadeKey = @"z"; break;
+        case KEY_DARROW+KEY_DOWN:   iCadeKey = @"x"; break;
+
+        // A/B/Y/X
+        case KEY_LCONTROL:          iCadeKey = @"p"; break;
+        case KEY_LCONTROL+KEY_DOWN: iCadeKey = @"k"; break;
+        case KEY_LALT:              iCadeKey = @"g"; break;
+        case KEY_LALT+KEY_DOWN:     iCadeKey = @"o"; break;
+        case KEY_SPACE:             iCadeKey = @"m"; break;
+        case KEY_SPACE+KEY_DOWN:    iCadeKey = @"i"; break;
+        case KEY_LSHIFT:            iCadeKey = @"v"; break;
+        case KEY_LSHIFT+KEY_DOWN:   iCadeKey = @"l"; break;
+
+        // L1/R1
+        case KEY_LCMD:              iCadeKey = @"f"; break;
+        case KEY_LCMD+KEY_DOWN:     iCadeKey = @"u"; break;
+        case KEY_RCMD:              iCadeKey = @"n"; break;
+        case KEY_RCMD+KEY_DOWN:     iCadeKey = @"j"; break;
+
+        // RETURN -> A
+        case KEY_RETURN:            iCadeKey = @"p"; break;
+        case KEY_RETURN+KEY_DOWN:   iCadeKey = @"k"; break;
+            
+        // DELETE -> B
+        case KEY_DELETE:            iCadeKey = @"g"; break;
+        case KEY_DELETE+KEY_DOWN:   iCadeKey = @"o"; break;
+            
+        // START and SELECT/COIN (Player 1)
+        case KEY_1:                 iCadeKey = @"r"; break;
+        case KEY_1+KEY_DOWN:        iCadeKey = @"h"; break;
+        case KEY_5:                 iCadeKey = @"t"; break;
+        case KEY_5+KEY_DOWN:        iCadeKey = @"y"; break;
+            
+        // START and SELECT/COIN (Player 2)
+        case KEY_2:                 myosd_pad_status &= ~(MYOSD_START|MYOSD_UP); break;
+        case KEY_2+KEY_DOWN:        myosd_pad_status |=  (MYOSD_START|MYOSD_UP); break;
+        case KEY_6:                 myosd_pad_status &= ~(MYOSD_SELECT|MYOSD_UP); break;
+        case KEY_6+KEY_DOWN:        myosd_pad_status |=  (MYOSD_SELECT|MYOSD_UP); break;
+
+        // MAME MENU
+        case KEY_TAB:               myosd_pad_status &= ~(MYOSD_SELECT|MYOSD_START); break;
+        case KEY_TAB+KEY_DOWN:      myosd_pad_status |=  (MYOSD_SELECT|MYOSD_START); break;
+        case KEY_ESCAPE:            [emuController runExit]; break;
+        case KEY_ESCAPE+KEY_DOWN:   break;
+            
+        // MAME4iOS MENU
+        case KEY_BQUOTE:            [emuController runMenu]; break;
+        case KEY_BQUOTE+KEY_DOWN:   break;
+    }
+    
+    // 8BitDo
+    switch (keyCode + (isKeyDown ? KEY_DOWN : 0)) {
+            
+        // DPAD
+        case KEY_('f'):            iCadeKey = @"c"; break;
+        case KEY_('f')+KEY_DOWN:   iCadeKey = @"d"; break;
+        case KEY_('e'):            iCadeKey = @"q"; break;
+        case KEY_('e')+KEY_DOWN:   iCadeKey = @"a"; break;
+        case KEY_('c'):            iCadeKey = @"e"; break;
+        case KEY_('c')+KEY_DOWN:   iCadeKey = @"w"; break;
+        case KEY_('d'):            iCadeKey = @"z"; break;
+        case KEY_('d')+KEY_DOWN:   iCadeKey = @"x"; break;
+
+        // A/B/Y/X
+        case KEY_('g'):             iCadeKey = @"p"; break;
+        case KEY_('g')+KEY_DOWN:    iCadeKey = @"k"; break;
+        case KEY_('j'):             iCadeKey = @"g"; break;
+        case KEY_('j')+KEY_DOWN:    iCadeKey = @"o"; break;
+        case KEY_('i'):             iCadeKey = @"m"; break;
+        case KEY_('i')+KEY_DOWN:    iCadeKey = @"i"; break;
+        case KEY_('h'):             iCadeKey = @"v"; break;
+        case KEY_('h')+KEY_DOWN:    iCadeKey = @"l"; break;
+
+        // L1/R1
+        case KEY_('k'):             iCadeKey = @"f"; break;
+        case KEY_('k')+KEY_DOWN:    iCadeKey = @"u"; break;
+        case KEY_('m'):             iCadeKey = @"n"; break;
+        case KEY_('m')+KEY_DOWN:    iCadeKey = @"j"; break;
+
+        // START and SELECT/COIN (Player 1)
+        case KEY_('o'):             iCadeKey = @"r"; break;
+        case KEY_('o')+KEY_DOWN:    iCadeKey = @"h"; break;
+        case KEY_('n'):             iCadeKey = @"t"; break;
+        case KEY_('n')+KEY_DOWN:    iCadeKey = @"y"; break;
+    }
+
+    if (iCadeKey != nil) {
+        [self iCadeKey:iCadeKey];
+    }
+
+    return nil;
 }
 
 @end

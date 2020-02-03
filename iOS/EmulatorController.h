@@ -133,13 +133,14 @@
 }
 
 - (int *)getBtnStates;
+#if TARGET_OS_IOS
 - (CGRect *)getInputRects;
 - (CGRect *)getButtonRects;
 - (UIView **)getButtonViews;
 - (UIView *)getDPADView;
 - (UIView *)getStickView;
-
 - (void)getControllerCoords:(int)orientation;
+#endif
 
 - (void)getConf;
 - (void)filldebugRects;
@@ -153,20 +154,23 @@
 
 - (void)changeUI;
 
+#if TARGET_OS_IOS
 - (void)buildPortraitImageBack;
 - (void)buildPortraitImageOverlay;
 - (void)buildPortrait;
 - (void)buildLandscapeImageOverlay;
 - (void)buildLandscapeImageBack;
 - (void)buildLandscape;
+- (NSSet*)touchesController:(NSSet *)touches withEvent:(UIEvent *)event;
+#endif
 
 - (void)runMenu;
+- (void)runExit;
+- (void)runPause;
 - (void)endMenu;
 
 - (void)handle_DPAD;
 - (void)handle_MENU;
-
-- (NSSet*)touchesController:(NSSet *)touches withEvent:(UIEvent *)event;
 
 - (void)updateOptions;
 
@@ -176,12 +180,15 @@
 - (FILE *)loadFile:(const char *)name;
 
 - (void)moveROMS;
+- (void)playGame:(NSDictionary*)game;
+- (void)chooseGame:(NSArray*)games;
 
+#if TARGET_OS_IOS
 - (void)beginCustomizeCurrentLayout;
 - (void)finishCustomizeCurrentLayout;
 - (void)resetCurrentLayout;
-
 - (void)adjustSizes;
+#endif
 
 @property (readwrite,assign)  UIView *externalView;
 @property (readwrite,assign) int dpad_state;

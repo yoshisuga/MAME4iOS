@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "925ABCA41E46DCC500997182"
-               BuildableName = "MAME4iOS 64-bit.app"
+               BuildableName = "MAME4iOS.app"
                BlueprintName = "MAME4iOS 64-bit"
                ReferencedContainer = "container:MAME4iOS.xcodeproj">
             </BuildableReference>
@@ -27,19 +27,17 @@
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
-      <Testables>
-      </Testables>
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "925ABCA41E46DCC500997182"
-            BuildableName = "MAME4iOS 64-bit.app"
+            BuildableName = "MAME4iOS.app"
             BlueprintName = "MAME4iOS 64-bit"
             ReferencedContainer = "container:MAME4iOS.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
-      <AdditionalOptions>
-      </AdditionalOptions>
+      <Testables>
+      </Testables>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Release"
@@ -50,19 +48,18 @@
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
-      allowLocationSimulation = "YES">
+      allowLocationSimulation = "YES"
+      showNonLocalizedStrings = "YES">
       <BuildableProductRunnable
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "925ABCA41E46DCC500997182"
-            BuildableName = "MAME4iOS 64-bit.app"
+            BuildableName = "MAME4iOS.app"
             BlueprintName = "MAME4iOS 64-bit"
             ReferencedContainer = "container:MAME4iOS.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
-      <AdditionalOptions>
-      </AdditionalOptions>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -75,7 +72,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "925ABCA41E46DCC500997182"
-            BuildableName = "MAME4iOS 64-bit.app"
+            BuildableName = "MAME4iOS.app"
             BlueprintName = "MAME4iOS 64-bit"
             ReferencedContainer = "container:MAME4iOS.xcodeproj">
          </BuildableReference>

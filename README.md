@@ -1,11 +1,12 @@
 # MAME4iOS Fork
-This is a fork of [yoshisuga/MAME4iOS](https://github.com/yoshisuga/MAME4iOS) by [@ToddLa](mailto:ToddLa@HotMail.com)  see the [original](#MAME4iOS) README below.
+This is a fork of [yoshisuga/MAME4iOS](https://github.com/yoshisuga/MAME4iOS) by [@ToddLa](mailto:ToddLa@HotMail.com)  see the [original README](#MAME4iOS) below.
 
 ## This fork adds support for
 * Updated to Xcode 11 and iOS 13
 * builds (mostly) without warnings or deprecations.
 * Better on screen control layout for iPhone11, iPad Pro
 * [New Choose Game UI](#Choose-Game-UI)
+* Rembers last game(s) played, and set of Favorite games.
 * [navigate/dismiss iOS alerts with game controller or iCade](#Game-Controllers)
 * [Hardware keyboard support](#hardware-keyboard)
 * [Siri Remote](#Siri-Remote)
@@ -19,8 +20,14 @@ This is a fork of [yoshisuga/MAME4iOS](https://github.com/yoshisuga/MAME4iOS) by
 ## TODO
 * Convert project to use ARC and Modern-Objective-C
 * Handle adding multiple ROMs at once in a zip of zips (aka "ROMS.ZIP")
-* Handle adding a artwork zip file
-
+* Handle adding a artwork zip file (move zip file with a .lay file into artwork folder)
+* Add a TopShelf to tvOS (show Favorites and Recent games)
+* Update help.html and update to current mappings and info.
+* When multiple game controllers (siri remote) are detected, make the controller that pressed START the default controller.
+* Better 2 Player support, add easy/discoverable way to do a 2 Player start. maybe add "Player 2 Start" to MAME4iOS menu.
+* load and save state apears broken, remove from the MAME4iOS menu, or fix.
+* remove game filter options from Settings UI (it is now native in Choose Game UI)
+* add a "Fullscreen when using joystick or keyboard" option in Settings UI.
 
 ## Choose Game UI
 no need to use the text mode "DOS" MAME UI to select a game, a iOS native (UICollectionView based) UI is all new.
@@ -55,6 +62,9 @@ we suppoprt a small subset of the keys supported by the command line MAME.
      RETURN          - MAME UI SELECT    (aka A)
      DELETE          - MAME UI BACK      (aka B)
      
+     BQUOTE          - MAME4iOS MENU
+
+
 ## 8BitDo Zero 
 <img src="https://support.8bitdo.com/images/support/products/zero2.gif" height=100em>
 
