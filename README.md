@@ -2,7 +2,6 @@
 This is a fork of [yoshisuga/MAME4iOS](https://github.com/yoshisuga/MAME4iOS) by [@ToddLa](mailto:ToddLa@HotMail.com)  see the [original](#MAME4iOS) README below.
 
 ## This fork adds support for
-
 * Updated to Xcode 11 and iOS 13
 * builds (mostly) without warnings or deprecations.
 * Better on screen control layout for iPhone11, iPad Pro
@@ -12,9 +11,16 @@ This is a fork of [yoshisuga/MAME4iOS](https://github.com/yoshisuga/MAME4iOS) by
 * [Siri Remote](#Siri-Remote)
 * [Xbox and DualShock controllers](#Game-Controllers)
 * [8BitDo Zero](#8BitDo-Zero)
-* [Siri Shortcuts and custom URL scheme](Siri-Shortcuts-and-custom-URL-scheme)
-* [Click and hold for a iOS 13 Context Menu](Context-Menu)
-* [Open ZIP files from other apps](Open-in-MAME)
+* Hide touch controlls when using joystick, iCade, or keyboard.
+* [Siri Shortcuts and custom URL scheme](#Siri-Shortcuts-and-custom-URL-scheme)
+* [Click and hold for a iOS 13 Context Menu](#Context-Menu)
+* [Open ZIP files from other apps](#Open-in-MAME)
+
+## TODO
+* Convert project to use ARC and Modern-Objective-C
+* Handle adding multiple ROMs at once in a zip of zips (aka "ROMS.ZIP")
+* Handle adding a artwork zip file
+
 
 ## Choose Game UI
 no need to use the text mode "DOS" MAME UI to select a game, a iOS native (UICollectionView based) UI is all new.
@@ -111,6 +117,13 @@ You can also open a custom URL to launch MAME4iOS and launch a game.
 
 ## Context Menu
 <img src="README.images/screenshot-menu.png" height=250em>
+
+Press and hold on a game tile will bring up a iOS 13+ context menu. 
+
+    PLAY        - Run MAME with this game.
+    FAVORITE    - Add or remove this game from list of Favorites
+    SHARE       - Share this game ROM file.
+    DELETE      - Delete this game from the ROMS folder.
 
 ## Open in MAME
 <img src="README.images/screenshot-share.png" height=250em>
