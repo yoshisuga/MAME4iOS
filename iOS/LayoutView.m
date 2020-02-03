@@ -44,6 +44,7 @@
 
 #import "LayoutView.h"
 #import "LayoutData.h"
+#import "Alert.h"
 
 @implementation LayoutView
 
@@ -89,7 +90,7 @@
         LayoutData *ld = (LayoutData *)[layoutDataArray objectAtIndex:i];
         if(ld.type == kType_ButtonRect ||
            (ld.type == kType_DPadImgRect && g_pref_input_touch_type == TOUCH_INPUT_DPAD) ||
-           (ld.type == kType_StickRect && !g_pref_input_touch_type == TOUCH_INPUT_DPAD)
+           (ld.type == kType_StickRect && g_pref_input_touch_type != TOUCH_INPUT_DPAD)
            )
         {
             
@@ -121,6 +122,9 @@
         
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 - (void) drawString: (NSString*) s withFont: (UIFont*) font inRect: (CGRect) contextRect {
     
     
@@ -132,8 +136,10 @@
     CGRect textRect = CGRectMake(contextRect.origin.x, contextRect.origin.y + yOffset, contextRect.size.width, fontHeight);
     
     [s drawInRect: textRect withFont: font lineBreakMode: UILineBreakModeClip
-        alignment: UITextAlignmentCenter];
+        alignment: NSTextAlignmentCenter];
 }
+
+#pragma clang diagnostic pop
 
 - (void)updateRelated:(LayoutData *)moved x:(int)ax y:(int)ay
 {
@@ -206,7 +212,7 @@
                  
                  if(ld.type == kType_ButtonRect ||
                     (ld.type == kType_DPadImgRect && g_pref_input_touch_type == TOUCH_INPUT_DPAD) ||
-                    (ld.type == kType_StickRect && !g_pref_input_touch_type == TOUCH_INPUT_DPAD))
+                    (ld.type == kType_StickRect && g_pref_input_touch_type != TOUCH_INPUT_DPAD))
                  {
                      if (MyCGRectContainsPoint([ld getNewRect], pt))
                      {
@@ -224,13 +230,15 @@
              
              if(moved==nil && MyCGRectContainsPoint(rFinish, pt))
              {
-                 UIAlertView* exitAlertView=[[UIAlertView alloc] initWithTitle:nil
-                                                                       message:@"Do you want to save changes?"
-                                                                      delegate:self cancelButtonTitle:nil
-                                                             otherButtonTitles:@"Yes",@"No",nil];
-                 [exitAlertView show];
-                 [exitAlertView release];
-                 
+                 [emuController showAlertWithTitle:nil message:@"Do you want to save changes?" buttons:@[@"Yes",@"No"] handler:^(NSUInteger buttonIndex) {
+                     if(buttonIndex == 0 )
+                     {
+                        [LayoutData saveLayoutData:layoutDataArray];
+                     }
+
+                     [layoutDataArray release];
+                     [emuController finishCustomizeCurrentLayout];
+                 }];
              }
          }
          else
@@ -253,18 +261,6 @@
         moved = nil;
     }
     
-}
-
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
-{
-    
-    if(buttonIndex == 0 )
-    {
-       [LayoutData saveLayoutData:layoutDataArray];
-    }
-
-    [layoutDataArray release];
-    [emuController finishCustomizeCurrentLayout];
 }
 
 - (void)dealloc {
