@@ -69,3 +69,5 @@
 @property (retain)  MCNearbyServiceAdvertiser *assistant;
 
 @end
+
+#pragma clang diagnostic pop

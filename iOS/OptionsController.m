@@ -118,8 +118,14 @@
     
     self.title = NSLocalizedString(@"Settings", @"");
     
+    UITableViewStyle style = UITableViewStyleGrouped;
+#if TARGET_OS_IOS
+    if (@available(iOS 13.0, *)) {
+        style = UITableViewStyleInsetGrouped;
+    }
+#endif
     UITableView *tableView = [[UITableView alloc] 
-    initWithFrame:CGRectMake(0, 0, 240, 200) style:UITableViewStyleGrouped];
+                              initWithFrame:CGRectMake(0, 0, 240, 200) style:style];
           
     tableView.delegate = self;
     tableView.dataSource = self;
@@ -133,7 +139,7 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
    
-   NSString *cellIdentifier = [NSString stringWithFormat: @"%d:%d", [indexPath indexAtPosition:0], [indexPath indexAtPosition:1]];
+   NSString *cellIdentifier = [NSString stringWithFormat: @"%d:%d", (int)[indexPath indexAtPosition:0], (int)[indexPath indexAtPosition:1]];
    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
    
    if (cell == nil)

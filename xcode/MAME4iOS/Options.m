@@ -121,18 +121,22 @@
     NSString *path=[NSString stringWithUTF8String:get_documents_path("iOS/options_v23.bin")];
     
     NSData *plistData;
-    id plist;
-    NSString *error;
+    id plist = nil;
+    NSError *error = nil;
     
     NSPropertyListFormat format;
     
     NSError *sqerr;
     plistData = [NSData dataWithContentsOfFile:path options: NSMappedRead error:&sqerr];
     
-    plist = [NSPropertyListSerialization propertyListFromData:plistData
-                                             mutabilityOption:NSPropertyListImmutable
+    if (plistData != nil)
+    {
+        plist = [NSPropertyListSerialization propertyListWithData:plistData
+                                                      options:NSPropertyListImmutable
                                                        format:&format
-                                             errorDescription:&error];
+                                                        error:&error];
+    }
+    
     if(!plist)
     {
         
@@ -153,7 +157,7 @@
         scanlineFilterLand = 0;
         
         showFPS = 0;
-        showINFO = 1;
+        showINFO = 0;
         fourButtonsLand = 0;
         animatedButtons = 1;
         
@@ -481,11 +485,13 @@
     
     NSData *plistData;
     
-    NSString *error;
+    NSError *error = nil;
     
-    plistData = [NSPropertyListSerialization dataFromPropertyList:optionsArray
+    plistData = [NSPropertyListSerialization dataWithPropertyList:optionsArray
                                                            format:NSPropertyListBinaryFormat_v1_0
-                                                 errorDescription:&error];
+                                                          options:0
+                                                            error:&error];
+
     if(plistData)
     {
         //NSError*err;

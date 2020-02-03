@@ -54,7 +54,14 @@
 
 
 - (id)initWithStyle:(UITableViewStyle)style type:(NSInteger)typeValue list:(NSArray *)listValue{
-
+    
+#if TARGET_OS_IOS
+    if (@available(iOS 13.0, *)) {
+        if (style == UITableViewStyleGrouped)
+            style = UITableViewStyleInsetGrouped;
+    }
+#endif
+    
     if(self = [super initWithStyle:style])
     {
         type = typeValue;
@@ -244,6 +251,7 @@
     [super viewWillDisappear:animated];
     
     Options *op = [[Options alloc] init];
+    int value = (int)self->value;
     
     switch (type) {
         case kTypeNumButtons:

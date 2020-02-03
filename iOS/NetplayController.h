@@ -55,7 +55,7 @@ typedef enum {
     BluetoothOn,
 } BluetoothState;
 
-@interface NetplayController : UITableViewController <UITextFieldDelegate,UIAlertViewDelegate, CBCentralManagerDelegate> {
+@interface NetplayController : UITableViewController <UITextFieldDelegate, CBCentralManagerDelegate> {
     
     NSArray *arrayWPANtype;
     NSArray *arrayWFframeSync;

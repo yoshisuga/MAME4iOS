@@ -922,7 +922,7 @@ static inline NSString* _EncodeBase64(NSString* string) {
   for (NSString* file in enumerator) {
     if (![file hasPrefix:@"."]) {
       NSString* type = [[enumerator fileAttributes] objectForKey:NSFileType];
-      NSString* escapedFile = [file stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+      NSString* escapedFile = [file stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLPathAllowedCharacterSet]];
       GWS_DCHECK(escapedFile);
       if ([type isEqualToString:NSFileTypeRegular]) {
         [html appendFormat:@"<li><a href=\"%@\">%@</a></li>\n", escapedFile, file];

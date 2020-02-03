@@ -56,7 +56,13 @@
 @synthesize emuController;
 
 - (id)init {
-    if (self = [super initWithStyle:UITableViewStyleGrouped]) {
+    UITableViewStyle style = UITableViewStyleGrouped;
+#if TARGET_OS_IOS
+    if (@available(iOS 13.0, *)) {
+        style = UITableViewStyleInsetGrouped;
+    }
+#endif
+    if (self = [super initWithStyle:style]) {
         
         switchAnimatedButtons=nil;
 
@@ -151,7 +157,7 @@
     [super loadView];
     
     UIBarButtonItem *button = [[UIBarButtonItem alloc] initWithTitle:@"Done"
-                                                               style:UIBarButtonItemStyleBordered
+                                                               style:UIBarButtonItemStylePlain
                                                               target: emuController  action:  @selector(done:) ];
     self.navigationItem.rightBarButtonItem = button;
     [button release];
@@ -336,14 +342,14 @@
                 {
                     cell.selectionStyle = UITableViewCellSelectionStyleBlue;
                     cell.textLabel.text = @"Change Current Layout";
-                    cell.textLabel.textAlignment = UITextAlignmentCenter;
+                    cell.textLabel.textAlignment = NSTextAlignmentCenter;
                     break;
                 }
                 case 1:
                 {
                     cell.selectionStyle = UITableViewCellSelectionStyleBlue;
                     cell.textLabel.text = @"Reset Current Layout to Default";
-                    cell.textLabel.textAlignment = UITextAlignmentCenter;
+                    cell.textLabel.textAlignment = NSTextAlignmentCenter;
                     break;
                 }
             }
