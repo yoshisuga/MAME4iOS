@@ -108,23 +108,23 @@ static ImageCache* sharedInstance = nil;
     
     if ([val isKindOfClass:[UIImage class]])
     {
-        NSLog(@".....IMAGE CACHE HIT");
+        NSLog(@"....IMAGE CACHE HIT");
         return handler(val);
     }
     
     if ([val isKindOfClass:[NSNull class]])
     {
-        NSLog(@".....IMAGE CACHE NULL");
+        NSLog(@"....IMAGE CACHE NULL");
         return handler(nil);
     }
 
     if ([val isKindOfClass:[NSMutableArray class]])
     {
-        NSLog(@".....IMAGE CACHE LOADING");
+        NSLog(@"....IMAGE CACHE LOADING");
         return [val addObject:handler];
     }
     
-    NSLog(@".....IMAGE CACHE MISS");
+    NSLog(@"....IMAGE CACHE MISS");
     NSParameterAssert(val == nil);
     [cache setObject:[NSMutableArray arrayWithObject:handler] forKey:key];
     
