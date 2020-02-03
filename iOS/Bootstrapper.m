@@ -85,13 +85,11 @@ const char* get_documents_path(const char* file)
 #elif TARGET_OS_TV
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
 #endif
-	const char *userPath = [[paths objectAtIndex:0] cStringUsingEncoding:NSASCIIStringEncoding];
+	const char *userPath = [[paths objectAtIndex:0] cStringUsingEncoding:NSUTF8StringEncoding];
     sprintf(documents_path, "%s/%s",userPath, file);
 #endif
     return documents_path;
 }
-
-//extern EmulatorController *GetSharedInstance();
 
 unsigned long read_mfi_controller(unsigned long res){
     return res;
@@ -99,7 +97,7 @@ unsigned long read_mfi_controller(unsigned long res){
 
 @implementation Bootstrapper
 
--(void)applicationDidFinishLaunching:(NSNotification *)aNotification {
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary<UIApplicationLaunchOptionsKey,id> *)launchOptions {
 
 	struct CGRect rect = [[UIScreen mainScreen] bounds];
 	rect.origin.x = rect.origin.y = 0.0f;
@@ -117,7 +115,7 @@ unsigned long read_mfi_controller(unsigned long res){
         mkdir("/var/mobile/Media/ROMs/", 0755);
         if(mkdir(get_documents_path(""), 0755) != 0)
         {
-        
+            
            UIAlertView *errAlert = [[UIAlertView alloc] initWithTitle:@"Error"
                                                            message:
                                  @"Directory cannot be created!\nCheck for write permissions.\n'chmod -R 777 /var/mobile/Media/ROMs' if needed.\nLook at the help for details."
@@ -137,6 +135,7 @@ unsigned long read_mfi_controller(unsigned long res){
     
     mkdir(get_documents_path("iOS"), 0755);
 	mkdir(get_documents_path("artwork"), 0755);
+    mkdir(get_documents_path("titles"), 0755);
 	mkdir(get_documents_path("cfg"), 0755);
 	mkdir(get_documents_path("nvram"), 0755);
 	mkdir(get_documents_path("ini"), 0755);
@@ -153,6 +152,8 @@ unsigned long read_mfi_controller(unsigned long res){
     [[NSURL fileURLWithPath: [NSString stringWithUTF8String:get_documents_path("roms")]]
      setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:nil];
     [[NSURL fileURLWithPath: [NSString stringWithUTF8String:get_documents_path("artwork")]]
+     setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:nil];
+    [[NSURL fileURLWithPath: [NSString stringWithUTF8String:get_documents_path("titles")]]
      setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:nil];
     [[NSURL fileURLWithPath: [NSString stringWithUTF8String:get_documents_path("samples")]]
      setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:nil];
@@ -202,7 +203,9 @@ unsigned long read_mfi_controller(unsigned long res){
     [manager release];
     
 #if TARGET_OS_IOS
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_7_0
     [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation : UIStatusBarAnimationNone];
+#endif
 #endif
     
     g_isIpad = IS_IPAD;
@@ -214,6 +217,7 @@ unsigned long read_mfi_controller(unsigned long res){
 	deviceWindow = [[UIWindow alloc] initWithFrame:rect];
 #if TARGET_OS_TV
     deviceWindow.backgroundColor = UIColor.darkGrayColor;
+    deviceWindow.tintColor = [UIColor colorWithRed:0.0 green:122.0/255.0 blue:1.0 alpha:1.0];
 #endif
 //    deviceWindow.backgroundColor = [UIColor redColor];
     
@@ -228,7 +232,7 @@ unsigned long read_mfi_controller(unsigned long res){
 	externalWindow.hidden = YES;
 	 	
 	if(g_pref_nativeTVOUT)
-	{ 	
+	{
 		[[NSNotificationCenter defaultCenter] addObserver:self 
 													 selector:@selector(prepareScreen) 
 														 name:/*@"UIScreenDidConnectNotification"*/UIScreenDidConnectNotification
@@ -242,12 +246,73 @@ unsigned long read_mfi_controller(unsigned long res){
 	}	
     
     [self prepareScreen];
+    return TRUE;
+}
+
+- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
+{
+    NSLog(@"OPEN URL: %@ %@", url, options);
+    
+    // handle our own scheme mame4ios://name
+    if ([url.scheme isEqualToString:@"mame4ios"] && [url.host length] != 0 && [url.path length] == 0 && [url.query length] == 0) {
+        NSDictionary* game = @{@"name":url.host};
+        [hrViewController performSelectorOnMainThread:@selector(playGame:) withObject:game waitUntilDone:NO];
+        return TRUE;
+    }
+
+    // copy a ZIP file to document root, and then let moveROMS take care of it....
+    // only handle .zip files
+    if (!url.fileURL || ![url.pathExtension.lowercaseString isEqualToString:@"zip"])
+        return FALSE;
+    
+    // dont share with myself
+    if ([[url URLByDeletingLastPathComponent].path isEqualToString:[NSString stringWithUTF8String:get_documents_path("roms")]])
+        return FALSE;
+
+    BOOL open_in_place = [options[UIApplicationOpenURLOptionsOpenInPlaceKey] boolValue];
+    
+    if (open_in_place)
+    {
+        if (![url startAccessingSecurityScopedResource])
+            return FALSE;
+    }
+
+    NSError* error = nil;
+    NSURL* documentsURL = [NSURL fileURLWithPath:[NSString stringWithUTF8String:get_documents_path("")]];
+    [NSFileManager.defaultManager copyItemAtURL:url toURL:[documentsURL URLByAppendingPathComponent:url.lastPathComponent] error:&error];
+    
+    if (open_in_place)
+        [url stopAccessingSecurityScopedResource];
+    else if ([[[url URLByDeletingLastPathComponent] lastPathComponent] isEqualToString:@"Inbox"])
+        [[NSFileManager defaultManager] removeItemAtURL:url error:nil];
+    
+    [hrViewController performSelectorOnMainThread:@selector(moveROMS) withObject:nil waitUntilDone:NO];
+        
+    return TRUE;
+}
+
+- (BOOL)application:(UIApplication *)application continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void (^)(NSArray<id<UIUserActivityRestoring>> * _Nullable))restorationHandler {
+    
+    NSLog(@"continueUserActivity: %@ %@", userActivity.activityType, userActivity.userInfo);
+    
+    if (![userActivity.activityType hasPrefix:[[NSBundle mainBundle] bundleIdentifier]])
+        return FALSE;
+    
+    NSString* cmd = [[userActivity.activityType componentsSeparatedByString:@"."] lastObject];
+    
+    if ([cmd isEqualToString:@"play"])
+    {
+        [hrViewController performSelectorOnMainThread:@selector(playGame:) withObject:userActivity.userInfo waitUntilDone:NO];
+        return TRUE;
+    }
+        
+    return FALSE;
 }
 
 - (void)applicationDidEnterBackground:(UIApplication *)application {
 
-   if((myosd_inGame || g_joy_used ) && !isGridlee )//force pause when game
-      [hrViewController runMenu];
+   if((myosd_inGame || g_joy_used ) && !isGridlee )//force pause when in game
+      [hrViewController runPause];
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {
@@ -353,6 +418,7 @@ unsigned long read_mfi_controller(unsigned long res){
     }	
 }
 
+#if TARGET_OS_IOS
 - (void)setScreenMode:(UIScreenMode*)screenMode
 {
 	
@@ -402,6 +468,7 @@ unsigned long read_mfi_controller(unsigned long res){
     [screenModes release];
 	[externalScreen release];
 }
+#endif
 
 -(void)dealloc {
     [hrViewController release];
@@ -409,6 +476,5 @@ unsigned long read_mfi_controller(unsigned long res){
 	[externalWindow dealloc];
 	[super dealloc];
 }
-
 
 @end

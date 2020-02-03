@@ -46,7 +46,7 @@
 
 int main(int argc, char **argv){
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    int retValue = UIApplicationMain(argc, argv, @"Bootstrapper", @"Bootstrapper");
+    int retValue = UIApplicationMain(argc, argv, nil, @"Bootstrapper");
     [pool release];
     return retValue;
 }
