@@ -45,9 +45,9 @@
 #import "DonateController.h"
 #import "Globals.h"
 #import "EmulatorController.h"
+#import "Alert.h"
 
 @implementation DonateController
-
 
 - (id)init {
     
@@ -60,7 +60,7 @@
 
 - (void)loadView {
 	
-	UIView *view= [[UIView alloc] initWithFrame:[[UIScreen mainScreen] applicationFrame]];
+	UIView *view= [[UIView alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 	self.view = view;
 	[view release];
     self.view.backgroundColor = [UIColor whiteColor];
@@ -77,21 +77,10 @@
     [ self.view addSubview: aWebView ];
 }
 
--(void)viewDidLoad{	
-   
+-(void)viewDidLoad{
     
-    UIAlertView *thksAlert = [[UIAlertView alloc] initWithTitle:@"Thanks for your support!"
-                              
-                              
-                                                        message:[NSString stringWithFormat: @"I am releasing everything for free, in keeping with the licensing MAME terms, which is free for non-commercial use only. This is strictly something I made because I wanted to play with it and have the skills to make it so. That said, if you are thinking on ways to support my development I suggest you to check my support page of other free works for the community."]
-                              
-                                                       delegate:self
-                                              cancelButtonTitle:@"OK" 
-                                              otherButtonTitles: nil];
-	
-    [thksAlert show];
-    [thksAlert release];
-   
+    [self showAlertWithTitle:@"Thanks for your support!"
+                     message:[NSString stringWithFormat: @"I am releasing everything for free, in keeping with the licensing MAME terms, which is free for non-commercial use only. This is strictly something I made because I wanted to play with it and have the skills to make it so. That said, if you are thinking on ways to support my development I suggest you to check my support page of other free works for the community."]];
 }
 
 - (void)viewWillAppear:(BOOL)animated{
@@ -136,14 +125,8 @@
     self.title = @"Error";
     if(error!=nil && error.code != NSURLErrorCancelled)
     {
-		UIAlertView *connectionAlert = [[UIAlertView alloc] initWithTitle:@"Connection Failed!"
-																  message:[NSString stringWithFormat:@"There is no internet connection. Connect to the internet and try again. Error:%@",[error localizedDescription]]
-																 delegate:self
-														cancelButtonTitle:@"OK"
-														otherButtonTitles: nil];
-		
-		[connectionAlert show];
-		[connectionAlert release];
+        [self showAlertWithTitle:@"Connection Failed!"
+                         message:[NSString stringWithFormat:@"There is no internet connection. Connect to the internet and try again. Error:%@",[error localizedDescription]]];
 	}
 }
 

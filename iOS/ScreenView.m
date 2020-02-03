@@ -156,6 +156,8 @@ void iphone_UpdateScreen()
 
 - (void)dealloc
 {
+    if (sharedInstance == self)
+        sharedInstance = nil;
 	
 	[ super dealloc ];
 }

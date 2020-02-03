@@ -60,7 +60,13 @@
 @synthesize emuController;
 
 - (id)init {
-    if (self = [super initWithStyle:UITableViewStyleGrouped]) {
+    UITableViewStyle style = UITableViewStyleGrouped;
+#if TARGET_OS_IOS
+    if (@available(iOS 13.0, *)) {
+        style = UITableViewStyleInsetGrouped;
+    }
+#endif
+    if (self = [super initWithStyle:style]) {
 #if TARGET_OS_IOS
         switchTvoutNative = nil;
         switchCheats = nil;
@@ -152,7 +158,7 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     
-    NSString *cellIdentifier = [NSString stringWithFormat: @"%d:%d", [indexPath indexAtPosition:0], [indexPath indexAtPosition:1]];
+    NSString *cellIdentifier = [NSString stringWithFormat: @"%d:%d", (int)[indexPath indexAtPosition:0], (int)[indexPath indexAtPosition:1]];
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
     
     if (cell == nil)

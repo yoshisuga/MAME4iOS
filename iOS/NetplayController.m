@@ -46,6 +46,7 @@
 #import "Options.h"
 #import "OptionsController.h"
 #import "ListOptionController.h"
+#import "Alert.h"
 
 #include "netplay.h"
 #include "skt_netplay.h"
@@ -70,7 +71,6 @@ static void netplay_warn_callback(char *msg)
 -(bool)ensureBluetooth;
 -(void)teardownCentral;
 +(void)showAlert:(NSString *)msg;
-+(void)autoDimiss:(id)sender;
 
 @end
 
@@ -79,26 +79,18 @@ static void netplay_warn_callback(char *msg)
 @synthesize emuController;
 
 + (void)showAlert:(NSString *)msg {
-    UIAlertView *warnAlert = [[UIAlertView alloc] initWithTitle:@"Netplay"
-                                                        message:msg//[NSString stringWithFormat: @"\n\n%@",msg]
-                                                       delegate:nil
-                                              cancelButtonTitle:/*nil*/@"Dismiss"
-                                              otherButtonTitles: nil];
-    
-    [warnAlert show];
-    //[NetplayController performSelector:@selector(autoDimiss:) withObject:warnAlert afterDelay:1.5f];
-    [warnAlert release];
-}
-
-+(void)autoDimiss:(id)sender {
-    
-    UIAlertView *alert = (UIAlertView *)sender;
-    [alert dismissWithClickedButtonIndex:0 animated:YES];
-    [alert release];
+    UIViewController* root = UIApplication.sharedApplication.keyWindow.rootViewController;
+    [root showAlertWithTitle:@"Netplay" message:msg /*timeout:1.5*/];
 }
 
 - (id)init {
-    if (self = [super initWithStyle:UITableViewStyleGrouped]) {
+    UITableViewStyle style = UITableViewStyleGrouped;
+#if TARGET_OS_IOS
+    if (@available(iOS 13.0, *)) {
+        style = UITableViewStyleInsetGrouped;
+    }
+#endif
+    if (self = [super initWithStyle:style]) {
         
         arrayWFframeSync = [[NSArray alloc] initWithObjects:@"Auto", @"1", @"2", @"3",@"4", @"5", @"6", @"7", @"8", @"9", @"10",nil];
         arrayWPANtype = [[NSArray alloc] initWithObjects:@"Wi-Fi", @"Bluetooth",nil];
@@ -143,7 +135,7 @@ static void netplay_warn_callback(char *msg)
     [super loadView];
     
     UIBarButtonItem *button = [[UIBarButtonItem alloc] initWithTitle:@"Done"
-                                                               style:UIBarButtonItemStyleBordered
+                                                               style:UIBarButtonItemStylePlain
                                                               target: emuController  action:  @selector(done:) ];
     self.navigationItem.rightBarButtonItem = button;
     [button release];
@@ -181,7 +173,7 @@ static void netplay_warn_callback(char *msg)
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     
-    NSString *cellIdentifier = [NSString stringWithFormat: @"%d:%d", [indexPath indexAtPosition:0], [indexPath indexAtPosition:1]];
+    NSString *cellIdentifier = [NSString stringWithFormat: @"%d:%d", (int)[indexPath indexAtPosition:0], (int)[indexPath indexAtPosition:1]];
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
     
     netplay_t *handle = netplay_get_handle();
@@ -232,7 +224,7 @@ static void netplay_warn_callback(char *msg)
                         cell.selectionStyle = UITableViewCellSelectionStyleBlue;
                         cell.textLabel.text = [NSString stringWithFormat:@"Start Game: %s",myosd_selected_game];                        
                     }
-                    cell.textLabel.textAlignment = UITextAlignmentCenter;
+                    cell.textLabel.textAlignment = NSTextAlignmentCenter;
                     
                     break;
                 }
@@ -249,7 +241,7 @@ static void netplay_warn_callback(char *msg)
                         cell.selectionStyle = UITableViewCellSelectionStyleBlue;
                     }
                     cell.textLabel.text = @"Join Peer Game";
-                    cell.textLabel.textAlignment = UITextAlignmentCenter;
+                    cell.textLabel.textAlignment = NSTextAlignmentCenter;
                     break;
                 }
                 case 2:
@@ -265,7 +257,7 @@ static void netplay_warn_callback(char *msg)
                         cell.selectionStyle = UITableViewCellSelectionStyleBlue;
                     }
                     cell.textLabel.text = @"Disconnect";
-                    cell.textLabel.textAlignment = UITextAlignmentCenter;
+                    cell.textLabel.textAlignment = NSTextAlignmentCenter;
                     
                     break;
                 }
@@ -288,7 +280,7 @@ static void netplay_warn_callback(char *msg)
             textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
             textField.spellCheckingType = UITextSpellCheckingTypeNo;
             textField.clearButtonMode = UITextFieldViewModeNever;
-            textField.textAlignment = UITextAlignmentRight;
+            textField.textAlignment = NSTextAlignmentRight;
             textField.keyboardType = UIKeyboardTypeNumbersAndPunctuation;
             textField.clearsOnBeginEditing = YES;
             
@@ -543,14 +535,8 @@ static void netplay_warn_callback(char *msg)
     
     if(!res)
     {
-        UIAlertView *warnAlert = [[UIAlertView alloc] initWithTitle: @"No WI-FI available!"
-                                                            message: @"You have no wifi connection available. Please connect to a WIFI network."
-                                                           delegate:nil
-                                                  cancelButtonTitle:@"Dismiss" 
-                                                  otherButtonTitles: nil];
-        
-        [warnAlert show];
-        [warnAlert release];
+        [self showAlertWithTitle:@"No WI-FI available!" message:@"You have no wifi connection available. Please connect to a WIFI network."];
+
         UITableView *tableView = (UITableView *)self.view;
         [tableView reloadData];
         return false;
@@ -575,14 +561,7 @@ static void netplay_warn_callback(char *msg)
         /*
         if(!first)
         {
-        UIAlertView *warnAlert = [[UIAlertView alloc] initWithTitle: @"No Bluetooth available!"
-                                                            message: @"You have no bluetooth available. Please connect bluetooth."
-                                                           delegate:nil
-                                                  cancelButtonTitle:@"Dismiss"
-                                                  otherButtonTitles: nil];
-        
-        [warnAlert show];
-        [warnAlert release];
+            [self showAlertWithTitle:@"No Bluetooth available!" message:@"You have no bluetooth available. Please connect bluetooth."];
         }*/
         UITableView *tableView = (UITableView *)self.view;
         [tableView reloadData];
@@ -595,14 +574,7 @@ static void netplay_warn_callback(char *msg)
     Options *op = [[[Options alloc] init] autorelease];
     if(op.wfpeeraddr == nil)
     {
-        UIAlertView *warnAlert = [[UIAlertView alloc] initWithTitle:@"No peer address available!"
-                                                            message:@"Peer address has not been set."
-                                                           delegate:nil
-                                                  cancelButtonTitle:@"Dismiss"
-                                                  otherButtonTitles: nil];
-        
-        [warnAlert show];
-        [warnAlert release];
+        [self showAlertWithTitle:@"No peer address available!" message:@"Peer address has not been set."];
         UITableView *tableView = (UITableView *)self.view;
         [tableView reloadData];
         return false;
@@ -620,25 +592,14 @@ static void netplay_warn_callback(char *msg)
         return;
     }
     
-    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Waiting peer to connect..."
-                                                  message  : @"\n\n"
-                                                   delegate:self
-                                          cancelButtonTitle:@"Cancel"
-                                          otherButtonTitles:nil];
-    
-    UIActivityIndicatorView *spinner = [[[UIActivityIndicatorView alloc]
-                                         initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge] autorelease];
-    spinner.center = CGPointMake(139.5, 70);
-    [alert addSubview:spinner];
-    [spinner startAnimating];
-    
     cancelled = false;
+    [self showAlertWithTitle:@"Waiting peer to connect..." message:nil buttons:@[@"Cancel"] handler:^(NSUInteger button) {
+        cancelled = true;
+    }];
         
     [self setNetplayOptions];
     
     strcpy(handle->game_name,myosd_selected_game);
-    
-    [alert show];
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         
@@ -650,14 +611,13 @@ static void netplay_warn_callback(char *msg)
         dispatch_async(dispatch_get_main_queue(), ^{
             if(!cancelled)
             {
-                [alert dismissWithClickedButtonIndex:0 animated:YES];
+                [self dismissAlert];
                 myosd_exitGame = 1;
             }
             else
             {
                 handle->has_connection = false;
             }
-            [alert release];
             UITableView *tableView = (UITableView *)self.view;
             [tableView reloadData];
         });
@@ -676,25 +636,13 @@ static void netplay_warn_callback(char *msg)
         return;
     }
     
-    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:[NSString stringWithFormat: @"Waiting to join to\n %@...",op.wfpeeraddr]
-                                                  message  : @"\n\n"
-                                       delegate:self
-                              cancelButtonTitle:@"Cancel"
-                              otherButtonTitles:nil];
-    
-    UIActivityIndicatorView *spinner = [[[UIActivityIndicatorView alloc]
-                                        initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge] autorelease];
-    spinner.center = CGPointMake(139.5, 90);
-    [alert addSubview:spinner];
-    [spinner startAnimating];
-    
     cancelled = false;
+    [self showAlertWithTitle:[NSString stringWithFormat: @"Waiting to join to\n %@...",op.wfpeeraddr] message:nil buttons:@[@"Cancel"] handler:^(NSUInteger button) {
+        cancelled = true;
+    }];
     
-    [alert show];
-
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                
-        
+         
         while(!handle->has_joined && !cancelled)
         {
             if(!netplay_send_join(handle))
@@ -705,14 +653,13 @@ static void netplay_warn_callback(char *msg)
         dispatch_async(dispatch_get_main_queue(), ^{
             if(!cancelled)
             {
-               [alert dismissWithClickedButtonIndex:0 animated:YES];
+                [self dismissAlert];
                 myosd_exitGame = 1;
             }
             else
             {
                 handle->has_connection = false;
             }
-            [alert release];
             UITableView *tableView = (UITableView *)self.view;
             [tableView reloadData];
         });
@@ -724,21 +671,11 @@ static void netplay_warn_callback(char *msg)
  
     netplay_t *handle = netplay_get_handle();
     
-    
-    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Waiting peer to connect..."
-                                                  message  : @"\n\n"
-                                                   delegate:self
-                                          cancelButtonTitle:@"Cancel"
-                                          otherButtonTitles:nil];
-    
-    UIActivityIndicatorView *spinner = [[[UIActivityIndicatorView alloc]
-                                         initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge] autorelease];
-    spinner.center = CGPointMake(139.5, 70);
-    [alert addSubview:spinner];
-    [spinner startAnimating];
-    
     cancelled = false;
-    
+    [self showAlertWithTitle:@"Waiting peer to connect..." message:nil buttons:@[@"Cancel"] handler:^(NSUInteger button) {
+        cancelled = true;
+    }];
+
     NetplayGameKit *gk = [NetplayGameKit sharedInstance];
     
     [gk connect:true];
@@ -747,8 +684,6 @@ static void netplay_warn_callback(char *msg)
     [self setNetplayOptions];
     
     strcpy(handle->game_name,myosd_selected_game);
-    
-    [alert show];
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         
@@ -767,14 +702,13 @@ static void netplay_warn_callback(char *msg)
         dispatch_async(dispatch_get_main_queue(), ^{
             if(!cancelled)
             {
-                [alert dismissWithClickedButtonIndex:0 animated:YES];
+                [self dismissAlert];
                 myosd_exitGame = 1;
             }
             else
             {
                 handle->has_connection = false;
             }
-            [alert release];
             UITableView *tableView = (UITableView *)self.view;
             [tableView reloadData];
         });
@@ -786,27 +720,15 @@ static void netplay_warn_callback(char *msg)
 
     netplay_t *handle = netplay_get_handle();
     
-    
-    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:[NSString stringWithFormat: @"Waiting to join..."]
-                                                  message  : @"\n\n"
-                                                   delegate:self
-                                          cancelButtonTitle:@"Cancel"
-                                          otherButtonTitles:nil];
-    
-    UIActivityIndicatorView *spinner = [[[UIActivityIndicatorView alloc]
-                                         initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge] autorelease];
-    spinner.center = CGPointMake(139.5, 70);
-    [alert addSubview:spinner];
-    [spinner startAnimating];
-    
     cancelled = false;
+    [self showAlertWithTitle: @"Waiting to join..." message:nil buttons:@[@"Cancel"] handler:^(NSUInteger button) {
+        cancelled = true;
+    }];
     
     NetplayGameKit *gk = [NetplayGameKit sharedInstance];
     
     [gk connect:false];
     handle->netplay_warn = netplay_warn_callback;
-    
-    [alert show];
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         
@@ -826,26 +748,19 @@ static void netplay_warn_callback(char *msg)
         dispatch_async(dispatch_get_main_queue(), ^{
             if(!cancelled)
             {
-                [alert dismissWithClickedButtonIndex:0 animated:YES];
+                [self dismissAlert];
                 myosd_exitGame = 1;
             }
             else
             {
                 handle->has_connection = false;
             }
-            [alert release];
             UITableView *tableView = (UITableView *)self.view;
             [tableView reloadData];
         });
         
     });
 
-}
-
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
-{
-    if(buttonIndex == [alertView cancelButtonIndex])
-        cancelled = true;
 }
 
 - (void)centralManagerDidUpdateState:(CBCentralManager *)central{

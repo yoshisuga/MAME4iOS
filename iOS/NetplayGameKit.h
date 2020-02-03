@@ -46,6 +46,9 @@
 #import <UIKit/UIKit.h>
 #import <GameKit/GameKit.h>
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 @interface NetplayGameKit : UIViewController <GKSessionDelegate>{
 
     GKSession *session;
@@ -61,3 +64,5 @@
 
 
 @end
+
+#pragma clang diagnostic pop

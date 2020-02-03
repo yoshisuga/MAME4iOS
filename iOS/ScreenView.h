@@ -50,8 +50,6 @@
 	CGContextRef bitmapContext;
 }
 
-- (void) orientationChanged:(NSNotification *)notification;
-
 @end
 
 @interface ScreenView : UIView
@@ -61,6 +59,6 @@
 - (id)initWithFrame:(CGRect)frame;
 - (void)drawRect:(CGRect)rect;
 
-@property (nonatomic, copy) void (^didUpdateScreenCallback)();
+@property (nonatomic, copy) void (^didUpdateScreenCallback)(void);
 
 @end
