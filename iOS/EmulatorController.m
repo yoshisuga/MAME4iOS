@@ -3714,13 +3714,20 @@ void myosd_handle_turbo() {
     
     if ([viewController isKindOfClass:[UIAlertController class]]) {
         UIAlertController* alert = (UIAlertController*)viewController;
-        
+        UIAlertAction* action;
+
         NSLog(@"ALERT: %@:%@", alert.title, alert.message);
-        if (alert.preferredAction != nil && alert.actions.count == 1) {
-            [alert dismissWithDefault];
-        }
-        else if (alert.cancelAction != nil) {
-            [alert dismissWithCancel];
+        
+        if (alert.actions.count == 1)
+            action = alert.preferredAction ?: alert.cancelAction;
+        else
+            action = alert.cancelAction;
+        
+        if (action != nil) {
+            [alert dismissWithAction:action completion:^{
+                [self performSelectorOnMainThread:@selector(playGame:) withObject:game waitUntilDone:NO];
+            }];
+            return;
         }
         else {
             NSLog(@"CANT RUN GAME! (alert does not have a default or cancel button)");

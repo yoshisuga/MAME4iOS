@@ -276,16 +276,22 @@ unsigned long read_mfi_controller(unsigned long res){
         if (![url startAccessingSecurityScopedResource])
             return FALSE;
     }
-
+    
     NSError* error = nil;
     NSURL* documentsURL = [NSURL fileURLWithPath:[NSString stringWithUTF8String:get_documents_path("")]];
     [NSFileManager.defaultManager copyItemAtURL:url toURL:[documentsURL URLByAppendingPathComponent:url.lastPathComponent] error:&error];
     
+    // TODO: this will fail if the URL is in iCloud and not downloaded yet, fix will require calling NSFileCoordinator.coordinateReadingItemAtURL
+    // ...or just set LSSupportsOpeningDocumentsInPlace = NO in Info.plist and you wont get any non-downloaded iCloud URLs
+    if (error != nil) {
+        NSLog(@"copyItemAtURL ERROR: (%@)", error);
+    }
+
     if (open_in_place)
         [url stopAccessingSecurityScopedResource];
-    else if ([[[url URLByDeletingLastPathComponent] lastPathComponent] isEqualToString:@"Inbox"])
+    else if ([[[url URLByDeletingLastPathComponent] lastPathComponent] hasSuffix:@"Inbox"])
         [[NSFileManager defaultManager] removeItemAtURL:url error:nil];
-    
+
     [hrViewController performSelectorOnMainThread:@selector(moveROMS) withObject:nil waitUntilDone:NO];
         
     return TRUE;
