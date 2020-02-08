@@ -41,6 +41,10 @@
 	<true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<true/>
+	<key>NSAllowsArbitraryLoads</key>
+	<true/>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>We need bluetooth for peer play</string>
 	<key>UIFileSharingEnabled</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
@@ -57,10 +61,6 @@
 	<true/>
 	<key>UIStatusBarHidden</key>
 	<true/>
-	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>We need bluetooth for peer play</string>
-	<key>NSAllowsArbitraryLoads</key>
-<true/>
 	<key>UIStatusBarHidden~ipad</key>
 	<true/>
 	<key>UISupportedInterfaceOrientations</key>
