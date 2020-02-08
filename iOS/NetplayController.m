@@ -79,6 +79,9 @@ static void netplay_warn_callback(char *msg)
 @synthesize emuController;
 
 + (void)showAlert:(NSString *)msg {
+    
+//    UIAlertController *warnAlert = [UIAlertController alertControllerWithTitle:@"Netplay" message:msg preferredStyle:UIAlertControllerStyleAlert];
+    
     UIAlertView *warnAlert = [[UIAlertView alloc] initWithTitle:@"Netplay"
                                                         message:msg//[NSString stringWithFormat: @"\n\n%@",msg]
                                                        delegate:nil
@@ -147,6 +150,7 @@ static void netplay_warn_callback(char *msg)
                                                               target: emuController  action:  @selector(done:) ];
     self.navigationItem.rightBarButtonItem = button;
     [button release];
+    
 }
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
@@ -181,7 +185,7 @@ static void netplay_warn_callback(char *msg)
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     
-    NSString *cellIdentifier = [NSString stringWithFormat: @"%d:%d", [indexPath indexAtPosition:0], [indexPath indexAtPosition:1]];
+    NSString *cellIdentifier = [NSString stringWithFormat: @"%lu:%lu", (unsigned long)[indexPath indexAtPosition:0], (unsigned long)[indexPath indexAtPosition:1]];
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
     
     netplay_t *handle = netplay_get_handle();
@@ -361,6 +365,7 @@ static void netplay_warn_callback(char *msg)
                 return;
             
             [self startSocket];
+//            [self startGamekit];
         }
         else
         {            
@@ -380,11 +385,12 @@ static void netplay_warn_callback(char *msg)
         {
             if(![self ensureWIFI])
                 return;
-            
+
             if(![self ensurePeerAddr])
                 return;
             
             [self joinSocket];
+//            [self joinGamekit];
         }
         else
         {
@@ -559,7 +565,6 @@ static void netplay_warn_callback(char *msg)
 }
 
 -(bool)ensureBluetooth{
-    
     bool first = false;
     if(btMgr==nil)
     {

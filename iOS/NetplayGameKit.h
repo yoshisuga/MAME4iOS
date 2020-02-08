@@ -44,20 +44,28 @@
 
 
 #import <UIKit/UIKit.h>
-#import <GameKit/GameKit.h>
+//#import <GameKit/GameKit.h>
+#import <MultipeerConnectivity/MultipeerConnectivity.h>
+#import <MultipeerConnectivity/MCNearbyServiceAdvertiser.h>
+#import <MultipeerConnectivity/MCNearbyServiceBrowser.h>
 
-@interface NetplayGameKit : UIViewController <GKSessionDelegate>{
+@interface NetplayGameKit : NSObject <MCSessionDelegate,MCNearbyServiceBrowserDelegate,MCNearbyServiceAdvertiserDelegate>{
 
-    GKSession *session;
+    MCSession *session;
 	NSMutableArray *peers;
     NSTimer *timer;
+    MCPeerID *peerId;
+    MCNearbyServiceBrowser *browser;
+    MCNearbyServiceAdvertiser *assistant;
 }
 
 +(NetplayGameKit *) sharedInstance;
 - (void) connect:(bool)server;
 
-@property (retain) GKSession *session;
+@property (retain) MCSession *session;
 @property (readwrite,assign) bool connected;
-
+@property (retain) MCPeerID *peerId;
+@property (retain) MCNearbyServiceBrowser *browser;
+@property (retain)  MCNearbyServiceAdvertiser *assistant;
 
 @end
