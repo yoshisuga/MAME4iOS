@@ -358,6 +358,15 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
     for (NSDictionary* game in filteredGames) {
         NSString* section = game[key] ?: @"All";
+        
+        // a UICollectionView will scroll like crap if we have too many sections, so try to filter/combine similar ones.
+        section = [[section componentsSeparatedByString:@" ("] firstObject];
+        section = [[section componentsSeparatedByString:@" / "] firstObject];
+        section = [[section componentsSeparatedByString:@"/"] firstObject];
+        
+        section = [section stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+        section = [section stringByTrimmingCharactersInSet:[NSCharacterSet punctuationCharacterSet]];
+
         if (gameData[section] == nil)
             gameData[section] = [[NSMutableArray alloc] init];
         [gameData[section] addObject:game];
@@ -365,7 +374,36 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     
     // and sort section names
     NSArray* gameSectionTitles = [gameData.allKeys sortedArrayUsingSelector:@selector(localizedCompare:)];
-
+    
+    // a UICollectionView will scroll like crap if we have too many sections. go through and merge a few
+    if ([gameSectionTitles count] > 200) {
+        NSLog(@"TOO MANY SECTIONS: %d!", (int)[gameSectionTitles count]);
+        
+        NSMutableArray* new_titles = [[NSMutableArray alloc] init];
+        
+        for (NSUInteger i=0; i<[gameSectionTitles count]-1; i++) {
+            NSString* title_0 = gameSectionTitles[i+0];
+            NSString* title_1 = gameSectionTitles[i+1];
+            if ([[title_0 componentsSeparatedByString:@" "] count] == 1 && [[title_1 componentsSeparatedByString:@" "] count] <= 2) {
+                NSString* new_title = [NSString stringWithFormat:@"%@ • %@", title_0, title_1];
+                
+                NSLog(@"   MERGE '%@' '%@' => '%@'", title_0, title_1, new_title);
+                
+                gameData[new_title] = [gameData[title_0] arrayByAddingObjectsFromArray:gameData[title_1]];
+                gameData[title_0] = nil;
+                gameData[title_1] = nil;
+                
+                [new_titles addObject:new_title];
+                i++;
+            }
+            else {
+                [new_titles addObject:title_0];
+            }
+        }
+        gameSectionTitles = [new_titles copy];
+        NSLog(@"SECTIONS AFTER MERGE: %d!", (int)[gameSectionTitles count]);
+    }
+ 
     // add favorite games
     NSArray* favoriteGames = [[_userDefaults objectForKey:FAVORITE_GAMES_KEY]
         filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF IN %@", filteredGames]];
@@ -525,7 +563,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     {
         ///layout.itemSize = CGSizeMake(width, 100.0 * (space / 8.0));
         layout.itemSize = CGSizeMake(width, width / 4.0);
-        layout.estimatedItemSize = layout.itemSize;
+        layout.estimatedItemSize = CGSizeZero;
     }
     else
     {
@@ -588,14 +626,15 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         {
             NSLog(@"CELL ASYNC LOAD: %@ %d:%d", info[kGameInfoName], (int)indexPath.section, (int)indexPath.item);
             BOOL selected = cell.isSelected;
+            BOOL enabled = [UIView areAnimationsEnabled];
 
-            [self.collectionView performBatchUpdates:^{
-                [self.collectionView reloadItemsAtIndexPaths:@[indexPath]];
-            } completion:^(BOOL finished) {
-                if (selected) {
-                    [self.collectionView selectItemAtIndexPath:indexPath animated:NO scrollPosition:UICollectionViewScrollPositionCenteredVertically];
-                }
-            }];
+            // reload the new image without animation to prevent "jumping"
+            [UIView setAnimationsEnabled:NO];
+            [self.collectionView reloadItemsAtIndexPaths:@[indexPath]];
+            if (selected) {
+                [self.collectionView selectItemAtIndexPath:indexPath animated:NO scrollPosition:UICollectionViewScrollPositionCenteredVertically];
+            }
+            [UIView setAnimationsEnabled:enabled];
         }
     }];
     
@@ -662,6 +701,28 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if (self.selectGameCallback != nil)
         self.selectGameCallback(game);
 }
+
+#pragma mark UICollectionView index (only on tvOS)
+
+#if TARGET_OS_TV
+- (NSArray*)indexTitlesForCollectionView:(UICollectionView *)collectionView
+{
+    NSMutableSet* set = [[NSMutableSet alloc] init];
+    for (NSString* section in _gameSectionTitles) {
+        if ([section isEqualToString:RECENT_GAMES_TITLE] || [section isEqualToString:FAVORITE_GAMES_TITLE])
+            continue;
+        [set addObject:[section substringToIndex:1]];
+    }
+    return [[set allObjects] sortedArrayUsingSelector:@selector(localizedCompare)];
+}
+
+/// Returns the index path that corresponds to the given title / index. (e.g. "B",1)
+/// Return an index path with a single index to indicate an entire section, instead of a specific item.
+- (NSIndexPath *)collectionView:(UICollectionView *)collectionView indexPathForIndexTitle:(NSString *)title atIndex:(NSInteger)index
+{
+    return [[NSIndexPath alloc] initWithIndex:0];
+}
+#endif
 
 #pragma mark - UIContextMenu (iOS 13+ only)
 
