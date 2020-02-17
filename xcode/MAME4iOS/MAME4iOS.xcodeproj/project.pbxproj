@@ -292,6 +292,11 @@
 		EF249339236264DA00DD0A6C /* ImageCache.m in Sources */ = {isa = PBXBuildFile; fileRef = EF249336236264D900DD0A6C /* ImageCache.m */; };
 		EF24933A236264DA00DD0A6C /* ImageCache.m in Sources */ = {isa = PBXBuildFile; fileRef = EF249336236264D900DD0A6C /* ImageCache.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		EF24933B236264DA00DD0A6C /* ImageCache.m in Sources */ = {isa = PBXBuildFile; fileRef = EF249336236264D900DD0A6C /* ImageCache.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		EF27F36523F73CD400B1E50A /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF27F36323F73CD400B1E50A /* ZipFile.m */; };
+		EF27F36623F73CD400B1E50A /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF27F36323F73CD400B1E50A /* ZipFile.m */; };
+		EF27F36723F73CD400B1E50A /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF27F36323F73CD400B1E50A /* ZipFile.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		EF27F36823F73CD400B1E50A /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF27F36323F73CD400B1E50A /* ZipFile.m */; };
+		EF27F36A23F7475100B1E50A /* libcompression.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = EF27F36923F7475100B1E50A /* libcompression.tbd */; };
 		EFD4D14923C0F65300857A76 /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF19F224235BB1C700C8EE7F /* Alert.m */; };
 		EFD4D14A23C0F6AB00857A76 /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = CE30090316FA47CB000EDCF1 /* Category.ini */; };
 /* End PBXBuildFile section */
@@ -475,6 +480,9 @@
 		EF19F22E235D1C0300C8EE7F /* ChooseGameController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ChooseGameController.h; sourceTree = "<group>"; };
 		EF249336236264D900DD0A6C /* ImageCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageCache.m; sourceTree = "<group>"; };
 		EF249337236264DA00DD0A6C /* ImageCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageCache.h; sourceTree = "<group>"; };
+		EF27F36323F73CD400B1E50A /* ZipFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZipFile.m; sourceTree = "<group>"; };
+		EF27F36423F73CD400B1E50A /* ZipFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZipFile.h; sourceTree = "<group>"; };
+		EF27F36923F7475100B1E50A /* libcompression.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcompression.tbd; path = usr/lib/libcompression.tbd; sourceTree = SDKROOT; };
 		EFCA24BB23E0C60900B0DC25 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../../README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -483,6 +491,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EF27F36A23F7475100B1E50A /* libcompression.tbd in Frameworks */,
 				92A533DD21EEFE290089FBB9 /* MobileCoreServices.framework in Frameworks */,
 				92A533DB21EEFDE20089FBB9 /* CFNetwork.framework in Frameworks */,
 				92D96574215B03E100EFE3AE /* libc++.tbd in Frameworks */,
@@ -699,6 +708,8 @@
 				92B99F0D2022706600CC44E3 /* UIView+Toast.m */,
 				EF19F223235BB15700C8EE7F /* Alert.h */,
 				EF19F224235BB1C700C8EE7F /* Alert.m */,
+				EF27F36423F73CD400B1E50A /* ZipFile.h */,
+				EF27F36323F73CD400B1E50A /* ZipFile.m */,
 				CEBFBC0E163C5BD300A05CD0 /* resources */,
 				92A533D521EE601D0089FBB9 /* WebServer.h */,
 				92A533D621EE601D0089FBB9 /* WebServer.m */,
@@ -802,6 +813,7 @@
 		CEE680881635BA7000051BC2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				EF27F36923F7475100B1E50A /* libcompression.tbd */,
 				92A533E021EEFE570089FBB9 /* MobileCoreServices.framework */,
 				92A533DE21EEFE520089FBB9 /* CFNetwork.framework */,
 				92A533DC21EEFE290089FBB9 /* MobileCoreServices.framework */,
@@ -952,10 +964,12 @@
 				ORGANIZATIONNAME = Seleuco;
 				TargetAttributes = {
 					925ABCA41E46DCC500997182 = {
+						DevelopmentTeam = 8RUN83V8CA;
 						ProvisioningStyle = Automatic;
 					};
 					92ECB8EA21EA984D00D1E3D0 = {
 						CreatedOnToolsVersion = 10.1;
+						DevelopmentTeam = 8RUN83V8CA;
 						ProvisioningStyle = Automatic;
 					};
 					CEE680841635BA7000051BC2 = {
@@ -1165,6 +1179,7 @@
 				925ABCB51E46DCC500997182 /* FilterOptionController.m in Sources */,
 				925ABCB61E46DCC500997182 /* InputOptionController.m in Sources */,
 				92A533C321EBDBAD0089FBB9 /* GCDWebServerMultiPartFormRequest.m in Sources */,
+				EF27F36723F73CD400B1E50A /* ZipFile.m in Sources */,
 				925ABCB71E46DCC500997182 /* DefaultOptionController.m in Sources */,
 				92A533B421EBDBAD0089FBB9 /* GCDWebServerErrorResponse.m in Sources */,
 				EF19F22C235D1BDF00C8EE7F /* ChooseGameController.m in Sources */,
@@ -1177,6 +1192,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EF27F36823F73CD400B1E50A /* ZipFile.m in Sources */,
 				92A533BE21EBDBAD0089FBB9 /* GCDWebServerStreamedResponse.m in Sources */,
 				92A533C421EBDBAD0089FBB9 /* GCDWebServerMultiPartFormRequest.m in Sources */,
 				926C770A21F271A700103EDE /* ListOptionController.m in Sources */,
@@ -1219,6 +1235,7 @@
 				CEAC6C4516AAA95800AF3275 /* ListOptionController.m in Sources */,
 				CEAC6C4716AAA95E00AF3275 /* OptionsController.m in Sources */,
 				EF19F22B235D1BDF00C8EE7F /* ChooseGameController.m in Sources */,
+				EF27F36623F73CD400B1E50A /* ZipFile.m in Sources */,
 				CEAC6C4916AAA96200AF3275 /* DebugView.m in Sources */,
 				CEAC6C4B16AAA96600AF3275 /* ScreenView.m in Sources */,
 				CEAC6C4D16AAA96A00AF3275 /* DonateController.m in Sources */,
@@ -1277,6 +1294,7 @@
 				CE9454D81731DF2700B81C32 /* FilterOptionController.m in Sources */,
 				CE8F08841741580100E2D5FB /* InputOptionController.m in Sources */,
 				92A533C221EBDBAD0089FBB9 /* GCDWebServerMultiPartFormRequest.m in Sources */,
+				EF27F36523F73CD400B1E50A /* ZipFile.m in Sources */,
 				CE8F088817435C3B00E2D5FB /* DefaultOptionController.m in Sources */,
 				92A533B321EBDBAD0089FBB9 /* GCDWebServerErrorResponse.m in Sources */,
 				EF19F22A235D1BDF00C8EE7F /* ChooseGameController.m in Sources */,
@@ -1314,7 +1332,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Yoshinobu Sugawara (R72X3BF4KE)";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 2020.1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 8RUN83V8CA;
 				ENABLE_BITCODE = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MAME4iOS/MAME4iOS-Prefix.pch";
@@ -1334,7 +1352,7 @@
 				MARKETING_VERSION = 2020.1;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4ios;
+				PRODUCT_BUNDLE_IDENTIFIER = com.toddla.mame4ios;
 				PRODUCT_NAME = MAME4iOS;
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1350,7 +1368,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Yoshinobu Sugawara (R72X3BF4KE)";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 2020.1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 8RUN83V8CA;
 				ENABLE_BITCODE = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MAME4iOS/MAME4iOS-Prefix.pch";
@@ -1366,7 +1384,7 @@
 				MARKETING_VERSION = 2020.1;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4ios;
+				PRODUCT_BUNDLE_IDENTIFIER = com.toddla.mame4ios;
 				PRODUCT_NAME = MAME4iOS;
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1409,7 +1427,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2020.1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 8RUN83V8CA;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -1431,7 +1449,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.example.MAME-tvOS";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.toddla.MAME-tvOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;
@@ -1475,7 +1493,7 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 2020.1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 8RUN83V8CA;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -1496,7 +1514,7 @@
 				MARKETING_VERSION = 2020.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.example.MAME-tvOS";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.toddla.MAME-tvOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;
