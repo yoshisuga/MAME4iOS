@@ -76,6 +76,7 @@
 #import "Options.h"
 #import "WebServer.h"
 #import "Alert.h"
+#import "ZipFile.h"
 
 #define DebugLog 0
 #if DebugLog == 0
@@ -3036,46 +3037,114 @@ void myosd_handle_turbo() {
             int i=0;
             
             NSString *fromPath = [NSString stringWithUTF8String:get_documents_path("")];
-            NSString *toPath  = [NSString stringWithUTF8String:get_documents_path("roms")];
-            
+            NSString *romPath  = [NSString stringWithUTF8String:get_documents_path("roms")];
+            NSString *artPath  = [NSString stringWithUTF8String:get_documents_path("artwork")];
+
             BOOL err = FALSE;            
             for (i = 0; i < count; i++)
             {
                 NSString *romName = [romlist objectAtIndex: i];
-                //NSLog(@"%@", romName);
+                NSLog(@"ROM NAME: %@ PATH:%@", romName, [fromPath stringByAppendingPathComponent:romName]);
                 
-                //first attemp to delete de old one
-                [filemgr removeItemAtPath:[toPath stringByAppendingPathComponent:romName] error:&error];
+                //
+                // scan the ZIP file to see what kind it is.
+                //
+                //  * zipset, if the ZIP contains other ZIP files, then it is a zip of romsets, aka zipset?.
+                //  * artwork, if the ZIP contains a .LAY file, then it is artwork
+                //  * romset, if the ZIP has "normal" files in it assume it is a romset.
+                //
+                int __block numLAY = 0;
+                int __block numZIP = 0;
+                int __block numCHD = 0;
+                int __block numFiles = 0;
+                BOOL result = [ZipFile enumerate:[fromPath stringByAppendingPathComponent:romName] withOptions:ZipFileEnumFiles usingBlock:^(ZipFileInfo* info) {
+                    NSString* ext = [info.name.pathExtension uppercaseString];
+                    numFiles++;
+                    if ([ext isEqualToString:@"LAY"])
+                        numLAY++;
+                    if ([ext isEqualToString:@"ZIP"])
+                        numZIP++;
+                    if ([ext isEqualToString:@"CHD"])
+                        numCHD++;
+                }];
                 
-                //now move it
-                error = nil;
-                [filemgr moveItemAtPath: [fromPath stringByAppendingPathComponent:romName]
-                                 toPath: [toPath stringByAppendingPathComponent:romName]
-                                  error:&error];
-                if(error!=nil)
+                NSString* toPath = nil;
+                
+                if (!result)
                 {
-                    NSLog(@"Unable to move rom: %@", [error localizedDescription]);
-                    err = TRUE;
+                    NSLog(@"%@ is a CORRUPT ZIP (deleting)", romName);
+                    [filemgr removeItemAtPath:[fromPath stringByAppendingPathComponent:romName] error:nil];
                 }
+                else if (numZIP != 0 || numCHD != 0)
+                {
+                    NSLog(@"%@ is a ZIPSET", romName);
+                    int maxFiles = numFiles;
+                    numFiles = 0;
+                    [ZipFile destructiveEnumerate:[fromPath stringByAppendingPathComponent:romName] withOptions:(ZipFileEnumFiles|ZipFileEnumDirectories) usingBlock:^(ZipFileInfo* info) {
+                        NSString* toPath = nil;
+                        NSString* ext = [info.name.pathExtension uppercaseString];
+                        
+                        if (info.isDirectory)
+                        {
+                            NSLog(@"...DIR: %@", info.name);
+                            if ([info.name hasPrefix:@"roms/"] && [info.name length] > 5)
+                                [[NSFileManager defaultManager] createDirectoryAtPath:[fromPath stringByAppendingPathComponent:info.name] withIntermediateDirectories:TRUE attributes:nil error:nil];
+                            return;
+                        }
+
+                        NSLog(@"...UNZIP: %@", info.name);
+
+                        if ([info.name hasPrefix:@"roms/"] || [info.name hasPrefix:@"artwork/"] || [info.name hasPrefix:@"titles/"])
+                            toPath = [fromPath stringByAppendingPathComponent:info.name];
+                        else if ([ext isEqualToString:@"ZIP"])
+                            toPath = [romPath stringByAppendingPathComponent:[info.name lastPathComponent]];
+
+                        if (toPath != nil)
+                        {
+                            if (![info.data writeToFile:toPath atomically:YES])
+                                NSLog(@"ERROR UNZIPing %@", info.name);
+                        }
+                        
+                        numFiles++;
+                        [progressAlert setProgress:((double)i / count) + ((double)numFiles / (maxFiles * count))];
+                    }];
+                    toPath = nil;   // nothing to move, we unziped the file "in place"
+                }
+                else if (numLAY != 0)
+                {
+                    NSLog(@"%@ is a ARTWORK file", romName);
+                    toPath = artPath;
+                }
+                else
+                {
+                    NSLog(@"%@ is a ROMSET", romName);
+                    toPath = romPath;
+                }
+
+                // move file to either ROMS or ARTWORK
+                if (toPath)
+                {
+                    //first attemp to delete de old one
+                    [filemgr removeItemAtPath:[toPath stringByAppendingPathComponent:romName] error:&error];
+                    
+                    //now move it
+                    error = nil;
+                    [filemgr moveItemAtPath: [fromPath stringByAppendingPathComponent:romName]
+                                     toPath: [toPath stringByAppendingPathComponent:romName]
+                                      error:&error];
+                    if(error!=nil)
+                    {
+                        NSLog(@"Unable to move rom: %@", [error localizedDescription]);
+                        err = TRUE;
+                    }
+                }
+                
                 //[NSThread sleepForTimeInterval:5.0];
-                [progressAlert setProgress:(i / (double)count)];
+                [progressAlert setProgress:((double)(i+1) / count)];
             }
             dispatch_async(dispatch_get_main_queue(), ^{
                 [topViewController dismissViewControllerAnimated:YES completion:^{
-                    
-                    /*
-                    if(err == FALSE)
-                    {
-                       if(!(myosd_in_menu==0 && myosd_inGame)){
-                          myosd_reset_filter = 1;
-                       }
-                       myosd_last_game_selected = 0;
-                    }
 
-                    if (err == FALSE && !myosd_inGame)
-                        myosd_exitGame = 1;
-                    */
-                    
                     // reload the MAME menu....
                     if (err == FALSE)
                         [self performSelectorOnMainThread:@selector(playGame:) withObject:nil waitUntilDone:NO];
@@ -3665,7 +3734,7 @@ void myosd_handle_turbo() {
 #else
     NSString* welcome = @"Welcome to MAME4iOS";
 #endif
-    NSString* message = [NSString stringWithFormat:@"\nTo transfer ROMs from your computer, go to one of these addresses on your web browser:\n\n%@",servers];
+    NSString* message = [NSString stringWithFormat:@"\nTo transfer ROMs from your computer, use AirDrop, or go to one of these addresses on your web browser:\n\n%@",servers];
     NSString* title = g_no_roms_found ? welcome : @"Web Server Started";
     NSString* done  = g_no_roms_found ? @"Reload ROMs" : @"Stop Server";
 

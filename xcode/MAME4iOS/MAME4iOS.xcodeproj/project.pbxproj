@@ -293,6 +293,11 @@
 		EF249339236264DA00DD0A6C /* ImageCache.m in Sources */ = {isa = PBXBuildFile; fileRef = EF249336236264D900DD0A6C /* ImageCache.m */; };
 		EF24933A236264DA00DD0A6C /* ImageCache.m in Sources */ = {isa = PBXBuildFile; fileRef = EF249336236264D900DD0A6C /* ImageCache.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		EF24933B236264DA00DD0A6C /* ImageCache.m in Sources */ = {isa = PBXBuildFile; fileRef = EF249336236264D900DD0A6C /* ImageCache.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		EF27F36523F73CD400B1E50A /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF27F36323F73CD400B1E50A /* ZipFile.m */; };
+		EF27F36623F73CD400B1E50A /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF27F36323F73CD400B1E50A /* ZipFile.m */; };
+		EF27F36723F73CD400B1E50A /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF27F36323F73CD400B1E50A /* ZipFile.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		EF27F36823F73CD400B1E50A /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF27F36323F73CD400B1E50A /* ZipFile.m */; };
+		EF27F36A23F7475100B1E50A /* libcompression.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = EF27F36923F7475100B1E50A /* libcompression.tbd */; };
 		EFD4D14923C0F65300857A76 /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF19F224235BB1C700C8EE7F /* Alert.m */; };
 		EFD4D14A23C0F6AB00857A76 /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = CE30090316FA47CB000EDCF1 /* Category.ini */; };
 /* End PBXBuildFile section */
@@ -477,6 +482,9 @@
 		EF19F22E235D1C0300C8EE7F /* ChooseGameController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ChooseGameController.h; sourceTree = "<group>"; };
 		EF249336236264D900DD0A6C /* ImageCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageCache.m; sourceTree = "<group>"; };
 		EF249337236264DA00DD0A6C /* ImageCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageCache.h; sourceTree = "<group>"; };
+		EF27F36323F73CD400B1E50A /* ZipFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZipFile.m; sourceTree = "<group>"; };
+		EF27F36423F73CD400B1E50A /* ZipFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZipFile.h; sourceTree = "<group>"; };
+		EF27F36923F7475100B1E50A /* libcompression.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcompression.tbd; path = usr/lib/libcompression.tbd; sourceTree = SDKROOT; };
 		EFCA24BB23E0C60900B0DC25 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../../README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -486,6 +494,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E9856CF023C9A7C50071666D /* MultipeerConnectivity.framework in Frameworks */,
+				EF27F36A23F7475100B1E50A /* libcompression.tbd in Frameworks */,
 				92A533DD21EEFE290089FBB9 /* MobileCoreServices.framework in Frameworks */,
 				92A533DB21EEFDE20089FBB9 /* CFNetwork.framework in Frameworks */,
 				92D96574215B03E100EFE3AE /* libc++.tbd in Frameworks */,
@@ -702,6 +711,8 @@
 				92B99F0D2022706600CC44E3 /* UIView+Toast.m */,
 				EF19F223235BB15700C8EE7F /* Alert.h */,
 				EF19F224235BB1C700C8EE7F /* Alert.m */,
+				EF27F36423F73CD400B1E50A /* ZipFile.h */,
+				EF27F36323F73CD400B1E50A /* ZipFile.m */,
 				CEBFBC0E163C5BD300A05CD0 /* resources */,
 				92A533D521EE601D0089FBB9 /* WebServer.h */,
 				92A533D621EE601D0089FBB9 /* WebServer.m */,
@@ -806,6 +817,7 @@
 			isa = PBXGroup;
 			children = (
 				E9856CEF23C9A7C50071666D /* MultipeerConnectivity.framework */,
+				EF27F36923F7475100B1E50A /* libcompression.tbd */,
 				92A533E021EEFE570089FBB9 /* MobileCoreServices.framework */,
 				92A533DE21EEFE520089FBB9 /* CFNetwork.framework */,
 				92A533DC21EEFE290089FBB9 /* MobileCoreServices.framework */,
@@ -1171,6 +1183,7 @@
 				925ABCB51E46DCC500997182 /* FilterOptionController.m in Sources */,
 				925ABCB61E46DCC500997182 /* InputOptionController.m in Sources */,
 				92A533C321EBDBAD0089FBB9 /* GCDWebServerMultiPartFormRequest.m in Sources */,
+				EF27F36723F73CD400B1E50A /* ZipFile.m in Sources */,
 				925ABCB71E46DCC500997182 /* DefaultOptionController.m in Sources */,
 				92A533B421EBDBAD0089FBB9 /* GCDWebServerErrorResponse.m in Sources */,
 				EF19F22C235D1BDF00C8EE7F /* ChooseGameController.m in Sources */,
@@ -1183,6 +1196,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EF27F36823F73CD400B1E50A /* ZipFile.m in Sources */,
 				92A533BE21EBDBAD0089FBB9 /* GCDWebServerStreamedResponse.m in Sources */,
 				92A533C421EBDBAD0089FBB9 /* GCDWebServerMultiPartFormRequest.m in Sources */,
 				926C770A21F271A700103EDE /* ListOptionController.m in Sources */,
@@ -1225,6 +1239,7 @@
 				CEAC6C4516AAA95800AF3275 /* ListOptionController.m in Sources */,
 				CEAC6C4716AAA95E00AF3275 /* OptionsController.m in Sources */,
 				EF19F22B235D1BDF00C8EE7F /* ChooseGameController.m in Sources */,
+				EF27F36623F73CD400B1E50A /* ZipFile.m in Sources */,
 				CEAC6C4916AAA96200AF3275 /* DebugView.m in Sources */,
 				CEAC6C4B16AAA96600AF3275 /* ScreenView.m in Sources */,
 				CEAC6C4D16AAA96A00AF3275 /* DonateController.m in Sources */,
@@ -1283,6 +1298,7 @@
 				CE9454D81731DF2700B81C32 /* FilterOptionController.m in Sources */,
 				CE8F08841741580100E2D5FB /* InputOptionController.m in Sources */,
 				92A533C221EBDBAD0089FBB9 /* GCDWebServerMultiPartFormRequest.m in Sources */,
+				EF27F36523F73CD400B1E50A /* ZipFile.m in Sources */,
 				CE8F088817435C3B00E2D5FB /* DefaultOptionController.m in Sources */,
 				92A533B321EBDBAD0089FBB9 /* GCDWebServerErrorResponse.m in Sources */,
 				EF19F22A235D1BDF00C8EE7F /* ChooseGameController.m in Sources */,

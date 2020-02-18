@@ -124,6 +124,18 @@ static ImageCache* sharedInstance = nil;
         return [val addObject:handler];
     }
     
+    // if we have a local copy on disk, and we dont need to resize, get the image synchronously (this helps smooth scrolling)
+    if (localURL != nil && (size.width == 0 && size.height == 0))
+    {
+        if ([[NSFileManager defaultManager] fileExistsAtPath:localURL.path])
+        {
+            NSLog(@"....IMAGE LOCAL CACHE HIT");
+            UIImage* image = [UIImage imageWithData:[NSData dataWithContentsOfURL:localURL]];
+            [cache setObject:(image ?: [NSNull null]) forKey:key];
+            return handler(image);
+        }
+    }
+    
     NSLog(@"....IMAGE CACHE MISS");
     NSParameterAssert(val == nil);
     [cache setObject:[NSMutableArray arrayWithObject:handler] forKey:key];
