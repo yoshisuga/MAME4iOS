@@ -365,7 +365,9 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         section = [[section componentsSeparatedByString:@"/"] firstObject];
         
         section = [section stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-        section = [section stringByTrimmingCharactersInSet:[NSCharacterSet punctuationCharacterSet]];
+        
+        if (![_gameFilterScope isEqualToString:@"Year"])
+            section = [section stringByTrimmingCharactersInSet:[NSCharacterSet punctuationCharacterSet]];
 
         if (gameData[section] == nil)
             gameData[section] = [[NSMutableArray alloc] init];
@@ -384,7 +386,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         for (NSUInteger i=0; i<[gameSectionTitles count]-1; i++) {
             NSString* title_0 = gameSectionTitles[i+0];
             NSString* title_1 = gameSectionTitles[i+1];
-            if ([[title_0 componentsSeparatedByString:@" "] count] == 1 && [[title_1 componentsSeparatedByString:@" "] count] <= 2) {
+            
+            if ([[title_0 componentsSeparatedByString:@" "] count] == 1 &&
+                [[title_1 componentsSeparatedByString:@" "] count] <= 2 ) {
+                
                 NSString* new_title = [NSString stringWithFormat:@"%@ • %@", title_0, title_1];
                 
                 NSLog(@"   MERGE '%@' '%@' => '%@'", title_0, title_1, new_title);
