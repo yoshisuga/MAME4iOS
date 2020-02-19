@@ -202,9 +202,11 @@ unsigned long read_mfi_controller(unsigned long res){
     [manager release];
     
 #if TARGET_OS_IOS
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_7_0
     [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation : UIStatusBarAnimationNone];
 #endif
-    
+#endif
+
     g_isIpad = IS_IPAD;
     g_isIphone5 = IS_WIDESCREEN; //Really want to know if widescreen
     //g_isIphone5 = true; g_isIpad = false;//TEST

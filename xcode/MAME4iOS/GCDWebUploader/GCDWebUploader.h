@@ -84,7 +84,10 @@
 /**
  *  Sets the delegate for the uploader.
  */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wobjc-property-synthesis"
 @property(nonatomic, assign) id<GCDWebUploaderDelegate> delegate;
+#pragma clang diagnostic pop
 
 /**
  *  Sets which files are allowed to be operated on depending on their extension.

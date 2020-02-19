@@ -271,7 +271,9 @@
     return self;    
 }
 
-- (void)drawRect:(CGRect)rect 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+- (void)drawRect:(CGRect)rect
 {
     if(g_enable_debug_view)
     {
@@ -295,8 +297,9 @@
 	    
 		CGContextShowTextAtPoint(context, 10, 10, [msg UTF8String],msg.length );
 	}
-	
 }
+#pragma clang diagnostic pop
+
 
 - (void)calculateStickPosition:(CGPoint)pt {
    

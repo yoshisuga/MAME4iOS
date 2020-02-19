@@ -48,6 +48,9 @@
 
 #include "netplay.h"
 
+// GKSession is deprecated, dont bother me!
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 static NetplayGameKit *sharedInstance = nil;
 
 NSData *_data;
@@ -76,6 +79,7 @@ static int send_pkt_data(netplay_t *handle,netplay_msg_t *msg)
     [sharedInstance sendData:[NSData dataWithBytesNoCopy:msg length:sizeof(netplay_msg_t) freeWhenDone:NO]];
     return 1;
 }
+
 
 @implementation NetplayGameKit
 

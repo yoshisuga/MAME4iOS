@@ -32,11 +32,13 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.7</string>
+	<string>1.9</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>1.7</string>
+	<string>1.9</string>
+    <key>LSRequiresIPhoneOS</key>
+    <true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<true/>
 	<key>UIFileSharingEnabled</key>
@@ -51,6 +53,10 @@
 	<true/>
 	<key>UIRequiresPersistentWiFi</key>
 	<true/>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+    <key>UILaunchStoryboardName</key>
+    <string>Launch Screen</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>We need bluetooth for peer play</string>
 	<key>UIStatusBarHidden</key>
