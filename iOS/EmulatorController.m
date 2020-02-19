@@ -73,6 +73,12 @@
 #import "Bootstrapper.h"
 #import "Options.h"
 #import "WebServer.h"
+#import "Alert.h"
+
+#define DebugLog 0
+#if DebugLog == 0
+#define NSLog(...) (void)0
+#endif
 
 // mfi Controllers
 NSMutableArray *controllers;
@@ -334,18 +340,14 @@ void* app_Thread_Start(void* args)
 
 #if TARGET_OS_IOS
         UINavigationController *navController = [[[UINavigationController alloc] initWithRootViewController:optionsController] autorelease];
-        
         [navController setModalPresentationStyle:UIModalPresentationPageSheet];
-        dispatch_async(dispatch_get_main_queue(), ^ {
-            [self presentViewController:navController animated:YES completion:nil];
-        });
-//        [optionsController release];
+        if (@available(iOS 13.0, *)) {
+            navController.modalInPresentation = YES;    // disable iOS 13 swipe to dismiss...
+        }
+        [self presentViewController:navController animated:YES completion:nil];
 #elif TARGET_OS_TV
         UINavigationController *navController = [[[UINavigationController alloc] initWithRootViewController:optionsController] autorelease];
-        dispatch_async(dispatch_get_main_queue(), ^ {
-            [self presentViewController:navController animated:true completion:^{
-            }];
-        });
+        [self presentViewController:navController animated:true completion:nil];
 #endif
     }]];
 
@@ -2886,8 +2888,9 @@ void myosd_handle_turbo() {
 -(void)moveROMS {
     NSFileManager *filemgr;
     NSArray *filelist;
-    int count;
-    int i;
+    NSUInteger count;
+    NSUInteger i;
+    static int g_move_roms = 0;
     
     //NSLog(@"checking roms!");
     
@@ -2910,21 +2913,22 @@ void myosd_handle_turbo() {
     count = [romlist count];
     
     [filemgr release];
+
+    if(count != 0)
+        NSLog(@"found (%d) ROMs to move....", (int)count);
+    if(count != 0 && g_move_roms != 0)
+        NSLog(@"....cant moveROMs now");
     
-    if(count!=0)
+    if(count != 0 && g_move_roms++ == 0)
     {
-        UIAlertController *progressAlert = [UIAlertController alertControllerWithTitle:@"Moving Newer ROMs" message:@"Please wait..." preferredStyle:UIAlertControllerStyleAlert];
-                UIProgressView *progressView = [[UIProgressView alloc] initWithFrame:CGRectMake(30.0f, 80.0f, 225.0f, 90.0f)];
-        [progressAlert.view addSubview:progressView];
-#if TARGET_OS_IOS
-        [progressView setProgressViewStyle: UIProgressViewStyleBar];
-#elif TARGET_OS_TV
-        [progressView setProgressViewStyle: UIProgressViewStyleDefault];
-#endif
-        
-//        [progressAlert show];
-        [self presentViewController:progressAlert animated:YES completion:nil];
-        [progressView setProgress:0.0f];
+        UIViewController* topViewController = self;
+        while (topViewController.presentedViewController != nil)
+            topViewController = topViewController.presentedViewController;
+
+        UIAlertController *progressAlert = [UIAlertController alertControllerWithTitle:@"Moving ROMs" message:@"Please wait..." preferredStyle:UIAlertControllerStyleAlert];
+        [progressAlert setProgress:0.0];
+
+        [topViewController presentViewController:progressAlert animated:YES completion:nil];
         
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             
@@ -2956,15 +2960,10 @@ void myosd_handle_turbo() {
                     err = TRUE;
                 }
                 
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [progressView setProgress:(i / (float)count)];
-                });
+                [progressAlert setProgress:((double)(i+1) / count)];
             }
             dispatch_async(dispatch_get_main_queue(), ^{
-//                [progressAlert dismissWithClickedButtonIndex:0 animated:YES];
-                [progressAlert dismissViewControllerAnimated:YES completion:nil];
-                [progressAlert release];
-                [progressView release];
+                [topViewController dismissViewControllerAnimated:YES completion:nil];
                 if(err == FALSE)
                 {
                    if(!(myosd_in_menu==0 && myosd_inGame)){
@@ -2972,6 +2971,7 @@ void myosd_handle_turbo() {
                    }
                    myosd_last_game_selected = 0;
                 }
+                g_move_roms = 0;
             });
             
             [filemgr release];
@@ -2991,18 +2991,12 @@ void myosd_handle_turbo() {
     
     if((g_joy_used && ((!g_device_is_landscape && g_pref_full_screen_port) || (g_device_is_landscape && g_pref_full_screen_land))))
     {
-        UIAlertView* exitAlertView=[[UIAlertView alloc] initWithTitle:nil
-                                                              message:@"You cannot customize current layout when using a external controller!"
-                                                             delegate:nil
-                                                    cancelButtonTitle:@"Dismiss"
-                                                    otherButtonTitles:nil];
-        [exitAlertView show];
-        [exitAlertView release];
+        [self showAlertWithTitle:nil message:@"You cannot customize current layout when using a external controller!"];
     }
     else
     {
-        [self dismissModalViewControllerAnimated:YES];
-        
+        [self dismissViewControllerAnimated:YES completion:nil];
+
         [self changeUI]; //ensure GUI
         
         [screenView removeFromSuperview];
@@ -3037,38 +3031,17 @@ void myosd_handle_turbo() {
     
     if((g_joy_used && ((!g_device_is_landscape && g_pref_full_screen_port) || (g_device_is_landscape && g_pref_full_screen_land))))
     {
-        UIAlertView* exitAlertView=[[UIAlertView alloc] initWithTitle:nil
-                                                              message:@"You cannot reset current layout when using a external controller!"
-                                                             delegate:nil
-                                                    cancelButtonTitle:@"Dismiss"
-                                                    otherButtonTitles:nil];
-        [exitAlertView show];
-        [exitAlertView release];
+        [self showAlertWithTitle:nil message:@"You cannot reset current layout when using a external controller!"];
+        return;
     }
-    else
-    {
-        [self dismissModalViewControllerAnimated:YES];
-        
-        [self changeUI]; //ensure GUI
-        
-        [screenView removeFromSuperview];
-        [screenView release];
-        screenView = nil;
-        
-        change_layout = 1;
-        
-        [self removeTouchControllerViews];
-        
-        [self buildTouchControllerViews];
-        
-        
-        UIAlertView* exitAlertView=[[UIAlertView alloc] initWithTitle:nil
-                                                              message:@"Do you want to reset current layout to default?"
-                                                             delegate:self cancelButtonTitle:nil
-                                                    otherButtonTitles:@"Yes",@"No",nil];
-        [exitAlertView show];
-        [exitAlertView release];
-    }
+    
+    [self showAlertWithTitle:nil message:@"Do you want to reset current layout to default?" buttons:@[@"Yes", @"No"] handler:^(NSUInteger buttonIndex) {
+        if (buttonIndex == 0)
+        {
+            [LayoutData removeLayoutData];
+            [self done:self];
+        }
+    }];
 }
 
 -(void)adjustSizes{
