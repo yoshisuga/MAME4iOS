@@ -1159,15 +1159,18 @@ void* app_Thread_Start(void* args)
         [externalView addSubview:icadeView];
     }
     
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_7_0
    [[UIApplication sharedApplication]   setStatusBarOrientation:self.interfaceOrientation];
-   
-   if((self.interfaceOrientation ==  UIDeviceOrientationLandscapeLeft) || (self.interfaceOrientation == UIDeviceOrientationLandscapeRight)){
-	          
-       [self buildLandscape];
-   } else	if((self.interfaceOrientation == UIDeviceOrientationPortrait) || (self.interfaceOrientation == UIDeviceOrientationPortraitUpsideDown)){
-              
-       [self buildPortrait];
-   }
+#endif
+    
+    if (self.view.bounds.size.width > self.view.bounds.size.height)
+        [self buildLandscape];
+    else
+        [self buildPortrait];
+    
+    if (@available(iOS 11.0, *))
+        [self setNeedsUpdateOfHomeIndicatorAutoHidden];
+
 #elif TARGET_OS_TV
     // for tvOS, use "landscape" only
     [self buildLandscape];
