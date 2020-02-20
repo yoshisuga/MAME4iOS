@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>${PRODUCT_NAME}</string>
+	<string>$(PRODUCT_NAME)</string>
 	<key>CFBundleExecutable</key>
 	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleIcons</key>
@@ -37,12 +37,18 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>1.9</string>
-    <key>LSRequiresIPhoneOS</key>
-    <true/>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<true/>
+	<key>NSAllowsArbitraryLoads</key>
+	<true/>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>We need bluetooth for peer play</string>
 	<key>UIFileSharingEnabled</key>
 	<true/>
+	<key>UILaunchStoryboardName</key>
+	<string>Launch Screen</string>
 	<key>UIPrerenderedIcon</key>
 	<true/>
 	<key>UIRequiredDeviceCapabilities</key>
@@ -53,12 +59,6 @@
 	<true/>
 	<key>UIRequiresPersistentWiFi</key>
 	<true/>
-    <key>NSAllowsArbitraryLoads</key>
-    <true/>
-    <key>UILaunchStoryboardName</key>
-    <string>Launch Screen</string>
-	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>We need bluetooth for peer play</string>
 	<key>UIStatusBarHidden</key>
 	<true/>
 	<key>UIStatusBarHidden~ipad</key>

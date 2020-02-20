@@ -47,7 +47,7 @@
 /**
  *  Returns the MIME type component of the content type for the part.
  */
-@property(nonatomic, readonly) NSString* mimeType;
+@property(strong, nonatomic, readonly) NSString* mimeType;
 
 @end
 
@@ -60,7 +60,7 @@
 /**
  *  Returns the data for the part.
  */
-@property(nonatomic, readonly) NSData* data;
+@property(strong, nonatomic, readonly) NSData* data;
 
 /**
  *  Returns the data for the part interpreted as text. If the content

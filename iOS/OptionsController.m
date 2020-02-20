@@ -114,7 +114,6 @@
                                                                    style:UIBarButtonItemStyleDone
                                                                   target: emuController  action:  @selector(done:) ];
     self.navigationItem.rightBarButtonItem = backButton;
-    [backButton release];
     
     self.title = NSLocalizedString(@"Settings", @"");
     
@@ -134,7 +133,6 @@
     self.view.backgroundColor = UIColor.darkGrayColor;
 #endif
     self.view = tableView;
-    [tableView release];
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -156,10 +154,10 @@
        else
           style = UITableViewCellStyleValue1;
        
-      cell = [[[UITableViewCell alloc] initWithStyle:style
+      cell = [[UITableViewCell alloc] initWithStyle:style
                                       //UITableViewCellStyleDefault
                                       //UITableViewCellStyleValue1
-                                      reuseIdentifier:@"CellIdentifier"] autorelease];
+                                      reuseIdentifier:@"CellIdentifier"];
        
       cell.accessoryType = UITableViewCellAccessoryNone;
       cell.selectionStyle = UITableViewCellSelectionStyleNone;
@@ -198,8 +196,7 @@
                case 0: 
                {
                    cell.textLabel.text   = @"Smoothed Image";
-                   [switchSmoothedPort release];
-                   switchSmoothedPort = [[UISwitch alloc] initWithFrame:CGRectZero];                
+                   switchSmoothedPort = [[UISwitch alloc] initWithFrame:CGRectZero];
                    cell.accessoryView = switchSmoothedPort;
                    [switchSmoothedPort setOn:[op smoothedPort] animated:NO];
                    [switchSmoothedPort addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];                   
@@ -209,8 +206,7 @@
                case 1:
                {
                    cell.textLabel.text   = @"CRT Effect";
-                   [switchTvFilterPort release];
-                   switchTvFilterPort  = [[UISwitch alloc] initWithFrame:CGRectZero];                               
+                   switchTvFilterPort  = [[UISwitch alloc] initWithFrame:CGRectZero];
                    cell.accessoryView = switchTvFilterPort ;
                    [switchTvFilterPort setOn:[op tvFilterPort] animated:NO];
                    [switchTvFilterPort addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
@@ -219,8 +215,7 @@
                case 2:
                {
                    cell.textLabel.text   = @"Scanline Effect";
-                   [switchScanlineFilterPort release];
-                   switchScanlineFilterPort  = [[UISwitch alloc] initWithFrame:CGRectZero];                
+                   switchScanlineFilterPort  = [[UISwitch alloc] initWithFrame:CGRectZero];
                    cell.accessoryView = switchScanlineFilterPort ;
                    [switchScanlineFilterPort setOn:[op scanlineFilterPort] animated:NO];
                    [switchScanlineFilterPort addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
@@ -229,8 +224,7 @@
                case 3:
                {
                    cell.textLabel.text   = @"Full Screen";
-                   [switchfullPort release];
-                   switchfullPort  = [[UISwitch alloc] initWithFrame:CGRectZero];                
+                   switchfullPort  = [[UISwitch alloc] initWithFrame:CGRectZero];
                    cell.accessoryView = switchfullPort;
                    [switchfullPort setOn:[op fullPort] animated:NO];
                    [switchfullPort addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged]; 
@@ -239,8 +233,7 @@
                case 4:
                {
 	                cell.textLabel.text   = @"Keep Aspect Ratio";
-                   [switchKeepAspectPort release];
-	                switchKeepAspectPort  = [[UISwitch alloc] initWithFrame:CGRectZero];                
+	                switchKeepAspectPort  = [[UISwitch alloc] initWithFrame:CGRectZero];
 	                cell.accessoryView = switchKeepAspectPort;
 	                [switchKeepAspectPort setOn:[op keepAspectRatioPort] animated:NO];
 	                [switchKeepAspectPort addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
@@ -257,8 +250,7 @@
                case 0: 
                {
                    cell.textLabel.text  = @"Smoothed Image";
-                   [switchSmoothedLand release];
-                   switchSmoothedLand = [[UISwitch alloc] initWithFrame:CGRectZero];                
+                   switchSmoothedLand = [[UISwitch alloc] initWithFrame:CGRectZero];
                    cell.accessoryView = switchSmoothedLand;
                    [switchSmoothedLand setOn:[op smoothedLand] animated:NO];
                    [switchSmoothedLand addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];  
@@ -267,8 +259,7 @@
                case 1:
                {
                    cell.textLabel.text   = @"CRT Effect";
-                   [switchTvFilterLand release];
-                   switchTvFilterLand  = [[UISwitch alloc] initWithFrame:CGRectZero];                
+                   switchTvFilterLand  = [[UISwitch alloc] initWithFrame:CGRectZero];
                    cell.accessoryView = switchTvFilterLand ;
                    [switchTvFilterLand setOn:[op tvFilterLand] animated:NO];
                    [switchTvFilterLand addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];  
@@ -277,8 +268,7 @@
                case 2:
                {
                    cell.textLabel.text   = @"Scanline Effect";
-                   [switchScanlineFilterLand release];
-                   switchScanlineFilterLand  = [[UISwitch alloc] initWithFrame:CGRectZero];                
+                   switchScanlineFilterLand  = [[UISwitch alloc] initWithFrame:CGRectZero];
                    cell.accessoryView = switchScanlineFilterLand ;
                    [switchScanlineFilterLand setOn:[op scanlineFilterLand] animated:NO];
                    [switchScanlineFilterLand addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
@@ -287,8 +277,7 @@
                case 3:
                {
                    cell.textLabel.text   = @"Full Screen";
-                   [switchfullLand release];
-                   switchfullLand  = [[UISwitch alloc] initWithFrame:CGRectZero];                
+                   switchfullLand  = [[UISwitch alloc] initWithFrame:CGRectZero];
                    cell.accessoryView = switchfullLand ;
                    [switchfullLand setOn:[op fullLand] animated:NO];
                    [switchfullLand addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
@@ -297,10 +286,8 @@
 
                case 4:
                {
-
                     cell.textLabel.text   = @"Keep Aspect Ratio";
-                   [switchKeepAspectLand release];
-                    switchKeepAspectLand  = [[UISwitch alloc] initWithFrame:CGRectZero];                
+                    switchKeepAspectLand  = [[UISwitch alloc] initWithFrame:CGRectZero];
                     cell.accessoryView = switchKeepAspectLand;
                     [switchKeepAspectLand setOn:[op keepAspectRatioLand] animated:NO];
                     [switchKeepAspectLand addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
@@ -343,8 +330,7 @@
               case 0:
                {
                    cell.textLabel.text   = @"Show FPS";
-                   [switchShowFPS release];
-                   switchShowFPS  = [[UISwitch alloc] initWithFrame:CGRectZero];                
+                   switchShowFPS  = [[UISwitch alloc] initWithFrame:CGRectZero];
                    cell.accessoryView = switchShowFPS ;
                    [switchShowFPS setOn:[op showFPS] animated:NO];
                    [switchShowFPS addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
@@ -370,8 +356,7 @@
                case 3:
                {
                    cell.textLabel.text   = @"Throttle";
-                   [switchThrottle release];
-                   switchThrottle  = [[UISwitch alloc] initWithFrame:CGRectZero];                
+                   switchThrottle  = [[UISwitch alloc] initWithFrame:CGRectZero];
                    cell.accessoryView = switchThrottle ;
                    [switchThrottle setOn:[op throttle] animated:NO];
                    [switchThrottle addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
@@ -388,8 +373,7 @@
                case 5:
                {
                    cell.textLabel.text   = @"Force Pixel Aspect";
-                   [switchForcepxa release];
-                   switchForcepxa  = [[UISwitch alloc] initWithFrame:CGRectZero];                
+                   switchForcepxa  = [[UISwitch alloc] initWithFrame:CGRectZero];
                    cell.accessoryView = switchForcepxa ;
                    [switchForcepxa setOn:[op forcepxa] animated:NO];
                    [switchForcepxa addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
@@ -398,8 +382,7 @@
               case 6:
                {
                    cell.textLabel.text   = @"Sleep on Idle";
-                   [switchSleep release];
-                   switchSleep  = [[UISwitch alloc] initWithFrame:CGRectZero];                
+                   switchSleep  = [[UISwitch alloc] initWithFrame:CGRectZero];
                    cell.accessoryView = switchSleep ;
                    [switchSleep setOn:[op sleep] animated:NO];
                    [switchSleep addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
@@ -408,8 +391,7 @@
               case 7:
                {
                    cell.textLabel.text   = @"Show Info/Warnings";
-                   [switchShowINFO release];
-                   switchShowINFO  = [[UISwitch alloc] initWithFrame:CGRectZero];                
+                   switchShowINFO  = [[UISwitch alloc] initWithFrame:CGRectZero];
                    cell.accessoryView = switchShowINFO ;
                    [switchShowINFO setOn:[op showINFO] animated:NO];
                    [switchShowINFO addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
@@ -418,7 +400,6 @@
                case 8:
                {
                     cell.textLabel.text   = @"Low Latency Audio";
-                    [switchLowlsound release];
                     switchLowlsound  = [[UISwitch alloc] initWithFrame:CGRectZero];
                     cell.accessoryView = switchLowlsound ;
                     [switchLowlsound setOn:[op lowlsound] animated:NO];
@@ -464,8 +445,6 @@
            break;
        }
    }
-
-   [op release];
 
    return cell;
 }
@@ -522,41 +501,6 @@
 	[super didReceiveMemoryWarning];
 }
 
-
-- (void)dealloc {
-    
-    [switchKeepAspectPort release];
-    [switchKeepAspectLand release];
-    [switchSmoothedPort release];
-    [switchSmoothedLand release];
-    [switchTvFilterPort release];
-    [switchTvFilterLand release];
-    [switchScanlineFilterPort release];
-    [switchScanlineFilterLand release];
-    
-    [switchShowFPS release];
-    [switchShowINFO release];
-    
-    [switchfullLand release];
-    [switchfullPort release];
-            
-    [switchThrottle release];
-    [switchSleep release];
-    [switchForcepxa release];
-    
-    [arrayEmuRes release];
-
-    [arrayFSValue release];
-    [arrayOverscanValue release];
-    [arraySkinValue release];
-        
-    [switchLowlsound release];
-    
-    [arrayEmuSpeed release];
-    
-    [super dealloc];
-}
-
 - (void)optionChanged:(id)sender
 {
     Options *op = [[Options alloc] init];
@@ -610,8 +554,6 @@
         op.lowlsound = [switchLowlsound isOn];
     
 	[op saveOptions];
-		
-	[op release];
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -627,13 +569,11 @@
             if (row==0){
                 HelpController *controller = [[HelpController alloc] init];
                 [[self navigationController] pushViewController:controller animated:YES];
-                [controller release];
             }
             
             if (row==1){
                 DonateController *controller = [[DonateController alloc] init];
                 [[self navigationController] pushViewController:controller animated:YES];
-                [controller release];
             }
 
             break;
@@ -645,7 +585,6 @@
                 inputOptController.emuController = self.emuController;
                 
                 [[self navigationController] pushViewController:inputOptController animated:YES];
-                [inputOptController release];
                 [tableView reloadData];
             }
             break;
@@ -657,7 +596,6 @@
                 defaultOptController.emuController = self.emuController;
                 
                 [[self navigationController] pushViewController:defaultOptController animated:YES];
-                [defaultOptController release];
                 [tableView reloadData];
             }
             break;
@@ -668,25 +606,21 @@
                 ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
                                type:kTypeEmuRes list:arrayEmuRes];                         
                 [[self navigationController] pushViewController:listController animated:YES];
-                [listController release];
             }
             if (row==2){
                 ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
                                                                                               type:kTypeEmuSpeed list:arrayEmuSpeed];
                 [[self navigationController] pushViewController:listController animated:YES];
-                [listController release];
             }
             if (row==4){
                 ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
                                 type:kTypeFSValue list:arrayFSValue];                         
                 [[self navigationController] pushViewController:listController animated:YES];
-                [listController release];
             }
             if (row==9){
                 ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
                                                         type:kTypeOverscanValue list:arrayOverscanValue];
                 [[self navigationController] pushViewController:listController animated:YES];
-                [listController release];
             }
 
             break;
@@ -699,7 +633,6 @@
                 netplayOptController.emuController = self.emuController;
                 
                 [[self navigationController] pushViewController:netplayOptController animated:YES];
-                [netplayOptController release];
                 [tableView reloadData];
             }
             break;
@@ -712,7 +645,6 @@
                 filterOptController.emuController = self.emuController;
                 
                 [[self navigationController] pushViewController:filterOptController animated:YES];
-                [filterOptController release];
                 [tableView reloadData];
             }
             break;

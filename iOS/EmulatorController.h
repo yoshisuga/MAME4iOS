@@ -135,7 +135,7 @@
 - (int *)getBtnStates;
 - (CGRect *)getInputRects;
 - (CGRect *)getButtonRects;
-- (UIView **)getButtonViews;
+- (UIView *)getButtonView:(int)i;
 - (UIView *)getDPADView;
 - (UIView *)getStickView;
 
@@ -183,7 +183,7 @@
 
 - (void)adjustSizes;
 
-@property (readwrite,assign)  UIView *externalView;
+@property (readwrite,strong)  UIView *externalView;
 @property (readwrite,assign) int dpad_state;
 @property (readonly,assign) int num_debug_rects;
 @property (readwrite,assign) CGRect rExternalView;
@@ -192,8 +192,8 @@
 @property (assign) CGRect rStickWindow;
 @property (assign) CGRect rDPadImage;
 #if TARGET_OS_IOS
-@property (retain, nonatomic) UIImpactFeedbackGenerator* impactFeedback;
-@property (retain, nonatomic) UISelectionFeedbackGenerator* selectionFeedback;
+@property (strong, nonatomic) UIImpactFeedbackGenerator* impactFeedback;
+@property (strong, nonatomic) UISelectionFeedbackGenerator* selectionFeedback;
 #endif
 
 

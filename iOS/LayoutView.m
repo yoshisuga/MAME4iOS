@@ -173,7 +173,7 @@
         
         if (ld.type == kType_ButtonImgRect)
         {
-            UIView *v = [emuController getButtonViews][ld.value];
+            UIView *v = [emuController getButtonView:ld.value];
             v.frame = [ld getNewRect];
             [v setNeedsDisplay];
         }
@@ -235,8 +235,6 @@
                      {
                         [LayoutData saveLayoutData:layoutDataArray];
                      }
-
-                     [layoutDataArray release];
                      [emuController finishCustomizeCurrentLayout];
                  }];
              }
@@ -262,11 +260,5 @@
     }
     
 }
-
-- (void)dealloc {
-    
-    [super dealloc];
-}
-
 
 @end

@@ -45,8 +45,5 @@
 #import "Bootstrapper.h"
 
 int main(int argc, char **argv){
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    int retValue = UIApplicationMain(argc, argv, @"Bootstrapper", @"Bootstrapper");
-    [pool release];
-    return retValue;
+    return UIApplicationMain(argc, argv, nil, @"Bootstrapper");
 }

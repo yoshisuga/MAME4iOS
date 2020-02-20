@@ -65,7 +65,7 @@ NS_ASSUME_NONNULL_BEGIN
     NSArray *arrayEmuSpeed;
 }
 
-@property (nonatomic, assign) EmulatorController *emuController;
+@property (nonatomic, strong) EmulatorController *emuController;
 
 +(UILabel*)labelForOnOffValue:(int)optionValue;
 +(void)setOnOffValueForCell:(UITableViewCell*)cell optionValue:(int)optionValue;

@@ -268,8 +268,8 @@ void* app_Thread_Start(void* args)
     return rButtonImages;
 }
 
-- (UIView **)getButtonViews{
-    return buttonViews;
+- (UIView *)getButtonView:(int)i {
+    return buttonViews[i];
 }
 - (UIView *)getDPADView{
     return dpadView;
@@ -307,8 +307,8 @@ void* app_Thread_Start(void* args)
 #endif
 }
 
-- (void)runMenu
-{
+- (void)runMenu { @autoreleasepool {
+
     if(g_menu_option != MENU_NONE)
        return;
     
@@ -316,7 +316,6 @@ void* app_Thread_Start(void* args)
 
     actionPending=1;
     
-    NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
     g_emulation_paused = 1;
     change_pause(1);
 
@@ -339,14 +338,14 @@ void* app_Thread_Start(void* args)
         g_menu_option = MENU_OPTIONS;
 
 #if TARGET_OS_IOS
-        UINavigationController *navController = [[[UINavigationController alloc] initWithRootViewController:optionsController] autorelease];
+        UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:optionsController];
         [navController setModalPresentationStyle:UIModalPresentationPageSheet];
         if (@available(iOS 13.0, *)) {
             navController.modalInPresentation = YES;    // disable iOS 13 swipe to dismiss...
         }
         [self presentViewController:navController animated:YES completion:nil];
 #elif TARGET_OS_TV
-        UINavigationController *navController = [[[UINavigationController alloc] initWithRootViewController:optionsController] autorelease];
+        UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:optionsController];
         [self presentViewController:navController animated:true completion:nil];
 #endif
     }]];
@@ -411,9 +410,7 @@ void* app_Thread_Start(void* args)
         self.controllerUserInteractionEnabled = YES;
 #endif
     }];
-    	   
-    [pool release];
-}
+}}
 
 - (void)endMenu{
     int old = g_joy_used;
@@ -687,7 +684,6 @@ void* app_Thread_Start(void* args)
     
     g_pref_touch_directional_enabled = [op touchDirectionalEnabled];
     
-    [op release];
 }
 
 -(void)done:(id)sender {
@@ -757,7 +753,6 @@ void* app_Thread_Start(void* args)
         }
     }
     
-    [op release];
     
     [self updateOptions];
     
@@ -861,7 +856,6 @@ void* app_Thread_Start(void* args)
 	rect.origin.x = rect.origin.y = 0.0f;
 	UIView *view= [[UIView alloc] initWithFrame:rect];
 	self.view = view;
-	[view release];
      self.view.backgroundColor = [UIColor blackColor];	
     externalView = nil;
     printf("loadView\n");
@@ -1113,9 +1107,8 @@ void* app_Thread_Start(void* args)
 }
 #endif
 
-- (void)changeUI{
-   NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
-    
+- (void)changeUI { @autoreleasepool {
+
   int prev_emulation_paused = g_emulation_paused;
    
   g_emulation_paused = 1;
@@ -1135,13 +1128,11 @@ void* app_Thread_Start(void* args)
   if(screenView != nil)
   {
      [screenView removeFromSuperview];
-     [screenView release];
   }
 
   if(imageBack!=nil)
   {
      [imageBack removeFromSuperview];
-     [imageBack release];
      imageBack = nil;
   }
    
@@ -1149,7 +1140,6 @@ void* app_Thread_Start(void* args)
    if(imageOverlay!=nil)
    {
      [imageOverlay removeFromSuperview];
-     [imageOverlay release];
      imageOverlay = nil;
    }
     
@@ -1220,10 +1210,9 @@ void* app_Thread_Start(void* args)
     [self.view bringSubviewToFront:gcExitAlertView];
 #endif
 
-   [pool release];
-}
+}}
 
-void myosd_handle_turbo() {
+void myosd_handle_turbo() { @autoreleasepool {
     if ( !myosd_inGame ) {
         return;
     }
@@ -1311,7 +1300,7 @@ void myosd_handle_turbo() {
             
         }
     }
-}
+}}
 
 - (void)removeTouchControllerViews{
 #if TARGET_OS_TV
@@ -1322,14 +1311,12 @@ void myosd_handle_turbo() {
    if(dpadView!=nil)
    {
       [dpadView removeFromSuperview];
-      [dpadView release];
       dpadView=nil;
    }
    
    if(analogStickView!=nil)
    {
       [analogStickView removeFromSuperview];
-      [analogStickView release];
       analogStickView=nil;   
    }
    
@@ -1338,7 +1325,6 @@ void myosd_handle_turbo() {
       if(buttonViews[i]!=nil)
       {
          [buttonViews[i] removeFromSuperview];
-         [buttonViews[i] release];     
          buttonViews[i] = nil; 
       }
    }
@@ -1524,7 +1510,6 @@ void myosd_handle_turbo() {
 	  if(dview!=nil)
 	  {
 	    [dview removeFromSuperview];
-	    [dview release];
 	  }  	 
 	
 	  dview = [[DebugView alloc] initWithFrame:self.view.bounds withEmuController:self];
@@ -1744,7 +1729,6 @@ void myosd_handle_turbo() {
 	  if(dview!=nil)
 	  {
         [dview removeFromSuperview];
-        [dview release];
       }	 	  
 	  
 	  dview = [[DebugView alloc] initWithFrame:self.view.bounds withEmuController:self];
@@ -2788,26 +2772,19 @@ void myosd_handle_turbo() {
     
     [self removeTouchControllerViews];
     
-    [screenView release];
     screenView = nil;
     
-    [imageBack release];
     imageBack = nil;
     
-    [imageOverlay release];
     imageOverlay = nil;
 
 #if TARGET_OS_IOS
-    [dview release];
     dview= nil;
 #endif
 
-    [optionsController release];
     optionsController = nil;
-    [icadeView release];
     icadeView = nil;
     
-	[super dealloc];
 }
 
 - (CGRect *)getDebugRects{
@@ -2915,7 +2892,6 @@ void myosd_handle_turbo() {
     }
     count = [romlist count];
     
-    [filemgr release];
 
     if(count != 0)
         NSLog(@"found (%d) ROMs to move....", (int)count);
@@ -2977,14 +2953,11 @@ void myosd_handle_turbo() {
                 g_move_roms = 0;
             });
             
-            [filemgr release];
-            [romlist release];
         });
         
     }
     else
     {
-        [romlist release];
     }
 }
 
@@ -3003,7 +2976,6 @@ void myosd_handle_turbo() {
         [self changeUI]; //ensure GUI
         
         [screenView removeFromSuperview];
-        [screenView release];
         screenView = nil;
         
         layoutView = [[LayoutView alloc] initWithFrame:self.view.bounds withEmuController:self];
@@ -3022,7 +2994,6 @@ void myosd_handle_turbo() {
 -(void)finishCustomizeCurrentLayout{
     
     [layoutView removeFromSuperview];
-    [layoutView release];
     
     change_layout = 0;
 
@@ -3388,24 +3359,24 @@ void myosd_handle_turbo() {
 #endif
             //Add Coin
             myosd_joy_status[index] |= MYOSD_START;
-            [self performSelector:@selector(releaseStart:) withObject:[NSNumber numberWithInteger:MFIController.playerIndex] afterDelay:0.1];
+            [self performSelector:@selector(releaseStart:) withObject:[NSNumber numberWithInteger:controller.playerIndex] afterDelay:0.1];
             
-            if (MFIController.gamepad.leftShoulder.pressed) {
+            if (controller.gamepad.leftShoulder.pressed) {
                 myosd_joy_status[index] &= ~MYOSD_START;
                 myosd_joy_status[index] &= ~MYOSD_L1;
                 myosd_joy_status[index] |= MYOSD_SELECT;
-                [self performSelector:@selector(releaseCoin:) withObject:[NSNumber numberWithInteger:MFIController.playerIndex] afterDelay:0.1];
+                [self performSelector:@selector(releaseCoin:) withObject:[NSNumber numberWithInteger:controller.playerIndex] afterDelay:0.1];
             }
             //Show Mame menu (Start + Coin)
-            if (MFIController.gamepad.rightShoulder.pressed) {
+            if (controller.gamepad.rightShoulder.pressed) {
                 myosd_joy_status[index] &= ~MYOSD_R1;
                 myosd_joy_status[index] &= ~MYOSD_START;
                 myosd_joy_status[index] |= MYOSD_SELECT;
                 myosd_joy_status[index] |= MYOSD_START;
-                [self performSelector:@selector(releaseMenu:) withObject:MFIController afterDelay:0.1];
+                [self performSelector:@selector(releaseMenu:) withObject:controller afterDelay:0.1];
             }
             //Exit Game
-            else if (MFIController.gamepad.buttonX.pressed) {
+            else if (controller.gamepad.buttonX.pressed) {
                 if (myosd_inGame && myosd_in_menu == 0) {
                     myosd_joy_status[index] &= ~MYOSD_START;
                     myosd_joy_status[index] &= ~MYOSD_X;
@@ -3415,7 +3386,7 @@ void myosd_handle_turbo() {
                 }
             }
             // Show Action Sheet Menu
-            else if ( MFIController.gamepad.buttonB.pressed) {
+            else if ( controller.gamepad.buttonB.pressed) {
                 if (myosd_inGame && myosd_in_menu == 0) {
                     myosd_joy_status[index] &= ~MYOSD_START;
                     myosd_joy_status[index] &= ~MYOSD_Y;
@@ -3423,7 +3394,7 @@ void myosd_handle_turbo() {
                 }
             }
             // Load State
-            else if ( MFIController.gamepad.buttonA.pressed ) {
+            else if ( controller.gamepad.buttonA.pressed ) {
                 myosd_joy_status[index] &= ~MYOSD_START;
                 myosd_joy_status[index] &= ~MYOSD_A;
                 myosd_pad_status &= ~MYOSD_START;
@@ -3431,7 +3402,7 @@ void myosd_handle_turbo() {
                 myosd_loadstate = 1;
             }
             // Save State
-            else if ( MFIController.gamepad.buttonY.pressed ) {
+            else if ( controller.gamepad.buttonY.pressed ) {
                 myosd_joy_status[index] &= ~MYOSD_START;
                 myosd_joy_status[index] &= ~MYOSD_Y;
                 myosd_pad_status &= ~MYOSD_START;
@@ -3484,7 +3455,7 @@ void myosd_handle_turbo() {
             index++;
         }
         if ( connectedNonGameControllerIndex != NSNotFound ) {
-            GCController *nonGameController = [[[controllers objectAtIndex:connectedNonGameControllerIndex] retain] autorelease];
+            GCController *nonGameController = [controllers objectAtIndex:connectedNonGameControllerIndex];
             [controllers removeObjectAtIndex:connectedNonGameControllerIndex];
             [controllers addObject:nonGameController];
         }
@@ -3524,7 +3495,7 @@ void myosd_handle_turbo() {
 
 #pragma mark GCDWebServerDelegate
 - (void)webServerDidCompleteBonjourRegistration:(GCDWebServer*)server {
-    NSMutableString *servers = [[[NSMutableString alloc] init] autorelease];
+    NSMutableString *servers = [[NSMutableString alloc] init];
     if ( server.serverURL != nil ) {
         [servers appendString:[NSString stringWithFormat:@"%@",server.serverURL]];
     }

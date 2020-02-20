@@ -510,17 +510,8 @@
     }
     else
     {
-        
         NSLog(@"%@",error);
-        [error release];
     }
-}
-
-- (void)dealloc {
-    
-    [optionsArray dealloc];
-    
-    [super dealloc];
 }
 
 @end

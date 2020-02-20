@@ -90,28 +90,6 @@
     return self;
 }
 
-- (void)dealloc {
-#if TARGET_OS_IOS
-    [switchTvoutNative release];
-    [switchCheats release];
-    [switchVsync release];
-    [switchThreaded release];
-    [switchDblbuff release];
-    [switchHiscore release];
-    [switchVBean2x release];
-    [switchVAntialias release];
-    [switchVFlicker release];
-#endif
-
-    [arraySoundValue release];
-    [arrayMainPriorityValue release];
-    [arrayVideoPriorityValue release];
-    [arrayVideoThreadTypeValue release];
-    [arrayMainThreadTypeValue release];
-    
-    [super dealloc];
-}
-
 - (void) viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     UITableView *tableView = (UITableView *)self.view;
@@ -131,7 +109,6 @@
                                                                style:UIBarButtonItemStyleDone
                                                               target: emuController  action:  @selector(done:) ];
     self.navigationItem.rightBarButtonItem = button;
-    [button release];
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
@@ -168,8 +145,7 @@
         
         style = UITableViewCellStyleValue1;
         
-        cell = [[[UITableViewCell alloc] initWithStyle:style
-                                       reuseIdentifier:@"CellIdentifier"] autorelease];
+        cell = [[UITableViewCell alloc] initWithStyle:style reuseIdentifier:@"CellIdentifier"];
     }
     cell.accessoryType = UITableViewCellAccessoryNone;
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
@@ -186,7 +162,6 @@
                 {
                     cell.textLabel.text  = @"Beam 2x";
 #if TARGET_OS_IOS
-                    [switchVBean2x release];
                     switchVBean2x = [[UISwitch alloc] initWithFrame:CGRectZero];
                     cell.accessoryView = switchVBean2x;
                     [switchVBean2x setOn:[op vbean2x] animated:NO];
@@ -201,7 +176,6 @@
                 {
                     cell.textLabel.text   = @"Antialias";
 #if TARGET_OS_IOS
-                    [switchVAntialias release];
                     switchVAntialias  = [[UISwitch alloc] initWithFrame:CGRectZero];
                     cell.accessoryView = switchVAntialias ;
                     [switchVAntialias setOn:[op vantialias] animated:NO];
@@ -216,8 +190,7 @@
                 {
                     cell.textLabel.text   = @"Flicker";
 #if TARGET_OS_IOS
-                    [switchVFlicker release];
-                    switchVFlicker  = [[UISwitch alloc] initWithFrame:CGRectZero];
+                     switchVFlicker  = [[UISwitch alloc] initWithFrame:CGRectZero];
                     cell.accessoryView = switchVFlicker ;
                     [switchVFlicker setOn:[op vflicker] animated:NO];
                     [switchVFlicker addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
@@ -244,7 +217,6 @@
                 {
                     cell.textLabel.text   = @"Cheats";
 #if TARGET_OS_IOS
-                    [switchCheats release];
                     switchCheats  = [[UISwitch alloc] initWithFrame:CGRectZero];
                     cell.accessoryView = switchCheats ;
                     [switchCheats setOn:[op cheats] animated:NO];
@@ -259,7 +231,6 @@
                 {
                     cell.textLabel.text   = @"Force 60Hz Sync";
 #if TARGET_OS_IOS
-                    [switchVsync release];
                     switchVsync  = [[UISwitch alloc] initWithFrame:CGRectZero];
                     cell.accessoryView = switchVsync ;
                     [switchVsync setOn:[op vsync] animated:NO];
@@ -273,7 +244,6 @@
                 {
                     cell.textLabel.text   = @"Save Hiscores";
 #if TARGET_OS_IOS
-                    [switchHiscore release];
                     switchHiscore  = [[UISwitch alloc] initWithFrame:CGRectZero];
                     cell.accessoryView = switchHiscore ;
                     [switchHiscore setOn:[op hiscore] animated:NO];
@@ -294,7 +264,6 @@
                 {
                     cell.textLabel.text   = @"Native TV-OUT";
 #if TARGET_OS_IOS
-                    [switchTvoutNative release];
                     switchTvoutNative  = [[UISwitch alloc] initWithFrame:CGRectZero];
                     cell.accessoryView = switchTvoutNative ;
                     [switchTvoutNative setOn:[op tvoutNative] animated:NO];
@@ -309,7 +278,6 @@
                 {
                     cell.textLabel.text   = @"Threaded Video";
 #if TARGET_OS_IOS
-                    [switchThreaded release];
                     switchThreaded  = [[UISwitch alloc] initWithFrame:CGRectZero];
                     cell.accessoryView = switchThreaded ;
                     [switchThreaded setOn:[op threaded] animated:NO];
@@ -337,7 +305,6 @@
                 {
                     cell.textLabel.text   = @"Double Buffer";
 #if TARGET_OS_IOS
-                    [switchDblbuff release];
                     switchDblbuff  = [[UISwitch alloc] initWithFrame:CGRectZero];
                     cell.accessoryView = switchDblbuff ;
                     [switchDblbuff setOn:[op dblbuff] animated:NO];
@@ -365,8 +332,6 @@
             break;
         }
     }
-    
-    [op release];
     
     return cell;
 }
@@ -404,7 +369,6 @@
         op.vflicker = [switchVFlicker isOn];
     
     [op saveOptions];
-	[op release];
 }
 #endif
 
@@ -415,7 +379,7 @@
     
 #if TARGET_OS_TV
     UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
-    Options *op = [[[Options alloc] init] autorelease];
+    Options *op = [[Options alloc] init];
     if ( section == 0 ) {
         if ( row == 0 ) {
             op.vbean2x = op.vbean2x ? 0 : 1;
@@ -458,31 +422,26 @@
         ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
                                                                                       type:kTypeSoundValue list:arraySoundValue];
         [[self navigationController] pushViewController:listController animated:YES];
-        [listController release];
     }
     if (section==2 && row==2){
         ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
                                                                                       type:kTypeVideoPriorityValue list:arrayVideoPriorityValue];
         [[self navigationController] pushViewController:listController animated:YES];
-        [listController release];
     }
     if (section==2 && row==3){
         ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
                                                                                       type:kTypeVideoThreadTypeValue list:arrayVideoThreadTypeValue];
         [[self navigationController] pushViewController:listController animated:YES];
-        [listController release];
     }
     if (section==2 && row==5){
         ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
                                                                                       type:kTypeMainPriorityValue list:arrayMainPriorityValue];
         [[self navigationController] pushViewController:listController animated:YES];
-        [listController release];
     }
     if (section==2 && row==6){
         ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
                                                                                       type:kTypeMainThreadTypeValue list:arrayMainThreadTypeValue];
         [[self navigationController] pushViewController:listController animated:YES];
-        [listController release];
     }
 
 }

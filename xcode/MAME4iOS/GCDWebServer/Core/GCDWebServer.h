@@ -271,7 +271,7 @@ extern NSString* const GCDWebServerAuthenticationMethod_DigestAccess;
  *  @warning This property is only valid if the server is running and Bonjour
  *  registration has successfully completed, which can take up to a few seconds.
  */
-@property(nonatomic, readonly) NSString* bonjourName;
+@property(strong, nonatomic, readonly) NSString* bonjourName;
 
 /**
  *  Returns the Bonjour service type used by the server.
@@ -279,7 +279,7 @@ extern NSString* const GCDWebServerAuthenticationMethod_DigestAccess;
  *  @warning This property is only valid if the server is running and Bonjour
  *  registration has successfully completed, which can take up to a few seconds.
  */
-@property(nonatomic, readonly) NSString* bonjourType;
+@property(strong, nonatomic, readonly) NSString* bonjourType;
 
 /**
  *  This method is the designated initializer for the class.

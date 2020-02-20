@@ -62,7 +62,6 @@
 	
 	UIView *view= [[UIView alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 	self.view = view;
-	[view release];
     self.view.backgroundColor = [UIColor whiteColor];
     
     self.title = @"Donate";
@@ -147,14 +146,6 @@
 
 - (void)didReceiveMemoryWarning {
 	//[super didReceiveMemoryWarning];
-}
-
-
-- (void)dealloc {
-    
-    [aWebView release];
-    
-	[super dealloc];
 }
 
 @end
