@@ -112,8 +112,8 @@ BASE_DEV=/Applications/Xcode.app/Contents/Developer/Platforms/AppleTVOS.platform
 endif
 
 else
-#MYPREFIX=/usr/bin/
-MYPREFIX=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin/
+MYPREFIX=/usr/bin/
+#MYPREFIX=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin/
 BASE_DEV=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk
 
 endif
@@ -868,8 +868,9 @@ endif
 
 else
 
-CCOMFLAGS += -arch i386 
-#CCOMFLAGS +=  -mios-simulator-version-min=6.0 
+#CCOMFLAGS += -arch i386
+CCOMFLAGS += -arch x86_64
+#CCOMFLAGS +=  -mios-simulator-version-min=6.0
 CCOMFLAGS += -D__IPHONE_OS_VERSION_MIN_REQUIRED=50000 
 #CCOMFLAGS += -x objective-c  -fmessage-length=0 -Wno-trigraphs -fasm-blocks -O0 -Wreturn-type -Wunused-variable -fexceptions -fvisibility=hidden -fvisibility-inlines-hidden -mmacosx-version-min=10.6 -fpascal-strings -gdwarf-2 -fobjc-legacy-dispatch -fobjc-abi-version=2
 
