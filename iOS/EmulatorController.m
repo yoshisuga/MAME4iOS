@@ -817,7 +817,7 @@ void* app_Thread_Start(void* args)
             change_pause(1);
             
 #if TARGET_OS_IOS
-            if ( [GCController controllers].count > 0 ) {
+            if ( controllers.count > 0 ) {
                 gcExitAlertView.hidden = NO;
                 [UIView animateWithDuration:0.5 animations:^{
                     self->gcExitAlertView.alpha = 1.0;
@@ -3354,6 +3354,11 @@ void myosd_handle_turbo() { @autoreleasepool {
     GCController *controller = (GCController *)[notif object];
     
     NSLog(@"Hello %@", controller.vendorName);
+    
+#if TARGET_IPHONE_SIMULATOR // ignore the bogus controller in the simulator
+    if ([controller.vendorName isEqualToString:@"Generic Controller"])
+        return;
+#endif
     
     [controller setPlayerIndex:GCControllerPlayerIndexUnset];
     
