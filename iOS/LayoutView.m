@@ -135,8 +135,7 @@
     
     CGRect textRect = CGRectMake(contextRect.origin.x, contextRect.origin.y + yOffset, contextRect.size.width, fontHeight);
     
-    [s drawInRect: textRect withFont: font lineBreakMode: UILineBreakModeClip
-        alignment: NSTextAlignmentCenter];
+    [s drawInRect: textRect withFont: font lineBreakMode: NSLineBreakByClipping alignment: NSTextAlignmentCenter];
 }
 
 #pragma clang diagnostic pop
@@ -233,9 +232,9 @@
                  [emuController showAlertWithTitle:nil message:@"Do you want to save changes?" buttons:@[@"Yes",@"No"] handler:^(NSUInteger buttonIndex) {
                      if(buttonIndex == 0 )
                      {
-                        [LayoutData saveLayoutData:layoutDataArray];
+                         [LayoutData saveLayoutData:self->layoutDataArray];
                      }
-                     [emuController finishCustomizeCurrentLayout];
+                     [self->emuController finishCustomizeCurrentLayout];
                  }];
              }
          }

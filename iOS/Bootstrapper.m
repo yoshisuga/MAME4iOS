@@ -285,6 +285,10 @@ unsigned long read_mfi_controller(unsigned long res){
 			for (UIScreenMode *mode in screenModes) {
 				CGSize modeScreenSize = mode.size;
                 [alert addAction:[UIAlertAction actionWithTitle:[NSString stringWithFormat:@"%.0f x %.0f pixels", modeScreenSize.width, modeScreenSize.height] style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                    UIScreen* externalScreen = self->externalScreen;
+                    UIWindow* externalWindow = self->externalWindow;
+                    EmulatorController* hrViewController = self->hrViewController;
+                    
                     [externalScreen setCurrentMode:mode];
                     [externalWindow setScreen:externalScreen];
                     

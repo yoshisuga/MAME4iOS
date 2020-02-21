@@ -45,5 +45,7 @@
 #import "Bootstrapper.h"
 
 int main(int argc, char **argv){
-    return UIApplicationMain(argc, argv, nil, @"Bootstrapper");
+    @autoreleasepool {
+        return UIApplicationMain(argc, argv, nil, @"Bootstrapper");
+    }
 }

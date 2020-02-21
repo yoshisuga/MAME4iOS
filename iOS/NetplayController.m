@@ -46,6 +46,7 @@
 #import "Options.h"
 #import "OptionsController.h"
 #import "ListOptionController.h"
+#import "EmulatorController.h"
 #import "Alert.h"
 
 #include "netplay.h"
@@ -54,10 +55,8 @@
 
 #import "NetplayGameKit.h"
 
-static void netplay_warn_callback(char *msg)
-{
-    [NetplayController performSelectorOnMainThread:@selector(showAlert:) withObject:[NSString stringWithUTF8String:msg] waitUntilDone:NO];
-}
+// dont want to change this file too much, so ignore self warning
+#pragma clang diagnostic ignored "-Wimplicit-retain-self"
 
 @interface NetplayController()
 
@@ -73,6 +72,11 @@ static void netplay_warn_callback(char *msg)
 +(void)showAlert:(NSString *)msg;
 
 @end
+
+static void netplay_warn_callback(char *msg)
+{
+    [NetplayController performSelectorOnMainThread:@selector(showAlert:) withObject:[NSString stringWithUTF8String:msg] waitUntilDone:NO];
+}
 
 @implementation NetplayController
 

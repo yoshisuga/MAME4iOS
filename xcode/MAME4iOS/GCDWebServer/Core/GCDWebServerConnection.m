@@ -33,6 +33,9 @@
 
 #import "GCDWebServerPrivate.h"
 
+// dont want to change this file too much, so ignore self warning
+#pragma clang diagnostic ignored "-Wimplicit-retain-self"
+
 #define kHeadersReadCapacity (1 * 1024)
 #define kBodyReadCapacity (256 * 1024)
 

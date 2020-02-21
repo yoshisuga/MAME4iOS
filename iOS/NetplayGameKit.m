@@ -136,7 +136,7 @@ static int send_pkt_data(netplay_t *handle,netplay_msg_t *msg)
     [self teardownConnection];
     
     peerId = [[MCPeerID alloc] initWithDisplayName:[NSString stringWithFormat:@"Gamer+%@",server?@"server":@"client"]];
-    session =  [[MCSession alloc] initWithPeer:peerId securityIdentity:nil encryptionPreference:nil];
+    session =  [[MCSession alloc] initWithPeer:peerId securityIdentity:nil encryptionPreference:MCEncryptionOptional];
 
     session.delegate = self;
     

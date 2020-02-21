@@ -50,6 +50,7 @@
 #import "TVOptionsController.h"
 #endif
 #import "ListOptionController.h"
+#import "EmulatorController.h" // for @selector(done:)
 
 #include "myosd.h"
 

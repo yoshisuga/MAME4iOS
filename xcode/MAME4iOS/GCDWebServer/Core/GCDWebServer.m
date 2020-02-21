@@ -37,6 +37,9 @@
 
 #import "GCDWebServerPrivate.h"
 
+// dont want to change this file too much, so ignore self warning
+#pragma clang diagnostic ignored "-Wimplicit-retain-self"
+
 #if TARGET_OS_IPHONE && !TARGET_IPHONE_SIMULATOR
 #define kDefaultPort 80
 #else

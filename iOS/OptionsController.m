@@ -491,16 +491,6 @@
     [super viewDidLoad];
 }
 
-
--(BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-     //return (interfaceOrientation == UIInterfaceOrientationPortrait);
-     return YES;
-}
-
-- (void)didReceiveMemoryWarning {
-	[super didReceiveMemoryWarning];
-}
-
 - (void)optionChanged:(id)sender
 {
     Options *op = [[Options alloc] init];

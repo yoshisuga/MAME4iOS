@@ -133,6 +133,8 @@
 }
 
 - (int *)getBtnStates;
+
+#if TARGET_OS_IOS
 - (CGRect *)getInputRects;
 - (CGRect *)getButtonRects;
 - (UIView *)getButtonView:(int)i;
@@ -140,9 +142,9 @@
 - (UIView *)getStickView;
 
 - (void)getControllerCoords:(int)orientation;
+#endif
 
 - (void)getConf;
-- (void)filldebugRects;
 
 - (void)startEmulation;
 
@@ -153,11 +155,13 @@
 
 - (void)changeUI;
 
+#if TARGET_OS_IOS
 - (void)buildPortraitImageBack;
 - (void)buildPortraitImageOverlay;
 - (void)buildPortrait;
-- (void)buildLandscapeImageOverlay;
 - (void)buildLandscapeImageBack;
+#endif
+- (void)buildLandscapeImageOverlay;
 - (void)buildLandscape;
 
 - (void)runMenu;
@@ -166,22 +170,23 @@
 - (void)handle_DPAD;
 - (void)handle_MENU;
 
-- (NSSet*)touchesController:(NSSet *)touches withEvent:(UIEvent *)event;
-
 - (void)updateOptions;
 
 - (CGRect *)getDebugRects;
+- (void)filldebugRects;
 
 - (UIImage *)loadImage:(NSString *)name;
 - (FILE *)loadFile:(const char *)name;
 
 - (void)moveROMS;
 
+#if TARGET_OS_IOS
+- (NSSet*)touchesController:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void)beginCustomizeCurrentLayout;
 - (void)finishCustomizeCurrentLayout;
 - (void)resetCurrentLayout;
-
 - (void)adjustSizes;
+#endif
 
 @property (readwrite,strong)  UIView *externalView;
 @property (readwrite,assign) int dpad_state;
