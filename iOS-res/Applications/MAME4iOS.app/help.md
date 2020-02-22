@@ -1,5 +1,7 @@
 # MAME4iOS Reloaded (0.139u1 ) 1.6 (May 15, 2013) by David Valdeita (Seleuco)
 
+![Icon](MAME4iOS144.png)
+
 ## INTRODUCTION
 
 MAME4iOS Reloaded is developed by David Valdeita (Seleuco), port of MAME 0.139u1 emulator by Nicola Salmoria and TEAM.
