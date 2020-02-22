@@ -52,7 +52,6 @@
 #import "FilterOptionController.h"
 #import "InputOptionController.h"
 #import "DefaultOptionController.h"
-#import "DonateController.h"
 #import "HelpController.h"
 #import "EmulatorController.h"
 
@@ -475,7 +474,7 @@
    
       switch (section)
       {
-          case kSupportSection: return 2;
+          case kSupportSection: return 1;
           case kPortraitSection: return 5;
           case kLandscapeSection: return 5;
           case kInputSection: return 1;
@@ -561,11 +560,6 @@
                 [[self navigationController] pushViewController:controller animated:YES];
             }
             
-            if (row==1){
-                DonateController *controller = [[DonateController alloc] init];
-                [[self navigationController] pushViewController:controller animated:YES];
-            }
-
             break;
         }
         case kInputSection:
