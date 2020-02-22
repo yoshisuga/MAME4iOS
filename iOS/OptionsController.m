@@ -176,14 +176,7 @@
                    cell.textLabel.text   = @"Help";
                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                    break;
-               }
-                   
-               case 1:
-               {
-                   cell.textLabel.text   = @"Donate";
-                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   break;
-               }
+               }                   
            }
            break;
        }
