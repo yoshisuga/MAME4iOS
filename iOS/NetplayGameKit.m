@@ -121,8 +121,6 @@ static int send_pkt_data(netplay_t *handle,netplay_msg_t *msg)
 
 - (void)dealloc {
     [self teardownConnection];
-	[peers release];
-    [super dealloc];
 }
 
 - (void) connect:(bool)server{
@@ -138,7 +136,7 @@ static int send_pkt_data(netplay_t *handle,netplay_msg_t *msg)
     [self teardownConnection];
     
     peerId = [[MCPeerID alloc] initWithDisplayName:[NSString stringWithFormat:@"Gamer+%@",server?@"server":@"client"]];
-    session =  [[MCSession alloc] initWithPeer:peerId securityIdentity:nil encryptionPreference:nil];
+    session =  [[MCSession alloc] initWithPeer:peerId securityIdentity:nil encryptionPreference:MCEncryptionOptional];
 
     session.delegate = self;
     
@@ -170,17 +168,14 @@ static int send_pkt_data(netplay_t *handle,netplay_msg_t *msg)
     handle->has_connection = false;
     
     if(peerId != nil){
-        [peerId release];
         peerId = nil;
     }
     if(browser != nil){
         [browser stopBrowsingForPeers];
-        [browser release];
         browser = nil;
     }
     if(assistant != nil){
         [assistant stopAdvertisingPeer];
-        [assistant release];
         assistant = nil;
     }
 
@@ -189,7 +184,6 @@ static int send_pkt_data(netplay_t *handle,netplay_msg_t *msg)
         [session disconnect];
         [peers removeAllObjects];
         session.delegate = nil;
-        [session release];
         session = nil;
     }
     if(timer!=nil)

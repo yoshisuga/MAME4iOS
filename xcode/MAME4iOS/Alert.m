@@ -72,10 +72,11 @@
 
     if (self.textFields.count == 0)
     {
+        UIColor* tintColor = self.view.tintColor;
         [self addTextFieldWithConfigurationHandler:^(UITextField* textField) {
             textField.enabled = NO;
-            textField.font = [UIFont fontWithName:@"Menlo" size:32.0];
-            textField.textColor = self.view.tintColor;
+            textField.font = [UIFont fontWithName:@"Menlo" size:[UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].pointSize];
+            textField.textColor = tintColor;
         }];
     }
     UITextField* textField = self.textFields.firstObject;
@@ -100,22 +101,24 @@
     }
     return nil;
 }
--(void)dismissWithAction:(UIAlertAction*)action
+-(void)dismissWithAction:(UIAlertAction*)action completion: (void (^ __nullable)(void))completion
 {
     if (action == nil)
         return;
     
     [self.presentingViewController dismissViewControllerAnimated:YES completion:^{
         [action callActionHandler];
+        if (completion != nil)
+            completion();
     }];
 }
 -(void)dismissWithDefault
 {
-    return [self dismissWithAction:self.preferredAction];
+    return [self dismissWithAction:self.preferredAction completion:nil];
 }
 -(void)dismissWithCancel
 {
-    return [self dismissWithAction:self.cancelAction];
+    return [self dismissWithAction:self.cancelAction completion:nil];
 }
 -(void)moveDefaultAction:(NSUInteger)direction
 {
@@ -151,17 +154,18 @@
     }
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundeclared-selector"
 - (void)setHighlighted:(BOOL)value
 {
-#if TARGET_OS_IOS
     if ([self respondsToSelector:@selector(_representer)])
     {
         id view = [self valueForKey:@"_representer"];
         if ([view respondsToSelector:@selector(setHighlighted:)])
             [view setHighlighted:value];
     }
-#endif
 }
+#pragma clang diagnostic pop
 @end
 
 

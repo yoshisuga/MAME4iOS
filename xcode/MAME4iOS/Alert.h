@@ -20,8 +20,8 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface UIAlertController(Dismiss)
--(UIAlertAction*)cancelAction;
--(void)dismissWithAction:(UIAlertAction*)action;
+-(UIAlertAction*  __nullable)cancelAction;
+-(void)dismissWithAction:(UIAlertAction*)action completion: (void (^ __nullable)(void))completion;
 -(void)dismissWithDefault;
 -(void)dismissWithCancel;
 -(void)moveDefaultAction:(NSUInteger)direction;

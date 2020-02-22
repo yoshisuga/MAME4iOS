@@ -19,12 +19,4 @@
     _buttonBImageView.tintColor = [UIColor greenColor];
 }
 
-- (void)dealloc {
-    [_messageLabel release];
-    [_okLabel release];
-    [_cancelLabel release];
-    [_buttonAImageView release];
-    [_buttonBImageView release];
-    [super dealloc];
-}
 @end

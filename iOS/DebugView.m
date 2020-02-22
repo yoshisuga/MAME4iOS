@@ -110,10 +110,6 @@
 #pragma clang diagnostic pop
 
 
-- (void)dealloc {
-
-    [super dealloc];
-}
 
 
 @end

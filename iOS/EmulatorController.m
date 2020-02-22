@@ -185,7 +185,9 @@ static int old_filter_category = 0;
 static int old_myosd_num_buttons = 0;
 static int button_auto = 0;
 static int ways_auto = 0;
+#if TARGET_OS_IOS
 static int change_layout=0;
+#endif
 
 static int exit_status = 0;
 
@@ -232,13 +234,12 @@ void* app_Thread_Start(void* args)
     CGPoint mouseInitialLocation;
     CGPoint touchDirectionalMoveStartLocation;
     CGPoint touchDirectionalMoveInitialLocation;
-    BOOL isPresentingAlert;
+    CGSize  layoutSize;
 #if TARGET_OS_IOS
     OptionsController *optionsController;
     GCAlertView *gcExitAlertView;
 #elif TARGET_OS_TV
     TVOptionsController *optionsController;
-    BOOL menuButtonOnRemoteWasPressed;
 #endif
 }
 @end
@@ -268,8 +269,8 @@ void* app_Thread_Start(void* args)
     return rButtonImages;
 }
 
-- (UIView **)getButtonViews{
-    return buttonViews;
+- (UIView *)getButtonView:(int)i {
+    return buttonViews[i];
 }
 - (UIView *)getDPADView{
     return dpadView;
@@ -307,8 +308,8 @@ void* app_Thread_Start(void* args)
 #endif
 }
 
-- (void)runMenu
-{
+- (void)runMenu { @autoreleasepool {
+
     if(g_menu_option != MENU_NONE)
        return;
     
@@ -316,7 +317,6 @@ void* app_Thread_Start(void* args)
 
     actionPending=1;
     
-    NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
     g_emulation_paused = 1;
     change_pause(1);
 
@@ -339,14 +339,14 @@ void* app_Thread_Start(void* args)
         g_menu_option = MENU_OPTIONS;
 
 #if TARGET_OS_IOS
-        UINavigationController *navController = [[[UINavigationController alloc] initWithRootViewController:optionsController] autorelease];
+        UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:self->optionsController];
         [navController setModalPresentationStyle:UIModalPresentationPageSheet];
         if (@available(iOS 13.0, *)) {
             navController.modalInPresentation = YES;    // disable iOS 13 swipe to dismiss...
         }
         [self presentViewController:navController animated:YES completion:nil];
 #elif TARGET_OS_TV
-        UINavigationController *navController = [[[UINavigationController alloc] initWithRootViewController:optionsController] autorelease];
+        UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:self->optionsController];
         [self presentViewController:navController animated:true completion:nil];
 #endif
     }]];
@@ -403,7 +403,7 @@ void* app_Thread_Start(void* args)
     if ( popoverController != nil ) {
         popoverController.sourceView = self.view;
         popoverController.sourceRect = CGRectMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds), 0.0f, 0.0f);
-        popoverController.permittedArrowDirections = @[];
+        popoverController.permittedArrowDirections = 0;
     }
 #endif
     [self presentViewController:menu animated:YES completion:^{
@@ -411,9 +411,7 @@ void* app_Thread_Start(void* args)
         self.controllerUserInteractionEnabled = YES;
 #endif
     }];
-    	   
-    [pool release];
-}
+}}
 
 - (void)endMenu{
     int old = g_joy_used;
@@ -687,7 +685,6 @@ void* app_Thread_Start(void* args)
     
     g_pref_touch_directional_enabled = [op touchDirectionalEnabled];
     
-    [op release];
 }
 
 -(void)done:(id)sender {
@@ -757,7 +754,6 @@ void* app_Thread_Start(void* args)
         }
     }
     
-    [op release];
     
     [self updateOptions];
     
@@ -797,9 +793,9 @@ void* app_Thread_Start(void* args)
         [self exitAlertActionCancel];
     }
     [UIView animateWithDuration:0.25 animations:^{
-        gcExitAlertView.alpha = 0.0;
+        self->gcExitAlertView.alpha = 0.0;
     } completion:^(BOOL finished) {
-        gcExitAlertView.hidden = YES;
+        self->gcExitAlertView.hidden = YES;
     }];
 #endif
 }
@@ -821,10 +817,10 @@ void* app_Thread_Start(void* args)
             change_pause(1);
             
 #if TARGET_OS_IOS
-            if ( [GCController controllers].count > 0 ) {
+            if ( controllers.count > 0 ) {
                 gcExitAlertView.hidden = NO;
                 [UIView animateWithDuration:0.5 animations:^{
-                    gcExitAlertView.alpha = 1.0;
+                    self->gcExitAlertView.alpha = 1.0;
                 }];
                 return;
             }
@@ -861,7 +857,6 @@ void* app_Thread_Start(void* args)
 	rect.origin.x = rect.origin.y = 0.0f;
 	UIView *view= [[UIView alloc] initWithFrame:rect];
 	self.view = view;
-	[view release];
      self.view.backgroundColor = [UIColor blackColor];	
     externalView = nil;
     printf("loadView\n");
@@ -952,6 +947,7 @@ void* app_Thread_Start(void* args)
 		
     [self updateOptions];
 
+#if TARGET_OS_IOS
     // Button to hide/show onscreen controls for lightgun games
     // Also functions as a show menu button when a game controller is used
     hideShowControlsForLightgun = [[UIButton alloc] initWithFrame:CGRectZero];
@@ -966,9 +962,10 @@ void* app_Thread_Start(void* args)
     [self.view addSubview:hideShowControlsForLightgun];
     [self.view addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeCenterX multiplier:1.0f constant:0.0f]];
     [self.view addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeTop multiplier:1.0f constant:8.0f]];
+#endif
+    
     areControlsHidden = NO;
 
-    isPresentingAlert = NO;
     [self changeUI];
     
     icadeView = [[iCadeView alloc] initWithFrame:CGRectZero withEmuController:self];
@@ -1016,7 +1013,6 @@ void* app_Thread_Start(void* args)
 #elif TARGET_OS_TV
     optionsController = [[TVOptionsController alloc] init];
     optionsController.emuController = self;
-    menuButtonOnRemoteWasPressed = NO;
 #endif
 }
 
@@ -1050,11 +1046,6 @@ void* app_Thread_Start(void* args)
     return NO;
 }
 
-
--(BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-    return change_layout ? NO : YES;
-}
-
 - (BOOL)shouldAutorotate {
     return change_layout ? NO : YES;
 }
@@ -1067,16 +1058,12 @@ void* app_Thread_Start(void* args)
         return UIInterfaceOrientationMaskAll;
 }
 
-/*
- - (UIInterfaceOrientation)preferredInterfaceOrientationForPresentation
- {
- //printf("llaman al preferredInterfaceOrientationForPresentation\n");
- return UIInterfaceOrientationPortrait;
- }
- */
-
--(void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {
-    [self changeUI];
+- (void)viewWillLayoutSubviews {
+    [super viewWillLayoutSubviews];
+    if (!CGSizeEqualToSize(layoutSize, self.view.bounds.size)) {
+        layoutSize = self.view.bounds.size;
+        [self changeUI];
+    }
 }
 
 #endif
@@ -1113,9 +1100,8 @@ void* app_Thread_Start(void* args)
 }
 #endif
 
-- (void)changeUI{
-   NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
-    
+- (void)changeUI { @autoreleasepool {
+
   int prev_emulation_paused = g_emulation_paused;
    
   g_emulation_paused = 1;
@@ -1135,13 +1121,11 @@ void* app_Thread_Start(void* args)
   if(screenView != nil)
   {
      [screenView removeFromSuperview];
-     [screenView release];
   }
 
   if(imageBack!=nil)
   {
      [imageBack removeFromSuperview];
-     [imageBack release];
      imageBack = nil;
   }
    
@@ -1149,7 +1133,6 @@ void* app_Thread_Start(void* args)
    if(imageOverlay!=nil)
    {
      [imageOverlay removeFromSuperview];
-     [imageOverlay release];
      imageOverlay = nil;
    }
     
@@ -1220,10 +1203,9 @@ void* app_Thread_Start(void* args)
     [self.view bringSubviewToFront:gcExitAlertView];
 #endif
 
-   [pool release];
-}
+}}
 
-void myosd_handle_turbo() {
+void myosd_handle_turbo() { @autoreleasepool {
     if ( !myosd_inGame ) {
         return;
     }
@@ -1239,33 +1221,32 @@ void myosd_handle_turbo() {
     for (int index = 0; index < controllers.count; index++) {
         GCController *mfiController = [controllers objectAtIndex:index];
         GCExtendedGamepad *extendedGamepad = mfiController.extendedGamepad;
-        GCGamepad *gamepad = mfiController.gamepad;
-        if ( extendedGamepad.buttonX.isPressed || gamepad.buttonX.isPressed ) {
+        if ( extendedGamepad.buttonX.isPressed ) {
             mfiBtnStates[index][BTN_X] = BUTTON_PRESS;
         } else {
             mfiBtnStates[index][BTN_X] = BUTTON_NO_PRESS;
         }
-        if ( extendedGamepad.buttonY.isPressed || gamepad.buttonY.isPressed ) {
+        if ( extendedGamepad.buttonY.isPressed ) {
             mfiBtnStates[index][BTN_Y] = BUTTON_PRESS;
         } else {
             mfiBtnStates[index][BTN_Y] = BUTTON_NO_PRESS;
         }
-        if ( extendedGamepad.buttonA.isPressed || gamepad.buttonA.isPressed ) {
+        if ( extendedGamepad.buttonA.isPressed ) {
             mfiBtnStates[index][BTN_A] = BUTTON_PRESS;
         } else {
             mfiBtnStates[index][BTN_A] = BUTTON_NO_PRESS;
         }
-        if ( extendedGamepad.buttonB.isPressed || gamepad.buttonB.isPressed ) {
+        if ( extendedGamepad.buttonB.isPressed ) {
             mfiBtnStates[index][BTN_B] = BUTTON_PRESS;
         } else {
             mfiBtnStates[index][BTN_B] = BUTTON_NO_PRESS;
         }
-        if ( extendedGamepad.leftShoulder.isPressed || gamepad.leftShoulder.isPressed ) {
+        if ( extendedGamepad.leftShoulder.isPressed ) {
             mfiBtnStates[index][BTN_L1] = BUTTON_PRESS;
         } else {
             mfiBtnStates[index][BTN_L1] = BUTTON_NO_PRESS;
         }
-        if ( extendedGamepad.rightShoulder.isPressed || gamepad.rightShoulder.isPressed ) {
+        if ( extendedGamepad.rightShoulder.isPressed ) {
             mfiBtnStates[index][BTN_R1] = BUTTON_PRESS;
         } else {
             mfiBtnStates[index][BTN_R1] = BUTTON_NO_PRESS;
@@ -1311,7 +1292,7 @@ void myosd_handle_turbo() {
             
         }
     }
-}
+}}
 
 - (void)removeTouchControllerViews{
 #if TARGET_OS_TV
@@ -1322,14 +1303,12 @@ void myosd_handle_turbo() {
    if(dpadView!=nil)
    {
       [dpadView removeFromSuperview];
-      [dpadView release];
       dpadView=nil;
    }
    
    if(analogStickView!=nil)
    {
       [analogStickView removeFromSuperview];
-      [analogStickView release];
       analogStickView=nil;   
    }
    
@@ -1338,7 +1317,6 @@ void myosd_handle_turbo() {
       if(buttonViews[i]!=nil)
       {
          [buttonViews[i] removeFromSuperview];
-         [buttonViews[i] release];     
          buttonViews[i] = nil; 
       }
    }
@@ -1524,7 +1502,6 @@ void myosd_handle_turbo() {
 	  if(dview!=nil)
 	  {
 	    [dview removeFromSuperview];
-	    [dview release];
 	  }  	 
 	
 	  dview = [[DebugView alloc] initWithFrame:self.view.bounds withEmuController:self];
@@ -1744,7 +1721,6 @@ void myosd_handle_turbo() {
 	  if(dview!=nil)
 	  {
         [dview removeFromSuperview];
-        [dview release];
       }	 	  
 	  
 	  dview = [[DebugView alloc] initWithFrame:self.view.bounds withEmuController:self];
@@ -2060,7 +2036,7 @@ void myosd_handle_turbo() {
     
     if ( areControlsHidden && g_pref_lightgun_enabled && g_device_is_landscape) {
         [self handleLightgunTouchesBegan:touches];
-        return NO;
+        return nil;
     }
     
     for (i = 0; i < touchcount; i++)
@@ -2698,9 +2674,7 @@ void myosd_handle_turbo() {
 #endif
 
 - (void)getConf{
-#if TARGET_OS_TV
-    return;
-#endif
+#if TARGET_OS_IOS
     char string[256];
     FILE *fp;
     
@@ -2770,13 +2744,8 @@ void myosd_handle_turbo() {
         }
         fclose(fp);
     }
+#endif
 }
-
-- (void)didReceiveMemoryWarning {
-	//[super didReceiveMemoryWarning]; // Releases the view if it doesn't have a superview
-	// Release anything that's not essential, such as cached data
-}
-
 
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self
@@ -2788,26 +2757,19 @@ void myosd_handle_turbo() {
     
     [self removeTouchControllerViews];
     
-    [screenView release];
     screenView = nil;
     
-    [imageBack release];
     imageBack = nil;
     
-    [imageOverlay release];
     imageOverlay = nil;
 
 #if TARGET_OS_IOS
-    [dview release];
     dview= nil;
 #endif
 
-    [optionsController release];
     optionsController = nil;
-    [icadeView release];
     icadeView = nil;
     
-	[super dealloc];
 }
 
 - (CGRect *)getDebugRects{
@@ -2915,7 +2877,6 @@ void myosd_handle_turbo() {
     }
     count = [romlist count];
     
-    [filemgr release];
 
     if(count != 0)
         NSLog(@"found (%d) ROMs to move....", (int)count);
@@ -2977,14 +2938,11 @@ void myosd_handle_turbo() {
                 g_move_roms = 0;
             });
             
-            [filemgr release];
-            [romlist release];
         });
         
     }
     else
     {
-        [romlist release];
     }
 }
 
@@ -3003,7 +2961,6 @@ void myosd_handle_turbo() {
         [self changeUI]; //ensure GUI
         
         [screenView removeFromSuperview];
-        [screenView release];
         screenView = nil;
         
         layoutView = [[LayoutView alloc] initWithFrame:self.view.bounds withEmuController:self];
@@ -3022,7 +2979,6 @@ void myosd_handle_turbo() {
 -(void)finishCustomizeCurrentLayout{
     
     [layoutView removeFromSuperview];
-    [layoutView release];
     
     change_layout = 0;
 
@@ -3133,7 +3089,7 @@ void myosd_handle_turbo() {
         
         NSLog(@" PlayerIndex: %li", (long)MFIController.playerIndex);
         
-        MFIController.gamepad.dpad.valueChangedHandler = ^ (GCControllerDirectionPad *directionpad, float xValue, float yValue) {
+        MFIController.extendedGamepad.dpad.valueChangedHandler = ^ (GCControllerDirectionPad *directionpad, float xValue, float yValue) {
             
             if (directionpad.up.pressed) {
                 myosd_joy_status[index] |= MYOSD_UP;
@@ -3161,74 +3117,11 @@ void myosd_handle_turbo() {
             }
         };
         
-        MFIController.extendedGamepad.dpad.valueChangedHandler = MFIController.gamepad.dpad.valueChangedHandler;
-        
-        MFIController.gamepad.valueChangedHandler = ^(GCGamepad* gamepad, GCControllerElement* element) {
-            
-#if TARGET_OS_TV
-            // disable button presses while alert is shown
-            if ( isPresentingAlert ) {
-                return;
-            }
-#endif
-            
-            if (element == gamepad.buttonA) {
-                if (gamepad.buttonA.pressed) {
-                    myosd_joy_status[index] |= MYOSD_A;
-                }
-                else {
-                    [self gameControllerMaybeHandleGCExitAlertWithCommand:YES];
-                    myosd_joy_status[index] &= ~MYOSD_A;
-                }
-            }
-            if (element == gamepad.buttonB) {
-                if (gamepad.buttonB.pressed) {
-                    myosd_joy_status[index] |= MYOSD_B;
-                }
-                else {
-                    [self gameControllerMaybeHandleGCExitAlertWithCommand:NO];
-                    myosd_joy_status[index] &= ~MYOSD_B;
-                }
-            }
-            if (element == gamepad.buttonX) {
-                if (gamepad.buttonX.pressed) {
-                    myosd_joy_status[index] |= MYOSD_X;
-                }
-                else {
-                    myosd_joy_status[index] &= ~MYOSD_X;
-                }
-            }
-            if (element == gamepad.buttonY) {
-                if (gamepad.buttonY.pressed) {
-                    myosd_joy_status[index] |= MYOSD_Y;
-                }
-                else {
-                    myosd_joy_status[index] &= ~MYOSD_Y;
-                }
-            }
-            if (element == gamepad.leftShoulder) {
-                if (gamepad.leftShoulder.pressed) {
-                    myosd_joy_status[index] |= MYOSD_L1;
-                }
-                else {
-                    myosd_joy_status[index] &= ~MYOSD_L1;
-                }
-            }
-            if (element == gamepad.rightShoulder) {
-                if (gamepad.rightShoulder.pressed) {
-                    myosd_joy_status[index] |= MYOSD_R1;
-                }
-                else {
-                    myosd_joy_status[index] &= ~MYOSD_R1;
-                }
-            }
-        };
-        
         MFIController.extendedGamepad.valueChangedHandler = ^(GCExtendedGamepad* gamepad, GCControllerElement* element) {
 
 #if TARGET_OS_TV
             // disable button presses while alert is shown
-            if ( isPresentingAlert ) {
+            if ( [self.presentedViewController isKindOfClass:[UIAlertController class]]  ) {
                 return;
             }
 #endif
@@ -3378,34 +3271,27 @@ void myosd_handle_turbo() {
         };
         
         MFIController.controllerPausedHandler = ^(GCController *controller) {
-#if TARGET_OS_TV
-            BOOL isSiriRemote = MFIController.gamepad == nil && MFIController.extendedGamepad == nil && MFIController.microGamepad != nil;
-            if ( isSiriRemote ) {
-                menuButtonOnRemoteWasPressed = YES;
-            } else {
-                menuButtonOnRemoteWasPressed = NO;
-            }
-#endif
+
             //Add Coin
             myosd_joy_status[index] |= MYOSD_START;
-            [self performSelector:@selector(releaseStart:) withObject:[NSNumber numberWithInteger:MFIController.playerIndex] afterDelay:0.1];
+            [self performSelector:@selector(releaseStart:) withObject:[NSNumber numberWithInteger:controller.playerIndex] afterDelay:0.1];
             
-            if (MFIController.gamepad.leftShoulder.pressed) {
+            if (controller.extendedGamepad.leftShoulder.pressed) {
                 myosd_joy_status[index] &= ~MYOSD_START;
                 myosd_joy_status[index] &= ~MYOSD_L1;
                 myosd_joy_status[index] |= MYOSD_SELECT;
-                [self performSelector:@selector(releaseCoin:) withObject:[NSNumber numberWithInteger:MFIController.playerIndex] afterDelay:0.1];
+                [self performSelector:@selector(releaseCoin:) withObject:[NSNumber numberWithInteger:controller.playerIndex] afterDelay:0.1];
             }
             //Show Mame menu (Start + Coin)
-            if (MFIController.gamepad.rightShoulder.pressed) {
+            if (controller.extendedGamepad.rightShoulder.pressed) {
                 myosd_joy_status[index] &= ~MYOSD_R1;
                 myosd_joy_status[index] &= ~MYOSD_START;
                 myosd_joy_status[index] |= MYOSD_SELECT;
                 myosd_joy_status[index] |= MYOSD_START;
-                [self performSelector:@selector(releaseMenu:) withObject:MFIController afterDelay:0.1];
+                [self performSelector:@selector(releaseMenu:) withObject:controller afterDelay:0.1];
             }
             //Exit Game
-            else if (MFIController.gamepad.buttonX.pressed) {
+            else if (controller.extendedGamepad.buttonX.pressed) {
                 if (myosd_inGame && myosd_in_menu == 0) {
                     myosd_joy_status[index] &= ~MYOSD_START;
                     myosd_joy_status[index] &= ~MYOSD_X;
@@ -3415,7 +3301,7 @@ void myosd_handle_turbo() {
                 }
             }
             // Show Action Sheet Menu
-            else if ( MFIController.gamepad.buttonB.pressed) {
+            else if ( controller.extendedGamepad.buttonB.pressed) {
                 if (myosd_inGame && myosd_in_menu == 0) {
                     myosd_joy_status[index] &= ~MYOSD_START;
                     myosd_joy_status[index] &= ~MYOSD_Y;
@@ -3423,7 +3309,7 @@ void myosd_handle_turbo() {
                 }
             }
             // Load State
-            else if ( MFIController.gamepad.buttonA.pressed ) {
+            else if ( controller.extendedGamepad.buttonA.pressed ) {
                 myosd_joy_status[index] &= ~MYOSD_START;
                 myosd_joy_status[index] &= ~MYOSD_A;
                 myosd_pad_status &= ~MYOSD_START;
@@ -3431,7 +3317,7 @@ void myosd_handle_turbo() {
                 myosd_loadstate = 1;
             }
             // Save State
-            else if ( MFIController.gamepad.buttonY.pressed ) {
+            else if ( controller.extendedGamepad.buttonY.pressed ) {
                 myosd_joy_status[index] &= ~MYOSD_START;
                 myosd_joy_status[index] &= ~MYOSD_Y;
                 myosd_pad_status &= ~MYOSD_START;
@@ -3469,6 +3355,11 @@ void myosd_handle_turbo() {
     
     NSLog(@"Hello %@", controller.vendorName);
     
+#if TARGET_IPHONE_SIMULATOR // ignore the bogus controller in the simulator
+    if ([controller.vendorName isEqualToString:@"Generic Controller"])
+        return;
+#endif
+    
     [controller setPlayerIndex:GCControllerPlayerIndexUnset];
     
     [controllers addObject:controller];
@@ -3478,13 +3369,13 @@ void myosd_handle_turbo() {
         NSInteger connectedNonGameControllerIndex = NSNotFound;
         NSUInteger index = 0;
         for (GCController *connectedController in controllers) {
-            if ( connectedController.gamepad == nil && connectedController.extendedGamepad == nil ) {
+            if ( connectedController.extendedGamepad == nil ) {
                 connectedNonGameControllerIndex = index;
             }
             index++;
         }
         if ( connectedNonGameControllerIndex != NSNotFound ) {
-            GCController *nonGameController = [[[controllers objectAtIndex:connectedNonGameControllerIndex] retain] autorelease];
+            GCController *nonGameController = [controllers objectAtIndex:connectedNonGameControllerIndex];
             [controllers removeObjectAtIndex:connectedNonGameControllerIndex];
             [controllers addObject:nonGameController];
         }
@@ -3508,9 +3399,9 @@ void myosd_handle_turbo() {
         if ( gcExitAlertView != nil && !gcExitAlertView.hidden) {
             [self exitAlertActionCancel];
             [UIView animateWithDuration:0.25 animations:^{
-                gcExitAlertView.alpha = 0.0;
+                self->gcExitAlertView.alpha = 0.0;
             } completion:^(BOOL finished) {
-                gcExitAlertView.hidden = YES;
+                self->gcExitAlertView.hidden = YES;
             }];
         }
 #endif
@@ -3524,7 +3415,7 @@ void myosd_handle_turbo() {
 
 #pragma mark GCDWebServerDelegate
 - (void)webServerDidCompleteBonjourRegistration:(GCDWebServer*)server {
-    NSMutableString *servers = [[[NSMutableString alloc] init] autorelease];
+    NSMutableString *servers = [[NSMutableString alloc] init];
     if ( server.serverURL != nil ) {
         [servers appendString:[NSString stringWithFormat:@"%@",server.serverURL]];
     }
@@ -3537,23 +3428,18 @@ void myosd_handle_turbo() {
 #if TARGET_OS_TV
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Welcome to MAME for AppleTV" message:[NSString stringWithFormat:@"To transfer ROMs from your computer, go to one of these addresses on your web browser:\n\n%@",servers] preferredStyle:UIAlertControllerStyleAlert];
     [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        isPresentingAlert = NO;
         self.controllerUserInteractionEnabled = !myosd_inGame;
     }]];
     [self presentViewController:alert animated:YES completion:^{
-        isPresentingAlert = YES;
         self.controllerUserInteractionEnabled = YES;
     }];
 #elif TARGET_OS_IOS
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Web Server Started" message:[NSString stringWithFormat:@"To transfer ROMs from your computer, go to one of these addresses on your web browser:\n\n%@",servers] preferredStyle:UIAlertControllerStyleAlert];
     [alert addAction:[UIAlertAction actionWithTitle:@"Stop Server" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        isPresentingAlert = NO;
         [[WebServer sharedInstance] webUploader].delegate = nil;
         [[WebServer sharedInstance] stopUploader];
     }]];
-    [self presentViewController:alert animated:YES completion:^{
-        isPresentingAlert = YES;
-    }];
+    [self presentViewController:alert animated:YES completion:nil];
 #endif
 }
 

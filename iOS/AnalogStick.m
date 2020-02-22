@@ -420,12 +420,4 @@
     }  
 }
 
-- (void)dealloc {
-
-    [outerView release]; 
-    [innerView release];
-	   
-	[super dealloc];
-}
-
 @end

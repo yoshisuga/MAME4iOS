@@ -80,7 +80,7 @@
         
         if(indexed)
         {
-            sections = [[NSArray arrayWithObjects:@"#", @"a", @"b", @"c", @"d", @"e", @"f", @"g", @"h", @"i", @"j", @"k", @"l", @"m", @"n", @"o", @"p", @"q", @"r", @"s", @"t", @"u", @"v", @"w", @"x", @"y", @"z", nil] retain];
+            sections = @[@"#", @"a", @"b", @"c", @"d", @"e", @"f", @"g", @"h", @"i", @"j", @"k", @"l", @"m", @"n", @"o", @"p", @"q", @"r", @"s", @"t", @"u", @"v", @"w", @"x", @"y", @"z"];
         }
         else
         {
@@ -95,11 +95,6 @@
 #if TARGET_OS_TV
     self.view.backgroundColor = UIColor.lightGrayColor;
 #endif
-}
-
-- (void)dealloc {
-    [sections release];
-	[super dealloc];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -219,8 +214,6 @@
             break;
     }
         
-    [op release];
-
     [super viewWillAppear:animated];
     
 }
@@ -340,7 +333,6 @@
     }
     
     [op saveOptions];
-    [op release];
 }
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
@@ -380,8 +372,7 @@
     static NSString *CheckMarkCellIdentifier = @"CheckMarkCellIdentifier";
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CheckMarkCellIdentifier];
     if (cell == nil) {
-        cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault
-                                       reuseIdentifier:CheckMarkCellIdentifier] autorelease];
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CheckMarkCellIdentifier];
     }
     
     NSUInteger row = [indexPath row];

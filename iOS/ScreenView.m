@@ -111,7 +111,7 @@ void iphone_UpdateScreen()
     
     CGImageRef cgImage = CGBitmapContextCreateImage(bitmapContext);
     
-    self.contents = (id)cgImage;
+    self.contents = (__bridge id)cgImage;
     
     CFRelease(cgImage);
 }
@@ -123,8 +123,6 @@ void iphone_UpdateScreen()
         CFRelease(bitmapContext);
         bitmapContext=nil;
     }
-    
-    [super dealloc];
 }
 @end
 
@@ -158,8 +156,6 @@ void iphone_UpdateScreen()
 {
     if (sharedInstance == self)
         sharedInstance = nil;
-	
-	[ super dealloc ];
 }
 
 - (void)drawRect:(CGRect)rect

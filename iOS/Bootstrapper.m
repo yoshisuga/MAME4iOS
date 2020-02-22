@@ -85,13 +85,11 @@ const char* get_documents_path(const char* file)
 #elif TARGET_OS_TV
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
 #endif
-	const char *userPath = [[paths objectAtIndex:0] cStringUsingEncoding:NSASCIIStringEncoding];
+	const char *userPath = [[paths objectAtIndex:0] cStringUsingEncoding:NSUTF8StringEncoding];
     sprintf(documents_path, "%s/%s",userPath, file);
 #endif
     return documents_path;
 }
-
-//extern EmulatorController *GetSharedInstance();
 
 unsigned long read_mfi_controller(unsigned long res){
     return res;
@@ -99,7 +97,7 @@ unsigned long read_mfi_controller(unsigned long res){
 
 @implementation Bootstrapper
 
--(void)applicationDidFinishLaunching:(NSNotification *)aNotification {
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary<UIApplicationLaunchOptionsKey,id> *)launchOptions {
 
 	struct CGRect rect = [[UIScreen mainScreen] bounds];
 	rect.origin.x = rect.origin.y = 0.0f;
@@ -117,7 +115,7 @@ unsigned long read_mfi_controller(unsigned long res){
         mkdir("/var/mobile/Media/ROMs/", 0755);
         if(mkdir(get_documents_path(""), 0755) != 0)
         {
-        
+            
            UIAlertView *errAlert = [[UIAlertView alloc] initWithTitle:@"Error"
                                                            message:
                                  @"Directory cannot be created!\nCheck for write permissions.\n'chmod -R 777 /var/mobile/Media/ROMs' if needed.\nLook at the help for details."
@@ -137,6 +135,7 @@ unsigned long read_mfi_controller(unsigned long res){
     
     mkdir(get_documents_path("iOS"), 0755);
 	mkdir(get_documents_path("artwork"), 0755);
+    mkdir(get_documents_path("titles"), 0755);
 	mkdir(get_documents_path("cfg"), 0755);
 	mkdir(get_documents_path("nvram"), 0755);
 	mkdir(get_documents_path("ini"), 0755);
@@ -153,6 +152,8 @@ unsigned long read_mfi_controller(unsigned long res){
     [[NSURL fileURLWithPath: [NSString stringWithUTF8String:get_documents_path("roms")]]
      setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:nil];
     [[NSURL fileURLWithPath: [NSString stringWithUTF8String:get_documents_path("artwork")]]
+     setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:nil];
+    [[NSURL fileURLWithPath: [NSString stringWithUTF8String:get_documents_path("titles")]]
      setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:nil];
     [[NSURL fileURLWithPath: [NSString stringWithUTF8String:get_documents_path("samples")]]
      setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:nil];
@@ -199,8 +200,6 @@ unsigned long read_mfi_controller(unsigned long res){
         NSLog(@"Unable to move file hiscore? %@", [error localizedDescription]);
     }
 
-    [manager release];
-    
 #if TARGET_OS_IOS
 #if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_7_0
     [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation : UIStatusBarAnimationNone];
@@ -216,6 +215,7 @@ unsigned long read_mfi_controller(unsigned long res){
 	deviceWindow = [[UIWindow alloc] initWithFrame:rect];
 #if TARGET_OS_TV
     deviceWindow.backgroundColor = UIColor.darkGrayColor;
+    deviceWindow.tintColor = [UIColor colorWithRed:0.0 green:122.0/255.0 blue:1.0 alpha:1.0];
 #endif
 //    deviceWindow.backgroundColor = [UIColor redColor];
     
@@ -244,6 +244,7 @@ unsigned long read_mfi_controller(unsigned long res){
 	}	
     
     [self prepareScreen];
+    return TRUE;
 }
 
 - (void)applicationDidEnterBackground:(UIApplication *)application {
@@ -276,14 +277,18 @@ unsigned long read_mfi_controller(unsigned long res){
 	    if ([[UIScreen screens] count] > 1 && g_pref_nativeTVOUT) {
 #if TARGET_OS_IOS
 			// Internal display is 0, external is 1.
-			externalScreen = [[[UIScreen screens] objectAtIndex:1] retain];			
-			screenModes =  [[externalScreen availableModes] retain];
+			externalScreen = [[UIScreen screens] objectAtIndex:1];
+			screenModes =  [externalScreen availableModes];
 					
 			// Allow user to choose from available screen-modes (pixel-sizes).
             UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"External Display Detected!" message:@"Choose a size for the external display." preferredStyle:UIAlertControllerStyleAlert];
 			for (UIScreenMode *mode in screenModes) {
 				CGSize modeScreenSize = mode.size;
                 [alert addAction:[UIAlertAction actionWithTitle:[NSString stringWithFormat:@"%.0f x %.0f pixels", modeScreenSize.width, modeScreenSize.height] style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                    UIScreen* externalScreen = self->externalScreen;
+                    UIWindow* externalWindow = self->externalWindow;
+                    EmulatorController* hrViewController = self->hrViewController;
+                    
                     [externalScreen setCurrentMode:mode];
                     [externalWindow setScreen:externalScreen];
                     
@@ -315,7 +320,6 @@ unsigned long read_mfi_controller(unsigned long res){
                     UIView *view= [[UIView alloc] initWithFrame:rect];
                     view.backgroundColor = [UIColor blackColor];
                     [externalWindow addSubview:view];
-                    [view release];
                     
                     [hrViewController setExternalView:view];
                     hrViewController.rExternalView = rView;
@@ -326,9 +330,6 @@ unsigned long read_mfi_controller(unsigned long res){
                         [hrViewController changeUI];
                     else
                         [hrViewController startEmulation];
-                    
-                    [screenModes release];
-                    [externalScreen release];
                 }]];
 			}
             [[[[UIApplication sharedApplication] keyWindow] rootViewController] presentViewController:alert animated:YES completion:nil];
@@ -355,6 +356,7 @@ unsigned long read_mfi_controller(unsigned long res){
     }	
 }
 
+#if TARGET_OS_IOS
 - (void)setScreenMode:(UIScreenMode*)screenMode
 {
 	
@@ -389,7 +391,6 @@ unsigned long read_mfi_controller(unsigned long res){
     UIView *view= [[UIView alloc] initWithFrame:rect];
     view.backgroundColor = [UIColor blackColor];
     [externalWindow addSubview:view];
-    [view release];
 		
     [hrViewController setExternalView:view];
     hrViewController.rExternalView = rView;
@@ -400,17 +401,7 @@ unsigned long read_mfi_controller(unsigned long res){
 	    [hrViewController changeUI];
 	else
 	    [hrViewController startEmulation];
-	    
-    [screenModes release];
-	[externalScreen release];
 }
-
--(void)dealloc {
-    [hrViewController release];
-	[deviceWindow dealloc];	
-	[externalWindow dealloc];
-	[super dealloc];
-}
-
+#endif
 
 @end

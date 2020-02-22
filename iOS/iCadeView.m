@@ -48,8 +48,6 @@
 
 @implementation iCadeView
 
-@synthesize active;
-
 - (id)initWithFrame:(CGRect)frame withEmuController:(EmulatorController*)emulatorController
 {
     self = [super initWithFrame:frame];
@@ -66,7 +64,6 @@
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationDidEnterBackgroundNotification object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationDidBecomeActiveNotification object:nil];
-    [super dealloc];
 }
 
 - (void)didEnterBackground {
@@ -95,10 +92,10 @@
 }
 
 - (void)setActive:(BOOL)value {
-    if (active == value) return;
+    if (_active == value) return;
     
-    active = value;
-    if (active) {
+    _active = value;
+    if (_active) {
         [self becomeFirstResponder];
     } else {
         [self resignFirstResponder];

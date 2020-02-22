@@ -231,8 +231,8 @@ extern NSString* GCDWebServerStringFromSockAddr(const struct sockaddr* addr, BOO
 @end
 
 @interface GCDWebServerHandler : NSObject
-@property(nonatomic, readonly) GCDWebServerMatchBlock matchBlock;
-@property(nonatomic, readonly) GCDWebServerAsyncProcessBlock asyncProcessBlock;
+@property(strong, nonatomic, readonly) GCDWebServerMatchBlock matchBlock;
+@property(strong, nonatomic, readonly) GCDWebServerAsyncProcessBlock asyncProcessBlock;
 @end
 
 @interface GCDWebServerRequest ()

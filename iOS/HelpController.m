@@ -61,7 +61,6 @@
        
     UIView *view= [[UIView alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 	self.view = view;
-	[view release];
     
     self.title = @"Help";
     self.view.backgroundColor = [UIColor whiteColor];
@@ -93,32 +92,6 @@
     aWebView.delegate = nil;
 }
 
--(BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-    //   return (interfaceOrientation == UIInterfaceOrientationPortrait);
-    return YES;
-    //return NO;
-}
-
-- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
-{
-    
-    //[self loadHTML];
-    //[aWebView reload];    
-}
-
-- (void)didReceiveMemoryWarning {
-	[super didReceiveMemoryWarning];
-}
-
- 
-- (void)dealloc {
-    
-    aWebView.delegate = nil;
-    [aWebView release];
-
-	[super dealloc];
-}
-
 -(BOOL) webView:(UIWebView *)inWeb shouldStartLoadWithRequest:(NSURLRequest *)inRequest navigationType:(UIWebViewNavigationType)inType {
     if ( inType == UIWebViewNavigationTypeLinkClicked ) {
         [[UIApplication sharedApplication] openURL:[inRequest URL]];
@@ -134,8 +107,6 @@
     NSURL *aURL = [NSURL fileURLWithPath:[NSString stringWithUTF8String:get_resource_path("")]];
     
     [aWebView loadHTMLString:HTMLData baseURL: aURL];
-    
-    [HTMLData release];
 }
 
 @end

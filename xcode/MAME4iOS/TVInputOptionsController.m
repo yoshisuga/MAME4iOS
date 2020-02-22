@@ -25,13 +25,12 @@
 }
     
 - (void)loadView {
-    self.view = [[[UIView alloc] initWithFrame:CGRectZero] autorelease];
+    self.view = [[UIView alloc] initWithFrame:CGRectZero];
     self.view.backgroundColor = UIColor.darkGrayColor;
     UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithTitle:@"Done"
                                                                    style:UIBarButtonItemStyleDone
                                                                   target: self.emuController  action:  @selector(done:) ];
     self.navigationItem.rightBarButtonItem = backButton;
-    [backButton release];
     self.title = NSLocalizedString(@"Input Options", @"");
     self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStyleGrouped];
     self.tableView.delegate = self;
@@ -48,13 +47,6 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-}
-    
-- (void)dealloc {
-    [arrayAutofireValue release];
-    [self.tableView release];
-    [self.options release];
-    [super dealloc];
 }
     
 #pragma mark UITableViewDataSource
@@ -87,7 +79,7 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Cell"];
     if ( cell == nil ) {
-        cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:@"Cell"] autorelease];
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:@"Cell"];
     }
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
     cell.accessoryView = nil;
