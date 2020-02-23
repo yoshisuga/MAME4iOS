@@ -331,6 +331,7 @@ static void push_mame_button(int player, int button)
     CGPoint mouseInitialLocation;
     CGPoint touchDirectionalMoveStartLocation;
     CGPoint touchDirectionalMoveInitialLocation;
+    CGSize  layoutSize;
 #if TARGET_OS_IOS
     OptionsController *optionsController;
 #elif TARGET_OS_TV
@@ -364,8 +365,8 @@ static void push_mame_button(int player, int button)
     return rButtonImages;
 }
 
-- (UIView **)getButtonViews{
-    return buttonViews;
+- (UIView *)getButtonView:(int)i {
+    return buttonViews[i];
 }
 - (UIView *)getDPADView{
     return dpadView;
@@ -453,7 +454,7 @@ static void push_mame_button(int player, int button)
         }]];
     }
     [menu addAction:[UIAlertAction actionWithTitle:@"Settings" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        UINavigationController *navController = [[[UINavigationController alloc] initWithRootViewController:optionsController] autorelease];
+        UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:self->optionsController];
 #if TARGET_OS_IOS
         [navController setModalPresentationStyle:UIModalPresentationPageSheet];
 #endif
@@ -558,19 +559,9 @@ static void push_mame_button(int player, int button)
     g_emulation_paused = 0;
     change_pause(0);
     
-    icadeView.active = FALSE;
     // always enable iCadeView so we can get input from a Hardware keyboard.
-    if(TRUE || g_pref_ext_control_type != EXT_CONTROL_NONE)
-    {
-        icadeView.active = TRUE;//force renable
-    }
-    else if(g_iCade_used)//ensure is off
-    {
-        g_iCade_used = 0;
-        g_joy_used = 0;
-        myosd_num_of_joys = 0;
-        [self changeUI];
-    }
+    icadeView.active = TRUE; //force renable
+    
     [UIApplication sharedApplication].idleTimerDisabled = (myosd_inGame || g_joy_used) ? YES : NO;//so atract mode dont sleep
 }
 
@@ -828,7 +819,6 @@ static void push_mame_button(int player, int button)
     
     g_pref_touch_directional_enabled = [op touchDirectionalEnabled];
     
-    [op release];
 }
 
 -(void)done:(id)sender {
@@ -898,7 +888,6 @@ static void push_mame_button(int player, int button)
         }
     }
     
-    [op release];
     
     [self updateOptions];
     
@@ -907,6 +896,7 @@ static void push_mame_button(int player, int button)
     [self endMenu];
     
 }
+
 
 // handle_MENU - called when a possible menu key is pressed on a controller, keyboard, or screen
 - (void)handle_MENU
@@ -962,8 +952,7 @@ static void push_mame_button(int player, int button)
 	rect.origin.x = rect.origin.y = 0.0f;
 	UIView *view= [[UIView alloc] initWithFrame:rect];
 	self.view = view;
-	[view release];
-     self.view.backgroundColor = [UIColor blackColor];	
+    self.view.backgroundColor = [UIColor blackColor];
     externalView = nil;
     printf("loadView\n");
 }
@@ -1075,8 +1064,7 @@ static void push_mame_button(int player, int button)
     [self.view addSubview:icadeView];
     
     // always enable iCadeView for Hardware keyboard support
-    if(TRUE || g_pref_ext_control_type != EXT_CONTROL_NONE)
-       icadeView.active = YES;
+    icadeView.active = YES;
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(MFIControllerConnected:)
@@ -1134,11 +1122,6 @@ static void push_mame_button(int player, int button)
     return g_device_is_landscape ? YES : NO;
 }
 
-
--(BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-    return change_layout ? NO : YES;
-}
-
 - (BOOL)shouldAutorotate {
     return change_layout ? NO : YES;
 }
@@ -1151,16 +1134,12 @@ static void push_mame_button(int player, int button)
         return UIInterfaceOrientationMaskAll;
 }
 
-/*
- - (UIInterfaceOrientation)preferredInterfaceOrientationForPresentation
- {
- //printf("llaman al preferredInterfaceOrientationForPresentation\n");
- return UIInterfaceOrientationPortrait;
- }
- */
-
--(void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {
-    [self changeUI];
+- (void)viewWillLayoutSubviews {
+    [super viewWillLayoutSubviews];
+    if (!CGSizeEqualToSize(layoutSize, self.view.bounds.size)) {
+        layoutSize = self.view.bounds.size;
+        [self changeUI];
+    }
 }
 
 #endif
@@ -1197,9 +1176,8 @@ static void push_mame_button(int player, int button)
 }
 #endif
 
-- (void)changeUI{
-   NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
-    
+- (void)changeUI { @autoreleasepool {
+
   int prev_emulation_paused = g_emulation_paused;
    
   g_emulation_paused = 1;
@@ -1219,14 +1197,12 @@ static void push_mame_button(int player, int button)
   if(screenView != nil)
   {
      [screenView removeFromSuperview];
-     [screenView release];
-      screenView = nil;
+     screenView = nil;
   }
 
   if(imageBack!=nil)
   {
      [imageBack removeFromSuperview];
-     [imageBack release];
      imageBack = nil;
   }
    
@@ -1234,7 +1210,6 @@ static void push_mame_button(int player, int button)
    if(imageOverlay!=nil)
    {
      [imageOverlay removeFromSuperview];
-     [imageOverlay release];
      imageOverlay = nil;
    }
     
@@ -1245,7 +1220,7 @@ static void push_mame_button(int player, int button)
     }
     
 #if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_7_0
-    [[UIApplication sharedApplication]   setStatusBarOrientation:self.interfaceOrientation];
+    [[UIApplication sharedApplication] setStatusBarOrientation:self.interfaceOrientation];
 #endif
     
     if (self.view.bounds.size.width > self.view.bounds.size.height)
@@ -1302,8 +1277,7 @@ static void push_mame_button(int player, int button)
         }
     }
 
-   [pool release];
-}
+}}
 
 // called from inside MAME droid_ios_poll_input
 void myosd_handle_turbo() {
@@ -1403,14 +1377,12 @@ void myosd_handle_turbo() {
    if(dpadView!=nil)
    {
       [dpadView removeFromSuperview];
-      [dpadView release];
       dpadView=nil;
    }
    
    if(analogStickView!=nil)
    {
       [analogStickView removeFromSuperview];
-      [analogStickView release];
       analogStickView=nil;   
    }
    
@@ -1419,7 +1391,6 @@ void myosd_handle_turbo() {
       if(buttonViews[i]!=nil)
       {
          [buttonViews[i] removeFromSuperview];
-         [buttonViews[i] release];     
          buttonViews[i] = nil; 
       }
    }
@@ -1605,7 +1576,6 @@ void myosd_handle_turbo() {
 	  if(dview!=nil)
 	  {
 	    [dview removeFromSuperview];
-	    [dview release];
 	  }  	 
 	
 	  dview = [[DebugView alloc] initWithFrame:self.view.bounds withEmuController:self];
@@ -1835,7 +1805,6 @@ void myosd_handle_turbo() {
 	  if(dview!=nil)
 	  {
         [dview removeFromSuperview];
-        [dview release];
       }	 	  
 	  
 	  dview = [[DebugView alloc] initWithFrame:self.view.bounds withEmuController:self];
@@ -2153,7 +2122,7 @@ void myosd_handle_turbo() {
     
     if ( areControlsHidden && g_pref_lightgun_enabled && g_device_is_landscape) {
         [self handleLightgunTouchesBegan:touches];
-        return NO;
+        return nil;
     }
     
     for (i = 0; i < touchcount; i++)
@@ -2782,9 +2751,7 @@ void myosd_handle_turbo() {
 #endif
 
 - (void)getConf{
-#if TARGET_OS_TV
-    return;
-#else
+#if TARGET_OS_IOS
     char string[256];
     FILE *fp;
     
@@ -2857,12 +2824,6 @@ void myosd_handle_turbo() {
 #endif
 }
 
-- (void)didReceiveMemoryWarning {
-	//[super didReceiveMemoryWarning]; // Releases the view if it doesn't have a superview
-	// Release anything that's not essential, such as cached data
-}
-
-
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self
                                                     name:GCControllerDidConnectNotification
@@ -2873,26 +2834,19 @@ void myosd_handle_turbo() {
     
     [self removeTouchControllerViews];
     
-    [screenView release];
     screenView = nil;
     
-    [imageBack release];
     imageBack = nil;
     
-    [imageOverlay release];
     imageOverlay = nil;
 
 #if TARGET_OS_IOS
-    [dview release];
     dview= nil;
 #endif
 
-    [optionsController release];
     optionsController = nil;
-    [icadeView release];
     icadeView = nil;
     
-	[super dealloc];
 }
 
 - (CGRect *)getDebugRects{
@@ -3014,8 +2968,6 @@ void myosd_handle_turbo() {
     }
     count = [romlist count];
     
-    [filemgr release];
- 
     if(count != 0)
         NSLog(@"found (%d) ROMs to move....", (int)count);
     if(count != 0 && g_move_roms != 0)
@@ -3144,6 +3096,15 @@ void myosd_handle_turbo() {
             }
             dispatch_async(dispatch_get_main_queue(), ^{
                 [topViewController dismissViewControllerAnimated:YES completion:^{
+                    
+                    // reset MAME filter and last game...
+                    if(err == FALSE)
+                    {
+                       if(!(myosd_in_menu==0 && myosd_inGame)){
+                          myosd_reset_filter = 1;
+                       }
+                       myosd_last_game_selected = 0;
+                    }
 
                     // reload the MAME menu....
                     if (err == FALSE)
@@ -3152,14 +3113,7 @@ void myosd_handle_turbo() {
                     g_move_roms = 0;
                 }];
             });
-            
-            [filemgr release];
-            [romlist release];
         });
-    }
-    else
-    {
-        [romlist release];
     }
 }
 
@@ -3178,7 +3132,6 @@ void myosd_handle_turbo() {
         [self changeUI]; //ensure GUI
         
         [screenView removeFromSuperview];
-        [screenView release];
         screenView = nil;
         
         layoutView = [[LayoutView alloc] initWithFrame:self.view.bounds withEmuController:self];
@@ -3197,7 +3150,6 @@ void myosd_handle_turbo() {
 -(void)finishCustomizeCurrentLayout{
     
     [layoutView removeFromSuperview];
-    [layoutView release];
     
     change_layout = 0;
 
@@ -3219,7 +3171,6 @@ void myosd_handle_turbo() {
             [self done:self];
         }
     }];
-
 }
 
 -(void)adjustSizes{
@@ -3367,7 +3318,13 @@ void myosd_handle_turbo() {
         
         MFIController.extendedGamepad.valueChangedHandler = ^(GCExtendedGamepad* gamepad, GCControllerElement* element) {
             NSLog(@"%d: %@", index, element);
-
+            
+#if TARGET_OS_TV
+            // disable button presses while alert is shown
+            if ([self controllerUserInteractionEnabled]) {
+                return;
+            }
+#endif
             if (element == gamepad.buttonA) {
                 if (gamepad.buttonA.pressed) {
                     myosd_joy_status[index] |= MYOSD_A;
@@ -3719,7 +3676,8 @@ void myosd_handle_turbo() {
     if (self.presentedViewController != nil)    // dont show multiple server alerts.
         return;
     
-    NSMutableString *servers = [[[NSMutableString alloc] init] autorelease];
+    NSMutableString *servers = [[NSMutableString alloc] init];
+
     if ( server.serverURL != nil ) {
         [servers appendString:[NSString stringWithFormat:@"%@",server.serverURL]];
     }
@@ -3864,14 +3822,12 @@ void myosd_handle_turbo() {
 
     ChooseGameController* choose = [[ChooseGameController alloc] init];
     [choose setGameList:games];
-    [games release];
     g_emulation_paused = 1;
     change_pause(g_emulation_paused);
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:kSelectedGameKey];
     choose.selectGameCallback = ^(NSDictionary* game) {
         [self dismissViewControllerAnimated:YES completion:^{
-            icadeView.active = FALSE;
-            icadeView.active = TRUE;
+            self->icadeView.active = TRUE;
             [self performSelectorOnMainThread:@selector(playGame:) withObject:game waitUntilDone:FALSE];
         }];
     };
@@ -3881,8 +3837,6 @@ void myosd_handle_turbo() {
         nav.modalInPresentation = YES;    // disable iOS 13 swipe to dismiss...
     }
     [self presentViewController:nav animated:YES completion:nil];
-    [choose release];
-    [nav release];
 }
 
 #pragma mark UIEvent handling for button presses
@@ -3931,7 +3885,6 @@ void myosd_handle_turbo() {
         
         self.userActivity = activity;
         [activity becomeCurrent];
-        [activity release];
     }
 #endif
 }

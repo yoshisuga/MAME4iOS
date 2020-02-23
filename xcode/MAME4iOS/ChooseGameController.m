@@ -712,13 +712,19 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 #if TARGET_OS_TV
 - (NSArray*)indexTitlesForCollectionView:(UICollectionView *)collectionView
 {
+    if ([_gameFilterScope isEqualToString:@"All"])
+        return @[];
+
     NSMutableSet* set = [[NSMutableSet alloc] init];
     for (NSString* section in _gameSectionTitles) {
         if ([section isEqualToString:RECENT_GAMES_TITLE] || [section isEqualToString:FAVORITE_GAMES_TITLE])
             continue;
-        [set addObject:[section substringToIndex:1]];
+        if ([_gameFilterScope isEqualToString:@"Year"])
+            [set addObject:section];
+        else
+            [set addObject:[section substringToIndex:1]];
     }
-    return [[set allObjects] sortedArrayUsingSelector:@selector(localizedCompare)];
+    return [[set allObjects] sortedArrayUsingSelector:@selector(localizedCompare:)];
 }
 
 /// Returns the index path that corresponds to the given title / index. (e.g. "B",1)
@@ -742,7 +748,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
                 return nil;     // use default
             }
             actionProvider:^UIMenu* (NSArray* suggestedActions) {
-                NSArray* favoriteGames = [_userDefaults objectForKey:FAVORITE_GAMES_KEY] ?: @[];
+                NSArray* favoriteGames = [self->_userDefaults objectForKey:FAVORITE_GAMES_KEY] ?: @[];
 
                 BOOL is_fav = [favoriteGames containsObject:game];
                 NSString* fav_text = is_fav ? @"Unfavorite" : @"Favorite";
@@ -756,7 +762,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
                     else
                         [games insertObject:game atIndex:0];
                     
-                    [_userDefaults setObject:games forKey:FAVORITE_GAMES_KEY];
+                    [self->_userDefaults setObject:games forKey:FAVORITE_GAMES_KEY];
                     [self filterGameList];
                 }];
                 
@@ -788,8 +794,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
                     if (url == nil)
                         return;
                     [[NSFileManager defaultManager] removeItemAtURL:url error:nil];
-                    [self setGameList:[_gameList filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF != %@", game]]];
-                    if ([_gameList count] == 0) {
+                    [self setGameList:[self->_gameList filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF != %@", game]]];
+                    if ([self->_gameList count] == 0) {
                         if (self.selectGameCallback != nil)
                             self.selectGameCallback(nil);
                     }

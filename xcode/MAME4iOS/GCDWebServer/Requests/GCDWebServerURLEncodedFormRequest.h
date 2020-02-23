@@ -40,7 +40,7 @@
  *  The text encoding used to interpret the data is extracted from the
  *  "Content-Type" header or defaults to UTF-8.
  */
-@property(nonatomic, readonly) NSDictionary* arguments;
+@property(strong, nonatomic, readonly) NSDictionary* arguments;
 
 /**
  *  Returns the MIME type for URL encoded forms

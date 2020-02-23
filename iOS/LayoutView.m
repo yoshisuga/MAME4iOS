@@ -135,8 +135,7 @@
     
     CGRect textRect = CGRectMake(contextRect.origin.x, contextRect.origin.y + yOffset, contextRect.size.width, fontHeight);
     
-    [s drawInRect: textRect withFont: font lineBreakMode: UILineBreakModeClip
-        alignment: NSTextAlignmentCenter];
+    [s drawInRect: textRect withFont: font lineBreakMode: NSLineBreakByClipping alignment: NSTextAlignmentCenter];
 }
 
 #pragma clang diagnostic pop
@@ -173,7 +172,7 @@
         
         if (ld.type == kType_ButtonImgRect)
         {
-            UIView *v = [emuController getButtonViews][ld.value];
+            UIView *v = [emuController getButtonView:ld.value];
             v.frame = [ld getNewRect];
             [v setNeedsDisplay];
         }
@@ -233,11 +232,9 @@
                  [emuController showAlertWithTitle:nil message:@"Do you want to save changes?" buttons:@[@"Yes",@"No"] handler:^(NSUInteger buttonIndex) {
                      if(buttonIndex == 0 )
                      {
-                        [LayoutData saveLayoutData:layoutDataArray];
+                         [LayoutData saveLayoutData:self->layoutDataArray];
                      }
-
-                     [layoutDataArray release];
-                     [emuController finishCustomizeCurrentLayout];
+                     [self->emuController finishCustomizeCurrentLayout];
                  }];
              }
          }
@@ -262,11 +259,5 @@
     }
     
 }
-
-- (void)dealloc {
-    
-    [super dealloc];
-}
-
 
 @end

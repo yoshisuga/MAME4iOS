@@ -176,7 +176,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite,assign) int driverSourceValue;
 @property (readwrite,assign) int categoryValue;
 
-@property (readwrite,assign,nullable) NSString *filterKeyword;
+@property (readwrite,strong,nullable) NSString *filterKeyword;
 
 @property (readwrite,assign) int lowlsound;
 @property (readwrite,assign) int vsync;
@@ -194,7 +194,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite,assign) int stickSize;
 
 @property (readwrite,assign) int wpantype;
-@property (readwrite,assign,nullable) NSString *wfpeeraddr;
+@property (readwrite,strong,nullable) NSString *wfpeeraddr;
 @property (readwrite,assign) int wfport;
 @property (readwrite,assign) int wfframesync;
 @property (readwrite,assign) int btlatency;

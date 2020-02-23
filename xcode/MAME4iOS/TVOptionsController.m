@@ -37,13 +37,12 @@
 }
 
 - (void)loadView {
-    self.view = [[[UIView alloc] initWithFrame:CGRectZero] autorelease];
+    self.view = [[UIView alloc] initWithFrame:CGRectZero];
     self.view.backgroundColor = UIColor.darkGrayColor;
     UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithTitle:@"Done"
                                                                    style:UIBarButtonItemStyleDone
                                                                   target: emuController  action:  @selector(done:) ];
     self.navigationItem.rightBarButtonItem = backButton;
-    [backButton release];
     self.title = NSLocalizedString(@"Settings", @"");
     self.navigationController.navigationBar.titleTextAttributes = @{NSForegroundColorAttributeName : UIColor.whiteColor};
     self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStyleGrouped];
@@ -63,15 +62,8 @@
     [self refresh];
 }
     
--(void)dealloc {
-    [self.tableView release];
-    [self.options release];
-    [super dealloc];
-}
-    
 -(void)refresh {
     if ( self.options != nil ) {
-        [self.options release];
         self.options = nil;
     }
     self.options = [[Options alloc] init];
@@ -82,7 +74,7 @@
     UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 100.0, 50.0)];
     label.text = optionValue ? @"On" : @"Off";
     [label sizeToFit];
-    return [label autorelease];
+    return label;
 }
     
 +(void)setOnOffValueForCell:(UITableViewCell*)cell optionValue:(int)optionValue {
@@ -121,7 +113,7 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Cell"];
     if ( cell == nil ) {
-        cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:@"Cell"] autorelease];
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:@"Cell"];
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
     }
     cell.accessoryType = UITableViewCellAccessoryNone;
@@ -188,7 +180,6 @@
         FilterOptionController *filterOptController = [[FilterOptionController alloc] init];
         filterOptController.emuController = self.emuController;
         [[self navigationController] pushViewController:filterOptController animated:YES];
-        [filterOptController release];
         [tableView reloadData];
     } else if ( indexPath.section == kScreenSection ) {
         if ( indexPath.row == 0 ) {
@@ -212,18 +203,15 @@
         } else if ( indexPath.row == 1 ) {
             ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped                                                                                          type:kTypeEmuRes list:arrayEmuRes];
             [[self navigationController] pushViewController:listController animated:YES];
-            [listController release];
         } else if ( indexPath.row == 2 ) {
             ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped                                                                                          type:kTypeEmuSpeed list:arrayEmuSpeed];
             [[self navigationController] pushViewController:listController animated:YES];
-            [listController release];
         } else if ( indexPath.row == 3 ) {
             self.options.throttle = self.options.throttle ? 0 : 1;
             [TVOptionsController setOnOffValueForCell:cell optionValue:self.options.throttle];
         } else if ( indexPath.row == 4 ) {
             ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped                                                                                          type:kTypeFSValue list:arrayFSValue];
             [[self navigationController] pushViewController:listController animated:YES];
-            [listController release];
         } else if ( indexPath.row == 5 ) {
             self.options.forcepxa = self.options.forcepxa ? 0 : 1;
             [TVOptionsController setOnOffValueForCell:cell optionValue:self.options.forcepxa];
@@ -238,9 +226,8 @@
         DefaultOptionController *defaultOptController = [[DefaultOptionController alloc] init];
         defaultOptController.emuController = self.emuController;
         [[self navigationController] pushViewController:defaultOptController animated:YES];
-        [defaultOptController release];
     } else if ( indexPath.section == kInputSection ) {
-        TVInputOptionsController *inputController = [[[TVInputOptionsController alloc] init] autorelease];
+        TVInputOptionsController *inputController = [[TVInputOptionsController alloc] init];
         inputController.emuController = self.emuController;
         [self.navigationController pushViewController:inputController animated:YES];
     }

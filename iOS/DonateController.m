@@ -62,7 +62,6 @@
 	
 	UIView *view= [[UIView alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 	self.view = view;
-	[view release];
     self.view.backgroundColor = [UIColor whiteColor];
     
     self.title = @"Donate";
@@ -137,24 +136,6 @@
         if(webView.request!=nil)
             self.title = webView.request.URL.absoluteString;
     }
-}
-
-
--(BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-    //return (interfaceOrientation == UIInterfaceOrientationPortrait);
-    return YES;
-}
-
-- (void)didReceiveMemoryWarning {
-	//[super didReceiveMemoryWarning];
-}
-
-
-- (void)dealloc {
-    
-    [aWebView release];
-    
-	[super dealloc];
 }
 
 @end

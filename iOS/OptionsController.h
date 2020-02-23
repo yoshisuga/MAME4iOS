@@ -120,6 +120,6 @@ enum ListOptionType
 
 - (void)optionChanged:(id)sender;
 
-@property (nonatomic, assign) EmulatorController *emuController;
+@property (nonatomic, strong) EmulatorController *emuController;
 
 @end

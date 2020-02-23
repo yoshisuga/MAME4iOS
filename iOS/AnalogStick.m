@@ -299,7 +299,6 @@
 }
 #pragma clang diagnostic pop
 
-
 - (void)calculateStickState:(CGPoint)pt min:(CGPoint)min max:(CGPoint)max center:(CGPoint)center{
 
     if(pt.x > max.x)pt.x=max.x;
@@ -380,14 +379,6 @@
     stickPos.size.width = stickWidth;
     stickPos.size.height = stickHeight;
     innerView.frame = stickPos;
-}
-
-- (void)dealloc {
-
-    [outerView release]; 
-    [innerView release];
-	   
-	[super dealloc];
 }
 
 @end

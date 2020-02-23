@@ -16,7 +16,7 @@
     static dispatch_once_t predicate = 0;
     static id sharedObject = nil;
     dispatch_once(&predicate, ^{
-        sharedObject = [[[self alloc] init] retain]; // if you're not using ARC
+        sharedObject = [[self alloc] init];
     });
     return sharedObject;
 }

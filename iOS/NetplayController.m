@@ -46,6 +46,7 @@
 #import "Options.h"
 #import "OptionsController.h"
 #import "ListOptionController.h"
+#import "EmulatorController.h"
 #import "Alert.h"
 
 #include "netplay.h"
@@ -54,10 +55,8 @@
 
 #import "NetplayGameKit.h"
 
-static void netplay_warn_callback(char *msg)
-{
-    [NetplayController performSelectorOnMainThread:@selector(showAlert:) withObject:[NSString stringWithUTF8String:msg] waitUntilDone:NO];
-}
+// dont want to change this file too much, so ignore self warning
+#pragma clang diagnostic ignored "-Wimplicit-retain-self"
 
 @interface NetplayController()
 
@@ -73,6 +72,11 @@ static void netplay_warn_callback(char *msg)
 +(void)showAlert:(NSString *)msg;
 
 @end
+
+static void netplay_warn_callback(char *msg)
+{
+    [NetplayController performSelectorOnMainThread:@selector(showAlert:) withObject:[NSString stringWithUTF8String:msg] waitUntilDone:NO];
+}
 
 @implementation NetplayController
 
@@ -115,19 +119,9 @@ static void netplay_warn_callback(char *msg)
     if(btMgr!=nil)
     {
         NSLog(@"Elimino btmgr");
-        [btMgr release];
         btMgr = nil;
     }
     btState =  BluetoothNotSet;
-}
-
-- (void)dealloc {
-    
-    [arrayWFframeSync release];
-    [arrayWPANtype release];
-    [arrayBTlatency release];
-    
-    [super dealloc];
 }
 
 - (void)loadView {
@@ -138,8 +132,6 @@ static void netplay_warn_callback(char *msg)
                                                                style:UIBarButtonItemStylePlain
                                                               target: emuController  action:  @selector(done:) ];
     self.navigationItem.rightBarButtonItem = button;
-    [button release];
-    
 }
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
@@ -192,14 +184,13 @@ static void netplay_warn_callback(char *msg)
         else
             style = UITableViewCellStyleValue1;
         
-        cell = [[[UITableViewCell alloc] initWithStyle:style
-                                       reuseIdentifier:@"CellIdentifier"] autorelease];
+        cell = [[UITableViewCell alloc] initWithStyle:style reuseIdentifier:@"CellIdentifier"];
         
         cell.accessoryType = UITableViewCellAccessoryNone;
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
     }
     
-    Options *op = [[[Options alloc] init] autorelease];
+    Options *op = [[Options alloc] init];
     
     switch (indexPath.section)
     {
@@ -323,7 +314,6 @@ static void netplay_warn_callback(char *msg)
                     break;
                 }
             }
-            [textField release];
             break;
         }
         case 3:
@@ -344,7 +334,7 @@ static void netplay_warn_callback(char *msg)
     NSUInteger section = [indexPath section];
     
     netplay_t *handle = netplay_get_handle();
-    Options *op = [[[Options alloc] init] autorelease];
+    Options *op = [[Options alloc] init];
     
     if (section == 0 && row==0){
         
@@ -402,7 +392,6 @@ static void netplay_warn_callback(char *msg)
         ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
                                                                                       type:kTypeArrayWPANtype list:arrayWPANtype];
         [[self navigationController] pushViewController:listController animated:YES];
-        [listController release];
     }
     else if(section == 2 && (row==1 || row==2))
     {
@@ -414,14 +403,12 @@ static void netplay_warn_callback(char *msg)
         ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
                                                                                       type:kTypeWFframeSync list:arrayWFframeSync];
         [[self navigationController] pushViewController:listController animated:YES];
-        [listController release];
     }
     else if(section == 3 && row==0)
     {
         ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
                                                                                       type:kTypeBTlatency list:arrayBTlatency];
         [[self navigationController] pushViewController:listController animated:YES];
-        [listController release];
     }
 }
 
@@ -465,7 +452,6 @@ static void netplay_warn_callback(char *msg)
     }
         
     [op saveOptions];
-    [op release];
 }
 
 - (BOOL) textFieldShouldReturn:(UITextField *)textField
@@ -481,13 +467,12 @@ static void netplay_warn_callback(char *msg)
     else if(textField.tag == 2)
        op.wfport = 0;
     [op saveOptions];
-    [op release];
     return YES;
 }
 
 -(void)setNetplayOptions{
     netplay_t *handle = netplay_get_handle();
-    Options *op = [[[Options alloc] init] autorelease];
+    Options *op = [[Options alloc] init];
     
     if(handle->type == NETPLAY_TYPE_SKT)
     {
@@ -573,7 +558,7 @@ static void netplay_warn_callback(char *msg)
 }
 
 -(bool)ensurePeerAddr{
-    Options *op = [[[Options alloc] init] autorelease];
+    Options *op = [[Options alloc] init];
     if(op.wfpeeraddr == nil)
     {
         [self showAlertWithTitle:@"No peer address available!" message:@"Peer address has not been set."];
@@ -585,7 +570,7 @@ static void netplay_warn_callback(char *msg)
 }
 
 -(void)startSocket{
-    Options *op = [[[Options alloc] init] autorelease];
+    Options *op = [[Options alloc] init];
     netplay_t *handle = netplay_get_handle();
     
     if(!skt_netplay_init(handle,NULL,op.wfport,netplay_warn_callback))
@@ -629,7 +614,7 @@ static void netplay_warn_callback(char *msg)
 }
 
 -(void)joinSocket{
-    Options *op = [[[Options alloc] init] autorelease];
+    Options *op = [[Options alloc] init];
     netplay_t *handle = netplay_get_handle();
     
     if(!skt_netplay_init(handle,[op.wfpeeraddr UTF8String],op.wfport,netplay_warn_callback))
@@ -774,7 +759,6 @@ static void netplay_warn_callback(char *msg)
         default: btState =  BluetoothUnknown; break;
     }
     NSLog(@"Bluetooth state: %d", btState);
-    [btMgr release];
     btMgr = nil;
 }
 

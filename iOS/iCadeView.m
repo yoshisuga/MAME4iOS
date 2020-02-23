@@ -45,14 +45,12 @@
 #import "iCadeView.h"
 #include "myosd.h"
 
-#define DebugLog 0
+#define DebugLog 1
 #if DebugLog == 0
 #define NSLog(...) (void)0
 #endif
 
 @implementation iCadeView
-
-@synthesize active;
 
 - (id)initWithFrame:(CGRect)frame withEmuController:(EmulatorController*)emulatorController
 {
@@ -70,7 +68,6 @@
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationDidEnterBackgroundNotification object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationDidBecomeActiveNotification object:nil];
-    [super dealloc];
 }
 
 - (void)didEnterBackground {
@@ -99,10 +96,8 @@
 }
 
 - (void)setActive:(BOOL)value {
-    if (active == value) return;
-    
-    active = value;
-    if (active) {
+    _active = value;
+    if (_active) {
         [self becomeFirstResponder];
     } else {
         [self resignFirstResponder];
@@ -715,6 +710,10 @@
 //
 //      BQUOTE          - MAME4iOS MENU
 //
+//      CMD+ENTER       - TOGGLE FULLSCREEN
+//      CMD+T           - TOGGLE CRT/TV FILTER
+//      CMD+S           - TOGGLE SCANLINE FILTER
+//
 // iCade keys
 //        we      yt uf im og
 //      aq  dc    hr jn kp lv
@@ -750,7 +749,31 @@
 #define KEY_BQUOTE   53
 
 #define KEY_A        4
-#define KEY_(c)      (KEY_A + ((c) - 'a'))
+#define KEY_B        5
+#define KEY_C        6
+#define KEY_D        7
+#define KEY_E        8
+#define KEY_F        9
+#define KEY_G        10
+#define KEY_H        11
+#define KEY_I        12
+#define KEY_J        13
+#define KEY_K        14
+#define KEY_L        15
+#define KEY_M        16
+#define KEY_N        17
+#define KEY_O        18
+#define KEY_P        19
+#define KEY_Q        20
+#define KEY_R        21
+#define KEY_S        22
+#define KEY_T        23
+#define KEY_U        24
+#define KEY_V        25
+#define KEY_W        26
+#define KEY_X        27
+#define KEY_Y        28
+#define KEY_Z        29
 
 #define KEY_1        30
 #define KEY_2        31
@@ -784,6 +807,8 @@
     NSLog(@"_keyCommandForEvent:'%@' '%@' keyCode:%@ isKeyDown:%@ time:%f", [event valueForKey:@"_unmodifiedInput"], [event valueForKey:@"_modifiedInput"], [event valueForKey:@"_keyCode"], [event valueForKey:@"_isKeyDown"], [event timestamp]);
 
     NSString* iCadeKey = nil;
+    
+    // MAME keys
     switch (keyCode + (isKeyDown ? KEY_DOWN : 0)) {
             
         // DPAD
@@ -843,40 +868,70 @@
         case KEY_BQUOTE+KEY_DOWN:   break;
     }
     
+    // command keys (ALT+ works in the simulator CMD+ does not)
+    if (g_keyboard_state[KEY_LCMD] || g_keyboard_state[KEY_RCMD] ||
+        g_keyboard_state[KEY_LALT] || g_keyboard_state[KEY_RALT])
+    {
+        switch (keyCode + (isKeyDown ? KEY_DOWN : 0)) {
+            case KEY_RETURN+KEY_DOWN:
+                if (g_device_is_landscape)
+                    g_pref_full_screen_land = !(g_pref_full_screen_land || g_pref_full_screen_joy);
+                else
+                    g_pref_full_screen_port = !(g_pref_full_screen_port || g_pref_full_screen_joy);
+                g_pref_full_screen_joy = 0;
+                [emuController changeUI];
+                return nil;
+            case KEY_T+KEY_DOWN:
+                if (g_device_is_landscape)
+                    g_pref_tv_filter_land = !g_pref_tv_filter_land;
+                else
+                    g_pref_tv_filter_port = !g_pref_tv_filter_port;
+                [emuController changeUI];
+                return nil;
+            case KEY_S+KEY_DOWN:
+                if (g_device_is_landscape)
+                    g_pref_scanline_filter_land = !g_pref_scanline_filter_land;
+                else
+                    g_pref_scanline_filter_port = !g_pref_scanline_filter_port;
+                [emuController changeUI];
+                return nil;
+        }
+    }
+    
     // 8BitDo
     switch (keyCode + (isKeyDown ? KEY_DOWN : 0)) {
             
         // DPAD
-        case KEY_('f'):            iCadeKey = @"c"; break;
-        case KEY_('f')+KEY_DOWN:   iCadeKey = @"d"; break;
-        case KEY_('e'):            iCadeKey = @"q"; break;
-        case KEY_('e')+KEY_DOWN:   iCadeKey = @"a"; break;
-        case KEY_('c'):            iCadeKey = @"e"; break;
-        case KEY_('c')+KEY_DOWN:   iCadeKey = @"w"; break;
-        case KEY_('d'):            iCadeKey = @"z"; break;
-        case KEY_('d')+KEY_DOWN:   iCadeKey = @"x"; break;
+        case KEY_F:            iCadeKey = @"c"; break;
+        case KEY_F+KEY_DOWN:   iCadeKey = @"d"; break;
+        case KEY_E:            iCadeKey = @"q"; break;
+        case KEY_E+KEY_DOWN:   iCadeKey = @"a"; break;
+        case KEY_C:            iCadeKey = @"e"; break;
+        case KEY_C+KEY_DOWN:   iCadeKey = @"w"; break;
+        case KEY_D:            iCadeKey = @"z"; break;
+        case KEY_D+KEY_DOWN:   iCadeKey = @"x"; break;
 
         // A/B/Y/X
-        case KEY_('g'):             iCadeKey = @"p"; break;
-        case KEY_('g')+KEY_DOWN:    iCadeKey = @"k"; break;
-        case KEY_('j'):             iCadeKey = @"g"; break;
-        case KEY_('j')+KEY_DOWN:    iCadeKey = @"o"; break;
-        case KEY_('i'):             iCadeKey = @"m"; break;
-        case KEY_('i')+KEY_DOWN:    iCadeKey = @"i"; break;
-        case KEY_('h'):             iCadeKey = @"v"; break;
-        case KEY_('h')+KEY_DOWN:    iCadeKey = @"l"; break;
+        case KEY_G:             iCadeKey = @"p"; break;
+        case KEY_G+KEY_DOWN:    iCadeKey = @"k"; break;
+        case KEY_J:             iCadeKey = @"g"; break;
+        case KEY_J+KEY_DOWN:    iCadeKey = @"o"; break;
+        case KEY_I:             iCadeKey = @"m"; break;
+        case KEY_I+KEY_DOWN:    iCadeKey = @"i"; break;
+        case KEY_H:             iCadeKey = @"v"; break;
+        case KEY_H+KEY_DOWN:    iCadeKey = @"l"; break;
 
         // L1/R1
-        case KEY_('k'):             iCadeKey = @"f"; break;
-        case KEY_('k')+KEY_DOWN:    iCadeKey = @"u"; break;
-        case KEY_('m'):             iCadeKey = @"n"; break;
-        case KEY_('m')+KEY_DOWN:    iCadeKey = @"j"; break;
+        case KEY_K:             iCadeKey = @"f"; break;
+        case KEY_K+KEY_DOWN:    iCadeKey = @"u"; break;
+        case KEY_M:             iCadeKey = @"n"; break;
+        case KEY_M+KEY_DOWN:    iCadeKey = @"j"; break;
 
         // START and SELECT/COIN (Player 1)
-        case KEY_('o'):             iCadeKey = @"r"; break;
-        case KEY_('o')+KEY_DOWN:    iCadeKey = @"h"; break;
-        case KEY_('n'):             iCadeKey = @"t"; break;
-        case KEY_('n')+KEY_DOWN:    iCadeKey = @"y"; break;
+        case KEY_O:             iCadeKey = @"r"; break;
+        case KEY_O+KEY_DOWN:    iCadeKey = @"h"; break;
+        case KEY_N:             iCadeKey = @"t"; break;
+        case KEY_N+KEY_DOWN:    iCadeKey = @"y"; break;
     }
 
     if (iCadeKey != nil) {

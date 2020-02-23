@@ -62,10 +62,12 @@
 +(NetplayGameKit *) sharedInstance;
 - (void) connect:(bool)server;
 
-@property (retain) MCSession *session;
+@property (strong) MCSession *session;
 @property (readwrite,assign) bool connected;
-@property (retain) MCPeerID *peerId;
-@property (retain) MCNearbyServiceBrowser *browser;
-@property (retain)  MCNearbyServiceAdvertiser *assistant;
+@property (strong) MCPeerID *peerId;
+@property (strong) MCNearbyServiceBrowser *browser;
+@property (strong)  MCNearbyServiceAdvertiser *assistant;
 
 @end
+
+#pragma clang diagnostic pop
