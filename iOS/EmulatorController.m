@@ -50,7 +50,6 @@
 #import <Intents/Intents.h>
 #import "HelpController.h"
 #import "OptionsController.h"
-#import "DonateController.h"
 #import "AnalogStick.h"
 #import "AnalogStick.h"
 #import "LayoutView.h"
