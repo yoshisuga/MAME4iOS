@@ -74,7 +74,7 @@
 #import "WebServer.h"
 #import "Alert.h"
 
-#define DebugLog 1
+#define DebugLog 0
 #if DebugLog == 0
 #define NSLog(...) (void)0
 #endif
@@ -3451,54 +3451,5 @@ void myosd_handle_turbo() { @autoreleasepool {
     [self presentViewController:alert animated:YES completion:nil];
 #endif
 }
-
-#if DebugLog
-
-- (BOOL)canBecomeFirstResponder {
-    return TRUE;
-}
-
-- (void)onKeyCommand:(UIKeyCommand*)keyCommand {
-    NSLog(@"KEY COMMAND: %@", keyCommand);
-    switch ([[keyCommand input] characterAtIndex:0])
-    {
-        case 'F':
-            if (g_device_is_landscape)
-                g_pref_full_screen_land = !g_pref_full_screen_land;
-            else
-                g_pref_full_screen_port = !g_pref_full_screen_port;
-            break;
-        case 'T':
-            if (g_device_is_landscape)
-                g_pref_tv_filter_land = !g_pref_tv_filter_land;
-            else
-                g_pref_tv_filter_port = !g_pref_tv_filter_port;
-            break;
-        case 'L':
-            if (g_device_is_landscape)
-                g_pref_scanline_filter_land = !g_pref_scanline_filter_land;
-            else
-                g_pref_scanline_filter_port = !g_pref_scanline_filter_port;
-            break;
-    }
-    [self changeUI];
-}
-
-- (NSArray*)keyCommands {
-    static NSArray* g_keyCommands;
-    
-    if (g_keyCommands == nil) {
-        g_keyCommands = @[
-            [UIKeyCommand keyCommandWithInput:@"F" modifierFlags:0 action:@selector(onKeyCommand:) discoverabilityTitle:@"FULLSCREEN"],
-            [UIKeyCommand keyCommandWithInput:@"T" modifierFlags:0 action:@selector(onKeyCommand:) discoverabilityTitle:@"TV/CRT"],
-            [UIKeyCommand keyCommandWithInput:@"L" modifierFlags:0 action:@selector(onKeyCommand:) discoverabilityTitle:@"SCANLINE"],
-        ];
-        for (UIKeyCommand* keyCommand in g_keyCommands)
-            [keyCommand setValue:@(NO) forKey:@"_repeatable"];
-    }
-    
-    return g_keyCommands;
-}
-#endif
 
 @end
