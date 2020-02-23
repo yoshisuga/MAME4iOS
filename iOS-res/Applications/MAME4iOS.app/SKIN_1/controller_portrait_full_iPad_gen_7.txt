@@ -1,0 +1,39 @@
+5,888,95,85//DownLeft
+100,888,71,96//Down
+171,888,85,85//DownRight
+5,821,64,67//Left
+201,821,64,67//Right
+5,736,95,85//UpLeft
+100,724,70,96//Up
+171,736,85,85//UpRight
+2,3,109,54//Select*
+697,4,109,54//Start*
+457,883,82,82//LPad
+527,953,82,82//Rpad
+0,0,0,0//menu
+530,883,70,70//ButtonDownLeft (X + A)
+527,821,82,82//ButtonDown X*
+682,887,70,70//ButtonDownRight (X + B)
+598,889,82,82//ButtonLeft A*
+669,817,82,82//ButtonRight B*
+529,752,70,70//ButtonUpLeft (A + Y)
+597,752,82,82//ButtonUp Y*
+678,749,70,70//ButtonUpRight (B + Y)
+277,7,109,54//L2*
+398,6,109,54//R2*
+0,0,0,0//showkyboard
+657,805,105,105//B img
+515,809,105,105//X img
+586,877,105,105//A img
+585,740,105,105//Y img
+35,752,205,205//DPad img
+2,3,109,54//select img*
+697,4,109,54//start img*
+446,872,105,105//L1 img
+516,942,105,105//R1 img
+277,7,109,54//L2 img
+398,6,109,54//R2 img
+19,738,240,240//StickWindow*
+19,738,240,240//StickArea*
+60//radio_stick
+50

@@ -2546,8 +2546,10 @@ void myosd_handle_turbo() { @autoreleasepool {
             deviceName = @"iPad_pro_11";
         } else if ( screenType == IPAD ) {
             deviceName = @"iPad";
+        } else if ( screenType == IPAD_GEN_7 ) {
+            deviceName = @"iPad_gen_7";
         } else {
-            deviceName = @"config_iPad_pro_12_9";
+            deviceName = @"iPad_pro_12_9";
         }
     } else {
         // default to the largest iPhone if unknown
@@ -2700,6 +2702,8 @@ void myosd_handle_turbo() { @autoreleasepool {
             fp  = [self loadFile:"config_iPad_pro_11.txt"];
         } else if ( screenType == IPAD ) {
             fp = [self loadFile:"config_iPad.txt"];
+        } else if ( screenType == IPAD_GEN_7 ) {
+            fp = [self loadFile:"config_iPad_gen_7.txt"];
         } else {
             fp = [self loadFile:"config_iPad_pro_12_9.txt"];
         }
