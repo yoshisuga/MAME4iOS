@@ -52,7 +52,6 @@
 #import "FilterOptionController.h"
 #import "InputOptionController.h"
 #import "DefaultOptionController.h"
-#import "DonateController.h"
 #import "HelpController.h"
 #import "EmulatorController.h"
 
@@ -177,14 +176,7 @@
                    cell.textLabel.text   = @"Help";
                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                    break;
-               }
-                   
-               case 1:
-               {
-                   cell.textLabel.text   = @"Donate";
-                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   break;
-               }
+               }                   
            }
            break;
        }
@@ -475,7 +467,7 @@
    
       switch (section)
       {
-          case kSupportSection: return 2;
+          case kSupportSection: return 1;
           case kPortraitSection: return 5;
           case kLandscapeSection: return 5;
           case kInputSection: return 1;
@@ -561,11 +553,6 @@
                 [[self navigationController] pushViewController:controller animated:YES];
             }
             
-            if (row==1){
-                DonateController *controller = [[DonateController alloc] init];
-                [[self navigationController] pushViewController:controller animated:YES];
-            }
-
             break;
         }
         case kInputSection:
