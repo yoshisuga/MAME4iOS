@@ -192,6 +192,7 @@
 		E9856CF023C9A7C50071666D /* MultipeerConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E9856CEF23C9A7C50071666D /* MultipeerConnectivity.framework */; };
 		EF0E08AD2401840700E98F01 /* help.md in Resources */ = {isa = PBXBuildFile; fileRef = EF0E08AC2401840700E98F01 /* help.md */; };
 		EF0E08AE2401840700E98F01 /* help.md in Resources */ = {isa = PBXBuildFile; fileRef = EF0E08AC2401840700E98F01 /* help.md */; };
+		EF44A98724031F0D00C20D88 /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF44A98524031F0D00C20D88 /* ZipFile.m */; };
 		EF7B232C23FD0469001FF51D /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF7B232A23FD0469001FF51D /* Alert.m */; };
 		EF7B232D23FD0469001FF51D /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF7B232A23FD0469001FF51D /* Alert.m */; };
 /* End PBXBuildFile section */
@@ -393,6 +394,8 @@
 		CEE680D1163BE5C400051BC2 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		E9856CEF23C9A7C50071666D /* MultipeerConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MultipeerConnectivity.framework; path = System/Library/Frameworks/MultipeerConnectivity.framework; sourceTree = SDKROOT; };
 		EF0E08AC2401840700E98F01 /* help.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = help.md; path = "../../iOS-res/Applications/MAME4iOS.app/help.md"; sourceTree = "<group>"; };
+		EF44A98524031F0D00C20D88 /* ZipFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ZipFile.m; path = ../../../../Desktop/ZipFile.m; sourceTree = "<group>"; };
+		EF44A98624031F0D00C20D88 /* ZipFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ZipFile.h; path = ../../../../Desktop/ZipFile.h; sourceTree = "<group>"; };
 		EF7B232A23FD0469001FF51D /* Alert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Alert.m; sourceTree = "<group>"; };
 		EF7B232B23FD0469001FF51D /* Alert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Alert.h; sourceTree = "<group>"; };
 		EF9F9C9E240070E700352554 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../../README.md; sourceTree = "<group>"; };
@@ -594,6 +597,8 @@
 				92B99F0D2022706600CC44E3 /* UIView+Toast.m */,
 				EF7B232B23FD0469001FF51D /* Alert.h */,
 				EF7B232A23FD0469001FF51D /* Alert.m */,
+				EF44A98624031F0D00C20D88 /* ZipFile.h */,
+				EF44A98524031F0D00C20D88 /* ZipFile.m */,
 				CEBFBC0E163C5BD300A05CD0 /* resources */,
 				92A533D521EE601D0089FBB9 /* WebServer.h */,
 				92A533D621EE601D0089FBB9 /* WebServer.m */,
@@ -991,6 +996,7 @@
 				925ABCB61E46DCC500997182 /* InputOptionController.m in Sources */,
 				92A533C321EBDBAD0089FBB9 /* GCDWebServerMultiPartFormRequest.m in Sources */,
 				925ABCB71E46DCC500997182 /* DefaultOptionController.m in Sources */,
+				EF44A98724031F0D00C20D88 /* ZipFile.m in Sources */,
 				EF7B232C23FD0469001FF51D /* Alert.m in Sources */,
 				92A533B421EBDBAD0089FBB9 /* GCDWebServerErrorResponse.m in Sources */,
 				92A533AE21EBDBAD0089FBB9 /* GCDWebServer.m in Sources */,
