@@ -3479,9 +3479,6 @@ void myosd_handle_turbo() { @autoreleasepool {
     
     if (g_keyCommands == nil) {
         g_keyCommands = @[
-//            [UIKeyCommand keyCommandWithInput:@"F" modifierFlags:UIKeyModifierCommand action:@selector(onKeyCommand:) discoverabilityTitle:@"FULLSCREEN"],
-//            [UIKeyCommand keyCommandWithInput:@"T" modifierFlags:UIKeyModifierCommand action:@selector(onKeyCommand:) discoverabilityTitle:@"TV/CRT"],
-//            [UIKeyCommand keyCommandWithInput:@"L" modifierFlags:UIKeyModifierCommand action:@selector(onKeyCommand:) discoverabilityTitle:@"SCANLINE"],
             [UIKeyCommand keyCommandWithInput:@"F" modifierFlags:0 action:@selector(onKeyCommand:) discoverabilityTitle:@"FULLSCREEN"],
             [UIKeyCommand keyCommandWithInput:@"T" modifierFlags:0 action:@selector(onKeyCommand:) discoverabilityTitle:@"TV/CRT"],
             [UIKeyCommand keyCommandWithInput:@"L" modifierFlags:0 action:@selector(onKeyCommand:) discoverabilityTitle:@"SCANLINE"],
