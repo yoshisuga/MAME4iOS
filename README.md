@@ -63,6 +63,10 @@ we suppoprt a small subset of the keys supported by the command line MAME.
      DELETE          - MAME UI BACK      (aka B)
      
      BQUOTE          - MAME4iOS MENU
+     
+     CMD+ENTER       - TOGGLE FULLSCREEN
+     CMD+T           - TOGGLE CRT/TV FILTER
+     CMD+S           - TOGGLE SCANLINE FILTER
 
 
 ## 8BitDo Zero 
