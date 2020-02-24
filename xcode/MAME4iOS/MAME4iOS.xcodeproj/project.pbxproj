@@ -143,13 +143,13 @@
 		B5FAE31921FCE64D003F44D0 /* MAME_tvOS.lsr in Resources */ = {isa = PBXBuildFile; fileRef = B5FAE31821FCE64D003F44D0 /* MAME_tvOS.lsr */; };
 		E9856CF023C9A7C50071666D /* MultipeerConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E9856CEF23C9A7C50071666D /* MultipeerConnectivity.framework */; };
 		EF0E08AE2401840700E98F01 /* help.md in Resources */ = {isa = PBXBuildFile; fileRef = EF0E08AC2401840700E98F01 /* help.md */; };
+		EF29C8852402E51200AFFA4E /* config_iPad_gen_7.txt in Resources */ = {isa = PBXBuildFile; fileRef = EF29C8832402E51100AFFA4E /* config_iPad_gen_7.txt */; };
 		EF44A98724031F0D00C20D88 /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF44A98524031F0D00C20D88 /* ZipFile.m */; };
 		EF44A98B24032C3B00C20D88 /* libcompression.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = EF44A98A24032C2100C20D88 /* libcompression.tbd */; };
 		EF44A98D240331A600C20D88 /* libcompression.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = EF44A98C2403319A00C20D88 /* libcompression.tbd */; };
-		EF29C8842402E51200AFFA4E /* config_iPad_gen_7.txt in Resources */ = {isa = PBXBuildFile; fileRef = EF29C8832402E51100AFFA4E /* config_iPad_gen_7.txt */; };
-		EF29C8852402E51200AFFA4E /* config_iPad_gen_7.txt in Resources */ = {isa = PBXBuildFile; fileRef = EF29C8832402E51100AFFA4E /* config_iPad_gen_7.txt */; };
 		EF7B232C23FD0469001FF51D /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF7B232A23FD0469001FF51D /* Alert.m */; };
 		EF7B232D23FD0469001FF51D /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF7B232A23FD0469001FF51D /* Alert.m */; };
+		EFF7486E240352E000A3F351 /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF44A98524031F0D00C20D88 /* ZipFile.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -324,11 +324,11 @@
 		CEE680D1163BE5C400051BC2 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		E9856CEF23C9A7C50071666D /* MultipeerConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MultipeerConnectivity.framework; path = System/Library/Frameworks/MultipeerConnectivity.framework; sourceTree = SDKROOT; };
 		EF0E08AC2401840700E98F01 /* help.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = help.md; path = "../../iOS-res/Applications/MAME4iOS.app/help.md"; sourceTree = "<group>"; };
+		EF29C8832402E51100AFFA4E /* config_iPad_gen_7.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = config_iPad_gen_7.txt; path = "../../iOS-res/Applications/MAME4iOS.app/config_iPad_gen_7.txt"; sourceTree = "<group>"; };
 		EF44A98524031F0D00C20D88 /* ZipFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ZipFile.m; path = ../../../../Desktop/ZipFile.m; sourceTree = "<group>"; };
 		EF44A98624031F0D00C20D88 /* ZipFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ZipFile.h; path = ../../../../Desktop/ZipFile.h; sourceTree = "<group>"; };
 		EF44A98A24032C2100C20D88 /* libcompression.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcompression.tbd; path = usr/lib/libcompression.tbd; sourceTree = SDKROOT; };
 		EF44A98C2403319A00C20D88 /* libcompression.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcompression.tbd; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS13.2.sdk/usr/lib/libcompression.tbd; sourceTree = DEVELOPER_DIR; };
-		EF29C8832402E51100AFFA4E /* config_iPad_gen_7.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = config_iPad_gen_7.txt; path = "../../iOS-res/Applications/MAME4iOS.app/config_iPad_gen_7.txt"; sourceTree = "<group>"; };
 		EF7B232A23FD0469001FF51D /* Alert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Alert.m; sourceTree = "<group>"; };
 		EF7B232B23FD0469001FF51D /* Alert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Alert.h; sourceTree = "<group>"; };
 		EF9F9C9E240070E700352554 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../../README.md; sourceTree = "<group>"; };
@@ -710,12 +710,10 @@
 				ORGANIZATIONNAME = Seleuco;
 				TargetAttributes = {
 					925ABCA41E46DCC500997182 = {
-						DevelopmentTeam = R72X3BF4KE;
 						ProvisioningStyle = Automatic;
 					};
 					92ECB8EA21EA984D00D1E3D0 = {
 						CreatedOnToolsVersion = 10.1;
-						DevelopmentTeam = 8RUN83V8CA;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -865,6 +863,7 @@
 				92A533B821EBDBAD0089FBB9 /* GCDWebServerFileResponse.m in Sources */,
 				92A533C121EBDBAD0089FBB9 /* GCDWebServerURLEncodedFormRequest.m in Sources */,
 				92ECB91921EAD57900D1E3D0 /* UIView+Toast.m in Sources */,
+				EFF7486E240352E000A3F351 /* ZipFile.m in Sources */,
 				92ECB91821EAD57400D1E3D0 /* ScreenView.m in Sources */,
 				92A533A621EBDBAD0089FBB9 /* GCDWebServerResponse.m in Sources */,
 				92A533D921EE601D0089FBB9 /* WebServer.m in Sources */,
@@ -894,7 +893,7 @@
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Yoshinobu Sugawara (R72X3BF4KE)";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = R72X3BF4KE;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_BITCODE = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MAME4iOS/MAME4iOS-Prefix.pch";
@@ -913,7 +912,7 @@
 				);
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.toddla.mame4ios;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4ios;
 				PRODUCT_NAME = MAME4iOS;
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -928,7 +927,7 @@
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Yoshinobu Sugawara (R72X3BF4KE)";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = R72X3BF4KE;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_BITCODE = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MAME4iOS/MAME4iOS-Prefix.pch";
@@ -943,7 +942,7 @@
 				);
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.toddla.mame4ios;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4ios;
 				PRODUCT_NAME = MAME4iOS;
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -985,7 +984,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = 8RUN83V8CA;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -1006,7 +1005,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.toddla.MAME-tvOS";
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4tvos;
 				PRODUCT_NAME = MAME4iOS;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;
@@ -1050,7 +1049,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = 8RUN83V8CA;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -1070,7 +1069,7 @@
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.toddla.MAME-tvOS";
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4tvos;
 				PRODUCT_NAME = MAME4iOS;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;

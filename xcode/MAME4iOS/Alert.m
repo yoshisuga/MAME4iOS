@@ -75,7 +75,7 @@
         UIColor* tintColor = self.view.tintColor;
         [self addTextFieldWithConfigurationHandler:^(UITextField* textField) {
             textField.enabled = NO;
-            textField.font = [UIFont fontWithName:@"Menlo" size:[UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].pointSize];
+            textField.font = [UIFont fontWithName:@"Menlo" size:[UIFont preferredFontForTextStyle:UIFontTextStyleFootnote].pointSize];
             textField.textColor = tintColor;
         }];
     }
