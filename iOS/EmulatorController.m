@@ -2534,13 +2534,17 @@ void myosd_handle_turbo() { @autoreleasepool {
             deviceName = @"iPad_pro_11";
         } else if ( screenType == IPAD ) {
             deviceName = @"iPad";
+        } else if ( screenType == IPAD_GEN_7 ) {
+            deviceName = @"iPad_gen_7";
         } else {
-            deviceName = @"config_iPad_pro_12_9";
+            deviceName = @"iPad_pro_12_9";
         }
     } else {
         // default to the largest iPhone if unknown
         deviceName = @"iPhone_xr_xs_max";
     }
+    
+    NSLog(@"DEVICE: %@", deviceName);
     
 	if(!orientation)
 	{
@@ -2663,39 +2667,45 @@ void myosd_handle_turbo() { @autoreleasepool {
 - (void)getConf{
 #if TARGET_OS_IOS
     char string[256];
-    FILE *fp;
     
     DeviceScreenType screenType = [DeviceScreenResolver resolve];
+    char* config = "";
     
     if ( screenType == IPHONE_XR_XS_MAX ) {
-        fp = [self loadFile:"config_iPhone_xr_xs_max.txt"];
+        config = "config_iPhone_xr_xs_max.txt";
     } else if ( screenType == IPHONE_X_XS ) {
-        fp = [self loadFile:"config_iPhone_x.txt"];
+        config = "config_iPhone_x.txt";
     } else if ( screenType == IPHONE_6_7_8_PLUS ) {
-        fp = [self loadFile:"config_iPhone_6_plus.txt"];
+        config = "config_iPhone_6_plus.txt";
     } else if ( screenType == IPHONE_6_7_8 ) {
-        fp = [self loadFile:"config_iPhone_6.txt"];
+        config = "config_iPhone_6.txt";
     } else if ( screenType == IPHONE_5 ) {
-        fp = [self loadFile:"config_iPhone_5.txt"];
+        config = "config_iPhone_5.txt";
     } else if ( screenType == IPHONE_4_OR_LESS ) {
-        fp = [self loadFile:"config_iPhone.txt"];
+        config = "config_iPhone.txt";
     } else if ( g_isIpad ) {
         if ( screenType == IPAD_PRO_12_9 ) {
-            fp  = [self loadFile:"config_iPad_pro_12_9.txt"];
+            config = "config_iPad_pro_12_9.txt";
         } else if ( screenType == IPAD_PRO_10_5 ) {
-            fp  = [self loadFile:"config_iPad_pro_10_5.txt"];
+            config = "config_iPad_pro_10_5.txt";
         } else if ( screenType == IPAD_PRO_11 ) {
-            fp  = [self loadFile:"config_iPad_pro_11.txt"];
+            config = "config_iPad_pro_11.txt";
         } else if ( screenType == IPAD ) {
-            fp = [self loadFile:"config_iPad.txt"];
+            config = "config_iPad.txt";
+        } else if ( screenType == IPAD_GEN_7 ) {
+            config = "config_iPad_gen_7.txt";
         } else {
-            fp = [self loadFile:"config_iPad_pro_12_9.txt"];
+            config = "config_iPad_pro_12_9.txt";
         }
     } else {
         // default to the largest iPhone if unknown
-        fp = [self loadFile:"config_iPhone_xr_xs_max.txt"];
+        config = "config_iPhone_xr_xs_max.txt";
     }
     
+    NSLog(@"USING CONFIG: %s", config);
+    
+    FILE *fp = [self loadFile:config];
+
     if (fp)
     {
         int i = 0;

@@ -3,9 +3,9 @@
 0,769,1024,597//PortraitImageBackFrame
 0,0,1024,769//PortraitImageOverlayFrame
 0,0,1366,1024//LandscapeViewFrameFull
-110,7,1067,800//rLandscapeViewFrameNotFull
+150,0,1067,800//rLandscapeViewFrameNotFull
 0,0,1366,1024//LandscapeImageBackFrame
-112,0,1067,800//LandscapeImageOverlayFrame
+150,0,1067,800//LandscapeImageOverlayFrame
 0//drawcoords
 
 

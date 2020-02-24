@@ -31,8 +31,10 @@
             return IPHONE_XR_XS_MAX;
         }
     } else if ( [[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad ) {
-        if ( maxLength < 1112.0f ) {
+        if ( maxLength <= 1024.0f ) {
             return IPAD;
+        } else if ( maxLength == 1080.0f ) {
+            return IPAD_GEN_7;
         } else if ( maxLength == 1112.0f ) {
             return IPAD_PRO_10_5;
         } else if ( maxLength == 1194.0f ) {
