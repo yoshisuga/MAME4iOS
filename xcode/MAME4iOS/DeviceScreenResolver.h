@@ -20,7 +20,8 @@ typedef NS_ENUM(NSUInteger, DeviceScreenType) {
     IPAD,
     IPAD_PRO_10_5,
     IPAD_PRO_11,
-    IPAD_PRO_12_9
+    IPAD_PRO_12_9,
+    IPAD_GEN_7,
 };
 
 @interface DeviceScreenResolver : NSObject

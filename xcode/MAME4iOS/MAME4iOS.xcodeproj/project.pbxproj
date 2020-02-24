@@ -192,6 +192,8 @@
 		E9856CF023C9A7C50071666D /* MultipeerConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E9856CEF23C9A7C50071666D /* MultipeerConnectivity.framework */; };
 		EF0E08AD2401840700E98F01 /* help.md in Resources */ = {isa = PBXBuildFile; fileRef = EF0E08AC2401840700E98F01 /* help.md */; };
 		EF0E08AE2401840700E98F01 /* help.md in Resources */ = {isa = PBXBuildFile; fileRef = EF0E08AC2401840700E98F01 /* help.md */; };
+		EF29C8842402E51200AFFA4E /* config_iPad_gen_7.txt in Resources */ = {isa = PBXBuildFile; fileRef = EF29C8832402E51100AFFA4E /* config_iPad_gen_7.txt */; };
+		EF29C8852402E51200AFFA4E /* config_iPad_gen_7.txt in Resources */ = {isa = PBXBuildFile; fileRef = EF29C8832402E51100AFFA4E /* config_iPad_gen_7.txt */; };
 		EF7B232C23FD0469001FF51D /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF7B232A23FD0469001FF51D /* Alert.m */; };
 		EF7B232D23FD0469001FF51D /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF7B232A23FD0469001FF51D /* Alert.m */; };
 /* End PBXBuildFile section */
@@ -393,6 +395,7 @@
 		CEE680D1163BE5C400051BC2 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		E9856CEF23C9A7C50071666D /* MultipeerConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MultipeerConnectivity.framework; path = System/Library/Frameworks/MultipeerConnectivity.framework; sourceTree = SDKROOT; };
 		EF0E08AC2401840700E98F01 /* help.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = help.md; path = "../../iOS-res/Applications/MAME4iOS.app/help.md"; sourceTree = "<group>"; };
+		EF29C8832402E51100AFFA4E /* config_iPad_gen_7.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = config_iPad_gen_7.txt; path = "../../iOS-res/Applications/MAME4iOS.app/config_iPad_gen_7.txt"; sourceTree = "<group>"; };
 		EF7B232A23FD0469001FF51D /* Alert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Alert.m; sourceTree = "<group>"; };
 		EF7B232B23FD0469001FF51D /* Alert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Alert.h; sourceTree = "<group>"; };
 		EF9F9C9E240070E700352554 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../../README.md; sourceTree = "<group>"; };
@@ -650,6 +653,7 @@
 				921CC321216A903600A39154 /* config_iPad_pro_10_5.txt */,
 				927BD1A52209E80F00ECF6C9 /* config_iPad_pro_11.txt */,
 				921CC324216A936800A39154 /* config_iPad_pro_12_9.txt */,
+				EF29C8832402E51100AFFA4E /* config_iPad_gen_7.txt */,
 				CEBFBC10163C5DA100A05CD0 /* border-iPad.png */,
 				CEBFBC13163C5DA100A05CD0 /* crt-1.png */,
 				CEBFBC14163C5DA100A05CD0 /* crt-2.png */,
@@ -881,6 +885,7 @@
 				925ABCCF1E46DCC500997182 /* crt-2.png in Resources */,
 				EF0E08AE2401840700E98F01 /* help.md in Resources */,
 				925ABCD01E46DCC500997182 /* scanline-1.png in Resources */,
+				EF29C8852402E51200AFFA4E /* config_iPad_gen_7.txt in Resources */,
 				927BD1A62209E80F00ECF6C9 /* config_iPad_pro_11.txt in Resources */,
 				925ABCD11E46DCC500997182 /* scanline-2.png in Resources */,
 				920BBDEF201FC29700AE7D50 /* dpad.png in Resources */,
@@ -938,6 +943,7 @@
 				CEAC6C6216AAAB0800AF3275 /* config_iPhone_5.txt in Resources */,
 				CEAC6C7516AAAC1D00AF3275 /* Default-568h@2x.png in Resources */,
 				CEAC6C7616AAAC1D00AF3275 /* Default.png in Resources */,
+				EF29C8842402E51200AFFA4E /* config_iPad_gen_7.txt in Resources */,
 				CEAC6C7716AAAC1D00AF3275 /* Default@2x.png in Resources */,
 				EF0E08AD2401840700E98F01 /* help.md in Resources */,
 				CEAC6C7C16AAACA700AF3275 /* Gridlee57.png in Resources */,

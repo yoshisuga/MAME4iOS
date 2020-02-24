@@ -323,16 +323,20 @@
             continue;
         }
         
+        /*
         if ( [comment isEqualToString:@"//StickArea*"] ) {
-            [layoutTextData addObject:[NSString stringWithFormat:@"%i,%i,%i,%i//StickArea*",(int)emuController.rStickArea.origin.x,
+            [layoutTextData addObject:[NSString stringWithFormat:@"%i,%i,%i,%i//StickArea*",
+                                       (int)emuController.rStickArea.origin.x,
                                        (int)emuController.rStickArea.origin.y,
                                        (int)emuController.rStickArea.size.width,
                                        (int)emuController.rStickArea.size.height]];
             continue;
         }
+        */
         
         if ( [comment isEqualToString:@"//DPad img"] ||
-            [comment isEqualToString:@"//StickWindow*" ]) {
+            [comment isEqualToString:@"//StickWindow*"] ||
+            [comment isEqualToString:@"//StickArea*"]) {
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"type == %lu",(unsigned long)coordType,(unsigned long)coordValue];
             NSArray *results = [data filteredArrayUsingPredicate:predicate];
             if ( results.count == 0 ) {
