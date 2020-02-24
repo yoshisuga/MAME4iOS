@@ -117,6 +117,7 @@ extern int g_pref_keep_aspect_ratio_land;
 extern int g_pref_keep_aspect_ratio_port;
 extern int g_pref_full_screen_land;
 extern int g_pref_full_screen_port;
+extern int g_pref_full_screen_joy;
 extern int g_pref_animated_DPad;
 extern int g_pref_4buttonsLand;
 extern int g_pref_hide_LR;
@@ -197,8 +198,5 @@ enum { EXT_CONTROL_NONE=0,EXT_CONTROL_ICADE=1,EXT_CONTROL_ICP = 2,EXT_CONTROL_IM
 
 extern const char* get_resource_path(const char* file);
 extern const char* get_documents_path(const char* file);
-
-extern int isGridlee;
-
 
 #endif

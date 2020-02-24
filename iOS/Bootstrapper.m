@@ -165,18 +165,8 @@ unsigned long read_mfi_controller(unsigned long res){
     
     manager = [[NSFileManager alloc] init];
     
-    fromPath = [NSString stringWithUTF8String:get_resource_path("gridlee.zip")];
-    toPath = [NSString stringWithUTF8String:get_documents_path("roms/gridlee.zip")];
-
-    if([manager fileExistsAtPath:fromPath] && ![manager fileExistsAtPath:toPath])
-    {
-        [manager copyItemAtPath:fromPath toPath:toPath error:nil];
-    }
-    
-    isGridlee = [manager fileExistsAtPath:toPath] && [[manager contentsOfDirectoryAtPath:[NSString stringWithUTF8String:get_documents_path("roms")] error:nil] count] == 1;
-	    
     toPath = [NSString stringWithUTF8String:get_documents_path("cheat.zip")];
-    if (![manager fileExistsAtPath:toPath] && !isGridlee)
+    if (![manager fileExistsAtPath:toPath])
     {
         error = nil;
         fromPath = [NSString stringWithUTF8String:get_resource_path("cheat.zip")];
@@ -184,7 +174,7 @@ unsigned long read_mfi_controller(unsigned long res){
         NSLog(@"Unable to move file cheat? %@", [error localizedDescription]);
     }
     toPath = [NSString stringWithUTF8String:get_documents_path("Category.ini")];
-    if (![manager fileExistsAtPath:toPath] && !isGridlee)
+    if (![manager fileExistsAtPath:toPath])
     {
         error = nil;
         fromPath = [NSString stringWithUTF8String:get_resource_path("Category.ini")];
@@ -192,7 +182,7 @@ unsigned long read_mfi_controller(unsigned long res){
         NSLog(@"Unable to move file category? %@", [error localizedDescription]);
     }
     toPath = [NSString stringWithUTF8String:get_documents_path("hiscore.dat")];
-    if (![manager fileExistsAtPath:toPath] && !isGridlee)
+    if (![manager fileExistsAtPath:toPath])
     {
         error = nil;
         fromPath = [NSString stringWithUTF8String:get_resource_path("hiscore.dat")];
@@ -247,9 +237,90 @@ unsigned long read_mfi_controller(unsigned long res){
     return TRUE;
 }
 
+- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
+{
+    NSLog(@"OPEN URL: %@ %@", url, options);
+    
+    // handle our own scheme mame4ios://name
+    if ([url.scheme isEqualToString:@"mame4ios"] && [url.host length] != 0 && [url.path length] == 0 && [url.query length] == 0) {
+        NSDictionary* game = @{@"name":url.host};
+        [hrViewController performSelectorOnMainThread:@selector(playGame:) withObject:game waitUntilDone:NO];
+        return TRUE;
+    }
+    
+    // copy a ZIP file to document root, and then let moveROMS take care of it....
+    // only handle .zip files
+    if (!url.fileURL || ![url.pathExtension.lowercaseString isEqualToString:@"zip"])
+        return FALSE;
+    
+    // dont share with myself
+    if ([[url URLByDeletingLastPathComponent].path isEqualToString:[NSString stringWithUTF8String:get_documents_path("roms")]])
+        return FALSE;
+    
+    NSURL* destURL = [[NSURL fileURLWithPath:[NSString stringWithUTF8String:get_documents_path("")]]
+                      URLByAppendingPathComponent:url.lastPathComponent];
+
+    BOOL open_in_place = [options[UIApplicationOpenURLOptionsOpenInPlaceKey] boolValue];
+    
+    if (open_in_place)
+    {
+        if (![url startAccessingSecurityScopedResource])
+            return FALSE;
+        
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            NSError* error = nil;
+            NSFileCoordinator* coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
+            [coordinator coordinateReadingItemAtURL:url options:NSFileCoordinatorReadingWithoutChanges error:&error byAccessor:^(NSURL * newURL) {
+                NSError* error = nil;
+                [NSFileManager.defaultManager copyItemAtURL:newURL toURL:destURL error:&error];
+                
+                if (error != nil)
+                    NSLog(@"copyItemAtURL ERROR: (%@)", error);
+                
+                [url stopAccessingSecurityScopedResource];
+                [self->hrViewController performSelectorOnMainThread:@selector(moveROMS) withObject:nil waitUntilDone:NO];
+            }];
+            if (error != nil)
+                NSLog(@"coordinateReadingItemAtURL ERROR: (%@)", error);
+        });
+    }
+    else {
+        NSError* error = nil;
+        [NSFileManager.defaultManager copyItemAtURL:url toURL:destURL error:&error];
+        
+        if (error != nil)
+            NSLog(@"copyItemAtURL ERROR: (%@)", error);
+        
+        if ([[[url URLByDeletingLastPathComponent] lastPathComponent] hasSuffix:@"Inbox"])
+            [[NSFileManager defaultManager] removeItemAtURL:url error:nil];
+        
+        [self->hrViewController performSelectorOnMainThread:@selector(moveROMS) withObject:nil waitUntilDone:NO];
+    }
+    
+    return TRUE;
+}
+
+- (BOOL)application:(UIApplication *)application continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void (^)(NSArray<id<UIUserActivityRestoring>> * _Nullable))restorationHandler {
+    
+    NSLog(@"continueUserActivity: %@ %@", userActivity.activityType, userActivity.userInfo);
+    
+    if (![userActivity.activityType hasPrefix:[[NSBundle mainBundle] bundleIdentifier]])
+        return FALSE;
+    
+    NSString* cmd = [[userActivity.activityType componentsSeparatedByString:@"."] lastObject];
+    
+    if ([cmd isEqualToString:@"play"])
+    {
+        [hrViewController performSelectorOnMainThread:@selector(playGame:) withObject:userActivity.userInfo waitUntilDone:NO];
+        return TRUE;
+    }
+        
+    return FALSE;
+}
+
 - (void)applicationDidEnterBackground:(UIApplication *)application {
 
-   if((myosd_inGame || g_joy_used ) && !isGridlee )//force pause when game
+   if (myosd_inGame || g_joy_used) // force pause when game
       [hrViewController runMenu];
 }
 

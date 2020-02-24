@@ -83,7 +83,7 @@ typedef enum
 }
 
 - (id)initWithFrame:(CGRect)frame withEmuController:(EmulatorController*)emulatorController;
-- (void)calculateStickPosition:(CGPoint)pt;
 - (void)analogTouches:(UITouch *)touch withEvent:(UIEvent *)event;
+- (void)update;
 
 @end

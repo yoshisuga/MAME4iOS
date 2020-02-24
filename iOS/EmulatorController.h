@@ -179,6 +179,7 @@
 - (FILE *)loadFile:(const char *)name;
 
 - (void)moveROMS;
+- (void)playGame:(NSDictionary*)game;
 
 #if TARGET_OS_IOS
 - (NSSet*)touchesController:(NSSet *)touches withEvent:(UIEvent *)event;
