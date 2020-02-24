@@ -1,40 +1,40 @@
-0,653,115,115//DownLeft*
-112,653,71,115//Down*
-180,653,85,115//DownRight*
-0,592,150,61//Left*
-150,592,120,61//Right*
-0,507,115,85//UpLeft*
-112,495,70,96//Up*
-180,507,85,85//UpRight*
-7,66,103,43//select*
-915,66,103,43//start*
-727,522,82,82//l1
-692,621,82,82//r1
-0,0,0,0//menu (select+ start) YO b + up
-830,660,70,70//button down left* X + A
-892,622,82,82//buttondown*  --> X
-950,610,70,70//button down right X + B
-792,622,82,82//buton left * --> A
-932,522,82,82//button right* -> B
-790,595,70,70//button up left* --> Y + A
-827,522,82,82//button up* --> Y
-870,495,70,70//button up right* Y + B
-7,16,103,43//lpad2
-915,16,103,43//rpad2
-0,0,0,0//showkyboard*
-920,510,105,105//B img
-880,620,105,105//X img
-780,620,105,105//A img
-815,510,105,105//Y img
-45,517,205,205//DPad img
-0,66,117,58//select img
-908,66,117,58//start img
-715,510,105,105//L1 img
-680,620,105,105//R1 img
+12,705,115,115//DownLeft
+124,705,71,115//Down
+192,705,85,115//DownRight
+12,644,128,61//Left
+184,644,98,61//Right
+12,559,115,85//UpLeft
+124,547,70,96//Up
+192,559,85,85//UpRight
+7,66,103,43//Select*
+996,65,103,43//Start*
+737,642,82,82//LPad
+695,718,82,82//Rpad
+0,0,0,0//menu
+852,760,70,70//ButtonDownLeft (X + A)
+899,718,82,82//ButtonDown X*
+962,717,70,70//ButtonDownRight (X + B)
+799,719,82,82//ButtonLeft A*
+934,639,82,82//ButtonRight B*
+810,676,70,70//ButtonUpLeft (A + Y)
+835,639,82,82//ButtonUp Y*
+887,653,70,70//ButtonUpRight (B + Y)
+7,16,103,43//L2*
+996,18,103,43//R2*
+0,0,0,0//showkyboard
+922,627,105,105//B img
+887,716,105,105//X img
+787,717,105,105//A img
+823,627,105,105//Y img
+57,569,205,205//DPad img
+0,66,117,58//select img*
+989,65,117,58//start img*
+725,630,105,105//L1 img
+683,717,105,105//R1 img
 0,16,117,58//L2 img
-908,16,117,58//R2 img
-0,480,300,290//StickWindow
-13,487,270,270//StickArea
-55//radio_stick
+989,18,117,58//R2 img
+25,539,270,270//StickWindow*
+25,539,270,270//StickArea*
+60//radio_stick
 50
 

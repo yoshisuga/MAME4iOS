@@ -45,7 +45,7 @@
 #import "iCadeView.h"
 #include "myosd.h"
 
-#define DebugLog 1
+#define DebugLog 0
 #if DebugLog == 0
 #define NSLog(...) (void)0
 #endif
@@ -169,7 +169,7 @@
     int joy2 = 0;
     
     switch (key)
-    {            
+    {
         // joystick up
         case 'w':
             if(STICK4WAY)

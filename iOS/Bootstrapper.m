@@ -165,18 +165,8 @@ unsigned long read_mfi_controller(unsigned long res){
     
     manager = [[NSFileManager alloc] init];
     
-    fromPath = [NSString stringWithUTF8String:get_resource_path("gridlee.zip")];
-    toPath = [NSString stringWithUTF8String:get_documents_path("roms/gridlee.zip")];
-
-    if([manager fileExistsAtPath:fromPath] && ![manager fileExistsAtPath:toPath])
-    {
-        [manager copyItemAtPath:fromPath toPath:toPath error:nil];
-    }
-    
-    isGridlee = [manager fileExistsAtPath:toPath] && [[manager contentsOfDirectoryAtPath:[NSString stringWithUTF8String:get_documents_path("roms")] error:nil] count] == 1;
-	    
     toPath = [NSString stringWithUTF8String:get_documents_path("cheat.zip")];
-    if (![manager fileExistsAtPath:toPath] && !isGridlee)
+    if (![manager fileExistsAtPath:toPath])
     {
         error = nil;
         fromPath = [NSString stringWithUTF8String:get_resource_path("cheat.zip")];
@@ -184,7 +174,7 @@ unsigned long read_mfi_controller(unsigned long res){
         NSLog(@"Unable to move file cheat? %@", [error localizedDescription]);
     }
     toPath = [NSString stringWithUTF8String:get_documents_path("Category.ini")];
-    if (![manager fileExistsAtPath:toPath] && !isGridlee)
+    if (![manager fileExistsAtPath:toPath])
     {
         error = nil;
         fromPath = [NSString stringWithUTF8String:get_resource_path("Category.ini")];
@@ -192,7 +182,7 @@ unsigned long read_mfi_controller(unsigned long res){
         NSLog(@"Unable to move file category? %@", [error localizedDescription]);
     }
     toPath = [NSString stringWithUTF8String:get_documents_path("hiscore.dat")];
-    if (![manager fileExistsAtPath:toPath] && !isGridlee)
+    if (![manager fileExistsAtPath:toPath])
     {
         error = nil;
         fromPath = [NSString stringWithUTF8String:get_resource_path("hiscore.dat")];
@@ -266,6 +256,9 @@ unsigned long read_mfi_controller(unsigned long res){
     // dont share with myself
     if ([[url URLByDeletingLastPathComponent].path isEqualToString:[NSString stringWithUTF8String:get_documents_path("roms")]])
         return FALSE;
+    
+    NSURL* destURL = [[NSURL fileURLWithPath:[NSString stringWithUTF8String:get_documents_path("")]]
+                      URLByAppendingPathComponent:url.lastPathComponent];
 
     BOOL open_in_place = [options[UIApplicationOpenURLOptionsOpenInPlaceKey] boolValue];
     
@@ -273,25 +266,37 @@ unsigned long read_mfi_controller(unsigned long res){
     {
         if (![url startAccessingSecurityScopedResource])
             return FALSE;
-    }
-    
-    NSError* error = nil;
-    NSURL* documentsURL = [NSURL fileURLWithPath:[NSString stringWithUTF8String:get_documents_path("")]];
-    [NSFileManager.defaultManager copyItemAtURL:url toURL:[documentsURL URLByAppendingPathComponent:url.lastPathComponent] error:&error];
-    
-    // TODO: this will fail if the URL is in iCloud and not downloaded yet, fix will require calling NSFileCoordinator.coordinateReadingItemAtURL
-    // ...or just set LSSupportsOpeningDocumentsInPlace = NO in Info.plist and you wont get any non-downloaded iCloud URLs
-    if (error != nil) {
-        NSLog(@"copyItemAtURL ERROR: (%@)", error);
-    }
-
-    if (open_in_place)
-        [url stopAccessingSecurityScopedResource];
-    else if ([[[url URLByDeletingLastPathComponent] lastPathComponent] hasSuffix:@"Inbox"])
-        [[NSFileManager defaultManager] removeItemAtURL:url error:nil];
-
-    [hrViewController performSelectorOnMainThread:@selector(moveROMS) withObject:nil waitUntilDone:NO];
         
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            NSError* error = nil;
+            NSFileCoordinator* coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
+            [coordinator coordinateReadingItemAtURL:url options:NSFileCoordinatorReadingWithoutChanges error:&error byAccessor:^(NSURL * newURL) {
+                NSError* error = nil;
+                [NSFileManager.defaultManager copyItemAtURL:newURL toURL:destURL error:&error];
+                
+                if (error != nil)
+                    NSLog(@"copyItemAtURL ERROR: (%@)", error);
+                
+                [url stopAccessingSecurityScopedResource];
+                [self->hrViewController performSelectorOnMainThread:@selector(moveROMS) withObject:nil waitUntilDone:NO];
+            }];
+            if (error != nil)
+                NSLog(@"coordinateReadingItemAtURL ERROR: (%@)", error);
+        });
+    }
+    else {
+        NSError* error = nil;
+        [NSFileManager.defaultManager copyItemAtURL:url toURL:destURL error:&error];
+        
+        if (error != nil)
+            NSLog(@"copyItemAtURL ERROR: (%@)", error);
+        
+        if ([[[url URLByDeletingLastPathComponent] lastPathComponent] hasSuffix:@"Inbox"])
+            [[NSFileManager defaultManager] removeItemAtURL:url error:nil];
+        
+        [self->hrViewController performSelectorOnMainThread:@selector(moveROMS) withObject:nil waitUntilDone:NO];
+    }
+    
     return TRUE;
 }
 
@@ -315,7 +320,7 @@ unsigned long read_mfi_controller(unsigned long res){
 
 - (void)applicationDidEnterBackground:(UIApplication *)application {
 
-   if((myosd_inGame || g_joy_used ) && !isGridlee )//force pause when in game
+   if (myosd_inGame || g_joy_used) //force pause when in game
       [hrViewController runPause];
 }
 

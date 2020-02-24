@@ -187,7 +187,4 @@ enum { EXT_CONTROL_NONE=0,EXT_CONTROL_ICADE=1,EXT_CONTROL_ICP = 2,EXT_CONTROL_IM
 extern const char* get_resource_path(const char* file);
 extern const char* get_documents_path(const char* file);
 
-extern int isGridlee;
-
-
 #endif

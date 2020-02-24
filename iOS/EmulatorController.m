@@ -566,6 +566,7 @@ static void push_mame_button(int player, int button)
 
 -(void)presentViewController:(UIViewController *)viewControllerToPresent animated:(BOOL)flag completion:(void (^)(void))completion {
     NSLog(@"PRESENT VIEWCONTROLLER: %@", viewControllerToPresent);
+
 #if TARGET_OS_TV
     self.controllerUserInteractionEnabled = YES;
 #endif
@@ -597,11 +598,11 @@ static void push_mame_button(int player, int button)
     g_pref_scanline_filter_port = [op scanlineFilterPort];
     
     myosd_fps = [op showFPS];
-    myosd_showinfo =  isGridlee ? 0 : [op showINFO];
+    myosd_showinfo =  [op showINFO];
     g_pref_animated_DPad  = [op animatedButtons];
-    g_pref_full_screen_land  = isGridlee ? 0 : [op fullLand];
+    g_pref_full_screen_land  = [op fullLand];
     g_pref_full_screen_port  = [op fullPort];
-    g_pref_full_screen_joy = 1; // [op fullJoy];
+    g_pref_full_screen_joy   = 1; /*[op fullJoy]*/;
 
     myosd_pxasp1 = [op p1aspx];
     
@@ -617,7 +618,7 @@ static void push_mame_button(int player, int button)
     g_pref_nativeTVOUT = [op tvoutNative];
     g_pref_overscanTVOUT = [op overscanValue];
     
-    g_pref_input_touch_type = isGridlee ? 0 : [op touchtype];
+    g_pref_input_touch_type = [op touchtype];
     g_pref_analog_DZ_value = [op analogDeadZoneValue];
     g_pref_ext_control_type = [op controltype];
     
@@ -1061,8 +1062,8 @@ static void push_mame_button(int player, int button)
     
     icadeView = [[iCadeView alloc] initWithFrame:CGRectZero withEmuController:self];
     [self.view addSubview:icadeView];
-    
-    // always enable iCadeView for Hardware keyboard support
+
+    // always enable iCadeView for hardware keyboard support
     icadeView.active = YES;
     
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -1127,10 +1128,7 @@ static void push_mame_button(int player, int button)
 
 -(UIInterfaceOrientationMask)supportedInterfaceOrientations
 {
-    if(isGridlee)
-        return UIInterfaceOrientationMaskLandscape;
-    else
-        return UIInterfaceOrientationMaskAll;
+    return UIInterfaceOrientationMaskAll;
 }
 
 - (void)viewWillLayoutSubviews {
@@ -1191,8 +1189,15 @@ static void push_mame_button(int player, int button)
      [self updateOptions];
   }
     
+  /* -- TODO figure out why we are doing this.  is it only needed at start up? if so only do it then.
+     -- we call changeUI when ever we need to update anything, and this delay causes a glitch.
+   
+     -- for example when we hit a key on the HW keyboard or iCade for the first time chageUI gets called to possibly hide the onscreen controls, this delay causes MAME to miss the key press
+   
+     -- another example, we call this when the device is rotated, a delay on the main thread is (almost) always a bad idea....
   usleep(150000);//ensure some frames displayed
-
+  */
+    
   if(screenView != nil)
   {
      [screenView removeFromSuperview];
@@ -1449,10 +1454,6 @@ void myosd_handle_turbo() {
             
             if (touch_buttons_disabled && (i != BTN_SELECT && i != BTN_START && i != BTN_L2 && i != BTN_R2 )) continue;
         }
-        
-        if(isGridlee && (i==BTN_L2 || i==BTN_R2))
-            continue;
-        
         
         name = [NSString stringWithFormat:@"./SKIN_%d/%@",g_pref_skin,nameImgButton_NotPress[i]];
         buttonViews[i] = [ [ UIImageView alloc ] initWithImage:[self loadImage:name]];
@@ -1914,16 +1915,16 @@ void myosd_handle_turbo() {
     if(dpad_state!=old_dpad_state && dpadView != nil && ![dpadView isHidden])
     {
        //printf("cambia depad %d %d\n",old_dpad_state,dpad_state);
-       NSString *imgName; 
+       NSString *imgName;
        imgName = nameImgDPad[dpad_state];
        if(imgName!=nil)
-       {  
-         NSString *name = [NSString stringWithFormat:@"./SKIN_%d/%@",g_pref_skin,imgName];   
+       {
+         NSString *name = [NSString stringWithFormat:@"./SKIN_%d/%@",g_pref_skin,imgName];
          //printf("%s\n",[name UTF8String]);
          UIImage *img = [self loadImage: name];
          [dpadView setImage:img];
          [dpadView setNeedsDisplay];
-       }           
+       }
        old_dpad_state = dpad_state;
         
         NSLog(@"dpad moved");
@@ -1949,15 +1950,15 @@ void myosd_handle_turbo() {
            {
                [self.selectionFeedback selectionChanged];
                imgName = nameImgButton_NotPress[i];
-           } 
+           }
            if(imgName!=nil)
-           {  
+           {
               NSString *name = [NSString stringWithFormat:@"./SKIN_%d/%@",g_pref_skin,imgName];
               UIImage *img = [self loadImage:name];
               [buttonViews[i] setImage:img];
-              [buttonViews[i] setNeedsDisplay];              
+              [buttonViews[i] setNeedsDisplay];
            }
-           old_btnStates[i] = btnStates[i]; 
+           old_btnStates[i] = btnStates[i];
         }
     }
     
@@ -2413,9 +2414,6 @@ void myosd_handle_turbo() {
                 btnStates[BTN_SELECT] = BUTTON_PRESS;
                 buttonTouched = YES;
                 [handledTouches addObject:touch];
-                if(isGridlee && (myosd_pad_status & MYOSD_START))
-                    myosd_pad_status &= ~MYOSD_START;
-                
             }
             else if (MyCGRectContainsPoint(rInput[BTN_START_RECT], point)) {
                 //NSLog(@"MYOSD_START");
@@ -2423,8 +2421,6 @@ void myosd_handle_turbo() {
                 btnStates[BTN_START] = BUTTON_PRESS;
                 buttonTouched = YES;
                 [handledTouches addObject:touch];
-                if(isGridlee && (myosd_pad_status & MYOSD_SELECT))
-                    myosd_pad_status &= ~MYOSD_SELECT;
             }
             else if (buttonViews[BTN_L1] != nil && !buttonViews[BTN_L1].hidden && MyCGRectContainsPoint(rInput[BTN_L1_RECT], point) && !touch_buttons_disabled) {
                 //NSLog(@"MYOSD_L");
@@ -2442,14 +2438,12 @@ void myosd_handle_turbo() {
             }
             else if (buttonViews[BTN_L2] != nil && !buttonViews[BTN_L2].hidden && MyCGRectContainsPoint(rInput[BTN_L2_RECT], point)) {
                 //NSLog(@"MYOSD_L2");
-                if(isGridlee)continue;
                 btnStates[BTN_L2] = BUTTON_PRESS;
                 buttonTouched = YES;
                 [handledTouches addObject:touch];
             }
             else if (buttonViews[BTN_R2] != nil && !buttonViews[BTN_R2].hidden && MyCGRectContainsPoint(rInput[BTN_R2_RECT], point) ) {
                 //NSLog(@"MYOSD_R2");
-                if(isGridlee)continue;
                 btnStates[BTN_R2] = BUTTON_PRESS;
                 buttonTouched = YES;
                 [handledTouches addObject:touch];
@@ -2623,13 +2617,17 @@ void myosd_handle_turbo() {
             deviceName = @"iPad_pro_11";
         } else if ( screenType == IPAD ) {
             deviceName = @"iPad";
+        } else if ( screenType == IPAD_GEN_7 ) {
+            deviceName = @"iPad_gen_7";
         } else {
-            deviceName = @"config_iPad_pro_12_9";
+            deviceName = @"iPad_pro_12_9";
         }
     } else {
         // default to the largest iPhone if unknown
         deviceName = @"iPhone_xr_xs_max";
     }
+    
+    NSLog(@"DEVICE: %@", deviceName);
     
 	if(!orientation)
 	{
@@ -2752,39 +2750,45 @@ void myosd_handle_turbo() {
 - (void)getConf{
 #if TARGET_OS_IOS
     char string[256];
-    FILE *fp;
     
     DeviceScreenType screenType = [DeviceScreenResolver resolve];
+    char* config = "";
     
     if ( screenType == IPHONE_XR_XS_MAX ) {
-        fp = [self loadFile:"config_iPhone_xr_xs_max.txt"];
+        config = "config_iPhone_xr_xs_max.txt";
     } else if ( screenType == IPHONE_X_XS ) {
-        fp = [self loadFile:"config_iPhone_x.txt"];
+        config = "config_iPhone_x.txt";
     } else if ( screenType == IPHONE_6_7_8_PLUS ) {
-        fp = [self loadFile:"config_iPhone_6_plus.txt"];
+        config = "config_iPhone_6_plus.txt";
     } else if ( screenType == IPHONE_6_7_8 ) {
-        fp = [self loadFile:"config_iPhone_6.txt"];
+        config = "config_iPhone_6.txt";
     } else if ( screenType == IPHONE_5 ) {
-        fp = [self loadFile:"config_iPhone_5.txt"];
+        config = "config_iPhone_5.txt";
     } else if ( screenType == IPHONE_4_OR_LESS ) {
-        fp = [self loadFile:"config_iPhone.txt"];
+        config = "config_iPhone.txt";
     } else if ( g_isIpad ) {
         if ( screenType == IPAD_PRO_12_9 ) {
-            fp  = [self loadFile:"config_iPad_pro_12_9.txt"];
+            config = "config_iPad_pro_12_9.txt";
         } else if ( screenType == IPAD_PRO_10_5 ) {
-            fp  = [self loadFile:"config_iPad_pro_10_5.txt"];
+            config = "config_iPad_pro_10_5.txt";
         } else if ( screenType == IPAD_PRO_11 ) {
-            fp  = [self loadFile:"config_iPad_pro_11.txt"];
+            config = "config_iPad_pro_11.txt";
         } else if ( screenType == IPAD ) {
-            fp = [self loadFile:"config_iPad.txt"];
+            config = "config_iPad.txt";
+        } else if ( screenType == IPAD_GEN_7 ) {
+            config = "config_iPad_gen_7.txt";
         } else {
-            fp = [self loadFile:"config_iPad_pro_12_9.txt"];
+            config = "config_iPad_pro_12_9.txt";
         }
     } else {
         // default to the largest iPhone if unknown
-        fp = [self loadFile:"config_iPhone_xr_xs_max.txt"];
+        config = "config_iPhone_xr_xs_max.txt";
     }
     
+    NSLog(@"USING CONFIG: %s", config);
+    
+    FILE *fp = [self loadFile:config];
+
     if (fp)
     {
         int i = 0;
@@ -2923,6 +2927,7 @@ void myosd_handle_turbo() {
     return img;
 }
 
+
 -(FILE *)loadFile:(const char *)name{
     NSString *path = nil;
     FILE *fp;
@@ -2939,20 +2944,136 @@ void myosd_handle_turbo() {
     return fp;
 }
 
+// move a single ZIP file from the document root into where it belongs.
+//
+// we handle three kinds of ZIP files...
+//
+//  * zipset, if the ZIP contains other ZIP files, then it is a zip of romsets, aka zipset?.
+//  * artwork, if the ZIP contains a .LAY file, then it is artwork
+//  * romset, if the ZIP has "normal" files in it assume it is a romset.
+//
+//  we will move a artwork zip file to the artwork directory
+//  we will move a romset zip file to the roms directory
+//  we will unzip (in place) a zipset
+//
+-(BOOL)moveROM:(NSString*)romName progressBlock:(void (^)(double progress))block {
+
+    if (![[romName.pathExtension uppercaseString] isEqualToString:@"ZIP"])
+        return FALSE;
+    
+    NSError *error = nil;
+
+    NSString *rootPath = [NSString stringWithUTF8String:get_documents_path("")];
+    NSString *romsPath = [NSString stringWithUTF8String:get_documents_path("roms")];
+    NSString *artwPath = [NSString stringWithUTF8String:get_documents_path("artwork")];
+
+    NSString *romPath = [rootPath stringByAppendingPathComponent:romName];
+
+    NSLog(@"ROM NAME: %@ PATH:%@", romName, romPath);
+
+    //
+    // scan the ZIP file to see what kind it is.
+    //
+    //  * zipset, if the ZIP contains other ZIP files, then it is a zip of romsets, aka zipset?.
+    //  * artwork, if the ZIP contains a .LAY file, then it is artwork
+    //  * romset, if the ZIP has "normal" files in it assume it is a romset.
+    //
+    int __block numLAY = 0;
+    int __block numZIP = 0;
+    int __block numCHD = 0;
+    int __block numFiles = 0;
+    BOOL result = [ZipFile enumerate:romPath withOptions:ZipFileEnumFiles usingBlock:^(ZipFileInfo* info) {
+        NSString* ext = [info.name.pathExtension uppercaseString];
+        numFiles++;
+        if ([ext isEqualToString:@"LAY"])
+            numLAY++;
+        if ([ext isEqualToString:@"ZIP"])
+            numZIP++;
+        if ([ext isEqualToString:@"CHD"])
+            numCHD++;
+    }];
+
+    NSString* toPath = nil;
+
+    if (!result)
+    {
+        NSLog(@"%@ is a CORRUPT ZIP (deleting)", romName);
+        [[NSFileManager defaultManager] removeItemAtPath:romPath error:nil];
+    }
+    else if (numZIP != 0 || numCHD != 0)
+    {
+        NSLog(@"%@ is a ZIPSET", romName);
+        int maxFiles = numFiles;
+        numFiles = 0;
+        [ZipFile destructiveEnumerate:romPath withOptions:(ZipFileEnumFiles|ZipFileEnumDirectories) usingBlock:^(ZipFileInfo* info) {
+            NSString* toPath = nil;
+            NSString* ext = [info.name.pathExtension uppercaseString];
+            
+            if (info.isDirectory)
+            {
+                NSLog(@"...DIR: %@", info.name);
+                if ([info.name hasPrefix:@"roms/"] && [info.name length] > 5)
+                    [[NSFileManager defaultManager] createDirectoryAtPath:[rootPath stringByAppendingPathComponent:info.name] withIntermediateDirectories:TRUE attributes:nil error:nil];
+                return;
+            }
+
+            NSLog(@"...UNZIP: %@", info.name);
+
+            if ([info.name hasPrefix:@"roms/"] || [info.name hasPrefix:@"artwork/"] || [info.name hasPrefix:@"titles/"] || [info.name hasPrefix:@"cfg/"])
+                toPath = [rootPath stringByAppendingPathComponent:info.name];
+            else if ([ext isEqualToString:@"ZIP"])
+                toPath = [romsPath stringByAppendingPathComponent:[info.name lastPathComponent]];
+
+            if (toPath != nil)
+            {
+                if (![info.data writeToFile:toPath atomically:YES])
+                    NSLog(@"ERROR UNZIPing %@", info.name);
+            }
+            
+            numFiles++;
+            block((double)numFiles / maxFiles);
+        }];
+        toPath = nil;   // nothing to move, we unziped the file "in place"
+    }
+    else if (numLAY != 0)
+    {
+        NSLog(@"%@ is a ARTWORK file", romName);
+        toPath = [artwPath stringByAppendingPathComponent:romName];
+    }
+    else
+    {
+        NSLog(@"%@ is a ROMSET", romName);
+        toPath = [romsPath stringByAppendingPathComponent:romName];
+    }
+
+    // move file to either ROMS or ARTWORK
+    if (toPath)
+    {
+        //first attemp to delete de old one
+        [[NSFileManager defaultManager] removeItemAtPath:toPath error:&error];
+        
+        //now move it
+        error = nil;
+        [[NSFileManager defaultManager] moveItemAtPath:romPath toPath:toPath error:&error];
+        if(error!=nil)
+        {
+            NSLog(@"Unable to move rom: %@", [error localizedDescription]);
+            result = FALSE;
+        }
+        block(1.0);
+    }
+    return result;
+}
+
 -(void)moveROMS {
     
-    NSFileManager *filemgr;
     NSArray *filelist;
     NSUInteger count;
     NSUInteger i;
     static int g_move_roms = 0;
     
-    //NSLog(@"checking roms!");
-    
-    filemgr = [[NSFileManager alloc] init];
-    
     NSString *fromPath = [NSString stringWithUTF8String:get_documents_path("")];
-    filelist = [filemgr contentsOfDirectoryAtPath:fromPath error:nil];
+    filelist = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:fromPath error:nil];
     count = [filelist count];
     
     NSMutableArray *romlist = [[NSMutableArray alloc] init];
@@ -2983,121 +3104,19 @@ void myosd_handle_turbo() {
         [topViewController presentViewController:progressAlert animated:YES completion:nil];
         
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            NSFileManager *filemgr = [[NSFileManager alloc] init];
-            NSError *error = nil;
-            int i=0;
-            
-            NSString *fromPath = [NSString stringWithUTF8String:get_documents_path("")];
-            NSString *romPath  = [NSString stringWithUTF8String:get_documents_path("roms")];
-            NSString *artPath  = [NSString stringWithUTF8String:get_documents_path("artwork")];
-
-            BOOL err = FALSE;            
-            for (i = 0; i < count; i++)
+            BOOL result = TRUE;
+            for (int i = 0; i < count; i++)
             {
-                NSString *romName = [romlist objectAtIndex: i];
-                NSLog(@"ROM NAME: %@ PATH:%@", romName, [fromPath stringByAppendingPathComponent:romName]);
-                
-                //
-                // scan the ZIP file to see what kind it is.
-                //
-                //  * zipset, if the ZIP contains other ZIP files, then it is a zip of romsets, aka zipset?.
-                //  * artwork, if the ZIP contains a .LAY file, then it is artwork
-                //  * romset, if the ZIP has "normal" files in it assume it is a romset.
-                //
-                int __block numLAY = 0;
-                int __block numZIP = 0;
-                int __block numCHD = 0;
-                int __block numFiles = 0;
-                BOOL result = [ZipFile enumerate:[fromPath stringByAppendingPathComponent:romName] withOptions:ZipFileEnumFiles usingBlock:^(ZipFileInfo* info) {
-                    NSString* ext = [info.name.pathExtension uppercaseString];
-                    numFiles++;
-                    if ([ext isEqualToString:@"LAY"])
-                        numLAY++;
-                    if ([ext isEqualToString:@"ZIP"])
-                        numZIP++;
-                    if ([ext isEqualToString:@"CHD"])
-                        numCHD++;
+                result = result && [self moveROM:[romlist objectAtIndex: i] progressBlock:^(double progress) {
+                    [progressAlert setProgress:((double)i / count) + progress * (1.0 / count)];
                 }];
-                
-                NSString* toPath = nil;
-                
-                if (!result)
-                {
-                    NSLog(@"%@ is a CORRUPT ZIP (deleting)", romName);
-                    [filemgr removeItemAtPath:[fromPath stringByAppendingPathComponent:romName] error:nil];
-                }
-                else if (numZIP != 0 || numCHD != 0)
-                {
-                    NSLog(@"%@ is a ZIPSET", romName);
-                    int maxFiles = numFiles;
-                    numFiles = 0;
-                    [ZipFile destructiveEnumerate:[fromPath stringByAppendingPathComponent:romName] withOptions:(ZipFileEnumFiles|ZipFileEnumDirectories) usingBlock:^(ZipFileInfo* info) {
-                        NSString* toPath = nil;
-                        NSString* ext = [info.name.pathExtension uppercaseString];
-                        
-                        if (info.isDirectory)
-                        {
-                            NSLog(@"...DIR: %@", info.name);
-                            if ([info.name hasPrefix:@"roms/"] && [info.name length] > 5)
-                                [[NSFileManager defaultManager] createDirectoryAtPath:[fromPath stringByAppendingPathComponent:info.name] withIntermediateDirectories:TRUE attributes:nil error:nil];
-                            return;
-                        }
-
-                        NSLog(@"...UNZIP: %@", info.name);
-
-                        if ([info.name hasPrefix:@"roms/"] || [info.name hasPrefix:@"artwork/"] || [info.name hasPrefix:@"titles/"])
-                            toPath = [fromPath stringByAppendingPathComponent:info.name];
-                        else if ([ext isEqualToString:@"ZIP"])
-                            toPath = [romPath stringByAppendingPathComponent:[info.name lastPathComponent]];
-
-                        if (toPath != nil)
-                        {
-                            if (![info.data writeToFile:toPath atomically:YES])
-                                NSLog(@"ERROR UNZIPing %@", info.name);
-                        }
-                        
-                        numFiles++;
-                        [progressAlert setProgress:((double)i / count) + ((double)numFiles / (maxFiles * count))];
-                    }];
-                    toPath = nil;   // nothing to move, we unziped the file "in place"
-                }
-                else if (numLAY != 0)
-                {
-                    NSLog(@"%@ is a ARTWORK file", romName);
-                    toPath = artPath;
-                }
-                else
-                {
-                    NSLog(@"%@ is a ROMSET", romName);
-                    toPath = romPath;
-                }
-
-                // move file to either ROMS or ARTWORK
-                if (toPath)
-                {
-                    //first attemp to delete de old one
-                    [filemgr removeItemAtPath:[toPath stringByAppendingPathComponent:romName] error:&error];
-                    
-                    //now move it
-                    error = nil;
-                    [filemgr moveItemAtPath: [fromPath stringByAppendingPathComponent:romName]
-                                     toPath: [toPath stringByAppendingPathComponent:romName]
-                                      error:&error];
-                    if(error!=nil)
-                    {
-                        NSLog(@"Unable to move rom: %@", [error localizedDescription]);
-                        err = TRUE;
-                    }
-                }
-                
-                //[NSThread sleepForTimeInterval:5.0];
-                [progressAlert setProgress:((double)(i+1) / count)];
+                [progressAlert setProgress:(double)(i+1) / count];
             }
             dispatch_async(dispatch_get_main_queue(), ^{
                 [topViewController dismissViewControllerAnimated:YES completion:^{
                     
                     // reset MAME filter and last game...
-                    if(err == FALSE)
+                    if (result)
                     {
                        if(!(myosd_in_menu==0 && myosd_inGame)){
                           myosd_reset_filter = 1;
@@ -3106,7 +3125,7 @@ void myosd_handle_turbo() {
                     }
 
                     // reload the MAME menu....
-                    if (err == FALSE)
+                    if (result)
                         [self performSelectorOnMainThread:@selector(playGame:) withObject:nil waitUntilDone:NO];
                     
                     g_move_roms = 0;
