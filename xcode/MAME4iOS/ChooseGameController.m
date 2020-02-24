@@ -16,7 +16,7 @@
 #error("This file assumes ARC")
 #endif
 
-#define DebugLog 0
+#define DebugLog 1
 #if DebugLog == 0
 #define NSLog(...) (void)0
 #endif
@@ -316,16 +316,6 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%s/%@.png", get_documents_path("titles"), name]];
 }
 
--(NSURL*)getGameLocalURL:(NSDictionary*)info
-{
-    NSString* name = info[kGameInfoName];
-    
-    if (name == nil)
-        return nil;
-    
-    return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%s/%@.zip", get_documents_path("roms"), name]];
-}
-
 - (void)filterGameList
 {
     NSArray* filteredGames = _gameList;
@@ -412,6 +402,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     // add favorite games
     NSArray* favoriteGames = [[_userDefaults objectForKey:FAVORITE_GAMES_KEY]
         filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF IN %@", filteredGames]];
+    
     if ([favoriteGames count] > 0) {
         //NSLog(@"FAVORITE GAMES: %@", favoriteGames);
         gameSectionTitles = [@[FAVORITE_GAMES_TITLE] arrayByAddingObjectsFromArray:gameSectionTitles];
@@ -464,7 +455,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if (![_gameFilterText isEqualToString:text] || ![_gameFilterScope isEqualToString:scope]) {
         _gameFilterText = text;
         _gameFilterScope = scope;
-        [self filterGameList];
+        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(filterGameList) object:nil];
+        [self performSelector:@selector(filterGameList) withObject:nil afterDelay:0.500];
     }
 }
 
@@ -566,7 +558,6 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     
     if (_layoutMode == LayoutList)
     {
-        ///layout.itemSize = CGSizeMake(width, 100.0 * (space / 8.0));
         layout.itemSize = CGSizeMake(width, width / 4.0);
         layout.estimatedItemSize = CGSizeZero;
     }
@@ -578,6 +569,91 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
     [self reloadData];
 }
+
+#pragma mark Favorites
+
+- (BOOL)isFavorite:(NSDictionary*)game
+{
+    NSArray* favoriteGames = [_userDefaults objectForKey:FAVORITE_GAMES_KEY] ?: @[];
+    return [favoriteGames containsObject:game];
+}
+- (void)setFavorite:(NSDictionary*)game isFavorite:(BOOL)flag
+{
+    if (game == nil || [game[kGameInfoName] length] == 0)
+        return;
+
+    NSMutableArray* favoriteGames = [([_userDefaults objectForKey:FAVORITE_GAMES_KEY] ?: @[]) mutableCopy];
+
+    [favoriteGames removeObject:game];
+
+    if (flag)
+        [favoriteGames insertObject:game atIndex:0];
+    
+    [_userDefaults setObject:favoriteGames forKey:FAVORITE_GAMES_KEY];
+    [self updateApplicationShortcutItems];
+}
+
+#pragma mark Recent Games
+
+- (void)setRecent:(NSDictionary*)game isRecent:(BOOL)flag
+{
+    if (game == nil || [game[kGameInfoName] length] == 0)
+        return;
+    
+    NSMutableArray* recentGames = [([_userDefaults objectForKey:RECENT_GAMES_KEY] ?: @[]) mutableCopy];
+
+    [recentGames removeObject:game];
+    if (flag)
+        [recentGames insertObject:game atIndex:0];
+    if ([recentGames count] > RECENT_GAMES_MAX)
+        [recentGames removeObjectsInRange:NSMakeRange(RECENT_GAMES_MAX,[recentGames count] - RECENT_GAMES_MAX)];
+
+    [_userDefaults setObject:recentGames forKey:RECENT_GAMES_KEY];
+    [self updateApplicationShortcutItems];
+}
+
+#pragma mark Application Shortcut Items
+
+#define MAX_SHORTCUT_ITEMS 4
+
+- (void) updateApplicationShortcutItems {
+#if TARGET_OS_IOS
+    NSArray* recentGames = [_userDefaults objectForKey:RECENT_GAMES_KEY] ?: @[];
+    NSArray* favoriteGames = [([_userDefaults objectForKey:FAVORITE_GAMES_KEY] ?: @[])
+                              filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"NOT (SELF IN %@)", recentGames]];
+    
+    NSLog(@"updateApplicationShortcutItems");
+    NSLog(@"    RECENT GAMES(%d): %@", (int)[recentGames count], recentGames);
+    NSLog(@"    FAVORITE GAMES(%d): %@", (int)[favoriteGames count], favoriteGames);
+    
+    NSUInteger maxRecent = MAX_SHORTCUT_ITEMS - MIN([favoriteGames count], MAX_SHORTCUT_ITEMS/2);
+    NSUInteger numRecent = MIN([recentGames count], maxRecent);
+    NSUInteger numFavorite = MIN([favoriteGames count], MAX_SHORTCUT_ITEMS - numRecent);
+    
+    recentGames = [recentGames subarrayWithRange:NSMakeRange(0, numRecent)];
+    favoriteGames = [favoriteGames subarrayWithRange:NSMakeRange(0, numFavorite)];
+    
+    NSMutableArray* shortcutItems = [[NSMutableArray alloc] init];
+    
+    for (NSDictionary* game in [recentGames arrayByAddingObjectsFromArray:favoriteGames]) {
+        NSString* type = [NSString stringWithFormat:@"%@.%@", NSBundle.mainBundle.bundleIdentifier, @"play"];
+        NSString* name = game[kGameInfoDescription] ?: game[kGameInfoName];
+        NSString* title = [NSString stringWithFormat:@"%@", [[name componentsSeparatedByString:@" ("] firstObject]];
+        UIApplicationShortcutIcon* icon = [UIApplicationShortcutIcon iconWithType:UIApplicationShortcutIconTypePlay];
+        
+        if (@available(iOS 13.0, *))
+            icon = [UIApplicationShortcutIcon iconWithSystemImageName:[self isFavorite:game] ? @"heart" : @"gamecontroller"];
+        
+        UIApplicationShortcutItem* item = [[UIApplicationShortcutItem alloc] initWithType:type
+                                           localizedTitle:title localizedSubtitle:nil
+                                           icon:icon userInfo:game];
+        [shortcutItems addObject:item];
+    }
+
+    [UIApplication sharedApplication].shortcutItems = shortcutItems;
+#endif
+}
+
 
 #pragma mark UICollectionView data source
 
@@ -658,8 +734,9 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if (section >= [_gameSectionTitles count] || [_gameData[_gameSectionTitles[section]] count] != 1)
         return layout.sectionInset;
             
+    CGFloat itemWidth = (layout.estimatedItemSize.width != 0.0) ? layout.estimatedItemSize.width : layout.itemSize.width;
     CGFloat width = collectionView.bounds.size.width - (layout.sectionInset.left + layout.sectionInset.right) - (self.safeAreaInsets.left + self.safeAreaInsets.right);
-    return UIEdgeInsetsMake(layout.sectionInset.top, layout.sectionInset.left, layout.sectionInset.bottom, layout.sectionInset.right + (width - layout.estimatedItemSize.width));
+    return UIEdgeInsetsMake(layout.sectionInset.top, layout.sectionInset.left, layout.sectionInset.bottom, layout.sectionInset.right + (width - itemWidth));
 }
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewFlowLayout*)layout referenceSizeForHeaderInSection:(NSInteger)section
@@ -693,14 +770,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     NSLog(@"DID SELECT ITEM[%d.%d] %@", (int)indexPath.section, (int)indexPath.item, game[kGameInfoName]);
     
     // add (or move to front) of the recent game LRU list...
-    if ([game[kGameInfoName] length] > 0) {
-        NSMutableArray* recentGames = [[_userDefaults objectForKey:RECENT_GAMES_KEY] mutableCopy] ?: [[NSMutableArray alloc] init];
-        [recentGames removeObject:game];
-        [recentGames insertObject:game atIndex:0];
-        if ([recentGames count] > RECENT_GAMES_MAX)
-            [recentGames removeObjectsInRange:NSMakeRange(RECENT_GAMES_MAX,[recentGames count] - RECENT_GAMES_MAX)];
-        [_userDefaults setObject:recentGames forKey:RECENT_GAMES_KEY];
-    }
+    [self setRecent:game isRecent:TRUE];
     
     // tell the code upstream that the user had selected a game to play!
     if (self.selectGameCallback != nil)
@@ -740,29 +810,24 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 #if TARGET_OS_IOS
 - (UIContextMenuConfiguration *)collectionView:(UICollectionView *)collectionView contextMenuConfigurationForItemAtIndexPath:(NSIndexPath *)indexPath point:(CGPoint)point API_AVAILABLE(ios(13.0)) {
     NSDictionary* game = [self getGameInfo:indexPath];
+    
+    if (game == nil || [game[kGameInfoName] length] == 0)
+        return nil;
 
     NSLog(@"contextMenuConfigurationForItem: [%d.%d] %@ %@", (int)indexPath.section, (int)indexPath.row, game[kGameInfoName], game);
     
     return [UIContextMenuConfiguration configurationWithIdentifier:indexPath
-                        previewProvider:^UIViewController* () {
+            previewProvider:^UIViewController* () {
                 return nil;     // use default
             }
             actionProvider:^UIMenu* (NSArray* suggestedActions) {
-                NSArray* favoriteGames = [self->_userDefaults objectForKey:FAVORITE_GAMES_KEY] ?: @[];
-
-                BOOL is_fav = [favoriteGames containsObject:game];
+                BOOL is_fav = [self isFavorite:game];
+        
                 NSString* fav_text = is_fav ? @"Unfavorite" : @"Favorite";
                 NSString* fav_icon = is_fav ? @"heart.slash" : @"heart";
 
                 UIAction* fav = [UIAction actionWithTitle:fav_text image:[UIImage systemImageNamed:fav_icon] identifier:nil handler:^(UIAction* action) {
-                    NSMutableArray* games = [favoriteGames mutableCopy];
-
-                    if (is_fav)
-                        [games removeObject:game];
-                    else
-                        [games insertObject:game atIndex:0];
-                    
-                    [self->_userDefaults setObject:games forKey:FAVORITE_GAMES_KEY];
+                    [self setFavorite:game isFavorite:!is_fav];
                     [self filterGameList];
                 }];
                 
@@ -771,8 +836,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
                 }];
                 
                 UIAction* share = [UIAction actionWithTitle:@"Share" image:[UIImage systemImageNamed:@"square.and.arrow.up"] identifier:nil handler:^(UIAction* action) {
-                    NSURL* url = [self getGameLocalURL:game];
-                    if (url == nil)
+                    
+                    NSURL* url = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%s/%@.zip", get_documents_path("roms"), game[kGameInfoName]]];
+                    
+                    if (![[NSFileManager defaultManager] fileExistsAtPath:url.path])
                         return;
                     
                     UIActivityViewController* activity = [[UIActivityViewController alloc] initWithActivityItems:@[url] applicationActivities:nil];
@@ -790,10 +857,18 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
                 }];
 
                 UIAction* remove = [UIAction actionWithTitle:@"Delete" image:[UIImage systemImageNamed:@"trash"] identifier:nil handler:^(UIAction* action) {
-                    NSURL* url = [self getGameLocalURL:game];
-                    if (url == nil)
-                        return;
-                    [[NSFileManager defaultManager] removeItemAtURL:url error:nil];
+                    NSArray* paths = @[@"roms/%@.zip", @"roms/%@", @"artwork/%@.zip", @"titles/%@.png", @"samples/%@.zip", @"cfg/%@.cfg"];
+                    
+                    NSString* root = [NSString stringWithUTF8String:get_documents_path("")];
+                    for (NSString* path in paths) {
+                        NSString* delete_path = [root stringByAppendingPathComponent:[NSString stringWithFormat:path, game[kGameInfoName]]];
+                        NSLog(@"DELETE: %@", delete_path);
+                        [[NSFileManager defaultManager] removeItemAtPath:delete_path error:nil];
+                    }
+                    
+                    [self setRecent:game isRecent:FALSE];
+                    [self setFavorite:game isFavorite:FALSE];
+
                     [self setGameList:[self->_gameList filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF != %@", game]]];
                     if ([self->_gameList count] == 0) {
                         if (self.selectGameCallback != nil)

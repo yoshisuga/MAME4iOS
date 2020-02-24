@@ -300,22 +300,30 @@ unsigned long read_mfi_controller(unsigned long res){
     return TRUE;
 }
 
-- (BOOL)application:(UIApplication *)application continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void (^)(NSArray<id<UIUserActivityRestoring>> * _Nullable))restorationHandler {
+- (BOOL)performActivity:(NSString*)activityType userInfo:(NSDictionary*)info {
     
-    NSLog(@"continueUserActivity: %@ %@", userActivity.activityType, userActivity.userInfo);
-    
-    if (![userActivity.activityType hasPrefix:[[NSBundle mainBundle] bundleIdentifier]])
+    if (![activityType hasPrefix:[[NSBundle mainBundle] bundleIdentifier]])
         return FALSE;
     
-    NSString* cmd = [[userActivity.activityType componentsSeparatedByString:@"."] lastObject];
+    NSString* cmd = [[activityType componentsSeparatedByString:@"."] lastObject];
     
     if ([cmd isEqualToString:@"play"])
     {
-        [hrViewController performSelectorOnMainThread:@selector(playGame:) withObject:userActivity.userInfo waitUntilDone:NO];
+        [hrViewController performSelectorOnMainThread:@selector(playGame:) withObject:info waitUntilDone:NO];
         return TRUE;
     }
         
     return FALSE;
+}
+
+- (BOOL)application:(UIApplication *)application continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void (^)(NSArray<id<UIUserActivityRestoring>> * _Nullable))restorationHandler {
+    NSLog(@"continueUserActivity: %@ %@", userActivity.activityType, userActivity.userInfo);
+    return [self performActivity:userActivity.activityType userInfo:userActivity.userInfo];
+}
+
+- (void)application:(UIApplication *)application performActionForShortcutItem:(UIApplicationShortcutItem *)shortcutItem completionHandler:(void (^)(BOOL))completionHandler {
+    NSLog(@"performActionForShortcutItem: %@ %@", shortcutItem.type, shortcutItem.userInfo);
+    completionHandler([self performActivity:shortcutItem.type userInfo:shortcutItem.userInfo]);
 }
 
 - (void)applicationDidEnterBackground:(UIApplication *)application {

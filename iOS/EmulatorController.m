@@ -1173,6 +1173,24 @@ static void push_mame_button(int player, int button)
 }
 #endif
 
+// hide or show the screen view
+// called from changeUI, and changeUI is called from iphone_Reset_Views() each time a new game (or menu) is started.
+- (void)updateScreenView {
+    CGFloat alpha;
+    if (myosd_inGame || g_mame_game[0])
+        alpha = 1.0;
+    else
+        alpha = 0.0;
+    
+    if (screenView.alpha != alpha) {
+        screenView.alpha = alpha;
+        if (alpha == 0.0)
+            NSLog(@"**** HIDING ScreenView ****");
+        else
+            NSLog(@"**** SHOWING ScreenView ****");
+    }
+}
+
 - (void)changeUI { @autoreleasepool {
 
   int prev_emulation_paused = g_emulation_paused;
@@ -1239,6 +1257,8 @@ static void push_mame_button(int player, int button)
     // for tvOS, use "landscape" only
     [self buildLandscape];
 #endif
+    [self updateScreenView];
+    
     if ( g_joy_used ) {
         [hideShowControlsForLightgun setImage:[UIImage imageNamed:@"menu"] forState:UIControlStateNormal];
     } else {
