@@ -427,6 +427,13 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         gameData[RECENT_GAMES_TITLE] = recentGames;
     }
     
+    // now put "system" items at the end
+    gameSectionTitles = [gameSectionTitles arrayByAddingObjectsFromArray:@[SYSTEM_GAMES_TITLE]];
+    gameData[SYSTEM_GAMES_TITLE] = @[
+        @{kGameInfoDescription:@"MAMEMENU", kGameInfoName:kGameInfoNameMameMenu},
+        @{kGameInfoDescription:@"Settings", kGameInfoName:kGameInfoNameSettings},
+    ];
+    
     _gameSectionTitles = gameSectionTitles;
     _gameData = gameData;
 
@@ -568,6 +575,13 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     }
 
     [self reloadData];
+}
+
+#pragma mark System
+
+- (BOOL)isSystem:(NSDictionary*)game
+{
+    return [@[kGameInfoNameMameMenu, kGameInfoNameSettings] containsObject:game[kGameInfoName]];
 }
 
 #pragma mark Favorites
