@@ -1562,7 +1562,7 @@ void myosd_handle_turbo() {
           CGImageRelease(tile);       
        }
      
-       if(g_isIpad /*&& externalView==nil*/ && (!g_pref_full_screen_port /*|| 1*/) && !(g_joy_used && g_pref_full_screen_joy))
+       if(g_isIpad /*&& externalView==nil*/ && !(g_pref_full_screen_port || (g_joy_used && g_pref_full_screen_joy)))
        {
           UIImage *image1;
           if(g_isIpad)          
@@ -1574,9 +1574,18 @@ void myosd_handle_turbo() {
        
           CGContextSetAlpha(uiContext,((float)100 / 100.0f));  
    
-          CGContextDrawImage(uiContext,rFrames[PORTRAIT_IMAGE_OVERLAY], img);
+          CGContextDrawImage(uiContext,CGRectMake(0, 0, r.size.width, r.size.height),img);
    
           CGImageRelease(img);  
+
+           //TODO: maybe we should inset the screenView so the border does not overlap it.
+           //TODO: the border image is 320x240 so it gets scaled up alot, maybe we need a new hires one.
+           if (TRUE) {
+               CGFloat border_edge_width = 7.0;
+               CGFloat f = 1.0 - (border_edge_width* 2.0) / image1.size.width;
+               screenView.frame = CGRectMake(r.origin.x + r.size.width * (1-f) * 0.5, r.origin.y + r.size.height * (1-f) * 0.5, r.size.width * f, r.size.height * f);
+           }
+           
        }
              
        UIImage *finishedImage = UIGraphicsGetImageFromCurrentImageContext();

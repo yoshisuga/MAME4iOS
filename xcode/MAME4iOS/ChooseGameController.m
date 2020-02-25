@@ -430,7 +430,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     // now put "system" items at the end
     gameSectionTitles = [gameSectionTitles arrayByAddingObjectsFromArray:@[SYSTEM_GAMES_TITLE]];
     gameData[SYSTEM_GAMES_TITLE] = @[
-        @{kGameInfoDescription:@"MAMEMENU", kGameInfoName:kGameInfoNameMameMenu},
+        @{kGameInfoDescription:@"MAME MENU", kGameInfoName:kGameInfoNameMameMenu},
         @{kGameInfoDescription:@"Settings", kGameInfoName:kGameInfoNameSettings},
     ];
     
@@ -702,7 +702,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
     if ([info[kGameInfoParent] length] > 1)
         cell.info.text = [NSString stringWithFormat:@"%@ [%@]", info[kGameInfoName], info[kGameInfoParent]];
-    else if ([info[kGameInfoName] length] > 0)
+    else if ([info[kGameInfoName] length] > 0 && ![self isSystem:info])
         cell.info.text = info[kGameInfoName];
     
     [cell setHorizontal:_layoutMode == LayoutList];
