@@ -593,7 +593,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 }
 - (void)setFavorite:(NSDictionary*)game isFavorite:(BOOL)flag
 {
-    if (game == nil || [game[kGameInfoName] length] == 0)
+    if (game == nil || [game[kGameInfoName] length] == 0 || [self isSystem:game])
         return;
 
     NSMutableArray* favoriteGames = [([_userDefaults objectForKey:FAVORITE_GAMES_KEY] ?: @[]) mutableCopy];
@@ -611,7 +611,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 - (void)setRecent:(NSDictionary*)game isRecent:(BOOL)flag
 {
-    if (game == nil || [game[kGameInfoName] length] == 0)
+    if (game == nil || [game[kGameInfoName] length] == 0 || [self isSystem:game])
         return;
     
     NSMutableArray* recentGames = [([_userDefaults objectForKey:RECENT_GAMES_KEY] ?: @[]) mutableCopy];
@@ -735,7 +735,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     
     // use a placeholder image if the image did not load right away.
     if (cell.image.image == nil)
-        cell.image.image = [UIImage imageNamed:@"MAME4iOS144"] ?: [UIImage imageNamed:@"App Icon"];
+        cell.image.image = [UIImage imageNamed:info[kGameInfoName]] ?: [UIImage imageNamed:@"DEFAULT"];
     
     return cell;
 }

@@ -383,7 +383,10 @@ static void push_mame_button(int player, int button)
     sharedInstance = self;
     
     NSDictionary* game = [[NSUserDefaults standardUserDefaults] dictionaryForKey:kSelectedGameKey];
-    strncpy(g_mame_game, [(game[kGameInfoName] ?: @"") cStringUsingEncoding:NSUTF8StringEncoding], sizeof(g_mame_game));
+    NSString* name = game[kGameInfoName] ?: @"";
+    if ([name isEqualToString:kGameInfoNameMameMenu])
+        name = @" ";
+    strncpy(g_mame_game, [name cStringUsingEncoding:NSUTF8StringEncoding], sizeof(g_mame_game));
     g_mame_game_error[0] = 0;
 	     		    				
     pthread_create(&main_tid, NULL, app_Thread_Start, NULL);
@@ -453,14 +456,7 @@ static void push_mame_button(int player, int button)
         }]];
     }
     [menu addAction:[UIAlertAction actionWithTitle:@"Settings" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:self->optionsController];
-#if TARGET_OS_IOS
-        [navController setModalPresentationStyle:UIModalPresentationPageSheet];
-#endif
-        if (@available(iOS 13.0, tvOS 13.0, *)) {
-            navController.modalInPresentation = YES;    // disable iOS 13 swipe to dismiss...
-        }
-        [self presentViewController:navController animated:YES completion:nil];
+        [self runSettings];
     }]];
 
     [menu addAction:[UIAlertAction actionWithTitle:@"Upload Files" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
@@ -472,7 +468,8 @@ static void push_mame_button(int player, int button)
     if(enable_menu_exit_option) {
         [menu addAction:[UIAlertAction actionWithTitle:@"Exit Game" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
             //[self runExit];   -- the user just selected "Exit Game" from a menu, dont ask again
-            g_mame_game[0] = 0;
+            if (g_mame_game[0] != ' ')
+                g_mame_game[0] = 0;
             myosd_exitGame = 1;
             [self endMenu];
         }]];
@@ -518,7 +515,8 @@ static void push_mame_button(int player, int button)
         UIAlertController *exitAlertController = [UIAlertController alertControllerWithTitle:@"" message:@"Are you sure you want to exit the game?" preferredStyle:UIAlertControllerStyleAlert];
         [exitAlertController addAction:[UIAlertAction actionWithTitle:yes style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
             [self endMenu];
-            g_mame_game[0] = 0;
+            if (g_mame_game[0] != ' ')
+                g_mame_game[0] = 0;
             myosd_exitGame = 1;
         }]];
         [exitAlertController addAction:[UIAlertAction actionWithTitle:no style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
@@ -527,8 +525,13 @@ static void push_mame_button(int player, int button)
         exitAlertController.preferredAction = exitAlertController.actions.firstObject;
         [self presentViewController:exitAlertController animated:YES completion:nil];
     }
+    else if (myosd_inGame && myosd_in_menu != 0)
+    {
+        myosd_exitGame = 1;
+    }
     else
     {
+        g_mame_game[0] = 0;
         myosd_exitGame = 1;
     }
 }
@@ -544,6 +547,19 @@ static void push_mame_button(int player, int button)
     }];
 }
 
+- (void)runSettings {
+
+    [self startMenu];
+
+    UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:optionsController];
+#if TARGET_OS_IOS
+    [navController setModalPresentationStyle:UIModalPresentationPageSheet];
+#endif
+    if (@available(iOS 13.0, tvOS 13.0, *)) {
+        navController.modalInPresentation = YES;    // disable iOS 13 swipe to dismiss...
+    }
+    [self presentViewController:navController animated:YES completion:nil];
+}
 
 - (void)endMenu{
     int old = g_joy_used;
@@ -722,9 +738,6 @@ static void push_mame_button(int player, int button)
     
     myosd_res = [op emures]+1;
 
-// with the new ChooseGameController, we dont want the MAME code filtering the games/drivers
-// TODO: I should remove the options from the SettingsUI, but I dont want to touch that right now....
-#if 0
     myosd_filter_clones = op.filterClones;
     myosd_filter_favorites = op.filterFavorites;
     myosd_filter_not_working = op.filterNotWorking;
@@ -744,7 +757,6 @@ static void push_mame_button(int player, int button)
        myosd_filter_keyword[0] = '\0';
     else
        strcpy(myosd_filter_keyword, [op.filterKeyword UTF8String]);
-#endif
     
     global_low_latency_sound = [op lowlsound];
     if(myosd_video_threaded==-1)
@@ -824,33 +836,21 @@ static void push_mame_button(int player, int button)
 -(void)done:(id)sender {
     
 	Options *op = [[Options alloc] init];
-           
-#if TARGET_OS_IOS
-    if(!change_layout && optionsController != nil )
-        [self dismissViewControllerAnimated:YES completion:nil];
     
+#if TARGET_OS_IOS
     if(g_pref_overscanTVOUT != [op overscanValue])
     {
-        UIAlertController *warnAlert = [UIAlertController alertControllerWithTitle:@"Pending unplug/plug TVOUT!" message:[NSString stringWithFormat: @"You need to unplug/plug TVOUT for the changes to take effect"] preferredStyle:UIAlertControllerStyleAlert];
-        [warnAlert addAction:[UIAlertAction actionWithTitle:@"Dismiss" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-            if(change_layout)
-            {
-                [LayoutData removeLayoutData];
-                change_layout = 0;
-                //                       [self done:self];
-            }
-            
-        }]];
-        [self presentViewController:warnAlert animated:YES completion:nil];
-    }
-#elif TARGET_OS_TV
-    if ( optionsController != nil ) {
-        [self dismissViewControllerAnimated:YES completion:nil];
+        [self showAlertWithTitle:@"Pending unplug/plug TVOUT!" message:@"You need to unplug/plug TVOUT for the changes to take effect" buttons:@[@"Dismiss"] handler:^(NSUInteger button) {
+            g_pref_overscanTVOUT = [op overscanValue];
+            [self done:self];
+        }];
+        return;
     }
 #endif
-
     
-    int keyword_changed = 0;    
+    [self dismissViewControllerAnimated:YES completion:nil];
+
+    int keyword_changed = 0;
     if(myosd_filter_keyword[0]!='\0' && [op.filterKeyword UTF8String] != nil)
         keyword_changed = strcmp(myosd_filter_keyword,[op.filterKeyword UTF8String])!=0;
     else if(myosd_filter_keyword[0]=='\0' && [op.filterKeyword UTF8String] == nil)
@@ -888,13 +888,15 @@ static void push_mame_button(int player, int button)
         }
     }
     
-    
+    // if we are at the root menu, exit and restart.
+    if (myosd_inGame == 0 && g_mame_game[0] == 0)
+        myosd_exitGame = 1;
+
     [self updateOptions];
     
     [self performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:YES];
     
     [self endMenu];
-    
 }
 
 
@@ -1184,6 +1186,7 @@ static void push_mame_button(int player, int button)
     
     if (screenView.alpha != alpha) {
         screenView.alpha = alpha;
+        imageOverlay.alpha = alpha;
         if (alpha == 0.0)
             NSLog(@"**** HIDING ScreenView ****");
         else
@@ -1518,10 +1521,12 @@ void myosd_handle_turbo() {
    
    if((g_pref_scanline_filter_port || g_pref_tv_filter_port) && externalView==nil)
    {
-                                                                                                                                                       
        CGRect r = (g_pref_full_screen_port || (g_joy_used && g_pref_full_screen_joy)) ? rScreenView : rFrames[PORTRAIT_IMAGE_OVERLAY];
        
-       UIGraphicsBeginImageContext(r.size);  
+       if (CGRectEqualToRect(rFrames[PORTRAIT_IMAGE_OVERLAY], rFrames[PORTRAIT_VIEW_NOT_FULL]))
+           r = screenView.frame;
+       
+       UIGraphicsBeginImageContextWithOptions(r.size, NO, 0.0);  
        
        //[image1 drawInRect: rPortraitImageOverlayFrame];
        
@@ -1634,6 +1639,20 @@ void myosd_handle_turbo() {
    {
         r = rFrames[PORTRAIT_VIEW_FULL];
    }
+    
+    // Handle Safe Area (iPhone X) adjust the view down away from the notch, before adjusting for aspect
+    if ( @available(iOS 11, *) ) {
+        if ( externalView == nil ) {
+            UIEdgeInsets inset = [[UIApplication sharedApplication] keyWindow].safeAreaInsets;
+            NSLog(@"safe area insets: top %f, bottom %f, left %f, right %f", inset.top, inset.bottom, inset.left, inset.right);
+            UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
+            CGRect newFrame = r;
+            if ( orientation == UIInterfaceOrientationPortrait ) {
+                newFrame = CGRectMake(r.origin.x, r.origin.y + inset.top, r.size.width, r.size.height - inset.top);
+            }
+            r = newFrame;
+        }
+    }
    
     if(g_pref_keep_aspect_ratio_port)
     {
@@ -1664,20 +1683,6 @@ void myosd_handle_turbo() {
    
    }
     
-    // Handle Safe Area (iPhone X)
-    if ( @available(iOS 11, *) ) {
-        if ( externalView == nil ) {
-            UIEdgeInsets inset = [[UIApplication sharedApplication] keyWindow].safeAreaInsets;
-            NSLog(@"safe area insets: top %f, bottom %f, left %f, right %f", inset.top, inset.bottom, inset.left, inset.right);
-            UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
-            CGRect newFrame = r;
-            if ( orientation == UIInterfaceOrientationPortrait ) {
-                newFrame = CGRectMake(r.origin.x, r.origin.y + inset.top, r.size.width, r.size.height - inset.top);
-            }
-            r = newFrame;
-        }
-    }
-
    rScreenView = r;
        
    screenView = [ [ScreenView alloc] initWithFrame: rScreenView];
@@ -1741,8 +1746,11 @@ void myosd_handle_turbo() {
           r = rScreenView;
        else
           r = rFrames[LANDSCAPE_IMAGE_OVERLAY];
+       
+       if (CGRectEqualToRect(rFrames[LANDSCAPE_IMAGE_OVERLAY], rFrames[LANDSCAPE_VIEW_NOT_FULL]))
+           r = screenView.frame;
 	
-	   UIGraphicsBeginImageContext(r.size);
+	   UIGraphicsBeginImageContextWithOptions(r.size, NO, 0.0);
 	
 	   CGContextRef uiContext = UIGraphicsGetCurrentContext();  
 	   
@@ -3813,6 +3821,14 @@ void myosd_handle_turbo() {
     
     NSString* name = game[kGameInfoName];
     
+    if ([name isEqualToString:kGameInfoNameSettings]) {
+        [self runSettings];
+        return;
+    }
+
+    if ([name isEqualToString:kGameInfoNameMameMenu])
+        name = @" ";
+
     if (name != nil) {
         strncpy(g_mame_game, [name cStringUsingEncoding:NSUTF8StringEncoding], sizeof(g_mame_game));
         [[NSUserDefaults standardUserDefaults] setObject:game forKey:kSelectedGameKey];
@@ -3834,6 +3850,10 @@ void myosd_handle_turbo() {
     // a Alert or Setting is up, bail
     if (self.presentedViewController != nil) {
         NSLog(@"CANT SHOW CHOOSE GAME UI....");
+        if (self.presentedViewController.beingDismissed) {
+            NSLog(@"....TRY AGAIN");
+            [self performSelector:_cmd withObject:games afterDelay:1.0];
+        }
         return;
     }
     g_no_roms_found = [games count] == 0;
@@ -3856,6 +3876,11 @@ void myosd_handle_turbo() {
         }];
         return;
     }
+    if (g_mame_game[0] == ' ') {
+        NSLog(@"RUNNING MAME MENU, DONT BRING UP UI.");
+        return;
+    }
+
     NSLog(@"GAMES: %@", games);
 
     ChooseGameController* choose = [[ChooseGameController alloc] init];
