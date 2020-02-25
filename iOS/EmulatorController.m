@@ -45,6 +45,7 @@
 #include "myosd.h"
 #import "EmulatorController.h"
 #import <GameController/GameController.h>
+#import <AVFoundation/AVFoundation.h>
 
 #if TARGET_OS_IOS
 #import <Intents/Intents.h>
@@ -115,6 +116,7 @@ int g_enable_debug_view = 0;
 int g_controller_opacity = 50;
 
 int g_device_is_landscape = 0;
+int g_device_is_fullscreen = 0;
 
 int g_pref_smooth_land = 0;
 int g_pref_smooth_port = 0;
@@ -131,7 +133,8 @@ int g_pref_animated_DPad = 0;
 int g_pref_4buttonsLand = 0;
 int g_pref_full_screen_land = 1;
 int g_pref_full_screen_port = 1;
-int g_pref_full_screen_joy = 1;
+int g_pref_full_screen_land_joy = 1;
+int g_pref_full_screen_port_joy = 1;
 
 int g_pref_hide_LR=0;
 int g_pref_BplusX=0;
@@ -562,13 +565,11 @@ static void push_mame_button(int player, int button)
 }
 
 - (void)endMenu{
-    int old = g_joy_used;
+    int old_joy_used = g_joy_used;
     g_joy_used = myosd_num_of_joys!=0;
     
-    if(((!g_device_is_landscape && g_pref_full_screen_port) || (g_device_is_landscape && g_pref_full_screen_land) || (g_joy_used && g_pref_full_screen_joy)) && !g_joy_used && old!=g_joy_used)
-    {
+    if (old_joy_used != g_joy_used)
         [self changeUI];
-    }
     
     myosd_exitPause = 1;
     g_emulation_paused = 0;
@@ -618,7 +619,8 @@ static void push_mame_button(int player, int button)
     g_pref_animated_DPad  = [op animatedButtons];
     g_pref_full_screen_land  = [op fullLand];
     g_pref_full_screen_port  = [op fullPort];
-    g_pref_full_screen_joy   = 1; /*[op fullJoy]*/;
+    g_pref_full_screen_land_joy = 1; /*[op fullLandJoy]*/;
+    g_pref_full_screen_port_joy = 1; /*[op fullPortJoy]*/;
 
     myosd_pxasp1 = [op p1aspx];
     
@@ -1435,7 +1437,7 @@ void myosd_handle_turbo() {
     
    g_joy_used = myosd_num_of_joys!=0; 
    
-   if(g_joy_used && ((!g_device_is_landscape && g_pref_full_screen_port) || (g_device_is_landscape && g_pref_full_screen_land) || (g_joy_used && g_pref_full_screen_joy)))
+   if (g_joy_used && g_device_is_fullscreen)
      return;
    
    NSString *name;
@@ -1448,7 +1450,7 @@ void myosd_handle_turbo() {
             name = [NSString stringWithFormat:@"./SKIN_%d/%@",g_pref_skin,nameImgDPad[DPAD_NONE]];
             dpadView = [ [ UIImageView alloc ] initWithImage:[self loadImage:name]];
             dpadView.frame = rDPadImage;
-            if( (!g_device_is_landscape && g_pref_full_screen_port) || (g_device_is_landscape && g_pref_full_screen_land) || (g_joy_used && g_pref_full_screen_joy))
+            if (g_device_is_fullscreen)
                 [dpadView setAlpha:((float)g_controller_opacity / 100.0f)];
             [self.view addSubview: dpadView];
             dpad_state = old_dpad_state = DPAD_NONE;
@@ -1465,7 +1467,7 @@ void myosd_handle_turbo() {
     BOOL touch_buttons_disabled = myosd_mouse == 1 && g_pref_touch_analog_enabled && g_pref_touch_analog_hide_buttons;
     for(i=0; i<NUM_BUTTONS;i++)
     {
-        if(!change_layout &&  (g_device_is_landscape || (!g_device_is_landscape && g_pref_full_screen_port) || (g_joy_used && g_pref_full_screen_joy)))
+        if(!change_layout && (g_device_is_landscape || g_device_is_fullscreen))
         {
             if(i==BTN_X && (g_pref_full_num_buttons < 4 && myosd_inGame))continue;
             if(i==BTN_Y && (g_pref_full_num_buttons < 3 || !myosd_inGame))continue;
@@ -1482,10 +1484,10 @@ void myosd_handle_turbo() {
         buttonViews[i] = [ [ UIImageView alloc ] initWithImage:[self loadImage:name]];
         buttonViews[i].frame = rButtonImages[i];
         
-        if((g_device_is_landscape && (g_pref_full_screen_land /*|| i==BTN_Y || i==BTN_A*/)) || (!g_device_is_landscape && g_pref_full_screen_port) || (g_joy_used && g_pref_full_screen_joy))
+        if (g_device_is_fullscreen)
             [buttonViews[i] setAlpha:((float)g_controller_opacity / 100.0f)];
         
-        if(g_device_is_landscape && !g_pref_full_screen_land && g_isIphone5 /*&& skin_data==1*/ && (i==BTN_Y || i==BTN_A || i==BTN_L1 || i==BTN_R1))
+        if (g_device_is_landscape && !g_device_is_fullscreen && g_isIphone5 /*&& skin_data==1*/ && (i==BTN_Y || i==BTN_A || i==BTN_L1 || i==BTN_R1))
             [buttonViews[i] setAlpha:((float)g_controller_opacity / 100.0f)];
         
         [self.view addSubview: buttonViews[i]];
@@ -1497,7 +1499,7 @@ void myosd_handle_turbo() {
 #if TARGET_OS_IOS
 - (void)buildPortraitImageBack {
 
-   if(!(g_pref_full_screen_port || (g_joy_used && g_pref_full_screen_joy)))
+   if(!g_device_is_fullscreen)
    {
 	   if(g_isIpad)
 	     imageBack = [ [ UIImageView alloc ] initWithImage:[self loadImage:[NSString stringWithFormat:@"./SKIN_%d/back_portrait_iPad.png",g_pref_skin]]];
@@ -1521,7 +1523,7 @@ void myosd_handle_turbo() {
    
    if((g_pref_scanline_filter_port || g_pref_tv_filter_port) && externalView==nil)
    {
-       CGRect r = (g_pref_full_screen_port || (g_joy_used && g_pref_full_screen_joy)) ? rScreenView : rFrames[PORTRAIT_IMAGE_OVERLAY];
+       CGRect r = g_device_is_fullscreen ? rScreenView : rFrames[PORTRAIT_IMAGE_OVERLAY];
        
        if (CGRectEqualToRect(rFrames[PORTRAIT_IMAGE_OVERLAY], rFrames[PORTRAIT_VIEW_NOT_FULL]))
            r = screenView.frame;
@@ -1562,7 +1564,7 @@ void myosd_handle_turbo() {
           CGImageRelease(tile);       
        }
      
-       if(g_isIpad /*&& externalView==nil*/ && !(g_pref_full_screen_port || (g_joy_used && g_pref_full_screen_joy)))
+       if(g_isIpad && !g_device_is_fullscreen)
        {
           UIImage *image1;
           if(g_isIpad)          
@@ -1578,14 +1580,15 @@ void myosd_handle_turbo() {
    
           CGImageRelease(img);  
 
-           //TODO: maybe we should inset the screenView so the border does not overlap it.
+           //inset the screenView so the border does not overlap it.
            //TODO: the border image is 320x240 so it gets scaled up alot, maybe we need a new hires one.
-           if (TRUE) {
-               CGFloat border_edge_width = 7.0;
-               CGFloat f = 1.0 - (border_edge_width* 2.0) / image1.size.width;
-               screenView.frame = CGRectMake(r.origin.x + r.size.width * (1-f) * 0.5, r.origin.y + r.size.height * (1-f) * 0.5, r.size.width * f, r.size.height * f);
+           if (TRUE && self.view.window.screen != nil) {
+               CGSize border = CGSizeMake(8.0,8.0);  // in pixels
+               CGFloat scale = self.view.window.screen.scale;
+               CGFloat dx = ceil((border.width * r.size.width / image1.size.width) / scale); // in points
+               CGFloat dy = ceil((border.height * r.size.height / image1.size.height) / scale);
+               screenView.frame = AVMakeRectWithAspectRatioInsideRect(r.size, CGRectInset(r, dx, dy));
            }
-           
        }
              
        UIImage *finishedImage = UIGraphicsGetImageFromCurrentImageContext();
@@ -1626,6 +1629,8 @@ void myosd_handle_turbo() {
 - (void)buildPortrait {
 
    g_device_is_landscape = 0;
+   g_device_is_fullscreen = g_pref_full_screen_port || (g_joy_used && g_pref_full_screen_port_joy) || externalView != nil;
+    
    [ self getControllerCoords:0 ];
     
    [ self adjustSizes];
@@ -1640,7 +1645,7 @@ void myosd_handle_turbo() {
    {
         r = rExternalView;
    }
-   else if(!(g_pref_full_screen_port || (g_joy_used && g_pref_full_screen_joy)))
+   else if (!g_device_is_fullscreen)
    {
 	    r = rFrames[PORTRAIT_VIEW_NOT_FULL];
    }		  
@@ -1652,45 +1657,14 @@ void myosd_handle_turbo() {
     // Handle Safe Area (iPhone X) adjust the view down away from the notch, before adjusting for aspect
     if ( @available(iOS 11, *) ) {
         if ( externalView == nil ) {
-            UIEdgeInsets inset = [[UIApplication sharedApplication] keyWindow].safeAreaInsets;
-            NSLog(@"safe area insets: top %f, bottom %f, left %f, right %f", inset.top, inset.bottom, inset.left, inset.right);
-            UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
-            CGRect newFrame = r;
-            if ( orientation == UIInterfaceOrientationPortrait ) {
-                newFrame = CGRectMake(r.origin.x, r.origin.y + inset.top, r.size.width, r.size.height - inset.top);
-            }
-            r = newFrame;
+            r = CGRectIntersection(r, UIEdgeInsetsInsetRect(self.view.bounds, self.view.safeAreaInsets));
         }
     }
-   
+    
     if(g_pref_keep_aspect_ratio_port)
     {
-       int tmp_height = r.size.height;// > emulated_width ?
-       int tmp_width = ((((tmp_height * myosd_vis_video_width) / myosd_vis_video_height)+7)&~7);
-       		       
-       if(tmp_width > r.size.width) //y no crop
-       {
-          tmp_width = r.size.width;
-          tmp_height = ((((tmp_width * myosd_vis_video_height) / myosd_vis_video_width)+7)&~7);
-       }   
-       
-       r.origin.x = r.origin.x + ((r.size.width - tmp_width) / 2);      
-       
-       if(!(g_pref_full_screen_port || (g_joy_used && g_pref_full_screen_joy)) || g_joy_used)
-       {
-          r.origin.y = r.origin.y + ((r.size.height - tmp_height) / 2);
-       }
-       else
-       {
-          int tmp = r.size.height - (r.size.height/5);
-          if(tmp_height < tmp)                                
-             r.origin.y = r.origin.y + ((tmp - tmp_height) / 2);
-       }
-              
-       r.size.width = tmp_width;
-       r.size.height = tmp_height;
-   
-   }
+        r = AVMakeRectWithAspectRatioInsideRect(CGSizeMake(myosd_vis_video_width, myosd_vis_video_height), r);
+    }
     
    rScreenView = r;
        
@@ -1709,7 +1683,7 @@ void myosd_handle_turbo() {
    [self buildPortraitImageOverlay];
 
     hideShowControlsForLightgun.hidden = YES;
-    if ( (g_pref_full_screen_port || (g_joy_used && g_pref_full_screen_joy)) &&
+    if ( g_device_is_fullscreen &&
         (
          (myosd_light_gun && g_pref_lightgun_enabled) ||
          (myosd_mouse && g_pref_touch_analog_enabled)
@@ -1723,7 +1697,7 @@ void myosd_handle_turbo() {
 
 - (void)buildLandscapeImageBack {
 
-   if(!(g_pref_full_screen_land || (g_joy_used && g_pref_full_screen_joy)))
+   if (!g_device_is_fullscreen)
    {
 	   if(g_isIpad)
 	     imageBack = [ [ UIImageView alloc ] initWithImage:[self loadImage:[NSString stringWithFormat:@"./SKIN_%d/back_landscape_iPad.png",g_pref_skin]]];
@@ -1751,7 +1725,7 @@ void myosd_handle_turbo() {
    {                                                                                                                                              
 	   CGRect r;
 
-       if(g_pref_full_screen_land || (g_joy_used && g_pref_full_screen_joy))
+       if(g_device_is_fullscreen)
           r = rScreenView;
        else
           r = rFrames[LANDSCAPE_IMAGE_OVERLAY];
@@ -1858,6 +1832,7 @@ void myosd_handle_turbo() {
 - (void)buildLandscape{
 	
    g_device_is_landscape = 1;
+   g_device_is_fullscreen = g_pref_full_screen_land  || (g_joy_used && g_pref_full_screen_land_joy) || externalView != nil;
 
 #if TARGET_OS_IOS
    [self getControllerCoords:1 ];
@@ -1876,7 +1851,7 @@ void myosd_handle_turbo() {
    {
         r = rExternalView;
    }
-   else if(!(g_pref_full_screen_land  || (g_joy_used && g_pref_full_screen_joy)))
+   else if (!g_device_is_fullscreen)
    {
         r = rFrames[LANDSCAPE_VIEW_NOT_FULL];
    }     
@@ -1890,27 +1865,9 @@ void myosd_handle_turbo() {
    
    if(g_pref_keep_aspect_ratio_land)
    {
-       //printf("%d %d\n",myosd_video_width,myosd_video_height);
-
-       int tmp_width = r.size.width;// > emulated_width ?
-       int tmp_height = ((((tmp_width * myosd_vis_video_height) / myosd_vis_video_width)+7)&~7);
-       
-       //printf("%d %d\n",tmp_width,tmp_height);
-       
-       if(tmp_height > r.size.height) //y no crop
-       {
-          tmp_height = r.size.height;
-          tmp_width = ((((tmp_height * myosd_vis_video_width) / myosd_vis_video_height)+7)&~7);
-       }   
-       
-       //printf("%d %d\n",tmp_width,tmp_height);
-                
-       r.origin.x = r.origin.x +(((int)r.size.width - tmp_width) / 2);             
-       r.origin.y = r.origin.y +(((int)r.size.height - tmp_height) / 2);
-       r.size.width = tmp_width;
-       r.size.height = tmp_height;
+       r = AVMakeRectWithAspectRatioInsideRect(CGSizeMake(myosd_vis_video_width, myosd_vis_video_height), r);
    }
-   
+
    rScreenView = r;
    
    screenView = [ [ScreenView alloc] initWithFrame: rScreenView];
@@ -1926,7 +1883,7 @@ void myosd_handle_turbo() {
            
    [self buildLandscapeImageOverlay];
     
-    if ( (g_pref_full_screen_land || (g_joy_used && g_pref_full_screen_joy)) &&
+    if (g_device_is_fullscreen &&
         (
          (myosd_light_gun && g_pref_lightgun_enabled) ||
          (myosd_mouse && g_pref_touch_analog_enabled)
@@ -2011,13 +1968,7 @@ void myosd_handle_turbo() {
     {
         [layoutView handleTouches:touches withEvent: event];
     }
-    else if((g_joy_used &&
-             (
-              (g_joy_used && g_pref_full_screen_joy) ||
-              (!g_device_is_landscape && g_pref_full_screen_port) ||
-              (g_device_is_landscape && g_pref_full_screen_land))
-             )
-            )
+    else if (g_joy_used && g_device_is_fullscreen)
     {
         // If controller is connected and display is full screen:
         // handle lightgun touches or
@@ -2668,14 +2619,14 @@ void myosd_handle_turbo() {
     
 	if(!orientation)
 	{
-        if(g_pref_full_screen_port || (g_joy_used && g_pref_full_screen_joy))
+        if (g_device_is_fullscreen)
             fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_portrait_full_%@.txt", g_skin_data, deviceName] UTF8String]];
         else
             fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_portrait_%@.txt", g_skin_data, deviceName] UTF8String]];
     }
 	else
 	{
-        if(g_pref_full_screen_land || (g_joy_used && g_pref_full_screen_joy))
+        if (g_device_is_fullscreen)
             fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_landscape_full_%@.txt", g_skin_data,deviceName] UTF8String]];
         else
             fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_landscape_%@.txt", g_skin_data, deviceName] UTF8String]];
@@ -3175,8 +3126,7 @@ void myosd_handle_turbo() {
 #if TARGET_OS_IOS
 -(void)beginCustomizeCurrentLayout{
     
-    
-    if (g_joy_used && ((!g_device_is_landscape && g_pref_full_screen_port) || (g_device_is_landscape && g_pref_full_screen_land) || (g_joy_used && g_pref_full_screen_joy)))
+    if (g_joy_used && g_device_is_fullscreen)
     {
         [self showAlertWithTitle:nil message:@"You cannot customize current layout when using a external controller!"];
     }
@@ -3213,7 +3163,7 @@ void myosd_handle_turbo() {
 
 -(void)resetCurrentLayout{
     
-    if (g_joy_used && ((!g_device_is_landscape && g_pref_full_screen_port) || (g_device_is_landscape && g_pref_full_screen_land) || (g_joy_used && g_pref_full_screen_joy)))
+    if (g_joy_used && g_device_is_fullscreen)
     {
         [self showAlertWithTitle:nil message:@"You cannot reset current layout when using a external controller!"];
         return;
@@ -3260,7 +3210,7 @@ void myosd_handle_turbo() {
         }
     }
     
-    if((!g_device_is_landscape && g_pref_full_screen_port) || (g_device_is_landscape && g_pref_full_screen_land) || (g_joy_used && g_pref_full_screen_joy))
+    if (g_device_is_fullscreen)
     {
        rStickWindow.size.height *= g_stick_size;
        rStickWindow.size.width *= g_stick_size;

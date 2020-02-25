@@ -157,6 +157,8 @@
 		EFA7570324055B0200A02AAB /* SETTINGS.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA7570124055B0200A02AAB /* SETTINGS.png */; };
 		EFA7570524057FD800A02AAB /* DEFAULT.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA7570424057FD800A02AAB /* DEFAULT.png */; };
 		EFA7570624057FD800A02AAB /* DEFAULT.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA7570424057FD800A02AAB /* DEFAULT.png */; };
+		EFA757082405B9EA00A02AAB /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA757072405B9EA00A02AAB /* AVFoundation.framework */; };
+		EFA7570A2405BA0200A02AAB /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA757092405BA0200A02AAB /* AVFoundation.framework */; };
 		EFD4D14A23C0F6AB00857A76 /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = CE30090316FA47CB000EDCF1 /* Category.ini */; };
 /* End PBXBuildFile section */
 
@@ -342,6 +344,8 @@
 		EFA756FE2405585D00A02AAB /* MAMEMENU.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MAMEMENU.png; sourceTree = "<group>"; };
 		EFA7570124055B0200A02AAB /* SETTINGS.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = SETTINGS.png; sourceTree = "<group>"; };
 		EFA7570424057FD800A02AAB /* DEFAULT.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = DEFAULT.png; sourceTree = "<group>"; };
+		EFA757072405B9EA00A02AAB /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS13.2.sdk/System/Library/Frameworks/AVFoundation.framework; sourceTree = DEVELOPER_DIR; };
+		EFA757092405BA0200A02AAB /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -360,6 +364,7 @@
 				925ABCBB1E46DCC500997182 /* CoreFoundation.framework in Frameworks */,
 				925ABCBC1E46DCC500997182 /* AudioToolbox.framework in Frameworks */,
 				925ABCBD1E46DCC500997182 /* QuartzCore.framework in Frameworks */,
+				EFA7570A2405BA0200A02AAB /* AVFoundation.framework in Frameworks */,
 				925ABCBE1E46DCC500997182 /* UIKit.framework in Frameworks */,
 				925ABCC01E46DCC500997182 /* Foundation.framework in Frameworks */,
 				925ABCC11E46DCC500997182 /* CoreGraphics.framework in Frameworks */,
@@ -380,6 +385,7 @@
 				92ECB90A21EA999600D1E3D0 /* QuartzCore.framework in Frameworks */,
 				92ECB90821EA998600D1E3D0 /* AudioToolbox.framework in Frameworks */,
 				92ECB90621EA998000D1E3D0 /* CoreFoundation.framework in Frameworks */,
+				EFA757082405B9EA00A02AAB /* AVFoundation.framework in Frameworks */,
 				92ECB90421EA997A00D1E3D0 /* GameController.framework in Frameworks */,
 				92ECB90121EA993E00D1E3D0 /* libc++.tbd in Frameworks */,
 				92ECB8FF21EA992100D1E3D0 /* libmamearm64-tvos.a in Frameworks */,
@@ -602,6 +608,8 @@
 		CEE680881635BA7000051BC2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				EFA757072405B9EA00A02AAB /* AVFoundation.framework */,
+				EFA757092405BA0200A02AAB /* AVFoundation.framework */,
 				E9856CEF23C9A7C50071666D /* MultipeerConnectivity.framework */,
 				EF27F36923F7475100B1E50A /* libcompression.tbd */,
 				92A533E021EEFE570089FBB9 /* MobileCoreServices.framework */,

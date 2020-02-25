@@ -875,10 +875,9 @@
         switch (keyCode + (isKeyDown ? KEY_DOWN : 0)) {
             case KEY_RETURN+KEY_DOWN:
                 if (g_device_is_landscape)
-                    g_pref_full_screen_land = !(g_pref_full_screen_land || g_pref_full_screen_joy);
+                    g_pref_full_screen_land = g_pref_full_screen_land_joy = !(g_pref_full_screen_land || g_pref_full_screen_land_joy);
                 else
-                    g_pref_full_screen_port = !(g_pref_full_screen_port || g_pref_full_screen_joy);
-                g_pref_full_screen_joy = 0;
+                    g_pref_full_screen_port = g_pref_full_screen_port_joy = !(g_pref_full_screen_port || g_pref_full_screen_port_joy);
                 [emuController changeUI];
                 return nil;
             case KEY_T+KEY_DOWN:

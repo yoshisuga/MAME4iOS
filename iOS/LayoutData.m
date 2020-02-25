@@ -197,12 +197,12 @@
     NSString *name = nil;
     NSString *path = nil;
     if(g_device_is_landscape)
-        if(g_pref_full_screen_land)
+        if(g_device_is_fullscreen)
            name = [NSString stringWithFormat:@"landscape_full_custom_layout_skin_%d.dat", g_skin_data];
         else
            name = [NSString stringWithFormat:@"landscape_no_full_custom_layout_skin_%d.dat", g_skin_data];  
     else
-        if(g_pref_full_screen_port)
+        if(g_device_is_fullscreen)
            name = [NSString stringWithFormat:@"portrait_full_custom_layout_skin_%d.dat", g_skin_data];
         else
            name = [NSString stringWithFormat:@"portrait_no_full_custom_layout_skin_%d.dat", g_skin_data];

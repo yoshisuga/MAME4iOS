@@ -104,6 +104,7 @@ extern int g_controller_opacity;
 extern int g_enable_debug_view;
 
 extern int g_device_is_landscape;
+extern int g_device_is_fullscreen;
 
 extern int g_pref_tv_filter_land;
 extern int g_pref_tv_filter_port;
@@ -115,7 +116,8 @@ extern int g_pref_keep_aspect_ratio_land;
 extern int g_pref_keep_aspect_ratio_port;
 extern int g_pref_full_screen_land;
 extern int g_pref_full_screen_port;
-extern int g_pref_full_screen_joy;
+extern int g_pref_full_screen_land_joy;
+extern int g_pref_full_screen_port_joy;
 extern int g_pref_animated_DPad;
 extern int g_pref_4buttonsLand;
 extern int g_pref_hide_LR;
