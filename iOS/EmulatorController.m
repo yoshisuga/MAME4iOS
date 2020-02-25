@@ -619,8 +619,8 @@ static void push_mame_button(int player, int button)
     g_pref_animated_DPad  = [op animatedButtons];
     g_pref_full_screen_land  = [op fullLand];
     g_pref_full_screen_port  = [op fullPort];
-    g_pref_full_screen_land_joy = 1; /*[op fullLandJoy]*/;
-    g_pref_full_screen_port_joy = 1; /*[op fullPortJoy]*/;
+    g_pref_full_screen_land_joy = [op fullLandJoy];
+    g_pref_full_screen_port_joy = [op fullPortJoy];
 
     myosd_pxasp1 = [op p1aspx];
     

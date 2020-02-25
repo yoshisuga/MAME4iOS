@@ -28,6 +28,8 @@
 @synthesize fourButtonsLand;
 @synthesize fullLand;
 @synthesize fullPort;
+@synthesize fullLandJoy;
+@synthesize fullPortJoy;
 
 @synthesize lightgunEnabled;
 @synthesize lightgunBottomScreenReload;
@@ -164,6 +166,9 @@
         fullLand = animatedButtons;
         fullPort = 0;
         
+        fullLandJoy = 1;
+        fullPortJoy = 1;
+        
         skinValue = 0;
         
         btDeadZoneValue = 2;
@@ -280,9 +285,12 @@
         showINFO =  [[[optionsArray objectAtIndex:0] objectForKey:@"showINFO"] intValue];
         fourButtonsLand =  [[[optionsArray objectAtIndex:0] objectForKey:@"fourButtonsLand"] intValue];
         animatedButtons =  [[[optionsArray objectAtIndex:0] objectForKey:@"animatedButtons"] intValue];
+        
         fullLand =  [[[optionsArray objectAtIndex:0] objectForKey:@"fullLand"] intValue];
         fullPort =  [[[optionsArray objectAtIndex:0] objectForKey:@"fullPort"] intValue];
-        
+        fullLandJoy =  [([[optionsArray objectAtIndex:0] objectForKey:@"fullLandJoy"] ?: @(1)) intValue];
+        fullPortJoy =  [([[optionsArray objectAtIndex:0] objectForKey:@"fullPortJoy"] ?: @(1)) intValue];
+
         _turboXEnabled = [[[optionsArray objectAtIndex:0] objectForKey:@"turboXEnabled"] intValue];
         _turboYEnabled = [[[optionsArray objectAtIndex:0] objectForKey:@"turboYEnabled"] intValue];
         _turboAEnabled = [[[optionsArray objectAtIndex:0] objectForKey:@"turboAEnabled"] intValue];
@@ -411,6 +419,9 @@
                              [NSString stringWithFormat:@"%d", fullLand], @"fullLand",
                              [NSString stringWithFormat:@"%d", fullPort], @"fullPort",
                              
+                             [NSString stringWithFormat:@"%d", fullLandJoy], @"fullLandJoy",
+                             [NSString stringWithFormat:@"%d", fullPortJoy], @"fullPortJoy",
+
                              [NSString stringWithFormat:@"%d", skinValue], @"skinValue",
                              
                              [NSString stringWithFormat:@"%d", btDeadZoneValue], @"btDeadZoneValue",
