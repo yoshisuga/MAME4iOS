@@ -161,19 +161,26 @@ int main(int argc, char **argv)
 	int ret;
 	FILE *f;
     
-	printf("Iniciando\n");
-    
+	//printf("Iniciando\n");
     
 	myosd_init();
-    
-	while(1)
+
+    // the iOS app will "re-run" MAME by calling into main again, dont loop here
+	//while(1)
 	{
 		droid_ios_setup_video();
         
         // cli_execute does the heavy lifting; if we have osd-specific options, we
         // would pass them as the third parameter here
 		n=0;
-		args[n]= (char *)"mame4x";n++;
+        if (argc == 0) {
+            args[n]= (char *)"mame4x";n++;
+        }
+        else {
+            while (n < argc) {
+                args[n]= argv[n];n++;
+            }
+        }
 
 		//args[n]= (char *)"starforc"; n++;
 		//args[n]= (char *)"1944"; n++;

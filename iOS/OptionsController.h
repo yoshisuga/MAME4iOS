@@ -106,6 +106,8 @@ enum ListOptionType
     UISwitch*		  switchShowINFO;
     UISwitch*		  switchfullLand;
     UISwitch*		  switchfullPort;
+    UISwitch*         switchfullLandJoy;
+    UISwitch*         switchfullPortJoy;
     UISwitch *switchThrottle;
     UISwitch *switchSleep;
     UISwitch *switchForcepxa;

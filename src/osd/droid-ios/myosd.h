@@ -124,6 +124,18 @@ extern const char *myosd_array_years[];
 extern const char *myosd_array_main_driver_source[];
 extern const char *myosd_array_categories[];
 
+// subset of a internal game_driver structure we pass up to the UI/OSD layer
+typedef struct
+{
+    const char *        source_file;                /* set this to __FILE__ */
+    const char *        parent;                     /* if this is a clone, the name of the parent */
+    const char *        name;                       /* short (8-character) name of the game */
+    const char *        description;                /* full name of the game */
+    const char *        year;                       /* year the game was released */
+    const char *        manufacturer;               /* manufacturer of the game */
+} myosd_game_info;
+extern void myosd_set_game_info(myosd_game_info *info[], int game_count);
+
 #if defined(__cplusplus)
 }
 #endif

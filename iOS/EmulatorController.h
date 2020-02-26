@@ -140,7 +140,6 @@
 - (UIView *)getButtonView:(int)i;
 - (UIView *)getDPADView;
 - (UIView *)getStickView;
-
 - (void)getControllerCoords:(int)orientation;
 #endif
 
@@ -164,7 +163,10 @@
 - (void)buildLandscapeImageOverlay;
 - (void)buildLandscape;
 
+
 - (void)runMenu;
+- (void)runExit;
+- (void)runPause;
 - (void)endMenu;
 
 - (void)handle_DPAD;
@@ -180,6 +182,7 @@
 
 - (void)moveROMS;
 - (void)playGame:(NSDictionary*)game;
+- (void)chooseGame:(NSArray*)games;
 
 #if TARGET_OS_IOS
 - (NSSet*)touchesController:(NSSet *)touches withEvent:(UIEvent *)event;

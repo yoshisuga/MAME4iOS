@@ -237,7 +237,7 @@
         
         NSString *name;
         
-        if((g_device_is_landscape && g_pref_full_screen_land) || (!g_device_is_landscape && g_pref_full_screen_port) /*|| iOS_skin==1*/)
+        if (g_device_is_fullscreen)
         {
             name = [NSString stringWithFormat:@"./SKIN_%d/%@",g_pref_skin,@"./stick-outer.png"];
             outerView = [ [ UIImageView alloc ] initWithImage:[emuController loadImage: name]];
@@ -257,7 +257,7 @@
         innerView = [ [ UIImageView alloc ] initWithImage:[emuController loadImage: name]];
         innerView.frame = CGRectMake(ptCenter.x - stickWidth/2, ptCenter.y - stickHeight/2, stickWidth, stickHeight);
         
-        if((g_device_is_landscape && g_pref_full_screen_land) || (!g_device_is_landscape && g_pref_full_screen_port))
+        if(g_device_is_fullscreen)
             [innerView setAlpha:((float)g_controller_opacity / 100.0f)];
         
         [self addSubview: innerView];

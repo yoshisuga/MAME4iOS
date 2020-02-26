@@ -7,10 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		9205D7CF22AAD30300CDF120 /* GCAlertView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9205D7CD22AAD30300CDF120 /* GCAlertView.xib */; };
-		9205D7D322AAD55100CDF120 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9205D7D122AAD55100CDF120 /* Images.xcassets */; };
-		9205D7D422AAD55100CDF120 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9205D7D122AAD55100CDF120 /* Images.xcassets */; };
-		9205D7D822AADB7A00CDF120 /* GCAlertView.m in Sources */ = {isa = PBXBuildFile; fileRef = 9205D7D622AADB7A00CDF120 /* GCAlertView.m */; };
 		920BBDEF201FC29700AE7D50 /* dpad.png in Resources */ = {isa = PBXBuildFile; fileRef = 920BBDED201FC29700AE7D50 /* dpad.png */; };
 		920BBDF220210C3800AE7D50 /* menu.png in Resources */ = {isa = PBXBuildFile; fileRef = 920BBDF020210C3700AE7D50 /* menu.png */; };
 		921CC323216A903600A39154 /* config_iPad_pro_10_5.txt in Resources */ = {isa = PBXBuildFile; fileRef = 921CC321216A903600A39154 /* config_iPad_pro_10_5.txt */; };
@@ -138,18 +134,32 @@
 		92ECB91221EAA1B700D1E3D0 /* EmulatorController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680B51635BB4900051BC2 /* EmulatorController.m */; };
 		92ECB91821EAD57400D1E3D0 /* ScreenView.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680C21635BB6100051BC2 /* ScreenView.m */; };
 		92ECB91921EAD57900D1E3D0 /* UIView+Toast.m in Sources */ = {isa = PBXBuildFile; fileRef = 92B99F0D2022706600CC44E3 /* UIView+Toast.m */; };
-		92ECDA88215AEF5D00E4303A /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 92ECDA86215AEF5D00E4303A /* Launch Screen.storyboard */; };
 		B5FAE31721FCDE0C003F44D0 /* scanline_tvOS201901.png in Resources */ = {isa = PBXBuildFile; fileRef = B5FAE31621FCDE0C003F44D0 /* scanline_tvOS201901.png */; };
 		B5FAE31921FCE64D003F44D0 /* MAME_tvOS.lsr in Resources */ = {isa = PBXBuildFile; fileRef = B5FAE31821FCE64D003F44D0 /* MAME_tvOS.lsr */; };
 		E9856CF023C9A7C50071666D /* MultipeerConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E9856CEF23C9A7C50071666D /* MultipeerConnectivity.framework */; };
 		EF0E08AE2401840700E98F01 /* help.md in Resources */ = {isa = PBXBuildFile; fileRef = EF0E08AC2401840700E98F01 /* help.md */; };
+		EF19F22C235D1BDF00C8EE7F /* ChooseGameController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF19F229235D1BDF00C8EE7F /* ChooseGameController.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		EF19F22D235D1BDF00C8EE7F /* ChooseGameController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF19F229235D1BDF00C8EE7F /* ChooseGameController.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		EF24933A236264DA00DD0A6C /* ImageCache.m in Sources */ = {isa = PBXBuildFile; fileRef = EF249336236264D900DD0A6C /* ImageCache.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		EF24933B236264DA00DD0A6C /* ImageCache.m in Sources */ = {isa = PBXBuildFile; fileRef = EF249336236264D900DD0A6C /* ImageCache.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		EF27F36823F73CD400B1E50A /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF27F36323F73CD400B1E50A /* ZipFile.m */; };
+		EF27F36A23F7475100B1E50A /* libcompression.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = EF27F36923F7475100B1E50A /* libcompression.tbd */; };
+		EF29C8822401C73A00AFFA4E /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EF29C8802401C73900AFFA4E /* Launch Screen.storyboard */; };
 		EF29C8852402E51200AFFA4E /* config_iPad_gen_7.txt in Resources */ = {isa = PBXBuildFile; fileRef = EF29C8832402E51100AFFA4E /* config_iPad_gen_7.txt */; };
-		EF44A98B24032C3B00C20D88 /* libcompression.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = EF44A98A24032C2100C20D88 /* libcompression.tbd */; };
-		EF44A98D240331A600C20D88 /* libcompression.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = EF44A98C2403319A00C20D88 /* libcompression.tbd */; };
-		EF7B232C23FD0469001FF51D /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF7B232A23FD0469001FF51D /* Alert.m */; };
-		EF7B232D23FD0469001FF51D /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF7B232A23FD0469001FF51D /* Alert.m */; };
-		EFF7487124035C1E00A3F351 /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EFF7486F24035C1E00A3F351 /* ZipFile.m */; };
-		EFF7487224035C1E00A3F351 /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EFF7486F24035C1E00A3F351 /* ZipFile.m */; };
+		EF301CF1240460C5000510FD /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF301CF0240460C5000510FD /* Alert.m */; };
+		EF301CF2240460C5000510FD /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF301CF0240460C5000510FD /* Alert.m */; };
+		EF301CF3240460F3000510FD /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF27F36323F73CD400B1E50A /* ZipFile.m */; };
+		EF7B232C23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
+		EF7B232D23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
+		EFA756FF2405585D00A02AAB /* MAMEMENU.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA756FE2405585D00A02AAB /* MAMEMENU.png */; };
+		EFA757002405585D00A02AAB /* MAMEMENU.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA756FE2405585D00A02AAB /* MAMEMENU.png */; };
+		EFA7570224055B0200A02AAB /* SETTINGS.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA7570124055B0200A02AAB /* SETTINGS.png */; };
+		EFA7570324055B0200A02AAB /* SETTINGS.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA7570124055B0200A02AAB /* SETTINGS.png */; };
+		EFA7570524057FD800A02AAB /* DEFAULT.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA7570424057FD800A02AAB /* DEFAULT.png */; };
+		EFA7570624057FD800A02AAB /* DEFAULT.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA7570424057FD800A02AAB /* DEFAULT.png */; };
+		EFA757082405B9EA00A02AAB /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA757072405B9EA00A02AAB /* AVFoundation.framework */; };
+		EFA7570A2405BA0200A02AAB /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA757092405BA0200A02AAB /* AVFoundation.framework */; };
+		EFD4D14A23C0F6AB00857A76 /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = CE30090316FA47CB000EDCF1 /* Category.ini */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -169,10 +179,6 @@
 /* End PBXBuildRule section */
 
 /* Begin PBXFileReference section */
-		9205D7CD22AAD30300CDF120 /* GCAlertView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = GCAlertView.xib; sourceTree = "<group>"; };
-		9205D7D122AAD55100CDF120 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
-		9205D7D522AADB7A00CDF120 /* GCAlertView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GCAlertView.h; sourceTree = "<group>"; };
-		9205D7D622AADB7A00CDF120 /* GCAlertView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GCAlertView.m; sourceTree = "<group>"; };
 		920BBDED201FC29700AE7D50 /* dpad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = dpad.png; sourceTree = "<group>"; };
 		920BBDF020210C3700AE7D50 /* menu.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menu.png; sourceTree = "<group>"; };
 		921CC321216A903600A39154 /* config_iPad_pro_10_5.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = config_iPad_pro_10_5.txt; sourceTree = "<group>"; };
@@ -234,7 +240,7 @@
 		92D96573215B03E100EFE3AE /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 		92D96575215B041300EFE3AE /* crt1.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; name = crt1.o; path = usr/lib/crt1.o; sourceTree = SDKROOT; };
 		92D96577215B048900EFE3AE /* crt1.3.1.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; name = crt1.3.1.o; path = usr/lib/crt1.3.1.o; sourceTree = SDKROOT; };
-		92ECB8EB21EA984D00D1E3D0 /* MAME4iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MAME4iOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		92ECB8EB21EA984D00D1E3D0 /* MAME4tvOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MAME4tvOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		92ECB8F621EA985000D1E3D0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		92ECB8F821EA985000D1E3D0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		92ECB8FE21EA992100D1E3D0 /* libmamearm64-tvos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libmamearm64-tvos.a"; path = "../../libmamearm64-tvos.a"; sourceTree = "<group>"; };
@@ -246,7 +252,6 @@
 		92ECB90B21EA999C00D1E3D0 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.1.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		92ECB90D21EA99A200D1E3D0 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.1.sdk/System/Library/Frameworks/CoreGraphics.framework; sourceTree = DEVELOPER_DIR; };
 		92ECB90F21EA99B600D1E3D0 /* GameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameKit.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.1.sdk/System/Library/Frameworks/GameKit.framework; sourceTree = DEVELOPER_DIR; };
-		92ECDA86215AEF5D00E4303A /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		B370F8AF1C8549010069377D /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = System/Library/Frameworks/GameController.framework; sourceTree = SDKROOT; };
 		B5FAE31621FCDE0C003F44D0 /* scanline_tvOS201901.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = scanline_tvOS201901.png; sourceTree = "<group>"; };
 		B5FAE31821FCE64D003F44D0 /* MAME_tvOS.lsr */ = {isa = PBXFileReference; lastKnownFileType = file; path = MAME_tvOS.lsr; sourceTree = "<group>"; };
@@ -324,14 +329,23 @@
 		CEE680D1163BE5C400051BC2 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		E9856CEF23C9A7C50071666D /* MultipeerConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MultipeerConnectivity.framework; path = System/Library/Frameworks/MultipeerConnectivity.framework; sourceTree = SDKROOT; };
 		EF0E08AC2401840700E98F01 /* help.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = help.md; path = "../../iOS-res/Applications/MAME4iOS.app/help.md"; sourceTree = "<group>"; };
+		EF19F229235D1BDF00C8EE7F /* ChooseGameController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ChooseGameController.m; sourceTree = "<group>"; };
+		EF19F22E235D1C0300C8EE7F /* ChooseGameController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ChooseGameController.h; sourceTree = "<group>"; };
+		EF249336236264D900DD0A6C /* ImageCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageCache.m; sourceTree = "<group>"; };
+		EF249337236264DA00DD0A6C /* ImageCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageCache.h; sourceTree = "<group>"; };
+		EF27F36323F73CD400B1E50A /* ZipFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZipFile.m; sourceTree = "<group>"; };
+		EF27F36423F73CD400B1E50A /* ZipFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZipFile.h; sourceTree = "<group>"; };
+		EF27F36923F7475100B1E50A /* libcompression.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcompression.tbd; path = usr/lib/libcompression.tbd; sourceTree = SDKROOT; };
+		EF29C8802401C73900AFFA4E /* Launch Screen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		EF29C8832402E51100AFFA4E /* config_iPad_gen_7.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = config_iPad_gen_7.txt; path = "../../iOS-res/Applications/MAME4iOS.app/config_iPad_gen_7.txt"; sourceTree = "<group>"; };
-		EF44A98A24032C2100C20D88 /* libcompression.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcompression.tbd; path = usr/lib/libcompression.tbd; sourceTree = SDKROOT; };
-		EF44A98C2403319A00C20D88 /* libcompression.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcompression.tbd; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS13.2.sdk/usr/lib/libcompression.tbd; sourceTree = DEVELOPER_DIR; };
-		EF7B232A23FD0469001FF51D /* Alert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Alert.m; sourceTree = "<group>"; };
-		EF7B232B23FD0469001FF51D /* Alert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Alert.h; sourceTree = "<group>"; };
+		EF301CEF240460C5000510FD /* Alert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Alert.h; sourceTree = "<group>"; };
+		EF301CF0240460C5000510FD /* Alert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Alert.m; sourceTree = "<group>"; };
 		EF9F9C9E240070E700352554 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../../README.md; sourceTree = "<group>"; };
-		EFF7486F24035C1E00A3F351 /* ZipFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZipFile.m; sourceTree = "<group>"; };
-		EFF7487024035C1E00A3F351 /* ZipFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZipFile.h; sourceTree = "<group>"; };
+		EFA756FE2405585D00A02AAB /* MAMEMENU.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MAMEMENU.png; sourceTree = "<group>"; };
+		EFA7570124055B0200A02AAB /* SETTINGS.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = SETTINGS.png; sourceTree = "<group>"; };
+		EFA7570424057FD800A02AAB /* DEFAULT.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = DEFAULT.png; sourceTree = "<group>"; };
+		EFA757072405B9EA00A02AAB /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS13.2.sdk/System/Library/Frameworks/AVFoundation.framework; sourceTree = DEVELOPER_DIR; };
+		EFA757092405BA0200A02AAB /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -340,9 +354,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				E9856CF023C9A7C50071666D /* MultipeerConnectivity.framework in Frameworks */,
+				EF27F36A23F7475100B1E50A /* libcompression.tbd in Frameworks */,
 				92A533DD21EEFE290089FBB9 /* MobileCoreServices.framework in Frameworks */,
 				92A533DB21EEFDE20089FBB9 /* CFNetwork.framework in Frameworks */,
-				EF44A98B24032C3B00C20D88 /* libcompression.tbd in Frameworks */,
 				92D96574215B03E100EFE3AE /* libc++.tbd in Frameworks */,
 				925ABCE51E46DD6E00997182 /* libmamearm64.a in Frameworks */,
 				925ABCB91E46DCC500997182 /* GameController.framework in Frameworks */,
@@ -350,6 +364,7 @@
 				925ABCBB1E46DCC500997182 /* CoreFoundation.framework in Frameworks */,
 				925ABCBC1E46DCC500997182 /* AudioToolbox.framework in Frameworks */,
 				925ABCBD1E46DCC500997182 /* QuartzCore.framework in Frameworks */,
+				EFA7570A2405BA0200A02AAB /* AVFoundation.framework in Frameworks */,
 				925ABCBE1E46DCC500997182 /* UIKit.framework in Frameworks */,
 				925ABCC01E46DCC500997182 /* Foundation.framework in Frameworks */,
 				925ABCC11E46DCC500997182 /* CoreGraphics.framework in Frameworks */,
@@ -370,10 +385,10 @@
 				92ECB90A21EA999600D1E3D0 /* QuartzCore.framework in Frameworks */,
 				92ECB90821EA998600D1E3D0 /* AudioToolbox.framework in Frameworks */,
 				92ECB90621EA998000D1E3D0 /* CoreFoundation.framework in Frameworks */,
+				EFA757082405B9EA00A02AAB /* AVFoundation.framework in Frameworks */,
 				92ECB90421EA997A00D1E3D0 /* GameController.framework in Frameworks */,
 				92ECB90121EA993E00D1E3D0 /* libc++.tbd in Frameworks */,
 				92ECB8FF21EA992100D1E3D0 /* libmamearm64-tvos.a in Frameworks */,
-				EF44A98D240331A600C20D88 /* libcompression.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -479,6 +494,10 @@
 				CEE680AC1635BB2700051BC2 /* Bootstrapper.h */,
 				CEE680AD1635BB2700051BC2 /* Bootstrapper.m */,
 				CE8F0D7B16585C2A0048D63C /* DebugView.h */,
+				EF19F22E235D1C0300C8EE7F /* ChooseGameController.h */,
+				EF19F229235D1BDF00C8EE7F /* ChooseGameController.m */,
+				EF249337236264DA00DD0A6C /* ImageCache.h */,
+				EF249336236264D900DD0A6C /* ImageCache.m */,
 				CE8F0D7C16585C2B0048D63C /* DebugView.m */,
 				CE8F088617435C3A00E2D5FB /* DefaultOptionController.h */,
 				CE8F088717435C3A00E2D5FB /* DefaultOptionController.m */,
@@ -514,17 +533,13 @@
 				CEE680C21635BB6100051BC2 /* ScreenView.m */,
 				92B99F0C2022706600CC44E3 /* UIView+Toast.h */,
 				92B99F0D2022706600CC44E3 /* UIView+Toast.m */,
-				EF7B232B23FD0469001FF51D /* Alert.h */,
-				EF7B232A23FD0469001FF51D /* Alert.m */,
-				EFF7487024035C1E00A3F351 /* ZipFile.h */,
-				EFF7486F24035C1E00A3F351 /* ZipFile.m */,
+				EF301CEF240460C5000510FD /* Alert.h */,
+				EF301CF0240460C5000510FD /* Alert.m */,
+				EF27F36423F73CD400B1E50A /* ZipFile.h */,
+				EF27F36323F73CD400B1E50A /* ZipFile.m */,
 				CEBFBC0E163C5BD300A05CD0 /* resources */,
 				92A533D521EE601D0089FBB9 /* WebServer.h */,
 				92A533D621EE601D0089FBB9 /* WebServer.m */,
-				9205D7CD22AAD30300CDF120 /* GCAlertView.xib */,
-				9205D7D122AAD55100CDF120 /* Images.xcassets */,
-				9205D7D522AADB7A00CDF120 /* GCAlertView.h */,
-				9205D7D622AADB7A00CDF120 /* GCAlertView.m */,
 			);
 			name = RELOADED;
 			sourceTree = "<group>";
@@ -532,6 +547,9 @@
 		CEBFBC0E163C5BD300A05CD0 /* resources */ = {
 			isa = PBXGroup;
 			children = (
+				EFA7570424057FD800A02AAB /* DEFAULT.png */,
+				EFA7570124055B0200A02AAB /* SETTINGS.png */,
+				EFA756FE2405585D00A02AAB /* MAMEMENU.png */,
 				B5FAE31621FCDE0C003F44D0 /* scanline_tvOS201901.png */,
 				920BBDED201FC29700AE7D50 /* dpad.png */,
 				920BBDF020210C3700AE7D50 /* menu.png */,
@@ -582,7 +600,7 @@
 			isa = PBXGroup;
 			children = (
 				925ABCE21E46DCC500997182 /* MAME4iOS.app */,
-				92ECB8EB21EA984D00D1E3D0 /* MAME4iOS.app */,
+				92ECB8EB21EA984D00D1E3D0 /* MAME4tvOS.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -590,9 +608,10 @@
 		CEE680881635BA7000051BC2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				EF44A98A24032C2100C20D88 /* libcompression.tbd */,
-				EF44A98C2403319A00C20D88 /* libcompression.tbd */,
+				EFA757072405B9EA00A02AAB /* AVFoundation.framework */,
+				EFA757092405BA0200A02AAB /* AVFoundation.framework */,
 				E9856CEF23C9A7C50071666D /* MultipeerConnectivity.framework */,
+				EF27F36923F7475100B1E50A /* libcompression.tbd */,
 				92A533E021EEFE570089FBB9 /* MobileCoreServices.framework */,
 				92A533DE21EEFE520089FBB9 /* CFNetwork.framework */,
 				92A533DC21EEFE290089FBB9 /* MobileCoreServices.framework */,
@@ -629,7 +648,7 @@
 			isa = PBXGroup;
 			children = (
 				CE87C2FE16F5C21A00ABE4F6 /* MAME4iOS.entitlements */,
-				92ECDA86215AEF5D00E4303A /* Launch Screen.storyboard */,
+				EF29C8802401C73900AFFA4E /* Launch Screen.storyboard */,
 				CEE680901635BA7000051BC2 /* Supporting Files */,
 			);
 			path = MAME4iOS;
@@ -697,7 +716,7 @@
 			);
 			name = "MAME tvOS";
 			productName = "MAME tvOS";
-			productReference = 92ECB8EB21EA984D00D1E3D0 /* MAME4iOS.app */;
+			productReference = 92ECB8EB21EA984D00D1E3D0 /* MAME4tvOS.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -743,17 +762,15 @@
 			buildActionMask = 2147483647;
 			files = (
 				9268D84D21661E3800AB0470 /* config_iPhone_x.txt in Resources */,
-				9205D7CF22AAD30300CDF120 /* GCAlertView.xib in Resources */,
 				921CC326216A936800A39154 /* config_iPad_pro_12_9.txt in Resources */,
 				925ABCC81E46DCC500997182 /* Default.png in Resources */,
 				925ABCC91E46DCC500997182 /* Default@2x.png in Resources */,
-				92ECDA88215AEF5D00E4303A /* Launch Screen.storyboard in Resources */,
-				9205D7D322AAD55100CDF120 /* Images.xcassets in Resources */,
 				9268D85321661F1700AB0470 /* config_iPhone_6_plus.txt in Resources */,
 				925ABCCA1E46DCC500997182 /* Default-568h@2x.png in Resources */,
 				9268D84A21661CA500AB0470 /* config_iPhone_xr_xs_max.txt in Resources */,
 				925ABCCB1E46DCC500997182 /* border-iPad.png in Resources */,
 				925ABCCC1E46DCC500997182 /* config_iPad.txt in Resources */,
+				EFA7570524057FD800A02AAB /* DEFAULT.png in Resources */,
 				925ABCCD1E46DCC500997182 /* config_iPhone.txt in Resources */,
 				925ABCCE1E46DCC500997182 /* crt-1.png in Resources */,
 				925ABCCF1E46DCC500997182 /* crt-2.png in Resources */,
@@ -763,6 +780,7 @@
 				927BD1A62209E80F00ECF6C9 /* config_iPad_pro_11.txt in Resources */,
 				925ABCD11E46DCC500997182 /* scanline-2.png in Resources */,
 				920BBDEF201FC29700AE7D50 /* dpad.png in Resources */,
+				EF29C8822401C73A00AFFA4E /* Launch Screen.storyboard in Resources */,
 				925ABCD21E46DCC500997182 /* SKIN_1 in Resources */,
 				925ABCD31E46DCC500997182 /* SKIN_2 in Resources */,
 				9268D85621661F8E00AB0470 /* config_iPhone_6.txt in Resources */,
@@ -772,9 +790,11 @@
 				925ABCD71E46DCC500997182 /* LICENSE in Resources */,
 				92A533D021EBDDF20089FBB9 /* GCDWebUploader.bundle in Resources */,
 				925ABCD81E46DCC500997182 /* MAME4iOS72.png in Resources */,
+				EFA756FF2405585D00A02AAB /* MAMEMENU.png in Resources */,
 				925ABCD91E46DCC500997182 /* MAME4iOS114.png in Resources */,
 				925ABCDA1E46DCC500997182 /* MAME4iOS144.png in Resources */,
 				925ABCDB1E46DCC500997182 /* MAME4iOS57.png in Resources */,
+				EFA7570224055B0200A02AAB /* SETTINGS.png in Resources */,
 				925ABCDC1E46DCC500997182 /* cheat.zip in Resources */,
 				921CC323216A903600A39154 /* config_iPad_pro_10_5.txt in Resources */,
 				925ABCDD1E46DCC500997182 /* Category.ini in Resources */,
@@ -786,15 +806,18 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EFD4D14A23C0F6AB00857A76 /* Category.ini in Resources */,
 				926C771221F39D2500103EDE /* cheat.zip in Resources */,
 				926C770721F26DFA00103EDE /* crt-2.png in Resources */,
 				926C770921F26E0000103EDE /* scanline-2.png in Resources */,
+				EFA757002405585D00A02AAB /* MAMEMENU.png in Resources */,
+				EFA7570624057FD800A02AAB /* DEFAULT.png in Resources */,
 				926C770621F26DEA00103EDE /* crt-1.png in Resources */,
 				92ECB8F721EA985000D1E3D0 /* Assets.xcassets in Resources */,
 				B5FAE31721FCDE0C003F44D0 /* scanline_tvOS201901.png in Resources */,
 				926C770821F26DFD00103EDE /* scanline-1.png in Resources */,
 				92A533D121EBDDF20089FBB9 /* GCDWebUploader.bundle in Resources */,
-				9205D7D422AAD55100CDF120 /* Images.xcassets in Resources */,
+				EFA7570324055B0200A02AAB /* SETTINGS.png in Resources */,
 				926C771321F39D2F00103EDE /* hiscore.dat in Resources */,
 				B5FAE31921FCE64D003F44D0 /* MAME_tvOS.lsr in Resources */,
 			);
@@ -814,15 +837,16 @@
 				92A533D321EBDDF20089FBB9 /* GCDWebUploader.m in Sources */,
 				92A533C921EBDBAD0089FBB9 /* GCDWebServerFileRequest.m in Sources */,
 				925ABCA81E46DCC500997182 /* ListOptionController.m in Sources */,
-				9205D7D822AADB7A00CDF120 /* GCAlertView.m in Sources */,
 				92A533C621EBDBAD0089FBB9 /* GCDWebServerDataRequest.m in Sources */,
 				92A533A821EBDBAD0089FBB9 /* GCDWebServerRequest.m in Sources */,
 				925ABCA91E46DCC500997182 /* OptionsController.m in Sources */,
 				92A533C021EBDBAD0089FBB9 /* GCDWebServerURLEncodedFormRequest.m in Sources */,
 				92A533D821EE601D0089FBB9 /* WebServer.m in Sources */,
+				EF301CF1240460C5000510FD /* Alert.m in Sources */,
 				92A533BA21EBDBAD0089FBB9 /* GCDWebServerDataResponse.m in Sources */,
 				925ABCAA1E46DCC500997182 /* DebugView.m in Sources */,
 				925ABCAB1E46DCC500997182 /* ScreenView.m in Sources */,
+				EF24933A236264DA00DD0A6C /* ImageCache.m in Sources */,
 				92B99F0F2022706600CC44E3 /* UIView+Toast.m in Sources */,
 				925ABCAD1E46DCC500997182 /* EmulatorController.m in Sources */,
 				925ABCAE1E46DCC500997182 /* HelpController.m in Sources */,
@@ -840,11 +864,12 @@
 				925ABCB61E46DCC500997182 /* InputOptionController.m in Sources */,
 				92A533C321EBDBAD0089FBB9 /* GCDWebServerMultiPartFormRequest.m in Sources */,
 				925ABCB71E46DCC500997182 /* DefaultOptionController.m in Sources */,
-				EFF7487124035C1E00A3F351 /* ZipFile.m in Sources */,
-				EF7B232C23FD0469001FF51D /* Alert.m in Sources */,
+				EF7B232C23FD0469001FF51D /* (null) in Sources */,
 				92A533B421EBDBAD0089FBB9 /* GCDWebServerErrorResponse.m in Sources */,
+				EF19F22C235D1BDF00C8EE7F /* ChooseGameController.m in Sources */,
 				92A533AE21EBDBAD0089FBB9 /* GCDWebServer.m in Sources */,
 				92A5332321EB57F00089FBB9 /* Options.m in Sources */,
+				EF301CF3240460F3000510FD /* ZipFile.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -852,6 +877,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EF27F36823F73CD400B1E50A /* ZipFile.m in Sources */,
 				92A533BE21EBDBAD0089FBB9 /* GCDWebServerStreamedResponse.m in Sources */,
 				92A533C421EBDBAD0089FBB9 /* GCDWebServerMultiPartFormRequest.m in Sources */,
 				926C770A21F271A700103EDE /* ListOptionController.m in Sources */,
@@ -863,19 +889,21 @@
 				92A533B821EBDBAD0089FBB9 /* GCDWebServerFileResponse.m in Sources */,
 				92A533C121EBDBAD0089FBB9 /* GCDWebServerURLEncodedFormRequest.m in Sources */,
 				92ECB91921EAD57900D1E3D0 /* UIView+Toast.m in Sources */,
-				EFF7487224035C1E00A3F351 /* ZipFile.m in Sources */,
 				92ECB91821EAD57400D1E3D0 /* ScreenView.m in Sources */,
+				EF19F22D235D1BDF00C8EE7F /* ChooseGameController.m in Sources */,
 				92A533A621EBDBAD0089FBB9 /* GCDWebServerResponse.m in Sources */,
 				92A533D921EE601D0089FBB9 /* WebServer.m in Sources */,
 				92A533D421EBDDF20089FBB9 /* GCDWebUploader.m in Sources */,
 				92ECB91221EAA1B700D1E3D0 /* EmulatorController.m in Sources */,
 				926C771A21F4F78300103EDE /* DefaultOptionController.m in Sources */,
 				92A533AC21EBDBAD0089FBB9 /* GCDWebServerFunctions.m in Sources */,
-				EF7B232D23FD0469001FF51D /* Alert.m in Sources */,
+				EF7B232D23FD0469001FF51D /* (null) in Sources */,
 				92A533AF21EBDBAD0089FBB9 /* GCDWebServer.m in Sources */,
 				92A533B521EBDBAD0089FBB9 /* GCDWebServerErrorResponse.m in Sources */,
 				926C770B21F31B1400103EDE /* FilterOptionController.m in Sources */,
+				EF24933B236264DA00DD0A6C /* ImageCache.m in Sources */,
 				92A5332421EB57F00089FBB9 /* Options.m in Sources */,
+				EF301CF2240460C5000510FD /* Alert.m in Sources */,
 				92A533CA21EBDBAD0089FBB9 /* GCDWebServerFileRequest.m in Sources */,
 				92A533BB21EBDBAD0089FBB9 /* GCDWebServerDataResponse.m in Sources */,
 				92ECB91121EA9BBB00D1E3D0 /* iph_main.m in Sources */,
@@ -893,6 +921,7 @@
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Yoshinobu Sugawara (R72X3BF4KE)";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 2020.1;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_BITCODE = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -910,6 +939,7 @@
 					"$(PROJECT_DIR)/MAME4iOS",
 					"$(PROJECT_DIR)",
 				);
+				MARKETING_VERSION = 2020.1;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4ios;
@@ -927,6 +957,7 @@
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Yoshinobu Sugawara (R72X3BF4KE)";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 2020.1;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_BITCODE = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -940,6 +971,7 @@
 					"$(PROJECT_DIR)/MAME4iOS",
 					"$(PROJECT_DIR)",
 				);
+				MARKETING_VERSION = 2020.1;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4ios;
@@ -983,6 +1015,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2020.1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -1002,11 +1035,12 @@
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/MAME4iOS",
 				);
+				MARKETING_VERSION = 2020.1;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4tvos;
-				PRODUCT_NAME = MAME4iOS;
+				PRODUCT_NAME = MAME4tvOS;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;
 				TARGETED_DEVICE_FAMILY = 3;
@@ -1048,6 +1082,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 2020.1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_NS_ASSERTIONS = NO;
@@ -1067,10 +1102,11 @@
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/MAME4iOS",
 				);
+				MARKETING_VERSION = 2020.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4tvos;
-				PRODUCT_NAME = MAME4iOS;
+				PRODUCT_NAME = MAME4tvOS;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;
 				TARGETED_DEVICE_FAMILY = 3;

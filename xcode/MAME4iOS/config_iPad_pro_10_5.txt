@@ -1,5 +1,5 @@
 0,0,834,1112//PortraitViewFrameFull
-11,11,812,605//PortraitViewFrameNotFull
+0,0,834,625//PortraitViewFrameNotFull
 0,625,834,487//PortraitImageBackFrame
 0,0,834,625//PortraitImageOverlayFrame
 0,0,1112,834//LandscapeViewFrameFull
