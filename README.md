@@ -107,8 +107,9 @@ Up to 4 controllers are supported.
 
 The following hotkey combinations are supported:
 
-MENU             |Open MAME4iOS MENU   
+| | |  
 ---------------- |-------------
+MENU             |Open MAME4iOS MENU   
 MENU+L1       |Insert coin                 
 MENU+R1       |Start Game               
 MENU+X          |Exit Game                 
