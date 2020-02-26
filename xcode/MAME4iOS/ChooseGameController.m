@@ -117,12 +117,12 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 - (void)viewDidLoad
 {
     //put the title on the left
-    self.title = @"MAME4iOS";
     UILabel* title = [[UILabel alloc] init];
-    title.text = self.title;
 #if TARGET_OS_IOS
+    title.text = @"MAME4iOS";
     title.font = [UIFont boldSystemFontOfSize:32.0];
 #else
+    title.text = @"MAME4tvOS";
     title.font = [UIFont boldSystemFontOfSize:64.0];
 #endif
     title.textColor = UIColor.whiteColor;
