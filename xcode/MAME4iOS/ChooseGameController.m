@@ -428,6 +428,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     }
     
     // now put "system" items at the end
+    // TODO: maybe these should be at the top (after Recents and Favorites)?
     gameSectionTitles = [gameSectionTitles arrayByAddingObjectsFromArray:@[SYSTEM_GAMES_TITLE]];
     gameData[SYSTEM_GAMES_TITLE] = @[
         @{kGameInfoDescription:@"MAME MENU", kGameInfoName:kGameInfoNameMameMenu},
@@ -695,16 +696,23 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     
 //    cell.title.text = @"Call me Ishmael. Some years ago - never mind how long precisely - having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world.";
     
-    if ([info[kGameInfoManufacturer] length] > 0 && [info[kGameInfoYear] length] > 0)
-        cell.detail.text = [NSString stringWithFormat:@"%@ • %@", info[kGameInfoManufacturer], info[kGameInfoYear]];
-    else if ([info[kGameInfoManufacturer] length] > 0)
-        cell.detail.text = info[kGameInfoManufacturer];
+    NSString* text = info[kGameInfoManufacturer];
+    
+    if ([info[kGameInfoYear] length] > 1)
+        text = [NSString stringWithFormat:@"%@ • %@", text, info[kGameInfoYear]];
+    
+    if ([info[kGameInfoName] length] > 1 && ![self isSystem:info])
+        text = [NSString stringWithFormat:@"%@ • %@", text, info[kGameInfoName]];
 
     if ([info[kGameInfoParent] length] > 1)
-        cell.info.text = [NSString stringWithFormat:@"%@ [%@]", info[kGameInfoName], info[kGameInfoParent]];
-    else if ([info[kGameInfoName] length] > 0 && ![self isSystem:info])
-        cell.info.text = info[kGameInfoName];
+        text = [NSString stringWithFormat:@"%@ [%@]", text, info[kGameInfoParent]];
+
+    if ([text hasPrefix:@" • "])
+        text = [text substringFromIndex:3];
     
+    cell.detail.text = text;
+    cell.info.text = nil;
+
     [cell setHorizontal:_layoutMode == LayoutList];
 
     NSURL* url = [self getGameImageURL:info];
