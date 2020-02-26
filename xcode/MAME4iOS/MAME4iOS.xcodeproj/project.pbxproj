@@ -159,6 +159,8 @@
 		EFA7570624057FD800A02AAB /* DEFAULT.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA7570424057FD800A02AAB /* DEFAULT.png */; };
 		EFA757082405B9EA00A02AAB /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA757072405B9EA00A02AAB /* AVFoundation.framework */; };
 		EFA7570A2405BA0200A02AAB /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA757092405BA0200A02AAB /* AVFoundation.framework */; };
+		EFA7570D2406D64600A02AAB /* SystemImage.m in Sources */ = {isa = PBXBuildFile; fileRef = EFA7570B2406D64600A02AAB /* SystemImage.m */; };
+		EFA7570E2406D64600A02AAB /* SystemImage.m in Sources */ = {isa = PBXBuildFile; fileRef = EFA7570B2406D64600A02AAB /* SystemImage.m */; };
 		EFD4D14A23C0F6AB00857A76 /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = CE30090316FA47CB000EDCF1 /* Category.ini */; };
 /* End PBXBuildFile section */
 
@@ -346,6 +348,8 @@
 		EFA7570424057FD800A02AAB /* DEFAULT.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = DEFAULT.png; sourceTree = "<group>"; };
 		EFA757072405B9EA00A02AAB /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS13.2.sdk/System/Library/Frameworks/AVFoundation.framework; sourceTree = DEVELOPER_DIR; };
 		EFA757092405BA0200A02AAB /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		EFA7570B2406D64600A02AAB /* SystemImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SystemImage.m; sourceTree = "<group>"; };
+		EFA7570C2406D64600A02AAB /* SystemImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SystemImage.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -535,6 +539,8 @@
 				92B99F0D2022706600CC44E3 /* UIView+Toast.m */,
 				EF301CEF240460C5000510FD /* Alert.h */,
 				EF301CF0240460C5000510FD /* Alert.m */,
+				EFA7570C2406D64600A02AAB /* SystemImage.h */,
+				EFA7570B2406D64600A02AAB /* SystemImage.m */,
 				EF27F36423F73CD400B1E50A /* ZipFile.h */,
 				EF27F36323F73CD400B1E50A /* ZipFile.m */,
 				CEBFBC0E163C5BD300A05CD0 /* resources */,
@@ -853,6 +859,7 @@
 				925ABCAF1E46DCC500997182 /* AnalogStick.m in Sources */,
 				925ABCB01E46DCC500997182 /* Bootstrapper.m in Sources */,
 				925ABCB11E46DCC500997182 /* LayoutData.m in Sources */,
+				EFA7570D2406D64600A02AAB /* SystemImage.m in Sources */,
 				92A533AB21EBDBAD0089FBB9 /* GCDWebServerFunctions.m in Sources */,
 				92A533BD21EBDBAD0089FBB9 /* GCDWebServerStreamedResponse.m in Sources */,
 				9268D85A2166841000AB0470 /* DeviceScreenResolver.m in Sources */,
@@ -899,6 +906,7 @@
 				92A533AC21EBDBAD0089FBB9 /* GCDWebServerFunctions.m in Sources */,
 				EF7B232D23FD0469001FF51D /* (null) in Sources */,
 				92A533AF21EBDBAD0089FBB9 /* GCDWebServer.m in Sources */,
+				EFA7570E2406D64600A02AAB /* SystemImage.m in Sources */,
 				92A533B521EBDBAD0089FBB9 /* GCDWebServerErrorResponse.m in Sources */,
 				926C770B21F31B1400103EDE /* FilterOptionController.m in Sources */,
 				EF24933B236264DA00DD0A6C /* ImageCache.m in Sources */,
@@ -942,7 +950,7 @@
 				MARKETING_VERSION = 2020.1;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4ios;
+				PRODUCT_BUNDLE_IDENTIFIER = com.toddla.mame4ios;
 				PRODUCT_NAME = MAME4iOS;
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -974,7 +982,7 @@
 				MARKETING_VERSION = 2020.1;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4ios;
+				PRODUCT_BUNDLE_IDENTIFIER = com.toddla.mame4ios;
 				PRODUCT_NAME = MAME4iOS;
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1039,7 +1047,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4tvos;
+				PRODUCT_BUNDLE_IDENTIFIER = com.toddla.mame4tvos;
 				PRODUCT_NAME = MAME4tvOS;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;
@@ -1105,7 +1113,7 @@
 				MARKETING_VERSION = 2020.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4tvos;
+				PRODUCT_BUNDLE_IDENTIFIER = com.toddla.mame4tvos;
 				PRODUCT_NAME = MAME4tvOS;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;

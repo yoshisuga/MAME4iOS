@@ -77,6 +77,7 @@
 #import "WebServer.h"
 #import "Alert.h"
 #import "ZipFile.h"
+#import "SystemImage.h"
 
 #define DebugLog 0
 #if DebugLog == 0
@@ -437,39 +438,39 @@ static void push_mame_button(int player, int button)
     if(myosd_inGame)
     {
         // MENU item to insert a coin and do a start. usefull for fullscreen and AppleTV siri remote, and discoverability on a GameController
-        [menu addAction:[UIAlertAction actionWithTitle:@"Coin+Start" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [menu addAction:[UIAlertAction actionWithTitle:@"Coin+Start" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"centsign.circle"] handler:^(UIAlertAction * _Nonnull action) {
             [self endMenu];
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                 push_mame_buttons(player, MYOSD_SELECT, MYOSD_START);
             });
         }]];
-        [menu addAction:[UIAlertAction actionWithTitle:@"Load State" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [menu addAction:[UIAlertAction actionWithTitle:@"Load State" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"bookmark"] handler:^(UIAlertAction * _Nonnull action) {
             myosd_loadstate = 1;
             [self endMenu];
         }]];
-        [menu addAction:[UIAlertAction actionWithTitle:@"Save State" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [menu addAction:[UIAlertAction actionWithTitle:@"Save State" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"bookmark.fill"] handler:^(UIAlertAction * _Nonnull action) {
             myosd_savestate = 1;
             [self endMenu];
         }]];
-        [menu addAction:[UIAlertAction actionWithTitle:@"MAME Menu" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [menu addAction:[UIAlertAction actionWithTitle:@"MAME Menu" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"slider.horizontal.3"] handler:^(UIAlertAction * _Nonnull action) {
             [self endMenu];
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                 push_mame_button(0, (MYOSD_SELECT|MYOSD_START));
             });
         }]];
     }
-    [menu addAction:[UIAlertAction actionWithTitle:@"Settings" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+    [menu addAction:[UIAlertAction actionWithTitle:@"Settings" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"gear"] handler:^(UIAlertAction * _Nonnull action) {
         [self runSettings];
     }]];
 
-    [menu addAction:[UIAlertAction actionWithTitle:@"Upload Files" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+    [menu addAction:[UIAlertAction actionWithTitle:@"Upload Files" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"arrow.up.arrow.down.circle"] handler:^(UIAlertAction * _Nonnull action) {
         [[WebServer sharedInstance] startUploader];
         [WebServer sharedInstance].webUploader.delegate = self;
         [self endMenu]; // [self done:self];
     }]];
 
     if(enable_menu_exit_option) {
-        [menu addAction:[UIAlertAction actionWithTitle:@"Exit Game" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
+        [menu addAction:[UIAlertAction actionWithTitle:@"Exit Game" style:UIAlertActionStyleDestructive image:[UIImage systemImageNamed:@"arrow.uturn.left.circle"] handler:^(UIAlertAction * _Nonnull action) {
             //[self runExit];   -- the user just selected "Exit Game" from a menu, dont ask again
             if (g_mame_game[0] != ' ')
                 g_mame_game[0] = 0;
