@@ -141,78 +141,19 @@
 		92ECDA88215AEF5D00E4303A /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 92ECDA86215AEF5D00E4303A /* Launch Screen.storyboard */; };
 		B5FAE31721FCDE0C003F44D0 /* scanline_tvOS201901.png in Resources */ = {isa = PBXBuildFile; fileRef = B5FAE31621FCDE0C003F44D0 /* scanline_tvOS201901.png */; };
 		B5FAE31921FCE64D003F44D0 /* MAME_tvOS.lsr in Resources */ = {isa = PBXBuildFile; fileRef = B5FAE31821FCE64D003F44D0 /* MAME_tvOS.lsr */; };
-		CE30090216FA47BD000EDCF1 /* cheat.zip in Resources */ = {isa = PBXBuildFile; fileRef = CE30090016FA47BD000EDCF1 /* cheat.zip */; };
-		CE30090516FA47CB000EDCF1 /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = CE30090316FA47CB000EDCF1 /* Category.ini */; };
-		CE30090816FA47E4000EDCF1 /* hiscore.dat in Resources */ = {isa = PBXBuildFile; fileRef = CE30090616FA47E4000EDCF1 /* hiscore.dat */; };
-		CE6D6E1516D8CADF00F265B7 /* LayoutData.m in Sources */ = {isa = PBXBuildFile; fileRef = CE6D6E1116D8CADF00F265B7 /* LayoutData.m */; };
-		CE6D6E1716D8CADF00F265B7 /* LayoutView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE6D6E1316D8CADF00F265B7 /* LayoutView.m */; };
-		CE8D432916AB0D5D00D55884 /* gridlee.zip in Resources */ = {isa = PBXBuildFile; fileRef = CE8D432816AB0D5D00D55884 /* gridlee.zip */; };
-		CE8F08851741580100E2D5FB /* InputOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8F08831741580100E2D5FB /* InputOptionController.m */; };
-		CE8F088917435C3B00E2D5FB /* DefaultOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8F088717435C3A00E2D5FB /* DefaultOptionController.m */; };
-		CE9454C9172BB26100B81C32 /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE9454C7172BB23100B81C32 /* GameKit.framework */; };
-		CE9454CD173160A300B81C32 /* NetplayController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE9454CB173160A300B81C32 /* NetplayController.m */; };
-		CE9454D51731DE4E00B81C32 /* NetplayGameKit.m in Sources */ = {isa = PBXBuildFile; fileRef = CE9454D31731DE4D00B81C32 /* NetplayGameKit.m */; };
-		CE9454D91731DF2700B81C32 /* FilterOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE9454D71731DF2700B81C32 /* FilterOptionController.m */; };
-		CEAC6C2E16AAA80400AF3275 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE680891635BA7000051BC2 /* UIKit.framework */; };
-		CEAC6C2F16AAA80400AF3275 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE6808B1635BA7000051BC2 /* Foundation.framework */; };
-		CEAC6C3016AAA80400AF3275 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE6808D1635BA7000051BC2 /* CoreGraphics.framework */; };
-		CEAC6C4116AAA92E00AF3275 /* iCadeView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8D87DC1653121200685BC4 /* iCadeView.m */; };
-		CEAC6C4316AAA93300AF3275 /* iph_main.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680A81635BAF400051BC2 /* iph_main.m */; };
-		CEAC6C4516AAA95800AF3275 /* ListOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE90575B166A89D000653872 /* ListOptionController.m */; };
-		CEAC6C4716AAA95E00AF3275 /* OptionsController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680C01635BB6100051BC2 /* OptionsController.m */; };
-		CEAC6C4916AAA96200AF3275 /* DebugView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8F0D7C16585C2B0048D63C /* DebugView.m */; };
-		CEAC6C4B16AAA96600AF3275 /* ScreenView.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680C21635BB6100051BC2 /* ScreenView.m */; };
-		CEAC6C4F16AAA96E00AF3275 /* EmulatorController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680B51635BB4900051BC2 /* EmulatorController.m */; };
-		CEAC6C5116AAA97200AF3275 /* HelpController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680B71635BB4900051BC2 /* HelpController.m */; };
-		CEAC6C5316AAA97500AF3275 /* AnalogStick.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680AB1635BB2700051BC2 /* AnalogStick.m */; };
-		CEAC6C5516AAA97800AF3275 /* Bootstrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680AD1635BB2700051BC2 /* Bootstrapper.m */; };
-		CEAC6C5716AAA9E700AF3275 /* SKIN_1 in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC1D163C5DA100A05CD0 /* SKIN_1 */; };
-		CEAC6C5816AAA9EA00AF3275 /* SKIN_2 in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC1E163C5DA100A05CD0 /* SKIN_2 */; };
-		CEAC6C5916AAA9EE00AF3275 /* SKIN_3 in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC1F163C5DA100A05CD0 /* SKIN_3 */; };
-		CEAC6C5A16AAAAEB00AF3275 /* scanline-2.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC1C163C5DA100A05CD0 /* scanline-2.png */; };
-		CEAC6C5B16AAAAEE00AF3275 /* scanline-1.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC1B163C5DA100A05CD0 /* scanline-1.png */; };
-		CEAC6C5D16AAAAF800AF3275 /* crt-2.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC14163C5DA100A05CD0 /* crt-2.png */; };
-		CEAC6C5E16AAAAFB00AF3275 /* crt-1.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC13163C5DA100A05CD0 /* crt-1.png */; };
-		CEAC6C5F16AAAAFF00AF3275 /* border-iPad.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC10163C5DA100A05CD0 /* border-iPad.png */; };
-		CEAC6C6016AAAB0200AF3275 /* config_iPhone.txt in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC12163C5DA100A05CD0 /* config_iPhone.txt */; };
-		CEAC6C6116AAAB0500AF3275 /* config_iPad.txt in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC11163C5DA100A05CD0 /* config_iPad.txt */; };
-		CEAC6C6216AAAB0800AF3275 /* config_iPhone_5.txt in Resources */ = {isa = PBXBuildFile; fileRef = CE8D87D7164FE4BE00685BC4 /* config_iPhone_5.txt */; };
-		CEAC6C6616AAAB2C00AF3275 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE680CD163B147100051BC2 /* libz.dylib */; };
-		CEAC6C6916AAAB3100AF3275 /* libstdc++.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE680CB163B13E400051BC2 /* libstdc++.dylib */; };
-		CEAC6C6A16AAAB3400AF3275 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE680C9163B13AB00051BC2 /* AudioToolbox.framework */; };
-		CEAC6C6B16AAAB3700AF3275 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE680D1163BE5C400051BC2 /* CoreFoundation.framework */; };
-		CEAC6C6C16AAAB3A00AF3275 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE680A61635BAA400051BC2 /* QuartzCore.framework */; };
-		CEAC6C7516AAAC1D00AF3275 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CEAC6C7216AAAC1C00AF3275 /* Default-568h@2x.png */; };
-		CEAC6C7616AAAC1D00AF3275 /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = CEAC6C7316AAAC1C00AF3275 /* Default.png */; };
-		CEAC6C7716AAAC1D00AF3275 /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CEAC6C7416AAAC1D00AF3275 /* Default@2x.png */; };
-		CEAC6C7C16AAACA700AF3275 /* Gridlee57.png in Resources */ = {isa = PBXBuildFile; fileRef = CEAC6C7816AAACA600AF3275 /* Gridlee57.png */; };
-		CEAC6C7D16AAACA700AF3275 /* Gridlee72.png in Resources */ = {isa = PBXBuildFile; fileRef = CEAC6C7916AAACA600AF3275 /* Gridlee72.png */; };
-		CEAC6C7E16AAACA700AF3275 /* Gridlee114.png in Resources */ = {isa = PBXBuildFile; fileRef = CEAC6C7A16AAACA600AF3275 /* Gridlee114.png */; };
-		CEAC6C7F16AAACA700AF3275 /* Gridlee144-2.png in Resources */ = {isa = PBXBuildFile; fileRef = CEAC6C7B16AAACA600AF3275 /* Gridlee144-2.png */; };
 		E9856CF023C9A7C50071666D /* MultipeerConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E9856CEF23C9A7C50071666D /* MultipeerConnectivity.framework */; };
-		EF0E08AD2401840700E98F01 /* help.md in Resources */ = {isa = PBXBuildFile; fileRef = EF0E08AC2401840700E98F01 /* help.md */; };
 		EF0E08AE2401840700E98F01 /* help.md in Resources */ = {isa = PBXBuildFile; fileRef = EF0E08AC2401840700E98F01 /* help.md */; };
-		EF29C8842402E51200AFFA4E /* config_iPad_gen_7.txt in Resources */ = {isa = PBXBuildFile; fileRef = EF29C8832402E51100AFFA4E /* config_iPad_gen_7.txt */; };
 		EF29C8852402E51200AFFA4E /* config_iPad_gen_7.txt in Resources */ = {isa = PBXBuildFile; fileRef = EF29C8832402E51100AFFA4E /* config_iPad_gen_7.txt */; };
+		EF44A98B24032C3B00C20D88 /* libcompression.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = EF44A98A24032C2100C20D88 /* libcompression.tbd */; };
+		EF44A98D240331A600C20D88 /* libcompression.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = EF44A98C2403319A00C20D88 /* libcompression.tbd */; };
 		EF7B232C23FD0469001FF51D /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF7B232A23FD0469001FF51D /* Alert.m */; };
 		EF7B232D23FD0469001FF51D /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF7B232A23FD0469001FF51D /* Alert.m */; };
+		EFF7487124035C1E00A3F351 /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EFF7486F24035C1E00A3F351 /* ZipFile.m */; };
+		EFF7487224035C1E00A3F351 /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EFF7486F24035C1E00A3F351 /* ZipFile.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
 		EF0E08AF2401853D00E98F01 /* PBXBuildRule */ = {
-			isa = PBXBuildRule;
-			compilerSpec = com.apple.compilers.proxy.script;
-			filePatterns = "*.md";
-			fileType = pattern.proxy;
-			inputFiles = (
-			);
-			isEditable = 1;
-			outputFiles = (
-				"$(DERIVED_FILE_DIR)/$(INPUT_FILE_BASE).html",
-			);
-			script = "\"$PROJECT_DIR/../../Markdown_1.0.1/Markdown.pl\" \"$INPUT_FILE_PATH\" > \"$DERIVED_FILE_DIR/$INPUT_FILE_BASE.html\"\n";
-		};
-		EF0E08B02401888200E98F01 /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
 			compilerSpec = com.apple.compilers.proxy.script;
 			filePatterns = "*.md";
@@ -316,10 +257,8 @@
 		CE6D6E1116D8CADF00F265B7 /* LayoutData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LayoutData.m; path = ../../iOS/LayoutData.m; sourceTree = "<group>"; };
 		CE6D6E1216D8CADF00F265B7 /* LayoutView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LayoutView.h; path = ../../iOS/LayoutView.h; sourceTree = "<group>"; };
 		CE6D6E1316D8CADF00F265B7 /* LayoutView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LayoutView.m; path = ../../iOS/LayoutView.m; sourceTree = "<group>"; };
-		CE87C2FD16F5C20F00ABE4F6 /* Gridlee.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Gridlee.entitlements; sourceTree = "<group>"; };
 		CE87C2FE16F5C21A00ABE4F6 /* MAME4iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = MAME4iOS.entitlements; sourceTree = "<group>"; };
 		CE8A4192170F41FC001ADFA4 /* myosd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = myosd.h; path = "../../../src/osd/droid-ios/myosd.h"; sourceTree = "<group>"; };
-		CE8D432816AB0D5D00D55884 /* gridlee.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = gridlee.zip; path = "../../iOS-res/Applications/MAME4iOS.app/gridlee.zip"; sourceTree = "<group>"; };
 		CE8D87D7164FE4BE00685BC4 /* config_iPhone_5.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = config_iPhone_5.txt; path = "../../iOS-res/Applications/MAME4iOS.app/config_iPhone_5.txt"; sourceTree = "<group>"; };
 		CE8D87DB1653121100685BC4 /* iCadeView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = iCadeView.h; path = ../../iOS/iCadeView.h; sourceTree = "<group>"; };
 		CE8D87DC1653121200685BC4 /* iCadeView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = iCadeView.m; path = ../../iOS/iCadeView.m; sourceTree = "<group>"; };
@@ -342,16 +281,6 @@
 		CE9454D31731DE4D00B81C32 /* NetplayGameKit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NetplayGameKit.m; path = ../../iOS/NetplayGameKit.m; sourceTree = "<group>"; };
 		CE9454D61731DF2600B81C32 /* FilterOptionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FilterOptionController.h; path = ../../iOS/FilterOptionController.h; sourceTree = "<group>"; };
 		CE9454D71731DF2700B81C32 /* FilterOptionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FilterOptionController.m; path = ../../iOS/FilterOptionController.m; sourceTree = "<group>"; };
-		CEAC6C2C16AAA80400AF3275 /* Gridlee.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Gridlee.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		CEAC6C3316AAA80400AF3275 /* Gridlee-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Gridlee-Info.plist"; sourceTree = "<group>"; };
-		CEAC6C3916AAA80500AF3275 /* Gridlee-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Gridlee-Prefix.pch"; sourceTree = "<group>"; };
-		CEAC6C7216AAAC1C00AF3275 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
-		CEAC6C7316AAAC1C00AF3275 /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Default.png; sourceTree = "<group>"; };
-		CEAC6C7416AAAC1D00AF3275 /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x.png"; sourceTree = "<group>"; };
-		CEAC6C7816AAACA600AF3275 /* Gridlee57.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Gridlee57.png; sourceTree = "<group>"; };
-		CEAC6C7916AAACA600AF3275 /* Gridlee72.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Gridlee72.png; sourceTree = "<group>"; };
-		CEAC6C7A16AAACA600AF3275 /* Gridlee114.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Gridlee114.png; sourceTree = "<group>"; };
-		CEAC6C7B16AAACA600AF3275 /* Gridlee144-2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Gridlee144-2.png"; sourceTree = "<group>"; };
 		CEB6982416AAB39F0005E140 /* MAME4iOS57.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MAME4iOS57.png; sourceTree = "<group>"; };
 		CEB6982516AAB39F0005E140 /* MAME4iOS72.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MAME4iOS72.png; sourceTree = "<group>"; };
 		CEB6982616AAB39F0005E140 /* MAME4iOS114.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MAME4iOS114.png; sourceTree = "<group>"; };
@@ -396,9 +325,13 @@
 		E9856CEF23C9A7C50071666D /* MultipeerConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MultipeerConnectivity.framework; path = System/Library/Frameworks/MultipeerConnectivity.framework; sourceTree = SDKROOT; };
 		EF0E08AC2401840700E98F01 /* help.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = help.md; path = "../../iOS-res/Applications/MAME4iOS.app/help.md"; sourceTree = "<group>"; };
 		EF29C8832402E51100AFFA4E /* config_iPad_gen_7.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = config_iPad_gen_7.txt; path = "../../iOS-res/Applications/MAME4iOS.app/config_iPad_gen_7.txt"; sourceTree = "<group>"; };
+		EF44A98A24032C2100C20D88 /* libcompression.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcompression.tbd; path = usr/lib/libcompression.tbd; sourceTree = SDKROOT; };
+		EF44A98C2403319A00C20D88 /* libcompression.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcompression.tbd; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS13.2.sdk/usr/lib/libcompression.tbd; sourceTree = DEVELOPER_DIR; };
 		EF7B232A23FD0469001FF51D /* Alert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Alert.m; sourceTree = "<group>"; };
 		EF7B232B23FD0469001FF51D /* Alert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Alert.h; sourceTree = "<group>"; };
 		EF9F9C9E240070E700352554 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../../README.md; sourceTree = "<group>"; };
+		EFF7486F24035C1E00A3F351 /* ZipFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZipFile.m; sourceTree = "<group>"; };
+		EFF7487024035C1E00A3F351 /* ZipFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZipFile.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -409,6 +342,7 @@
 				E9856CF023C9A7C50071666D /* MultipeerConnectivity.framework in Frameworks */,
 				92A533DD21EEFE290089FBB9 /* MobileCoreServices.framework in Frameworks */,
 				92A533DB21EEFDE20089FBB9 /* CFNetwork.framework in Frameworks */,
+				EF44A98B24032C3B00C20D88 /* libcompression.tbd in Frameworks */,
 				92D96574215B03E100EFE3AE /* libc++.tbd in Frameworks */,
 				925ABCE51E46DD6E00997182 /* libmamearm64.a in Frameworks */,
 				925ABCB91E46DCC500997182 /* GameController.framework in Frameworks */,
@@ -439,22 +373,7 @@
 				92ECB90421EA997A00D1E3D0 /* GameController.framework in Frameworks */,
 				92ECB90121EA993E00D1E3D0 /* libc++.tbd in Frameworks */,
 				92ECB8FF21EA992100D1E3D0 /* libmamearm64-tvos.a in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		CEAC6C2916AAA80400AF3275 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				CE9454C9172BB26100B81C32 /* GameKit.framework in Frameworks */,
-				CEAC6C2E16AAA80400AF3275 /* UIKit.framework in Frameworks */,
-				CEAC6C2F16AAA80400AF3275 /* Foundation.framework in Frameworks */,
-				CEAC6C3016AAA80400AF3275 /* CoreGraphics.framework in Frameworks */,
-				CEAC6C6616AAAB2C00AF3275 /* libz.dylib in Frameworks */,
-				CEAC6C6916AAAB3100AF3275 /* libstdc++.dylib in Frameworks */,
-				CEAC6C6A16AAAB3400AF3275 /* AudioToolbox.framework in Frameworks */,
-				CEAC6C6B16AAAB3700AF3275 /* CoreFoundation.framework in Frameworks */,
-				CEAC6C6C16AAAB3A00AF3275 /* QuartzCore.framework in Frameworks */,
+				EF44A98D240331A600C20D88 /* libcompression.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -597,6 +516,8 @@
 				92B99F0D2022706600CC44E3 /* UIView+Toast.m */,
 				EF7B232B23FD0469001FF51D /* Alert.h */,
 				EF7B232A23FD0469001FF51D /* Alert.m */,
+				EFF7487024035C1E00A3F351 /* ZipFile.h */,
+				EFF7486F24035C1E00A3F351 /* ZipFile.m */,
 				CEBFBC0E163C5BD300A05CD0 /* resources */,
 				92A533D521EE601D0089FBB9 /* WebServer.h */,
 				92A533D621EE601D0089FBB9 /* WebServer.m */,
@@ -606,31 +527,6 @@
 				9205D7D622AADB7A00CDF120 /* GCAlertView.m */,
 			);
 			name = RELOADED;
-			sourceTree = "<group>";
-		};
-		CEAC6C3116AAA80400AF3275 /* Gridlee */ = {
-			isa = PBXGroup;
-			children = (
-				CE87C2FD16F5C20F00ABE4F6 /* Gridlee.entitlements */,
-				CEAC6C3216AAA80400AF3275 /* Supporting Files */,
-			);
-			path = Gridlee;
-			sourceTree = "<group>";
-		};
-		CEAC6C3216AAA80400AF3275 /* Supporting Files */ = {
-			isa = PBXGroup;
-			children = (
-				CEAC6C7816AAACA600AF3275 /* Gridlee57.png */,
-				CEAC6C7916AAACA600AF3275 /* Gridlee72.png */,
-				CEAC6C7A16AAACA600AF3275 /* Gridlee114.png */,
-				CEAC6C7B16AAACA600AF3275 /* Gridlee144-2.png */,
-				CEAC6C7216AAAC1C00AF3275 /* Default-568h@2x.png */,
-				CEAC6C7316AAAC1C00AF3275 /* Default.png */,
-				CEAC6C7416AAAC1D00AF3275 /* Default@2x.png */,
-				CEAC6C3316AAA80400AF3275 /* Gridlee-Info.plist */,
-				CEAC6C3916AAA80500AF3275 /* Gridlee-Prefix.pch */,
-			);
-			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
 		CEBFBC0E163C5BD300A05CD0 /* resources */ = {
@@ -659,7 +555,6 @@
 				CEBFBC14163C5DA100A05CD0 /* crt-2.png */,
 				CEBFBC1B163C5DA100A05CD0 /* scanline-1.png */,
 				CEBFBC1C163C5DA100A05CD0 /* scanline-2.png */,
-				CE8D432816AB0D5D00D55884 /* gridlee.zip */,
 				CEBFBC1D163C5DA100A05CD0 /* SKIN_1 */,
 				CEBFBC1E163C5DA100A05CD0 /* SKIN_2 */,
 				CEBFBC1F163C5DA100A05CD0 /* SKIN_3 */,
@@ -677,7 +572,6 @@
 				CEAC6C2716AAA73900AF3275 /* RELOADED */,
 				CEE6808F1635BA7000051BC2 /* MAME4iOS */,
 				92ECB8EC21EA984E00D1E3D0 /* MAME tvOS */,
-				CEAC6C3116AAA80400AF3275 /* Gridlee */,
 				CEE680C51635BB8500051BC2 /* Includes */,
 				CEE680881635BA7000051BC2 /* Frameworks */,
 				CEE680861635BA7000051BC2 /* Products */,
@@ -687,7 +581,6 @@
 		CEE680861635BA7000051BC2 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				CEAC6C2C16AAA80400AF3275 /* Gridlee.app */,
 				925ABCE21E46DCC500997182 /* MAME4iOS.app */,
 				92ECB8EB21EA984D00D1E3D0 /* MAME4iOS.app */,
 			);
@@ -697,6 +590,8 @@
 		CEE680881635BA7000051BC2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				EF44A98A24032C2100C20D88 /* libcompression.tbd */,
+				EF44A98C2403319A00C20D88 /* libcompression.tbd */,
 				E9856CEF23C9A7C50071666D /* MultipeerConnectivity.framework */,
 				92A533E021EEFE570089FBB9 /* MobileCoreServices.framework */,
 				92A533DE21EEFE520089FBB9 /* CFNetwork.framework */,
@@ -805,24 +700,6 @@
 			productReference = 92ECB8EB21EA984D00D1E3D0 /* MAME4iOS.app */;
 			productType = "com.apple.product-type.application";
 		};
-		CEAC6C2B16AAA80400AF3275 /* Gridlee */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = CEAC6C3D16AAA80500AF3275 /* Build configuration list for PBXNativeTarget "Gridlee" */;
-			buildPhases = (
-				CEAC6C2816AAA80400AF3275 /* Sources */,
-				CEAC6C2916AAA80400AF3275 /* Frameworks */,
-				CEAC6C2A16AAA80400AF3275 /* Resources */,
-			);
-			buildRules = (
-				EF0E08B02401888200E98F01 /* PBXBuildRule */,
-			);
-			dependencies = (
-			);
-			name = Gridlee;
-			productName = Gridlee;
-			productReference = CEAC6C2C16AAA80400AF3275 /* Gridlee.app */;
-			productType = "com.apple.product-type.application";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -833,12 +710,10 @@
 				ORGANIZATIONNAME = Seleuco;
 				TargetAttributes = {
 					925ABCA41E46DCC500997182 = {
-						DevelopmentTeam = R72X3BF4KE;
 						ProvisioningStyle = Automatic;
 					};
 					92ECB8EA21EA984D00D1E3D0 = {
 						CreatedOnToolsVersion = 10.1;
-						DevelopmentTeam = 8RUN83V8CA;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -856,7 +731,6 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				CEAC6C2B16AAA80400AF3275 /* Gridlee */,
 				925ABCA41E46DCC500997182 /* MAME4iOS 64-bit */,
 				92ECB8EA21EA984D00D1E3D0 /* MAME tvOS */,
 			);
@@ -926,37 +800,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		CEAC6C2A16AAA80400AF3275 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				CEAC6C5716AAA9E700AF3275 /* SKIN_1 in Resources */,
-				CEAC6C5816AAA9EA00AF3275 /* SKIN_2 in Resources */,
-				CEAC6C5916AAA9EE00AF3275 /* SKIN_3 in Resources */,
-				CEAC6C5A16AAAAEB00AF3275 /* scanline-2.png in Resources */,
-				CEAC6C5B16AAAAEE00AF3275 /* scanline-1.png in Resources */,
-				CEAC6C5D16AAAAF800AF3275 /* crt-2.png in Resources */,
-				CEAC6C5E16AAAAFB00AF3275 /* crt-1.png in Resources */,
-				CEAC6C5F16AAAAFF00AF3275 /* border-iPad.png in Resources */,
-				CEAC6C6016AAAB0200AF3275 /* config_iPhone.txt in Resources */,
-				CEAC6C6116AAAB0500AF3275 /* config_iPad.txt in Resources */,
-				CEAC6C6216AAAB0800AF3275 /* config_iPhone_5.txt in Resources */,
-				CEAC6C7516AAAC1D00AF3275 /* Default-568h@2x.png in Resources */,
-				CEAC6C7616AAAC1D00AF3275 /* Default.png in Resources */,
-				EF29C8842402E51200AFFA4E /* config_iPad_gen_7.txt in Resources */,
-				CEAC6C7716AAAC1D00AF3275 /* Default@2x.png in Resources */,
-				EF0E08AD2401840700E98F01 /* help.md in Resources */,
-				CEAC6C7C16AAACA700AF3275 /* Gridlee57.png in Resources */,
-				CEAC6C7D16AAACA700AF3275 /* Gridlee72.png in Resources */,
-				CEAC6C7E16AAACA700AF3275 /* Gridlee114.png in Resources */,
-				CEAC6C7F16AAACA700AF3275 /* Gridlee144-2.png in Resources */,
-				CE8D432916AB0D5D00D55884 /* gridlee.zip in Resources */,
-				CE30090216FA47BD000EDCF1 /* cheat.zip in Resources */,
-				CE30090516FA47CB000EDCF1 /* Category.ini in Resources */,
-				CE30090816FA47E4000EDCF1 /* hiscore.dat in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -997,6 +840,7 @@
 				925ABCB61E46DCC500997182 /* InputOptionController.m in Sources */,
 				92A533C321EBDBAD0089FBB9 /* GCDWebServerMultiPartFormRequest.m in Sources */,
 				925ABCB71E46DCC500997182 /* DefaultOptionController.m in Sources */,
+				EFF7487124035C1E00A3F351 /* ZipFile.m in Sources */,
 				EF7B232C23FD0469001FF51D /* Alert.m in Sources */,
 				92A533B421EBDBAD0089FBB9 /* GCDWebServerErrorResponse.m in Sources */,
 				92A533AE21EBDBAD0089FBB9 /* GCDWebServer.m in Sources */,
@@ -1019,6 +863,7 @@
 				92A533B821EBDBAD0089FBB9 /* GCDWebServerFileResponse.m in Sources */,
 				92A533C121EBDBAD0089FBB9 /* GCDWebServerURLEncodedFormRequest.m in Sources */,
 				92ECB91921EAD57900D1E3D0 /* UIView+Toast.m in Sources */,
+				EFF7487224035C1E00A3F351 /* ZipFile.m in Sources */,
 				92ECB91821EAD57400D1E3D0 /* ScreenView.m in Sources */,
 				92A533A621EBDBAD0089FBB9 /* GCDWebServerResponse.m in Sources */,
 				92A533D921EE601D0089FBB9 /* WebServer.m in Sources */,
@@ -1039,30 +884,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		CEAC6C2816AAA80400AF3275 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				CEAC6C4116AAA92E00AF3275 /* iCadeView.m in Sources */,
-				CEAC6C4316AAA93300AF3275 /* iph_main.m in Sources */,
-				CEAC6C4516AAA95800AF3275 /* ListOptionController.m in Sources */,
-				CEAC6C4716AAA95E00AF3275 /* OptionsController.m in Sources */,
-				CEAC6C4916AAA96200AF3275 /* DebugView.m in Sources */,
-				CEAC6C4B16AAA96600AF3275 /* ScreenView.m in Sources */,
-				CEAC6C4F16AAA96E00AF3275 /* EmulatorController.m in Sources */,
-				CEAC6C5116AAA97200AF3275 /* HelpController.m in Sources */,
-				CEAC6C5316AAA97500AF3275 /* AnalogStick.m in Sources */,
-				CEAC6C5516AAA97800AF3275 /* Bootstrapper.m in Sources */,
-				CE6D6E1516D8CADF00F265B7 /* LayoutData.m in Sources */,
-				CE6D6E1716D8CADF00F265B7 /* LayoutView.m in Sources */,
-				CE9454CD173160A300B81C32 /* NetplayController.m in Sources */,
-				CE9454D51731DE4E00B81C32 /* NetplayGameKit.m in Sources */,
-				CE9454D91731DF2700B81C32 /* FilterOptionController.m in Sources */,
-				CE8F08851741580100E2D5FB /* InputOptionController.m in Sources */,
-				CE8F088917435C3B00E2D5FB /* DefaultOptionController.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
@@ -1072,7 +893,7 @@
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Yoshinobu Sugawara (R72X3BF4KE)";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = R72X3BF4KE;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_BITCODE = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MAME4iOS/MAME4iOS-Prefix.pch";
@@ -1091,7 +912,7 @@
 				);
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.yoshisuga.mame4ios;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4ios;
 				PRODUCT_NAME = MAME4iOS;
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1106,7 +927,7 @@
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Yoshinobu Sugawara (R72X3BF4KE)";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = R72X3BF4KE;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_BITCODE = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MAME4iOS/MAME4iOS-Prefix.pch";
@@ -1121,7 +942,7 @@
 				);
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.yoshisuga.mame4ios;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4ios;
 				PRODUCT_NAME = MAME4iOS;
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1163,7 +984,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = 8RUN83V8CA;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -1184,7 +1005,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.toddla.MAME-tvOS";
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4tvos;
 				PRODUCT_NAME = MAME4iOS;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;
@@ -1228,7 +1049,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = 8RUN83V8CA;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -1248,53 +1069,13 @@
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.toddla.MAME-tvOS";
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4tvos;
 				PRODUCT_NAME = MAME4iOS;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 12.1;
 				VALID_ARCHS = arm64;
-			};
-			name = Release;
-		};
-		CEAC6C3E16AAA80500AF3275 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ENABLE_OBJC_ARC = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "Gridlee/Gridlee-Prefix.pch";
-				INFOPLIST_FILE = "Gridlee/Gridlee-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/../..\"",
-				);
-				ONLY_ACTIVE_ARCH = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.seleuco.${PRODUCT_NAME:rfc1034identifier}";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				WRAPPER_EXTENSION = app;
-			};
-			name = Debug;
-		};
-		CEAC6C3F16AAA80500AF3275 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ENABLE_OBJC_ARC = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "Gridlee/Gridlee-Prefix.pch";
-				INFOPLIST_FILE = "Gridlee/Gridlee-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/../..\"",
-				);
-				ONLY_ACTIVE_ARCH = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.seleuco.${PRODUCT_NAME:rfc1034identifier}";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
 		};
@@ -1411,15 +1192,6 @@
 			buildConfigurations = (
 				92ECB8FB21EA985000D1E3D0 /* Debug */,
 				92ECB8FC21EA985000D1E3D0 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		CEAC6C3D16AAA80500AF3275 /* Build configuration list for PBXNativeTarget "Gridlee" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				CEAC6C3E16AAA80500AF3275 /* Debug */,
-				CEAC6C3F16AAA80500AF3275 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
