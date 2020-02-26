@@ -1291,6 +1291,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
 
 #define MAME_BUTTON_PLAYER_MASK     0xF0000000
 #define MAME_BUTTON_PLAYER_SHIFT    28
+#define MAME_BUTTON_SENT            0xFFFFFFFF
 #define MAME_BUTTONS                4
 static unsigned long g_mame_buttons[MAME_BUTTONS];
 
@@ -1298,14 +1299,13 @@ static void push_mame_button(int player, int button)
 {
     button = button | (player << MAME_BUTTON_PLAYER_SHIFT);
     
-    int n = -1;
     for (int i=0; i<MAME_BUTTONS; i++)
     {
-        if (g_mame_buttons[i] != 0)
-            n = i;
+        if (g_mame_buttons[i] == 0) {
+            g_mame_buttons[i] = button;
+            break;
+        }
     }
-    if (n+1 < MAME_BUTTONS)
-        g_mame_buttons[n+1] = button;
 }
 
 static void push_mame_buttons(int player, int button1, int button2)
@@ -1324,10 +1324,10 @@ void myosd_handle_turbo() {
         
         // send keys - we do this inside of myosd_handle_turbo() because it is called from droid_ios_poll_input
         // ...and we are sure MAME is in a state to accept input, and not waking up from being paused or loading a ROM
-        if (g_mame_buttons[0]) {
+        if (g_mame_buttons[0] != 0 && g_mame_buttons[0] != MAME_BUTTON_SENT) {
             unsigned long button = g_mame_buttons[0] & ~MAME_BUTTON_PLAYER_MASK;
             unsigned long player = (g_mame_buttons[0] & MAME_BUTTON_PLAYER_MASK) >> MAME_BUTTON_PLAYER_SHIFT;
-            g_mame_buttons[0] = 0;
+            g_mame_buttons[0] = MAME_BUTTON_SENT;
             
             myosd_joy_status[player] |= button;
             if (player == 0)
@@ -1339,13 +1339,11 @@ void myosd_handle_turbo() {
                 myosd_joy_status[player] &= ~button;
                 if (player == 0)
                     myosd_pad_status &= ~button;
-                if (g_mame_buttons[1] != 0) {
-                    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(next_delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                        for (int i=0; i<MAME_BUTTONS-1; i++)
-                            g_mame_buttons[i] = g_mame_buttons[i+1];
-                        g_mame_buttons[MAME_BUTTONS-1] = 0;
-                    });
-                }
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(next_delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                    for (int i=0; i<MAME_BUTTONS-1; i++)
+                        g_mame_buttons[i] = g_mame_buttons[i+1];
+                    g_mame_buttons[MAME_BUTTONS-1] = 0;
+                });
             });
         }
         
