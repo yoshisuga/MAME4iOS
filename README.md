@@ -18,6 +18,7 @@ This repo adds support for:
 - Supports modern device screen sizes, including iPhone X/XR/XS/XS Max and iPad Pro
 - tvOS (new in 2019!)
 - An in-app web server to transfer files from your computer (new in 2019!)
+- Transfer ROMs, Artwork, and ROMSETs via AirDrop or iOS File Sharing (new in 2020!)
 - Multiple MFI controllers (up to 4 with dual analog support - @DarrenBranford)
 - Supports using the touch screen as a lightgun
 - Turbo mode toggle for buttons
@@ -66,8 +67,7 @@ Even if you are not in the paid Apple Developer Program, you can sideload the ap
 
 MAME for tvOS support was just added in early 2019, and it currently can run games, but UI support and controller support is still in-progress. Most notably:
 
-- MFI controller is currently **required**
-- No Siri-remote-as-game-controller support yet
+- MFI controllers, Xbox One, PS4 DualShock, and Siri Remote supported.
 
 ## Using MAME
 
@@ -98,20 +98,24 @@ You can also use the "Upload Files" option in the menu (from the options button 
 
 You can upload ROMs to MAME on your AppleTV using a computer. After MAME starts, you'll be shown a welcome screen with the address of the AppleTV that you can enter in your web browser. Add MAME ROMs to the `roms` directory using the provided web uploader.
 
-## MFI Controller Support
+## Game Controller Support
 
-Pair your MFI controller with your iOS device, and it should 'just work'.
-Up to 4 MFI controllers are supported.
+Pair your MFI, Xbox, or Dual Shock controller with your iOS device, and it should 'just work'.
+Up to 4 controllers are supported.
 
 ### Hotkey combinations (while in-game)
 
 The following hotkey combinations are supported:
 
-- Start game (MENU)
-- Insert coin (Hold L and press MENU)
-- Open MAME menu for input remapping, cheats, etc. (Hold R and press MENU)
-- Open app menu for settings, save states (Hold Y and press MENU)
-- Exit game (Hold X and press MENU)
+MENU             |Open MAME4iOS MENU   
+---------------- |-------------
+MENU+L1       |Insert coin                 
+MENU+R1       |Start Game               
+MENU+X          |Exit Game                 
+MENU+B          |Open MAME menu   
+MENU+A          |Load State                
+MENU+Y          |Save State                
+OPTION            |Insert Coin and Start   
 
 ### Dual analog support
 
@@ -120,6 +124,16 @@ The right stick on the extended controller profile is fully supported, with supp
 ### Trigger buttons
 
 The trigger buttons are mapped to analog controls and should be useful in assigning for pedal controls, for example.
+
+## Siri Remote
+MAME4iOS is now usable on a AppleTV using only the stock Siri Remote. You can only play games that use only the A and X buttons.
+
+to start playing a game, hit MENU and select "Coin + Start" from the list.
+
+    TRACKPAD MOVE   - emulate a dpad or joystick
+    TRAKPAD CLICK   - A button
+    PLAY            - X button
+    MENU            - bring up the MAME4iOS menu
 
 ## Touch Screen Lightgun Support (new in 2018)
 
