@@ -704,7 +704,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if ([info[kGameInfoName] length] > 1 && ![self isSystem:info])
         text = [NSString stringWithFormat:@"%@ • %@", text, info[kGameInfoName]];
 
-    if ([info[kGameInfoParent] length] > 1)
+    if ([info[kGameInfoParent] length] > 1 && _layoutMode != LayoutSmall)
         text = [NSString stringWithFormat:@"%@ [%@]", text, info[kGameInfoParent]];
 
     if ([text hasPrefix:@" • "])
