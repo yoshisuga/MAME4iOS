@@ -3783,7 +3783,6 @@ static void menu_select_game_populate(running_machine *machine, ui_menu *menu, s
 	{
 #ifdef IOS
         ui_menu_item_append(menu, "No games found. Place your MAME-titled zipped roms in the roms folder.\n\n"
-                                 "You can upload roms files using the integrated web server. Connect your device to a Wi-Fi network, press Option > Upload Files and follow the instructions on the display."
 								  , NULL, MENU_FLAG_MULTILINE | MENU_FLAG_REDTEXT, NULL);
 #else
        ui_menu_item_append(menu, "No games found. After installing, place your MAME-titled zipped roms in MAME4droid ROMs folder\n\n"
@@ -4013,7 +4012,11 @@ static void menu_select_game_build_driver_list(ui_menu *menu, select_game_state 
 	/* NULL-terminate */
 	menustate->driverlist[listnum] = NULL;
 //DAV HACK
+    // sort entire list by description instead of name
 	qsort((void *)menustate->driverlist, listnum, sizeof(menustate->driverlist[0]), menu_select_game_driver_compare_2);
+    
+    // pass driver list to myosd so it can create a custom GUI selection UI....
+    myosd_set_game_info((myosd_game_info**)menustate->driverlist, listnum);
 //DAV HACK
 }
 

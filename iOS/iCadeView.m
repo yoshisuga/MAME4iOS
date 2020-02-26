@@ -860,7 +860,7 @@
         // MAME MENU
         case KEY_TAB:               myosd_pad_status &= ~(MYOSD_SELECT|MYOSD_START); break;
         case KEY_TAB+KEY_DOWN:      myosd_pad_status |=  (MYOSD_SELECT|MYOSD_START); break;
-        case KEY_ESCAPE:            myosd_exitGame = 1; /*[emuController runExit];*/ break;
+        case KEY_ESCAPE:            [emuController runExit]; break;
         case KEY_ESCAPE+KEY_DOWN:   break;
             
         // MAME4iOS MENU
@@ -875,10 +875,9 @@
         switch (keyCode + (isKeyDown ? KEY_DOWN : 0)) {
             case KEY_RETURN+KEY_DOWN:
                 if (g_device_is_landscape)
-                    g_pref_full_screen_land = !(g_pref_full_screen_land || g_pref_full_screen_joy);
+                    g_pref_full_screen_land = g_pref_full_screen_land_joy = !(g_pref_full_screen_land || g_pref_full_screen_land_joy);
                 else
-                    g_pref_full_screen_port = !(g_pref_full_screen_port || g_pref_full_screen_joy);
-                g_pref_full_screen_joy = 0;
+                    g_pref_full_screen_port = g_pref_full_screen_port_joy = !(g_pref_full_screen_port || g_pref_full_screen_port_joy);
                 [emuController changeUI];
                 return nil;
             case KEY_T+KEY_DOWN:

@@ -78,7 +78,9 @@
 
         switchfullLand=nil;
         switchfullPort=nil;
-                                        
+        switchfullLandJoy=nil;
+        switchfullPortJoy=nil;
+
         switchThrottle = nil;
         
         switchSleep = nil;
@@ -219,10 +221,19 @@
                    switchfullPort  = [[UISwitch alloc] initWithFrame:CGRectZero];
                    cell.accessoryView = switchfullPort;
                    [switchfullPort setOn:[op fullPort] animated:NO];
-                   [switchfullPort addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged]; 
+                   [switchfullPort addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
                    break;
-               }   
+               }
                case 4:
+               {
+                   cell.textLabel.text   = @"Full Screen when using game controller";
+                   switchfullPortJoy  = [[UISwitch alloc] initWithFrame:CGRectZero];
+                   cell.accessoryView = switchfullPortJoy;
+                   [switchfullPortJoy setOn:[op fullPortJoy] animated:NO];
+                   [switchfullPortJoy addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                   break;
+               }
+               case 5:
                {
 	                cell.textLabel.text   = @"Keep Aspect Ratio";
 	                switchKeepAspectPort  = [[UISwitch alloc] initWithFrame:CGRectZero];
@@ -272,11 +283,21 @@
                    switchfullLand  = [[UISwitch alloc] initWithFrame:CGRectZero];
                    cell.accessoryView = switchfullLand ;
                    [switchfullLand setOn:[op fullLand] animated:NO];
-                   [switchfullLand addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
+                   [switchfullLand addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
                    break;
                }
 
                case 4:
+               {
+                   cell.textLabel.text   = @"Full Screen when using game controller";
+                   switchfullLandJoy  = [[UISwitch alloc] initWithFrame:CGRectZero];
+                   cell.accessoryView = switchfullLandJoy;
+                   [switchfullLandJoy setOn:[op fullLandJoy] animated:NO];
+                   [switchfullLandJoy addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                   break;
+               }
+
+               case 5:
                {
                     cell.textLabel.text   = @"Keep Aspect Ratio";
                     switchKeepAspectLand  = [[UISwitch alloc] initWithFrame:CGRectZero];
@@ -468,8 +489,8 @@
       switch (section)
       {
           case kSupportSection: return 1;
-          case kPortraitSection: return 5;
-          case kLandscapeSection: return 5;
+          case kPortraitSection: return 6;
+          case kLandscapeSection: return 6;
           case kInputSection: return 1;
           case kDefaultsSection: return 1;
           case kMiscSection: return 10;
@@ -520,9 +541,15 @@
 	if(sender == switchfullLand) 
 	   op.fullLand =  [switchfullLand isOn];
 
-	if(sender == switchfullPort) 
-	   op.fullPort =  [switchfullPort isOn];
-  	   	     	   	         
+	if(sender == switchfullPort)
+       op.fullPort =  [switchfullPort isOn];
+  	 
+    if(sender == switchfullLandJoy)
+       op.fullLandJoy = [sender isOn];
+                                      
+    if(sender == switchfullPortJoy)
+       op.fullPortJoy = [sender isOn];
+    
     if(sender == switchThrottle)
         op.throttle = [switchThrottle isOn];    
        

@@ -100,12 +100,11 @@ extern int g_joy_used;
 extern int g_iCade_used;
 extern int g_btjoy_available;
 
-extern int g_menu_option;
-
 extern int g_controller_opacity;
 extern int g_enable_debug_view;
 
 extern int g_device_is_landscape;
+extern int g_device_is_fullscreen;
 
 extern int g_pref_tv_filter_land;
 extern int g_pref_tv_filter_port;
@@ -117,7 +116,8 @@ extern int g_pref_keep_aspect_ratio_land;
 extern int g_pref_keep_aspect_ratio_port;
 extern int g_pref_full_screen_land;
 extern int g_pref_full_screen_port;
-extern int g_pref_full_screen_joy;
+extern int g_pref_full_screen_land_joy;
+extern int g_pref_full_screen_port_joy;
 extern int g_pref_animated_DPad;
 extern int g_pref_4buttonsLand;
 extern int g_pref_hide_LR;
@@ -181,16 +181,6 @@ enum {
 enum { BTN_B=0,BTN_X=1,BTN_A=2,BTN_Y=3,BTN_SELECT=4,BTN_START=5,BTN_L1=6,BTN_R1=7,BTN_L2=8,BTN_R2=9};
 enum { BUTTON_PRESS=0,BUTTON_NO_PRESS=1};
 enum { DPAD_NONE=0,DPAD_UP=1,DPAD_DOWN=2,DPAD_LEFT=3,DPAD_RIGHT=4,DPAD_UP_LEFT=5,DPAD_UP_RIGHT=6,DPAD_DOWN_LEFT=7,DPAD_DOWN_RIGHT=8};
-
-enum {
-    MENU_NONE               =  0,
-    MENU_EXIT               =  4,
-    MENU_HELP               =  5,
-    MENU_OPTIONS            =  6,
-    MENU_DONATE             =  9,
-    MENU_DOWNLOAD           = 11,
-    MENU_BTJOY            = 12};
-
 
 enum { TOUCH_INPUT_DPAD=0,TOUCH_INPUT_DSTICK=1, TOUCH_INPUT_ANALOG=2};
 

@@ -138,6 +138,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite,assign) int fourButtonsLand;
 @property (readwrite,assign) int fullLand;
 @property (readwrite,assign) int fullPort;
+@property (readwrite,assign) int fullLandJoy;
+@property (readwrite,assign) int fullPortJoy;
 
 @property (readwrite,assign) int skinValue;
 

@@ -220,7 +220,7 @@ unsigned long read_mfi_controller(unsigned long res){
 	externalWindow.hidden = YES;
 	 	
 	if(g_pref_nativeTVOUT)
-	{ 	
+	{
 		[[NSNotificationCenter defaultCenter] addObserver:self 
 													 selector:@selector(prepareScreen) 
 														 name:/*@"UIScreenDidConnectNotification"*/UIScreenDidConnectNotification
@@ -247,7 +247,7 @@ unsigned long read_mfi_controller(unsigned long res){
         [hrViewController performSelectorOnMainThread:@selector(playGame:) withObject:game waitUntilDone:NO];
         return TRUE;
     }
-    
+
     // copy a ZIP file to document root, and then let moveROMS take care of it....
     // only handle .zip files
     if (!url.fileURL || ![url.pathExtension.lowercaseString isEqualToString:@"zip"])
@@ -300,28 +300,36 @@ unsigned long read_mfi_controller(unsigned long res){
     return TRUE;
 }
 
-- (BOOL)application:(UIApplication *)application continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void (^)(NSArray<id<UIUserActivityRestoring>> * _Nullable))restorationHandler {
+- (BOOL)performActivity:(NSString*)activityType userInfo:(NSDictionary*)info {
     
-    NSLog(@"continueUserActivity: %@ %@", userActivity.activityType, userActivity.userInfo);
-    
-    if (![userActivity.activityType hasPrefix:[[NSBundle mainBundle] bundleIdentifier]])
+    if (![activityType hasPrefix:[[NSBundle mainBundle] bundleIdentifier]])
         return FALSE;
     
-    NSString* cmd = [[userActivity.activityType componentsSeparatedByString:@"."] lastObject];
+    NSString* cmd = [[activityType componentsSeparatedByString:@"."] lastObject];
     
     if ([cmd isEqualToString:@"play"])
     {
-        [hrViewController performSelectorOnMainThread:@selector(playGame:) withObject:userActivity.userInfo waitUntilDone:NO];
+        [hrViewController performSelectorOnMainThread:@selector(playGame:) withObject:info waitUntilDone:NO];
         return TRUE;
     }
         
     return FALSE;
 }
 
+- (BOOL)application:(UIApplication *)application continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void (^)(NSArray<id<UIUserActivityRestoring>> * _Nullable))restorationHandler {
+    NSLog(@"continueUserActivity: %@ %@", userActivity.activityType, userActivity.userInfo);
+    return [self performActivity:userActivity.activityType userInfo:userActivity.userInfo];
+}
+
+- (void)application:(UIApplication *)application performActionForShortcutItem:(UIApplicationShortcutItem *)shortcutItem completionHandler:(void (^)(BOOL))completionHandler {
+    NSLog(@"performActionForShortcutItem: %@ %@", shortcutItem.type, shortcutItem.userInfo);
+    completionHandler([self performActivity:shortcutItem.type userInfo:shortcutItem.userInfo]);
+}
+
 - (void)applicationDidEnterBackground:(UIApplication *)application {
 
-   if (myosd_inGame || g_joy_used) // force pause when game
-      [hrViewController runMenu];
+   if (myosd_inGame || g_joy_used) //force pause when in game
+      [hrViewController runPause];
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {
