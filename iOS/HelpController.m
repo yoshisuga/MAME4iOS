@@ -92,9 +92,9 @@
     aWebView.delegate = nil;
 }
 
--(BOOL) webView:(UIWebView *)inWeb shouldStartLoadWithRequest:(NSURLRequest *)inRequest navigationType:(UIWebViewNavigationType)inType {
-    if ( inType == UIWebViewNavigationTypeLinkClicked ) {
-        [[UIApplication sharedApplication] openURL:[inRequest URL]];
+-(BOOL) webView:(UIWebView *)inWeb shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)type {
+    if ( type == UIWebViewNavigationTypeLinkClicked && !request.URL.isFileURL) {
+        [[UIApplication sharedApplication] openURL:request.URL];
         return NO;
     }
     

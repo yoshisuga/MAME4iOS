@@ -161,6 +161,7 @@
 		EFA7570A2405BA0200A02AAB /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA757092405BA0200A02AAB /* AVFoundation.framework */; };
 		EFA7570D2406D64600A02AAB /* SystemImage.m in Sources */ = {isa = PBXBuildFile; fileRef = EFA7570B2406D64600A02AAB /* SystemImage.m */; };
 		EFA7570E2406D64600A02AAB /* SystemImage.m in Sources */ = {isa = PBXBuildFile; fileRef = EFA7570B2406D64600A02AAB /* SystemImage.m */; };
+		EFA757222408488D00A02AAB /* iCadeControls.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA757212408488D00A02AAB /* iCadeControls.png */; };
 		EFD4D14A23C0F6AB00857A76 /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = CE30090316FA47CB000EDCF1 /* Category.ini */; };
 /* End PBXBuildFile section */
 
@@ -176,7 +177,7 @@
 			outputFiles = (
 				"$(DERIVED_FILE_DIR)/$(INPUT_FILE_BASE).html",
 			);
-			script = "\"$PROJECT_DIR/../../Markdown_1.0.1/Markdown.pl\" \"$INPUT_FILE_PATH\" > \"$DERIVED_FILE_DIR/$INPUT_FILE_BASE.html\"\n";
+			script = "\"$PROJECT_DIR/../../Markdown_1.1.9/Markdown.pl\" --stub \"$INPUT_FILE_PATH\" > \"$DERIVED_FILE_DIR/$INPUT_FILE_BASE.html\"\n";
 		};
 /* End PBXBuildRule section */
 
@@ -350,6 +351,7 @@
 		EFA757092405BA0200A02AAB /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		EFA7570B2406D64600A02AAB /* SystemImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SystemImage.m; sourceTree = "<group>"; };
 		EFA7570C2406D64600A02AAB /* SystemImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SystemImage.h; sourceTree = "<group>"; };
+		EFA757212408488D00A02AAB /* iCadeControls.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = iCadeControls.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -563,6 +565,7 @@
 				CE30090316FA47CB000EDCF1 /* Category.ini */,
 				CE30090016FA47BD000EDCF1 /* cheat.zip */,
 				EF0E08AC2401840700E98F01 /* help.md */,
+				EFA7571E2408308000A02AAB /* help images */,
 				9268D84821661CA500AB0470 /* config_iPhone_xr_xs_max.txt */,
 				9268D84B21661E3800AB0470 /* config_iPhone_x.txt */,
 				9268D85121661F1700AB0470 /* config_iPhone_6_plus.txt */,
@@ -687,6 +690,14 @@
 			path = MAME4iOS;
 			sourceTree = "<group>";
 		};
+		EFA7571E2408308000A02AAB /* help images */ = {
+			isa = PBXGroup;
+			children = (
+				EFA757212408488D00A02AAB /* iCadeControls.png */,
+			);
+			name = "help images";
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -797,6 +808,7 @@
 				92A533D021EBDDF20089FBB9 /* GCDWebUploader.bundle in Resources */,
 				925ABCD81E46DCC500997182 /* MAME4iOS72.png in Resources */,
 				EFA756FF2405585D00A02AAB /* MAMEMENU.png in Resources */,
+				EFA757222408488D00A02AAB /* iCadeControls.png in Resources */,
 				925ABCD91E46DCC500997182 /* MAME4iOS114.png in Resources */,
 				925ABCDA1E46DCC500997182 /* MAME4iOS144.png in Resources */,
 				925ABCDB1E46DCC500997182 /* MAME4iOS57.png in Resources */,
