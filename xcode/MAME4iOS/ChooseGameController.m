@@ -844,6 +844,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 #pragma mark - Context Menu
 
+#if TARGET_OS_IOS
+
 // on iOS 13 create a UIAction for use in a UIContextMenu, on pre-iOS 13 create a UIAlertAction for use in a UIAlertController
 - (id)actionWithTitle:(NSString*)title image:(UIImage*)image destructive:(BOOL)destructive handler:(void (^)(id action))handler {
     
@@ -928,7 +930,6 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 #pragma mark - UIContextMenu (iOS 13+ only)
 
-#if TARGET_OS_IOS
 - (UIContextMenuConfiguration *)collectionView:(UICollectionView *)collectionView contextMenuConfigurationForItemAtIndexPath:(NSIndexPath *)indexPath point:(CGPoint)point API_AVAILABLE(ios(13.0)) {
     NSArray* actions = [self menuActionsForItemAtIndexPath:indexPath];
     
@@ -957,7 +958,6 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         [self collectionView:collectionView didSelectItemAtIndexPath:indexPath];
     }];
 }
-#endif
 
 #pragma mark - LongPress menu (pre iOS 13 only)
 
@@ -984,6 +984,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
     [self presentViewController:alert animated:YES completion:nil];
 }
+
+#endif
+
+#pragma mark Keyboard and Game Controller navigation
 
 #if TARGET_OS_IOS
 - (void)onCommandUp    { [self onCommandMove:-1 * _layoutCollums]; }

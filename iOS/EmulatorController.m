@@ -3449,8 +3449,7 @@ void myosd_handle_turbo() {
                 return;
             }
 #endif
-            
-            if (@available(iOS 13.0, *)) {
+             if (@available(iOS 13.0, tvOS 13.0, *)) {
                 if (gamepad.buttonMenu.pressed && element != gamepad.buttonMenu) {
                     menuButtonHandler(TRUE);
                     return;
