@@ -321,10 +321,12 @@ unsigned long read_mfi_controller(unsigned long res){
     return [self performActivity:userActivity.activityType userInfo:userActivity.userInfo];
 }
 
+#if TARGET_OS_IOS
 - (void)application:(UIApplication *)application performActionForShortcutItem:(UIApplicationShortcutItem *)shortcutItem completionHandler:(void (^)(BOOL))completionHandler {
     NSLog(@"performActionForShortcutItem: %@ %@", shortcutItem.type, shortcutItem.userInfo);
     completionHandler([self performActivity:shortcutItem.type userInfo:shortcutItem.userInfo]);
 }
+#endif
 
 - (void)applicationDidEnterBackground:(UIApplication *)application {
 

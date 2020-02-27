@@ -77,6 +77,7 @@
 #import "WebServer.h"
 #import "Alert.h"
 #import "ZipFile.h"
+#import "SystemImage.h"
 
 #define DebugLog 0
 #if DebugLog == 0
@@ -196,6 +197,7 @@ static int change_layout=0;
 static char g_mame_game[MAX_GAME_NAME];     // game MAME should run (or empty is menu)
 static char g_mame_game_error[MAX_GAME_NAME];
 static BOOL g_no_roms_found = FALSE;
+static int  g_save_state_count = 0;
 
 static EmulatorController *sharedInstance = nil;
 
@@ -225,6 +227,7 @@ void* app_Thread_Start(void* args)
     while (1) {
         prev_myosd_mouse = myosd_mouse = 0;
         prev_myosd_light_gun = myosd_light_gun = 0;
+        g_save_state_count = 0;
         
         if (run_mame(g_mame_game) != 0 && g_mame_game[0]) {
             strncpy(g_mame_game_error, g_mame_game, sizeof(g_mame_game_error));
@@ -292,30 +295,6 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
         
         [sharedInstance performSelectorOnMainThread:@selector(chooseGame:) withObject:games waitUntilDone:FALSE];
     }
-}
-
-// send one (or two) buttons to MAME
-static void push_mame_buttons(int player, int button1, int button2)
-{
-    NSTimeInterval press_delay = 0.750;     // NOTE this time is very finicky, for example Asteroids 1.0 is too much and 0.5 is not enough!
-    
-    if ((myosd_joy_status[player] & (button1 | button2)) || g_emulation_paused)
-        return;
-
-    myosd_joy_status[player] |= button1;
-    if (player == 0)
-        myosd_pad_status |= button1;
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(press_delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        myosd_joy_status[player] &= ~button1;
-        if (player == 0)
-            myosd_pad_status &= ~button1;
-        if (button2 != 0)
-            push_mame_buttons(player, button2, 0);
-    });
-}
-static void push_mame_button(int player, int button)
-{
-    push_mame_buttons(player, button, 0);
 }
 
 @implementation UINavigationController(KeyboardDismiss)
@@ -437,39 +416,41 @@ static void push_mame_button(int player, int button)
     if(myosd_inGame)
     {
         // MENU item to insert a coin and do a start. usefull for fullscreen and AppleTV siri remote, and discoverability on a GameController
-        [menu addAction:[UIAlertAction actionWithTitle:@"Coin+Start" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-            [self endMenu];
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                push_mame_buttons(player, MYOSD_SELECT, MYOSD_START);
-            });
-        }]];
-        [menu addAction:[UIAlertAction actionWithTitle:@"Load State" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-            myosd_loadstate = 1;
+        [menu addAction:[UIAlertAction actionWithTitle:@"Coin+Start" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"centsign.circle"] handler:^(UIAlertAction * _Nonnull action) {
+            push_mame_buttons(player, MYOSD_SELECT, MYOSD_SELECT); // some games need 2 credits to play, so enter two coins
+            push_mame_button(player, MYOSD_START);
             [self endMenu];
         }]];
-        [menu addAction:[UIAlertAction actionWithTitle:@"Save State" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        if (g_save_state_count > 0) {
+            [menu addAction:[UIAlertAction actionWithTitle:@"Load State" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"bookmark.fill"] handler:^(UIAlertAction * _Nonnull action) {
+                myosd_loadstate = 1;
+                push_mame_buttons(0, MYOSD_NONE, MYOSD_B); // B for slot 1, X for slot 2
+                [self endMenu];
+            }]];
+        }
+        [menu addAction:[UIAlertAction actionWithTitle:@"Save State" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"bookmark"] handler:^(UIAlertAction * _Nonnull action) {
+            g_save_state_count++;
             myosd_savestate = 1;
+            push_mame_buttons(0, MYOSD_NONE, MYOSD_B); // B for slot 1, X for slot 2, HACK: use SELECT as a pause
             [self endMenu];
         }]];
-        [menu addAction:[UIAlertAction actionWithTitle:@"MAME Menu" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [menu addAction:[UIAlertAction actionWithTitle:@"MAME Menu" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"slider.horizontal.3"] handler:^(UIAlertAction * _Nonnull action) {
+            push_mame_button(0, (MYOSD_SELECT|MYOSD_START));
             [self endMenu];
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                push_mame_button(0, (MYOSD_SELECT|MYOSD_START));
-            });
         }]];
     }
-    [menu addAction:[UIAlertAction actionWithTitle:@"Settings" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+    [menu addAction:[UIAlertAction actionWithTitle:@"Settings" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"gear"] handler:^(UIAlertAction * _Nonnull action) {
         [self runSettings];
     }]];
 
-    [menu addAction:[UIAlertAction actionWithTitle:@"Upload Files" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+    [menu addAction:[UIAlertAction actionWithTitle:@"Upload Files" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"arrow.up.arrow.down.circle"] handler:^(UIAlertAction * _Nonnull action) {
         [[WebServer sharedInstance] startUploader];
         [WebServer sharedInstance].webUploader.delegate = self;
         [self endMenu]; // [self done:self];
     }]];
 
     if(enable_menu_exit_option) {
-        [menu addAction:[UIAlertAction actionWithTitle:@"Exit Game" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
+        [menu addAction:[UIAlertAction actionWithTitle:@"Exit Game" style:UIAlertActionStyleDestructive image:[UIImage systemImageNamed:@"arrow.uturn.left.circle"] handler:^(UIAlertAction * _Nonnull action) {
             //[self runExit];   -- the user just selected "Exit Game" from a menu, dont ask again
             if (g_mame_game[0] != ' ')
                 g_mame_game[0] = 0;
@@ -1308,6 +1289,31 @@ static void push_mame_button(int player, int button)
 
 }}
 
+#define MAME_BUTTON_PLAYER_MASK     0xF0000000
+#define MAME_BUTTON_PLAYER_SHIFT    28
+#define MAME_BUTTON_SENT            0xFFFFFFFF
+#define MAME_BUTTONS                4
+static unsigned long g_mame_buttons[MAME_BUTTONS];
+
+static void push_mame_button(int player, int button)
+{
+    button = button | (player << MAME_BUTTON_PLAYER_SHIFT);
+    
+    for (int i=0; i<MAME_BUTTONS; i++)
+    {
+        if (g_mame_buttons[i] == 0) {
+            g_mame_buttons[i] = button;
+            break;
+        }
+    }
+}
+
+static void push_mame_buttons(int player, int button1, int button2)
+{
+    push_mame_button(player, button1);
+    push_mame_button(player, button2);
+}
+
 // called from inside MAME droid_ios_poll_input
 void myosd_handle_turbo() {
     if ( !myosd_inGame ) {
@@ -1315,6 +1321,32 @@ void myosd_handle_turbo() {
     }
     // this is called on the MAME thread, need to be carefull and clean up!
     @autoreleasepool {
+        
+        // send keys - we do this inside of myosd_handle_turbo() because it is called from droid_ios_poll_input
+        // ...and we are sure MAME is in a state to accept input, and not waking up from being paused or loading a ROM
+        if (g_mame_buttons[0] != 0 && g_mame_buttons[0] != MAME_BUTTON_SENT) {
+            unsigned long button = g_mame_buttons[0] & ~MAME_BUTTON_PLAYER_MASK;
+            unsigned long player = (g_mame_buttons[0] & MAME_BUTTON_PLAYER_MASK) >> MAME_BUTTON_PLAYER_SHIFT;
+            g_mame_buttons[0] = MAME_BUTTON_SENT;
+            
+            myosd_joy_status[player] |= button;
+            if (player == 0)
+                myosd_pad_status |= button;
+
+            NSTimeInterval hold_delay = 0.250;
+            NSTimeInterval next_delay = 0.250;
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(hold_delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                myosd_joy_status[player] &= ~button;
+                if (player == 0)
+                    myosd_pad_status &= ~button;
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(next_delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                    for (int i=0; i<MAME_BUTTONS-1; i++)
+                        g_mame_buttons[i] = g_mame_buttons[i+1];
+                    g_mame_buttons[MAME_BUTTONS-1] = 0;
+                });
+            });
+        }
+        
         // poll mfi controllers and read state of button presses
         for (int index = 0; index < controllers.count; index++) {
             GCController *mfiController = [controllers objectAtIndex:index];

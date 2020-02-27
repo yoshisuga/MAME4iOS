@@ -143,7 +143,16 @@
 }
 @end
 
-@implementation UIAlertAction(Missing)
+@implementation UIAlertAction(Helper)
+
++ (instancetype)actionWithTitle:(nullable NSString *)title style:(UIAlertActionStyle)style image:(UIImage*)image handler:(void (^ __nullable)(UIAlertAction *action))handler
+{
+    UIAlertAction* action = [self actionWithTitle:title style:style handler:handler];
+    if ([action respondsToSelector:@selector(image)])
+        [action setValue:image forKey:@"image"];
+    return action;
+}
+
 - (void)callActionHandler
 {
     if ([self respondsToSelector:@selector(handler)])
@@ -166,6 +175,7 @@
     }
 }
 #pragma clang diagnostic pop
+
 @end
 
 

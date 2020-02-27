@@ -31,7 +31,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setProgress:(double)value;
 @end
 
-@interface UIAlertAction(Missing)
+@interface UIAlertAction(Helper)
++ (instancetype)actionWithTitle:(nullable NSString *)title style:(UIAlertActionStyle)style image:(UIImage*)image handler:(void (^ __nullable)(UIAlertAction *action))handler;
 - (void)callActionHandler;
 - (void)setHighlighted:(BOOL)value;
 @end
