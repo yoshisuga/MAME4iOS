@@ -217,15 +217,15 @@ MENU+L1     |Insert coin
 MENU+R1     |Start Game               
 MENU+X       |Exit Game                 
 MENU+B       |Open MAME menu   
-MENU+A       |Load State                
-MENU+Y       |Save State                
+MENU+A       |Load State  B (slot1) or X (slot 2)            
+MENU+Y       |Save State  B (slot1) or X (slot 2)              
 OPTION         |Insert Coin and Start   
 
 **NOTE** on versions prior to iOS 13 only MiFi controllers are reconized and when doing multiple button combinations the secondary button must be pressed first.  For example to insert a coin hold down L1 and hit MENU.  on iOS 13+ you can hold MENU and then hit L1.
 
 ## SAVE/LOAD STATE
 
-You can save or load game states by pressing the MENU button when you are gaming, and select save or load state option. Also you can press button A+COIN (Load) or A+START (Save) on a external controller. Then you should press button B (slot1) or button X (slot 2) to save or load the state
+You can save or load game states by pressing the MENU button when you are gaming, and select save or load state option. Also you can press button MENU+A (Load) or MENU+Y (Save) on a external controller. Then you should press button B (slot1) or button X (slot 2) to save or load the state. If you select Load or Save state from the MAME4iOS menu slot 1 is always used.
 
 ## 8BitDo Zero 
 MAME4iOS supports the [8BitDo Zero](https://www.8bitdo.com/zero2/) when in KEYBOARD mode.
