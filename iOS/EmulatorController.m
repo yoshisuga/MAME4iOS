@@ -216,8 +216,8 @@ void iphone_Reset_Views(void)
 // run MAME (or pass NULL for main menu)
 int run_mame(char* game)
 {
-    char* argv[] = {"mame4ios", "-skip_gameinfo", game};
-    return iOS_main((game && *game) ? 3 : 2,argv);
+    char* argv[] = {"mame4ios", game};
+    return iOS_main((game && *game) ? 2 : 1,argv);
 }
 
 void* app_Thread_Start(void* args)

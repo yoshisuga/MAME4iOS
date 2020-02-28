@@ -80,7 +80,7 @@ NOTE: To type OK when MAME requires it, press LEFT and then RIGHT.
 
 **Full Screen** Uses all available screen or shows the emulator windowed.
 
-**Full Screen when using Game Controler** automaticly enters Full Screen when a controler, keyboard, iCade is detected.
+**Full Screen with Controler** automaticly enters Full Screen when a controler, keyboard, iCade is detected.
 
 **Keep Aspect Ratio** 'Enabled' keeps the aspect ratio; 'Disabled' will use all available screen.
 
