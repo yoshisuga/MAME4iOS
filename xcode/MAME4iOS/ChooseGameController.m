@@ -37,7 +37,8 @@
 #define SCOPE_MODE_KEY      @"ScopeMode"
 #define RECENT_GAMES_MAX    4
 #define RECENT_GAMES_MIN    2
-#define ALL_SCOPES          @[@"All", @"Author", @"Year", @"Category"]
+#define ALL_SCOPES          @[@"All", @"Manufacturer", @"Year", @"Genre"]
+#define ALL_SCOPES_MINI     @[@"All", @"Mfr.", @"Year", @"Genre"]
 
 #define CLAMP(x, num) MIN(MAX(x,0), (num)-1)
 
@@ -177,7 +178,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     _searchController.searchBar.delegate = self;
     _searchController.obscuresBackgroundDuringPresentation = NO;
 
-    _searchController.searchBar.scopeButtonTitles = ALL_SCOPES;
+    if ([UIScreen mainScreen].bounds.size.width <= 375)
+        _searchController.searchBar.scopeButtonTitles = ALL_SCOPES_MINI;
+    else
+        _searchController.searchBar.scopeButtonTitles = ALL_SCOPES;
     _searchController.searchBar.selectedScopeButtonIndex = [ALL_SCOPES indexOfObject:_gameFilterScope];
     _searchController.searchBar.placeholder = @"Filter";
     
@@ -349,9 +353,13 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         key = kGameInfoYear;
     if ([_gameFilterScope isEqualToString:@"Manufacturer"])
         key = kGameInfoManufacturer;
+    if ([_gameFilterScope isEqualToString:@"Mfr."])
+        key = kGameInfoManufacturer;
     if ([_gameFilterScope isEqualToString:@"Author"])
         key = kGameInfoManufacturer;
     if ([_gameFilterScope isEqualToString:@"Category"])
+        key = kGameInfoCategory;
+    if ([_gameFilterScope isEqualToString:@"Genre"])
         key = kGameInfoCategory;
 
     for (NSDictionary* game in filteredGames) {
@@ -473,7 +481,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         return;
     }
     NSString* text = searchBar.text;
-    NSString* scope = searchBar.scopeButtonTitles[searchBar.selectedScopeButtonIndex];
+    NSString* scope = ALL_SCOPES[searchBar.selectedScopeButtonIndex];
     
     if (![_gameFilterText isEqualToString:text] || ![_gameFilterScope isEqualToString:scope]) {
         _gameFilterText = text;
@@ -502,7 +510,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 }
 - (void)searchBar:(UISearchBar *)searchBar selectedScopeButtonIndexDidChange:(NSInteger)selectedScope
 {
-    _gameFilterScope = searchBar.scopeButtonTitles[selectedScope];
+    _gameFilterScope = ALL_SCOPES[selectedScope];
     [_userDefaults setValue:_gameFilterScope forKey:SCOPE_MODE_KEY];
     [self filterGameList];
 }
