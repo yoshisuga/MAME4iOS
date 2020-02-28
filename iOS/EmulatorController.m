@@ -459,9 +459,6 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
         }]];
     }
     
-    // yoshisuga: removing this because its 2019 and no one cares about jailbroken devices anymore
-//    if(g_btjoy_available)
-//       [menu addButtonWithTitle:@"WiiMote/Sixaxis"];
     [menu addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
         [self endMenu];
     }]];

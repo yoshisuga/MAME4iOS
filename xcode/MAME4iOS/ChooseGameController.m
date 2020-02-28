@@ -343,20 +343,35 @@ UIView* find_view(UIView* view, Class class) {
 {
     NSArray* filteredGames = _gameList;
     
-    // filter all games, multiple keywords will be treated as AND
+    // filter all games, multiple keywords will be treated as AND, and #### <#### >#### <=#### >=#### will compare years
     if ([_gameFilterText length] > 0)
     {
         for (NSString* word in [_gameFilterText componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]])
         {
+            NSPredicate* predicate = nil;
+            
+            if ([word length] == 0)
+                continue;
+
+            // handle YEAR comparisions
+            for (NSString* op in @[@"=", @"!=", @"<", @">", @">=", @"<="])
+            {
+                int year;
+                
+                if ([word hasPrefix:op] && (year = [[word substringFromIndex:[op length]] intValue]) >= 1970)
+                {
+                    predicate = [NSPredicate predicateWithFormat:
+                                 [NSString stringWithFormat:@"%@.intValue %@ %d", kGameInfoYear, op, year]];
+                }
+            }
+
             if ([word length] == 4 && [word intValue] >= 1970)
-            {
-                filteredGames = [filteredGames filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"%K == %@", kGameInfoYear, word]];
-            }
-            else if ([word length] > 0)
-            {
-                //filteredGames = [filteredGames filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF.@description CONTAINS[cd] %@", word]];
-                filteredGames = [filteredGames filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SUBQUERY(SELF.@allValues, $x, $x CONTAINS[cd] %@).@count > 0", word]];
-            }
+                predicate = [NSPredicate predicateWithFormat:@"%K = %@", kGameInfoYear, word];
+
+            if (predicate == nil)
+                predicate = [NSPredicate predicateWithFormat:@"SUBQUERY(SELF.@allValues, $x, $x CONTAINS[cd] %@).@count > 0", word];
+            
+            filteredGames = [filteredGames filteredArrayUsingPredicate:predicate];
         }
     }
     
