@@ -38,7 +38,6 @@
 #define RECENT_GAMES_MAX    4
 #define RECENT_GAMES_MIN    2
 #define ALL_SCOPES          @[@"All", @"Manufacturer", @"Year", @"Genre"]
-#define ALL_SCOPES_MINI     @[@"All", @"Mfr.", @"Year", @"Genre"]
 
 #define CLAMP(x, num) MIN(MAX(x,0), (num)-1)
 
@@ -78,6 +77,16 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 #endif
 }
 @end
+
+UIView* find_view(UIView* view, Class class) {
+    if ([view isKindOfClass:class])
+        return view;
+    for (UIView* subview in view.subviews) {
+        if ((view = find_view(subview, class)))
+            return view;
+    }
+    return nil;
+}
 
 @interface ChooseGameController () <UISearchResultsUpdating, UISearchBarDelegate> {
     NSArray* _gameList;         // all games
@@ -177,11 +186,13 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     _searchController.searchResultsUpdater = self;
     _searchController.searchBar.delegate = self;
     _searchController.obscuresBackgroundDuringPresentation = NO;
+    _searchController.searchBar.scopeButtonTitles = ALL_SCOPES;
 
-    if ([UIScreen mainScreen].bounds.size.width <= 375)
-        _searchController.searchBar.scopeButtonTitles = ALL_SCOPES_MINI;
-    else
-        _searchController.searchBar.scopeButtonTitles = ALL_SCOPES;
+    if ([UIScreen mainScreen].bounds.size.width <= 375) {
+        UISegmentedControl* seg = (UISegmentedControl*)find_view(_searchController.searchBar, [UISegmentedControl class]);
+        [seg setApportionsSegmentWidthsByContent:YES];
+    }
+
     _searchController.searchBar.selectedScopeButtonIndex = [ALL_SCOPES indexOfObject:_gameFilterScope];
     _searchController.searchBar.placeholder = @"Filter";
     
@@ -352,10 +363,6 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if ([_gameFilterScope isEqualToString:@"Year"])
         key = kGameInfoYear;
     if ([_gameFilterScope isEqualToString:@"Manufacturer"])
-        key = kGameInfoManufacturer;
-    if ([_gameFilterScope isEqualToString:@"Mfr."])
-        key = kGameInfoManufacturer;
-    if ([_gameFilterScope isEqualToString:@"Author"])
         key = kGameInfoManufacturer;
     if ([_gameFilterScope isEqualToString:@"Category"])
         key = kGameInfoCategory;
