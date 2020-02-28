@@ -348,7 +348,11 @@ UIView* find_view(UIView* view, Class class) {
     {
         for (NSString* word in [_gameFilterText componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]])
         {
-            if ([word length] > 0)
+            if ([word length] == 4 && [word intValue] >= 1970)
+            {
+                filteredGames = [filteredGames filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"%K == %@", kGameInfoYear, word]];
+            }
+            else if ([word length] > 0)
             {
                 //filteredGames = [filteredGames filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF.@description CONTAINS[cd] %@", word]];
                 filteredGames = [filteredGames filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SUBQUERY(SELF.@allValues, $x, $x CONTAINS[cd] %@).@count > 0", word]];
