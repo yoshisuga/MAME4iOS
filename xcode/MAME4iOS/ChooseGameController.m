@@ -971,6 +971,11 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if (indexPath == nil)
         return;
     
+    UICollectionViewCell* cell = [self.collectionView cellForItemAtIndexPath:indexPath];
+    
+    if (cell == nil)
+        return;
+    
     NSArray* actions = [self menuActionsForItemAtIndexPath:indexPath];
     
     if ([actions count] == 0)
@@ -982,6 +987,13 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         [alert addAction:action];
     
     [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
+
+    if (alert.popoverPresentationController != nil) {
+        alert.popoverPresentationController.sourceView = cell;
+        alert.popoverPresentationController.sourceRect = cell.bounds;
+        alert.popoverPresentationController.permittedArrowDirections = UIPopoverArrowDirectionAny;
+    }
+
     [self presentViewController:alert animated:YES completion:nil];
 }
 
