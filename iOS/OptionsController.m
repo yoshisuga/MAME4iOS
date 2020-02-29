@@ -226,7 +226,7 @@
                }
                case 4:
                {
-                   cell.textLabel.text   = @"Full Screen when using game controller";
+                   cell.textLabel.text   = @"Full Screen with Controller";
                    switchfullPortJoy  = [[UISwitch alloc] initWithFrame:CGRectZero];
                    cell.accessoryView = switchfullPortJoy;
                    [switchfullPortJoy setOn:[op fullPortJoy] animated:NO];
@@ -289,7 +289,7 @@
 
                case 4:
                {
-                   cell.textLabel.text   = @"Full Screen when using game controller";
+                   cell.textLabel.text   = @"Full Screen with Controller";
                    switchfullLandJoy  = [[UISwitch alloc] initWithFrame:CGRectZero];
                    cell.accessoryView = switchfullLandJoy;
                    [switchfullLandJoy setOn:[op fullLandJoy] animated:NO];

@@ -9,6 +9,7 @@
 #import <GameController/GameController.h>
 #import "ChooseGameController.h"
 #import "ImageCache.h"
+#import "SystemImage.h"
 #import "Globals.h"
 #import "myosd.h"
 
@@ -16,7 +17,7 @@
 #error("This file assumes ARC")
 #endif
 
-#define DebugLog 1
+#define DebugLog 0
 #if DebugLog == 0
 #define NSLog(...) (void)0
 #endif
@@ -36,7 +37,7 @@
 #define SCOPE_MODE_KEY      @"ScopeMode"
 #define RECENT_GAMES_MAX    4
 #define RECENT_GAMES_MIN    2
-#define ALL_SCOPES          @[@"All", @"Author", @"Year", @"Category"]
+#define ALL_SCOPES          @[@"All", @"Manufacturer", @"Year", @"Genre"]
 
 #define CLAMP(x, num) MIN(MAX(x,0), (num)-1)
 
@@ -76,6 +77,16 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 #endif
 }
 @end
+
+UIView* find_view(UIView* view, Class class) {
+    if ([view isKindOfClass:class])
+        return view;
+    for (UIView* subview in view.subviews) {
+        if ((view = find_view(subview, class)))
+            return view;
+    }
+    return nil;
+}
 
 @interface ChooseGameController () <UISearchResultsUpdating, UISearchBarDelegate> {
     NSArray* _gameList;         // all games
@@ -175,8 +186,13 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     _searchController.searchResultsUpdater = self;
     _searchController.searchBar.delegate = self;
     _searchController.obscuresBackgroundDuringPresentation = NO;
-
     _searchController.searchBar.scopeButtonTitles = ALL_SCOPES;
+
+    if ([UIScreen mainScreen].bounds.size.width <= 375) {
+        UISegmentedControl* seg = (UISegmentedControl*)find_view(_searchController.searchBar, [UISegmentedControl class]);
+        [seg setApportionsSegmentWidthsByContent:YES];
+    }
+
     _searchController.searchBar.selectedScopeButtonIndex = [ALL_SCOPES indexOfObject:_gameFilterScope];
     _searchController.searchBar.placeholder = @"Filter";
     
@@ -210,6 +226,13 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         // add a search button on tvOS
         UIBarButtonItem* search = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSearch target:self action:@selector(showSearch)];
         self.navigationItem.rightBarButtonItems = [@[search] arrayByAddingObjectsFromArray:self.navigationItem.rightBarButtonItems];
+    }
+#endif
+    
+#if TARGET_OS_IOS
+    // attach long press gesture to collectionView (only on pre-iOS 13)
+    if (@available(iOS 13.0, *)) {} else {
+        [self.collectionView addGestureRecognizer:[[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)]];
     }
 #endif
     
@@ -320,16 +343,35 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 {
     NSArray* filteredGames = _gameList;
     
-    // filter all games, multiple keywords will be treated as AND
+    // filter all games, multiple keywords will be treated as AND, and #### <#### >#### <=#### >=#### will compare years
     if ([_gameFilterText length] > 0)
     {
         for (NSString* word in [_gameFilterText componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]])
         {
-            if ([word length] > 0)
+            NSPredicate* predicate = nil;
+            
+            if ([word length] == 0)
+                continue;
+
+            // handle YEAR comparisions
+            for (NSString* op in @[@"=", @"!=", @"<", @">", @">=", @"<="])
             {
-                //filteredGames = [filteredGames filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF.@description CONTAINS[cd] %@", word]];
-                filteredGames = [filteredGames filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SUBQUERY(SELF.@allValues, $x, $x CONTAINS[cd] %@).@count > 0", word]];
+                int year;
+                
+                if ([word hasPrefix:op] && (year = [[word substringFromIndex:[op length]] intValue]) >= 1970)
+                {
+                    predicate = [NSPredicate predicateWithFormat:
+                                 [NSString stringWithFormat:@"%@.intValue %@ %d", kGameInfoYear, op, year]];
+                }
             }
+
+            if ([word length] == 4 && [word intValue] >= 1970)
+                predicate = [NSPredicate predicateWithFormat:@"%K = %@", kGameInfoYear, word];
+
+            if (predicate == nil)
+                predicate = [NSPredicate predicateWithFormat:@"SUBQUERY(SELF.@allValues, $x, $x CONTAINS[cd] %@).@count > 0", word];
+            
+            filteredGames = [filteredGames filteredArrayUsingPredicate:predicate];
         }
     }
     
@@ -341,9 +383,9 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         key = kGameInfoYear;
     if ([_gameFilterScope isEqualToString:@"Manufacturer"])
         key = kGameInfoManufacturer;
-    if ([_gameFilterScope isEqualToString:@"Author"])
-        key = kGameInfoManufacturer;
     if ([_gameFilterScope isEqualToString:@"Category"])
+        key = kGameInfoCategory;
+    if ([_gameFilterScope isEqualToString:@"Genre"])
         key = kGameInfoCategory;
 
     for (NSDictionary* game in filteredGames) {
@@ -398,7 +440,19 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         gameSectionTitles = [new_titles copy];
         NSLog(@"SECTIONS AFTER MERGE: %d!", (int)[gameSectionTitles count]);
     }
- 
+
+    // now add "system" items
+    // TODO: maybe these should be at the top (after Recents and Favorites)?
+    BOOL fSystemItemsAtEnd = FALSE;
+
+    gameData[SYSTEM_GAMES_TITLE] = @[
+        @{kGameInfoDescription:@"MAME MENU", kGameInfoName:kGameInfoNameMameMenu},
+        @{kGameInfoDescription:@"Settings", kGameInfoName:kGameInfoNameSettings},
+    ];
+    
+    if (!fSystemItemsAtEnd)
+        gameSectionTitles = [@[SYSTEM_GAMES_TITLE] arrayByAddingObjectsFromArray:gameSectionTitles];
+    
     // add favorite games
     NSArray* favoriteGames = [[_userDefaults objectForKey:FAVORITE_GAMES_KEY]
         filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF IN %@", filteredGames]];
@@ -427,13 +481,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         gameData[RECENT_GAMES_TITLE] = recentGames;
     }
     
-    // now put "system" items at the end
-    // TODO: maybe these should be at the top (after Recents and Favorites)?
-    gameSectionTitles = [gameSectionTitles arrayByAddingObjectsFromArray:@[SYSTEM_GAMES_TITLE]];
-    gameData[SYSTEM_GAMES_TITLE] = @[
-        @{kGameInfoDescription:@"MAME MENU", kGameInfoName:kGameInfoNameMameMenu},
-        @{kGameInfoDescription:@"Settings", kGameInfoName:kGameInfoNameSettings},
-    ];
+    if (fSystemItemsAtEnd)
+        gameSectionTitles = [gameSectionTitles arrayByAddingObjectsFromArray:@[SYSTEM_GAMES_TITLE]];
     
     _gameSectionTitles = gameSectionTitles;
     _gameData = gameData;
@@ -458,7 +507,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         return;
     }
     NSString* text = searchBar.text;
-    NSString* scope = searchBar.scopeButtonTitles[searchBar.selectedScopeButtonIndex];
+    NSString* scope = ALL_SCOPES[searchBar.selectedScopeButtonIndex];
     
     if (![_gameFilterText isEqualToString:text] || ![_gameFilterScope isEqualToString:scope]) {
         _gameFilterText = text;
@@ -487,7 +536,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 }
 - (void)searchBar:(UISearchBar *)searchBar selectedScopeButtonIndexDidChange:(NSInteger)selectedScope
 {
-    _gameFilterScope = searchBar.scopeButtonTitles[selectedScope];
+    _gameFilterScope = ALL_SCOPES[selectedScope];
     [_userDefaults setValue:_gameFilterScope forKey:SCOPE_MODE_KEY];
     [self filterGameList];
 }
@@ -827,79 +876,106 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 }
 #endif
 
-#pragma mark - UIContextMenu (iOS 13+ only)
+#pragma mark - Context Menu
 
 #if TARGET_OS_IOS
-- (UIContextMenuConfiguration *)collectionView:(UICollectionView *)collectionView contextMenuConfigurationForItemAtIndexPath:(NSIndexPath *)indexPath point:(CGPoint)point API_AVAILABLE(ios(13.0)) {
+
+// on iOS 13 create a UIAction for use in a UIContextMenu, on pre-iOS 13 create a UIAlertAction for use in a UIAlertController
+- (id)actionWithTitle:(NSString*)title image:(UIImage*)image destructive:(BOOL)destructive handler:(void (^)(id action))handler {
+    
+    if (@available(iOS 13.0, *)) {
+        UIAction* action = [UIAction actionWithTitle:title image:image identifier:nil handler:handler];
+        action.attributes = destructive ? UIMenuElementAttributesDestructive : 0;
+        return action;
+    } else {
+        UIAlertAction* action = [UIAlertAction actionWithTitle:title
+                                                         style:(destructive ? UIAlertActionStyleDestructive : UIAlertActionStyleDefault)
+                                                       handler:handler];
+        return action;
+    }
+}
+
+/// get the items in the ContextMenu for a item
+- (NSArray*)menuActionsForItemAtIndexPath:(NSIndexPath *)indexPath {
     NSDictionary* game = [self getGameInfo:indexPath];
     
-    if (game == nil || [game[kGameInfoName] length] == 0)
+    if (game == nil || [game[kGameInfoName] length] == 0 || [self isSystem:game])
         return nil;
 
-    NSLog(@"contextMenuConfigurationForItem: [%d.%d] %@ %@", (int)indexPath.section, (int)indexPath.row, game[kGameInfoName], game);
+    NSLog(@"menuActionsForItemAtIndexPath: [%d.%d] %@ %@", (int)indexPath.section, (int)indexPath.row, game[kGameInfoName], game);
+
+    BOOL is_fav = [self isFavorite:game];
+    
+    NSString* fav_text = is_fav ? @"Unfavorite" : @"Favorite";
+    NSString* fav_icon = is_fav ? @"heart.slash" : @"heart";
+
+    return @[
+        [self actionWithTitle:fav_text image:[UIImage systemImageNamed:fav_icon] destructive:NO handler:^(id action) {
+            [self setFavorite:game isFavorite:!is_fav];
+            [self filterGameList];
+        }],
+                
+        [self actionWithTitle:@"Play" image:[UIImage systemImageNamed:@"gamecontroller"] destructive:NO handler:^(id action) {
+            [self collectionView:self.collectionView didSelectItemAtIndexPath:indexPath];
+        }],
+        
+        [self actionWithTitle:@"Share" image:[UIImage systemImageNamed:@"square.and.arrow.up"] destructive:NO handler:^(id action) {
+            
+            NSURL* url = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%s/%@.zip", get_documents_path("roms"), game[kGameInfoName]]];
+            
+            if (![[NSFileManager defaultManager] fileExistsAtPath:url.path])
+                return;
+            
+            UIActivityViewController* activity = [[UIActivityViewController alloc] initWithActivityItems:@[url] applicationActivities:nil];
+            [activity setCompletionWithItemsHandler:^(UIActivityType activityType, BOOL completed, NSArray* _Nullable returnedItems, NSError* activityError) {
+                NSLog(@"%@", activityType);
+            }];
+
+            if (activity.popoverPresentationController != nil) {
+                activity.popoverPresentationController.sourceView = self.view;
+                activity.popoverPresentationController.sourceRect = CGRectMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds), 0.0f, 0.0f);;
+                activity.popoverPresentationController.permittedArrowDirections = 0;
+            }
+
+            [self presentViewController:activity animated:YES completion:nil];
+        }],
+
+        [self actionWithTitle:@"Delete" image:[UIImage systemImageNamed:@"trash"] destructive:YES handler:^(id action) {
+            NSArray* paths = @[@"roms/%@.zip", @"roms/%@", @"artwork/%@.zip", @"titles/%@.png", @"samples/%@.zip", @"cfg/%@.cfg"];
+            
+            NSString* root = [NSString stringWithUTF8String:get_documents_path("")];
+            for (NSString* path in paths) {
+                NSString* delete_path = [root stringByAppendingPathComponent:[NSString stringWithFormat:path, game[kGameInfoName]]];
+                NSLog(@"DELETE: %@", delete_path);
+                [[NSFileManager defaultManager] removeItemAtPath:delete_path error:nil];
+            }
+            
+            [self setRecent:game isRecent:FALSE];
+            [self setFavorite:game isFavorite:FALSE];
+
+            [self setGameList:[self->_gameList filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF != %@", game]]];
+            if ([self->_gameList count] == 0) {
+                if (self.selectGameCallback != nil)
+                    self.selectGameCallback(nil);
+            }
+        }]
+    ];
+}
+
+#pragma mark - UIContextMenu (iOS 13+ only)
+
+- (UIContextMenuConfiguration *)collectionView:(UICollectionView *)collectionView contextMenuConfigurationForItemAtIndexPath:(NSIndexPath *)indexPath point:(CGPoint)point API_AVAILABLE(ios(13.0)) {
+    NSArray* actions = [self menuActionsForItemAtIndexPath:indexPath];
+    
+    if ([actions count] == 0)
+        return nil;
     
     return [UIContextMenuConfiguration configurationWithIdentifier:indexPath
             previewProvider:^UIViewController* () {
                 return nil;     // use default
             }
             actionProvider:^UIMenu* (NSArray* suggestedActions) {
-                BOOL is_fav = [self isFavorite:game];
-        
-                NSString* fav_text = is_fav ? @"Unfavorite" : @"Favorite";
-                NSString* fav_icon = is_fav ? @"heart.slash" : @"heart";
-
-                UIAction* fav = [UIAction actionWithTitle:fav_text image:[UIImage systemImageNamed:fav_icon] identifier:nil handler:^(UIAction* action) {
-                    [self setFavorite:game isFavorite:!is_fav];
-                    [self filterGameList];
-                }];
-                
-                UIAction* play = [UIAction actionWithTitle:@"Play" image:[UIImage systemImageNamed:@"gamecontroller"] identifier:nil handler:^(UIAction* action) {
-                    [self collectionView:collectionView didSelectItemAtIndexPath:indexPath];
-                }];
-                
-                UIAction* share = [UIAction actionWithTitle:@"Share" image:[UIImage systemImageNamed:@"square.and.arrow.up"] identifier:nil handler:^(UIAction* action) {
-                    
-                    NSURL* url = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%s/%@.zip", get_documents_path("roms"), game[kGameInfoName]]];
-                    
-                    if (![[NSFileManager defaultManager] fileExistsAtPath:url.path])
-                        return;
-                    
-                    UIActivityViewController* activity = [[UIActivityViewController alloc] initWithActivityItems:@[url] applicationActivities:nil];
-                    [activity setCompletionWithItemsHandler:^(UIActivityType activityType, BOOL completed, NSArray* _Nullable returnedItems, NSError* activityError) {
-                        NSLog(@"%@", activityType);
-                    }];
-
-                    if (activity.popoverPresentationController != nil) {
-                        activity.popoverPresentationController.sourceView = self.view;
-                        activity.popoverPresentationController.sourceRect = CGRectMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds), 0.0f, 0.0f);;
-                        activity.popoverPresentationController.permittedArrowDirections = 0;
-                    }
-
-                    [self presentViewController:activity animated:YES completion:nil];
-                }];
-
-                UIAction* remove = [UIAction actionWithTitle:@"Delete" image:[UIImage systemImageNamed:@"trash"] identifier:nil handler:^(UIAction* action) {
-                    NSArray* paths = @[@"roms/%@.zip", @"roms/%@", @"artwork/%@.zip", @"titles/%@.png", @"samples/%@.zip", @"cfg/%@.cfg"];
-                    
-                    NSString* root = [NSString stringWithUTF8String:get_documents_path("")];
-                    for (NSString* path in paths) {
-                        NSString* delete_path = [root stringByAppendingPathComponent:[NSString stringWithFormat:path, game[kGameInfoName]]];
-                        NSLog(@"DELETE: %@", delete_path);
-                        [[NSFileManager defaultManager] removeItemAtPath:delete_path error:nil];
-                    }
-                    
-                    [self setRecent:game isRecent:FALSE];
-                    [self setFavorite:game isFavorite:FALSE];
-
-                    [self setGameList:[self->_gameList filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF != %@", game]]];
-                    if ([self->_gameList count] == 0) {
-                        if (self.selectGameCallback != nil)
-                            self.selectGameCallback(nil);
-                    }
-                }];
-                remove.attributes = UIMenuElementAttributesDestructive;
-
-                return [UIMenu menuWithTitle:@"" children:@[play, fav, share, remove]];
+                return [UIMenu menuWithTitle:@"" children:actions];
             }
     ];
 }
@@ -916,7 +992,48 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         [self collectionView:collectionView didSelectItemAtIndexPath:indexPath];
     }];
 }
+
+#pragma mark - LongPress menu (pre iOS 13 only)
+
+-(void)handleLongPress:(UIGestureRecognizer*)sender {
+
+    if (sender.state != UIGestureRecognizerStateBegan)
+        return;
+
+    NSIndexPath *indexPath = [self.collectionView indexPathForItemAtPoint:[sender locationInView:self.collectionView]];
+    
+    if (indexPath == nil)
+        return;
+    
+    UICollectionViewCell* cell = [self.collectionView cellForItemAtIndexPath:indexPath];
+    
+    if (cell == nil)
+        return;
+    
+    NSArray* actions = [self menuActionsForItemAtIndexPath:indexPath];
+    
+    if ([actions count] == 0)
+        return;
+    
+    UIAlertController* alert = [UIAlertController alertControllerWithTitle:[self getGameInfo:indexPath][kGameInfoName] message:nil preferredStyle:UIAlertControllerStyleActionSheet];
+    
+    for (UIAlertAction* action in actions)
+        [alert addAction:action];
+    
+    [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
+
+    if (alert.popoverPresentationController != nil) {
+        alert.popoverPresentationController.sourceView = cell;
+        alert.popoverPresentationController.sourceRect = cell.bounds;
+        alert.popoverPresentationController.permittedArrowDirections = UIPopoverArrowDirectionAny;
+    }
+
+    [self presentViewController:alert animated:YES completion:nil];
+}
+
 #endif
+
+#pragma mark Keyboard and Game Controller navigation
 
 #if TARGET_OS_IOS
 - (void)onCommandUp    { [self onCommandMove:-1 * _layoutCollums]; }

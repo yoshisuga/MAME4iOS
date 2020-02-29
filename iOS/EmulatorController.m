@@ -216,8 +216,8 @@ void iphone_Reset_Views(void)
 // run MAME (or pass NULL for main menu)
 int run_mame(char* game)
 {
-    char* argv[] = {"mame4ios", "-skip_gameinfo", game};
-    return iOS_main((game && *game) ? 3 : 2,argv);
+    char* argv[] = {"mame4ios", game};
+    return iOS_main((game && *game) ? 2 : 1,argv);
 }
 
 void* app_Thread_Start(void* args)
@@ -459,9 +459,6 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
         }]];
     }
     
-    // yoshisuga: removing this because its 2019 and no one cares about jailbroken devices anymore
-//    if(g_btjoy_available)
-//       [menu addButtonWithTitle:@"WiiMote/Sixaxis"];
     [menu addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
         [self endMenu];
     }]];
@@ -3304,12 +3301,14 @@ void myosd_handle_turbo() {
         [self changeUI];
     }
     
+    if (controllers.count > 4) {
+        [controllers removeObjectsInRange:NSMakeRange(4,controllers.count - 4)];
+    }
+    
     if (controllers.count != 0 && myosd_num_of_joys == 0) {
         g_joy_used = 1;
         myosd_num_of_joys = 8;
         [self changeUI];
-        //[self removeTouchControllerViews];
-        //[self.view setNeedsDisplay];
     }
     
     for (int index = 0; index < controllers.count; index++) {
@@ -3353,6 +3352,91 @@ void myosd_handle_turbo() {
             [self handle_MENU];
         };
         
+        //
+        // handle a MENU BUTTON modifier
+        //
+        // NOTE because UIAlertController now works with a game controller, we dont need
+        // to rely on these crazy button combinations, but I had to change them around
+        // a little bit so just hitting menu by itself will bring up the MAME4iOS menu.
+        //
+        //                NEW                   OLD
+        //                -------------         -------------
+        //      MENU    = MAME4iOS MENU         START
+        //      MENU+L1 = COIN/SELECT           COIN/SELECT
+        //      MENU+R1 = START                 MAME MENU
+        //      MENU+X  = EXIT GAME             EXIT GAME
+        //      MENU+B  = MAME MENU             MAME4iOS MENU
+        //      MENU+A  = LOAD STATE            LOAD STATE
+        //      MENU+Y  = SAVE STATE            SAVE STATE
+        //
+        //      OPTION   = COIN + START
+        //
+        void (^menuButtonHandler)(BOOL) = ^(BOOL pressed){
+            static int g_menu_modifier_button_pressed[4];
+            
+            NSLog(@"%d: MENU %s", index, pressed ? "DOWN" : "UP");
+            
+            // on MENU button up, if no modifier was pressed then show menu
+            if (!pressed) {
+                if (g_menu_modifier_button_pressed[index] == FALSE) {
+                    // Show or Cancel Action Sheet (aka MAME4iOS) Menu
+                    if ([self.presentedViewController isKindOfClass:[UIAlertController class]]) {
+                       [(UIAlertController*)self.presentedViewController dismissWithCancel];
+                    }
+                    else if (myosd_inGame && myosd_in_menu == 0) {
+                        [self runMenu:index];
+                    }
+                }
+                g_menu_modifier_button_pressed[index] = FALSE;  // reset for next time.
+                return;
+            }
+
+             // Add Coin
+             if (MFIController.extendedGamepad.leftShoulder.pressed) {
+                 NSLog(@"%d: MENU+L1 => COIN", index);
+                 myosd_joy_status[index] &= ~MYOSD_L1;
+                 push_mame_button(index, MYOSD_SELECT);
+             }
+             // Start
+             else if (MFIController.extendedGamepad.rightShoulder.pressed) {
+                 NSLog(@"%d: MENU+R1 => START", index);
+                 myosd_joy_status[index] &= ~MYOSD_R1;
+                 push_mame_button(index, MYOSD_START);
+             }
+             //Show Mame menu (Start + Coin)
+             else if (MFIController.extendedGamepad.buttonB.pressed) {
+                 NSLog(@"%d: MENU+B => MAME MENU", index);
+                 myosd_joy_status[index] &= ~MYOSD_B;
+                 push_mame_button(index, MYOSD_SELECT|MYOSD_START);
+             }
+             //Exit Game
+             else if (MFIController.microGamepad.buttonX.pressed) {
+                 NSLog(@"%d: MENU+X => EXIT GAME", index);
+                 if (myosd_inGame && myosd_in_menu == 0) {
+                     myosd_joy_status[index] &= ~MYOSD_X;
+                     [self runExit];
+                 }
+             }
+             // Load State
+             else if (MFIController.microGamepad.buttonA.pressed ) {
+                 NSLog(@"%d: MENU+A => LOAD STATE", index);
+                 myosd_joy_status[index] &= ~MYOSD_A;
+                 myosd_pad_status &= ~MYOSD_A;
+                 myosd_loadstate = 1;
+             }
+             // Save State
+             else if (MFIController.extendedGamepad.buttonY.pressed ) {
+                 NSLog(@"%d: MENU+Y => SAVE STATE", index);
+                 myosd_joy_status[index] &= ~MYOSD_Y;
+                 myosd_pad_status &= ~MYOSD_Y;
+                 myosd_savestate = 1;
+             }
+             else {
+                 return;
+             }
+             g_menu_modifier_button_pressed[index] = TRUE;
+        };
+        
         MFIController.extendedGamepad.valueChangedHandler = ^(GCExtendedGamepad* gamepad, GCControllerElement* element) {
             NSLog(@"%d: %@", index, element);
             
@@ -3362,6 +3446,13 @@ void myosd_handle_turbo() {
                 return;
             }
 #endif
+             if (@available(iOS 13.0, tvOS 13.0, *)) {
+                if (gamepad.buttonMenu.pressed && element != gamepad.buttonMenu) {
+                    menuButtonHandler(TRUE);
+                    return;
+                }
+            }
+            
             if (element == gamepad.buttonA) {
                 if (gamepad.buttonA.pressed) {
                     myosd_joy_status[index] |= MYOSD_A;
@@ -3413,9 +3504,21 @@ void myosd_handle_turbo() {
             
             if (element == gamepad.leftTrigger) {
                 joy_analog_x[index][2] = gamepad.leftTrigger.value;
+                if (gamepad.leftTrigger.pressed) {
+                    myosd_joy_status[index] |= MYOSD_L2;
+                }
+                else {
+                    myosd_joy_status[index] &= ~MYOSD_L2;
+                }
             }
             if (element == gamepad.rightTrigger) {
                 joy_analog_x[index][3] = gamepad.rightTrigger.value;
+                if (gamepad.rightTrigger.pressed) {
+                    myosd_joy_status[index] |= MYOSD_R2;
+                }
+                else {
+                    myosd_joy_status[index] &= ~MYOSD_R2;
+                }
             }
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 120100 || __TV_OS_VERSION_MAX_ALLOWED >= 120100
             if (@available(iOS 12.1, *)) {
@@ -3435,7 +3538,8 @@ void myosd_handle_turbo() {
                 }
             }
 #endif
-            [self handle_MENU];
+            if (element != gamepad.dpad)
+                [self handle_MENU];
         };
         
         //
@@ -3571,88 +3675,18 @@ void myosd_handle_turbo() {
             if ( yValue <= deadZone && yValue >= -deadZone ) {
                 joy_analog_y[index][1] = 0.0f;
             }
-            
-        };
-        
-        //
-        // handle the MENU BUTTON
-        //
-        // NOTE because UIAlertController now works with a game controller, we dont need
-        // to rely on these crazy button combinations, but I had to change them around
-        // a little bit so just hitting menu by itself will bring up the MAME4iOS menu.
-        //
-        //                    NEW                   OLD
-        //                    -------------         -------------
-        //           MENU   = MAME4iOS MENU         START
-        //      L1 + MENU   = COIN/SELECT           COIN/SELECT
-        //      R1 + MENU   = START                 MAME MENU
-        //      X  + MENU   = EXIT GAME             EXIT GAME
-        //      B  + MENU   = MAME MENU             MAME4iOS MENU
-        //      A  + MENU   = LOAD STATE            LOAD STATE
-        //      Y  + MENU   = SAVE STATE            SAVE STATE
-        //
-        //         OPTION   = COIN + START
-        //
-        void (^menuButtonHandler)(void) = ^{
-             NSLog(@"%d: MENU", index);
-
-             // Add Coin
-             if (MFIController.extendedGamepad.leftShoulder.pressed || MFIController.extendedGamepad.leftTrigger.pressed) {
-                 myosd_joy_status[index] &= ~(MYOSD_L1|MYOSD_L3);
-                 push_mame_button(index, MYOSD_SELECT);
-             }
-             // Start
-             else if (MFIController.extendedGamepad.rightShoulder.pressed || MFIController.extendedGamepad.rightTrigger.pressed) {
-                 myosd_joy_status[index] &= ~(MYOSD_R1|MYOSD_R3);
-                 push_mame_button(index, MYOSD_START);
-             }
-             //Show Mame menu (Start + Coin)
-             else if (MFIController.extendedGamepad.buttonB.pressed) {
-                 myosd_joy_status[index] &= ~MYOSD_B;
-                 push_mame_button(index, MYOSD_SELECT|MYOSD_START);
-             }
-             //Exit Game
-             else if (MFIController.microGamepad.buttonX.pressed) {
-                 if (myosd_inGame && myosd_in_menu == 0) {
-                     myosd_joy_status[index] &= ~MYOSD_X;
-                     [self runExit];
-                 }
-             }
-             // Load State
-             else if (MFIController.microGamepad.buttonA.pressed ) {
-                 myosd_joy_status[index] &= ~MYOSD_A;
-                 myosd_pad_status &= ~MYOSD_A;
-                 myosd_loadstate = 1;
-             }
-             // Save State
-             else if (MFIController.extendedGamepad.buttonY.pressed ) {
-                 myosd_joy_status[index] &= ~MYOSD_Y;
-                 myosd_pad_status &= ~MYOSD_Y;
-                 myosd_savestate = 1;
-             }
-             // Show or Cancel Action Sheet (aka MAME4iOS) Menu
-             else {
-                 if ([self.presentedViewController isKindOfClass:[UIAlertController class]]) {
-                    [(UIAlertController*)self.presentedViewController dismissWithCancel];
-                 }
-                 else if (myosd_inGame && myosd_in_menu == 0) {
-                     [self runMenu:index];
-                 }
-             }
         };
         
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 130000 || __TV_OS_VERSION_MAX_ALLOWED >= 130000
         // handle MENU and OPTION buttons on Xbox and PS4 controllers
         if (@available(iOS 13.0, tvOS 13.0, *)) {
             MFIController.microGamepad.buttonMenu.pressedChangedHandler = ^(GCControllerButtonInput* button, float value, BOOL pressed) {
-                if (pressed) {
-                    menuButtonHandler();
-                }
+                menuButtonHandler(pressed);
             };
             MFIController.extendedGamepad.buttonMenu.pressedChangedHandler = MFIController.microGamepad.buttonMenu.pressedChangedHandler;
             
             MFIController.extendedGamepad.buttonOptions.pressedChangedHandler = ^(GCControllerButtonInput* button, float value, BOOL pressed) {
-                if (pressed) {
+                if (!pressed) {
                     NSLog(@"%d: OPTIONS", index);
 
                     // Insert a COIN, then do a START (Player 1 or Player 2)
@@ -3662,12 +3696,14 @@ void myosd_handle_turbo() {
         }
         else {
             MFIController.controllerPausedHandler = ^(GCController *controller) {
-                menuButtonHandler();
+                menuButtonHandler(TRUE);
+                menuButtonHandler(FALSE);
             };
         }
 #else
         MFIController.controllerPausedHandler = ^(GCController *controller) {
-            menuButtonHandler();
+            menuButtonHandler(TRUE);
+            menuButtonHandler(FALSE);
         };
 #endif
     }
