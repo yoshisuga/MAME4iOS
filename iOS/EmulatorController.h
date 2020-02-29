@@ -65,7 +65,7 @@
 @class iCadeView;
 
 #if TARGET_OS_IOS
-@interface EmulatorController : UIViewController<GCDWebUploaderDelegate>
+@interface EmulatorController : UIViewController<GCDWebUploaderDelegate, UIDocumentPickerDelegate>
 #elif TARGET_OS_TV
 @interface EmulatorController : GCEventViewController<GCDWebUploaderDelegate>
 #endif
@@ -167,7 +167,12 @@
 - (void)runMenu;
 - (void)runExit;
 - (void)runPause;
+- (void)runServer;
 - (void)endMenu;
+#if TARGET_OS_IOS
+- (void)runImport;
+- (void)runExport;
+#endif
 
 - (void)handle_DPAD;
 - (void)handle_MENU;

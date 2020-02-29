@@ -47,14 +47,13 @@
 enum OptionSections
 {
     kSupportSection = 0,
-    kMultiplayerSection = 1,
-    kFilterSection = 2,
-    kInputSection = 3,
-    kPortraitSection = 4,
-    kLandscapeSection = 5,
-    kMiscSection = 6,
-    kDefaultsSection = 7,
-    kNumSections = 8
+    kOtherSection,
+    kPortraitSection,
+    kLandscapeSection,
+    kMiscSection,
+    kFilterSection,
+    kImportSection,
+    kNumSections
 };
 
 enum ListOptionType
@@ -108,6 +107,8 @@ enum ListOptionType
     UISwitch*		  switchfullPort;
     UISwitch*         switchfullLandJoy;
     UISwitch*         switchfullPortJoy;
+    UISwitch*         switchHideClones;
+    UISwitch*         switchHideNotWorking;
     UISwitch *switchThrottle;
     UISwitch *switchSleep;
     UISwitch *switchForcepxa;

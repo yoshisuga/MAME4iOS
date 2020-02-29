@@ -14,12 +14,13 @@
 
 enum OptionSections
 {
-    kFilterSection = 0,
-    kInputSection = 1,
-    kScreenSection = 2,
-    kMiscSection = 3,
-    kDefaultsSection = 4,
-    kNumSections = 5
+    kInputSection = 0,
+    kScreenSection,
+    kMiscSection,
+    kDefaultsSection,
+    kFilterSection,
+    kServerSection,
+    kNumSections
 };
 
 enum ListOptionType
