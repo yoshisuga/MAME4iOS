@@ -24,9 +24,11 @@
 
 #define CELL_IDENTIFIER   @"GameInfoCell"
 #if TARGET_OS_IOS
+#define CELL_TINY_WIDTH    100.0
 #define CELL_SMALL_WIDTH   200.0
 #define CELL_LARGE_WIDTH   400.0
 #else
+#define CELL_TINY_WIDTH    200.0
 #define CELL_SMALL_WIDTH   400.0
 #define CELL_LARGE_WIDTH   600.0
 #endif
@@ -42,6 +44,7 @@
 #define CLAMP(x, num) MIN(MAX(x,0), (num)-1)
 
 typedef NS_ENUM(NSInteger, LayoutMode) {
+    LayoutTiny,
     LayoutSmall,
     LayoutLarge,
     LayoutList,
@@ -157,15 +160,12 @@ UIView* find_view(UIView* view, Class class) {
     // layout
     UISegmentedControl* seg;
     
-    if (@available(iOS 13.0, tvOS 13.0, *)) {
-        seg = [[UISegmentedControl alloc] initWithItems:@[
-            [UIImage systemImageNamed:@"rectangle.grid.2x2.fill"],
-            [UIImage systemImageNamed:@"rectangle.stack.fill"],
-            [UIImage systemImageNamed:@"rectangle.grid.1x2.fill"]
-        ]];
-    } else {
-        seg = [[UISegmentedControl alloc] initWithItems:@[@"☷",@"▢",@"☰"]];
-    }
+    seg = [[UISegmentedControl alloc] initWithItems:@[
+        [UIImage systemImageNamed:@"square.grid.4x3.fill"]    ?: @"⚏",
+        [UIImage systemImageNamed:@"rectangle.grid.2x2.fill"] ?: @"☷",
+        [UIImage systemImageNamed:@"rectangle.stack.fill"]    ?: @"▢",
+        [UIImage systemImageNamed:@"rectangle.grid.1x2.fill"] ?: @"☰"
+    ]];
 
     seg.selectedSegmentIndex = _layoutMode;
     [seg addTarget:self action:@selector(viewChange:) forControlEvents:UIControlEventValueChanged];
@@ -446,7 +446,7 @@ UIView* find_view(UIView* view, Class class) {
     BOOL fSystemItemsAtEnd = FALSE;
 
     gameData[SYSTEM_GAMES_TITLE] = @[
-        @{kGameInfoDescription:@"MAME MENU", kGameInfoName:kGameInfoNameMameMenu},
+        @{kGameInfoDescription:@"MAME", kGameInfoName:kGameInfoNameMameMenu},
         @{kGameInfoDescription:@"Settings", kGameInfoName:kGameInfoNameSettings},
     ];
     
@@ -608,7 +608,9 @@ UIView* find_view(UIView* view, Class class) {
     else
         width -= (self.collectionView.contentInset.left + self.collectionView.contentInset.right);
 
-    if (_layoutMode == LayoutSmall)
+    if (_layoutMode == LayoutTiny)
+        _layoutCollums = MAX(2,round(width / CELL_TINY_WIDTH));
+    else if (_layoutMode == LayoutSmall)
         _layoutCollums = MAX(2,round(width / CELL_SMALL_WIDTH));
     else
         _layoutCollums = MAX(1,round(width / CELL_LARGE_WIDTH));
@@ -744,27 +746,37 @@ UIView* find_view(UIView* view, Class class) {
     
     GameCell* cell = [collectionView dequeueReusableCellWithReuseIdentifier:CELL_IDENTIFIER forIndexPath:indexPath];
     
-    cell.title.text = info[kGameInfoDescription];
+    NSString* text = info[kGameInfoDescription];
+    
+    if  (_layoutMode == LayoutTiny) {
+        text = [[text componentsSeparatedByString:@" ("] firstObject];
+        cell.title.font = [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
+    }
+
+    cell.title.text = text;
+    cell.detail.text = nil;
+    cell.info.text = nil;
     
 //    cell.title.text = @"Call me Ishmael. Some years ago - never mind how long precisely - having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world.";
     
-    NSString* text = info[kGameInfoManufacturer];
-    
-    if ([info[kGameInfoYear] length] > 1)
-        text = [NSString stringWithFormat:@"%@ • %@", text, info[kGameInfoYear]];
-    
-    if ([info[kGameInfoName] length] > 1 && ![self isSystem:info])
-        text = [NSString stringWithFormat:@"%@ • %@", text, info[kGameInfoName]];
+    if  (_layoutMode > LayoutTiny) {
+        NSString* text = info[kGameInfoManufacturer];
 
-    if ([info[kGameInfoParent] length] > 1 && _layoutMode != LayoutSmall)
-        text = [NSString stringWithFormat:@"%@ [%@]", text, info[kGameInfoParent]];
+        if ([info[kGameInfoYear] length] > 1)
+            text = [NSString stringWithFormat:@"%@ • %@", text, info[kGameInfoYear]];
+        
+        if ([info[kGameInfoName] length] > 1 && ![self isSystem:info])
+            text = [NSString stringWithFormat:@"%@ • %@", text, info[kGameInfoName]];
 
-    if ([text hasPrefix:@" • "])
-        text = [text substringFromIndex:3];
+        if ([info[kGameInfoParent] length] > 1 && _layoutMode > LayoutSmall)
+            text = [NSString stringWithFormat:@"%@ [%@]", text, info[kGameInfoParent]];
+
+        if ([text hasPrefix:@" • "])
+            text = [text substringFromIndex:3];
+
+        cell.detail.text = text;
+    }
     
-    cell.detail.text = text;
-    cell.info.text = nil;
-
     [cell setHorizontal:_layoutMode == LayoutList];
 
     NSURL* url = [self getGameImageURL:info];
