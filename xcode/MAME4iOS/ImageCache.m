@@ -97,8 +97,8 @@ static ImageCache* sharedInstance = nil;
     NSParameterAssert(localURL == nil || [localURL isFileURL]);
 
 #if ImageCacheDebug
-//    if (localURL != nil)
-//        [[NSFileManager defaultManager] removeItemAtURL:localURL error:nil];
+    if (localURL != nil)
+        [[NSFileManager defaultManager] removeItemAtURL:localURL error:nil];
 #endif
     
     NSLog(@"IMAGE CACHE: getImage: %@ [%f,%f]", url.path, size.width, size.height);

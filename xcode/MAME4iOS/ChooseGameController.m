@@ -557,18 +557,21 @@ UIView* find_view(UIView* view, Class class) {
 
 #pragma mark - UICollectionView
 
--(void)reloadData
+-(void)invalidateLayout
 {
-    [self.collectionView reloadData];
     [self.collectionView.collectionViewLayout invalidateLayout];
     
     // HACK kick the layout in the head, so it gets the location of headers correct
-    if (@available(iOS 13.0, *)) {} else {
-        CGPoint offset = self.collectionView.contentOffset;
-        [self.collectionView setContentOffset:CGPointMake(offset.x, offset.y + 0.5)];
-        [self.collectionView layoutIfNeeded];
-        [self.collectionView setContentOffset:offset];
-    }
+    CGPoint offset = self.collectionView.contentOffset;
+    [self.collectionView setContentOffset:CGPointMake(offset.x, offset.y + 0.5)];
+    [self.collectionView layoutIfNeeded];
+    [self.collectionView setContentOffset:offset];
+}
+
+-(void)reloadData
+{
+    [self.collectionView reloadData];
+    [self invalidateLayout];
 }
 
 -(void)updateLayout
@@ -786,6 +789,7 @@ UIView* find_view(UIView* view, Class class) {
             if (selected) {
                 [self.collectionView selectItemAtIndexPath:indexPath animated:NO scrollPosition:UICollectionViewScrollPositionCenteredVertically];
             }
+            [self invalidateLayout];
             [UIView setAnimationsEnabled:enabled];
         }
     }];
