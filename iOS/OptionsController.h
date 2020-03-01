@@ -48,11 +48,11 @@ enum OptionSections
 {
     kSupportSection = 0,
     kOtherSection,
+    kImportSection,
     kPortraitSection,
     kLandscapeSection,
     kMiscSection,
     kFilterSection,
-    kImportSection,
     kNumSections
 };
 

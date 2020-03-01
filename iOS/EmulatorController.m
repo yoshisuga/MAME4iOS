@@ -2933,8 +2933,13 @@ void myosd_handle_turbo() {
     NSString *sampPath = [NSString stringWithUTF8String:get_documents_path("samples")];
 
     NSString *romPath = [rootPath stringByAppendingPathComponent:romName];
+    
+    // if the ROM had a name like "foobar 1.zip", "foobar (1).zip" use only the first word as the ROM name.
+    // this most likley came when a user downloaded the zip and a foobar.zip already existed, MAME ROMs are <8 char and no spaces.
+    if ([romName containsString:@" "])
+        romName = [[romName componentsSeparatedByString:@" "].firstObject stringByAppendingPathExtension:@"zip"];
 
-    NSLog(@"ROM NAME: %@ PATH:%@", romName, romPath);
+    NSLog(@"ROM NAME: '%@' PATH:%@", romName, romPath);
 
     //
     // scan the ZIP file to see what kind it is.
@@ -2966,28 +2971,21 @@ void myosd_handle_turbo() {
 
     if (!result)
     {
-        NSLog(@"%@ is a CORRUPT ZIP (deleting)", romName);
+        NSLog(@"%@ is a CORRUPT ZIP (deleting)", romPath);
         [[NSFileManager defaultManager] removeItemAtPath:romPath error:nil];
     }
     else if (numZIP != 0 || numCHD != 0)
     {
-        NSLog(@"%@ is a ZIPSET", romName);
+        NSLog(@"%@ is a ZIPSET", [romPath lastPathComponent]);
         int maxFiles = numFiles;
         numFiles = 0;
-        [ZipFile destructiveEnumerate:romPath withOptions:(ZipFileEnumFiles|ZipFileEnumDirectories) usingBlock:^(ZipFileInfo* info) {
+        [ZipFile destructiveEnumerate:romPath withOptions:ZipFileEnumFiles usingBlock:^(ZipFileInfo* info) {
             NSString* toPath = nil;
             NSString* ext = [info.name.pathExtension uppercaseString];
             
-            if (info.isDirectory)
-            {
-                NSLog(@"...DIR: %@", info.name);
-                if ([info.name hasPrefix:@"roms/"] && [info.name length] > 5)
-                    [[NSFileManager defaultManager] createDirectoryAtPath:[rootPath stringByAppendingPathComponent:info.name] withIntermediateDirectories:TRUE attributes:nil error:nil];
-                return;
-            }
-
             NSLog(@"...UNZIP: %@", info.name);
 
+            // only UNZIP files to specific directories, send a ZIP file with a unspecifed directory to roms/
             if ([info.name hasPrefix:@"roms/"] || [info.name hasPrefix:@"artwork/"] || [info.name hasPrefix:@"titles/"]  || [info.name hasPrefix:@"samples/"] || [info.name hasPrefix:@"cfg/"])
                 toPath = [rootPath stringByAppendingPathComponent:info.name];
             else if ([ext isEqualToString:@"ZIP"])
@@ -2995,6 +2993,9 @@ void myosd_handle_turbo() {
 
             if (toPath != nil)
             {
+                if (![NSFileManager.defaultManager createDirectoryAtPath:[toPath stringByDeletingLastPathComponent] withIntermediateDirectories:TRUE attributes:nil error:nil])
+                    NSLog(@"ERROR CREATING DIRECTORY: ", [info.name stringByDeletingLastPathComponent]);
+
                 if (![info.data writeToFile:toPath atomically:YES])
                     NSLog(@"ERROR UNZIPing %@", info.name);
             }
