@@ -88,6 +88,8 @@ UIView* find_view(UIView* view, Class class) {
     return nil;
 }
 
+#pragma mark ChooseGameController
+
 @interface ChooseGameController () <UISearchResultsUpdating, UISearchBarDelegate> {
     NSArray* _gameList;         // all games
     NSDictionary* _gameData;    // filtered and separated into sections/scope
@@ -101,6 +103,7 @@ UIView* find_view(UIView* view, Class class) {
     NSUserDefaults* _userDefaults;
     NSArray* _key_commands;
     BOOL _searchCancel;
+    NSIndexPath* currentlyFocusedIndexPath;
 }
 @end
 
@@ -176,10 +179,13 @@ UIView* find_view(UIView* view, Class class) {
         self.navigationItem.titleView = seg;
     }
     
-    if (@available(iOS 13.0, tvOS 13.0, *)) {
-        [UISegmentedControl appearanceWhenContainedInInstancesOfClasses:@[[UINavigationBar class]]].selectedSegmentTintColor = self.view.tintColor;
+#if TARGET_OS_IOS
+    if (@available(iOS 13.0, *)) {
+        UISegmentedControl* appearance = [UISegmentedControl appearanceWhenContainedInInstancesOfClasses:@[[UINavigationBar class]]];
+        appearance.selectedSegmentTintColor = self.view.tintColor;
     }
-    
+#endif
+
     // Search
 #if TARGET_OS_IOS
     _searchController = [[UISearchController alloc] initWithSearchResultsController:nil];
@@ -229,12 +235,10 @@ UIView* find_view(UIView* view, Class class) {
     }
 #endif
     
-#if TARGET_OS_IOS
-    // attach long press gesture to collectionView (only on pre-iOS 13)
-    if (@available(iOS 13.0, *)) {} else {
+    // attach long press gesture to collectionView (only on pre-iOS 13, and tvOS)
+    if (NSClassFromString(@"UIContextMenuConfiguration") == nil) {
         [self.collectionView addGestureRecognizer:[[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)]];
     }
-#endif
     
     // collection view
     [self.collectionView registerClass:[GameCell class] forCellWithReuseIdentifier:CELL_IDENTIFIER];
@@ -356,13 +360,9 @@ UIView* find_view(UIView* view, Class class) {
             // handle YEAR comparisions
             for (NSString* op in @[@"=", @"!=", @"<", @">", @">=", @"<="])
             {
-                int year;
-                
+                int year = 0;
                 if ([word hasPrefix:op] && (year = [[word substringFromIndex:[op length]] intValue]) >= 1970)
-                {
-                    predicate = [NSPredicate predicateWithFormat:
-                                 [NSString stringWithFormat:@"%@.intValue %@ %d", kGameInfoYear, op, year]];
-                }
+                    predicate = [NSPredicate predicateWithFormat:[NSString stringWithFormat:@"%@.intValue %@ %d", kGameInfoYear, op, year]];
             }
 
             if ([word length] == 4 && [word intValue] >= 1970)
@@ -393,8 +393,8 @@ UIView* find_view(UIView* view, Class class) {
         
         // a UICollectionView will scroll like crap if we have too many sections, so try to filter/combine similar ones.
         section = [[section componentsSeparatedByString:@" ("] firstObject];
-        section = [[section componentsSeparatedByString:@" / "] firstObject];
-        section = [[section componentsSeparatedByString:@"/"] firstObject];
+        //section = [[section componentsSeparatedByString:@" / "] firstObject];
+        //section = [[section componentsSeparatedByString:@"/"] firstObject];
         
         section = [section stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
         
@@ -405,10 +405,10 @@ UIView* find_view(UIView* view, Class class) {
             gameData[section] = [[NSMutableArray alloc] init];
         [gameData[section] addObject:game];
     }
-    
+
     // and sort section names
     NSArray* gameSectionTitles = [gameData.allKeys sortedArrayUsingSelector:@selector(localizedCompare:)];
-    
+
     // a UICollectionView will scroll like crap if we have too many sections. go through and merge a few
     if ([gameSectionTitles count] > 200) {
         NSLog(@"TOO MANY SECTIONS: %d!", (int)[gameSectionTitles count]);
@@ -440,7 +440,7 @@ UIView* find_view(UIView* view, Class class) {
         gameSectionTitles = [new_titles copy];
         NSLog(@"SECTIONS AFTER MERGE: %d!", (int)[gameSectionTitles count]);
     }
-
+    
     // now add "system" items
     // TODO: maybe these should be at the top (after Recents and Favorites)?
     BOOL fSystemItemsAtEnd = FALSE;
@@ -878,16 +878,18 @@ UIView* find_view(UIView* view, Class class) {
 
 #pragma mark - Context Menu
 
-#if TARGET_OS_IOS
-
 // on iOS 13 create a UIAction for use in a UIContextMenu, on pre-iOS 13 create a UIAlertAction for use in a UIAlertController
 - (id)actionWithTitle:(NSString*)title image:(UIImage*)image destructive:(BOOL)destructive handler:(void (^)(id action))handler {
-    
-    if (@available(iOS 13.0, *)) {
-        UIAction* action = [UIAction actionWithTitle:title image:image identifier:nil handler:handler];
-        action.attributes = destructive ? UIMenuElementAttributesDestructive : 0;
-        return action;
-    } else {
+    if (NSClassFromString(@"UIContextMenuConfiguration") != nil) {
+        if (@available(iOS 13.0, tvOS 13.0, *)) {
+            UIAction* action = [UIAction actionWithTitle:title image:image identifier:nil handler:handler];
+            action.attributes = destructive ? UIMenuElementAttributesDestructive : 0;
+            return action;
+        }
+        return nil;
+    }
+    else
+    {
         UIAlertAction* action = [UIAlertAction actionWithTitle:title
                                                          style:(destructive ? UIAlertActionStyleDestructive : UIAlertActionStyleDefault)
                                                        handler:handler];
@@ -895,7 +897,7 @@ UIView* find_view(UIView* view, Class class) {
     }
 }
 
-/// get the items in the ContextMenu for a item
+// get the items in the ContextMenu for a item
 - (NSArray*)menuActionsForItemAtIndexPath:(NSIndexPath *)indexPath {
     NSDictionary* game = [self getGameInfo:indexPath];
     
@@ -910,15 +912,16 @@ UIView* find_view(UIView* view, Class class) {
     NSString* fav_icon = is_fav ? @"heart.slash" : @"heart";
 
     return @[
+        [self actionWithTitle:@"Play" image:[UIImage systemImageNamed:@"gamecontroller"] destructive:NO handler:^(id action) {
+            [self collectionView:self.collectionView didSelectItemAtIndexPath:indexPath];
+        }],
+        
         [self actionWithTitle:fav_text image:[UIImage systemImageNamed:fav_icon] destructive:NO handler:^(id action) {
             [self setFavorite:game isFavorite:!is_fav];
             [self filterGameList];
         }],
                 
-        [self actionWithTitle:@"Play" image:[UIImage systemImageNamed:@"gamecontroller"] destructive:NO handler:^(id action) {
-            [self collectionView:self.collectionView didSelectItemAtIndexPath:indexPath];
-        }],
-        
+#if TARGET_OS_IOS
         [self actionWithTitle:@"Share" image:[UIImage systemImageNamed:@"square.and.arrow.up"] destructive:NO handler:^(id action) {
             
             NSURL* url = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%s/%@.zip", get_documents_path("roms"), game[kGameInfoName]]];
@@ -932,14 +935,15 @@ UIView* find_view(UIView* view, Class class) {
             }];
 
             if (activity.popoverPresentationController != nil) {
-                activity.popoverPresentationController.sourceView = self.view;
-                activity.popoverPresentationController.sourceRect = CGRectMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds), 0.0f, 0.0f);;
-                activity.popoverPresentationController.permittedArrowDirections = 0;
+                UIView* view = [self.collectionView cellForItemAtIndexPath:indexPath] ?: self.view;
+                activity.popoverPresentationController.sourceView = view;
+                activity.popoverPresentationController.sourceRect = view.bounds;
+                activity.popoverPresentationController.permittedArrowDirections = UIPopoverArrowDirectionAny;
             }
 
             [self presentViewController:activity animated:YES completion:nil];
         }],
-
+#endif
         [self actionWithTitle:@"Delete" image:[UIImage systemImageNamed:@"trash"] destructive:YES handler:^(id action) {
             NSArray* paths = @[@"roms/%@.zip", @"roms/%@", @"artwork/%@.zip", @"titles/%@.png", @"samples/%@.zip", @"cfg/%@.cfg"];
             
@@ -963,6 +967,8 @@ UIView* find_view(UIView* view, Class class) {
 }
 
 #pragma mark - UIContextMenu (iOS 13+ only)
+
+#if TARGET_OS_IOS
 
 - (UIContextMenuConfiguration *)collectionView:(UICollectionView *)collectionView contextMenuConfigurationForItemAtIndexPath:(NSIndexPath *)indexPath point:(CGPoint)point API_AVAILABLE(ios(13.0)) {
     NSArray* actions = [self menuActionsForItemAtIndexPath:indexPath];
@@ -992,22 +998,26 @@ UIView* find_view(UIView* view, Class class) {
         [self collectionView:collectionView didSelectItemAtIndexPath:indexPath];
     }];
 }
+#endif
 
-#pragma mark - LongPress menu (pre iOS 13 only)
+- (void)collectionView:(UICollectionView *)collectionView didUpdateFocusInContext:(UICollectionViewFocusUpdateContext *)context withAnimationCoordinator:(UIFocusAnimationCoordinator *)coordinator {
+    NSLog(@"didUpdateFocusInContext: %@ => %@", context.previouslyFocusedIndexPath, context.nextFocusedIndexPath);
+    currentlyFocusedIndexPath = context.nextFocusedIndexPath;
+}
+
+#pragma mark - LongPress menu (pre iOS 13 and tvOS only)
 
 -(void)handleLongPress:(UIGestureRecognizer*)sender {
 
     if (sender.state != UIGestureRecognizerStateBegan)
         return;
 
+#if TARGET_OS_TV
+    NSIndexPath *indexPath = currentlyFocusedIndexPath;
+#else
     NSIndexPath *indexPath = [self.collectionView indexPathForItemAtPoint:[sender locationInView:self.collectionView]];
-    
+#endif
     if (indexPath == nil)
-        return;
-    
-    UICollectionViewCell* cell = [self.collectionView cellForItemAtIndexPath:indexPath];
-    
-    if (cell == nil)
         return;
     
     NSArray* actions = [self menuActionsForItemAtIndexPath:indexPath];
@@ -1023,15 +1033,14 @@ UIView* find_view(UIView* view, Class class) {
     [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
 
     if (alert.popoverPresentationController != nil) {
-        alert.popoverPresentationController.sourceView = cell;
-        alert.popoverPresentationController.sourceRect = cell.bounds;
+        UIView* view = [self.collectionView cellForItemAtIndexPath:indexPath] ?: self.view;
+        alert.popoverPresentationController.sourceView = view;
+        alert.popoverPresentationController.sourceRect = view.bounds;
         alert.popoverPresentationController.permittedArrowDirections = UIPopoverArrowDirectionAny;
     }
 
     [self presentViewController:alert animated:YES completion:nil];
 }
-
-#endif
 
 #pragma mark Keyboard and Game Controller navigation
 
@@ -1162,7 +1171,8 @@ UIView* find_view(UIView* view, Class class) {
 #if TARGET_OS_TV
 - (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event; {
     // exit the app (to the aTV home screen) when the user hits MENU at the root
-    // if we dont do this tvOS will just dismiss us
+    // if we dont do this tvOS will just dismiss us (with no game to play)
+    // [yuck](https://stackoverflow.com/questions/34522004/allow-menu-button-to-exit-tvos-app-when-pressed-on-presented-modal-view-controll)
     if ([self.navigationController topViewController] == self) {
         for (UIPress *press in presses) {
             if (press.type == UIPressTypeMenu) {

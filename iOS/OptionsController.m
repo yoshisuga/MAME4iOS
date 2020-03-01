@@ -54,6 +54,7 @@
 #import "DefaultOptionController.h"
 #import "HelpController.h"
 #import "EmulatorController.h"
+#import "SystemImage.h"
 
 @implementation OptionsController
 
@@ -143,21 +144,7 @@
    
    if (cell == nil)
    {
-       
-      UITableViewCellStyle style;
-       
-      if((indexPath.section==kFilterSection && indexPath.row==9)
-          || (indexPath.section==kMultiplayerSection && indexPath.row==0)
-          || (indexPath.section==kMultiplayerSection && indexPath.row==1)
-          || (indexPath.section==kMultiplayerSection && indexPath.row==2)
-         )
-          style = UITableViewCellStyleDefault;
-       else
-          style = UITableViewCellStyleValue1;
-       
-      cell = [[UITableViewCell alloc] initWithStyle:style
-                                      //UITableViewCellStyleDefault
-                                      //UITableViewCellStyleValue1
+      cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault
                                       reuseIdentifier:@"CellIdentifier"];
        
       cell.accessoryType = UITableViewCellAccessoryNone;
@@ -176,6 +163,7 @@
                case 0:
                {
                    cell.textLabel.text   = @"Help";
+                   cell.imageView.image = [UIImage systemImageNamed:@"questionmark.circle"];
                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                    break;
                }                   
@@ -310,32 +298,6 @@
            }
            break;
         }    
-        case kInputSection:  //Input
-        {
-            switch (indexPath.row)
-            {
-                case 0:
-                {
-                    cell.textLabel.text = @"Game Input";
-                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                    break;
-                }
-            }
-            break;
-        }
-       case kDefaultsSection:
-       {
-           switch (indexPath.row)
-           {
-               case 0:
-               {
-                   cell.textLabel.text = @"Defaults";
-                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   break;
-               }
-           }
-           break;
-       }
         case kMiscSection:  //Miscellaneous
         {
             switch (indexPath.row) 
@@ -437,26 +399,78 @@
            {
                case 0:
                {
-                   cell.textLabel.text = @"Game Filter";
-                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   cell.textLabel.text   = @"Hide Clones";
+                   switchHideClones  = [[UISwitch alloc] initWithFrame:CGRectZero];
+                   cell.accessoryView = switchHideClones;
+                   [switchHideClones setOn:[op filterClones] animated:NO];
+                   [switchHideClones addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                   break;
+               }
+               case 1:
+               {
+                   cell.textLabel.text   = @"Hide Not Working";
+                   switchHideNotWorking  = [[UISwitch alloc] initWithFrame:CGRectZero];
+                   cell.accessoryView = switchHideNotWorking;
+                   [switchHideNotWorking setOn:[op filterNotWorking] animated:NO];
+                   [switchHideNotWorking addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
                    break;
                }
            }
            break;
-       }
-       case kMultiplayerSection:
-       {
+        }
+        case kOtherSection:
+        {
+            switch (indexPath.row)
+            {
+                case 0:
+                {
+                    cell.textLabel.text = @"Peer-to-peer Netplay";
+                    cell.imageView.image = [UIImage systemImageNamed:@"antenna.radiowaves.left.and.right"];
+                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                    break;
+                }
+                case 1:
+                {
+                    cell.textLabel.text = @"Game Input";
+                    cell.imageView.image = [UIImage systemImageNamed:@"gamecontroller"];
+                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                    break;
+                }
+                case 2:
+                {
+                    cell.textLabel.text = @"Defaults";
+                    cell.imageView.image = [UIImage systemImageNamed:@"slider.horizontal.3"];
+                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                    break;
+                }
+            }
+            break;
+        }
+        case kImportSection:
+        {
            switch (indexPath.row)
            {
                case 0:
                {
-                   cell.textLabel.text = @"Peer-to-peer Netplay";
-                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   cell.textLabel.text = @"Start Server";
+                   cell.accessoryView = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"arrow.up.arrow.down.circle"]];
+                   break;
+               }
+               case 1:
+               {
+                   cell.textLabel.text = @"Import ROMs";
+                   cell.accessoryView = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"square.and.arrow.down"]];
+                   break;
+               }
+               case 2:
+               {
+                   cell.textLabel.text = @"Export ROMs";
+                   cell.accessoryView = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"square.and.arrow.up"]];
                    break;
                }
            }
            break;
-       }
+        }
    }
 
    return cell;
@@ -471,14 +485,13 @@
 		
     switch (section)
     {
-          case kSupportSection: return @"Support";
-          case kPortraitSection: return @"Portrait";
-          case kLandscapeSection: return @"Landscape";
-          case kInputSection: return @"";//@"Game Input";
-          case kDefaultsSection: return @"";
-          case kMiscSection: return @"";
-          case kFilterSection: return @"";//@"Game Filter";
-          case kMultiplayerSection: return @"";//@"Peer-to-peer Netplay";
+        case kSupportSection: return @"Support";
+        case kPortraitSection: return @"Portrait";
+        case kLandscapeSection: return @"Landscape";
+        case kMiscSection: return @"Options";
+        case kFilterSection: return @"Game Filter";
+        case kOtherSection: return @""; // @"Other";
+        case kImportSection: return @"Import and Export";
     }
     return @"Error!";
 }
@@ -491,11 +504,10 @@
           case kSupportSection: return 1;
           case kPortraitSection: return 6;
           case kLandscapeSection: return 6;
-          case kInputSection: return 1;
-          case kDefaultsSection: return 1;
+          case kOtherSection: return 3;
           case kMiscSection: return 10;
-          case kFilterSection: return 1;
-          case kMultiplayerSection: return 1;
+          case kFilterSection: return 2;
+          case kImportSection: return 2; // TODO: change to 3 when Exporting ROMs works.
       }
     return -1;
 }
@@ -562,6 +574,12 @@
     if(sender == switchLowlsound)
         op.lowlsound = [switchLowlsound isOn];
     
+    if(sender == switchHideClones)
+        op.filterClones = [sender isOn];
+
+    if(sender == switchHideNotWorking)
+        op.filterNotWorking = [sender isOn];
+
 	[op saveOptions];
 }
 
@@ -579,23 +597,26 @@
                 HelpController *controller = [[HelpController alloc] init];
                 [[self navigationController] pushViewController:controller animated:YES];
             }
-            
             break;
         }
-        case kInputSection:
+        case kOtherSection:
         {
-            if (row==0){
+            if(row==0)
+            {
+                NetplayController *netplayOptController = [[NetplayController alloc] init];
+                netplayOptController.emuController = self.emuController;
+                
+                [[self navigationController] pushViewController:netplayOptController animated:YES];
+                [tableView reloadData];
+            }
+            if (row==1){
                 InputOptionController *inputOptController = [[InputOptionController alloc] init];
                 inputOptController.emuController = self.emuController;
                 
                 [[self navigationController] pushViewController:inputOptController animated:YES];
                 [tableView reloadData];
             }
-            break;
-        }
-        case kDefaultsSection:
-        {
-            if (row==0){
+            if (row==2){
                 DefaultOptionController *defaultOptController = [[DefaultOptionController alloc] init];
                 defaultOptController.emuController = self.emuController;
                 
@@ -629,27 +650,16 @@
 
             break;
         }
-        case kMultiplayerSection:
+        case kImportSection:
         {
-            if(row==0)
-            {
-                NetplayController *netplayOptController = [[NetplayController alloc] init];
-                netplayOptController.emuController = self.emuController;
-                
-                [[self navigationController] pushViewController:netplayOptController animated:YES];
-                [tableView reloadData];
+            if (row==0) {
+                [emuController runServer];
             }
-            break;
-        }
-        case kFilterSection:
-        {
-            if(row==0)
-            {
-                FilterOptionController *filterOptController = [[FilterOptionController alloc] init];
-                filterOptController.emuController = self.emuController;
-                
-                [[self navigationController] pushViewController:filterOptController animated:YES];
-                [tableView reloadData];
+            if (row==1) {
+                [emuController runImport];
+            }
+            if (row==2) {
+                [emuController runExport];
             }
             break;
         }

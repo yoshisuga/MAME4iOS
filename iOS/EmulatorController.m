@@ -179,13 +179,6 @@ int prev_myosd_mouse = 0;
         
 static pthread_t main_tid;
 
-static int enable_menu_exit_option = 0;
-static int old_pref_num_buttons = 0;
-static int old_filter_manufacturer = 0;
-static int old_filter_gte_year = 0;
-static int old_filter_lte_year = 0;
-static int old_filter_driver_source = 0;
-static int old_filter_category = 0;
 static int old_myosd_num_buttons = 0;
 static int button_auto = 0;
 static int ways_auto = 0;
@@ -409,7 +402,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     
     [self startMenu];
 
-    enable_menu_exit_option  = myosd_inGame && myosd_in_menu==0;
+    int enable_menu_exit_option = myosd_inGame && myosd_in_menu==0;
     
     menu = [UIAlertController alertControllerWithTitle:@"MAME4iOS" message:nil preferredStyle:UIAlertControllerStyleActionSheet];
     
@@ -443,11 +436,13 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
         [self runSettings];
     }]];
 
+    /* Start Server is in Settings (no need for it to be on the in-game menu)
     [menu addAction:[UIAlertAction actionWithTitle:@"Upload Files" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"arrow.up.arrow.down.circle"] handler:^(UIAlertAction * _Nonnull action) {
         [[WebServer sharedInstance] startUploader];
         [WebServer sharedInstance].webUploader.delegate = self;
         [self endMenu]; // [self done:self];
     }]];
+    */
 
     if(enable_menu_exit_option) {
         [menu addAction:[UIAlertAction actionWithTitle:@"Exit Game" style:UIAlertActionStyleDestructive image:[UIImage systemImageNamed:@"arrow.uturn.left.circle"] handler:^(UIAlertAction * _Nonnull action) {
@@ -630,11 +625,9 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     myosd_throttle = [op throttle];
     myosd_cheat = [op cheats];
     myosd_vsync = [op vsync] == 1 ? 6000 : -1;
-   
-    
+       
     myosd_sleep = [op sleep];
     
-    old_pref_num_buttons = [op numbuttons];
     g_pref_aplusb = [op aplusb];
     
     int nbuttons = [op numbuttons];
@@ -719,36 +712,18 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     myosd_res = [op emures]+1;
 
     myosd_filter_clones = op.filterClones;
-    myosd_filter_favorites = op.filterFavorites;
     myosd_filter_not_working = op.filterNotWorking;
-    
-    old_filter_manufacturer =  op.manufacturerValue;
-    old_filter_gte_year = op.yearGTEValue;
-    old_filter_lte_year = op.yearLTEValue;
-    old_filter_driver_source = op.driverSourceValue;
-    old_filter_category = op.categoryValue;
-    myosd_filter_manufacturer = op.manufacturerValue == 0 ? -1 : op.manufacturerValue -1;
-    myosd_filter_gte_year = op.yearGTEValue == 0 ? -1 : op.yearGTEValue -1;
-    myosd_filter_lte_year = op.yearLTEValue == 0 ? -1 : op.yearLTEValue -1;
-    myosd_filter_driver_source = op.driverSourceValue == 0 ? -1 : op.driverSourceValue -1;
-    myosd_filter_category = op.categoryValue == 0 ? -1 : op.categoryValue -1;
-    
-    if(op.filterKeyword == nil)
-       myosd_filter_keyword[0] = '\0';
-    else
-       strcpy(myosd_filter_keyword, [op.filterKeyword UTF8String]);
     
     global_low_latency_sound = [op lowlsound];
     if(myosd_video_threaded==-1)
     {
-          
         myosd_video_threaded = [op threaded];
         main_thread_priority =  MAX(1,[op mainPriority] * 10);
         video_thread_priority = MAX(1,[op videoPriority] * 10);
         myosd_dbl_buffer = [op dblbuff];
         main_thread_priority_type = [op mainThreadType]+1;
         main_thread_priority_type = [op videoThreadType]+1;
-        printf("thread Type %d %d\n",main_thread_priority_type,main_thread_priority_type);
+        NSLog(@"thread Type %d %d\n",main_thread_priority_type,main_thread_priority_type);
     }
     
     myosd_autofire = [op autofire];
@@ -830,34 +805,6 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     
     [self dismissViewControllerAnimated:YES completion:nil];
 
-    int keyword_changed = 0;
-    if(myosd_filter_keyword[0]!='\0' && [op.filterKeyword UTF8String] != nil)
-        keyword_changed = strcmp(myosd_filter_keyword,[op.filterKeyword UTF8String])!=0;
-    else if(myosd_filter_keyword[0]=='\0' && [op.filterKeyword UTF8String] == nil)
-        keyword_changed = 0;
-    else
-        keyword_changed = 1;
-    
-    //printf("%d %s %s\n",keyword_changed,myosd_filter_keyword,[op.filterKeyword UTF8String]);
-    
-    if (myosd_filter_clones != op.filterClones ||
-        myosd_filter_favorites!= op.filterFavorites ||
-        myosd_filter_not_working != op.filterNotWorking ||
-        old_filter_manufacturer != op.manufacturerValue ||
-        old_filter_gte_year != op.yearGTEValue ||
-        old_filter_lte_year != op.yearLTEValue ||
-        old_filter_driver_source != op.driverSourceValue ||
-        old_filter_category != op.categoryValue ||
-        keyword_changed
-        
-        )
-    {
-        if(!(myosd_in_menu==0 && myosd_inGame)){
-            myosd_reset_filter = 1;
-        }
-        myosd_last_game_selected = 0;
-    }
-    
     if(global_low_latency_sound != [op lowlsound])
     {
         if(myosd_sound_value!=-1)
@@ -869,7 +816,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     }
     
     // if we are at the root menu, exit and restart.
-    if (myosd_inGame == 0 && g_mame_game[0] == 0)
+    if (myosd_inGame == 0)
         myosd_exitGame = 1;
 
     [self updateOptions];
@@ -2983,6 +2930,7 @@ void myosd_handle_turbo() {
     NSString *rootPath = [NSString stringWithUTF8String:get_documents_path("")];
     NSString *romsPath = [NSString stringWithUTF8String:get_documents_path("roms")];
     NSString *artwPath = [NSString stringWithUTF8String:get_documents_path("artwork")];
+    NSString *sampPath = [NSString stringWithUTF8String:get_documents_path("samples")];
 
     NSString *romPath = [rootPath stringByAppendingPathComponent:romName];
 
@@ -2993,11 +2941,13 @@ void myosd_handle_turbo() {
     //
     //  * zipset, if the ZIP contains other ZIP files, then it is a zip of romsets, aka zipset?.
     //  * artwork, if the ZIP contains a .LAY file, then it is artwork
+    //  * samples, if the ZIP contains a .WAV file, then it is samples
     //  * romset, if the ZIP has "normal" files in it assume it is a romset.
     //
     int __block numLAY = 0;
     int __block numZIP = 0;
     int __block numCHD = 0;
+    int __block numWAV = 0;
     int __block numFiles = 0;
     BOOL result = [ZipFile enumerate:romPath withOptions:ZipFileEnumFiles usingBlock:^(ZipFileInfo* info) {
         NSString* ext = [info.name.pathExtension uppercaseString];
@@ -3008,6 +2958,8 @@ void myosd_handle_turbo() {
             numZIP++;
         if ([ext isEqualToString:@"CHD"])
             numCHD++;
+        if ([ext isEqualToString:@"WAV"])
+            numWAV++;
     }];
 
     NSString* toPath = nil;
@@ -3036,7 +2988,7 @@ void myosd_handle_turbo() {
 
             NSLog(@"...UNZIP: %@", info.name);
 
-            if ([info.name hasPrefix:@"roms/"] || [info.name hasPrefix:@"artwork/"] || [info.name hasPrefix:@"titles/"] || [info.name hasPrefix:@"cfg/"])
+            if ([info.name hasPrefix:@"roms/"] || [info.name hasPrefix:@"artwork/"] || [info.name hasPrefix:@"titles/"]  || [info.name hasPrefix:@"samples/"] || [info.name hasPrefix:@"cfg/"])
                 toPath = [rootPath stringByAppendingPathComponent:info.name];
             else if ([ext isEqualToString:@"ZIP"])
                 toPath = [romsPath stringByAppendingPathComponent:[info.name lastPathComponent]];
@@ -3057,13 +3009,18 @@ void myosd_handle_turbo() {
         NSLog(@"%@ is a ARTWORK file", romName);
         toPath = [artwPath stringByAppendingPathComponent:romName];
     }
+    else if (numWAV != 0)
+    {
+        NSLog(@"%@ is a SAMPLES file", romName);
+        toPath = [sampPath stringByAppendingPathComponent:romName];
+    }
     else
     {
         NSLog(@"%@ is a ROMSET", romName);
         toPath = [romsPath stringByAppendingPathComponent:romName];
     }
 
-    // move file to either ROMS or ARTWORK
+    // move file to either ROMS, ARTWORK or SAMPLES
     if (toPath)
     {
         //first attemp to delete de old one
@@ -3151,6 +3108,44 @@ void myosd_handle_turbo() {
         });
     }
 }
+
+#pragma mark - IMPORT and EXPORT
+
+#if TARGET_OS_IOS
+- (void)documentPickerWasCancelled:(UIDocumentPickerViewController *)controller {
+    NSLog(@"IMPORT CANCELED");
+}
+- (void)documentPicker:(UIDocumentPickerViewController *)controller didPickDocumentAtURL:(NSURL *)url {
+    NSLog(@"IMPORT: %@", url);
+    UIApplication* application = UIApplication.sharedApplication;
+    // call our own openURL handler (in Bootstrapper)
+    [application.delegate application:application openURL:url options:@{UIApplicationOpenURLOptionsOpenInPlaceKey:@(YES)}];
+}
+- (void)documentPicker:(UIDocumentPickerViewController *)controller didPickDocumentsAtURLs:(NSArray <NSURL *>*)urls {
+    for (NSURL* url in urls) {
+        [self documentPicker:controller didPickDocumentAtURL:url];
+    }
+}
+
+- (void)runImport {
+    // TODO: support multi select??
+    UIDocumentPickerViewController* documentPicker = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:@[@"public.zip-archive"] inMode:UIDocumentPickerModeOpen];
+    documentPicker.modalPresentationStyle = UIModalPresentationFormSheet;
+    documentPicker.delegate = self;
+    [(self.presentedViewController ?: self) presentViewController:documentPicker animated:YES completion:nil];
+}
+
+- (void)runExport {
+    [self showAlertWithTitle:@"MAME4iOS" message:@"T.B.D."];
+}
+#endif
+
+- (void)runServer {
+    [[WebServer sharedInstance] startUploader];
+    [WebServer sharedInstance].webUploader.delegate = self;
+}
+
+#pragma mark - CUSTOM LAYOUT
 
 #if TARGET_OS_IOS
 -(void)beginCustomizeCurrentLayout{
@@ -3746,9 +3741,6 @@ void myosd_handle_turbo() {
 #pragma mark GCDWebServerDelegate
 - (void)webServerDidCompleteBonjourRegistration:(GCDWebServer*)server {
     
-    if (self.presentedViewController != nil)    // dont show multiple server alerts.
-        return;
-    
     NSMutableString *servers = [[NSMutableString alloc] init];
 
     if ( server.serverURL != nil ) {
@@ -3762,10 +3754,11 @@ void myosd_handle_turbo() {
     }
 #if TARGET_OS_TV
     NSString* welcome = @"Welcome to MAME for AppleTV";
+    NSString* message = [NSString stringWithFormat:@"\nTo transfer ROMs from your computer go to one of these addresses in your web browser:\n\n%@",servers];
 #else
     NSString* welcome = @"Welcome to MAME4iOS";
+    NSString* message = [NSString stringWithFormat:@"\nTo transfer ROMs from your computer, use AirDrop, or go to one of these addresses in your web browser:\n\n%@",servers];
 #endif
-    NSString* message = [NSString stringWithFormat:@"\nTo transfer ROMs from your computer, use AirDrop, or go to one of these addresses on your web browser:\n\n%@",servers];
     NSString* title = g_no_roms_found ? welcome : @"Web Server Started";
     NSString* done  = g_no_roms_found ? @"Reload ROMs" : @"Stop Server";
 
@@ -3776,7 +3769,10 @@ void myosd_handle_turbo() {
         if (!myosd_inGame)
             myosd_exitGame = 1;     /* exit mame menu and re-scan ROMs*/
     }]];
-    [self presentViewController:alert animated:YES completion:nil];
+    UIViewController* vc = self;
+    while (vc.presentedViewController != nil)
+        vc = vc.presentedViewController;
+    [vc presentViewController:alert animated:YES completion:nil];
 }
 
 #pragma mark play GAME
@@ -3886,8 +3882,7 @@ void myosd_handle_turbo() {
     g_no_roms_found = [games count] == 0;
     if (g_no_roms_found) {
         NSLog(@"NO GAMES, START SERVER....");
-        [[WebServer sharedInstance] startUploader];
-        [WebServer sharedInstance].webUploader.delegate = self;
+        [self runServer];
         return;
     }
     if (g_mame_game_error[0] != 0) {
@@ -3952,7 +3947,7 @@ void myosd_handle_turbo() {
 {
     NSDictionary* game = [[NSUserDefaults standardUserDefaults] dictionaryForKey:kSelectedGameKey];
     
-    if (game == nil || game[kGameInfoName] == nil)
+    if (game == nil || game[kGameInfoName] == nil || [game[kGameInfoName] length] <= 1)
         return;
 
 #if TARGET_OS_IOS && __IPHONE_OS_VERSION_MAX_ALLOWED >= 120100

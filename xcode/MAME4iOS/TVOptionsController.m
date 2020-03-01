@@ -90,7 +90,7 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     if ( section == kFilterSection ) {
-        return 1;
+        return 2;
     } else if ( section == kScreenSection ) {
         return 4;
     } else if ( section == kMiscSection ) {
@@ -99,6 +99,8 @@
         return 1;
     } else if ( section == kInputSection ) {
         return 1;
+    } else if ( section == kServerSection ) {
+        return 1;
     }
     return 0;
 }
@@ -106,6 +108,9 @@
 -(NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
     if ( section == kScreenSection ) {
         return @"Display Options";
+    }
+    if ( section == kFilterSection ) {
+        return @"ROM Options";
     }
     return @"";
 }
@@ -119,8 +124,18 @@
     cell.accessoryType = UITableViewCellAccessoryNone;
     cell.accessoryView = nil;
     if ( indexPath.section == kFilterSection ) {
-        cell.textLabel.text = @"Game Filter";
-        cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+        if ( indexPath.row == 0 ) {
+            cell.textLabel.text   = @"Hide Clones";
+            cell.accessoryView = [TVOptionsController labelForOnOffValue:self.options.filterClones];
+        } else if ( indexPath.row == 1 ) {
+            cell.textLabel.text   = @"Hide Not Working";
+            cell.accessoryView = [TVOptionsController labelForOnOffValue:self.options.filterNotWorking];
+        }
+    } else if ( indexPath.section == kServerSection ) {
+        if ( indexPath.row == 0 ) {
+            cell.textLabel.text = @"Start Server";
+            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+        }
     } else if ( indexPath.section == kScreenSection ) {
         if ( indexPath.row == 0 ) {
             cell.textLabel.text  = @"Smoothed Image";
@@ -177,10 +192,17 @@
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
     if ( indexPath.section == kFilterSection ) {
-        FilterOptionController *filterOptController = [[FilterOptionController alloc] init];
-        filterOptController.emuController = self.emuController;
-        [[self navigationController] pushViewController:filterOptController animated:YES];
-        [tableView reloadData];
+        if ( indexPath.row == 0 ) {
+            self.options.filterClones = self.options.filterClones ? 0 : 1;
+            [TVOptionsController setOnOffValueForCell:cell optionValue:self.options.filterClones];
+        } else if ( indexPath.row == 1 ) {
+            self.options.filterNotWorking = self.options.filterNotWorking ? 0 : 1;
+            [TVOptionsController setOnOffValueForCell:cell optionValue:self.options.filterNotWorking];
+        }
+    } else if ( indexPath.section == kServerSection ) {
+        if ( indexPath.row == 0 ) {
+            [emuController runServer];
+        }
     } else if ( indexPath.section == kScreenSection ) {
         if ( indexPath.row == 0 ) {
             // Smoothed Image

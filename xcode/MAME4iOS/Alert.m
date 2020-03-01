@@ -148,8 +148,10 @@
 + (instancetype)actionWithTitle:(nullable NSString *)title style:(UIAlertActionStyle)style image:(UIImage*)image handler:(void (^ __nullable)(UIAlertAction *action))handler
 {
     UIAlertAction* action = [self actionWithTitle:title style:style handler:handler];
+#if TARGET_OS_IOS // images in Alerts look bad on tvOS (they are too small)
     if ([action respondsToSelector:@selector(image)])
         [action setValue:image forKey:@"image"];
+#endif
     return action;
 }
 
