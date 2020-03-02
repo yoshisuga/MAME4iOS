@@ -4,6 +4,11 @@ Original Author: David Valdeita (Seleuco)<br/>
 
 This is a port of MAME 0.139u1 for iOS and tvOS.
 
+![iPhone Screenshot](README.images/screenshot-iphone-small.png)
+![AppleTV Screenshot](README.images/screenshot-atv-small.png)
+
+[Download iOS IPA (v2020.1)](https://mega.nz/#!rBY0kY4I!u5z0D5M6g_PfhRebaVc2Rnpy6Q-696CeU7vBZqju7iM) | [Download tvOS IPA (v2020.1)](https://mega.nz/#!eQQAUIBb!wE0mbC-jEaYWuKTeS56SoJbriBF0FkyZeozLgUkGCuQ)
+
 [Chat on Discord!](https://discord.gg/ZC6wkmU)
 
 MAME stands for Multi Arcade Machine Emulator, and lets you play arcade games from the past 30+ years on a device that fits in your pocket! My teenage self from decades ago would be replaying that ["mind blown GIF"](https://media0.giphy.com/media/xT0xeJpnrWC4XWblEk/giphy.gif) over and over again, but that GIF did not exist back then.
@@ -16,6 +21,7 @@ This repo adds support for:
 
 - 64-bit binary to run on modern and future iOS devices
 - Supports modern device screen sizes, including iPhone X/XR/XS/XS Max and iPad Pro
+- A native iOS/iPadOS/tvOS frontend (by @ToddLa, new in 2020!)
 - tvOS (new in 2019!)
 - An in-app web server to transfer files from your computer (new in 2019!)
 - Transfer ROMs, Artwork, and ROMSETs via AirDrop or iOS File Sharing (new in 2020!)
