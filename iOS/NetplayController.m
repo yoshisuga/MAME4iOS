@@ -754,8 +754,8 @@ static void netplay_warn_callback(char *msg)
     
     switch(central.state)
     {
-        case CBCentralManagerStatePoweredOff: btState = BluetoothOff; break;
-        case CBCentralManagerStatePoweredOn: btState = BluetoothOn; break;
+        case CBManagerStatePoweredOff: btState = BluetoothOff; break;
+        case CBManagerStatePoweredOn: btState = BluetoothOn; break;
         default: btState =  BluetoothUnknown; break;
     }
     NSLog(@"Bluetooth state: %d", btState);

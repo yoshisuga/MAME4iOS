@@ -3134,15 +3134,13 @@ void myosd_handle_turbo() {
 - (void)documentPickerWasCancelled:(UIDocumentPickerViewController *)controller {
     NSLog(@"IMPORT CANCELED");
 }
-- (void)documentPicker:(UIDocumentPickerViewController *)controller didPickDocumentAtURL:(NSURL *)url {
-    NSLog(@"IMPORT: %@", url);
-    UIApplication* application = UIApplication.sharedApplication;
-    // call our own openURL handler (in Bootstrapper)
-    [application.delegate application:application openURL:url options:@{UIApplicationOpenURLOptionsOpenInPlaceKey:@(YES)}];
-}
 - (void)documentPicker:(UIDocumentPickerViewController *)controller didPickDocumentsAtURLs:(NSArray <NSURL *>*)urls {
+    UIApplication* application = UIApplication.sharedApplication;
     for (NSURL* url in urls) {
-        [self documentPicker:controller didPickDocumentAtURL:url];
+        NSLog(@"IMPORT: %@", url);
+
+        // call our own openURL handler (in Bootstrapper)
+        [application.delegate application:application openURL:url options:@{UIApplicationOpenURLOptionsOpenInPlaceKey:@(YES)}];
     }
 }
 

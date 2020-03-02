@@ -94,7 +94,8 @@
 
 -(BOOL) webView:(UIWebView *)inWeb shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)type {
     if ( type == UIWebViewNavigationTypeLinkClicked && !request.URL.isFileURL) {
-        [[UIApplication sharedApplication] openURL:request.URL];
+        
+        [[UIApplication sharedApplication] openURL:request.URL options:@{} completionHandler:nil];
         return NO;
     }
     
