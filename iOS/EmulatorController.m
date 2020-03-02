@@ -393,6 +393,33 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     change_pause(1);
 }
 
+- (void)runLoadSaveState:(BOOL)load
+{
+    NSString* message = [NSString stringWithFormat:@"Select State to %@", load ? @"Load" : @"Save"];
+    
+    [self showAlertWithTitle:nil message:message buttons:@[@"State 1", @"State 2"] handler:^(NSUInteger button) {
+        if (load)
+            myosd_loadstate = 1;
+        else
+            myosd_savestate = 1;
+
+        if (button == 0)
+            push_mame_buttons(0, MYOSD_NONE, MYOSD_B);       // delay, slot 1
+        else
+            push_mame_buttons(0, MYOSD_NONE, MYOSD_X);       // delay, slot 2
+        
+        [self endMenu];
+    }];
+}
+- (void)runLoadState
+{
+    [self runLoadSaveState:TRUE];
+}
+- (void)runSaveState
+{
+    [self runLoadSaveState:FALSE];
+}
+
 - (void)runMenu:(int)player
 {
     if (self.presentedViewController != nil)
@@ -413,12 +440,10 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
             [self endMenu];
         }]];
         [menu addAction:[UIAlertAction actionWithTitle:@"Load State" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"bookmark.fill"] handler:^(UIAlertAction * _Nonnull action) {
-            myosd_loadstate = 1;
-            [self endMenu];
+            [self runLoadState];
         }]];
         [menu addAction:[UIAlertAction actionWithTitle:@"Save State" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"bookmark"] handler:^(UIAlertAction * _Nonnull action) {
-            myosd_savestate = 1;
-            [self endMenu];
+            [self runSaveState];
         }]];
         [menu addAction:[UIAlertAction actionWithTitle:@"MAME Menu" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"slider.horizontal.3"] handler:^(UIAlertAction * _Nonnull action) {
             push_mame_button(0, (MYOSD_SELECT|MYOSD_START));
@@ -3355,7 +3380,7 @@ void myosd_handle_turbo() {
         //      MENU+R1 = START                 MAME MENU
         //      MENU+X  = EXIT GAME             EXIT GAME
         //      MENU+B  = MAME MENU             MAME4iOS MENU
-        //      MENU+A  = LOAD STATE            LOAD STATE
+        //      MENU+A  = LOAD STATE            LOAD STATE 
         //      MENU+Y  = SAVE STATE            SAVE STATE
         //
         //      OPTION   = COIN + START
