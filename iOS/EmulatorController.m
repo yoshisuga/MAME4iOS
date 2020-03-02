@@ -395,9 +395,22 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
 
 - (void)runLoadSaveState:(BOOL)load
 {
+    if (self.presentedViewController) {
+        NSLog(@"runLoadSaveState: BUSY!");
+        return;
+    }
+    
     NSString* message = [NSString stringWithFormat:@"Select State to %@", load ? @"Load" : @"Save"];
     
-    [self showAlertWithTitle:nil message:message buttons:@[@"State 1", @"State 2"] handler:^(NSUInteger button) {
+#if TARGET_OS_TV
+    NSString* state1 = @"State 1";
+    NSString* state2 = @"State 2";
+#else
+    NSString* state1 = controllers.count > 0 ? @"Ⓐ State A" : @"State 1";
+    NSString* state2 = controllers.count > 0 ? @"Ⓑ State B" : @"State 2";
+#endif
+    
+    [self showAlertWithTitle:nil message:message buttons:@[state1, state2] handler:^(NSUInteger button) {
         if (load)
             myosd_loadstate = 1;
         else
@@ -3378,7 +3391,7 @@ void myosd_handle_turbo() {
         //      MENU+R1 = START                 MAME MENU
         //      MENU+X  = EXIT GAME             EXIT GAME
         //      MENU+B  = MAME MENU             MAME4iOS MENU
-        //      MENU+A  = LOAD STATE            LOAD STATE 
+        //      MENU+A  = LOAD STATE            LOAD STATE
         //      MENU+Y  = SAVE STATE            SAVE STATE
         //
         //      OPTION   = COIN + START
@@ -3432,16 +3445,12 @@ void myosd_handle_turbo() {
              // Load State
              else if (MFIController.microGamepad.buttonA.pressed ) {
                  NSLog(@"%d: MENU+A => LOAD STATE", index);
-                 myosd_joy_status[index] &= ~MYOSD_A;
-                 myosd_pad_status &= ~MYOSD_A;
-                 myosd_loadstate = 1;
+                 [self runLoadState];
              }
              // Save State
              else if (MFIController.extendedGamepad.buttonY.pressed ) {
                  NSLog(@"%d: MENU+Y => SAVE STATE", index);
-                 myosd_joy_status[index] &= ~MYOSD_Y;
-                 myosd_pad_status &= ~MYOSD_Y;
-                 myosd_savestate = 1;
+                 [self runSaveState];
              }
              else {
                  return;
@@ -3470,6 +3479,7 @@ void myosd_handle_turbo() {
                     myosd_joy_status[index] |= MYOSD_A;
                 }
                 else {
+                    [self handle_MENU];     // handle menu on button UP
                     myosd_joy_status[index] &= ~MYOSD_A;
                 }
             }
@@ -3478,6 +3488,7 @@ void myosd_handle_turbo() {
                     myosd_joy_status[index] |= MYOSD_B;
                 }
                 else {
+                    [self handle_MENU];     // handle menu on button UP
                     myosd_joy_status[index] &= ~MYOSD_B;
                 }
             }
@@ -3550,8 +3561,6 @@ void myosd_handle_turbo() {
                 }
             }
 #endif
-            if (element != gamepad.dpad)
-                [self handle_MENU];
         };
         
         //
