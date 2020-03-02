@@ -214,6 +214,7 @@ UIView* find_view(UIView* view, Class class) {
         self.navigationItem.hidesSearchBarWhenScrolling = TRUE;
     }
     else {
+#if (TARGET_OS_IPHONE && __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_11_0)
         _searchController.searchBar.barTintColor = [UIColor blackColor];
         
         self.navigationController.navigationBar.translucent = NO;
@@ -227,6 +228,7 @@ UIView* find_view(UIView* view, Class class) {
         self.collectionView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
         self.collectionView.contentInset = UIEdgeInsetsMake(h, 0, 0, 0);
         [self.view addSubview:_searchController.searchBar];
+#endif
     }
 #else   // tvOS
     if (self.navigationController != nil) {
