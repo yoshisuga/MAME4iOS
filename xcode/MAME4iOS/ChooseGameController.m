@@ -137,7 +137,7 @@ UIView* find_view(UIView* view, Class class) {
     UILabel* title = [[UILabel alloc] init];
 #if TARGET_OS_IOS
     title.text = @"MAME4iOS";
-    title.font = [UIFont boldSystemFontOfSize:32.0];
+    title.font = [UIFont boldSystemFontOfSize:28.0];
 #else
     title.text = @"MAME4tvOS";
     title.font = [UIFont boldSystemFontOfSize:64.0];
@@ -175,6 +175,7 @@ UIView* find_view(UIView* view, Class class) {
     if (self.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular) {
         UISegmentedControl* seg = [[UISegmentedControl alloc] initWithItems:ALL_SCOPES];
         seg.selectedSegmentIndex = [ALL_SCOPES indexOfObject:_gameFilterScope];
+        //seg.apportionsSegmentWidthsByContent = YES;
         [seg addTarget:self action:@selector(scopeChange:) forControlEvents:UIControlEventValueChanged];
         self.navigationItem.titleView = seg;
     }
@@ -446,7 +447,7 @@ UIView* find_view(UIView* view, Class class) {
     BOOL fSystemItemsAtEnd = FALSE;
 
     gameData[SYSTEM_GAMES_TITLE] = @[
-        @{kGameInfoDescription:@"MAME", kGameInfoName:kGameInfoNameMameMenu},
+        @{kGameInfoDescription:@"MAME Menu", kGameInfoName:kGameInfoNameMameMenu},
         @{kGameInfoDescription:@"Settings", kGameInfoName:kGameInfoNameSettings},
     ];
     
@@ -746,20 +747,24 @@ UIView* find_view(UIView* view, Class class) {
     
     GameCell* cell = [collectionView dequeueReusableCellWithReuseIdentifier:CELL_IDENTIFIER forIndexPath:indexPath];
     
-    NSString* text = info[kGameInfoDescription];
-    
-    if  (_layoutMode == LayoutTiny) {
-        text = [[text componentsSeparatedByString:@" ("] firstObject];
+    //  set the text based on the LayoutMode
+    //
+    //  TINY        SMALL                   LARGE or LIST
+    //  romname     short Description       full Description
+    //                                      Manufacturer • Year  • romname [parent-rom]
+    //
+    if (_layoutMode == LayoutTiny) {
         cell.title.font = [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
+        cell.title.text = info[kGameInfoName];
+        cell.title.numberOfLines = 1;
+        cell.title.adjustsFontSizeToFitWidth = TRUE;
     }
+    else if (_layoutMode == LayoutSmall) {
+        cell.title.text = [[info[kGameInfoDescription] componentsSeparatedByString:@" ("] firstObject];
+    }
+    else { // LayoutLarge and LayoutList
+        cell.title.text = info[kGameInfoDescription];
 
-    cell.title.text = text;
-    cell.detail.text = nil;
-    cell.info.text = nil;
-    
-//    cell.title.text = @"Call me Ishmael. Some years ago - never mind how long precisely - having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world.";
-    
-    if  (_layoutMode > LayoutTiny) {
         NSString* text = info[kGameInfoManufacturer];
 
         if ([info[kGameInfoYear] length] > 1)
@@ -1303,12 +1308,14 @@ UIView* find_view(UIView* view, Class class) {
     _title.font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
     _title.textColor = [UIColor whiteColor];
     _title.numberOfLines = 0;
+    _title.adjustsFontSizeToFitWidth = FALSE;
     
     _detail.text = nil;
     _detail.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
     _detail.textColor = [UIColor lightGrayColor];
     _detail.numberOfLines = 0;
-    
+    _title.adjustsFontSizeToFitWidth = FALSE;
+
     _info.text = nil;
     _info.font = _detail.font;
     _info.textColor = _detail.textColor;
