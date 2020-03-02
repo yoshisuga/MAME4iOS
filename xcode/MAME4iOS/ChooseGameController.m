@@ -38,7 +38,6 @@
 #define LAYOUT_MODE_KEY     @"LayoutMode"
 #define SCOPE_MODE_KEY      @"ScopeMode"
 #define RECENT_GAMES_MAX    4
-#define RECENT_GAMES_MIN    2
 #define ALL_SCOPES          @[@"All", @"Manufacturer", @"Year", @"Genre"]
 
 #define CLAMP(x, num) MIN(MAX(x,0), (num)-1)
@@ -93,7 +92,7 @@ UIView* find_view(UIView* view, Class class) {
 
 #pragma mark ChooseGameController
 
-@interface ChooseGameController () <UISearchResultsUpdating, UISearchBarDelegate> {
+@interface ChooseGameController () <UISearchResultsUpdating, UISearchBarDelegate, UISearchControllerDelegate> {
     NSArray* _gameList;         // all games
     NSDictionary* _gameData;    // filtered and separated into sections/scope
     NSArray* _gameSectionTitles;// sorted section names
@@ -191,6 +190,7 @@ UIView* find_view(UIView* view, Class class) {
 #if TARGET_OS_IOS
     _searchController = [[UISearchController alloc] initWithSearchResultsController:nil];
     _searchController.searchResultsUpdater = self;
+    _searchController.delegate = self;
     _searchController.searchBar.delegate = self;
     _searchController.obscuresBackgroundDuringPresentation = NO;
     _searchController.searchBar.scopeButtonTitles = ALL_SCOPES;
@@ -204,37 +204,30 @@ UIView* find_view(UIView* view, Class class) {
     _searchController.searchBar.placeholder = @"Filter";
     
     // make the cancel button say Done
-    [[UIBarButtonItem appearanceWhenContainedInInstancesOfClasses:@[[UISearchBar class]]] setTitle:@"Done"];
-    
+    //[[UIBarButtonItem appearanceWhenContainedInInstancesOfClasses:@[[UISearchBar class]]] setTitle:@"Done"];
+    _searchController.searchBar.showsCancelButton = YES;
+    [self updateSearchCancelButton];
+
     self.definesPresentationContext = TRUE;
 
-    // on iOS 11+ use search in navbar, else just add it...
-    if (@available(iOS 11.0, *)) {
-        self.navigationItem.searchController = _searchController;
-        self.navigationItem.hidesSearchBarWhenScrolling = TRUE;
-    }
-    else {
-#if (TARGET_OS_IPHONE && __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_11_0)
-        _searchController.searchBar.barTintColor = [UIColor blackColor];
-        
-        self.navigationController.navigationBar.translucent = NO;
-        _searchController.searchBar.translucent = NO;
-
-        CGFloat h = self.navigationController.navigationBar.frame.size.height;
-        _searchController.searchBar.frame = CGRectMake(0, 0, self.view.frame.size.width, h);
-        _searchController.searchBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        _searchController.dimsBackgroundDuringPresentation = NO;
-        
-        self.collectionView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-        self.collectionView.contentInset = UIEdgeInsetsMake(h, 0, 0, 0);
-        [self.view addSubview:_searchController.searchBar];
-#endif
-    }
+    // put search in navbar...
+    self.navigationItem.searchController = _searchController;
+    self.navigationItem.hidesSearchBarWhenScrolling = TRUE;
 #else   // tvOS
     if (self.navigationController != nil) {
         // add a search button on tvOS
         UIBarButtonItem* search = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSearch target:self action:@selector(showSearch)];
         self.navigationItem.rightBarButtonItems = [@[search] arrayByAddingObjectsFromArray:self.navigationItem.rightBarButtonItems];
+        
+        // add a settings button on tvOS
+        if (@available(tvOS 13.0, *)) {
+            UIImage* image = [[UIImage systemImageNamed:@"gear"] imageByApplyingSymbolConfiguration:[UIImageSymbolConfiguration configurationWithFont:title.font]];
+            UIBarButtonItem* settings = [[UIBarButtonItem alloc] initWithImage:image style:UIBarButtonItemStylePlain target:self action:@selector(showSettings)];
+            self.navigationItem.rightBarButtonItems = [@[settings] arrayByAddingObjectsFromArray:self.navigationItem.rightBarButtonItems];
+        } else {
+            UIBarButtonItem* settings = [[UIBarButtonItem alloc] initWithTitle:@"⚙️" style:UIBarButtonItemStylePlain target:self action:@selector(showSettings)];
+            self.navigationItem.rightBarButtonItems = [@[settings] arrayByAddingObjectsFromArray:self.navigationItem.rightBarButtonItems];
+        }
     }
 #endif
     
@@ -255,9 +248,14 @@ UIView* find_view(UIView* view, Class class) {
 -(void)scrollToTop
 {
     if (@available(iOS 11.0, *))
-        [self.collectionView setContentOffset:CGPointMake(0, self.collectionView.adjustedContentInset.top * -1.0) animated:TRUE];
+        [self.collectionView setContentOffset:CGPointMake(0, (self.collectionView.adjustedContentInset.top - _searchController.searchBar.bounds.size.height) * -1.0) animated:TRUE];
     else
         [self.collectionView setContentOffset:CGPointMake(0, self.collectionView.contentInset.top * -1.0) animated:TRUE];
+}
+-(void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+    [self scrollToTop];
 }
 
 #if TARGET_OS_TV
@@ -287,6 +285,11 @@ UIView* find_view(UIView* view, Class class) {
     [self.navigationController pushViewController:search animated:YES];
 }
 #endif
+-(void)showSettings
+{
+    if (_selectGameCallback)
+        _selectGameCallback(@{kGameInfoDescription:@"Settings", kGameInfoName:kGameInfoNameSettings});
+}
 
 - (void)viewWillLayoutSubviews
 {
@@ -301,6 +304,19 @@ UIView* find_view(UIView* view, Class class) {
 
 - (void)setGameList:(NSArray*)games
 {
+    // add a *special* system game that will run the DOS MAME menu.
+
+    games = [games arrayByAddingObject:@{
+        kGameInfoName:kGameInfoNameMameMenu,
+        kGameInfoDescription:@"MAME Menu",
+        kGameInfoYear:@"2010",
+        kGameInfoManufacturer:@"MAME4iOS",
+        kGameInfoCategory:@"MAME4iOS"
+    }];
+    
+    // then (re)sort the list by description
+    games = [games sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:kGameInfoDescription ascending:TRUE]]];
+    
     _gameList = games;
     [self filterGameList];
 }
@@ -444,18 +460,6 @@ UIView* find_view(UIView* view, Class class) {
         NSLog(@"SECTIONS AFTER MERGE: %d!", (int)[gameSectionTitles count]);
     }
     
-    // now add "system" items
-    // TODO: maybe these should be at the top (after Recents and Favorites)?
-    BOOL fSystemItemsAtEnd = FALSE;
-
-    gameData[SYSTEM_GAMES_TITLE] = @[
-        @{kGameInfoDescription:@"MAME Menu", kGameInfoName:kGameInfoNameMameMenu},
-        @{kGameInfoDescription:@"Settings", kGameInfoName:kGameInfoNameSettings},
-    ];
-    
-    if (!fSystemItemsAtEnd)
-        gameSectionTitles = [@[SYSTEM_GAMES_TITLE] arrayByAddingObjectsFromArray:gameSectionTitles];
-    
     // add favorite games
     NSArray* favoriteGames = [[_userDefaults objectForKey:FAVORITE_GAMES_KEY]
         filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF IN %@", filteredGames]];
@@ -472,9 +476,6 @@ UIView* find_view(UIView* view, Class class) {
 
     NSUInteger maxRecentGames = RECENT_GAMES_MAX;
     
-    if (self.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact || [[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone)
-        maxRecentGames = RECENT_GAMES_MIN;
-        
     if ([recentGames count] > maxRecentGames)
         recentGames = [recentGames subarrayWithRange:NSMakeRange(0, maxRecentGames)];
 
@@ -483,9 +484,6 @@ UIView* find_view(UIView* view, Class class) {
         gameSectionTitles = [@[RECENT_GAMES_TITLE] arrayByAddingObjectsFromArray:gameSectionTitles];
         gameData[RECENT_GAMES_TITLE] = recentGames;
     }
-    
-    if (fSystemItemsAtEnd)
-        gameSectionTitles = [gameSectionTitles arrayByAddingObjectsFromArray:@[SYSTEM_GAMES_TITLE]];
     
     _gameSectionTitles = gameSectionTitles;
     _gameData = gameData;
@@ -505,7 +503,7 @@ UIView* find_view(UIView* view, Class class) {
     
     // prevent UISearchController from clearing out our filter when done
     if (_searchCancel) {
-        if (![searchBar.text isEqualToString:_gameFilterText])
+        if (_gameFilterText != nil && ![searchBar.text isEqualToString:_gameFilterText])
             searchBar.text = _gameFilterText;
         return;
     }
@@ -525,6 +523,7 @@ UIView* find_view(UIView* view, Class class) {
 - (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar
 {
     NSLog(@"searchBarTextDidBeginEditing");
+
     _searchCancel = FALSE;
     searchBar.selectedScopeButtonIndex = [ALL_SCOPES indexOfObject:_gameFilterScope];
 }
@@ -547,16 +546,85 @@ UIView* find_view(UIView* view, Class class) {
 #if TARGET_OS_IOS
 - (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar
 {
-    NSLog(@"searchBarSearchButtonClicked");
+    NSLog(@"searchBarSearchButtonClicked: active=%d", _searchController.active);
     _searchCancel = TRUE;
     _searchController.active = NO;
 }
 - (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar
 {
-    NSLog(@"searchBarCancelButtonClicked");
+    NSLog(@"searchBarCancelButtonClicked: active=%d", _searchController.active);
     _searchCancel = TRUE;
+    
+    if (!_searchController.active) {
+        [self showSettings];
+    }
 }
 #endif
+
+#pragma mark - UISearchControllerDelegate
+
+- (void)willPresentSearchController:(UISearchController *)searchController
+{
+    NSLog(@"willPresentSearchController: active=%d", searchController.active);
+}
+- (void)didPresentSearchController:(UISearchController *)searchController
+{
+    NSLog(@"didPresentSearchController: active=%d", searchController.active);
+    [self updateSearchCancelButton];
+}
+- (void)willDismissSearchController:(UISearchController *)searchController
+{
+    NSLog(@"willDismissSearchController: active=%d", searchController.active);
+}
+- (void)didDismissSearchController:(UISearchController *)searchController
+{
+    NSLog(@"didDismissSearchController: active=%d", searchController.active);
+    [self updateSearchCancelButton];
+}
+
+#pragma mark - SearchBar cancel button
+
+//
+// we have hijacked the meaning of the search cancel button.
+//
+//    * it is allways shown, even when we are not searching.
+//    * when we are searching the text says "Done" and it will end search mode
+//    * when we are not searching the text says "Settings" and it will go to Settings
+//
+// if we cant find the button, seartch still works, just no Settings button, user can get to it via in-game-menu
+//
+-(void)updateSearchCancelButton
+{
+#if TARGET_OS_IOS
+    UISearchBar* searchBar = _searchController.searchBar;
+    UIButton* button = (UIButton*)find_view(searchBar, NSClassFromString(@"UINavigationButton"));
+
+    if (button == nil) {
+        NSLog(@"CANT FIND CANCEL BUTTON!");
+        searchBar.showsCancelButton = NO;
+        return;
+    }
+
+    if (_searchController.active) {
+        [button setTitle:@"Done" forState:UIControlStateNormal];
+        [button setImage:nil forState:UIControlStateNormal];
+    }
+    else {
+        if (@available(iOS 13.0, *)) {
+            UIImage* image = [[UIImage systemImageNamed:@"gear"] imageByApplyingSymbolConfiguration:[UIImageSymbolConfiguration configurationWithFont:searchBar.searchTextField.font]];
+            [button setTitle:@"" forState:UIControlStateNormal];
+            [button setImage:image forState:UIControlStateNormal];
+        }
+        else {
+            //[button setTitle:@"⚙️" forState:UIControlStateNormal];
+            [button setTitle:@"Settings" forState:UIControlStateNormal];
+        }
+    }
+    searchBar.showsCancelButton = YES;
+    [button invalidateIntrinsicContentSize];
+    [button.superview setNeedsLayout];
+#endif
+}
 
 #pragma mark - UICollectionView
 
@@ -651,7 +719,7 @@ UIView* find_view(UIView* view, Class class) {
 }
 - (void)setFavorite:(NSDictionary*)game isFavorite:(BOOL)flag
 {
-    if (game == nil || [game[kGameInfoName] length] == 0 || [self isSystem:game])
+    if (game == nil || [game[kGameInfoName] length] == 0)
         return;
 
     NSMutableArray* favoriteGames = [([_userDefaults objectForKey:FAVORITE_GAMES_KEY] ?: @[]) mutableCopy];
@@ -669,7 +737,7 @@ UIView* find_view(UIView* view, Class class) {
 
 - (void)setRecent:(NSDictionary*)game isRecent:(BOOL)flag
 {
-    if (game == nil || [game[kGameInfoName] length] == 0 || [self isSystem:game])
+    if (game == nil || [game[kGameInfoName] length] == 0)
         return;
     
     NSMutableArray* recentGames = [([_userDefaults objectForKey:RECENT_GAMES_KEY] ?: @[]) mutableCopy];
@@ -735,7 +803,11 @@ UIView* find_view(UIView* view, Class class) {
 }
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
 {
-    return [_gameData[_gameSectionTitles[section]] count];
+    NSString* title = _gameSectionTitles[section];
+    NSInteger num = [_gameData[title] count];
+    if ([title isEqualToString:RECENT_GAMES_TITLE] && _layoutMode <= LayoutSmall)
+        num = MIN(num, _layoutCollums);
+    return num;
 }
 -(NSDictionary*)getGameInfo:(NSIndexPath*)indexPath
 {
@@ -772,7 +844,7 @@ UIView* find_view(UIView* view, Class class) {
         if ([info[kGameInfoYear] length] > 1)
             text = [NSString stringWithFormat:@"%@ • %@", text, info[kGameInfoYear]];
         
-        if ([info[kGameInfoName] length] > 1 && ![self isSystem:info])
+        if ([info[kGameInfoName] length] > 1)
             text = [NSString stringWithFormat:@"%@ • %@", text, info[kGameInfoName]];
 
         if ([info[kGameInfoParent] length] > 1 && _layoutMode > LayoutSmall)
@@ -924,7 +996,7 @@ UIView* find_view(UIView* view, Class class) {
 - (NSArray*)menuActionsForItemAtIndexPath:(NSIndexPath *)indexPath {
     NSDictionary* game = [self getGameInfo:indexPath];
     
-    if (game == nil || [game[kGameInfoName] length] == 0 || [self isSystem:game])
+    if (game == nil || [game[kGameInfoName] length] == 0)
         return nil;
 
     NSLog(@"menuActionsForItemAtIndexPath: [%d.%d] %@ %@", (int)indexPath.section, (int)indexPath.row, game[kGameInfoName], game);
@@ -933,8 +1005,8 @@ UIView* find_view(UIView* view, Class class) {
     
     NSString* fav_text = is_fav ? @"Unfavorite" : @"Favorite";
     NSString* fav_icon = is_fav ? @"heart.slash" : @"heart";
-
-    return @[
+    
+    NSArray* actions = @[
         [self actionWithTitle:@"Play" image:[UIImage systemImageNamed:@"gamecontroller"] destructive:NO handler:^(id action) {
             [self collectionView:self.collectionView didSelectItemAtIndexPath:indexPath];
         }],
@@ -942,51 +1014,56 @@ UIView* find_view(UIView* view, Class class) {
         [self actionWithTitle:fav_text image:[UIImage systemImageNamed:fav_icon] destructive:NO handler:^(id action) {
             [self setFavorite:game isFavorite:!is_fav];
             [self filterGameList];
-        }],
-                
-#if TARGET_OS_IOS
-        [self actionWithTitle:@"Share" image:[UIImage systemImageNamed:@"square.and.arrow.up"] destructive:NO handler:^(id action) {
-            
-            NSURL* url = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%s/%@.zip", get_documents_path("roms"), game[kGameInfoName]]];
-            
-            if (![[NSFileManager defaultManager] fileExistsAtPath:url.path])
-                return;
-            
-            UIActivityViewController* activity = [[UIActivityViewController alloc] initWithActivityItems:@[url] applicationActivities:nil];
-            [activity setCompletionWithItemsHandler:^(UIActivityType activityType, BOOL completed, NSArray* _Nullable returnedItems, NSError* activityError) {
-                NSLog(@"%@", activityType);
-            }];
-
-            if (activity.popoverPresentationController != nil) {
-                UIView* view = [self.collectionView cellForItemAtIndexPath:indexPath] ?: self.view;
-                activity.popoverPresentationController.sourceView = view;
-                activity.popoverPresentationController.sourceRect = view.bounds;
-                activity.popoverPresentationController.permittedArrowDirections = UIPopoverArrowDirectionAny;
-            }
-
-            [self presentViewController:activity animated:YES completion:nil];
-        }],
-#endif
-        [self actionWithTitle:@"Delete" image:[UIImage systemImageNamed:@"trash"] destructive:YES handler:^(id action) {
-            NSArray* paths = @[@"roms/%@.zip", @"roms/%@", @"artwork/%@.zip", @"titles/%@.png", @"samples/%@.zip", @"cfg/%@.cfg"];
-            
-            NSString* root = [NSString stringWithUTF8String:get_documents_path("")];
-            for (NSString* path in paths) {
-                NSString* delete_path = [root stringByAppendingPathComponent:[NSString stringWithFormat:path, game[kGameInfoName]]];
-                NSLog(@"DELETE: %@", delete_path);
-                [[NSFileManager defaultManager] removeItemAtPath:delete_path error:nil];
-            }
-            
-            [self setRecent:game isRecent:FALSE];
-            [self setFavorite:game isFavorite:FALSE];
-
-            [self setGameList:[self->_gameList filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF != %@", game]]];
-            if ([self->_gameList count] == 0) {
-                if (self.selectGameCallback != nil)
-                    self.selectGameCallback(nil);
-            }
         }]
     ];
+
+    if (![self isSystem:game]) {
+        actions = [actions arrayByAddingObjectsFromArray:@[
+#if TARGET_OS_IOS
+            [self actionWithTitle:@"Share" image:[UIImage systemImageNamed:@"square.and.arrow.up"] destructive:NO handler:^(id action) {
+                
+                NSURL* url = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%s/%@.zip", get_documents_path("roms"), game[kGameInfoName]]];
+                
+                if (![[NSFileManager defaultManager] fileExistsAtPath:url.path])
+                    return;
+                
+                UIActivityViewController* activity = [[UIActivityViewController alloc] initWithActivityItems:@[url] applicationActivities:nil];
+                [activity setCompletionWithItemsHandler:^(UIActivityType activityType, BOOL completed, NSArray* _Nullable returnedItems, NSError* activityError) {
+                    NSLog(@"%@", activityType);
+                }];
+
+                if (activity.popoverPresentationController != nil) {
+                    UIView* view = [self.collectionView cellForItemAtIndexPath:indexPath] ?: self.view;
+                    activity.popoverPresentationController.sourceView = view;
+                    activity.popoverPresentationController.sourceRect = view.bounds;
+                    activity.popoverPresentationController.permittedArrowDirections = UIPopoverArrowDirectionAny;
+                }
+
+                [self presentViewController:activity animated:YES completion:nil];
+            }],
+#endif
+            [self actionWithTitle:@"Delete" image:[UIImage systemImageNamed:@"trash"] destructive:YES handler:^(id action) {
+                NSArray* paths = @[@"roms/%@.zip", @"roms/%@", @"artwork/%@.zip", @"titles/%@.png", @"samples/%@.zip", @"cfg/%@.cfg"];
+                
+                NSString* root = [NSString stringWithUTF8String:get_documents_path("")];
+                for (NSString* path in paths) {
+                    NSString* delete_path = [root stringByAppendingPathComponent:[NSString stringWithFormat:path, game[kGameInfoName]]];
+                    NSLog(@"DELETE: %@", delete_path);
+                    [[NSFileManager defaultManager] removeItemAtPath:delete_path error:nil];
+                }
+                
+                [self setRecent:game isRecent:FALSE];
+                [self setFavorite:game isFavorite:FALSE];
+
+                [self setGameList:[self->_gameList filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF != %@", game]]];
+                if ([self->_gameList count] == 0) {
+                    if (self.selectGameCallback != nil)
+                        self.selectGameCallback(nil);
+                }
+            }]
+        ]];
+    }
+    return actions;
 }
 
 #pragma mark - UIContextMenu (iOS 13+ only)

@@ -23,7 +23,6 @@
 #define kGameInfoCategory       @"category"
 
 // special "system" games
-#define SYSTEM_GAMES_TITLE      @"MAME4iOS"
 #define kGameInfoNameSettings   @"settings"
 #define kGameInfoNameMameMenu   @"mamemenu"
 
