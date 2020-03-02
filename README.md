@@ -2,7 +2,7 @@
 
 Original Author: David Valdeita (Seleuco)<br/>
 
-This is a port of MAME 0.139u1 for iOS and tvOS.
+This is a port of MAME 0.139u1 for iOS, iPadOS, and tvOS.
 
 ![iPhone Screenshot](README.images/screenshot-iphone-small.png)
 ![AppleTV Screenshot](README.images/screenshot-atv-small.png)
