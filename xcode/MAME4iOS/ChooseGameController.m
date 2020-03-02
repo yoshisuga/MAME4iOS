@@ -24,9 +24,11 @@
 
 #define CELL_IDENTIFIER   @"GameInfoCell"
 #if TARGET_OS_IOS
+#define CELL_TINY_WIDTH    100.0
 #define CELL_SMALL_WIDTH   200.0
 #define CELL_LARGE_WIDTH   400.0
 #else
+#define CELL_TINY_WIDTH    200.0
 #define CELL_SMALL_WIDTH   400.0
 #define CELL_LARGE_WIDTH   600.0
 #endif
@@ -42,6 +44,7 @@
 #define CLAMP(x, num) MIN(MAX(x,0), (num)-1)
 
 typedef NS_ENUM(NSInteger, LayoutMode) {
+    LayoutTiny,
     LayoutSmall,
     LayoutLarge,
     LayoutList,
@@ -134,7 +137,7 @@ UIView* find_view(UIView* view, Class class) {
     UILabel* title = [[UILabel alloc] init];
 #if TARGET_OS_IOS
     title.text = @"MAME4iOS";
-    title.font = [UIFont boldSystemFontOfSize:32.0];
+    title.font = [UIFont boldSystemFontOfSize:28.0];
 #else
     title.text = @"MAME4tvOS";
     title.font = [UIFont boldSystemFontOfSize:64.0];
@@ -157,15 +160,12 @@ UIView* find_view(UIView* view, Class class) {
     // layout
     UISegmentedControl* seg;
     
-    if (@available(iOS 13.0, tvOS 13.0, *)) {
-        seg = [[UISegmentedControl alloc] initWithItems:@[
-            [UIImage systemImageNamed:@"rectangle.grid.2x2.fill"],
-            [UIImage systemImageNamed:@"rectangle.stack.fill"],
-            [UIImage systemImageNamed:@"rectangle.grid.1x2.fill"]
-        ]];
-    } else {
-        seg = [[UISegmentedControl alloc] initWithItems:@[@"☷",@"▢",@"☰"]];
-    }
+    seg = [[UISegmentedControl alloc] initWithItems:@[
+        [UIImage systemImageNamed:@"square.grid.4x3.fill"]    ?: @"⚏",
+        [UIImage systemImageNamed:@"rectangle.grid.2x2.fill"] ?: @"☷",
+        [UIImage systemImageNamed:@"rectangle.stack.fill"]    ?: @"▢",
+        [UIImage systemImageNamed:@"rectangle.grid.1x2.fill"] ?: @"☰"
+    ]];
 
     seg.selectedSegmentIndex = _layoutMode;
     [seg addTarget:self action:@selector(viewChange:) forControlEvents:UIControlEventValueChanged];
@@ -175,6 +175,7 @@ UIView* find_view(UIView* view, Class class) {
     if (self.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular) {
         UISegmentedControl* seg = [[UISegmentedControl alloc] initWithItems:ALL_SCOPES];
         seg.selectedSegmentIndex = [ALL_SCOPES indexOfObject:_gameFilterScope];
+        //seg.apportionsSegmentWidthsByContent = YES;
         [seg addTarget:self action:@selector(scopeChange:) forControlEvents:UIControlEventValueChanged];
         self.navigationItem.titleView = seg;
     }
@@ -446,7 +447,7 @@ UIView* find_view(UIView* view, Class class) {
     BOOL fSystemItemsAtEnd = FALSE;
 
     gameData[SYSTEM_GAMES_TITLE] = @[
-        @{kGameInfoDescription:@"MAME MENU", kGameInfoName:kGameInfoNameMameMenu},
+        @{kGameInfoDescription:@"MAME Menu", kGameInfoName:kGameInfoNameMameMenu},
         @{kGameInfoDescription:@"Settings", kGameInfoName:kGameInfoNameSettings},
     ];
     
@@ -557,18 +558,21 @@ UIView* find_view(UIView* view, Class class) {
 
 #pragma mark - UICollectionView
 
--(void)reloadData
+-(void)invalidateLayout
 {
-    [self.collectionView reloadData];
     [self.collectionView.collectionViewLayout invalidateLayout];
     
     // HACK kick the layout in the head, so it gets the location of headers correct
-    if (@available(iOS 13.0, *)) {} else {
-        CGPoint offset = self.collectionView.contentOffset;
-        [self.collectionView setContentOffset:CGPointMake(offset.x, offset.y + 0.5)];
-        [self.collectionView layoutIfNeeded];
-        [self.collectionView setContentOffset:offset];
-    }
+    CGPoint offset = self.collectionView.contentOffset;
+    [self.collectionView setContentOffset:CGPointMake(offset.x, offset.y + 0.5)];
+    [self.collectionView layoutIfNeeded];
+    [self.collectionView setContentOffset:offset];
+}
+
+-(void)reloadData
+{
+    [self.collectionView reloadData];
+    [self invalidateLayout];
 }
 
 -(void)updateLayout
@@ -605,7 +609,9 @@ UIView* find_view(UIView* view, Class class) {
     else
         width -= (self.collectionView.contentInset.left + self.collectionView.contentInset.right);
 
-    if (_layoutMode == LayoutSmall)
+    if (_layoutMode == LayoutTiny)
+        _layoutCollums = MAX(2,round(width / CELL_TINY_WIDTH));
+    else if (_layoutMode == LayoutSmall)
         _layoutCollums = MAX(2,round(width / CELL_SMALL_WIDTH));
     else
         _layoutCollums = MAX(1,round(width / CELL_LARGE_WIDTH));
@@ -741,27 +747,41 @@ UIView* find_view(UIView* view, Class class) {
     
     GameCell* cell = [collectionView dequeueReusableCellWithReuseIdentifier:CELL_IDENTIFIER forIndexPath:indexPath];
     
-    cell.title.text = info[kGameInfoDescription];
-    
-//    cell.title.text = @"Call me Ishmael. Some years ago - never mind how long precisely - having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world.";
-    
-    NSString* text = info[kGameInfoManufacturer];
-    
-    if ([info[kGameInfoYear] length] > 1)
-        text = [NSString stringWithFormat:@"%@ • %@", text, info[kGameInfoYear]];
-    
-    if ([info[kGameInfoName] length] > 1 && ![self isSystem:info])
-        text = [NSString stringWithFormat:@"%@ • %@", text, info[kGameInfoName]];
+    //  set the text based on the LayoutMode
+    //
+    //  TINY        SMALL                   LARGE or LIST
+    //  romname     short Description       full Description
+    //                                      Manufacturer • Year  • romname [parent-rom]
+    //
+    if (_layoutMode == LayoutTiny) {
+        cell.title.font = [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
+        cell.title.text = info[kGameInfoName];
+        cell.title.numberOfLines = 1;
+        cell.title.adjustsFontSizeToFitWidth = TRUE;
+    }
+    else if (_layoutMode == LayoutSmall) {
+        cell.title.text = [[info[kGameInfoDescription] componentsSeparatedByString:@" ("] firstObject];
+    }
+    else { // LayoutLarge and LayoutList
+        cell.title.text = info[kGameInfoDescription];
 
-    if ([info[kGameInfoParent] length] > 1 && _layoutMode != LayoutSmall)
-        text = [NSString stringWithFormat:@"%@ [%@]", text, info[kGameInfoParent]];
+        NSString* text = info[kGameInfoManufacturer];
 
-    if ([text hasPrefix:@" • "])
-        text = [text substringFromIndex:3];
+        if ([info[kGameInfoYear] length] > 1)
+            text = [NSString stringWithFormat:@"%@ • %@", text, info[kGameInfoYear]];
+        
+        if ([info[kGameInfoName] length] > 1 && ![self isSystem:info])
+            text = [NSString stringWithFormat:@"%@ • %@", text, info[kGameInfoName]];
+
+        if ([info[kGameInfoParent] length] > 1 && _layoutMode > LayoutSmall)
+            text = [NSString stringWithFormat:@"%@ [%@]", text, info[kGameInfoParent]];
+
+        if ([text hasPrefix:@" • "])
+            text = [text substringFromIndex:3];
+
+        cell.detail.text = text;
+    }
     
-    cell.detail.text = text;
-    cell.info.text = nil;
-
     [cell setHorizontal:_layoutMode == LayoutList];
 
     NSURL* url = [self getGameImageURL:info];
@@ -786,6 +806,7 @@ UIView* find_view(UIView* view, Class class) {
             if (selected) {
                 [self.collectionView selectItemAtIndexPath:indexPath animated:NO scrollPosition:UICollectionViewScrollPositionCenteredVertically];
             }
+            [self invalidateLayout];
             [UIView setAnimationsEnabled:enabled];
         }
     }];
@@ -1287,12 +1308,14 @@ UIView* find_view(UIView* view, Class class) {
     _title.font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
     _title.textColor = [UIColor whiteColor];
     _title.numberOfLines = 0;
+    _title.adjustsFontSizeToFitWidth = FALSE;
     
     _detail.text = nil;
     _detail.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
     _detail.textColor = [UIColor lightGrayColor];
     _detail.numberOfLines = 0;
-    
+    _title.adjustsFontSizeToFitWidth = FALSE;
+
     _info.text = nil;
     _info.font = _detail.font;
     _info.textColor = _detail.textColor;
