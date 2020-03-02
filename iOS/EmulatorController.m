@@ -190,7 +190,6 @@ static int change_layout=0;
 static char g_mame_game[MAX_GAME_NAME];     // game MAME should run (or empty is menu)
 static char g_mame_game_error[MAX_GAME_NAME];
 static BOOL g_no_roms_found = FALSE;
-static int  g_save_state_count = 0;
 
 static EmulatorController *sharedInstance = nil;
 
@@ -220,7 +219,6 @@ void* app_Thread_Start(void* args)
     while (1) {
         prev_myosd_mouse = myosd_mouse = 0;
         prev_myosd_light_gun = myosd_light_gun = 0;
-        g_save_state_count = 0;
         
         if (run_mame(g_mame_game) != 0 && g_mame_game[0]) {
             strncpy(g_mame_game_error, g_mame_game, sizeof(g_mame_game_error));
@@ -414,17 +412,12 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
             push_mame_button(player, MYOSD_START);
             [self endMenu];
         }]];
-        if (g_save_state_count > 0) {
-            [menu addAction:[UIAlertAction actionWithTitle:@"Load State" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"bookmark.fill"] handler:^(UIAlertAction * _Nonnull action) {
-                myosd_loadstate = 1;
-                push_mame_buttons(0, MYOSD_NONE, MYOSD_B); // B for slot 1, X for slot 2
-                [self endMenu];
-            }]];
-        }
+        [menu addAction:[UIAlertAction actionWithTitle:@"Load State" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"bookmark.fill"] handler:^(UIAlertAction * _Nonnull action) {
+            myosd_loadstate = 1;
+            [self endMenu];
+        }]];
         [menu addAction:[UIAlertAction actionWithTitle:@"Save State" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"bookmark"] handler:^(UIAlertAction * _Nonnull action) {
-            g_save_state_count++;
             myosd_savestate = 1;
-            push_mame_buttons(0, MYOSD_NONE, MYOSD_B); // B for slot 1, X for slot 2, HACK: use SELECT as a pause
             [self endMenu];
         }]];
         [menu addAction:[UIAlertAction actionWithTitle:@"MAME Menu" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"slider.horizontal.3"] handler:^(UIAlertAction * _Nonnull action) {
