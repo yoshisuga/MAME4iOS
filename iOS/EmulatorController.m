@@ -3117,7 +3117,7 @@ void myosd_handle_turbo() {
 }
 - (void)documentPicker:(UIDocumentPickerViewController *)controller didPickDocumentsAtURLs:(NSArray <NSURL *>*)urls {
     for (NSURL* url in urls) {
-        [self documentPicker:controller didPickDocumentAtURL:url];
+        [self documentPicker:controller didPickDocumentsAtURLs:@[url]];
     }
 }
 

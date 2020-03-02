@@ -224,7 +224,7 @@ UIView* find_view(UIView* view, Class class) {
         _searchController.searchBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         _searchController.dimsBackgroundDuringPresentation = NO;
         
-        self.automaticallyAdjustsScrollViewInsets = FALSE;
+        self.collectionView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
         self.collectionView.contentInset = UIEdgeInsetsMake(h, 0, 0, 0);
         [self.view addSubview:_searchController.searchBar];
     }
