@@ -15,11 +15,11 @@
 enum OptionSections
 {
     kInputSection = 0,
+    kServerSection,
     kScreenSection,
     kMiscSection,
     kDefaultsSection,
     kFilterSection,
-    kServerSection,
     kNumSections
 };
 
