@@ -221,7 +221,7 @@ UIView* find_view(UIView* view, Class class) {
         
         // add a settings button on tvOS
         if (@available(tvOS 13.0, *)) {
-            UIImage* image = [[UIImage systemImageNamed:@"gear"] imageByApplyingSymbolConfiguration:[UIImageSymbolConfiguration configurationWithFont:title.font]];
+            UIImage* image = [UIImage systemImageNamed:@"gear" withPointSize:title.font.pointSize weight:UIFontWeightHeavy];
             UIBarButtonItem* settings = [[UIBarButtonItem alloc] initWithImage:image style:UIBarButtonItemStylePlain target:self action:@selector(showSettings)];
             self.navigationItem.rightBarButtonItems = [@[settings] arrayByAddingObjectsFromArray:self.navigationItem.rightBarButtonItems];
         } else {
@@ -611,7 +611,7 @@ UIView* find_view(UIView* view, Class class) {
     }
     else {
         if (@available(iOS 13.0, *)) {
-            UIImage* image = [[UIImage systemImageNamed:@"gear"] imageByApplyingSymbolConfiguration:[UIImageSymbolConfiguration configurationWithFont:searchBar.searchTextField.font]];
+            UIImage* image = [UIImage systemImageNamed:@"gear" withPointSize:searchBar.searchTextField.font.pointSize weight:UIFontWeightHeavy];
             [button setTitle:@"" forState:UIControlStateNormal];
             [button setImage:image forState:UIControlStateNormal];
         }
@@ -887,7 +887,7 @@ UIView* find_view(UIView* view, Class class) {
     
     // use a placeholder image if the image did not load right away.
     if (cell.image.image == nil)
-        cell.image.image = [UIImage imageNamed:info[kGameInfoName]] ?: [UIImage imageNamed:@"DEFAULT"];
+        cell.image.image = [UIImage imageNamed:info[kGameInfoName]] ?: [UIImage imageNamed:@"default_game_icon"];
     
     return cell;
 }
