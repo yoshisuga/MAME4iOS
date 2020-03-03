@@ -828,9 +828,18 @@ UIView* find_view(UIView* view, Class class) {
     [_updated_urls removeAllObjects];
 
     if (update_items.count > 0) {
+        NSIndexPath* selectedIndexPath = self.collectionView.indexPathsForSelectedItems.firstObject;
+        
+        if (selectedIndexPath != nil && ![update_items containsObject:selectedIndexPath])
+            selectedIndexPath = nil;
+        
         [self.collectionView performBatchUpdates:^{
             [self.collectionView reloadItemsAtIndexPaths:update_items];
-        } completion:nil];
+        } completion:^(BOOL finished) {
+            if (selectedIndexPath != nil) {
+                [self.collectionView selectItemAtIndexPath:selectedIndexPath animated:NO scrollPosition:UICollectionViewScrollPositionCenteredVertically];
+            }
+        }];
     }
 
     NSLog(@"updateImages DONE!");
