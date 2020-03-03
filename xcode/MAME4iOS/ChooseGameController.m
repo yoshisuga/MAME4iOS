@@ -106,7 +106,8 @@ UIView* find_view(UIView* view, Class class) {
     NSArray* _key_commands;
     BOOL _searchCancel;
     NSIndexPath* currentlyFocusedIndexPath;
-    UIImage* _defaultGameImage;
+    UIImage* _defaultImage;
+    UIImage* _loadingImage;
     NSMutableSet* _updated_urls;
 }
 @end
@@ -129,8 +130,9 @@ UIView* find_view(UIView* view, Class class) {
     _layoutMode = [_userDefaults integerForKey:LAYOUT_MODE_KEY];
     _layoutMode = MIN(MAX(_layoutMode,0), LayoutCount);
     
-    _defaultGameImage = [UIImage imageNamed:@"default_game_icon"];
-    
+    _defaultImage = [UIImage imageNamed:@"default_game_icon"];
+    _loadingImage = [UIImage imageNamed:@"loading_game_icon"];
+
     return self;
 }
 
@@ -824,7 +826,7 @@ UIView* find_view(UIView* view, Class class) {
             [update_items addObject:indexPath];
     }
     
-    NSLog(@"updateImages: %d visible items, %d dirty images, %d cells need updated", (int)vis_items.count, (int)g_updated_urls.count, (int)update_items.count);
+    NSLog(@"updateImages: %d visible items, %d dirty images, %d cells need updated", (int)vis_items.count, (int)_updated_urls.count, (int)update_items.count);
     [_updated_urls removeAllObjects];
 
     if (update_items.count > 0) {
@@ -843,6 +845,15 @@ UIView* find_view(UIView* view, Class class) {
     }
 
     NSLog(@"updateImages DONE!");
+}
+
+// update all cells with this image
+-(void)updateImage:(NSURL*)url
+{
+    _updated_urls = _updated_urls ?: [[NSMutableSet alloc] init];
+    [_updated_urls addObject:url];
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateImages) object:nil];
+    [self performSelector:@selector(updateImages) withObject:nil afterDelay:1.0];
 }
 
 
@@ -914,46 +925,24 @@ UIView* find_view(UIView* view, Class class) {
     cell.tag = url.hash;
     [[ImageCache sharedInstance] getImage:url size:CGSizeZero localURL:local completionHandler:^(UIImage *image) {
         
-        // cell has been re-used or load fail => bail
-        if (cell.tag != url.hash || image == nil)
+        // cell has been re-used bail
+        if (cell.tag != url.hash)
             return;
         
         // if this is syncronous set image and be done
         if (cell.image.image == nil) {
-            cell.image.image = image;
+            cell.image.image = image ?: self->_defaultImage;
             return;
         }
         
         NSLog(@"CELL ASYNC LOAD: %@ %d:%d", info[kGameInfoName], (int)indexPath.section, (int)indexPath.item);
+        [self updateImage:url];
         
-        // otherwise this a async callback, we might get a bunch of these so batch them up and do them all later
-        self->_updated_urls = self->_updated_urls ?: [[NSMutableSet alloc] init];
-        [self->_updated_urls addObject:url];
-        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateImages) object:nil];
-        [self performSelector:@selector(updateImages) withObject:nil afterDelay:1.0];
-
-        /*
-        if (async && [[self.collectionView indexPathForCell:cell] isEqual:indexPath])
-        {
-            NSLog(@"CELL ASYNC LOAD: %@ %d:%d", info[kGameInfoName], (int)indexPath.section, (int)indexPath.item);
-            BOOL selected = cell.isSelected;
-            BOOL enabled = [UIView areAnimationsEnabled];
-
-            // reload the new image without animation to prevent "jumping"
-            [UIView setAnimationsEnabled:NO];
-            [self.collectionView reloadItemsAtIndexPaths:@[indexPath]];
-            if (selected) {
-                [self.collectionView selectItemAtIndexPath:indexPath animated:NO scrollPosition:UICollectionViewScrollPositionCenteredVertically];
-            }
-            [self invalidateLayout];
-            [UIView setAnimationsEnabled:enabled];
-        }
-        */
     }];
     
     // use a placeholder image if the image did not load right away.
     if (cell.image.image == nil)
-        cell.image.image = _defaultGameImage;
+        cell.image.image = _loadingImage;
     
     return cell;
 }
@@ -1007,6 +996,35 @@ UIView* find_view(UIView* view, Class class) {
     // tell the code upstream that the user had selected a game to play!
     if (self.selectGameCallback != nil)
         self.selectGameCallback(game);
+}
+
+- (void)collectionView:(UICollectionView *)collectionView willDisplayCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath
+{
+    NSLog(@"willDisplayCell: %d.%d %@", (int)indexPath.section, (int)indexPath.row);
+
+    // if this cell still have the loading image, it went offscreen, got canceled, came back on screen ==> reload just to be safe.
+    if ([cell isKindOfClass:[GameCell class]] && ((GameCell*)cell).image.image == _loadingImage)
+    {
+        NSDictionary* game = [self getGameInfo:indexPath];
+        NSURL* url = [self getGameImageURL:game];
+
+        if (url != nil)
+            [self updateImage:url];
+    }
+}
+
+- (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath
+{
+    NSLog(@"endDisplayCell: %d.%d %@", (int)indexPath.section, (int)indexPath.row);
+    
+    if ([cell isKindOfClass:[GameCell class]] && ((GameCell*)cell).image.image == _loadingImage)
+    {
+        NSDictionary* game = [self getGameInfo:indexPath];
+        NSURL* url = [self getGameImageURL:game];
+    
+        if (url != nil)
+            [[ImageCache sharedInstance] cancelImage:url];
+    }
 }
 
 #pragma mark UICollectionView index (only on tvOS)
@@ -1430,6 +1448,7 @@ UIView* find_view(UIView* view, Class class) {
 }
 - (void)prepareForReuse
 {
+    NSLog(@">>>>>>prepareForReuse");
     [super prepareForReuse];
     [self setNeedsLayout];
     [self setNeedsUpdateConstraints];

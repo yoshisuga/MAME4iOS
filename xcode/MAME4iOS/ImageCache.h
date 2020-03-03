@@ -15,8 +15,7 @@ typedef void (^ImageCacheCallback) (UIImage* image);
 - (void)getImage:(NSURL*)url size:(CGSize)size localURL:(NSURL*)localURL completionHandler:(ImageCacheCallback)handler;
 - (void)getImage:(NSURL*)url size:(CGSize)size completionHandler:(ImageCacheCallback)handler;
 - (void)getImage:(NSURL*)url completionHandler:(ImageCacheCallback)handler;
-// TODO: add ability to cancel.
-//- (void)cancelImage:(NSURL*)url;
+- (void)cancelImage:(NSURL*)url;
 @end
 
 @interface UIImage (Resize)

@@ -149,6 +149,8 @@
 		EF301CF1240460C5000510FD /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF301CF0240460C5000510FD /* Alert.m */; };
 		EF301CF2240460C5000510FD /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF301CF0240460C5000510FD /* Alert.m */; };
 		EF301CF3240460F3000510FD /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF27F36323F73CD400B1E50A /* ZipFile.m */; };
+		EF40996B240EB4BF00FACC5D /* loading_game_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = EF40996A240EB4BF00FACC5D /* loading_game_icon.png */; };
+		EF40996C240EB4BF00FACC5D /* loading_game_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = EF40996A240EB4BF00FACC5D /* loading_game_icon.png */; };
 		EF7B232C23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
 		EF7B232D23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
 		EFA756FF2405585D00A02AAB /* mamemenu.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA756FE2405585D00A02AAB /* mamemenu.png */; };
@@ -341,6 +343,7 @@
 		EF29C8832402E51100AFFA4E /* config_iPad_gen_7.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = config_iPad_gen_7.txt; path = "../../iOS-res/Applications/MAME4iOS.app/config_iPad_gen_7.txt"; sourceTree = "<group>"; };
 		EF301CEF240460C5000510FD /* Alert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Alert.h; sourceTree = "<group>"; };
 		EF301CF0240460C5000510FD /* Alert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Alert.m; sourceTree = "<group>"; };
+		EF40996A240EB4BF00FACC5D /* loading_game_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = loading_game_icon.png; sourceTree = "<group>"; };
 		EF9F9C9E240070E700352554 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../../README.md; sourceTree = "<group>"; };
 		EFA756FE2405585D00A02AAB /* mamemenu.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = mamemenu.png; sourceTree = "<group>"; };
 		EFA7570424057FD800A02AAB /* default_game_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = default_game_icon.png; sourceTree = "<group>"; };
@@ -553,6 +556,7 @@
 			isa = PBXGroup;
 			children = (
 				EFA7570424057FD800A02AAB /* default_game_icon.png */,
+				EF40996A240EB4BF00FACC5D /* loading_game_icon.png */,
 				EFA756FE2405585D00A02AAB /* mamemenu.png */,
 				B5FAE31621FCDE0C003F44D0 /* scanline_tvOS201901.png */,
 				920BBDED201FC29700AE7D50 /* dpad.png */,
@@ -807,6 +811,7 @@
 				925ABCD81E46DCC500997182 /* MAME4iOS72.png in Resources */,
 				EFA756FF2405585D00A02AAB /* mamemenu.png in Resources */,
 				EFA757222408488D00A02AAB /* iCadeControls.png in Resources */,
+				EF40996B240EB4BF00FACC5D /* loading_game_icon.png in Resources */,
 				925ABCD91E46DCC500997182 /* MAME4iOS114.png in Resources */,
 				925ABCDA1E46DCC500997182 /* MAME4iOS144.png in Resources */,
 				925ABCDB1E46DCC500997182 /* MAME4iOS57.png in Resources */,
@@ -824,6 +829,7 @@
 				EFD4D14A23C0F6AB00857A76 /* Category.ini in Resources */,
 				926C771221F39D2500103EDE /* cheat.zip in Resources */,
 				926C770721F26DFA00103EDE /* crt-2.png in Resources */,
+				EF40996C240EB4BF00FACC5D /* loading_game_icon.png in Resources */,
 				926C770921F26E0000103EDE /* scanline-2.png in Resources */,
 				EFA757002405585D00A02AAB /* mamemenu.png in Resources */,
 				EFA7570624057FD800A02AAB /* default_game_icon.png in Resources */,

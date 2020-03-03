@@ -20,6 +20,7 @@
 @implementation ImageCache
 {
     NSCache* cache;
+    NSMutableDictionary* task_dict;
 }
 
 static ImageCache* sharedInstance = nil;
@@ -38,6 +39,7 @@ static ImageCache* sharedInstance = nil;
     if ((self = [super init]))
     {
         cache = [[NSCache alloc] init];
+        task_dict = [[NSMutableDictionary alloc] init];
     }
     return self;
 }
@@ -53,7 +55,7 @@ static ImageCache* sharedInstance = nil;
     [cache removeAllObjects];
 }
 
-- (void)getData:(NSURL*)url localURL:(NSURL*)localURL completionHandler:(void (^)(NSData* data))handler
+- (void)getData:(NSURL*)url localURL:(NSURL*)localURL completionHandler:(void (^)(NSData* data, NSError* error))handler
 {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
         if (localURL != nil)
@@ -61,21 +63,25 @@ static ImageCache* sharedInstance = nil;
             NSData* data = [NSData dataWithContentsOfURL:localURL];
             
             if (data != nil)
-                return handler(data);
+                return handler(data, nil);
         }
         
         if (url == nil)
-            return handler(nil);
+            return handler(nil, nil);
 
         NSURLSession* session = [NSURLSession sharedSession];
         NSURLRequest* request = [NSURLRequest requestWithURL:url];
-        [[session dataTaskWithRequest:request completionHandler:^(NSData* data, NSURLResponse* response, NSError* error) {
+        NSURLSessionDataTask* task = [session dataTaskWithRequest:request
+            completionHandler:^(NSData* data, NSURLResponse* response, NSError* error) {
 
             NSInteger status = [(NSHTTPURLResponse*)response statusCode];
 
             if (error != nil)
                 NSLog(@"GET DATA\n\tURL:%@\n\tERROR:%@", url, error);
-            
+
+            if (error != nil && [error.domain isEqualToString:NSURLErrorDomain] && error.code == NSURLErrorCancelled)
+                NSLog(@"getData: CANCELED");
+
             if (status != 200)
             {
                 NSLog(@"GET DATA: BAD RESPONSE (%d)\n\tURL:%@\n\tBODY:%@", (int)status, url, [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
@@ -85,8 +91,12 @@ static ImageCache* sharedInstance = nil;
             if (localURL != nil && data != nil && error == nil)
                 [data writeToURL:localURL atomically:NO];
 
-            handler(data);
-        }] resume];
+            handler(data, error);
+        }];
+        [task resume];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            self->task_dict[url] = task;
+        });
     });
 }
 
@@ -124,7 +134,6 @@ static ImageCache* sharedInstance = nil;
         return [val addObject:handler];
     }
     
-#if 0
     // if we have a local copy on disk, and we dont need to resize, get the image synchronously (this helps smooth scrolling)
     if (localURL != nil && (size.width == 0 && size.height == 0))
     {
@@ -136,13 +145,12 @@ static ImageCache* sharedInstance = nil;
             return handler(image);
         }
     }
-#endif
     
     NSLog(@"....IMAGE CACHE MISS");
     NSParameterAssert(val == nil);
     [cache setObject:[NSMutableArray arrayWithObject:handler] forKey:key];
     
-    [self getData:url localURL:localURL completionHandler:^(NSData *data) {
+    [self getData:url localURL:localURL completionHandler:^(NSData *data, NSError* error) {
         NSLog(@"IMAGE CACHE DATA: %d bytes", (int)[data length]);
         UIImage* image = [UIImage imageWithData:data];
         NSLog(@"IMAGE IMAGE: %@", image);
@@ -154,14 +162,22 @@ static ImageCache* sharedInstance = nil;
 #else
         dispatch_async(dispatch_get_main_queue(), ^{
 #endif
+            self->task_dict[url] = nil;
             NSArray* callbacks = [self->cache objectForKey:key];
-            [self->cache setObject:(image ?: [NSNull null]) forKey:key];
-            NSLog(@"IMAGE START CALLBACKS for %@ [%d clients]", url.lastPathComponent, (int)[callbacks count]);
-            for (ImageCacheCallback callback in callbacks) {
-                NSLog(@"....IMAGE CALLBACK: %@", image);
-                callback(image);
+
+            if (image == nil && error != nil && [error.domain isEqualToString:NSURLErrorDomain] && error.code == NSURLErrorCancelled) {
+                NSLog(@"IMAGE LOAD CANCELED: %@ [%d clients]", url.lastPathComponent, (int)[callbacks count]);
+                [self->cache removeObjectForKey:key];
             }
-            NSLog(@"IMAGE STOP CALLBACKS for %@", url.lastPathComponent);
+            else {
+                [self->cache setObject:(image ?: [NSNull null]) forKey:key];
+                NSLog(@"IMAGE START CALLBACKS for %@ [%d clients]", url.lastPathComponent, (int)[callbacks count]);
+                for (ImageCacheCallback callback in callbacks) {
+                    NSLog(@"....IMAGE CALLBACK: %@", image);
+                    callback(image);
+                }
+                NSLog(@"IMAGE STOP CALLBACKS for %@", url.lastPathComponent);
+            }
         });
     }];
 }
@@ -175,6 +191,18 @@ static ImageCache* sharedInstance = nil;
 {
     [self getImage:url size:CGSizeZero completionHandler:handler];
 }
+                       
+- (void)cancelImage:(NSURL*)url
+{
+    NSURLSessionDataTask* task = task_dict[url];
+    NSLog(@"cancelImage: %@", url);
+    if (task != nil) {
+        NSLog(@"cancelImage: DONE!");
+        [task cancel];
+        task_dict[url] = nil;
+    }
+}
+
 
 @end
 
