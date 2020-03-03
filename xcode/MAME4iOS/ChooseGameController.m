@@ -362,7 +362,10 @@ UIView* find_view(UIView* view, Class class) {
     if (name == nil)
         return nil;
     
-    return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%s/%@.png", get_documents_path("titles"), name]];
+    if ([self isSystem:info])
+        return [[NSBundle mainBundle] URLForResource:name withExtension:@"png"];
+    
+    return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%s/%@.png", get_documents_path("titles"), name] isDirectory:NO];
 }
 
 - (void)filterGameList
@@ -890,7 +893,7 @@ UIView* find_view(UIView* view, Class class) {
     
     // use a placeholder image if the image did not load right away.
     if (cell.image.image == nil)
-        cell.image.image = [UIImage imageNamed:info[kGameInfoName]] ?: _defaultGameImage;
+        cell.image.image = _defaultGameImage;
     
     return cell;
 }

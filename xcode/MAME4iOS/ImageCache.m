@@ -55,7 +55,7 @@ static ImageCache* sharedInstance = nil;
 
 - (void)getData:(NSURL*)url localURL:(NSURL*)localURL completionHandler:(void (^)(NSData* data))handler
 {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
         if (localURL != nil)
         {
             NSData* data = [NSData dataWithContentsOfURL:localURL];
@@ -124,6 +124,7 @@ static ImageCache* sharedInstance = nil;
         return [val addObject:handler];
     }
     
+#if 0
     // if we have a local copy on disk, and we dont need to resize, get the image synchronously (this helps smooth scrolling)
     if (localURL != nil && (size.width == 0 && size.height == 0))
     {
@@ -135,6 +136,7 @@ static ImageCache* sharedInstance = nil;
             return handler(image);
         }
     }
+#endif
     
     NSLog(@"....IMAGE CACHE MISS");
     NSParameterAssert(val == nil);
