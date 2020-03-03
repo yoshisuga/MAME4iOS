@@ -153,8 +153,8 @@
 		EF7B232D23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
 		EFA756FF2405585D00A02AAB /* mamemenu.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA756FE2405585D00A02AAB /* mamemenu.png */; };
 		EFA757002405585D00A02AAB /* mamemenu.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA756FE2405585D00A02AAB /* mamemenu.png */; };
-		EFA7570524057FD800A02AAB /* DEFAULT.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA7570424057FD800A02AAB /* DEFAULT.png */; };
-		EFA7570624057FD800A02AAB /* DEFAULT.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA7570424057FD800A02AAB /* DEFAULT.png */; };
+		EFA7570524057FD800A02AAB /* default_game_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA7570424057FD800A02AAB /* default_game_icon.png */; };
+		EFA7570624057FD800A02AAB /* default_game_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA7570424057FD800A02AAB /* default_game_icon.png */; };
 		EFA757082405B9EA00A02AAB /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA757072405B9EA00A02AAB /* AVFoundation.framework */; };
 		EFA7570A2405BA0200A02AAB /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA757092405BA0200A02AAB /* AVFoundation.framework */; };
 		EFA7570D2406D64600A02AAB /* SystemImage.m in Sources */ = {isa = PBXBuildFile; fileRef = EFA7570B2406D64600A02AAB /* SystemImage.m */; };
@@ -343,7 +343,7 @@
 		EF301CF0240460C5000510FD /* Alert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Alert.m; sourceTree = "<group>"; };
 		EF9F9C9E240070E700352554 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../../README.md; sourceTree = "<group>"; };
 		EFA756FE2405585D00A02AAB /* mamemenu.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = mamemenu.png; sourceTree = "<group>"; };
-		EFA7570424057FD800A02AAB /* DEFAULT.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = DEFAULT.png; sourceTree = "<group>"; };
+		EFA7570424057FD800A02AAB /* default_game_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = default_game_icon.png; sourceTree = "<group>"; };
 		EFA757072405B9EA00A02AAB /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS13.2.sdk/System/Library/Frameworks/AVFoundation.framework; sourceTree = DEVELOPER_DIR; };
 		EFA757092405BA0200A02AAB /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		EFA7570B2406D64600A02AAB /* SystemImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SystemImage.m; sourceTree = "<group>"; };
@@ -552,7 +552,7 @@
 		CEBFBC0E163C5BD300A05CD0 /* resources */ = {
 			isa = PBXGroup;
 			children = (
-				EFA7570424057FD800A02AAB /* DEFAULT.png */,
+				EFA7570424057FD800A02AAB /* default_game_icon.png */,
 				EFA756FE2405585D00A02AAB /* mamemenu.png */,
 				B5FAE31621FCDE0C003F44D0 /* scanline_tvOS201901.png */,
 				920BBDED201FC29700AE7D50 /* dpad.png */,
@@ -785,7 +785,7 @@
 				9268D84A21661CA500AB0470 /* config_iPhone_xr_xs_max.txt in Resources */,
 				925ABCCB1E46DCC500997182 /* border-iPad.png in Resources */,
 				925ABCCC1E46DCC500997182 /* config_iPad.txt in Resources */,
-				EFA7570524057FD800A02AAB /* DEFAULT.png in Resources */,
+				EFA7570524057FD800A02AAB /* default_game_icon.png in Resources */,
 				925ABCCD1E46DCC500997182 /* config_iPhone.txt in Resources */,
 				925ABCCE1E46DCC500997182 /* crt-1.png in Resources */,
 				925ABCCF1E46DCC500997182 /* crt-2.png in Resources */,
@@ -826,7 +826,7 @@
 				926C770721F26DFA00103EDE /* crt-2.png in Resources */,
 				926C770921F26E0000103EDE /* scanline-2.png in Resources */,
 				EFA757002405585D00A02AAB /* mamemenu.png in Resources */,
-				EFA7570624057FD800A02AAB /* DEFAULT.png in Resources */,
+				EFA7570624057FD800A02AAB /* default_game_icon.png in Resources */,
 				926C770621F26DEA00103EDE /* crt-1.png in Resources */,
 				92ECB8F721EA985000D1E3D0 /* Assets.xcassets in Resources */,
 				B5FAE31721FCDE0C003F44D0 /* scanline_tvOS201901.png in Resources */,
