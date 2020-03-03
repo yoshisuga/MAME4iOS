@@ -107,6 +107,7 @@ UIView* find_view(UIView* view, Class class) {
     BOOL _searchCancel;
     NSIndexPath* currentlyFocusedIndexPath;
     UIImage* _defaultGameImage;
+    NSMutableSet* _updated_urls;
 }
 @end
 
@@ -802,12 +803,11 @@ UIView* find_view(UIView* view, Class class) {
 
 #pragma mark Update Images
 
-static NSMutableSet* g_updated_urls;
-
 -(void)updateImages
 {
     if (self.collectionView.isDragging || self.collectionView.isTracking || self.collectionView.isDecelerating) {
         NSLog(@"updateImages: SCROLLING (will try again)");
+        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateImages) object:nil];
         [self performSelector:@selector(updateImages) withObject:nil afterDelay:1.0];
         return;
     }
@@ -820,12 +820,12 @@ static NSMutableSet* g_updated_urls;
     for (NSIndexPath* indexPath in vis_items) {
         NSDictionary* game = [self getGameInfo:indexPath];
         NSURL* url = [self getGameImageURL:game];
-        if ([g_updated_urls containsObject:url])
+        if ([_updated_urls containsObject:url])
             [update_items addObject:indexPath];
     }
     
     NSLog(@"updateImages: %d visible items, %d dirty images, %d cells need updated", (int)vis_items.count, (int)g_updated_urls.count, (int)update_items.count);
-    [g_updated_urls removeAllObjects];
+    [_updated_urls removeAllObjects];
 
     if (update_items.count > 0) {
         [self.collectionView performBatchUpdates:^{
@@ -918,8 +918,8 @@ static NSMutableSet* g_updated_urls;
         NSLog(@"CELL ASYNC LOAD: %@ %d:%d", info[kGameInfoName], (int)indexPath.section, (int)indexPath.item);
         
         // otherwise this a async callback, we might get a bunch of these so batch them up and do them all later
-        g_updated_urls = g_updated_urls ?: [[NSMutableSet alloc] init];
-        [g_updated_urls addObject:url];
+        self->_updated_urls = self->_updated_urls ?: [[NSMutableSet alloc] init];
+        [self->_updated_urls addObject:url];
         [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateImages) object:nil];
         [self performSelector:@selector(updateImages) withObject:nil afterDelay:1.0];
 
