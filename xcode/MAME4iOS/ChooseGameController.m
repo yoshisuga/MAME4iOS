@@ -106,6 +106,7 @@ UIView* find_view(UIView* view, Class class) {
     NSArray* _key_commands;
     BOOL _searchCancel;
     NSIndexPath* currentlyFocusedIndexPath;
+    UIImage* _defaultGameImage;
 }
 @end
 
@@ -126,6 +127,8 @@ UIView* find_view(UIView* view, Class class) {
     // layout mode
     _layoutMode = [_userDefaults integerForKey:LAYOUT_MODE_KEY];
     _layoutMode = MIN(MAX(_layoutMode,0), LayoutCount);
+    
+    _defaultGameImage = [UIImage imageNamed:@"default_game_icon"];
     
     return self;
 }
@@ -887,7 +890,7 @@ UIView* find_view(UIView* view, Class class) {
     
     // use a placeholder image if the image did not load right away.
     if (cell.image.image == nil)
-        cell.image.image = [UIImage imageNamed:info[kGameInfoName]] ?: [UIImage imageNamed:@"default_game_icon"];
+        cell.image.image = [UIImage imageNamed:info[kGameInfoName]] ?: _defaultGameImage;
     
     return cell;
 }
