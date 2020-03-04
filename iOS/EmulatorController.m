@@ -443,32 +443,34 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     int enable_menu_exit_option = myosd_inGame && myosd_in_menu==0;
     
     menu = [UIAlertController alertControllerWithTitle:@"MAME4iOS" message:nil preferredStyle:UIAlertControllerStyleActionSheet];
-    
+
+    CGFloat size = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].pointSize * 1.5;
+
     if(myosd_inGame)
     {
         // MENU item to insert a coin and do a start. usefull for fullscreen and AppleTV siri remote, and discoverability on a GameController
-        [menu addAction:[UIAlertAction actionWithTitle:@"Coin+Start" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"centsign.circle"] handler:^(UIAlertAction * _Nonnull action) {
+        [menu addAction:[UIAlertAction actionWithTitle:@"Coin+Start" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"centsign.circle" withPointSize:size] handler:^(UIAlertAction * _Nonnull action) {
             push_mame_buttons(player, MYOSD_SELECT, MYOSD_SELECT); // some games need 2 credits to play, so enter two coins
             push_mame_button(player, MYOSD_START);
             [self endMenu];
         }]];
-        [menu addAction:[UIAlertAction actionWithTitle:@"Load State" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"bookmark.fill"] handler:^(UIAlertAction * _Nonnull action) {
+        [menu addAction:[UIAlertAction actionWithTitle:@"Load State" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"bookmark.fill" withPointSize:size] handler:^(UIAlertAction * _Nonnull action) {
             [self runLoadState];
         }]];
-        [menu addAction:[UIAlertAction actionWithTitle:@"Save State" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"bookmark"] handler:^(UIAlertAction * _Nonnull action) {
+        [menu addAction:[UIAlertAction actionWithTitle:@"Save State" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"bookmark" withPointSize:size] handler:^(UIAlertAction * _Nonnull action) {
             [self runSaveState];
         }]];
-        [menu addAction:[UIAlertAction actionWithTitle:@"MAME Menu" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"slider.horizontal.3"] handler:^(UIAlertAction * _Nonnull action) {
+        [menu addAction:[UIAlertAction actionWithTitle:@"MAME Menu" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"slider.horizontal.3" withPointSize:size] handler:^(UIAlertAction * _Nonnull action) {
             push_mame_button(0, (MYOSD_SELECT|MYOSD_START));
             [self endMenu];
         }]];
     }
-    [menu addAction:[UIAlertAction actionWithTitle:@"Settings" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"gear"] handler:^(UIAlertAction * _Nonnull action) {
+    [menu addAction:[UIAlertAction actionWithTitle:@"Settings" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"gear" withPointSize:size] handler:^(UIAlertAction * _Nonnull action) {
         [self runSettings];
     }]];
 
     /* Start Server is in Settings (no need for it to be on the in-game menu)
-    [menu addAction:[UIAlertAction actionWithTitle:@"Upload Files" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"arrow.up.arrow.down.circle"] handler:^(UIAlertAction * _Nonnull action) {
+    [menu addAction:[UIAlertAction actionWithTitle:@"Upload Files" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"arrow.up.arrow.down.circle" withPointSize:size] handler:^(UIAlertAction * _Nonnull action) {
         [[WebServer sharedInstance] startUploader];
         [WebServer sharedInstance].webUploader.delegate = self;
         [self endMenu];
@@ -476,7 +478,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     */
 
     if(enable_menu_exit_option) {
-        [menu addAction:[UIAlertAction actionWithTitle:@"Exit Game" style:UIAlertActionStyleDestructive image:[UIImage systemImageNamed:@"arrow.uturn.left.circle"] handler:^(UIAlertAction * _Nonnull action) {
+        [menu addAction:[UIAlertAction actionWithTitle:@"Exit Game" style:UIAlertActionStyleDestructive image:[UIImage systemImageNamed:@"arrow.uturn.left.circle" withPointSize:size] handler:^(UIAlertAction * _Nonnull action) {
             //[self runExit];   -- the user just selected "Exit Game" from a menu, dont ask again
             if (g_mame_game[0] != ' ')
                 g_mame_game[0] = 0;
