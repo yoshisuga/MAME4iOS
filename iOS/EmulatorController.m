@@ -471,7 +471,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     [menu addAction:[UIAlertAction actionWithTitle:@"Upload Files" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"arrow.up.arrow.down.circle"] handler:^(UIAlertAction * _Nonnull action) {
         [[WebServer sharedInstance] startUploader];
         [WebServer sharedInstance].webUploader.delegate = self;
-        [self endMenu]; // [self done:self];
+        [self endMenu];
     }]];
     */
 
@@ -565,7 +565,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     if (@available(iOS 13.0, tvOS 13.0, *)) {
         navController.modalInPresentation = YES;    // disable iOS 13 swipe to dismiss...
     }
-    [self presentViewController:navController animated:YES completion:nil];
+    [(self.presentedViewController ?: self) presentViewController:navController animated:YES completion:nil];
 }
 
 - (void)endMenu{
@@ -819,6 +819,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     
 }
 
+// DONE button on Settings dialog
 -(void)done:(id)sender {
     
 	Options *op = [[Options alloc] init];
@@ -834,27 +835,32 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     }
 #endif
     
-    [self dismissViewControllerAnimated:YES completion:nil];
-
-    if(global_low_latency_sound != [op lowlsound])
-    {
-        if(myosd_sound_value!=-1)
+    // have the parent of the options/setting dialog dismiss
+    // we present settings two ways, from in-game menu (we are parent) and from ChooseGameUI (it is the parent)
+    UIViewController* parent = optionsController.navigationController.presentingViewController;
+    [(parent ?: self) dismissViewControllerAnimated:YES completion:^{
+        if(global_low_latency_sound != [op lowlsound])
         {
-           myosd_closeSound();
-           global_low_latency_sound = [op lowlsound];
-           myosd_openSound(myosd_sound_value, 1);
+            if(myosd_sound_value!=-1)
+            {
+               myosd_closeSound();
+               global_low_latency_sound = [op lowlsound];
+               myosd_openSound(myosd_sound_value, 1);
+            }
         }
-    }
-    
-    // if we are at the root menu, exit and restart.
-    if (myosd_inGame == 0)
-        myosd_exitGame = 1;
+        
+        // if we are at the root menu, exit and restart.
+        if (myosd_inGame == 0)
+            myosd_exitGame = 1;
 
-    [self updateOptions];
-    
-    [self performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:YES];
-    
-    [self endMenu];
+        [self updateOptions];
+        
+        [self performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:YES];
+        
+        // dont call endMenu (and unpause MAME) if we still have a dialog up.
+        if (self.presentedViewController == nil)
+            [self endMenu];
+    }];
 }
 
 
@@ -3870,11 +3876,6 @@ void myosd_handle_turbo() {
     
     NSString* name = game[kGameInfoName];
     
-    if ([name isEqualToString:kGameInfoNameSettings]) {
-        [self runSettings];
-        return;
-    }
-
     if ([name isEqualToString:kGameInfoNameMameMenu])
         name = @" ";
 
@@ -3937,6 +3938,10 @@ void myosd_handle_turbo() {
     change_pause(g_emulation_paused);
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:kSelectedGameKey];
     choose.selectGameCallback = ^(NSDictionary* game) {
+        if ([game[kGameInfoName] isEqualToString:kGameInfoNameSettings]) {
+            [self runSettings];
+            return;
+        }
         [self dismissViewControllerAnimated:YES completion:^{
             self->icadeView.active = TRUE;
             [self performSelectorOnMainThread:@selector(playGame:) withObject:game waitUntilDone:FALSE];
