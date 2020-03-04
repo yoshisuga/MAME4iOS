@@ -37,7 +37,7 @@ This repo adds support for:
 
 Requirements: Mac 10.13.6 with Xcode 10 or above
 
-Building MAME4iOS requires a prebuilt MAME binary (It was not included in this repo due to its large size):
+Building MAME4iOS requires a prebuilt MAME binary (it has not been included in this repo due to its large size):
 
 1. _Make sure you have the latest version of the Xcode commandline tools installed:_<br>
 `xcode-select --install`
@@ -45,8 +45,8 @@ Building MAME4iOS requires a prebuilt MAME binary (It was not included in this r
 2. In Terminal: `cd [path to MAME4iOS root]`<br>
   <sup>(alternatively, you can drag & drop a folder on Terminal after `cd` if don't know how to get the directory path)</sup><br>
 
-3. Get MAME binary (build yourself):
-    - Build (choose one of the following depending on your device):
+3. Create the MAME binary by building it yourself from scratch:
+    - Build it in the above selected terminal by chosing one of the following scripts (depending on which device you are building for):
         - iOS 64-bit: `./make-ios.sh`<br>
         <sup>For iPhone 5S, iPad Air, iPad mini, and up…</sup><br>
         - tvOS: `./make-tvos.sh`<br>
@@ -165,4 +165,3 @@ Under Settings -> Game Input, there's a section called "Turbo Mode Toggle", that
 Also in Settings -> Game Input, you'll find a section called "Touch Analog" and "Touch Directional Input". "Touch Analog" lets you use your touchscreen as an analog device for games using input controls such as trackballs and knobs. These include games like Arkanoid or Crystal Castles. You can adjust the sensitivity of the analog controls, and also choose to hide the d-pad/analog stick in this mode.
 
 "Touch Directional Input" is rather experimental and is for vertical shooters so you can move around using your finger. It still needs some work so just a word of caution :)
-
