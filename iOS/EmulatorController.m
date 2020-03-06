@@ -395,9 +395,22 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
 
 - (void)runLoadSaveState:(BOOL)load
 {
+    if (self.presentedViewController) {
+        NSLog(@"runLoadSaveState: BUSY!");
+        return;
+    }
+    
     NSString* message = [NSString stringWithFormat:@"Select State to %@", load ? @"Load" : @"Save"];
     
-    [self showAlertWithTitle:nil message:message buttons:@[@"State 1", @"State 2"] handler:^(NSUInteger button) {
+#if TARGET_OS_TV
+    NSString* state1 = @"State 1";
+    NSString* state2 = @"State 2";
+#else
+    NSString* state1 = controllers.count > 0 ? @"Ⓐ State A" : @"State 1";
+    NSString* state2 = controllers.count > 0 ? @"Ⓑ State B" : @"State 2";
+#endif
+    
+    [self showAlertWithTitle:nil message:message buttons:@[state1, state2] handler:^(NSUInteger button) {
         if (load)
             myosd_loadstate = 1;
         else
@@ -430,40 +443,42 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     int enable_menu_exit_option = myosd_inGame && myosd_in_menu==0;
     
     menu = [UIAlertController alertControllerWithTitle:@"MAME4iOS" message:nil preferredStyle:UIAlertControllerStyleActionSheet];
-    
+
+    CGFloat size = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].pointSize * 1.5;
+
     if(myosd_inGame)
     {
         // MENU item to insert a coin and do a start. usefull for fullscreen and AppleTV siri remote, and discoverability on a GameController
-        [menu addAction:[UIAlertAction actionWithTitle:@"Coin+Start" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"centsign.circle"] handler:^(UIAlertAction * _Nonnull action) {
+        [menu addAction:[UIAlertAction actionWithTitle:@"Coin+Start" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"centsign.circle" withPointSize:size] handler:^(UIAlertAction * _Nonnull action) {
             push_mame_buttons(player, MYOSD_SELECT, MYOSD_SELECT); // some games need 2 credits to play, so enter two coins
             push_mame_button(player, MYOSD_START);
             [self endMenu];
         }]];
-        [menu addAction:[UIAlertAction actionWithTitle:@"Load State" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"bookmark.fill"] handler:^(UIAlertAction * _Nonnull action) {
+        [menu addAction:[UIAlertAction actionWithTitle:@"Load State" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"bookmark.fill" withPointSize:size] handler:^(UIAlertAction * _Nonnull action) {
             [self runLoadState];
         }]];
-        [menu addAction:[UIAlertAction actionWithTitle:@"Save State" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"bookmark"] handler:^(UIAlertAction * _Nonnull action) {
+        [menu addAction:[UIAlertAction actionWithTitle:@"Save State" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"bookmark" withPointSize:size] handler:^(UIAlertAction * _Nonnull action) {
             [self runSaveState];
         }]];
-        [menu addAction:[UIAlertAction actionWithTitle:@"MAME Menu" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"slider.horizontal.3"] handler:^(UIAlertAction * _Nonnull action) {
+        [menu addAction:[UIAlertAction actionWithTitle:@"MAME Menu" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"slider.horizontal.3" withPointSize:size] handler:^(UIAlertAction * _Nonnull action) {
             push_mame_button(0, (MYOSD_SELECT|MYOSD_START));
             [self endMenu];
         }]];
     }
-    [menu addAction:[UIAlertAction actionWithTitle:@"Settings" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"gear"] handler:^(UIAlertAction * _Nonnull action) {
+    [menu addAction:[UIAlertAction actionWithTitle:@"Settings" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"gear" withPointSize:size] handler:^(UIAlertAction * _Nonnull action) {
         [self runSettings];
     }]];
 
     /* Start Server is in Settings (no need for it to be on the in-game menu)
-    [menu addAction:[UIAlertAction actionWithTitle:@"Upload Files" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"arrow.up.arrow.down.circle"] handler:^(UIAlertAction * _Nonnull action) {
+    [menu addAction:[UIAlertAction actionWithTitle:@"Upload Files" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"arrow.up.arrow.down.circle" withPointSize:size] handler:^(UIAlertAction * _Nonnull action) {
         [[WebServer sharedInstance] startUploader];
         [WebServer sharedInstance].webUploader.delegate = self;
-        [self endMenu]; // [self done:self];
+        [self endMenu];
     }]];
     */
 
     if(enable_menu_exit_option) {
-        [menu addAction:[UIAlertAction actionWithTitle:@"Exit Game" style:UIAlertActionStyleDestructive image:[UIImage systemImageNamed:@"arrow.uturn.left.circle"] handler:^(UIAlertAction * _Nonnull action) {
+        [menu addAction:[UIAlertAction actionWithTitle:@"Exit Game" style:UIAlertActionStyleDestructive image:[UIImage systemImageNamed:@"arrow.uturn.left.circle" withPointSize:size] handler:^(UIAlertAction * _Nonnull action) {
             //[self runExit];   -- the user just selected "Exit Game" from a menu, dont ask again
             if (g_mame_game[0] != ' ')
                 g_mame_game[0] = 0;
@@ -552,7 +567,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     if (@available(iOS 13.0, tvOS 13.0, *)) {
         navController.modalInPresentation = YES;    // disable iOS 13 swipe to dismiss...
     }
-    [self presentViewController:navController animated:YES completion:nil];
+    [(self.presentedViewController ?: self) presentViewController:navController animated:YES completion:nil];
 }
 
 - (void)endMenu{
@@ -806,6 +821,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     
 }
 
+// DONE button on Settings dialog
 -(void)done:(id)sender {
     
 	Options *op = [[Options alloc] init];
@@ -821,27 +837,32 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     }
 #endif
     
-    [self dismissViewControllerAnimated:YES completion:nil];
-
-    if(global_low_latency_sound != [op lowlsound])
-    {
-        if(myosd_sound_value!=-1)
+    // have the parent of the options/setting dialog dismiss
+    // we present settings two ways, from in-game menu (we are parent) and from ChooseGameUI (it is the parent)
+    UIViewController* parent = optionsController.navigationController.presentingViewController;
+    [(parent ?: self) dismissViewControllerAnimated:YES completion:^{
+        if(global_low_latency_sound != [op lowlsound])
         {
-           myosd_closeSound();
-           global_low_latency_sound = [op lowlsound];
-           myosd_openSound(myosd_sound_value, 1);
+            if(myosd_sound_value!=-1)
+            {
+               myosd_closeSound();
+               global_low_latency_sound = [op lowlsound];
+               myosd_openSound(myosd_sound_value, 1);
+            }
         }
-    }
-    
-    // if we are at the root menu, exit and restart.
-    if (myosd_inGame == 0)
-        myosd_exitGame = 1;
+        
+        // if we are at the root menu, exit and restart.
+        if (myosd_inGame == 0)
+            myosd_exitGame = 1;
 
-    [self updateOptions];
-    
-    [self performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:YES];
-    
-    [self endMenu];
+        [self updateOptions];
+        
+        [self performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:YES];
+        
+        // dont call endMenu (and unpause MAME) if we still have a dialog up.
+        if (self.presentedViewController == nil)
+            [self endMenu];
+    }];
 }
 
 
@@ -3378,7 +3399,7 @@ void myosd_handle_turbo() {
         //      MENU+R1 = START                 MAME MENU
         //      MENU+X  = EXIT GAME             EXIT GAME
         //      MENU+B  = MAME MENU             MAME4iOS MENU
-        //      MENU+A  = LOAD STATE            LOAD STATE 
+        //      MENU+A  = LOAD STATE            LOAD STATE
         //      MENU+Y  = SAVE STATE            SAVE STATE
         //
         //      OPTION   = COIN + START
@@ -3432,16 +3453,12 @@ void myosd_handle_turbo() {
              // Load State
              else if (MFIController.microGamepad.buttonA.pressed ) {
                  NSLog(@"%d: MENU+A => LOAD STATE", index);
-                 myosd_joy_status[index] &= ~MYOSD_A;
-                 myosd_pad_status &= ~MYOSD_A;
-                 myosd_loadstate = 1;
+                 [self runLoadState];
              }
              // Save State
              else if (MFIController.extendedGamepad.buttonY.pressed ) {
                  NSLog(@"%d: MENU+Y => SAVE STATE", index);
-                 myosd_joy_status[index] &= ~MYOSD_Y;
-                 myosd_pad_status &= ~MYOSD_Y;
-                 myosd_savestate = 1;
+                 [self runSaveState];
              }
              else {
                  return;
@@ -3470,6 +3487,7 @@ void myosd_handle_turbo() {
                     myosd_joy_status[index] |= MYOSD_A;
                 }
                 else {
+                    [self handle_MENU];     // handle menu on button UP
                     myosd_joy_status[index] &= ~MYOSD_A;
                 }
             }
@@ -3478,6 +3496,7 @@ void myosd_handle_turbo() {
                     myosd_joy_status[index] |= MYOSD_B;
                 }
                 else {
+                    [self handle_MENU];     // handle menu on button UP
                     myosd_joy_status[index] &= ~MYOSD_B;
                 }
             }
@@ -3550,8 +3569,6 @@ void myosd_handle_turbo() {
                 }
             }
 #endif
-            if (element != gamepad.dpad)
-                [self handle_MENU];
         };
         
         //
@@ -3861,11 +3878,6 @@ void myosd_handle_turbo() {
     
     NSString* name = game[kGameInfoName];
     
-    if ([name isEqualToString:kGameInfoNameSettings]) {
-        [self runSettings];
-        return;
-    }
-
     if ([name isEqualToString:kGameInfoNameMameMenu])
         name = @" ";
 
@@ -3928,6 +3940,10 @@ void myosd_handle_turbo() {
     change_pause(g_emulation_paused);
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:kSelectedGameKey];
     choose.selectGameCallback = ^(NSDictionary* game) {
+        if ([game[kGameInfoName] isEqualToString:kGameInfoNameSettings]) {
+            [self runSettings];
+            return;
+        }
         [self dismissViewControllerAnimated:YES completion:^{
             self->icadeView.active = TRUE;
             [self performSelectorOnMainThread:@selector(playGame:) withObject:game waitUntilDone:FALSE];

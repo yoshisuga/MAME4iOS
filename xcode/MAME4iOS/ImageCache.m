@@ -8,7 +8,6 @@
 #import "ImageCache.h"
 
 #define ImageCacheDebug 0
-
 #if !ImageCacheDebug
 #define NSLog(...) (void)0
 #endif
@@ -17,15 +16,19 @@
 #error("This file assumes ARC")
 #endif
 
+#define ERROR_RETRY_TIME (1.0 * 60.0)   // retry again after this amount...
+
 @implementation ImageCache
 {
     NSCache* cache;
+    NSMutableDictionary* task_dict;
 }
 
 static ImageCache* sharedInstance = nil;
 
 +(ImageCache*) sharedInstance
 {
+    NSParameterAssert([NSThread isMainThread]);
     if (sharedInstance == nil)
         sharedInstance = [[ImageCache alloc] init];
     return sharedInstance;
@@ -33,11 +36,10 @@ static ImageCache* sharedInstance = nil;
 
 -(id)init
 {
-    NSAssert([NSThread isMainThread], @"ACK!");
-
     if ((self = [super init]))
     {
         cache = [[NSCache alloc] init];
+        task_dict = [[NSMutableDictionary alloc] init];
     }
     return self;
 }
@@ -53,40 +55,55 @@ static ImageCache* sharedInstance = nil;
     [cache removeAllObjects];
 }
 
-- (void)getData:(NSURL*)url localURL:(NSURL*)localURL completionHandler:(void (^)(NSData* data))handler
+- (void)getData:(NSURL*)url localURL:(NSURL*)localURL completionHandler:(void (^)(NSData* data, NSError* error))handler
 {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        if (localURL != nil)
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+        if (localURL != nil && ImageCacheDebug == 0)
         {
             NSData* data = [NSData dataWithContentsOfURL:localURL];
             
             if (data != nil)
-                return handler(data);
+                return handler(data, nil);
         }
         
         if (url == nil)
-            return handler(nil);
-
+            return handler(nil, nil);
+        
         NSURLSession* session = [NSURLSession sharedSession];
         NSURLRequest* request = [NSURLRequest requestWithURL:url];
-        [[session dataTaskWithRequest:request completionHandler:^(NSData* data, NSURLResponse* response, NSError* error) {
+        
+#if ImageCacheDebug
+        // randomly force a timeout to test code....
+        if (arc4random_uniform(10) == 0) {
+            NSLog(@"TESTING A NETWORK ERROR: %@", url);
+            request = [NSURLRequest requestWithURL:[NSURL URLWithString:@"http://www.example.com:81/wombat.png"]];
+        }
+#endif
+        NSURLSessionDataTask* task = [session dataTaskWithRequest:request
+            completionHandler:^(NSData* data, NSURLResponse* response, NSError* error) {
 
             NSInteger status = [(NSHTTPURLResponse*)response statusCode];
 
             if (error != nil)
                 NSLog(@"GET DATA\n\tURL:%@\n\tERROR:%@", url, error);
-            
+
             if (status != 200)
             {
-                NSLog(@"GET DATA: BAD RESPONSE (%d)\n\tURL:%@\n\tBODY:%@", (int)status, url, [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+                NSLog(@"GET DATA: BAD RESPONSE (%d)\n\tURL:%@\n\tBODY:%@",
+                      (int)status, url, [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
                 data = nil;
             }
 
             if (localURL != nil && data != nil && error == nil)
-                [data writeToURL:localURL atomically:NO];
+                [data writeToURL:localURL atomically:YES];
 
-            handler(data);
-        }] resume];
+            handler(data, error);
+        }];
+        [task resume];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            NSParameterAssert([NSThread isMainThread]);
+            self->task_dict[url] = task;
+        });
     });
 }
 
@@ -96,11 +113,6 @@ static ImageCache* sharedInstance = nil;
     NSParameterAssert(handler != nil);
     NSParameterAssert(localURL == nil || [localURL isFileURL]);
 
-#if ImageCacheDebug
-    if (localURL != nil)
-        [[NSFileManager defaultManager] removeItemAtURL:localURL error:nil];
-#endif
-    
     NSLog(@"IMAGE CACHE: getImage: %@ [%f,%f]", url.path, size.width, size.height);
     
     NSString* key = [NSString stringWithFormat:@"%@[%f,%f]", url.path, size.width, size.height];
@@ -110,6 +122,17 @@ static ImageCache* sharedInstance = nil;
     {
         NSLog(@"....IMAGE CACHE HIT");
         return handler(val);
+    }
+    
+    if ([val isKindOfClass:[NSDate class]])
+    {
+        if ([((NSDate*)val) timeIntervalSinceNow] > (-1.0 * ERROR_RETRY_TIME))
+        {
+            NSLog(@"....IMAGE LOAD ERROR: NIL");
+            return handler(nil);
+        }
+        NSLog(@"....IMAGE LOAD ERROR: RETRY");
+        val = nil;
     }
     
     if ([val isKindOfClass:[NSNull class]])
@@ -124,8 +147,9 @@ static ImageCache* sharedInstance = nil;
         return [val addObject:handler];
     }
     
-    // if we have a local copy on disk, and we dont need to resize, get the image synchronously (this helps smooth scrolling)
-    if (localURL != nil && (size.width == 0 && size.height == 0))
+    // if we have a local copy on disk, and we dont need to resize, get the image synchronously.
+    // this prevents showing default icons unless we need to go to the net, at expense of a little scrolling perf.
+    if (localURL != nil && (size.width == 0 && size.height == 0) && ImageCacheDebug == 0)
     {
         if ([[NSFileManager defaultManager] fileExistsAtPath:localURL.path])
         {
@@ -140,7 +164,7 @@ static ImageCache* sharedInstance = nil;
     NSParameterAssert(val == nil);
     [cache setObject:[NSMutableArray arrayWithObject:handler] forKey:key];
     
-    [self getData:url localURL:localURL completionHandler:^(NSData *data) {
+    [self getData:url localURL:localURL completionHandler:^(NSData *data, NSError* error) {
         NSLog(@"IMAGE CACHE DATA: %d bytes", (int)[data length]);
         UIImage* image = [UIImage imageWithData:data];
         NSLog(@"IMAGE IMAGE: %@", image);
@@ -152,14 +176,34 @@ static ImageCache* sharedInstance = nil;
 #else
         dispatch_async(dispatch_get_main_queue(), ^{
 #endif
+            self->task_dict[url] = nil;
             NSArray* callbacks = [self->cache objectForKey:key];
-            [self->cache setObject:(image ?: [NSNull null]) forKey:key];
-            NSLog(@"IMAGE START CALLBACKS for %@ [%d clients]", url.lastPathComponent, (int)[callbacks count]);
-            for (ImageCacheCallback callback in callbacks) {
-                NSLog(@"....IMAGE CALLBACK: %@", image);
-                callback(image);
+
+            if (image == nil && error != nil && [error.domain isEqualToString:NSURLErrorDomain] && error.code == NSURLErrorCancelled) {
+                NSLog(@"IMAGE LOAD CANCELED: %@ [%d clients]", url.lastPathComponent, (int)[callbacks count]);
+                [self->cache removeObjectForKey:key];
             }
-            NSLog(@"IMAGE STOP CALLBACKS for %@", url.lastPathComponent);
+            else {
+                //  * if we got an error, put the current date in the cache
+                //    so we will try again later (after a while)
+                //
+                //  * if we got an image, put that in the cache, success!
+                //
+                //  * if we got a nil image, but no error, the url must not exist (404)
+                //    or be a bad image. put a NSNull in the cache.
+                //
+                if (image == nil && error != nil)
+                    [self->cache setObject:[NSDate date] forKey:key];
+                else
+                    [self->cache setObject:(image ?: [NSNull null]) forKey:key];
+                
+                NSLog(@"IMAGE START CALLBACKS for %@ [%d clients]", url.lastPathComponent, (int)[callbacks count]);
+                for (ImageCacheCallback callback in callbacks) {
+                    NSLog(@"....IMAGE CALLBACK: %@", image);
+                    callback(image);
+                }
+                NSLog(@"IMAGE STOP CALLBACKS for %@", url.lastPathComponent);
+            }
         });
     }];
 }
@@ -173,6 +217,18 @@ static ImageCache* sharedInstance = nil;
 {
     [self getImage:url size:CGSizeZero completionHandler:handler];
 }
+                       
+- (void)cancelImage:(NSURL*)url
+{
+    NSParameterAssert([NSThread isMainThread]);
+    NSURLSessionDataTask* task = task_dict[url];
+    if (task != nil) {
+        NSLog(@"cancelImage: %@", url);
+        [task cancel];
+        task_dict[url] = nil;
+    }
+}
+
 
 @end
 

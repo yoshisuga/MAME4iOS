@@ -149,14 +149,14 @@
 		EF301CF1240460C5000510FD /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF301CF0240460C5000510FD /* Alert.m */; };
 		EF301CF2240460C5000510FD /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF301CF0240460C5000510FD /* Alert.m */; };
 		EF301CF3240460F3000510FD /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF27F36323F73CD400B1E50A /* ZipFile.m */; };
+		EF40996B240EB4BF00FACC5D /* loading_game_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = EF40996A240EB4BF00FACC5D /* loading_game_icon.png */; };
+		EF40996C240EB4BF00FACC5D /* loading_game_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = EF40996A240EB4BF00FACC5D /* loading_game_icon.png */; };
 		EF7B232C23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
 		EF7B232D23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
 		EFA756FF2405585D00A02AAB /* mamemenu.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA756FE2405585D00A02AAB /* mamemenu.png */; };
 		EFA757002405585D00A02AAB /* mamemenu.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA756FE2405585D00A02AAB /* mamemenu.png */; };
-		EFA7570224055B0200A02AAB /* settings.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA7570124055B0200A02AAB /* settings.png */; };
-		EFA7570324055B0200A02AAB /* settings.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA7570124055B0200A02AAB /* settings.png */; };
-		EFA7570524057FD800A02AAB /* DEFAULT.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA7570424057FD800A02AAB /* DEFAULT.png */; };
-		EFA7570624057FD800A02AAB /* DEFAULT.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA7570424057FD800A02AAB /* DEFAULT.png */; };
+		EFA7570524057FD800A02AAB /* default_game_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA7570424057FD800A02AAB /* default_game_icon.png */; };
+		EFA7570624057FD800A02AAB /* default_game_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA7570424057FD800A02AAB /* default_game_icon.png */; };
 		EFA757082405B9EA00A02AAB /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA757072405B9EA00A02AAB /* AVFoundation.framework */; };
 		EFA7570A2405BA0200A02AAB /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA757092405BA0200A02AAB /* AVFoundation.framework */; };
 		EFA7570D2406D64600A02AAB /* SystemImage.m in Sources */ = {isa = PBXBuildFile; fileRef = EFA7570B2406D64600A02AAB /* SystemImage.m */; };
@@ -343,10 +343,10 @@
 		EF29C8832402E51100AFFA4E /* config_iPad_gen_7.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = config_iPad_gen_7.txt; path = "../../iOS-res/Applications/MAME4iOS.app/config_iPad_gen_7.txt"; sourceTree = "<group>"; };
 		EF301CEF240460C5000510FD /* Alert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Alert.h; sourceTree = "<group>"; };
 		EF301CF0240460C5000510FD /* Alert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Alert.m; sourceTree = "<group>"; };
+		EF40996A240EB4BF00FACC5D /* loading_game_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = loading_game_icon.png; sourceTree = "<group>"; };
 		EF9F9C9E240070E700352554 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../../README.md; sourceTree = "<group>"; };
 		EFA756FE2405585D00A02AAB /* mamemenu.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = mamemenu.png; sourceTree = "<group>"; };
-		EFA7570124055B0200A02AAB /* settings.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = settings.png; sourceTree = "<group>"; };
-		EFA7570424057FD800A02AAB /* DEFAULT.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = DEFAULT.png; sourceTree = "<group>"; };
+		EFA7570424057FD800A02AAB /* default_game_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = default_game_icon.png; sourceTree = "<group>"; };
 		EFA757072405B9EA00A02AAB /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS13.2.sdk/System/Library/Frameworks/AVFoundation.framework; sourceTree = DEVELOPER_DIR; };
 		EFA757092405BA0200A02AAB /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		EFA7570B2406D64600A02AAB /* SystemImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SystemImage.m; sourceTree = "<group>"; };
@@ -555,8 +555,8 @@
 		CEBFBC0E163C5BD300A05CD0 /* resources */ = {
 			isa = PBXGroup;
 			children = (
-				EFA7570424057FD800A02AAB /* DEFAULT.png */,
-				EFA7570124055B0200A02AAB /* settings.png */,
+				EFA7570424057FD800A02AAB /* default_game_icon.png */,
+				EF40996A240EB4BF00FACC5D /* loading_game_icon.png */,
 				EFA756FE2405585D00A02AAB /* mamemenu.png */,
 				B5FAE31621FCDE0C003F44D0 /* scanline_tvOS201901.png */,
 				920BBDED201FC29700AE7D50 /* dpad.png */,
@@ -789,7 +789,7 @@
 				9268D84A21661CA500AB0470 /* config_iPhone_xr_xs_max.txt in Resources */,
 				925ABCCB1E46DCC500997182 /* border-iPad.png in Resources */,
 				925ABCCC1E46DCC500997182 /* config_iPad.txt in Resources */,
-				EFA7570524057FD800A02AAB /* DEFAULT.png in Resources */,
+				EFA7570524057FD800A02AAB /* default_game_icon.png in Resources */,
 				925ABCCD1E46DCC500997182 /* config_iPhone.txt in Resources */,
 				925ABCCE1E46DCC500997182 /* crt-1.png in Resources */,
 				925ABCCF1E46DCC500997182 /* crt-2.png in Resources */,
@@ -811,10 +811,10 @@
 				925ABCD81E46DCC500997182 /* MAME4iOS72.png in Resources */,
 				EFA756FF2405585D00A02AAB /* mamemenu.png in Resources */,
 				EFA757222408488D00A02AAB /* iCadeControls.png in Resources */,
+				EF40996B240EB4BF00FACC5D /* loading_game_icon.png in Resources */,
 				925ABCD91E46DCC500997182 /* MAME4iOS114.png in Resources */,
 				925ABCDA1E46DCC500997182 /* MAME4iOS144.png in Resources */,
 				925ABCDB1E46DCC500997182 /* MAME4iOS57.png in Resources */,
-				EFA7570224055B0200A02AAB /* settings.png in Resources */,
 				925ABCDC1E46DCC500997182 /* cheat.zip in Resources */,
 				921CC323216A903600A39154 /* config_iPad_pro_10_5.txt in Resources */,
 				925ABCDD1E46DCC500997182 /* Category.ini in Resources */,
@@ -829,15 +829,15 @@
 				EFD4D14A23C0F6AB00857A76 /* Category.ini in Resources */,
 				926C771221F39D2500103EDE /* cheat.zip in Resources */,
 				926C770721F26DFA00103EDE /* crt-2.png in Resources */,
+				EF40996C240EB4BF00FACC5D /* loading_game_icon.png in Resources */,
 				926C770921F26E0000103EDE /* scanline-2.png in Resources */,
 				EFA757002405585D00A02AAB /* mamemenu.png in Resources */,
-				EFA7570624057FD800A02AAB /* DEFAULT.png in Resources */,
+				EFA7570624057FD800A02AAB /* default_game_icon.png in Resources */,
 				926C770621F26DEA00103EDE /* crt-1.png in Resources */,
 				92ECB8F721EA985000D1E3D0 /* Assets.xcassets in Resources */,
 				B5FAE31721FCDE0C003F44D0 /* scanline_tvOS201901.png in Resources */,
 				926C770821F26DFD00103EDE /* scanline-1.png in Resources */,
 				92A533D121EBDDF20089FBB9 /* GCDWebUploader.bundle in Resources */,
-				EFA7570324055B0200A02AAB /* settings.png in Resources */,
 				926C771321F39D2F00103EDE /* hiscore.dat in Resources */,
 				B5FAE31921FCE64D003F44D0 /* MAME_tvOS.lsr in Resources */,
 			);

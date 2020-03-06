@@ -20,6 +20,9 @@
         if ([buttons[i] caseInsensitiveCompare:@"Cancel"] == NSOrderedSame)
             style = UIAlertActionStyleCancel;
         
+        if (buttons.count == 2 && alert.preferredAction != nil)
+            style = UIAlertActionStyleCancel;
+        
         [alert addAction:[UIAlertAction actionWithTitle:buttons[i] style:style handler:^(UIAlertAction* action) {
             if (handler != nil)
                 handler(i);
@@ -28,6 +31,7 @@
         if (style != UIAlertActionStyleCancel && alert.preferredAction == nil)
             alert.preferredAction = alert.actions.lastObject;
     }
+        
     UIViewController* vc = self;
     while (vc.presentedViewController != nil)
         vc = vc.presentedViewController;
@@ -148,10 +152,8 @@
 + (instancetype)actionWithTitle:(nullable NSString *)title style:(UIAlertActionStyle)style image:(UIImage*)image handler:(void (^ __nullable)(UIAlertAction *action))handler
 {
     UIAlertAction* action = [self actionWithTitle:title style:style handler:handler];
-#if TARGET_OS_IOS // images in Alerts look bad on tvOS (they are too small)
     if ([action respondsToSelector:@selector(image)])
         [action setValue:image forKey:@"image"];
-#endif
     return action;
 }
 
