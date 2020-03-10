@@ -801,15 +801,16 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
         case 15: myosd_speed = 150; break;
     }
     
-    g_pref_lightgun_enabled = [op lightgunEnabled];
-    g_pref_lightgun_bottom_reload = [op lightgunBottomScreenReload];
-    
     turboBtnEnabled[BTN_X] = [op turboXEnabled];
     turboBtnEnabled[BTN_Y] = [op turboYEnabled];
     turboBtnEnabled[BTN_A] = [op turboAEnabled];
     turboBtnEnabled[BTN_B] = [op turboBEnabled];
     turboBtnEnabled[BTN_L1] = [op turboLEnabled];
     turboBtnEnabled[BTN_R1] = [op turboREnabled];
+    
+#if TARGET_OS_IOS
+    g_pref_lightgun_enabled = [op lightgunEnabled];
+    g_pref_lightgun_bottom_reload = [op lightgunBottomScreenReload];
     
     g_pref_touch_analog_enabled = [op touchAnalogEnabled];
     g_pref_touch_analog_hide_dpad = [op touchAnalogHideTouchDirectionalPad];
@@ -818,7 +819,11 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     g_controller_opacity = [op touchControlsOpacity];
     
     g_pref_touch_directional_enabled = [op touchDirectionalEnabled];
-    
+#else
+    g_pref_lightgun_enabled = NO;
+    g_pref_touch_analog_enabled = NO;
+    g_pref_touch_directional_enabled = NO;
+#endif
 }
 
 // DONE button on Settings dialog
