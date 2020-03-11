@@ -4,12 +4,12 @@ Original Author: David Valdeita (Seleuco)<br/>
 
 This is a port of MAME 0.139u1 for iOS, iPadOS, and tvOS.
 
-![iPhone Screenshot](README.images/screenshot-iphone-small.jpg)
-![AppleTV Screenshot](README.images/screenshot-atv-small.png)
-
 [Download iOS IPA (v2020.1)](https://mega.nz/#!OEAimSTQ!Z_QEZOJGPyVc8bqGkaGpqJ3xn-FOdtW53GKev1Lzt8w) | [Download tvOS IPA (v2020.1)](https://mega.nz/#!OQJylQZS!XLsDkdDf_RD3idDEFdcnJ92QQC7AN6ffrcXFoyuxZTQ)
 
 [Chat on Discord!](https://discord.gg/ZC6wkmU)
+
+![iPhone Screenshot](README.images/screenshot-iphone-small.jpg)
+![AppleTV Screenshot](README.images/screenshot-atv-small.png)
 
 MAME stands for Multi Arcade Machine Emulator, and lets you play arcade games from the past 30+ years on a device that fits in your pocket! My teenage self from decades ago would be replaying that ["mind blown GIF"](https://media0.giphy.com/media/xT0xeJpnrWC4XWblEk/giphy.gif) over and over again, but that GIF did not exist back then.
 
