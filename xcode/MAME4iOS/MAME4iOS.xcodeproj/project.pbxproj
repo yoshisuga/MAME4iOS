@@ -142,6 +142,8 @@
 		EF19F22D235D1BDF00C8EE7F /* ChooseGameController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF19F229235D1BDF00C8EE7F /* ChooseGameController.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		EF24933A236264DA00DD0A6C /* ImageCache.m in Sources */ = {isa = PBXBuildFile; fileRef = EF249336236264D900DD0A6C /* ImageCache.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		EF24933B236264DA00DD0A6C /* ImageCache.m in Sources */ = {isa = PBXBuildFile; fileRef = EF249336236264D900DD0A6C /* ImageCache.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		EF26AE08241848800078FD30 /* mame_logo.png in Resources */ = {isa = PBXBuildFile; fileRef = EF26AE07241848800078FD30 /* mame_logo.png */; };
+		EF26AE09241848800078FD30 /* mame_logo.png in Resources */ = {isa = PBXBuildFile; fileRef = EF26AE07241848800078FD30 /* mame_logo.png */; };
 		EF27F36823F73CD400B1E50A /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF27F36323F73CD400B1E50A /* ZipFile.m */; };
 		EF27F36A23F7475100B1E50A /* libcompression.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = EF27F36923F7475100B1E50A /* libcompression.tbd */; };
 		EF29C8822401C73A00AFFA4E /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EF29C8802401C73900AFFA4E /* Launch Screen.storyboard */; };
@@ -336,6 +338,7 @@
 		EF19F22E235D1C0300C8EE7F /* ChooseGameController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ChooseGameController.h; sourceTree = "<group>"; };
 		EF249336236264D900DD0A6C /* ImageCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageCache.m; sourceTree = "<group>"; };
 		EF249337236264DA00DD0A6C /* ImageCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageCache.h; sourceTree = "<group>"; };
+		EF26AE07241848800078FD30 /* mame_logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = mame_logo.png; sourceTree = "<group>"; };
 		EF27F36323F73CD400B1E50A /* ZipFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZipFile.m; sourceTree = "<group>"; };
 		EF27F36423F73CD400B1E50A /* ZipFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZipFile.h; sourceTree = "<group>"; };
 		EF27F36923F7475100B1E50A /* libcompression.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcompression.tbd; path = usr/lib/libcompression.tbd; sourceTree = SDKROOT; };
@@ -557,6 +560,7 @@
 			children = (
 				EFA7570424057FD800A02AAB /* default_game_icon.png */,
 				EF40996A240EB4BF00FACC5D /* loading_game_icon.png */,
+				EF26AE07241848800078FD30 /* mame_logo.png */,
 				EFA756FE2405585D00A02AAB /* mamemenu.png */,
 				B5FAE31621FCDE0C003F44D0 /* scanline_tvOS201901.png */,
 				920BBDED201FC29700AE7D50 /* dpad.png */,
@@ -788,6 +792,7 @@
 				925ABCCA1E46DCC500997182 /* Default-568h@2x.png in Resources */,
 				9268D84A21661CA500AB0470 /* config_iPhone_xr_xs_max.txt in Resources */,
 				925ABCCB1E46DCC500997182 /* border-iPad.png in Resources */,
+				EF26AE08241848800078FD30 /* mame_logo.png in Resources */,
 				925ABCCC1E46DCC500997182 /* config_iPad.txt in Resources */,
 				EFA7570524057FD800A02AAB /* default_game_icon.png in Resources */,
 				925ABCCD1E46DCC500997182 /* config_iPhone.txt in Resources */,
@@ -829,6 +834,7 @@
 				EFD4D14A23C0F6AB00857A76 /* Category.ini in Resources */,
 				926C771221F39D2500103EDE /* cheat.zip in Resources */,
 				926C770721F26DFA00103EDE /* crt-2.png in Resources */,
+				EF26AE09241848800078FD30 /* mame_logo.png in Resources */,
 				EF40996C240EB4BF00FACC5D /* loading_game_icon.png in Resources */,
 				926C770921F26E0000103EDE /* scanline-2.png in Resources */,
 				EFA757002405585D00A02AAB /* mamemenu.png in Resources */,
