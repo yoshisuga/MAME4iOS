@@ -909,9 +909,10 @@ UIView* find_view(UIView* view, Class class) {
     
     //  set the text based on the LayoutMode
     //
-    //  TINY        SMALL                   LARGE or LIST
-    //  romname     short Description       full Description
-    //                                      Manufacturer • Year  • romname [parent-rom]
+    //  TINY        SMALL                       LARGE or LIST
+    //  ----        -----                       -------------
+    //  romname     short Description           full Description
+    //              short Manufacturer • Year   full Manufacturer • Year  • romname [parent-rom]
     //
     if (_layoutMode == LayoutTiny) {
         cell.title.font = [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
@@ -921,6 +922,9 @@ UIView* find_view(UIView* view, Class class) {
     }
     else if (_layoutMode == LayoutSmall) {
         cell.title.text = [[info[kGameInfoDescription] componentsSeparatedByString:@" ("] firstObject];
+        cell.detail.text = [NSString stringWithFormat:@"%@ • %@",
+                            [[info[kGameInfoManufacturer] componentsSeparatedByString:@" ("] firstObject],
+                            info[kGameInfoYear]];
     }
     else { // LayoutLarge and LayoutList
         cell.title.text = info[kGameInfoDescription];
@@ -933,7 +937,7 @@ UIView* find_view(UIView* view, Class class) {
         if ([info[kGameInfoName] length] > 1)
             text = [NSString stringWithFormat:@"%@ • %@", text, info[kGameInfoName]];
 
-        if ([info[kGameInfoParent] length] > 1 && _layoutMode > LayoutSmall)
+        if ([info[kGameInfoParent] length] > 1)
             text = [NSString stringWithFormat:@"%@ [%@]", text, info[kGameInfoParent]];
 
         if ([text hasPrefix:@" • "])
@@ -1175,13 +1179,31 @@ UIView* find_view(UIView* view, Class class) {
     return actions;
 }
 
+// get the title for the ContextMenu
+- (NSString*)menuTitleForItemAtIndexPath:(NSIndexPath *)indexPath {
+    NSDictionary* game = [self getGameInfo:indexPath];
+    
+    if (game == nil || [game[kGameInfoName] length] == 0)
+        return nil;
+    
+    return [NSString stringWithFormat:@"%@\n%@ • %@ • %@",
+            game[kGameInfoDescription],
+            game[kGameInfoManufacturer],
+            game[kGameInfoYear],
+            ([game[kGameInfoParent] length] > 1) ?
+                [NSString stringWithFormat:@"%@ [%@]", game[kGameInfoName], game[kGameInfoParent]] :
+                game[kGameInfoName]
+            ];
+}
+
 #pragma mark - UIContextMenu (iOS 13+ only)
 
 #if TARGET_OS_IOS
 
 - (UIContextMenuConfiguration *)collectionView:(UICollectionView *)collectionView contextMenuConfigurationForItemAtIndexPath:(NSIndexPath *)indexPath point:(CGPoint)point API_AVAILABLE(ios(13.0)) {
     NSArray* actions = [self menuActionsForItemAtIndexPath:indexPath];
-    
+    NSString* title = [self menuTitleForItemAtIndexPath:indexPath];
+
     if ([actions count] == 0)
         return nil;
     
@@ -1190,7 +1212,7 @@ UIView* find_view(UIView* view, Class class) {
                 return nil;     // use default
             }
             actionProvider:^UIMenu* (NSArray* suggestedActions) {
-                return [UIMenu menuWithTitle:@"" children:actions];
+                return [UIMenu menuWithTitle:title children:actions];
             }
     ];
 }
@@ -1230,11 +1252,12 @@ UIView* find_view(UIView* view, Class class) {
         return;
     
     NSArray* actions = [self menuActionsForItemAtIndexPath:indexPath];
+    NSString* title = [self menuTitleForItemAtIndexPath:indexPath];
     
     if ([actions count] == 0)
         return;
     
-    UIAlertController* alert = [UIAlertController alertControllerWithTitle:[self getGameInfo:indexPath][kGameInfoName] message:nil preferredStyle:UIAlertControllerStyleActionSheet];
+    UIAlertController* alert = [UIAlertController alertControllerWithTitle:title message:nil preferredStyle:UIAlertControllerStyleActionSheet];
     
     for (UIAlertAction* action in actions)
         [alert addAction:action];
