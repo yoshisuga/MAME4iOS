@@ -33,6 +33,15 @@
 #define CELL_LARGE_WIDTH   600.0
 #endif
 
+#define BACKGROUND_COLOR        [UIColor blackColor]
+#define TITLE_COLOR             [UIColor whiteColor]
+#define HEADER_TEXT_COLOR       [UIColor whiteColor]
+#define CELL_BACKGROUND_COLOR   [UIColor colorWithWhite:0.222 alpha:1.0]
+#define CELL_TITLE_COLOR        [UIColor whiteColor]
+#define CELL_DETAIL_COLOR       [UIColor lightGrayColor]
+#define CELL_INFO_COLOR         [UIColor lightGrayColor]
+#define CELL_SELECTED_COLOR     self.tintColor
+
 #define HEADER_IDENTIFIER   @"GameInfoHeader"
 
 #define LAYOUT_MODE_KEY     @"LayoutMode"
@@ -147,7 +156,7 @@ UIView* find_view(UIView* view, Class class) {
     title.text = @"MAME4tvOS";
     title.font = [UIFont boldSystemFontOfSize:64.0];
 #endif
-    title.textColor = UIColor.whiteColor;
+    title.textColor = TITLE_COLOR;
     [title sizeToFit];
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:title];
     self.title = nil;
@@ -156,7 +165,7 @@ UIView* find_view(UIView* view, Class class) {
 #if TARGET_OS_IOS
     self.navigationController.navigationBar.translucent = YES;
     self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
-    self.navigationController.navigationBar.barTintColor = [UIColor blackColor];
+    self.navigationController.navigationBar.barTintColor = BACKGROUND_COLOR;
     [self.navigationController.navigationBar addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(scrollToTop)]];
 #else
     self.navigationController.navigationBar.translucent = NO;
@@ -246,7 +255,7 @@ UIView* find_view(UIView* view, Class class) {
     [self.collectionView registerClass:[GameCell class] forCellWithReuseIdentifier:CELL_IDENTIFIER];
     [self.collectionView registerClass:[GameCell class] forSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:HEADER_IDENTIFIER];
     
-    self.collectionView.backgroundColor = [UIColor colorWithWhite:0.000 alpha:1.0];
+    self.collectionView.backgroundColor = BACKGROUND_COLOR;
     self.collectionView.allowsMultipleSelection = NO;
     self.collectionView.allowsSelection = YES;
     self.collectionView.alwaysBounceVertical = YES;
@@ -873,7 +882,15 @@ UIView* find_view(UIView* view, Class class) {
 }
 -(NSDictionary*)getGameInfo:(NSIndexPath*)indexPath
 {
-    return _gameData[_gameSectionTitles[indexPath.section]][indexPath.item];
+    if (indexPath.section >= _gameSectionTitles.count)
+        return nil;
+    
+    NSArray* items = _gameData[_gameSectionTitles[indexPath.section]];
+    
+    if (indexPath.item >= items.count)
+        return nil;
+        
+    return items[indexPath.item];
 }
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
 {
@@ -973,7 +990,7 @@ UIView* find_view(UIView* view, Class class) {
     [cell setHorizontal:TRUE];
     cell.title.text = _gameSectionTitles[indexPath.section];
     cell.title.font = [UIFont systemFontOfSize:cell.bounds.size.height * 0.8 weight:UIFontWeightHeavy];
-    cell.title.textColor = [UIColor whiteColor];
+    cell.title.textColor = HEADER_TEXT_COLOR;
     [cell setTextInsets:UIEdgeInsetsMake(2.0, self.safeAreaInsets.left + 2.0, 2.0, self.safeAreaInsets.right + 2.0)];
     cell.contentView.backgroundColor = [self.collectionView.backgroundColor colorWithAlphaComponent:0.5];
     cell.layer.cornerRadius = 0.0;
@@ -1000,7 +1017,7 @@ UIView* find_view(UIView* view, Class class) {
 
 - (void)collectionView:(UICollectionView *)collectionView willDisplayCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    NSLog(@"willDisplayCell: %d.%d %@", (int)indexPath.section, (int)indexPath.row);
+    NSLog(@"willDisplayCell: %d.%d %@", (int)indexPath.section, (int)indexPath.row, [self getGameInfo:indexPath][kGameInfoName]);
 
     // if this cell still have the loading image, it went offscreen, got canceled, came back on screen ==> reload just to be safe.
     if ([cell isKindOfClass:[GameCell class]] && ((GameCell*)cell).image.image == _loadingImage)
@@ -1015,7 +1032,7 @@ UIView* find_view(UIView* view, Class class) {
 
 - (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    NSLog(@"endDisplayCell: %d.%d %@", (int)indexPath.section, (int)indexPath.row);
+    NSLog(@"endDisplayCell: %d.%d %@", (int)indexPath.section, (int)indexPath.row, [self getGameInfo:indexPath][kGameInfoName]);
     
     if ([cell isKindOfClass:[GameCell class]] && ((GameCell*)cell).image.image == _loadingImage)
     {
@@ -1448,13 +1465,12 @@ UIView* find_view(UIView* view, Class class) {
 }
 - (void)prepareForReuse
 {
-    NSLog(@">>>>>>prepareForReuse");
     [super prepareForReuse];
     [self setNeedsLayout];
     [self setNeedsUpdateConstraints];
     
     self.backgroundColor = [UIColor clearColor];
-    self.contentView.backgroundColor = [UIColor colorWithWhite:0.222 alpha:1.0];
+    self.contentView.backgroundColor = CELL_BACKGROUND_COLOR;
 
     self.layer.cornerRadius = 8.0;
     self.contentView.layer.cornerRadius = 8.0;
@@ -1463,26 +1479,26 @@ UIView* find_view(UIView* view, Class class) {
     self.contentView.layer.borderWidth = 2.0;
     self.contentView.layer.borderColor = self.contentView.backgroundColor.CGColor;
 
-    self.layer.shadowColor = UIColor.clearColor.CGColor; // UIColor.darkGrayColor.CGColor;
+    self.layer.shadowColor = UIColor.clearColor.CGColor;
     self.layer.shadowOffset = CGSizeMake(0.0, 0.0f);
     self.layer.shadowRadius = 8.0;
     self.layer.shadowOpacity = 1.0;
     
     _title.text = nil;
     _title.font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
-    _title.textColor = [UIColor whiteColor];
+    _title.textColor = CELL_TITLE_COLOR;
     _title.numberOfLines = 0;
     _title.adjustsFontSizeToFitWidth = FALSE;
     
     _detail.text = nil;
     _detail.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
-    _detail.textColor = [UIColor lightGrayColor];
+    _detail.textColor = CELL_DETAIL_COLOR;
     _detail.numberOfLines = 0;
     _title.adjustsFontSizeToFitWidth = FALSE;
 
     _info.text = nil;
     _info.font = _detail.font;
-    _info.textColor = _detail.textColor;
+    _info.textColor = CELL_INFO_COLOR;
     _info.numberOfLines = 1;
     _info.adjustsFontSizeToFitWidth = TRUE;
 
@@ -1567,29 +1583,34 @@ UIView* find_view(UIView* view, Class class) {
     return [self systemLayoutSizeFittingSize:targetSize];
 }
 
+- (void)updateSelected
+{
+    BOOL selected = self.selected || self.focused;
+    self.transform = selected ? CGAffineTransformMakeScale(1.02, 1.02) : (self.highlighted ? CGAffineTransformMakeScale(0.98, 0.98) : CGAffineTransformIdentity);
+    UIColor* color = selected ? CELL_SELECTED_COLOR : CELL_BACKGROUND_COLOR;
+    self.layer.shadowColor = selected ? color.CGColor : UIColor.clearColor.CGColor;
+    self.contentView.backgroundColor = color;
+    self.contentView.layer.borderColor = color.CGColor;
+}
+
 - (void)setHighlighted:(BOOL)highlighted
 {
+    NSLog(@"setHighlighted(%@): %@", self.title.text, highlighted ? @"YES" : @"NO");
     [super setHighlighted:highlighted];
-    [UIView animateWithDuration:0.25 animations:^{
-        self.layer.shadowColor = highlighted ? self.tintColor.CGColor : UIColor.clearColor.CGColor;
-        self.transform = highlighted ? CGAffineTransformMakeScale(0.98, 0.98) : CGAffineTransformIdentity;
-    }];
+    [self updateSelected];
 }
 - (void)setSelected:(BOOL)selected
 {
+    NSLog(@"setSelected(%@): %@", self.title.text, selected ? @"YES" : @"NO");
     [super setSelected:selected];
-    [UIView animateWithDuration:0.25 animations:^{
-        self.layer.shadowColor = selected ? self.tintColor.CGColor : UIColor.clearColor.CGColor;
-        self.transform = selected ? CGAffineTransformMakeScale(1.02, 1.02) : CGAffineTransformIdentity;
-    }];
+    [self updateSelected];
 }
 #if TARGET_OS_TV
 - (void)didUpdateFocusInContext:(UIFocusUpdateContext *)context withAnimationCoordinator:(UIFocusAnimationCoordinator *)coordinator
 {
     [super didUpdateFocusInContext:context withAnimationCoordinator:coordinator];
     [coordinator addCoordinatedAnimations:^{
-        self.layer.shadowColor = self.focused ? self.tintColor.CGColor : UIColor.clearColor.CGColor;
-        self.transform = self.focused ? CGAffineTransformMakeScale(1.02, 1.02) : CGAffineTransformIdentity;
+        [self updateSelected];
     } completion:nil];
 }
 #endif
