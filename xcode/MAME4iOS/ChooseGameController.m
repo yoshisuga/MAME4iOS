@@ -33,6 +33,7 @@
 #define CELL_LARGE_WIDTH   600.0
 #endif
 
+#define USE_TITLE_IMAGE         TRUE
 #define BACKGROUND_COLOR        [UIColor blackColor]
 #define TITLE_COLOR             [UIColor whiteColor]
 #define HEADER_TEXT_COLOR       [UIColor whiteColor]
@@ -46,7 +47,7 @@
 
 #define LAYOUT_MODE_KEY     @"LayoutMode"
 #define SCOPE_MODE_KEY      @"ScopeMode"
-#define RECENT_GAMES_MAX    4
+#define RECENT_GAMES_MAX    8
 #define ALL_SCOPES          @[@"All", @"Manufacturer", @"Year", @"Genre"]
 
 #define CLAMP(x, num) MIN(MAX(x,0), (num)-1)
@@ -147,17 +148,23 @@ UIView* find_view(UIView* view, Class class) {
 
 - (void)viewDidLoad
 {
-    //put the title on the left
-    UILabel* title = [[UILabel alloc] init];
-#if TARGET_OS_IOS
-    title.text = @"MAME4iOS";
-    title.font = [UIFont boldSystemFontOfSize:28.0];
+#if USE_TITLE_IMAGE
+    UIImage* image = [[UIImage imageNamed:@"mame_logo"] scaledToSize:CGSizeMake(0.0, 44.0)];
+    UIImageView* title = [[UIImageView alloc] initWithImage:image];
 #else
+    UILabel* title = [[UILabel alloc] init];
+    #if TARGET_OS_IOS
+    title.text = @"MAME4iOS";
+    title.font = [UIFont boldSystemFontOfSize:44.0 * 0.6];
+    #else
     title.text = @"MAME4tvOS";
-    title.font = [UIFont boldSystemFontOfSize:64.0];
-#endif
+    title.font = [UIFont boldSystemFontOfSize:44.0];
+    #endif
     title.textColor = TITLE_COLOR;
     [title sizeToFit];
+#endif
+
+    // put the title on the left, and set center title to nil
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:title];
     self.title = nil;
     
@@ -236,7 +243,7 @@ UIView* find_view(UIView* view, Class class) {
         
         // add a settings button on tvOS
         if (@available(tvOS 13.0, *)) {
-            UIImage* image = [UIImage systemImageNamed:@"gear" withPointSize:title.font.pointSize weight:UIFontWeightHeavy];
+            UIImage* image = [UIImage systemImageNamed:@"gear" withPointSize:title.bounds.size.height weight:UIFontWeightHeavy];
             UIBarButtonItem* settings = [[UIBarButtonItem alloc] initWithImage:image style:UIBarButtonItemStylePlain target:self action:@selector(showSettings)];
             self.navigationItem.rightBarButtonItems = [@[settings] arrayByAddingObjectsFromArray:self.navigationItem.rightBarButtonItems];
         } else {
@@ -1157,7 +1164,8 @@ UIView* find_view(UIView* view, Class class) {
                 [self setFavorite:game isFavorite:FALSE];
 
                 [self setGameList:[self->_gameList filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF != %@", game]]];
-                if ([self->_gameList count] == 0) {
+                // if we have deleted the last game, excpet for the MAMEMENU, then exit with no game selected and let a re-scan happen.
+                if ([self->_gameList count] <= 1) {
                     if (self.selectGameCallback != nil)
                         self.selectGameCallback(nil);
                 }
