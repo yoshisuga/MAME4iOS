@@ -440,7 +440,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     
     [self startMenu];
 
-    int enable_menu_exit_option = myosd_inGame && myosd_in_menu==0;
+    int enable_menu_exit_option = TRUE; // (myosd_inGame && myosd_in_menu==0) || !myosd_inGame;
     
     menu = [UIAlertController alertControllerWithTitle:@"MAME4iOS" message:nil preferredStyle:UIAlertControllerStyleActionSheet];
 
@@ -478,11 +478,24 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     */
 
     if(enable_menu_exit_option) {
-        [menu addAction:[UIAlertAction actionWithTitle:@"Exit Game" style:UIAlertActionStyleDestructive image:[UIImage systemImageNamed:@"arrow.uturn.left.circle" withPointSize:size] handler:^(UIAlertAction * _Nonnull action) {
+        [menu addAction:[UIAlertAction actionWithTitle:((myosd_inGame && myosd_in_menu==0) ? @"Exit Game" : @"Exit") style:UIAlertActionStyleDestructive image:[UIImage systemImageNamed:@"arrow.uturn.left.circle" withPointSize:size] handler:^(UIAlertAction * _Nonnull action) {
             //[self runExit];   -- the user just selected "Exit Game" from a menu, dont ask again
-            if (g_mame_game[0] != ' ')
+            //this is the exact same logic in runExit, except we dont ask for permission to exit.
+            if (myosd_inGame && myosd_in_menu == 0)
+            {
+                if (g_mame_game[0] != ' ')
+                    g_mame_game[0] = 0;
+                myosd_exitGame = 1;
+            }
+            else if (myosd_inGame && myosd_in_menu != 0)
+            {
+                myosd_exitGame = 1;
+            }
+            else
+            {
                 g_mame_game[0] = 0;
-            myosd_exitGame = 1;
+                myosd_exitGame = 1;
+            }
             [self endMenu];
         }]];
     }
@@ -3421,7 +3434,7 @@ void myosd_handle_turbo() {
                     if ([self.presentedViewController isKindOfClass:[UIAlertController class]]) {
                        [(UIAlertController*)self.presentedViewController dismissWithCancel];
                     }
-                    else if (myosd_inGame && myosd_in_menu == 0) {
+                    else {
                         [self runMenu:index];
                     }
                 }
