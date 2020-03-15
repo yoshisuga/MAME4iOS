@@ -1614,9 +1614,8 @@ void myosd_handle_turbo() {
           CGImageRelease(img);  
 
            //inset the screenView so the border does not overlap it.
-           //TODO: the border image is 320x240 so it gets scaled up alot, maybe we need a new hires one.
            if (TRUE && self.view.window.screen != nil) {
-               CGSize border = CGSizeMake(8.0,8.0);  // in pixels
+               CGSize border = CGSizeMake(4.0,4.0);  // in pixels
                CGFloat scale = self.view.window.screen.scale;
                CGFloat dx = ceil((border.width * r.size.width / image1.size.width) / scale); // in points
                CGFloat dy = ceil((border.height * r.size.height / image1.size.height) / scale);
