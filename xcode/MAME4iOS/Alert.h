@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)showAlertWithTitle:(NSString* __nullable)title message:(NSString* __nullable)message;
 -(void)showAlertWithTitle:(NSString* __nullable)title message:(NSString* __nullable)message timeout:(NSTimeInterval)timeout;
 -(void)dismissAlert;
-
+-(UIViewController*)topViewController;
 @end
 
 @interface UIAlertController(Dismiss)
