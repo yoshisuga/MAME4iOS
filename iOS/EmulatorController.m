@@ -56,6 +56,7 @@
 #import "LayoutView.h"
 #import "LayoutData.h"
 #import "NetplayGameKit.h"
+#import "FileItemProvider.h"
 #endif
 
 #import "ChooseGameController.h"
@@ -190,6 +191,9 @@ static int change_layout=0;
 static char g_mame_game[MAX_GAME_NAME];     // game MAME should run (or empty is menu)
 static char g_mame_game_error[MAX_GAME_NAME];
 static BOOL g_no_roms_found = FALSE;
+
+static NSInteger g_settings_roms_count;
+static NSInteger g_settings_file_count;
 
 static EmulatorController *sharedInstance = nil;
 
@@ -446,7 +450,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
 
     CGFloat size = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].pointSize * 1.5;
 
-    if(myosd_inGame)
+    if(myosd_inGame && myosd_in_menu==0)
     {
         // MENU item to insert a coin and do a start. usefull for fullscreen and AppleTV siri remote, and discoverability on a GameController
         [menu addAction:[UIAlertAction actionWithTitle:@"Coin+Start" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"centsign.circle" withPointSize:size] handler:^(UIAlertAction * _Nonnull action) {
@@ -570,6 +574,9 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
 }
 
 - (void)runSettings {
+    
+    g_settings_file_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:[NSString stringWithUTF8String:get_documents_path("")] error:nil] count];
+    g_settings_roms_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:[NSString stringWithUTF8String:get_documents_path("roms")] error:nil] count];
 
     [self startMenu];
 
@@ -580,7 +587,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     if (@available(iOS 13.0, tvOS 13.0, *)) {
         navController.modalInPresentation = YES;    // disable iOS 13 swipe to dismiss...
     }
-    [(self.presentedViewController ?: self) presentViewController:navController animated:YES completion:nil];
+    [self.topViewController presentViewController:navController animated:YES completion:nil];
 }
 
 - (void)endMenu{
@@ -877,6 +884,19 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
         
         [self performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:YES];
         
+        NSInteger file_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:[NSString stringWithUTF8String:get_documents_path("")] error:nil] count];
+        NSInteger roms_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:[NSString stringWithUTF8String:get_documents_path("roms")] error:nil] count];
+
+        if (file_count != g_settings_file_count)
+            NSLog(@"SETTINGS DONE: files added to root %ld => %ld", g_settings_file_count, file_count);
+        if (roms_count != g_settings_roms_count)
+            NSLog(@"SETTINGS DONE: files added to roms %ld => %ld", g_settings_roms_count, roms_count);
+
+        if (g_settings_file_count != file_count)
+            [self performSelector:@selector(moveROMS) withObject:nil afterDelay:0.0];
+        else if (g_settings_roms_count != roms_count)
+            [self performSelector:@selector(playGame:) withObject:nil afterDelay:0.0];
+
         // dont call endMenu (and unpause MAME) if we still have a dialog up.
         if (self.presentedViewController == nil)
             [self endMenu];
@@ -3007,7 +3027,6 @@ void myosd_handle_turbo() {
     //
     int __block numLAY = 0;
     int __block numZIP = 0;
-    int __block numCHD = 0;
     int __block numWAV = 0;
     int __block numFiles = 0;
     BOOL result = [ZipFile enumerate:romPath withOptions:ZipFileEnumFiles usingBlock:^(ZipFileInfo* info) {
@@ -3017,8 +3036,6 @@ void myosd_handle_turbo() {
             numLAY++;
         if ([ext isEqualToString:@"ZIP"])
             numZIP++;
-        if ([ext isEqualToString:@"CHD"])
-            numCHD++;
         if ([ext isEqualToString:@"WAV"])
             numWAV++;
     }];
@@ -3030,7 +3047,7 @@ void myosd_handle_turbo() {
         NSLog(@"%@ is a CORRUPT ZIP (deleting)", romPath);
         [[NSFileManager defaultManager] removeItemAtPath:romPath error:nil];
     }
-    else if (numZIP != 0 || numCHD != 0)
+    else if (numZIP != 0)
     {
         NSLog(@"%@ is a ZIPSET", [romPath lastPathComponent]);
         int maxFiles = numFiles;
@@ -3042,7 +3059,8 @@ void myosd_handle_turbo() {
             NSLog(@"...UNZIP: %@", info.name);
 
             // only UNZIP files to specific directories, send a ZIP file with a unspecifed directory to roms/
-            if ([info.name hasPrefix:@"roms/"] || [info.name hasPrefix:@"artwork/"] || [info.name hasPrefix:@"titles/"]  || [info.name hasPrefix:@"samples/"] || [info.name hasPrefix:@"cfg/"])
+            if ([info.name hasPrefix:@"roms/"] || [info.name hasPrefix:@"artwork/"] || [info.name hasPrefix:@"titles/"] || [info.name hasPrefix:@"samples/"] ||
+                [info.name hasPrefix:@"cfg/"] || [info.name hasPrefix:@"ini/"] || [info.name hasPrefix:@"sta/"] || [info.name hasPrefix:@"hi/"] )
                 toPath = [rootPath stringByAppendingPathComponent:info.name];
             else if ([ext isEqualToString:@"ZIP"])
                 toPath = [romsPath stringByAppendingPathComponent:[info.name lastPathComponent]];
@@ -3050,7 +3068,7 @@ void myosd_handle_turbo() {
             if (toPath != nil)
             {
                 if (![NSFileManager.defaultManager createDirectoryAtPath:[toPath stringByDeletingLastPathComponent] withIntermediateDirectories:TRUE attributes:nil error:nil])
-                    NSLog(@"ERROR CREATING DIRECTORY: ", [info.name stringByDeletingLastPathComponent]);
+                    NSLog(@"ERROR CREATING DIRECTORY: %@", [info.name stringByDeletingLastPathComponent]);
 
                 if (![info.data writeToFile:toPath atomically:YES])
                     NSLog(@"ERROR UNZIPing %@", info.name);
@@ -3126,9 +3144,7 @@ void myosd_handle_turbo() {
     
     if(count != 0 && g_move_roms++ == 0)
     {
-        UIViewController* topViewController = self;
-        while (topViewController.presentedViewController != nil)
-            topViewController = topViewController.presentedViewController;
+        UIViewController* topViewController = self.topViewController;
 
         UIAlertController *progressAlert = [UIAlertController alertControllerWithTitle:@"Moving ROMs" message:@"Please wait..." preferredStyle:UIAlertControllerStyleAlert];
         [progressAlert setProgress:0.0];
@@ -3146,14 +3162,9 @@ void myosd_handle_turbo() {
             dispatch_async(dispatch_get_main_queue(), ^{
                 [topViewController dismissViewControllerAnimated:YES completion:^{
                     
-                    // reset MAME filter and last game...
+                    // reset MAME last game selected...
                     if (result)
-                    {
-                       if(!(myosd_in_menu==0 && myosd_inGame)){
-                          myosd_reset_filter = 1;
-                       }
                        myosd_last_game_selected = 0;
-                    }
 
                     // reload the MAME menu....
                     if (result)
@@ -3164,6 +3175,34 @@ void myosd_handle_turbo() {
             });
         });
     }
+}
+
+// ZIP up all the important files in our documents directory
+// TODO: maybe we should also export the settings.bin or the UserDefaults plist
+-(BOOL)saveROMS:(NSURL*)url progressBlock:(BOOL (^)(double progress))block {
+
+    NSString *rootPath = [NSString stringWithUTF8String:get_documents_path("")];
+    NSString *romsPath = [NSString stringWithUTF8String:get_documents_path("roms")];
+
+    NSMutableArray* files = [[NSMutableArray alloc] init];
+
+    NSArray* roms = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:romsPath error:nil];
+    for (NSString* rom in roms) {
+        NSString* ext = [rom.pathExtension uppercaseString];
+        
+        if (![ext isEqualToString:@"ZIP"])
+            continue;
+        
+        NSArray* paths = @[@"roms/%@.zip", @"artwork/%@.zip", @"titles/%@.png", @"samples/%@.zip", @"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@/1.sta", @"sta/%@/2.sta", @"hi/%@.hi"];
+        for (NSString* path in paths) {
+            [files addObject:[NSString stringWithFormat:path, [rom stringByDeletingPathExtension]]];
+        }
+    }
+    
+    NSLog(@"saveROMS: ROMS: %@", roms);
+    NSLog(@"saveROMS: FILES: %@", files);
+    
+    return [ZipFile exportTo:url.path fromFiles:files fromDirectory:rootPath withOptions:(ZipFileWriteFiles | ZipFileWriteAtomic | ZipFileWriteNoCompress) progressBlock:block];
 }
 
 #pragma mark - IMPORT and EXPORT
@@ -3183,15 +3222,28 @@ void myosd_handle_turbo() {
 }
 
 - (void)runImport {
-    // TODO: support multi select??
     UIDocumentPickerViewController* documentPicker = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:@[@"public.zip-archive"] inMode:UIDocumentPickerModeOpen];
     documentPicker.modalPresentationStyle = UIModalPresentationFormSheet;
     documentPicker.delegate = self;
-    [(self.presentedViewController ?: self) presentViewController:documentPicker animated:YES completion:nil];
+    [self.topViewController presentViewController:documentPicker animated:YES completion:nil];
 }
 
 - (void)runExport {
-    [self showAlertWithTitle:@"MAME4iOS" message:@"T.B.D."];
+    
+    FileItemProvider* item = [[FileItemProvider alloc] initWithTitle:@"MAME4iOS (export)" typeIdentifier:@"public.zip-archive" saveHandler:^BOOL(NSURL* url, FileItemProviderProgressHandler progressHandler) {
+        return [self saveROMS:url progressBlock:progressHandler];
+    }];
+    
+    // NOTE UIActivityViewController is kind of broken in the Simulator, if you find a crash or problem verify it on a real device.
+    UIActivityViewController* activity = [[UIActivityViewController alloc] initWithActivityItems:@[item] applicationActivities:nil];
+
+    if (activity.popoverPresentationController != nil) {
+        activity.popoverPresentationController.sourceView = self.view;
+        activity.popoverPresentationController.sourceRect = CGRectMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds), 0.0f, 0.0f);
+        activity.popoverPresentationController.permittedArrowDirections = 0;
+    }
+    
+    [self.topViewController presentViewController:activity animated:YES completion:nil];
 }
 #endif
 
@@ -3791,6 +3843,11 @@ void myosd_handle_turbo() {
 
 #pragma mark GCDWebServerDelegate
 - (void)webServerDidCompleteBonjourRegistration:(GCDWebServer*)server {
+    // dont bring up this WebServer alert multiple times, for example the server will stop and restart when app goes into background.
+    static BOOL g_web_server_alert = FALSE;
+    
+    if (g_web_server_alert)
+        return;
     
     NSMutableString *servers = [[NSMutableString alloc] init];
 
@@ -3815,23 +3872,27 @@ void myosd_handle_turbo() {
 
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
     [alert addAction:[UIAlertAction actionWithTitle:done style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        g_web_server_alert = FALSE;
         [[WebServer sharedInstance] webUploader].delegate = nil;
         [[WebServer sharedInstance] stopUploader];
         if (!myosd_inGame)
             myosd_exitGame = 1;     /* exit mame menu and re-scan ROMs*/
     }]];
-    UIViewController* vc = self;
-    while (vc.presentedViewController != nil)
-        vc = vc.presentedViewController;
-    [vc presentViewController:alert animated:YES completion:nil];
+    alert.preferredAction = alert.actions.lastObject;
+    g_web_server_alert = TRUE;
+    [self.topViewController presentViewController:alert animated:YES completion:nil];
 }
 
 #pragma mark play GAME
 
-// this is called three ways
+// this is called a few ways
 //    -- after the user has selected a game in the ChooseGame UI
 //    -- if a NSUserActivity is restored
 //    -- if a mame4ios: URL is opened.
+//    -- called from moveROMs (with nil) to reload the gameList.
+//
+// NOTE we cant run a game in all situations, for example if the user is deep
+// into the Settings dialog, we just give up, to complex to try to back out.
 //
 -(void)playGame:(NSDictionary*)game {
     NSLog(@"PLAY: %@", game);
@@ -3847,7 +3908,7 @@ void myosd_handle_turbo() {
     //      server
     //      other/error
     //
-    //      if the alert has a cancel button, cancel and then run game....
+    //      if the alert has a cancel button (or single default) dismiss and then run game....
     //
     // 2. settings view controller is active
     //      just fail in this case.
@@ -3881,7 +3942,7 @@ void myosd_handle_turbo() {
             return;
         }
     }
-    else if ([viewController isKindOfClass:[ChooseGameController class]]) {
+    else if ([viewController isKindOfClass:[ChooseGameController class]] && viewController.presentedViewController == nil) {
         // if we are in the ChooseGame UI dismiss and run game
         ChooseGameController* choose = (ChooseGameController*)viewController;
         if (choose.selectGameCallback != nil)

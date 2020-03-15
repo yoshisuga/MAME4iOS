@@ -507,7 +507,7 @@
           case kOtherSection: return 3;
           case kMiscSection: return 10;
           case kFilterSection: return 2;
-          case kImportSection: return 2; // TODO: change to 3 when Exporting ROMs works.
+          case kImportSection: return 3;
       }
     return -1;
 }
