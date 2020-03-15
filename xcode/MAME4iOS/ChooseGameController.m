@@ -641,8 +641,8 @@ UIView* find_view(UIView* view, Class class) {
             [button setImage:image forState:UIControlStateNormal];
         }
         else {
-            //[button setTitle:@"⚙️" forState:UIControlStateNormal];
             [button setTitle:@"Settings" forState:UIControlStateNormal];
+            [button setTitleEdgeInsets:UIEdgeInsetsMake(-4.0, 0, 0, 0)];
         }
     }
     searchBar.showsCancelButton = YES;
@@ -1186,7 +1186,7 @@ UIView* find_view(UIView* view, Class class) {
     if (game == nil || [game[kGameInfoName] length] == 0)
         return nil;
     
-    return [NSString stringWithFormat:@"%@\n%@ • %@ • %@",
+    return [NSString stringWithFormat:@"%@\n%@ • %@\n%@",
             game[kGameInfoDescription],
             game[kGameInfoManufacturer],
             game[kGameInfoYear],
