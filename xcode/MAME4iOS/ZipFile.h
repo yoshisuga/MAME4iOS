@@ -15,6 +15,18 @@ typedef NS_OPTIONS(NSUInteger, ZipFileEnumOptions) {
     ZipFileEnumAll          = (ZipFileEnumFiles + ZipFileEnumDirectories + ZipFileEnumHidden),
 };
 
+typedef NS_OPTIONS(NSUInteger, ZipFileWriteOptions) {
+    ZipFileWriteFiles         = 0,
+    ZipFileWriteDirectories   = (1 << 0),
+    ZipFileWriteHidden        = (1 << 1),
+    ZipFileWriteAtomic        = (1 << 8),
+    ZipFileWriteZip64         = (1 << 9),
+    ZipFileWriteDirectoryName = (1 << 10),
+    ZipFileWriteNoCompress    = (1 << 11),
+    ZipFileWriteAll           = (ZipFileWriteFiles + ZipFileWriteDirectories + ZipFileWriteHidden),
+};
+
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ZipFileInfo : NSObject
@@ -26,6 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) NSUInteger compressed_size;
 @property(nonatomic, assign) uint32_t crc32;
 @property(nonatomic, assign) uint64_t offset;
+@property(nonatomic, assign) BOOL cancel;
 -(BOOL)isDirectory;
 -(BOOL)isHidden;
 @end
@@ -37,6 +50,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 // destructivly enumerate all the files in a zip archive, this is used to unzip a large zip file "in place" saving disk space. when this call returns the zip file is gone.
 + (BOOL)destructiveEnumerate:(NSString*)path withOptions:(ZipFileEnumOptions)options usingBlock:(void (^)(ZipFileInfo* info))block;
+
+// create a ZipFile from any user supplied data
++ (BOOL)exportTo:(NSString*)path fromItems:(NSArray*)items withOptions:(ZipFileWriteOptions)options usingBlock:(ZipFileInfo* (^)(id item))loadHandler;
+
+// create a ZipFile from files.
++ (BOOL)exportTo:(NSString*)path fromFiles:(NSArray<NSString*>*)files fromDirectory:(NSString*)root withOptions:(ZipFileWriteOptions)options progressBlock:(nullable BOOL (^)(double progress))block;
+
+// create a ZipFile from directory.
++ (BOOL)exportTo:(NSString*)path fromDirectory:(NSString*)root withOptions:(ZipFileWriteOptions)options progressBlock:(nullable BOOL (^)(double progress))block;
 
 @end
 

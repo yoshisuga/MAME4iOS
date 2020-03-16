@@ -641,8 +641,8 @@ UIView* find_view(UIView* view, Class class) {
             [button setImage:image forState:UIControlStateNormal];
         }
         else {
-            //[button setTitle:@"⚙️" forState:UIControlStateNormal];
             [button setTitle:@"Settings" forState:UIControlStateNormal];
+            [button setTitleEdgeInsets:UIEdgeInsetsMake(-4.0, 0, 0, 0)];
         }
     }
     searchBar.showsCancelButton = YES;
@@ -1155,7 +1155,7 @@ UIView* find_view(UIView* view, Class class) {
             }],
 #endif
             [self actionWithTitle:@"Delete" image:[UIImage systemImageNamed:@"trash"] destructive:YES handler:^(id action) {
-                NSArray* paths = @[@"roms/%@.zip", @"roms/%@", @"artwork/%@.zip", @"titles/%@.png", @"samples/%@.zip", @"cfg/%@.cfg"];
+                NSArray* paths = @[@"roms/%@.zip", @"artwork/%@.zip", @"titles/%@.png", @"samples/%@.zip", @"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@", @"hi/%@.hi"];
                 
                 NSString* root = [NSString stringWithUTF8String:get_documents_path("")];
                 for (NSString* path in paths) {
@@ -1167,7 +1167,9 @@ UIView* find_view(UIView* view, Class class) {
                 [self setRecent:game isRecent:FALSE];
                 [self setFavorite:game isFavorite:FALSE];
 
-                [self setGameList:[self->_gameList filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF != %@", game]]];
+                self->_gameList = [self->_gameList filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF != %@", game]];
+                [self filterGameList];
+
                 // if we have deleted the last game, excpet for the MAMEMENU, then exit with no game selected and let a re-scan happen.
                 if ([self->_gameList count] <= 1) {
                     if (self.selectGameCallback != nil)
@@ -1186,7 +1188,7 @@ UIView* find_view(UIView* view, Class class) {
     if (game == nil || [game[kGameInfoName] length] == 0)
         return nil;
     
-    return [NSString stringWithFormat:@"%@\n%@ • %@ • %@",
+    return [NSString stringWithFormat:@"%@\n%@ • %@\n%@",
             game[kGameInfoDescription],
             game[kGameInfoManufacturer],
             game[kGameInfoYear],

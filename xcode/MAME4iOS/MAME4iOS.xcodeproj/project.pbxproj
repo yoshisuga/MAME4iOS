@@ -144,6 +144,7 @@
 		EF24933B236264DA00DD0A6C /* ImageCache.m in Sources */ = {isa = PBXBuildFile; fileRef = EF249336236264D900DD0A6C /* ImageCache.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		EF26AE08241848800078FD30 /* mame_logo.png in Resources */ = {isa = PBXBuildFile; fileRef = EF26AE07241848800078FD30 /* mame_logo.png */; };
 		EF26AE09241848800078FD30 /* mame_logo.png in Resources */ = {isa = PBXBuildFile; fileRef = EF26AE07241848800078FD30 /* mame_logo.png */; };
+		EF26AE0C241AA6900078FD30 /* FileItemProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = EF26AE0B241AA6900078FD30 /* FileItemProvider.m */; };
 		EF27F36823F73CD400B1E50A /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF27F36323F73CD400B1E50A /* ZipFile.m */; };
 		EF27F36A23F7475100B1E50A /* libcompression.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = EF27F36923F7475100B1E50A /* libcompression.tbd */; };
 		EF29C8822401C73A00AFFA4E /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EF29C8802401C73900AFFA4E /* Launch Screen.storyboard */; };
@@ -339,6 +340,8 @@
 		EF249336236264D900DD0A6C /* ImageCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageCache.m; sourceTree = "<group>"; };
 		EF249337236264DA00DD0A6C /* ImageCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageCache.h; sourceTree = "<group>"; };
 		EF26AE07241848800078FD30 /* mame_logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = mame_logo.png; sourceTree = "<group>"; };
+		EF26AE0A241AA6900078FD30 /* FileItemProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FileItemProvider.h; sourceTree = "<group>"; };
+		EF26AE0B241AA6900078FD30 /* FileItemProvider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FileItemProvider.m; sourceTree = "<group>"; };
 		EF27F36323F73CD400B1E50A /* ZipFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZipFile.m; sourceTree = "<group>"; };
 		EF27F36423F73CD400B1E50A /* ZipFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZipFile.h; sourceTree = "<group>"; };
 		EF27F36923F7475100B1E50A /* libcompression.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcompression.tbd; path = usr/lib/libcompression.tbd; sourceTree = SDKROOT; };
@@ -548,6 +551,8 @@
 				EFA7570B2406D64600A02AAB /* SystemImage.m */,
 				EF27F36423F73CD400B1E50A /* ZipFile.h */,
 				EF27F36323F73CD400B1E50A /* ZipFile.m */,
+				EF26AE0A241AA6900078FD30 /* FileItemProvider.h */,
+				EF26AE0B241AA6900078FD30 /* FileItemProvider.m */,
 				CEBFBC0E163C5BD300A05CD0 /* resources */,
 				92A533D521EE601D0089FBB9 /* WebServer.h */,
 				92A533D621EE601D0089FBB9 /* WebServer.m */,
@@ -890,6 +895,7 @@
 				925ABCB51E46DCC500997182 /* FilterOptionController.m in Sources */,
 				925ABCB61E46DCC500997182 /* InputOptionController.m in Sources */,
 				92A533C321EBDBAD0089FBB9 /* GCDWebServerMultiPartFormRequest.m in Sources */,
+				EF26AE0C241AA6900078FD30 /* FileItemProvider.m in Sources */,
 				925ABCB71E46DCC500997182 /* DefaultOptionController.m in Sources */,
 				EF7B232C23FD0469001FF51D /* (null) in Sources */,
 				92A533B421EBDBAD0089FBB9 /* GCDWebServerErrorResponse.m in Sources */,

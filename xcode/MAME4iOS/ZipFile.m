@@ -19,6 +19,10 @@
 #endif
 
 @interface NSFileHandle (NSFileHandle_Read)
+- (NSData*) readDataOfLengthSafe:(size_t)length;    // a *safe* version of readDataOfLength:
+- (BOOL) writeDataSafe:(NSData*)data;               // a *safe* version of writeData:
+- (BOOL) readBytes:(void *)bytes length:(size_t)length;
+- (BOOL) writeBytes:(const void *)bytes length:(size_t)length;
 - (uint16_t) read2;
 - (uint32_t) read4;
 - (uint64_t) read8;
@@ -27,7 +31,13 @@
 
 @interface NSData (NSData_Compression)
 - (NSData*) inflated:(NSUInteger)length;
+- (NSData*) deflated;
 - (uint32_t) crc32;
+@end
+
+@interface NSDate (NSDate_MSDOS)
++ (NSDate*) dateWithDosDateTime:(NSUInteger)datetime;
+- (NSUInteger) dosDateTime;
 @end
 
 @interface ZipFileInfo ()
@@ -35,6 +45,8 @@
 @end
 
 @implementation ZipFile
+
+#pragma mark - ZipFile reading
 
 // simple read-only access to a standard [ZIP](https://en.wikipedia.org/wiki/Zip_(file_format)) archive.
 //
@@ -212,26 +224,7 @@
         info.compressed_size = compressed_size;
         info.crc32 = crc32;
         info.method = compression;
-
-        //
-        //  The 32 bit date and time format used in the MSDOS and Windows FAT directory entry.
-        //  Each portion of the time stamp (year, month etc.) is encoded within specific bits of the 32bit time stamp.
-        //  The epoch for a DOS date is 1980 so this must be added to the date from bits 25-31.
-        //  This format has a granularity of 2 seconds and the data is stored as follows:
-        //
-        //            Year     Month    Day      Hour    Min      Seconds/2
-        //    Bits    31-25    24-21    20-16    15-11    10-5    4-0
-        //
-        NSDateComponents* components = [[NSDateComponents alloc] init];
-        components.year   = ((datetime >> 25) & 0x7F) + 1980;
-        components.month  = ((datetime >> 21) & 0x0F);
-        components.day    = ((datetime >> 16) & 0x1F);
-        components.hour   = ((datetime >> 11) & 0x1F);
-        components.minute = ((datetime >>  5) & 0x3F);
-        components.second = ((datetime >>  0) & 0x1F) * 2;
-        components.timeZone = [NSTimeZone defaultTimeZone];
-        
-        info.date = [[NSCalendar currentCalendar] dateFromComponents:components] ?: [NSDate distantPast];
+        info.date = [NSDate dateWithDosDateTime:datetime];
         
         // seek to the local file header and find location of the data
         [file seekToFileOffset:local_offset];
@@ -274,10 +267,15 @@
             continue;
         
         block(info);
+        
+        if (info.cancel)
+            break;
     }
     
     return TRUE;
 }}
+
+#pragma mark - ZipFile destructive reading
 
 // destructivly enumerate all the files in a zip archive, this is used to unzip a large zip file "in place" saving disk space. when this call returns the zip file is gone.
 + (BOOL)destructiveEnumerate:(NSString*)path withOptions:(ZipFileEnumOptions)options usingBlock:(void (^)(ZipFileInfo* info))block;
@@ -291,11 +289,6 @@
     if (!result)
         return FALSE;
 
-    for (ZipFileInfo* info in all_info) @autoreleasepool {
-        if (info.isDirectory)
-            block(info);
-    }
-
     // sort info by offset in file
     [all_info sortUsingComparator:^NSComparisonResult(ZipFileInfo* lhs, ZipFileInfo* rhs) {
         return (lhs.offset == rhs.offset) ? NSOrderedSame : ((lhs.offset < rhs.offset) ? NSOrderedAscending : NSOrderedDescending);
@@ -308,8 +301,6 @@
     
     // walk the files backward, so we can truncate the file from the top down
     for (ZipFileInfo* info in [all_info reverseObjectEnumerator]) @autoreleasepool {
-        if (info.isDirectory)
-            continue;
         result = [info loadDataFromFile:file];
         if (!result)
             break;
@@ -330,6 +321,258 @@
     return result;
 }}
 
+#pragma mark - ZipFile writing
+
+// create a ZipFile from any user supplied data, callback is required to convert item in array to a ZipFileInfo
++ (BOOL)exportTo:(NSString*)path fromItems:(NSArray*)items withOptions:(ZipFileWriteOptions)options usingBlock:(ZipFileInfo* (^)(id item))loadHandler
+{
+    if (options & ZipFileWriteAtomic) {
+        NSError* error = nil;
+        NSURL* fileURL = [NSURL fileURLWithPath:path];
+        NSURL* tempURL = [[NSFileManager defaultManager] URLForDirectory:NSItemReplacementDirectory inDomain:NSUserDomainMask appropriateForURL:fileURL create:TRUE error:&error];
+        
+        if (error != nil)
+            return ERROR(@"CANT CREATE TEMP DIRECTORY: %@", error);
+        
+        tempURL = [tempURL URLByAppendingPathComponent:[fileURL lastPathComponent]];
+    
+        BOOL result = [ZipFile exportTo:tempURL.path fromItems:items withOptions:(options & ~ZipFileWriteAtomic) usingBlock:loadHandler];
+        
+        if (result) {
+            result = [NSFileManager.defaultManager replaceItemAtURL:fileURL withItemAtURL:tempURL backupItemName:nil options:0 resultingItemURL:nil error:&error];
+            
+            if (error != nil)
+                return ERROR(@"CANT REPLACE FILE: %@ => %@ (%@)", tempURL, fileURL, error);
+        }
+        
+        if (!result)
+            [NSFileManager.defaultManager removeItemAtURL:tempURL error:nil];
+        
+        return result;
+    }
+    
+    [NSFileManager.defaultManager createFileAtPath:path contents:nil attributes:nil];
+    NSFileHandle* file = [NSFileHandle fileHandleForWritingAtPath:path];
+   
+#define BYTE2(x)    (((x) >> 0) & 0xFF), (((x) >> 8) & 0xFF)
+#define BYTE4(x)    BYTE2(x), BYTE2(x >> 16)
+#define BYTE8(x)    BYTE4(x), BYTE4((uint64_t)(x) >> 32)
+
+    if (file == nil)
+        return ERROR(@"cant open for writing");
+    
+    BOOL result = TRUE;
+    NSMutableArray* all_info = [[NSMutableArray alloc] init];
+    
+    for (id item in items) @autoreleasepool {
+        ZipFileInfo* info = loadHandler(item);
+    
+        if (info == nil || info.name == nil)
+            continue;
+        
+        if (!(options & ZipFileWriteDirectories) && [info isDirectory])
+            continue;
+        
+        if (!(options & ZipFileWriteHidden) && [info isHidden])
+            continue;
+        
+        if (info.cancel)
+            break;
+
+        NSData* data = info.data;
+        info.data = nil;
+        uint32_t crc32 = [data crc32];
+        uint64_t uncompressed_size = [data length];
+        uint32_t datetime = (uint32_t)info.date.dosDateTime;
+        if (!(options & ZipFileWriteNoCompress))
+            data = [data deflated] ?: data;
+        uint64_t compressed_size = [data length];
+        uint32_t method = (compressed_size == uncompressed_size) ? 0 : 8;
+        NSData* name_data = [info.name dataUsingEncoding:NSUTF8StringEncoding];
+        uint16_t name_len = [name_data length];
+
+        if (uncompressed_size >= 0xFFFFFFFF)
+            return ERROR("big ZIP");
+
+        uint8_t local_file_header[] = {
+            BYTE4(0x04034b50),      // Local file header signature = 0x04034b50 (read as a little-endian number)
+            BYTE2(45),              // Version needed to extract (minimum)
+            BYTE2(0),               // General purpose bit flag
+            BYTE2(method),          // Compression method
+            BYTE4(datetime),        // last modification datetime
+            BYTE4(crc32),           // CRC-32
+            BYTE4(compressed_size), // Compressed size
+            BYTE4(uncompressed_size),// Uncompressed size
+            BYTE2(name_len),        // File name length
+            BYTE2(0),               // Extra field length
+        };
+        [file writeBytes:local_file_header length:sizeof(local_file_header)];
+        [file writeDataSafe:name_data];
+        info.offset = [file offsetInFile];
+        [file writeDataSafe:data];
+        
+        if (([file offsetInFile] - info.offset) != data.length)
+            return ERROR("write error");
+
+        info.crc32 = crc32;
+        info.uncompressed_size = uncompressed_size;
+        info.compressed_size = compressed_size;
+        [all_info addObject:info];
+    }
+    
+    uint64_t central_directory_offset = [file offsetInFile];
+    
+    for (ZipFileInfo* info in all_info) @autoreleasepool {
+        
+        uint32_t crc32 = info.crc32;
+        uint32_t uncompressed_size = (uint32_t)info.uncompressed_size;
+        uint32_t compressed_size = (uint32_t)info.compressed_size;
+        uint32_t method = (compressed_size == uncompressed_size) ? 0 : 8;
+        uint32_t datetime = (uint32_t)info.date.dosDateTime;
+        NSData* name_data = [info.name dataUsingEncoding:NSUTF8StringEncoding];
+        uint16_t name_len = [name_data length];
+        uint64_t offset = info.offset - (30 + name_len);
+        uint16_t extra_len = 0;
+        uint32_t external_attr = (0100644<<16);     // -rw-r--r--
+                                  
+        if ([info isDirectory])
+            external_attr = (040755<<16) + 0x10;    // drwxr-xr-x + MS-DOS dir bit
+
+        // handle ZIP64
+        if (offset >= 0xFFFFFFFF || (options & ZipFileWriteZip64)) {
+            offset = 0xFFFFFFFF;
+            extra_len = 12;
+        }
+
+        uint8_t central_directory_file_header[] = {
+            BYTE4(0x02014b50),      // Central directory file header signature = 0x02014b50
+            BYTE2(45 + 0x0300),     // Version made by (4.5) + OS (Unix)
+            BYTE2(45),              // Version needed (4.5)
+            BYTE2(0),               // General purpose bit flag
+            BYTE2(method),          // Compression method
+            BYTE4(datetime),        // last modification datetime
+            BYTE4(crc32),           // CRC-32
+            BYTE4(compressed_size), // Compressed size
+            BYTE4(uncompressed_size),// Uncompressed size
+            BYTE2(name_len),        // File name length
+            BYTE2(extra_len),       // Extra field length
+            BYTE2(0),               // comment length
+            BYTE2(0),               // disk number
+            BYTE2(0),               // Internal file attributes
+            BYTE4(external_attr),   // External file attributes
+            BYTE4(offset),          // offset of local file header
+        };
+        [file writeBytes:central_directory_file_header length:sizeof(central_directory_file_header)];
+        [file writeDataSafe:name_data];
+        if (extra_len) {
+            uint64_t offset = info.offset - (30 + name_len);
+            uint8_t extra[] = {
+                BYTE2(0x0001),
+                BYTE2(8),
+                BYTE8(offset),
+            };
+            [file writeBytes:extra length:sizeof(extra)];
+        }
+    }
+    uint64_t central_directory_size = [file offsetInFile] - central_directory_offset;
+    uint64_t central_directory_num  = [all_info count];
+    
+    // handle ZIP64
+    if (central_directory_offset >= 0xFFFFFFFF || (options & ZipFileWriteZip64)) {
+        uint64_t offset = [file offsetInFile];
+
+        uint8_t zip64_central_directory_end[] = {
+            BYTE4(0x06064b50),              // Zip64 End of central directory signature = 0x06064b50
+            BYTE8(44),                      // size of this record
+            BYTE2(45),                      // Version made by
+            BYTE2(45),                      // Version needed
+            BYTE4(0),                       // Number of this disk
+            BYTE4(0),                       // Disk where central directory starts
+            BYTE8(central_directory_num),   // Number of central directory records on this disk
+            BYTE8(central_directory_num),   // Total number of central directory records
+            BYTE8(central_directory_size),  // Size of central directory (bytes)
+            BYTE8(central_directory_offset),// Offset of start of central directory
+            
+            BYTE4(0x07064b50),              // Zip64 End of central directory locator signature = 0x07064b50
+            BYTE4(0),                       // disk number of EOCD
+            BYTE8(offset),                  // offset to EOCD64
+            BYTE4(1),                       // total number of disks
+        };
+        [file writeBytes:zip64_central_directory_end length:sizeof(zip64_central_directory_end)];
+        central_directory_offset = 0xFFFFFFFF;
+    }
+    
+    uint8_t central_directory_end[] = {
+        BYTE4(0x06054b50),              // End of central directory signature = 0x06054b50
+        BYTE2(0),                       // Number of this disk
+        BYTE2(0),                       // Disk where central directory starts
+        BYTE2(central_directory_num),   // Number of central directory records on this disk
+        BYTE2(central_directory_num),   // Total number of central directory records
+        BYTE4(central_directory_size),  // Size of central directory (bytes)
+        BYTE4(central_directory_offset),// Offset of start of central directory
+        BYTE2(0),                       // Comment length
+    };
+    [file writeBytes:central_directory_end length:sizeof(central_directory_end)];
+    
+    return result;
+}
+
+// create a ZipFile from files.
++ (BOOL)exportTo:(NSString*)path fromFiles:(NSArray<NSString*>*)files fromDirectory:(NSString*)root withOptions:(ZipFileWriteOptions)options progressBlock:(nullable BOOL (^)(double progress))block
+{
+    BOOL isDirectory;
+    if (!([NSFileManager.defaultManager fileExistsAtPath:root isDirectory:&isDirectory] && isDirectory))
+        return ERROR("BAD DIRECTORY: %@", root);
+    
+    if (![root hasSuffix:@"/"])
+        root = [root stringByAppendingString:@"/"];
+
+    if (files.count == 0 && (options & ZipFileWriteDirectoryName))
+        files = @[@""];
+    
+    BOOL result = [ZipFile exportTo:path fromItems:files withOptions:options usingBlock:^ZipFileInfo* (NSString* name) {
+        
+        ZipFileInfo* info = [[ZipFileInfo alloc] init];
+
+        if (block)
+            info.cancel = block((double)[files indexOfObject:name] / [files count]);
+        
+        if ([name hasPrefix:root])
+            name = [name substringFromIndex:[root length]];
+        NSString* path = [root stringByAppendingPathComponent:name];
+        if (options & ZipFileWriteDirectoryName)
+            name = [[root lastPathComponent] stringByAppendingPathComponent:name];
+        
+        BOOL isDirectory;
+        if (![NSFileManager.defaultManager fileExistsAtPath:path isDirectory:&isDirectory])
+            return nil;
+
+        if (isDirectory) {
+            if (![name hasSuffix:@"/"])
+                name = [name stringByAppendingString:@"/"];
+        }
+        else {
+            info.data = [NSData dataWithContentsOfFile:path];
+        }
+        info.name = name;
+        info.date = [[[NSFileManager defaultManager] attributesOfItemAtPath:path error:nil] fileModificationDate];
+
+        return info;
+    }];
+    
+    if (block)
+        block(1.0);
+    
+    return result;
+}
+
+// create a ZipFile from directory.
++ (BOOL)exportTo:(NSString*)path fromDirectory:(NSString*)root withOptions:(ZipFileWriteOptions)options progressBlock:(nullable BOOL (^)(double progress))block
+{
+    NSArray* files = [[NSFileManager.defaultManager enumeratorAtPath:root] allObjects];
+    return [self exportTo:path fromFiles:files fromDirectory:root withOptions:options progressBlock:block];
+}
+
 @end
 
 #pragma mark - ZipFileInfo
@@ -339,7 +582,7 @@
 - (BOOL)loadDataFromFile:(NSFileHandle*)file
 {
     [file seekToFileOffset:self.offset];
-    NSData* data = [file readDataOfLength:self.compressed_size];
+    NSData* data = [file readDataOfLengthSafe:self.compressed_size];
     self.data = nil;
 
     if ([data length] != self.compressed_size)
@@ -372,38 +615,60 @@
 
 @implementation NSFileHandle (NSFileHandle_Read)
 
+- (NSData*) readDataOfLengthSafe:(size_t)length
+{
+    @try {
+        return [self readDataOfLength:length];
+    } @catch (NSException *exception) {
+        return nil;
+    }
+}
+- (BOOL) writeDataSafe:(NSData*)data
+{
+    @try {
+        [self writeData:data];
+        return TRUE;
+    } @catch (NSException *exception) {
+        return FALSE;
+    }
+}
+- (BOOL) readBytes:(void *)bytes length:(size_t)length
+{
+    NSData* data = [self readDataOfLengthSafe:length];
+    if (data.length != 0)
+        memcpy(bytes, data.bytes, MIN(length, data.length));
+    return length == data.length;
+}
+- (BOOL) writeBytes:(const void *)bytes length:(size_t)length
+{
+    return [self writeDataSafe:[NSData dataWithBytes:bytes length:length]];
+}
 - (uint16_t) read2
 {
-    NSData* data = [self readDataOfLength:2];
-    
-    if ([data length] != 2)
-        return 0xFFFF;
-        
-    const uint8_t* b = (const uint8_t*)data.bytes;
-    return ((uint32_t)b[0] << 0) + ((uint32_t)b[1] << 8);
+    uint16_t u16 = 0;
+    [self readBytes:&u16 length:2];
+    return OSSwapLittleToHostInt16(u16);
 }
-                                          
 - (uint32_t) read4
 {
-    NSData* data = [self readDataOfLength:4];
-    
-    if ([data length] != 4)
-        return 0xFFFFFFFF;
-        
-    const uint8_t* b = (const uint8_t*)data.bytes;
-    return ((uint32_t)b[0] << 0) + ((uint32_t)b[1] << 8) + ((uint32_t)b[2] << 16) + ((uint32_t)b[3] << 24);
+    uint32_t u32 = 0;
+    [self readBytes:&u32 length:4];
+    return OSSwapLittleToHostInt32(u32);
 }
-
 - (uint64_t) read8
 {
-    return (uint64_t)[self read4] + ((uint64_t)[self read4] << 32);
+    uint64_t u64 = 0;
+    [self readBytes:&u64 length:8];
+    return OSSwapLittleToHostInt64(u64);
 }
-
 - (void) skip:(NSInteger)skip
 {
-    [self seekToFileOffset:[self offsetInFile] + skip];
+    @try {
+        [self seekToFileOffset:[self offsetInFile] + skip];
+    }
+    @catch (NSException *exception) {
+    }
 }
-
 @end
 
 #pragma mark - NSData compression helpers
@@ -413,15 +678,26 @@
 - (NSData*) inflated:(NSUInteger)length
 {
     NSMutableData* data = [[NSMutableData alloc] initWithLength:length];
-    NSMutableData* temp = [[NSMutableData alloc] initWithLength:compression_decode_scratch_buffer_size(COMPRESSION_ZLIB)];
 
-    length = compression_decode_buffer(data.mutableBytes, [data length], self.bytes, [self length], temp.mutableBytes, COMPRESSION_ZLIB);
+    length = compression_decode_buffer(data.mutableBytes, [data length], self.bytes, [self length], nil, COMPRESSION_ZLIB);
     
     if (length != [data length])
         return nil;
     
     return data;
 }
+- (NSData*) deflated
+{
+    NSMutableData* data = [[NSMutableData alloc] initWithLength:[self length]];
+
+    data.length = compression_encode_buffer(data.mutableBytes, [data length], self.bytes, [self length], nil, COMPRESSION_ZLIB);
+    
+    if (data.length == 0)
+        return nil;
+
+    return data;
+}
+
 // from [gist](https://gist.github.com/antfarm/695fa78e0730b67eb094c77d53942216)
 - (uint32_t) crc32
 {
@@ -449,5 +725,39 @@
 }
 @end
 
+#pragma mark - NSDate MSDOS
 
-
+@implementation NSDate (NSDate_MSDOS)
+//
+//  The 32 bit date and time format used in the MSDOS and Windows FAT directory entry.
+//  Each portion of the time stamp (year, month etc.) is encoded within specific bits of the 32bit time stamp.
+//  The epoch for a DOS date is 1980 so this must be added to the date from bits 25-31.
+//  This format has a granularity of 2 seconds and the data is stored as follows:
+//
+//            Year     Month    Day      Hour    Min      Seconds/2
+//    Bits    31-25    24-21    20-16    15-11   10-5     4-0
+//
++(NSDate*) dateWithDosDateTime:(NSUInteger)datetime
+{
+    NSDateComponents* components = [[NSDateComponents alloc] init];
+    components.year   = ((datetime >> 25) & 0x7F) + 1980;
+    components.month  = ((datetime >> 21) & 0x0F);
+    components.day    = ((datetime >> 16) & 0x1F);
+    components.hour   = ((datetime >> 11) & 0x1F);
+    components.minute = ((datetime >>  5) & 0x3F);
+    components.second = ((datetime >>  0) & 0x1F) * 2;
+    components.timeZone = [NSTimeZone defaultTimeZone];
+    return [[NSCalendar currentCalendar] dateFromComponents:components] ?: [NSDate distantPast];
+}
+-(NSUInteger)dosDateTime
+{
+    NSCalendarUnit units = NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay | NSCalendarUnitHour | NSCalendarUnitMinute | NSCalendarUnitSecond;
+    NSDateComponents* components = [NSCalendar.currentCalendar components:units fromDate:self];
+    return (((components.year - 1980) & 0x7F) << 25) |
+                   ((components.month & 0x0F) << 21) |
+                     ((components.day & 0x1F) << 16) |
+                    ((components.hour & 0x1F) << 11) |
+                  ((components.minute & 0x3F) <<  5) |
+            (((components.second / 2) & 0x1F) <<  0) ;
+}
+@end

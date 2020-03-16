@@ -32,10 +32,7 @@
             alert.preferredAction = alert.actions.lastObject;
     }
         
-    UIViewController* vc = self;
-    while (vc.presentedViewController != nil)
-        vc = vc.presentedViewController;
-    [vc presentViewController:alert animated:YES completion:nil];
+    [self.topViewController presentViewController:alert animated:YES completion:nil];
 }
 
 -(void)showAlertWithTitle:(NSString*)title message:(NSString*)message
@@ -54,11 +51,20 @@
 
 -(void)dismissAlert
 {
-    if (![[self presentedViewController] isKindOfClass:[UIAlertController class]])
+    if (![self.topViewController isKindOfClass:[UIAlertController class]])
         return;
     
-    [self dismissViewControllerAnimated:YES completion:nil];
+    [self.topViewController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
 }
+
+-(UIViewController*)topViewController
+{
+    UIViewController* vc = self;
+    while (vc.presentedViewController != nil)
+        vc = vc.presentedViewController;
+    return vc;
+}
+
 
 @end
 
