@@ -266,6 +266,12 @@ UIView* find_view(UIView* view, Class class) {
     self.collectionView.allowsMultipleSelection = NO;
     self.collectionView.allowsSelection = YES;
     self.collectionView.alwaysBounceVertical = YES;
+    
+#if TARGET_OS_TV
+    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(menuPress)];
+    tap.allowedPressTypes = @[[NSNumber numberWithInteger:UIPressTypeMenu]];
+    [self.navigationController.view addGestureRecognizer:tap];
+#endif
 }
 -(void)scrollToTop
 {
@@ -1403,19 +1409,13 @@ UIView* find_view(UIView* view, Class class) {
 #pragma mark UIEvent handling for button presses
 
 #if TARGET_OS_TV
-- (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event; {
+-(void)menuPress {
+    NSLog(@"MENU PRESS");
     // exit the app (to the aTV home screen) when the user hits MENU at the root
     // if we dont do this tvOS will just dismiss us (with no game to play)
     // [yuck](https://stackoverflow.com/questions/34522004/allow-menu-button-to-exit-tvos-app-when-pressed-on-presented-modal-view-controll)
-    if ([self.navigationController topViewController] == self) {
-        for (UIPress *press in presses) {
-            if (press.type == UIPressTypeMenu) {
-                exit(0);
-            }
-        }
-    }
-    // not a menu press, delegate to UIKit responder handling
-    [super pressesBegan:presses withEvent:event];
+    if ([self.navigationController topViewController] == self)
+        exit(0);
 }
 #endif
 
