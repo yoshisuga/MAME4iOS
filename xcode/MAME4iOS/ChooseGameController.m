@@ -67,6 +67,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 @property (readwrite, nonatomic, strong) UILabel* info;
 -(void)setHorizontal:(BOOL)horizontal;
 -(void)setTextInsets:(UIEdgeInsets)insets;
+-(void)setImageAspect:(CGFloat)aspect;
 @end
 
 #pragma mark Safe Area helper for UIViewController (for pre and post iOS11)
@@ -158,7 +159,7 @@ UIView* find_view(UIView* view, Class class) {
     title.font = [UIFont boldSystemFontOfSize:44.0 * 0.6];
     #else
     title.text = @"MAME4tvOS";
-    title.font = [UIFont boldSystemFontOfSize:44.0];
+    title.font = [UIFont boldSystemFontOfSize:44.0 * 1.5];
     #endif
     title.textColor = TITLE_COLOR;
     [title sizeToFit];
@@ -966,6 +967,10 @@ UIView* find_view(UIView* view, Class class) {
         // if this is syncronous set image and be done
         if (cell.image.image == nil) {
             cell.image.image = image ?: self->_defaultImage;
+            // MAME games always ran on horz or vertical CRTs so it does not matter what the PAR of
+            // the title image is force a DAR of 3:4 or 4:3
+            if (image != nil)
+                [cell setImageAspect:image.size.width > image.size.height ? 4.0/3.0 : 3.0/4.0];
             return;
         }
         
@@ -1425,6 +1430,7 @@ UIView* find_view(UIView* view, Class class) {
 
 @interface ImageView : UIImageView
 @property (readwrite, nonatomic) CGSize contentSize;
+@property (readwrite, nonatomic) CGFloat aspect;
 @end
 
 @implementation ImageView
@@ -1438,15 +1444,21 @@ UIView* find_view(UIView* view, Class class) {
         return self.image.size;
     
     if (size.width == 0.0)
-        size.width = floor(size.height * (self.image.size.width / self.image.size.height));
+        size.width = floor(size.height * self.aspect);
     if (size.height == 0.0)
-        size.height = floor(size.width * (self.image.size.height / self.image.size.width));
+        size.height = floor(size.width / self.aspect);
     
     return size;
 }
 - (void)setContentSize:(CGSize)contentSize {
     _contentSize = contentSize;
     [self invalidateIntrinsicContentSize];
+}
+// return the aspect ratio of the image, or an override (if set)
+-(CGFloat)aspect {
+    if (_aspect != 0.0)
+        return _aspect;
+    return self.image.size.width / self.image.size.height;
 }
 @end
 
@@ -1537,6 +1549,7 @@ UIView* find_view(UIView* view, Class class) {
 
     _image.image = nil;
     _image.contentMode = UIViewContentModeScaleAspectFill;
+    ((ImageView*)_image).aspect = 0.0;
     [_image setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
 
     _stackView.axis = UILayoutConstraintAxisVertical;
@@ -1595,6 +1608,11 @@ UIView* find_view(UIView* view, Class class) {
 {
     _stackText.layoutMargins = insets;
     [self setNeedsUpdateConstraints];
+}
+-(void)setImageAspect:(CGFloat)aspect
+{
+    _image.contentMode = UIViewContentModeScaleToFill;
+    ((ImageView*)_image).aspect = aspect;
 }
 
 - (CGSize)sizeThatFits:(CGSize)targetSize
