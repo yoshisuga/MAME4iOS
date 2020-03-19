@@ -55,6 +55,15 @@
     [[self.tableView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor] setActive:YES];
     [[self.tableView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor] setActive:YES];
     self.options = [[Options alloc] init];
+    
+    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(menuPress)];
+    tap.allowedPressTypes = @[[NSNumber numberWithInteger:UIPressTypeMenu]];
+    [self.navigationController.view addGestureRecognizer:tap];
+}
+
+-(void)menuPress {
+    NSLog(@"MENU PRESS");
+    [self.emuController done:nil];
 }
     
 -(void)viewWillAppear:(BOOL)animated {
@@ -256,22 +265,4 @@
     [self.options saveOptions];
 }
 
-#pragma mark UIEvent handling for button presses
-- (void)pressesBegan:(NSSet<UIPress *> *)presses
-           withEvent:(UIPressesEvent *)event; {
-    BOOL menuPressed = NO;
-    for (UIPress *press in presses) {
-        if ( press.type == UIPressTypeMenu ) {
-            menuPressed = YES;
-        }
-    }
-    NSLog(@"Presses began - was it a menu press? %@",menuPressed ? @"YES" : @"NO");
-    if ( menuPressed && self.emuController != nil ) {
-        [self.emuController done:nil];
-        return;
-    }
-    // not a menu press, delegate to UIKit responder handling
-    [super pressesBegan:presses withEvent:event];
-}
-    
 @end

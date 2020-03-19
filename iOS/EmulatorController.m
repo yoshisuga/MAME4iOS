@@ -623,6 +623,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     [super dismissViewControllerAnimated:flag completion:completion];
 }
 
+
 -(void)updateOptions{
     
     //printf("load options\n");
@@ -1125,7 +1126,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
 }
 -(BOOL)prefersHomeIndicatorAutoHidden
 {
-    return g_device_is_landscape ? YES : NO;
+    return g_device_is_fullscreen;
 }
 
 - (BOOL)shouldAutorotate {
@@ -3215,16 +3216,18 @@ void myosd_handle_turbo() {
     UIApplication* application = UIApplication.sharedApplication;
     for (NSURL* url in urls) {
         NSLog(@"IMPORT: %@", url);
-
         // call our own openURL handler (in Bootstrapper)
-        [application.delegate application:application openURL:url options:@{UIApplicationOpenURLOptionsOpenInPlaceKey:@(YES)}];
+        [application.delegate application:application openURL:url options:@{UIApplicationOpenURLOptionsOpenInPlaceKey:@(NO)}];
+        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(moveROMS) object:nil];
     }
+    [self performSelectorOnMainThread:@selector(moveROMS) withObject:nil waitUntilDone:NO];
 }
 
 - (void)runImport {
-    UIDocumentPickerViewController* documentPicker = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:@[@"public.zip-archive"] inMode:UIDocumentPickerModeOpen];
+    UIDocumentPickerViewController* documentPicker = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:@[@"public.zip-archive"] inMode:UIDocumentPickerModeImport];
     documentPicker.modalPresentationStyle = UIModalPresentationFormSheet;
     documentPicker.delegate = self;
+    documentPicker.allowsMultipleSelection = YES;
     [self.topViewController presentViewController:documentPicker animated:YES completion:nil];
 }
 
@@ -3477,13 +3480,19 @@ void myosd_handle_turbo() {
             static int g_menu_modifier_button_pressed[4];
             
             NSLog(@"%d: MENU %s", index, pressed ? "DOWN" : "UP");
-            
+#if TARGET_OS_TV
+            // disable button presses while alert is shown
+            if ([self controllerUserInteractionEnabled]) {
+                return;
+            }
+#endif
             // on MENU button up, if no modifier was pressed then show menu
             if (!pressed) {
                 if (g_menu_modifier_button_pressed[index] == FALSE) {
                     // Show or Cancel Action Sheet (aka MAME4iOS) Menu
                     if ([self.presentedViewController isKindOfClass:[UIAlertController class]]) {
-                       [(UIAlertController*)self.presentedViewController dismissWithCancel];
+                        if (!self.presentedViewController.isBeingDismissed)
+                            [(UIAlertController*)self.presentedViewController dismissWithCancel];
                     }
                     else {
                         [self runMenu:index];
@@ -3649,6 +3658,12 @@ void myosd_handle_turbo() {
             MFIController.microGamepad.reportsAbsoluteDpadValues = NO;
 
             MFIController.microGamepad.valueChangedHandler = ^(GCMicroGamepad* gamepad, GCControllerElement* element) {
+#if TARGET_OS_TV
+                // disable button presses while alert is shown
+                if ([self controllerUserInteractionEnabled]) {
+                    return;
+                }
+#endif
                 NSLog(@"%d: %@", index, element);
                 if (element == gamepad.buttonA) {
                     if (gamepad.buttonA.pressed) {
