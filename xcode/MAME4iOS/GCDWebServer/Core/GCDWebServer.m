@@ -37,6 +37,9 @@
 
 #import "GCDWebServerPrivate.h"
 
+// dont want to change this file too much, so ignore self warning
+#pragma clang diagnostic ignored "-Wimplicit-retain-self"
+
 #if TARGET_OS_IPHONE && !TARGET_IPHONE_SIMULATOR
 #define kDefaultPort 80
 #else
@@ -922,7 +925,7 @@ static inline NSString* _EncodeBase64(NSString* string) {
   for (NSString* file in enumerator) {
     if (![file hasPrefix:@"."]) {
       NSString* type = [[enumerator fileAttributes] objectForKey:NSFileType];
-      NSString* escapedFile = [file stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+      NSString* escapedFile = [file stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLPathAllowedCharacterSet]];
       GWS_DCHECK(escapedFile);
       if ([type isEqualToString:NSFileTypeRegular]) {
         [html appendFormat:@"<li><a href=\"%@\">%@</a></li>\n", escapedFile, file];

@@ -55,7 +55,7 @@ static input_device *keyboard_device;
 
 // the states
 static int keyboard_state[KEY_TOTAL];
-static int joy_buttons[4][8];
+static int joy_buttons[4][10];
 static int joy_axis[4][6];
 static int joy_hats[4][4];
 
@@ -112,6 +112,9 @@ void droid_ios_init_input(running_machine *machine)
 
 		input_device_item_add(devinfo, "Coin", &joy_buttons[i][6], ITEM_ID_BUTTON7, my_get_state);
 		input_device_item_add(devinfo, "Start", &joy_buttons[i][7], ITEM_ID_BUTTON8, my_get_state);
+
+		input_device_item_add(devinfo, "L3", &joy_buttons[i][8], ITEM_ID_BUTTON9, my_get_state);
+		input_device_item_add(devinfo, "R3", &joy_buttons[i][9], ITEM_ID_BUTTON10, my_get_state);
 
 		input_device_item_add(devinfo, "D-Pad Up", &joy_hats[i][0],(input_item_id)( ITEM_ID_HAT1UP+i*4), my_get_state);
 		input_device_item_add(devinfo, "D-Pad Down", &joy_hats[i][1],(input_item_id)( ITEM_ID_HAT1DOWN+i*4), my_get_state);
@@ -295,7 +298,6 @@ void droid_ios_poll_input(running_machine *machine)
     
 	if(mystate == STATE_NORMAL)
 	{
-
 		keyboard_state[KEY_1] = 0;
 		keyboard_state[KEY_2] = 0;
 
@@ -521,14 +523,17 @@ void droid_ios_poll_input(running_machine *machine)
 
 			joy_buttons[i][6]  = ((_pad_status & MYOSD_SELECT ) != 0) ? 0x80 : 0;
 			joy_buttons[i][7]  = ((_pad_status & MYOSD_START  ) != 0) ? 0x80 : 0;
+
+			joy_buttons[i][8]  = ((_pad_status & MYOSD_L3 ) != 0) ? 0x80 : 0;
+			joy_buttons[i][9]  = ((_pad_status & MYOSD_R3  ) != 0) ? 0x80 : 0;
+
 		}
 	}
 	else if(mystate == STATE_LOADSAVE)
 	{
-		
         keyboard_state[KEY_ESCAPE] = 0;
-		keyboard_state[KEY_1] = 0;
-		keyboard_state[KEY_2] = 0;
+//		keyboard_state[KEY_1] = 0;
+//		keyboard_state[KEY_2] = 0;
 
 		if(myosd_exitGame || handle->state.ext & NP_EXIT || handle->peer_state.ext & NP_EXIT)
 		{
@@ -555,7 +560,32 @@ void droid_ios_poll_input(running_machine *machine)
             handle->state.ext &= ~ NP_EXIT;
             handle->peer_state.ext &= ~ NP_EXIT;
 		}
+        
+        if ((_pad_status & MYOSD_B) != 0 && keyboard_state[KEY_1] == 0)
+        {
+            keyboard_state[KEY_LOAD] = 0;
+            keyboard_state[KEY_SAVE] = 0;
+            keyboard_state[KEY_1] = 0x80;
+        }
+        if ((_pad_status & MYOSD_B) == 0 &&  keyboard_state[KEY_1] == 0x80)
+        {
+            keyboard_state[KEY_1] = 0;
+            mystate = STATE_NORMAL;
+        }
+        
+        if ((_pad_status & MYOSD_X) != 0 && keyboard_state[KEY_2] == 0)
+        {
+            keyboard_state[KEY_LOAD] = 0;
+            keyboard_state[KEY_SAVE] = 0;
+            keyboard_state[KEY_2] = 0x80;
+        }
+        if ((_pad_status & MYOSD_X) == 0 &&  keyboard_state[KEY_2] == 0x80)
+        {
+            keyboard_state[KEY_2] = 0;
+            mystate = STATE_NORMAL;
+        }
 
+        /*
 		if ((_pad_status & MYOSD_B) != 0)
 		{
 			keyboard_state[KEY_1] = 0x80;
@@ -569,6 +599,7 @@ void droid_ios_poll_input(running_machine *machine)
 			mystate = STATE_NORMAL;
             do{}while(myosd_joystick_read(0) & MYOSD_X);
 		}
+        */
 
 	}
 	else {/*???*/}

@@ -37,13 +37,12 @@
 }
 
 - (void)loadView {
-    self.view = [[[UIView alloc] initWithFrame:CGRectZero] autorelease];
+    self.view = [[UIView alloc] initWithFrame:CGRectZero];
     self.view.backgroundColor = UIColor.darkGrayColor;
     UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithTitle:@"Done"
                                                                    style:UIBarButtonItemStyleDone
                                                                   target: emuController  action:  @selector(done:) ];
     self.navigationItem.rightBarButtonItem = backButton;
-    [backButton release];
     self.title = NSLocalizedString(@"Settings", @"");
     self.navigationController.navigationBar.titleTextAttributes = @{NSForegroundColorAttributeName : UIColor.whiteColor};
     self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStyleGrouped];
@@ -56,6 +55,15 @@
     [[self.tableView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor] setActive:YES];
     [[self.tableView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor] setActive:YES];
     self.options = [[Options alloc] init];
+    
+    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(menuPress)];
+    tap.allowedPressTypes = @[[NSNumber numberWithInteger:UIPressTypeMenu]];
+    [self.navigationController.view addGestureRecognizer:tap];
+}
+
+-(void)menuPress {
+    NSLog(@"MENU PRESS");
+    [self.emuController done:nil];
 }
     
 -(void)viewWillAppear:(BOOL)animated {
@@ -63,15 +71,8 @@
     [self refresh];
 }
     
--(void)dealloc {
-    [self.tableView release];
-    [self.options release];
-    [super dealloc];
-}
-    
 -(void)refresh {
     if ( self.options != nil ) {
-        [self.options release];
         self.options = nil;
     }
     self.options = [[Options alloc] init];
@@ -82,7 +83,7 @@
     UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 100.0, 50.0)];
     label.text = optionValue ? @"On" : @"Off";
     [label sizeToFit];
-    return [label autorelease];
+    return label;
 }
     
 +(void)setOnOffValueForCell:(UITableViewCell*)cell optionValue:(int)optionValue {
@@ -98,7 +99,7 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     if ( section == kFilterSection ) {
-        return 1;
+        return 2;
     } else if ( section == kScreenSection ) {
         return 4;
     } else if ( section == kMiscSection ) {
@@ -106,6 +107,8 @@
     } else if ( section == kDefaultsSection ) {
         return 1;
     } else if ( section == kInputSection ) {
+        return 1;
+    } else if ( section == kServerSection ) {
         return 1;
     }
     return 0;
@@ -115,20 +118,33 @@
     if ( section == kScreenSection ) {
         return @"Display Options";
     }
+    if ( section == kFilterSection ) {
+        return @"ROM Options";
+    }
     return @"";
 }
     
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Cell"];
     if ( cell == nil ) {
-        cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:@"Cell"] autorelease];
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:@"Cell"];
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
     }
     cell.accessoryType = UITableViewCellAccessoryNone;
     cell.accessoryView = nil;
     if ( indexPath.section == kFilterSection ) {
-        cell.textLabel.text = @"Game Filter";
-        cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+        if ( indexPath.row == 0 ) {
+            cell.textLabel.text   = @"Hide Clones";
+            cell.accessoryView = [TVOptionsController labelForOnOffValue:self.options.filterClones];
+        } else if ( indexPath.row == 1 ) {
+            cell.textLabel.text   = @"Hide Not Working";
+            cell.accessoryView = [TVOptionsController labelForOnOffValue:self.options.filterNotWorking];
+        }
+    } else if ( indexPath.section == kServerSection ) {
+        if ( indexPath.row == 0 ) {
+            cell.textLabel.text = @"Start Server";
+            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+        }
     } else if ( indexPath.section == kScreenSection ) {
         if ( indexPath.row == 0 ) {
             cell.textLabel.text  = @"Smoothed Image";
@@ -162,7 +178,7 @@
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
             cell.detailTextLabel.text = [arrayFSValue objectAtIndex:self.options.fsvalue];
         } else if ( indexPath.row == 5 ) {
-            cell.textLabel.text   = @"Force Pixel Aspect";
+            cell.textLabel.text   = @"Fill Screen";
             cell.accessoryView = [TVOptionsController labelForOnOffValue:self.options.forcepxa];
         } else if ( indexPath.row == 6 ) {
             cell.textLabel.text   = @"Show Info/Warnings";
@@ -185,11 +201,17 @@
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
     if ( indexPath.section == kFilterSection ) {
-        FilterOptionController *filterOptController = [[FilterOptionController alloc] init];
-        filterOptController.emuController = self.emuController;
-        [[self navigationController] pushViewController:filterOptController animated:YES];
-        [filterOptController release];
-        [tableView reloadData];
+        if ( indexPath.row == 0 ) {
+            self.options.filterClones = self.options.filterClones ? 0 : 1;
+            [TVOptionsController setOnOffValueForCell:cell optionValue:self.options.filterClones];
+        } else if ( indexPath.row == 1 ) {
+            self.options.filterNotWorking = self.options.filterNotWorking ? 0 : 1;
+            [TVOptionsController setOnOffValueForCell:cell optionValue:self.options.filterNotWorking];
+        }
+    } else if ( indexPath.section == kServerSection ) {
+        if ( indexPath.row == 0 ) {
+            [emuController runServer];
+        }
     } else if ( indexPath.section == kScreenSection ) {
         if ( indexPath.row == 0 ) {
             // Smoothed Image
@@ -212,18 +234,15 @@
         } else if ( indexPath.row == 1 ) {
             ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped                                                                                          type:kTypeEmuRes list:arrayEmuRes];
             [[self navigationController] pushViewController:listController animated:YES];
-            [listController release];
         } else if ( indexPath.row == 2 ) {
             ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped                                                                                          type:kTypeEmuSpeed list:arrayEmuSpeed];
             [[self navigationController] pushViewController:listController animated:YES];
-            [listController release];
         } else if ( indexPath.row == 3 ) {
             self.options.throttle = self.options.throttle ? 0 : 1;
             [TVOptionsController setOnOffValueForCell:cell optionValue:self.options.throttle];
         } else if ( indexPath.row == 4 ) {
             ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped                                                                                          type:kTypeFSValue list:arrayFSValue];
             [[self navigationController] pushViewController:listController animated:YES];
-            [listController release];
         } else if ( indexPath.row == 5 ) {
             self.options.forcepxa = self.options.forcepxa ? 0 : 1;
             [TVOptionsController setOnOffValueForCell:cell optionValue:self.options.forcepxa];
@@ -238,31 +257,12 @@
         DefaultOptionController *defaultOptController = [[DefaultOptionController alloc] init];
         defaultOptController.emuController = self.emuController;
         [[self navigationController] pushViewController:defaultOptController animated:YES];
-        [defaultOptController release];
     } else if ( indexPath.section == kInputSection ) {
-        TVInputOptionsController *inputController = [[[TVInputOptionsController alloc] init] autorelease];
+        TVInputOptionsController *inputController = [[TVInputOptionsController alloc] init];
         inputController.emuController = self.emuController;
         [self.navigationController pushViewController:inputController animated:YES];
     }
     [self.options saveOptions];
 }
 
-#pragma mark UIEvent handling for button presses
-- (void)pressesBegan:(NSSet<UIPress *> *)presses
-           withEvent:(UIPressesEvent *)event; {
-    BOOL menuPressed = NO;
-    for (UIPress *press in presses) {
-        if ( press.type == UIPressTypeMenu ) {
-            menuPressed = YES;
-        }
-    }
-    NSLog(@"Presses began - was it a menu press? %@",menuPressed ? @"YES" : @"NO");
-    if ( menuPressed && self.emuController != nil ) {
-        [self.emuController done:nil];
-        return;
-    }
-    // not a menu press, delegate to UIKit responder handling
-    [super pressesBegan:presses withEvent:event];
-}
-    
 @end

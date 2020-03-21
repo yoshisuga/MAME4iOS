@@ -58,7 +58,7 @@ UIKIT_EXTERN_CLASS @interface UIScreenMode : NSObject {
 @end
 #endif
 
-@interface Bootstrapper : UIApplication  {
+@interface Bootstrapper : NSObject <UIApplicationDelegate>  {
 	
 	UIWindow		    *deviceWindow;
 	UIWindow            *externalWindow;
@@ -66,7 +66,5 @@ UIKIT_EXTERN_CLASS @interface UIScreenMode : NSObject {
 	UIScreen            *externalScreen;
 	EmulatorController	*hrViewController;
 }
-
-- (void)prepareScreen;
 
 @end

@@ -105,88 +105,88 @@
     LayoutData *d = nil;
     
     //RECT Y,A,B,X
-    d = [[[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_Y value:BTN_Y_RECT rect: rInputs[BTN_Y_RECT] ] autorelease];
+    d = [[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_Y value:BTN_Y_RECT rect: rInputs[BTN_Y_RECT] ];
     [array addObject: d];
-    d = [[[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubype_A value:BTN_A_RECT rect: rInputs[BTN_A_RECT] ] autorelease];
+    d = [[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubype_A value:BTN_A_RECT rect: rInputs[BTN_A_RECT] ];
     [array addObject: d];
-    d = [[[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_B value:BTN_B_RECT rect: rInputs[BTN_B_RECT] ] autorelease];
+    d = [[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_B value:BTN_B_RECT rect: rInputs[BTN_B_RECT] ];
     [array addObject: d];
-    d = [[[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_X value:BTN_X_RECT rect: rInputs[BTN_X_RECT] ] autorelease];
+    d = [[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_X value:BTN_X_RECT rect: rInputs[BTN_X_RECT] ];
     [array addObject: d];
     
     //RECT SELECT,START
-    d = [[[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_SELECT value:BTN_SELECT_RECT rect: rInputs[BTN_SELECT_RECT] ] autorelease];
+    d = [[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_SELECT value:BTN_SELECT_RECT rect: rInputs[BTN_SELECT_RECT] ];
     [array addObject: d];
-    d = [[[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_START value:BTN_START_RECT rect: rInputs[BTN_START_RECT] ] autorelease];
+    d = [[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_START value:BTN_START_RECT rect: rInputs[BTN_START_RECT] ];
     [array addObject: d];
     
     //RECT L1,L2,R1,R2
-    d = [[[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_L1 value:BTN_L1_RECT rect: rInputs[BTN_L1_RECT] ] autorelease];
+    d = [[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_L1 value:BTN_L1_RECT rect: rInputs[BTN_L1_RECT] ];
     [array addObject: d];
-    d = [[[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_L2 value:BTN_L2_RECT rect: rInputs[BTN_L2_RECT] ] autorelease];
+    d = [[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_L2 value:BTN_L2_RECT rect: rInputs[BTN_L2_RECT] ];
     [array addObject: d];
-    d = [[[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_R1 value:BTN_R1_RECT rect: rInputs[BTN_R1_RECT] ] autorelease];
+    d = [[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_R1 value:BTN_R1_RECT rect: rInputs[BTN_R1_RECT] ];
     [array addObject: d];
-    d = [[[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_R2 value:BTN_R2_RECT rect: rInputs[BTN_R2_RECT] ] autorelease];
+    d = [[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_R2 value:BTN_R2_RECT rect: rInputs[BTN_R2_RECT] ];
     [array addObject: d];
     
     //RECT x + y
-    d = [[[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_NONE value:BTN_A_Y_RECT rect: rInputs[BTN_A_Y_RECT] ] autorelease];
+    d = [[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_NONE value:BTN_A_Y_RECT rect: rInputs[BTN_A_Y_RECT] ];
     [array addObject: d];
-    d = [[[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_NONE value:BTN_X_A_RECT rect: rInputs[BTN_X_A_RECT] ] autorelease];
+    d = [[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_NONE value:BTN_X_A_RECT rect: rInputs[BTN_X_A_RECT] ];
     [array addObject: d];
-    d = [[[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_NONE value:BTN_B_Y_RECT rect: rInputs[BTN_B_Y_RECT] ] autorelease];
+    d = [[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_NONE value:BTN_B_Y_RECT rect: rInputs[BTN_B_Y_RECT] ];
     [array addObject: d];
-    d = [[[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_NONE value:BTN_B_X_RECT rect: rInputs[BTN_B_X_RECT] ] autorelease];
+    d = [[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_NONE value:BTN_B_X_RECT rect: rInputs[BTN_B_X_RECT] ];
     [array addObject: d];
     
     //RECT DPAD
-    d = [[[LayoutData alloc] initWithType:kType_DPadRect subtype:kSubtype_CONTROLLER value:DPAD_UP_RECT rect: rInputs[DPAD_UP_RECT] ] autorelease];
+    d = [[LayoutData alloc] initWithType:kType_DPadRect subtype:kSubtype_CONTROLLER value:DPAD_UP_RECT rect: rInputs[DPAD_UP_RECT] ];
     [array addObject: d];
-    d = [[[LayoutData alloc] initWithType:kType_DPadRect subtype:kSubtype_CONTROLLER value:DPAD_LEFT_RECT rect: rInputs[DPAD_LEFT_RECT] ] autorelease];
+    d = [[LayoutData alloc] initWithType:kType_DPadRect subtype:kSubtype_CONTROLLER value:DPAD_LEFT_RECT rect: rInputs[DPAD_LEFT_RECT] ];
     [array addObject: d];
-    d = [[[LayoutData alloc] initWithType:kType_DPadRect subtype:kSubtype_CONTROLLER value:DPAD_DOWN_RECT rect: rInputs[DPAD_DOWN_RECT] ] autorelease];
+    d = [[LayoutData alloc] initWithType:kType_DPadRect subtype:kSubtype_CONTROLLER value:DPAD_DOWN_RECT rect: rInputs[DPAD_DOWN_RECT] ];
     [array addObject: d];
-    d = [[[LayoutData alloc] initWithType:kType_DPadRect subtype:kSubtype_CONTROLLER value:DPAD_RIGHT_RECT rect: rInputs[DPAD_RIGHT_RECT] ] autorelease];
+    d = [[LayoutData alloc] initWithType:kType_DPadRect subtype:kSubtype_CONTROLLER value:DPAD_RIGHT_RECT rect: rInputs[DPAD_RIGHT_RECT] ];
     [array addObject: d];
-    d = [[[LayoutData alloc] initWithType:kType_DPadRect subtype:kSubtype_CONTROLLER value:DPAD_UP_LEFT_RECT rect: rInputs[DPAD_UP_LEFT_RECT] ] autorelease];
+    d = [[LayoutData alloc] initWithType:kType_DPadRect subtype:kSubtype_CONTROLLER value:DPAD_UP_LEFT_RECT rect: rInputs[DPAD_UP_LEFT_RECT] ];
     [array addObject: d];
-    d = [[[LayoutData alloc] initWithType:kType_DPadRect subtype:kSubtype_CONTROLLER value:DPAD_DOWN_LEFT_RECT rect: rInputs[DPAD_DOWN_LEFT_RECT] ] autorelease];
+    d = [[LayoutData alloc] initWithType:kType_DPadRect subtype:kSubtype_CONTROLLER value:DPAD_DOWN_LEFT_RECT rect: rInputs[DPAD_DOWN_LEFT_RECT] ];
     [array addObject: d];
-    d = [[[LayoutData alloc] initWithType:kType_DPadRect subtype:kSubtype_CONTROLLER value:DPAD_UP_RIGHT_RECT rect: rInputs[DPAD_UP_RIGHT_RECT] ] autorelease];
+    d = [[LayoutData alloc] initWithType:kType_DPadRect subtype:kSubtype_CONTROLLER value:DPAD_UP_RIGHT_RECT rect: rInputs[DPAD_UP_RIGHT_RECT] ];
     [array addObject: d];
-    d = [[[LayoutData alloc] initWithType:kType_DPadRect subtype:kSubtype_CONTROLLER value:DPAD_DOWN_RIGHT_RECT rect: rInputs[DPAD_DOWN_RIGHT_RECT] ] autorelease];
+    d = [[LayoutData alloc] initWithType:kType_DPadRect subtype:kSubtype_CONTROLLER value:DPAD_DOWN_RIGHT_RECT rect: rInputs[DPAD_DOWN_RIGHT_RECT] ];
     [array addObject: d];
     
     //BTN img
     CGRect *rButtons = [emuController getButtonRects];
-    d = [[[LayoutData alloc] initWithType:kType_ButtonImgRect subtype:kSubtype_Y value:BTN_Y rect: rButtons[BTN_Y] ] autorelease];
+    d = [[LayoutData alloc] initWithType:kType_ButtonImgRect subtype:kSubtype_Y value:BTN_Y rect: rButtons[BTN_Y] ];
     [array addObject: d];
-    d = [[[LayoutData alloc] initWithType:kType_ButtonImgRect subtype:kSubype_A value:BTN_A rect: rButtons[BTN_A] ] autorelease];
+    d = [[LayoutData alloc] initWithType:kType_ButtonImgRect subtype:kSubype_A value:BTN_A rect: rButtons[BTN_A] ];
     [array addObject: d];
-    d = [[[LayoutData alloc] initWithType:kType_ButtonImgRect subtype:kSubtype_B value:BTN_B rect: rButtons[BTN_B] ] autorelease];
+    d = [[LayoutData alloc] initWithType:kType_ButtonImgRect subtype:kSubtype_B value:BTN_B rect: rButtons[BTN_B] ];
     [array addObject: d];
-    d = [[[LayoutData alloc] initWithType:kType_ButtonImgRect subtype:kSubtype_X value:BTN_X rect: rButtons[BTN_X] ] autorelease];
-    [array addObject: d];
-    
-    d = [[[LayoutData alloc] initWithType:kType_ButtonImgRect subtype:kSubtype_SELECT value:BTN_SELECT rect: rButtons[BTN_SELECT] ] autorelease];
-    [array addObject: d];
-    d = [[[LayoutData alloc] initWithType:kType_ButtonImgRect subtype:kSubtype_START value:BTN_START rect: rButtons[BTN_START] ] autorelease];
+    d = [[LayoutData alloc] initWithType:kType_ButtonImgRect subtype:kSubtype_X value:BTN_X rect: rButtons[BTN_X] ];
     [array addObject: d];
     
-    d = [[[LayoutData alloc] initWithType:kType_ButtonImgRect subtype:kSubtype_L1 value:BTN_L1 rect: rButtons[BTN_L1] ] autorelease];
+    d = [[LayoutData alloc] initWithType:kType_ButtonImgRect subtype:kSubtype_SELECT value:BTN_SELECT rect: rButtons[BTN_SELECT] ];
     [array addObject: d];
-    d = [[[LayoutData alloc] initWithType:kType_ButtonImgRect subtype:kSubtype_L2 value:BTN_L2 rect: rButtons[BTN_L2] ] autorelease];
+    d = [[LayoutData alloc] initWithType:kType_ButtonImgRect subtype:kSubtype_START value:BTN_START rect: rButtons[BTN_START] ];
     [array addObject: d];
-    d = [[[LayoutData alloc] initWithType:kType_ButtonImgRect subtype:kSubtype_R1 value:BTN_R1 rect: rButtons[BTN_R1] ] autorelease];
+    
+    d = [[LayoutData alloc] initWithType:kType_ButtonImgRect subtype:kSubtype_L1 value:BTN_L1 rect: rButtons[BTN_L1] ];
     [array addObject: d];
-    d = [[[LayoutData alloc] initWithType:kType_ButtonImgRect subtype:kSubtype_R2 value:BTN_R2 rect: rButtons[BTN_R2] ] autorelease];
+    d = [[LayoutData alloc] initWithType:kType_ButtonImgRect subtype:kSubtype_L2 value:BTN_L2 rect: rButtons[BTN_L2] ];
+    [array addObject: d];
+    d = [[LayoutData alloc] initWithType:kType_ButtonImgRect subtype:kSubtype_R1 value:BTN_R1 rect: rButtons[BTN_R1] ];
+    [array addObject: d];
+    d = [[LayoutData alloc] initWithType:kType_ButtonImgRect subtype:kSubtype_R2 value:BTN_R2 rect: rButtons[BTN_R2] ];
     [array addObject: d];
     
     //rest
-    d = [[[LayoutData alloc] initWithType:kType_DPadImgRect subtype:kSubtype_CONTROLLER value:-1 rect: emuController.rDPadImage] autorelease];
+    d = [[LayoutData alloc] initWithType:kType_DPadImgRect subtype:kSubtype_CONTROLLER value:-1 rect: emuController.rDPadImage];
     [array addObject: d];
-    d = [[[LayoutData alloc] initWithType:kType_StickRect subtype:kSubtype_CONTROLLER value:-1 rect: emuController.rStickWindow] autorelease];
+    d = [[LayoutData alloc] initWithType:kType_StickRect subtype:kSubtype_CONTROLLER value:-1 rect: emuController.rStickWindow];
     [array addObject: d];
     
     
@@ -197,12 +197,12 @@
     NSString *name = nil;
     NSString *path = nil;
     if(g_device_is_landscape)
-        if(g_pref_full_screen_land)
+        if(g_device_is_fullscreen)
            name = [NSString stringWithFormat:@"landscape_full_custom_layout_skin_%d.dat", g_skin_data];
         else
            name = [NSString stringWithFormat:@"landscape_no_full_custom_layout_skin_%d.dat", g_skin_data];  
     else
-        if(g_pref_full_screen_port)
+        if(g_device_is_fullscreen)
            name = [NSString stringWithFormat:@"portrait_full_custom_layout_skin_%d.dat", g_skin_data];
         else
            name = [NSString stringWithFormat:@"portrait_no_full_custom_layout_skin_%d.dat", g_skin_data];
@@ -216,7 +216,6 @@
     NSFileManager *filemgr = [[NSFileManager alloc] init];
     NSError *error = nil;
     [filemgr removeItemAtPath:[LayoutData getLayoutFilePath] error:&error];
-    [filemgr release];
 }
 
 +(void)saveLayoutData:(NSMutableArray *)data {
@@ -267,7 +266,7 @@
 }
 
 +(void)printAsTextFileFormat:(NSMutableArray*)data emuController:(EmulatorController*)emuController {
-    NSMutableArray *layoutTextData = [[[NSMutableArray alloc] init] autorelease];
+    NSMutableArray *layoutTextData = [[NSMutableArray alloc] init];
     NSArray<NSArray*> *fileDataLayoutElements = @[
                                      @[ @(kType_DPadRect), @(DPAD_DOWN_LEFT_RECT), @"//DownLeft"],    // 1
                                      @[ @(kType_DPadRect), @(DPAD_DOWN_RECT), @"//Down"],         // 2
@@ -324,16 +323,20 @@
             continue;
         }
         
+        /*
         if ( [comment isEqualToString:@"//StickArea*"] ) {
-            [layoutTextData addObject:[NSString stringWithFormat:@"%i,%i,%i,%i//StickArea*",(int)emuController.rStickArea.origin.x,
+            [layoutTextData addObject:[NSString stringWithFormat:@"%i,%i,%i,%i//StickArea*",
+                                       (int)emuController.rStickArea.origin.x,
                                        (int)emuController.rStickArea.origin.y,
                                        (int)emuController.rStickArea.size.width,
                                        (int)emuController.rStickArea.size.height]];
             continue;
         }
+        */
         
         if ( [comment isEqualToString:@"//DPad img"] ||
-            [comment isEqualToString:@"//StickWindow*" ]) {
+            [comment isEqualToString:@"//StickWindow*"] ||
+            [comment isEqualToString:@"//StickArea*"]) {
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"type == %lu",(unsigned long)coordType,(unsigned long)coordValue];
             NSArray *results = [data filteredArrayUsingPredicate:predicate];
             if ( results.count == 0 ) {
@@ -341,12 +344,12 @@
                 continue;
             }
             LayoutData *layoutData = results.firstObject;
-            [layoutTextData addObject:[NSString stringWithFormat:@"%i,%i,%i,%i%@",(int)layoutData.rect.origin.x,(int)layoutData.rect.origin.y,(int)layoutData.rect.size.width,(int)layoutData.rect.size.height,comment]];
+            [layoutTextData addObject:[NSString stringWithFormat:@"%i,%i,%i,%i%@",(int)layoutData.rect.origin.x + layoutData.ax,(int)layoutData.rect.origin.y + layoutData.ay,(int)layoutData.rect.size.width,(int)layoutData.rect.size.height,comment]];
             continue;
         }
         
         if ( coordType == -2 ) {
-            [layoutTextData addObject:[NSString stringWithFormat:@"%lu%@",coordValue,comment]];
+            [layoutTextData addObject:[NSString stringWithFormat:@"%lu%@",(unsigned long)coordValue,comment]];
             continue;
         }
         
@@ -357,7 +360,7 @@
             continue;
         }
         LayoutData *layoutData = results.firstObject;
-        [layoutTextData addObject:[NSString stringWithFormat:@"%i,%i,%i,%i%@",(int)layoutData.rect.origin.x,(int)layoutData.rect.origin.y,(int)layoutData.rect.size.width,(int)layoutData.rect.size.height,comment]];
+        [layoutTextData addObject:[NSString stringWithFormat:@"%i,%i,%i,%i%@",(int)layoutData.rect.origin.x + layoutData.ax,(int)layoutData.rect.origin.y + layoutData.ay,(int)layoutData.rect.size.width,(int)layoutData.rect.size.height,comment]];
     }
     NSLog(@"\n%@",[layoutTextData componentsJoinedByString:@"\n"]);
 }

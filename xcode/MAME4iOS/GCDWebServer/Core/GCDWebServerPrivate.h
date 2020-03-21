@@ -205,7 +205,7 @@ static inline NSError* GCDWebServerMakePosixError(int code) {
   return [NSError errorWithDomain:NSPOSIXErrorDomain code:code userInfo:@{NSLocalizedDescriptionKey: [NSString stringWithUTF8String:strerror(code)]}];
 }
 
-extern void GCDWebServerInitializeFunctions();
+extern void GCDWebServerInitializeFunctions(void);
 extern NSString* GCDWebServerNormalizeHeaderValue(NSString* value);
 extern NSString* GCDWebServerTruncateHeaderValue(NSString* value);
 extern NSString* GCDWebServerExtractHeaderValueParameter(NSString* header, NSString* attribute);
@@ -231,8 +231,8 @@ extern NSString* GCDWebServerStringFromSockAddr(const struct sockaddr* addr, BOO
 @end
 
 @interface GCDWebServerHandler : NSObject
-@property(nonatomic, readonly) GCDWebServerMatchBlock matchBlock;
-@property(nonatomic, readonly) GCDWebServerAsyncProcessBlock asyncProcessBlock;
+@property(strong, nonatomic, readonly) GCDWebServerMatchBlock matchBlock;
+@property(strong, nonatomic, readonly) GCDWebServerAsyncProcessBlock asyncProcessBlock;
 @end
 
 @interface GCDWebServerRequest ()

@@ -1,32 +1,32 @@
-0,280,40,40//downleft
-40,280,45,40//down
-85,280,50,40//downright
-0,234,60,46//left
-60,234,75,46//right
-0,178,40,56//upleft
-40,178,45,56//up
-85,178,50,56//upright
+6,318,45,46//downleft
+51,318,45,46//down
+96,318,45,46//downright
+6,275,68,43//left
+74,275,67,43//right
+6,229,45,46//upleft
+51,229,45,46//up
+96,229,45,46//upright
 10,0,79,35//select
 577,0,79,35//start
 421,227,66,66//l1
 501,227,66,66//r1
 0,0,0,0//menu (select+ start) YO b + up
 517,295,57,57//button down left X + A
-541,295,66,66//buttondown  --> X
+370,294,66,66//button up --> X
 508,298,57,57//button down right X + B
-455,294,66,66//buton left  --> A
+541,295,66,66//buttondown  --> A
 587,227,66,66//button right -> B
 432,295,57,57//button up left --> Y + A
-370,294,66,66//button up --> Y
+455,294,66,66//buton left  --> Y
 370,295,57,57//button up right Y + B
 90,0,79,35//lpad2
 497,0,79,35//rpad2
 0,0,0,0 //showkyboard
 578,219,83,83//B img
-532,287,83,83//X img
-446,287,83,83//A img
-361,287,83,83//Y img
-1,199,115,115//DPad img
+361,287,83,83//X img
+532,287,83,83//A img
+446,287,83,83//Y img
+21,244,103,103//DPad img
 10,0,78,39//select img
 577,0,78,39//start img
 413,219,83,83//L1 img

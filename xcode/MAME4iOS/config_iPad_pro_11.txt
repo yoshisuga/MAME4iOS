@@ -1,0 +1,9 @@
+0,0,834,1194//PortraitViewFrameFull
+0,0,834,707//PortraitViewFrameNotFull
+0,707,834,487//PortraitImageBackFrame
+0,0,834,707//PortraitImageOverlayFrame
+0,0,1194,834//LandscapeViewFrameFull
+160,0,869,652//rLandscapeViewFrameNotFull
+0,0,1194,834//LandscapeImageBackFrame
+160,0,869,652//LandscapeImageOverlayFrame
+0//drawcoords

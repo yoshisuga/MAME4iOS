@@ -14,12 +14,13 @@
 
 enum OptionSections
 {
-    kFilterSection = 0,
-    kInputSection = 1,
-    kScreenSection = 2,
-    kMiscSection = 3,
-    kDefaultsSection = 4,
-    kNumSections = 5
+    kInputSection = 0,
+    kServerSection,
+    kScreenSection,
+    kMiscSection,
+    kDefaultsSection,
+    kFilterSection,
+    kNumSections
 };
 
 enum ListOptionType
@@ -62,10 +63,10 @@ NS_ASSUME_NONNULL_BEGIN
     NSArray *arrayEmuRes;
     NSArray *arrayFSValue;
     NSArray *arrayOverscanValue;
-    NSArray  *arrayEmuSpeed;
+    NSArray *arrayEmuSpeed;
 }
 
-@property (nonatomic, assign) EmulatorController *emuController;
+@property (nonatomic, strong) EmulatorController *emuController;
 
 +(UILabel*)labelForOnOffValue:(int)optionValue;
 +(void)setOnOffValueForCell:(UITableViewCell*)cell optionValue:(int)optionValue;

@@ -59,6 +59,9 @@
 }
 
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 - (void)drawRect:(CGRect)rect {
 	//printf("draw dview\n");
 	
@@ -104,11 +107,6 @@
 		
 }
 
-
-- (void)dealloc {
-
-    [super dealloc];
-}
-
+#pragma clang diagnostic pop
 
 @end

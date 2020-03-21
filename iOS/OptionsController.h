@@ -47,14 +47,13 @@
 enum OptionSections
 {
     kSupportSection = 0,
-    kMultiplayerSection = 1,
-    kFilterSection = 2,
-    kInputSection = 3,
-    kPortraitSection = 4,
-    kLandscapeSection = 5,
-    kMiscSection = 6,
-    kDefaultsSection = 7,
-    kNumSections = 8
+    kOtherSection,
+    kImportSection,
+    kPortraitSection,
+    kLandscapeSection,
+    kMiscSection,
+    kFilterSection,
+    kNumSections
 };
 
 enum ListOptionType
@@ -106,6 +105,10 @@ enum ListOptionType
     UISwitch*		  switchShowINFO;
     UISwitch*		  switchfullLand;
     UISwitch*		  switchfullPort;
+    UISwitch*         switchfullLandJoy;
+    UISwitch*         switchfullPortJoy;
+    UISwitch*         switchHideClones;
+    UISwitch*         switchHideNotWorking;
     UISwitch *switchThrottle;
     UISwitch *switchSleep;
     UISwitch *switchForcepxa;
@@ -120,6 +123,6 @@ enum ListOptionType
 
 - (void)optionChanged:(id)sender;
 
-@property (nonatomic, assign) EmulatorController *emuController;
+@property (nonatomic, strong) EmulatorController *emuController;
 
 @end

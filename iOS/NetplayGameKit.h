@@ -44,20 +44,30 @@
 
 
 #import <UIKit/UIKit.h>
-#import <GameKit/GameKit.h>
+//#import <GameKit/GameKit.h>
+#import <MultipeerConnectivity/MultipeerConnectivity.h>
+#import <MultipeerConnectivity/MCNearbyServiceAdvertiser.h>
+#import <MultipeerConnectivity/MCNearbyServiceBrowser.h>
 
-@interface NetplayGameKit : UIViewController <GKSessionDelegate>{
+@interface NetplayGameKit : NSObject <MCSessionDelegate,MCNearbyServiceBrowserDelegate,MCNearbyServiceAdvertiserDelegate>{
 
-    GKSession *session;
+    MCSession *session;
 	NSMutableArray *peers;
     NSTimer *timer;
+    MCPeerID *peerId;
+    MCNearbyServiceBrowser *browser;
+    MCNearbyServiceAdvertiser *assistant;
 }
 
 +(NetplayGameKit *) sharedInstance;
 - (void) connect:(bool)server;
 
-@property (retain) GKSession *session;
+@property (strong) MCSession *session;
 @property (readwrite,assign) bool connected;
-
+@property (strong) MCPeerID *peerId;
+@property (strong) MCNearbyServiceBrowser *browser;
+@property (strong)  MCNearbyServiceAdvertiser *assistant;
 
 @end
+
+#pragma clang diagnostic pop

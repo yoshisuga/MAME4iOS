@@ -50,6 +50,7 @@
 #import "TVOptionsController.h"
 #endif
 #import "ListOptionController.h"
+#import "EmulatorController.h" // for @selector(done:)
 
 #include "myosd.h"
 
@@ -58,7 +59,13 @@
 @synthesize emuController;
 
 - (id)init {
-    if (self = [super initWithStyle:UITableViewStyleGrouped]) {
+    UITableViewStyle style = UITableViewStyleGrouped;
+#if TARGET_OS_IOS
+    if (@available(iOS 13.0, *)) {
+        style = UITableViewStyleInsetGrouped;
+    }
+#endif
+    if (self = [super initWithStyle:style]) {
 
 #if TARGET_OS_IOS
         switchFilterClones = nil;
@@ -101,21 +108,6 @@
     return self;
 }
 
-- (void)dealloc {
-#if TARGET_OS_IOS
-    [switchFilterClones release];
-    [switchFilterFavorites release];
-    [switchFilterNotWorking release];
-#endif
-    [arrayManufacturerValue release];
-    [arrayYearGTEValue release];
-    [arrayYearLTEValue release];
-    [arrayDriverSourceValue release];
-    [arrayCategoryValue release];
-    
-    [super dealloc];
-}
-
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     
     return 5;
@@ -129,7 +121,6 @@
                                                                style:UIBarButtonItemStylePlain
                                                               target: emuController  action:  @selector(done:) ];
     self.navigationItem.rightBarButtonItem = button;
-    [button release];
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
@@ -160,8 +151,7 @@
         else
             style = UITableViewCellStyleValue1;
         
-        cell = [[[UITableViewCell alloc] initWithStyle:style
-                                       reuseIdentifier:@"CellIdentifier"] autorelease];
+        cell = [[UITableViewCell alloc] initWithStyle:style reuseIdentifier:@"CellIdentifier"];
         
         cell.accessoryType = UITableViewCellAccessoryNone;
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
@@ -179,7 +169,6 @@
                 {
                     cell.textLabel.text = @"Hide Non-Favorites";
 #if TARGET_OS_IOS
-                    [switchFilterFavorites release];
                     switchFilterFavorites  = [[UISwitch alloc] initWithFrame:CGRectZero];
                     cell.accessoryView = switchFilterFavorites ;
                     [switchFilterFavorites setOn:[op filterFavorites] animated:NO];
@@ -193,7 +182,6 @@
                 {
                     cell.textLabel.text = @"Hide Clones";
 #if TARGET_OS_IOS
-                    [switchFilterClones release];
                     switchFilterClones  = [[UISwitch alloc] initWithFrame:CGRectZero];
                     cell.accessoryView = switchFilterClones ;
                     [switchFilterClones setOn:[op filterClones] animated:NO];
@@ -207,7 +195,6 @@
                 {
                     cell.textLabel.text = @"Hide Not Working";
 #if TARGET_OS_IOS
-                    [switchFilterNotWorking release];
                     switchFilterNotWorking  = [[UISwitch alloc] initWithFrame:CGRectZero];
                     cell.accessoryView = switchFilterNotWorking ;
                     [switchFilterNotWorking setOn:[op filterNotWorking] animated:NO];
@@ -237,8 +224,6 @@
             textField.clearsOnBeginEditing = YES;
             textField.delegate = self;
             cell.accessoryView = textField;
-            [textField release];
-            
             break;
         }
         case 2:
@@ -303,8 +288,6 @@
         }
     }
     
-    [op release];
-    
     return cell;
 }
 
@@ -321,7 +304,6 @@
         op.filterNotWorking = [switchFilterNotWorking isOn];
     
     [op saveOptions];
-	[op release];    
 }
 #endif
 
@@ -347,7 +329,6 @@
         }
     }
     [op saveOptions];
-    [op release];
 #endif
     
     if(section==1 && row==0)
@@ -360,14 +341,12 @@
                                                                                       type:kTypeYearGTEValue list:arrayYearGTEValue];
         
         [[self navigationController] pushViewController:listController animated:YES];
-        [listController release];
     }
     if (section==2 && row==1){
         ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStylePlain
                                                                                       type:kTypeYearLTEValue list:arrayYearLTEValue];
         
         [[self navigationController] pushViewController:listController animated:YES];
-        [listController release];
     }
     
     if (section==3 && row==0){
@@ -375,7 +354,6 @@
                                                                                       type:kTypeManufacturerValue list:arrayManufacturerValue];
         
         [[self navigationController] pushViewController:listController animated:YES];
-        [listController release];
     }
     
     if (section==3 && row==1){
@@ -383,7 +361,6 @@
                                                                                       type:kTypeDriverSourceValue list:arrayDriverSourceValue];
         
         [[self navigationController] pushViewController:listController animated:YES];
-        [listController release];
     }
     
     if (section==3 && row==2){
@@ -391,7 +368,6 @@
                                                                                       type:kTypeCategoryValue list:arrayCategoryValue];
         
         [[self navigationController] pushViewController:listController animated:YES];
-        [listController release];
     }
     
     if (section==4 && row==0){
@@ -408,8 +384,6 @@
         op.filterKeyword = nil;
         
         [op saveOptions];
-        [op release];
-        
         [tableView reloadData];
     }
 
@@ -438,7 +412,6 @@
         else
             op.filterKeyword = [textField.text substringToIndex:MIN(MAX_FILTER_KEYWORD-1,textField.text.length)];
         [op saveOptions];
-        [op release];
     }
 }
 
@@ -452,7 +425,6 @@
     Options *op = [[Options alloc] init];
     op.filterKeyword = nil;
     [op saveOptions];
-    [op release];
     return YES;
 }
 

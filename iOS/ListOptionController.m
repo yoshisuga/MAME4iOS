@@ -54,7 +54,14 @@
 
 
 - (id)initWithStyle:(UITableViewStyle)style type:(NSInteger)typeValue list:(NSArray *)listValue{
-
+    
+#if TARGET_OS_IOS
+    if (@available(iOS 13.0, *)) {
+        if (style == UITableViewStyleGrouped)
+            style = UITableViewStyleInsetGrouped;
+    }
+#endif
+    
     if(self = [super initWithStyle:style])
     {
         type = typeValue;
@@ -73,7 +80,7 @@
         
         if(indexed)
         {
-            sections = [[NSArray arrayWithObjects:@"#", @"a", @"b", @"c", @"d", @"e", @"f", @"g", @"h", @"i", @"j", @"k", @"l", @"m", @"n", @"o", @"p", @"q", @"r", @"s", @"t", @"u", @"v", @"w", @"x", @"y", @"z", nil] retain];
+            sections = @[@"#", @"a", @"b", @"c", @"d", @"e", @"f", @"g", @"h", @"i", @"j", @"k", @"l", @"m", @"n", @"o", @"p", @"q", @"r", @"s", @"t", @"u", @"v", @"w", @"x", @"y", @"z"];
         }
         else
         {
@@ -88,11 +95,6 @@
 #if TARGET_OS_TV
     self.view.backgroundColor = UIColor.lightGrayColor;
 #endif
-}
-
-- (void)dealloc {
-    [sections release];
-	[super dealloc];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -212,8 +214,6 @@
             break;
     }
         
-    [op release];
-
     [super viewWillAppear:animated];
     
 }
@@ -226,9 +226,9 @@
         {
             NSString *s = [list objectAtIndex:value];
             NSString *l = [[s substringToIndex:1] lowercaseString];
-            int sec = [sections indexOfObject:l];
+            int sec = (uint32_t)[sections indexOfObject:l];
             NSArray *sectionArray = [list filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF beginswith[c] %@", [sections objectAtIndex: sec]]];
-            int row = [sectionArray indexOfObject:s];
+            int row = (uint32_t)[sectionArray indexOfObject:s];
             scrollIndexPath = [NSIndexPath indexPathForRow:row inSection:sec];
         }
         else
@@ -244,6 +244,7 @@
     [super viewWillDisappear:animated];
     
     Options *op = [[Options alloc] init];
+    int value = (int)self->value;
     
     switch (type) {
         case kTypeNumButtons:
@@ -332,7 +333,6 @@
     }
     
     [op saveOptions];
-    [op release];
 }
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
@@ -372,8 +372,7 @@
     static NSString *CheckMarkCellIdentifier = @"CheckMarkCellIdentifier";
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CheckMarkCellIdentifier];
     if (cell == nil) {
-        cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault
-                                       reuseIdentifier:CheckMarkCellIdentifier] autorelease];
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CheckMarkCellIdentifier];
     }
     
     NSUInteger row = [indexPath row];
@@ -403,7 +402,7 @@
     }
     else
     {
-       int row = [indexPath row];
+       int row = (uint32_t)[indexPath row];
        if (row != value) {
            value = row;
        }

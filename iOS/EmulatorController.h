@@ -65,7 +65,7 @@
 @class iCadeView;
 
 #if TARGET_OS_IOS
-@interface EmulatorController : UIViewController<GCDWebUploaderDelegate>
+@interface EmulatorController : UIViewController<GCDWebUploaderDelegate, UIDocumentPickerDelegate>
 #elif TARGET_OS_TV
 @interface EmulatorController : GCEventViewController<GCDWebUploaderDelegate>
 #endif
@@ -133,16 +133,17 @@
 }
 
 - (int *)getBtnStates;
+
+#if TARGET_OS_IOS
 - (CGRect *)getInputRects;
 - (CGRect *)getButtonRects;
-- (UIView **)getButtonViews;
+- (UIView *)getButtonView:(int)i;
 - (UIView *)getDPADView;
 - (UIView *)getStickView;
-
 - (void)getControllerCoords:(int)orientation;
+#endif
 
 - (void)getConf;
-- (void)filldebugRects;
 
 - (void)startEmulation;
 
@@ -153,37 +154,50 @@
 
 - (void)changeUI;
 
+#if TARGET_OS_IOS
 - (void)buildPortraitImageBack;
 - (void)buildPortraitImageOverlay;
 - (void)buildPortrait;
-- (void)buildLandscapeImageOverlay;
 - (void)buildLandscapeImageBack;
+#endif
+- (void)buildLandscapeImageOverlay;
 - (void)buildLandscape;
 
+
 - (void)runMenu;
+- (void)runExit;
+- (void)runPause;
+- (void)runServer;
 - (void)endMenu;
+#if TARGET_OS_IOS
+- (void)runImport;
+- (void)runExport;
+#endif
 
 - (void)handle_DPAD;
 - (void)handle_MENU;
 
-- (NSSet*)touchesController:(NSSet *)touches withEvent:(UIEvent *)event;
-
 - (void)updateOptions;
 
 - (CGRect *)getDebugRects;
+- (void)filldebugRects;
 
 - (UIImage *)loadImage:(NSString *)name;
 - (FILE *)loadFile:(const char *)name;
 
 - (void)moveROMS;
+- (void)playGame:(NSDictionary*)game;
+- (void)chooseGame:(NSArray*)games;
 
+#if TARGET_OS_IOS
+- (NSSet*)touchesController:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void)beginCustomizeCurrentLayout;
 - (void)finishCustomizeCurrentLayout;
 - (void)resetCurrentLayout;
-
 - (void)adjustSizes;
+#endif
 
-@property (readwrite,assign)  UIView *externalView;
+@property (readwrite,strong)  UIView *externalView;
 @property (readwrite,assign) int dpad_state;
 @property (readonly,assign) int num_debug_rects;
 @property (readwrite,assign) CGRect rExternalView;
@@ -192,8 +206,8 @@
 @property (assign) CGRect rStickWindow;
 @property (assign) CGRect rDPadImage;
 #if TARGET_OS_IOS
-@property (retain, nonatomic) UIImpactFeedbackGenerator* impactFeedback;
-@property (retain, nonatomic) UISelectionFeedbackGenerator* selectionFeedback;
+@property (strong, nonatomic) UIImpactFeedbackGenerator* impactFeedback;
+@property (strong, nonatomic) UISelectionFeedbackGenerator* selectionFeedback;
 #endif
 
 

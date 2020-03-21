@@ -141,7 +141,7 @@ extern "C" {
     } netplay_t;
     
     
-    netplay_t * netplay_get_handle();
+    netplay_t * netplay_get_handle(void);
     void netplay_warn_hangup(netplay_t *handle);
     int  netplay_read_data(netplay_t *handle);
     int  netplay_send_data(netplay_t *handle);

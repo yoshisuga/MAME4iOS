@@ -106,12 +106,14 @@ NS_ASSUME_NONNULL_BEGIN
     
 @public int touchDirectionalEnabled;
     
+/* these will be autosynthesized
 @public int turboXEnabled;
 @public int turboYEnabled;
 @public int turboAEnabled;
 @public int turboBEnabled;
 @public int turboLEnabled;
 @public int turboREnabled;
+*/
     
 @public CGFloat touchControlsOpacity;
     
@@ -136,6 +138,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite,assign) int fourButtonsLand;
 @property (readwrite,assign) int fullLand;
 @property (readwrite,assign) int fullPort;
+@property (readwrite,assign) int fullLandJoy;
+@property (readwrite,assign) int fullPortJoy;
 
 @property (readwrite,assign) int skinValue;
 
@@ -174,7 +178,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite,assign) int driverSourceValue;
 @property (readwrite,assign) int categoryValue;
 
-@property (readwrite,assign) NSString *filterKeyword;
+@property (readwrite,strong,nullable) NSString *filterKeyword;
 
 @property (readwrite,assign) int lowlsound;
 @property (readwrite,assign) int vsync;
@@ -192,7 +196,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite,assign) int stickSize;
 
 @property (readwrite,assign) int wpantype;
-@property (readwrite,assign) NSString *wfpeeraddr;
+@property (readwrite,strong,nullable) NSString *wfpeeraddr;
 @property (readwrite,assign) int wfport;
 @property (readwrite,assign) int wfframesync;
 @property (readwrite,assign) int btlatency;

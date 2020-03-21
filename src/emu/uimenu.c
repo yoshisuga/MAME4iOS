@@ -3782,8 +3782,7 @@ static void menu_select_game_populate(running_machine *machine, ui_menu *menu, s
 	if (matchcount == 0)
 	{
 #ifdef IOS
-        ui_menu_item_append(menu, "No games found. After installing, place your MAME-titled zipped roms in /var/mobile/Media/ROMs/MAME4iOS/roms folder.\n\n"
-                                 "On MAME4iOS for NO jailbroken devices, use iTunes file sharing or use a 3rd party app, like iFunBox or iExplorer, to copy ROMs on sandboxed MAME4iOS 'Documents' folder."
+        ui_menu_item_append(menu, "No games found. Place your MAME-titled zipped roms in the roms folder.\n\n"
 								  , NULL, MENU_FLAG_MULTILINE | MENU_FLAG_REDTEXT, NULL);
 #else
        ui_menu_item_append(menu, "No games found. After installing, place your MAME-titled zipped roms in MAME4droid ROMs folder\n\n"
@@ -4013,7 +4012,11 @@ static void menu_select_game_build_driver_list(ui_menu *menu, select_game_state 
 	/* NULL-terminate */
 	menustate->driverlist[listnum] = NULL;
 //DAV HACK
+    // sort entire list by description instead of name
 	qsort((void *)menustate->driverlist, listnum, sizeof(menustate->driverlist[0]), menu_select_game_driver_compare_2);
+    
+    // pass driver list to myosd so it can create a custom GUI selection UI....
+    myosd_set_game_info((myosd_game_info**)menustate->driverlist, listnum);
 //DAV HACK
 }
 
@@ -4091,7 +4094,7 @@ static void menu_select_game_custom_render(running_machine *machine, ui_menu *me
     {
 			//sprintf(&tempbuf[0][0], "Type name or select: _");
 	#ifdef IOS
-			sprintf(&tempbuf[0][0], "MAME4iOS Reloaded 1.6b by David Valdeita (Seleuco). Game: %d/%d",MIN(myosd_last_game_selected+1,nroms), nroms);
+			sprintf(&tempbuf[0][0], "MAME 1.8. Romset 0.139 (August 2010). Game: %d/%d",MIN(myosd_last_game_selected+1,nroms), nroms);
 	#else
 			sprintf(&tempbuf[0][0], "MAME4droid Reloaded 1.2 by David Valdeita (Seleuco). Game: %d/%d",MIN(myosd_last_game_selected+1,nroms), nroms);
 	#endif
