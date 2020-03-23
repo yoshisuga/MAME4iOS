@@ -51,6 +51,7 @@
 #import "myosd.h"
 #import "EmulatorController.h"
 #import <GameController/GameController.h>
+#import "Alert.h"
 
 #include <sys/stat.h>
 
@@ -207,33 +208,32 @@ unsigned long read_mfi_controller(unsigned long res){
     deviceWindow.backgroundColor = UIColor.darkGrayColor;
     deviceWindow.tintColor = [UIColor colorWithRed:0.0 green:122.0/255.0 blue:1.0 alpha:1.0];
 #endif
-//    deviceWindow.backgroundColor = [UIColor redColor];
+#ifdef DEBUG
+    deviceWindow.backgroundColor = [UIColor redColor];
+#endif
     
 	//[deviceWindow addSubview: hrViewController.view ];//LO CAMBIO PARA QUE GIRE EN iOS 6.0	
     [deviceWindow setRootViewController:hrViewController];
     
+    [hrViewController startEmulation];
 	[deviceWindow makeKeyAndVisible];
         
     [UIApplication sharedApplication].idleTimerDisabled = YES;
 	 
-	externalWindow = [[UIWindow alloc] initWithFrame:CGRectZero];
-	externalWindow.hidden = YES;
-	 	
+#if TARGET_OS_IOS
+    externalWindow = [[UIWindow alloc] initWithFrame:CGRectZero];
+    externalWindow.hidden = YES;
+    
 	if(g_pref_nativeTVOUT)
 	{
-		[[NSNotificationCenter defaultCenter] addObserver:self 
-													 selector:@selector(prepareScreen) 
-														 name:/*@"UIScreenDidConnectNotification"*/UIScreenDidConnectNotification
-													   object:nil];
-	        
-			
-	    [[NSNotificationCenter defaultCenter] addObserver:self 
-													 selector:@selector(prepareScreen) 
-														 name:/*@"UIScreenDidDisconnectNotification"*/UIScreenDidDisconnectNotification
-													   object:nil];
-	}	
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(prepareScreen) name:UIScreenDidConnectNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(prepareScreen) name:UIScreenDidDisconnectNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateScreen)  name:UIScreenModeDidChangeNotification object:nil];
+	}
     
     [self prepareScreen];
+#endif
+
     return TRUE;
 }
 
@@ -341,147 +341,74 @@ unsigned long read_mfi_controller(unsigned long res){
 #endif
 }
 
-/*
-- (void)applicationDidBecomeActive:(UIApplication  *)application {
-  
-}
-
-- (void)applicationWillTerminate:(UIApplication *)application {
- 
-}
-*/
-
+#if TARGET_OS_IOS
+// called when a screen is attached *or* detached
 - (void)prepareScreen
 {
-	 @try
-    {
+    // dont show alert asking for screen mode more than once!
+    static UIAlertController *g_alert;
+    if (g_alert != nil) {
+        [g_alert dismissWithCancel];
+    }
+    else {
 	    if ([[UIScreen screens] count] > 1 && g_pref_nativeTVOUT) {
-#if TARGET_OS_IOS
 			// Internal display is 0, external is 1.
-			externalScreen = [[UIScreen screens] objectAtIndex:1];
-			screenModes =  [externalScreen availableModes];
+			UIScreen* externalScreen = [[UIScreen screens] objectAtIndex:1];
+			NSArray* screenModes = [externalScreen availableModes];
 					
 			// Allow user to choose from available screen-modes (pixel-sizes).
-            UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"External Display Detected!" message:@"Choose a size for the external display." preferredStyle:UIAlertControllerStyleAlert];
+            g_alert = [UIAlertController alertControllerWithTitle:@"External Display Detected!" message:@"Choose a size for the external display." preferredStyle:UIAlertControllerStyleAlert];
 			for (UIScreenMode *mode in screenModes) {
 				CGSize modeScreenSize = mode.size;
-                [alert addAction:[UIAlertAction actionWithTitle:[NSString stringWithFormat:@"%.0f x %.0f pixels", modeScreenSize.width, modeScreenSize.height] style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-                    UIScreen* externalScreen = self->externalScreen;
-                    UIWindow* externalWindow = self->externalWindow;
-                    EmulatorController* hrViewController = self->hrViewController;
+                [g_alert addAction:[UIAlertAction actionWithTitle:[NSString stringWithFormat:@"%.0f x %.0f pixels", modeScreenSize.width, modeScreenSize.height] style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                    g_alert = nil;
+                    
+                    // make sure we still have multiple screens, otherwise ignore
+                    if ([[UIScreen screens] count] <= 1)
+                        return;
                     
                     [externalScreen setCurrentMode:mode];
-                    [externalWindow setScreen:externalScreen];
+                    [self->externalWindow setScreen:externalScreen];
                     
-                    CGRect rect = CGRectZero;
-                    
-                    rect = externalScreen.bounds;
-                    externalWindow.frame = rect;
-                    externalWindow.clipsToBounds = YES;
-                    
-                    int  external_width = externalWindow.frame.size.width;
-                    int  external_height = externalWindow.frame.size.height;
-                    
-                    float overscan = 1 - (g_pref_overscanTVOUT *  0.025f);
-                    
-                    int width=external_width;
-                    int height=external_height;
-                    
-                    width = width * overscan;
-                    height = height * overscan;
-                    int x = (external_width - width)/2;
-                    int y = (external_height - height)/2;
-                    
-                    CGRect rView = CGRectMake( x, y, width, height);
-                    
-                    for (UIView *view in [externalWindow subviews]) {
+                    for (UIView *view in [self->externalWindow subviews]) {
                         [view removeFromSuperview];
                     }
                     
-                    UIView *view= [[UIView alloc] initWithFrame:rect];
+                    UIView *view= [[UIView alloc] initWithFrame:CGRectMake(0, 0, modeScreenSize.width, modeScreenSize.height)];
                     view.backgroundColor = [UIColor blackColor];
-                    [externalWindow addSubview:view];
-                    
-                    [hrViewController setExternalView:view];
-                    hrViewController.rExternalView = rView;
-                    
-                    externalWindow.hidden = NO;
-                    //[externalWindow makeKeyAndVisible];
-                    if(g_emulation_initiated)
-                        [hrViewController changeUI];
-                    else
-                        [hrViewController startEmulation];
-                }]];
-			}
-            [[[[UIApplication sharedApplication] keyWindow] rootViewController] presentViewController:alert animated:YES completion:nil];
+                    [self->externalWindow addSubview:view];
+#ifdef DEBUG
+view.backgroundColor = [UIColor systemOrangeColor];
 #endif
+                    [self->hrViewController setExternalView:view];
+                    self->externalWindow.hidden = NO;
+                    [self->hrViewController performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:NO];
+                }]];
+                
+                if (mode == externalScreen.preferredMode)
+                    [g_alert setPreferredAction:g_alert.actions.lastObject];
+			}
+            [g_alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+                g_alert = nil;
+                [self->hrViewController setExternalView:nil];
+                self->externalWindow.hidden = YES;
+                [self->hrViewController performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:NO];
+            }]];
+             
+            [hrViewController.topViewController presentViewController:g_alert animated:YES completion:nil];
 		} else {
-		     if(!g_emulation_initiated)
-		     {
-		        [hrViewController startEmulation];
-		     }   
-		     else
-		     {
-		        [hrViewController setExternalView:nil];
-		        externalWindow.hidden = YES;
-		        [hrViewController changeUI];
-		     }   
-		    	
+            [hrViewController setExternalView:nil];
+            externalWindow.hidden = YES;
+            [hrViewController performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:NO];
 		}
 	}
-	 @catch(NSException* ex)
-    {
-        NSLog(@"Not supported tv out API!");
-        if(!g_emulation_initiated)
-          [hrViewController startEmulation];
-    }	
 }
-
-#if TARGET_OS_IOS
-- (void)setScreenMode:(UIScreenMode*)screenMode
+- (void)updateScreen
 {
-	
-	[externalScreen setCurrentMode:screenMode];
-	[externalWindow setScreen:externalScreen];
-	
-	CGRect rect = CGRectZero;
- 	
-	rect = externalScreen.bounds;
-	externalWindow.frame = rect;
-	externalWindow.clipsToBounds = YES;
-	
-	int  external_width = externalWindow.frame.size.width;
-	int  external_height = externalWindow.frame.size.height;
-	
-	float overscan = 1 - (g_pref_overscanTVOUT *  0.025f);
-
-    int width=external_width;
-    int height=external_height; 
-
-    width = width * overscan;    
-    height = height * overscan;
-    int x = (external_width - width)/2;
-    int y = (external_height - height)/2;
-                                       
-    CGRect rView = CGRectMake( x, y, width, height);
-    
-    for (UIView *view in [externalWindow subviews]) {
-       [view removeFromSuperview];
+    if (externalWindow.hidden == NO) {
+        [NSObject cancelPreviousPerformRequestsWithTarget:hrViewController selector:@selector(changeUI) object:nil];
+        [hrViewController performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:NO];
     }
-    
-    UIView *view= [[UIView alloc] initWithFrame:rect];
-    view.backgroundColor = [UIColor blackColor];
-    [externalWindow addSubview:view];
-		
-    [hrViewController setExternalView:view];
-    hrViewController.rExternalView = rView;
-    
-	externalWindow.hidden = NO;
-	//[externalWindow makeKeyAndVisible];
-	if(g_emulation_initiated)
-	    [hrViewController changeUI];
-	else
-	    [hrViewController startEmulation];
 }
 #endif
 

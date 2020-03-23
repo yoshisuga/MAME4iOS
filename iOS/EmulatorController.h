@@ -74,6 +74,7 @@
   ScreenView			* screenView;
   UIImageView	    * imageBack;
   UIImageView	    * imageOverlay;
+  UIImageView        * imageInfo;
 #if TARGET_OS_IOS
   DebugView         * dview;
   AnalogStickView   * analogStickView;
@@ -119,9 +120,6 @@
   int stick_radio;
   CGRect rStickWindow;
   CGRect rStickArea;
-    
-  //tvout external view
-  CGRect RectExternalView;
     
   //input debug stuff
   CGRect debug_rects[100];
@@ -200,7 +198,6 @@
 @property (readwrite,strong)  UIView *externalView;
 @property (readwrite,assign) int dpad_state;
 @property (readonly,assign) int num_debug_rects;
-@property (readwrite,assign) CGRect rExternalView;
 @property (readonly,assign) int stick_radio;
 @property (readonly,assign) CGRect rStickArea;
 @property (assign) CGRect rStickWindow;

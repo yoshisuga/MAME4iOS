@@ -321,7 +321,6 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
 @synthesize dpad_state;
 @synthesize num_debug_rects;
 @synthesize externalView;
-@synthesize rExternalView;
 @synthesize stick_radio;
 @synthesize rStickWindow;
 @synthesize rStickArea;
@@ -852,17 +851,6 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     
 	Options *op = [[Options alloc] init];
     
-#if TARGET_OS_IOS
-    if(g_pref_overscanTVOUT != [op overscanValue])
-    {
-        [self showAlertWithTitle:@"Pending unplug/plug TVOUT!" message:@"You need to unplug/plug TVOUT for the changes to take effect" buttons:@[@"Dismiss"] handler:^(NSUInteger button) {
-            g_pref_overscanTVOUT = [op overscanValue];
-            [self done:self];
-        }];
-        return;
-    }
-#endif
-    
     // have the parent of the options/setting dialog dismiss
     // we present settings two ways, from in-game menu (we are parent) and from ChooseGameUI (it is the parent)
     UIViewController* parent = optionsController.navigationController.presentingViewController;
@@ -1243,11 +1231,19 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
      imageOverlay = nil;
    }
     
+  if(imageInfo != nil)
+  {
+      [imageInfo removeFromSuperview];
+      imageInfo = nil;
+  }
+    
 #if TARGET_OS_IOS
-    // Support iCade in external screens
-    if ( externalView != nil && icadeView != nil && ![externalView.subviews containsObject:icadeView] ) {
-        [externalView addSubview:icadeView];
-    }
+    
+// this does not make any sence, iCadeView needs to become the first responder and get keyboard input, it cant do this on the external display?????
+//    // Support iCade in external screens
+//    if ( externalView != nil && icadeView != nil && ![externalView.subviews containsObject:icadeView] ) {
+//        [externalView addSubview:icadeView];
+//    }
     
 #if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_7_0
     [[UIApplication sharedApplication] setStatusBarOrientation:self.interfaceOrientation];
@@ -1257,6 +1253,14 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
         [self buildLandscape];
     else
         [self buildPortrait];
+    
+    if (externalView != nil)
+    {
+        imageInfo = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"tv"] ?: [UIImage imageNamed:@"mame_logo"]];
+        imageInfo.contentMode = UIViewContentModeScaleAspectFit;
+        imageInfo.frame = g_device_is_landscape ? rFrames[LANDSCAPE_VIEW_NOT_FULL] : rFrames[PORTRAIT_VIEW_NOT_FULL];
+        [self.view addSubview:imageInfo];
+    }
 
    if (@available(iOS 11.0, *))
        [self setNeedsUpdateOfHomeIndicatorAutoHidden];
@@ -1575,7 +1579,7 @@ void myosd_handle_turbo() {
 
 - (void)buildPortraitImageOverlay {
    
-   if((g_pref_scanline_filter_port || g_pref_tv_filter_port) && externalView==nil)
+   if((g_pref_scanline_filter_port || g_pref_tv_filter_port) /*&& externalView==nil*/)
    {
        CGRect r = g_device_is_fullscreen ? rScreenView : rFrames[PORTRAIT_IMAGE_OVERLAY];
        
@@ -1618,7 +1622,7 @@ void myosd_handle_turbo() {
           CGImageRelease(tile);       
        }
      
-       if(g_isIpad && !g_device_is_fullscreen)
+       if(g_isIpad && !g_device_is_fullscreen && externalView == nil)
        {
           UIImage *image1;
           if(g_isIpad)          
@@ -1652,9 +1656,8 @@ void myosd_handle_turbo() {
          
        imageOverlay.frame = r;
             		    			
-       [self.view addSubview: imageOverlay];
-                                    
-   }  
+       [screenView.superview addSubview: imageOverlay];
+  }
 
   //DPAD---   
   [self buildTouchControllerViews];   
@@ -1682,7 +1685,7 @@ void myosd_handle_turbo() {
 - (void)buildPortrait {
 
    g_device_is_landscape = 0;
-   g_device_is_fullscreen = g_pref_full_screen_port || (g_joy_used && g_pref_full_screen_port_joy) || externalView != nil;
+   g_device_is_fullscreen = (g_pref_full_screen_port || (g_joy_used && g_pref_full_screen_port_joy)) && externalView == nil;
     
    [ self getControllerCoords:0 ];
     
@@ -1696,7 +1699,13 @@ void myosd_handle_turbo() {
    
    if(externalView!=nil)   
    {
-        r = rExternalView;
+       r = externalView.window.screen.bounds;
+       
+       CGFloat overscan = (g_pref_overscanTVOUT *  0.025f);
+       CGFloat overscan_x = ceil(r.size.width * overscan / 2.0);
+       CGFloat overscan_y = ceil(r.size.height * overscan / 2.0);
+
+       r = CGRectInset(r, overscan_x, overscan_y);
    }
    else if (!g_device_is_fullscreen)
    {
@@ -1732,7 +1741,7 @@ void myosd_handle_turbo() {
    {
        [externalView addSubview: screenView];
    }
-      
+    
    [self buildPortraitImageOverlay];
 
     hideShowControlsForLightgun.hidden = YES;
@@ -1774,7 +1783,7 @@ void myosd_handle_turbo() {
 
 - (void)buildLandscapeImageOverlay{
  
-   if((g_pref_scanline_filter_land || g_pref_tv_filter_land) &&  externalView==nil)
+   if((g_pref_scanline_filter_land || g_pref_tv_filter_land) /*&& externalView==nil*/)
    {                                                                                                                                              
 	   CGRect r;
 
@@ -1854,7 +1863,7 @@ void myosd_handle_turbo() {
    
         //[imageBack setOpaque:YES];
                                          
-        [self.view addSubview: imageOverlay];
+        [screenView.superview addSubview: imageOverlay];
 	  	   
     }
    
@@ -1885,7 +1894,7 @@ void myosd_handle_turbo() {
 - (void)buildLandscape{
 	
    g_device_is_landscape = 1;
-   g_device_is_fullscreen = g_pref_full_screen_land  || (g_joy_used && g_pref_full_screen_land_joy) || externalView != nil;
+   g_device_is_fullscreen = (g_pref_full_screen_land || (g_joy_used && g_pref_full_screen_land_joy)) && externalView == nil;
 
 #if TARGET_OS_IOS
    [self getControllerCoords:1 ];
@@ -1902,7 +1911,13 @@ void myosd_handle_turbo() {
 #if TARGET_OS_IOS
    if(externalView!=nil)
    {
-        r = rExternalView;
+       r = externalView.window.screen.bounds;
+       
+       CGFloat overscan = (g_pref_overscanTVOUT *  0.025f);
+       CGFloat overscan_x = ceil(r.size.width * overscan / 2.0);
+       CGFloat overscan_y = ceil(r.size.height * overscan / 2.0);
+
+       r = CGRectInset(r, overscan_x, overscan_y);
    }
    else if (!g_device_is_fullscreen)
    {
