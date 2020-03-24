@@ -349,68 +349,79 @@ unsigned long read_mfi_controller(unsigned long res){
     static UIAlertController *g_alert;
     if (g_alert != nil) {
         [g_alert dismissWithCancel];
+        return;
     }
-    else {
-	    if ([[UIScreen screens] count] > 1 && g_pref_nativeTVOUT) {
-			// Internal display is 0, external is 1.
-			UIScreen* externalScreen = [[UIScreen screens] objectAtIndex:1];
-			NSArray* screenModes = [externalScreen availableModes];
-					
+
+    if ([[UIScreen screens] count] > 1 && g_pref_nativeTVOUT) {
+        
+        // Internal display is 0, external is 1.
+        UIScreen* externalScreen = [[UIScreen screens] objectAtIndex:1];
+        NSArray* screenModes = [externalScreen availableModes];
+        
+        if (screenModes.count <= 1) {
+            // only one mode, just use it no quesrtions asked
+            [self setupScreen:externalScreen];
+        }
+        else {
 			// Allow user to choose from available screen-modes (pixel-sizes).
             g_alert = [UIAlertController alertControllerWithTitle:@"External Display Detected!" message:@"Choose a size for the external display." preferredStyle:UIAlertControllerStyleAlert];
 			for (UIScreenMode *mode in screenModes) {
-				CGSize modeScreenSize = mode.size;
-                [g_alert addAction:[UIAlertAction actionWithTitle:[NSString stringWithFormat:@"%.0f x %.0f pixels", modeScreenSize.width, modeScreenSize.height] style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                [g_alert addAction:[UIAlertAction actionWithTitle:[NSString stringWithFormat:@"%.0f x %.0f pixels", mode.size.width, mode.size.height] style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
                     g_alert = nil;
-                    
-                    // make sure we still have multiple screens, otherwise ignore
-                    if ([[UIScreen screens] count] <= 1)
-                        return;
-                    
                     [externalScreen setCurrentMode:mode];
-                    [externalScreen setOverscanCompensation:UIScreenOverscanCompensationNone];
-                    [self->externalWindow setScreen:externalScreen];
-                    
-                    for (UIView *view in [self->externalWindow subviews]) {
-                        [view removeFromSuperview];
-                    }
-                    
-                    UIView *view = [[UIView alloc] initWithFrame:externalScreen.bounds];
-                    view.backgroundColor = [UIColor blackColor];
-                    [self->externalWindow addSubview:view];
-#ifdef DEBUG
-view.backgroundColor = [UIColor systemOrangeColor];
-#endif
-                    [self->hrViewController setExternalView:view];
-                    self->externalWindow.hidden = NO;
-                    [self->hrViewController performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:NO];
+                    [self setupScreen:externalScreen];
                 }]];
-                
                 if (mode == externalScreen.preferredMode)
                     [g_alert setPreferredAction:g_alert.actions.lastObject];
 			}
             [g_alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
                 g_alert = nil;
-                [self->hrViewController setExternalView:nil];
-                self->externalWindow.hidden = YES;
-                [self->hrViewController performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:NO];
+                [self setupScreen:nil];
             }]];
              
             [hrViewController.topViewController presentViewController:g_alert animated:YES completion:nil];
-		} else {
-            [hrViewController setExternalView:nil];
-            externalWindow.hidden = YES;
-            [hrViewController performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:NO];
 		}
-	}
+    }
+    else {
+        [self setupScreen:nil];
+    }
 }
+
+// called to use an external screen (or nil for none)
+- (void)setupScreen:(UIScreen*)screen
+{
+    if (screen != nil)
+    {
+        [screen setOverscanCompensation:UIScreenOverscanCompensationNone];
+        [externalWindow setScreen:screen];
+                            
+        for (UIView *view in externalWindow.subviews)
+            [view removeFromSuperview];
+                            
+        UIView *view = [[UIView alloc] initWithFrame:screen.bounds];
+        view.backgroundColor = [UIColor blackColor];
+        [externalWindow addSubview:view];
+#ifdef DEBUG
+        view.backgroundColor = [UIColor systemOrangeColor];
+#endif
+        [hrViewController setExternalView:view];
+        externalWindow.hidden = NO;
+    }
+    else
+    {
+        [hrViewController setExternalView:nil];
+        externalWindow.hidden = YES;
+    }
+    [hrViewController performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:NO];
+}
+
 // called when a mode change happens on a external display
 - (void)updateScreen
 {
     if (externalWindow.hidden == NO && externalWindow.screen != nil) {
+        // update window and view frame to new screen mode/size
         externalWindow.frame = externalWindow.screen.bounds;
         externalWindow.subviews.firstObject.frame = externalWindow.bounds;
-        [NSObject cancelPreviousPerformRequestsWithTarget:hrViewController selector:@selector(changeUI) object:nil];
         [hrViewController performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:NO];
     }
 }
