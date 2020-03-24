@@ -368,13 +368,14 @@ unsigned long read_mfi_controller(unsigned long res){
                         return;
                     
                     [externalScreen setCurrentMode:mode];
+                    [externalScreen setOverscanCompensation:UIScreenOverscanCompensationNone];
                     [self->externalWindow setScreen:externalScreen];
                     
                     for (UIView *view in [self->externalWindow subviews]) {
                         [view removeFromSuperview];
                     }
                     
-                    UIView *view= [[UIView alloc] initWithFrame:CGRectMake(0, 0, modeScreenSize.width, modeScreenSize.height)];
+                    UIView *view = [[UIView alloc] initWithFrame:externalScreen.bounds];
                     view.backgroundColor = [UIColor blackColor];
                     [self->externalWindow addSubview:view];
 #ifdef DEBUG
@@ -403,9 +404,12 @@ view.backgroundColor = [UIColor systemOrangeColor];
 		}
 	}
 }
+// called when a mode change happens on a external display
 - (void)updateScreen
 {
-    if (externalWindow.hidden == NO) {
+    if (externalWindow.hidden == NO && externalWindow.screen != nil) {
+        externalWindow.frame = externalWindow.screen.bounds;
+        externalWindow.subviews.firstObject.frame = externalWindow.bounds;
         [NSObject cancelPreviousPerformRequestsWithTarget:hrViewController selector:@selector(changeUI) object:nil];
         [hrViewController performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:NO];
     }
