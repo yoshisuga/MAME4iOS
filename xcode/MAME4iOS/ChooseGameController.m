@@ -966,11 +966,32 @@ UIView* find_view(UIView* view, Class class) {
         
         // if this is syncronous set image and be done
         if (cell.image.image == nil) {
-            cell.image.image = image ?: self->_defaultImage;
+            
+            image = image ?: self->_defaultImage;
+            
             // MAME games always ran on horz or vertical CRTs so it does not matter what the PAR of
-            // the title image is force a DAR of 3:4 or 4:3
-            if (image != nil)
-                [cell setImageAspect:image.size.width > image.size.height ? 4.0/3.0 : 3.0/4.0];
+            // the title image is force a aspect of 3:4 or 4:3
+            
+            if (image.size.width < image.size.height) {
+                // image is a portrait (3:4) image
+                CGFloat aspect = 3.0/4.0;
+                
+                if (self->_layoutMode == LayoutList)
+                    image = [image scaledToSize:CGSizeMake(cell.bounds.size.height / aspect, cell.bounds.size.height) aspect:aspect mode:UIViewContentModeScaleAspectFit background:[image averageColor]];
+                else
+                    [cell setImageAspect:aspect];
+            }
+            else {
+                // image is a landscape (4:3) image
+                CGFloat aspect = 4.0/3.0;
+                
+                if (self->_layoutMode == LayoutList || self->_layoutCollums == 1)
+                    [cell setImageAspect:aspect];
+                else
+                    image = [image scaledToSize:CGSizeMake(cell.bounds.size.width, cell.bounds.size.width * aspect) aspect:aspect mode:UIViewContentModeScaleAspectFit background:[image averageColor]];
+            }
+
+            cell.image.image = image ?: self->_defaultImage;
             return;
         }
         
@@ -1458,6 +1479,8 @@ UIView* find_view(UIView* view, Class class) {
 -(CGFloat)aspect {
     if (_aspect != 0.0)
         return _aspect;
+    if (self.image.size.height == 0.0)
+        return 1.0;
     return self.image.size.width / self.image.size.height;
 }
 @end

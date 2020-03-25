@@ -235,7 +235,7 @@ static ImageCache* sharedInstance = nil;
 //
 // background safe image resize
 //
-static UIImage* resizeImage(UIImage* image, CGFloat width, CGFloat height, UIViewContentMode mode)
+static UIImage* resizeImage(UIImage* image, CGFloat aspect, CGFloat width, CGFloat height, UIViewContentMode mode, UIColor* color)
 {
     CGRect src;
     CGRect dst;
@@ -246,12 +246,15 @@ static UIImage* resizeImage(UIImage* image, CGFloat width, CGFloat height, UIVie
     
     if (width == 0.0 && height == 0.0)
         return image;
-    
+
+    if (aspect == 0.0)
+        aspect = image.size.width / image.size.height;
+        
     if (width == 0.0)
-        width = floor(height * image.size.width / image.size.height);
+        width = floor(height * aspect);
     
     if (height == 0.0)
-        height = floor(width * image.size.height / image.size.width);
+        height = floor(width / aspect);
     
     if (width == image.size.width && height == image.size.height)
         return image;
@@ -261,36 +264,31 @@ static UIImage* resizeImage(UIImage* image, CGFloat width, CGFloat height, UIVie
     else
         scale = 1.0;
     
-    width *= scale;
-    height *= scale;
+    width = floor(width * scale);
+    height = floor(height * scale);
     
-    if (mode == UIViewContentModeScaleToFill)
-    {
-        src = CGRectMake(0,0,image.size.width,image.size.height);
-        dst = CGRectMake(0,0,width,height);
-    }
-    else if (mode == UIViewContentModeScaleAspectFit)
+    if (mode == UIViewContentModeScaleAspectFit)
     {
         // Aspect Fit
         CGFloat w = width;
-        CGFloat h = width * image.size.height / image.size.width;
+        CGFloat h = width / aspect;
         
         if (h > height)
         {
-            w = height * image.size.width / image.size.height;
+            w = height * aspect;
             h = height;
         }
         
         src = CGRectMake(0,0,image.size.width,image.size.height);
         dst = CGRectMake((width - w)/2,(height-h)/2,w,h);
     }
-    else // mode == UIViewContentModeScaleAspectFill
+    else if (mode == UIViewContentModeScaleAspectFill)
     {
         // Aspect Fill
         
         dst = CGRectMake(0,0,width,height);
         
-        if ((image.size.width / image.size.height) <= (width / height))
+        if (aspect <= (width / height))
         {
             CGFloat w = image.size.width;
             CGFloat h = image.size.width * height / width;
@@ -302,6 +300,11 @@ static UIImage* resizeImage(UIImage* image, CGFloat width, CGFloat height, UIVie
             CGFloat h = image.size.height;
             src = CGRectMake((image.size.width - w)/2,0,w,h);
         }
+    }
+    else // if (mode == UIViewContentModeScaleToFill)
+    {
+        src = CGRectMake(0,0,image.size.width,image.size.height);
+        dst = CGRectMake(0,0,width,height);
     }
     
     CGImageRef imageRef = [image CGImage];
@@ -316,6 +319,14 @@ static UIImage* resizeImage(UIImage* image, CGFloat width, CGFloat height, UIVie
         alphaInfo = kCGImageAlphaPremultipliedFirst;
 
     CGContextRef bitmap = CGBitmapContextCreate(NULL, width, height, 8, 4 * width, colorSpaceInfo, alphaInfo);
+    CGContextSetInterpolationQuality(bitmap, kCGInterpolationHigh);
+    
+    if (mode == UIViewContentModeScaleAspectFit && color != nil)
+    {
+        CGContextSetFillColorWithColor(bitmap, color.CGColor);
+        CGContextFillRect(bitmap, CGRectMake(0, 0, width, height));
+    }
+        
     CGImageRef source = CGImageCreateWithImageInRect(imageRef, src);
     CGContextDrawImage(bitmap, dst, source);
     CGImageRef ref = CGBitmapContextCreateImage(bitmap);
@@ -336,13 +347,29 @@ static UIImage* resizeImage(UIImage* image, CGFloat width, CGFloat height, UIVie
 }
 
 @implementation UIImage (Resize)
+- (UIImage*)scaledToSize:(CGSize)size aspect:(CGFloat)aspect mode:(UIViewContentMode)mode background:(UIColor*)color
+{
+    return resizeImage(self, aspect, size.width, size.height, mode, color);
+}
 - (UIImage*)scaledToSize:(CGSize)size mode:(UIViewContentMode)mode
 {
-    return resizeImage(self, size.width, size.height, mode);
+    return resizeImage(self, 0.0, size.width, size.height, mode, nil);
 }
 - (UIImage*)scaledToSize:(CGSize)size
 {
     return [self scaledToSize:size mode:UIViewContentModeScaleToFill];
+}
+- (UIColor*) averageColor
+{
+    uint8_t rgba[4];
+    CIImage* image = self.CIImage ?: [[CIImage alloc] initWithImage:self];
+    CIFilter* filter = [CIFilter filterWithName:@"CIAreaAverage" withInputParameters:@{
+        kCIInputImageKey: image,
+        kCIInputExtentKey: [CIVector vectorWithCGRect:image.extent]
+    }];
+    CIContext* context = [CIContext contextWithOptions:nil];
+    [context render:filter.outputImage toBitmap:rgba rowBytes:sizeof(rgba) bounds:CGRectMake(0, 0, 1, 1) format:kCIFormatRGBA8 colorSpace:nil];
+    return [UIColor colorWithRed:rgba[0]/255.0 green:rgba[1]/255.0 blue:rgba[2]/255.0 alpha:rgba[3]/255.0];
 }
 @end
 

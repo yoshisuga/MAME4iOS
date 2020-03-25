@@ -19,6 +19,9 @@ typedef void (^ImageCacheCallback) (UIImage* image);
 @end
 
 @interface UIImage (Resize)
+- (UIImage*)scaledToSize:(CGSize)size aspect:(CGFloat)aspect mode:(UIViewContentMode)mode background:(UIColor*)color;
 - (UIImage*)scaledToSize:(CGSize)size mode:(UIViewContentMode)mode;
 - (UIImage*)scaledToSize:(CGSize)size;
+- (UIColor*)averageColor;
 @end
+
