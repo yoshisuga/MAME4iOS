@@ -40,8 +40,10 @@
 #define CELL_BACKGROUND_COLOR   [UIColor colorWithWhite:0.222 alpha:1.0]
 #define CELL_TITLE_COLOR        [UIColor whiteColor]
 #define CELL_DETAIL_COLOR       [UIColor lightGrayColor]
-#define CELL_INFO_COLOR         [UIColor lightGrayColor]
 #define CELL_SELECTED_COLOR     self.tintColor
+
+#define CELL_TITLE_FONT         [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
+#define CELL_DETAIL_FONT        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote]
 
 #define HEADER_IDENTIFIER   @"GameInfoHeader"
 
@@ -120,6 +122,7 @@ UIView* find_view(UIView* view, Class class) {
     UIImage* _defaultImage;
     UIImage* _loadingImage;
     NSMutableSet* _updated_urls;
+    NSMutableDictionary* _gameImageSize;
 }
 @end
 
@@ -393,6 +396,48 @@ UIView* find_view(UIView* view, Class class) {
     
     return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%s/%@.png", get_documents_path("titles"), name] isDirectory:NO];
 }
+
+-(CGSize)getGameImageSize:(NSDictionary*)info
+{
+    NSString* name = info[kGameInfoName];
+    CGSize size = CGSizeZero;
+
+    if (name == nil)
+        return size;
+    
+    NSValue* val = _gameImageSize[name];
+    
+    if (val != nil)
+        return [val CGSizeValue];
+    
+    NSURL* url = [self getGameImageLocalURL:info];
+    
+    if (url == nil)
+        return size;
+    
+    // because we only need the size, directly read the PNG header and get it.
+    // [PNG header](https://en.wikipedia.org/wiki/Portable_Network_Graphics#File_header)
+    // 0x89 'PNG' \r\n 0x1A \n [13] 'IHDR' [width] [height] (FYI PNG stores integers in big-endian)
+    uint8_t png_header[] = {0x89, 'P','N','G', '\r','\n', 0x1A, '\n', 0,0,0,13, 'I','H','D','R'};
+    
+    NSFileHandle* file = [NSFileHandle fileHandleForReadingFromURL:url error:nil];
+    NSData* data = [file readDataOfLength:sizeof(png_header) + 4*2];
+    const uint8_t* bytes = [data bytes];
+    
+    if ([data length] == (sizeof(png_header) + 4*2) && memcmp(png_header, bytes, sizeof(png_header)) == 0)
+    {
+        NSUInteger width  = (NSUInteger)bytes[sizeof(png_header) + 0*4 + 3] + ((NSUInteger)bytes[sizeof(png_header) + 0*4 + 2] << 8);
+        NSUInteger height = (NSUInteger)bytes[sizeof(png_header) + 1*4 + 3] + ((NSUInteger)bytes[sizeof(png_header) + 1*4 + 2] << 8);
+        size = CGSizeMake(width, height);
+    }
+    
+    // store this size in the cache, so next time we dont need to do any file I/O
+    _gameImageSize = _gameImageSize ?: [[NSMutableDictionary alloc] init];
+    _gameImageSize[name] = [NSValue valueWithCGSize:size];
+    
+    return size;
+}
+
 
 - (void)filterGameList
 {
@@ -908,7 +953,7 @@ UIView* find_view(UIView* view, Class class) {
 }
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    //NSLog(@"cellForItemAtIndexPath: %d.%d", (int)indexPath.section, (int)indexPath.item);
+    NSLog(@"cellForItemAtIndexPath: %d.%d", (int)indexPath.section, (int)indexPath.item);
     
     NSDictionary* info = [self getGameInfo:indexPath];
     
@@ -957,6 +1002,12 @@ UIView* find_view(UIView* view, Class class) {
 
     NSURL* url = [self getGameImageURL:info];
     NSURL* local = [self getGameImageLocalURL:info];
+    CGSize size = [self getGameImageSize:info];
+    
+    NSLog(@"    URL: %@", url);
+    NSLog(@"    PNG: %@", local);
+    NSLog(@"   SIZE: %@", NSStringFromCGSize(size));
+
     cell.tag = url.hash;
     [[ImageCache sharedInstance] getImage:url size:CGSizeZero localURL:local completionHandler:^(UIImage *image) {
         
@@ -1553,20 +1604,20 @@ UIView* find_view(UIView* view, Class class) {
     self.layer.shadowOpacity = 1.0;
     
     _title.text = nil;
-    _title.font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
+    _title.font = CELL_TITLE_FONT;
     _title.textColor = CELL_TITLE_COLOR;
     _title.numberOfLines = 0;
     _title.adjustsFontSizeToFitWidth = FALSE;
     
     _detail.text = nil;
-    _detail.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+    _detail.font = CELL_DETAIL_FONT;
     _detail.textColor = CELL_DETAIL_COLOR;
     _detail.numberOfLines = 0;
     _title.adjustsFontSizeToFitWidth = FALSE;
 
     _info.text = nil;
     _info.font = _detail.font;
-    _info.textColor = CELL_INFO_COLOR;
+    _info.textColor = _detail.textColor;
     _info.numberOfLines = 1;
     _info.adjustsFontSizeToFitWidth = TRUE;
 
