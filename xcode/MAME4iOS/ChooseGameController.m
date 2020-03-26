@@ -17,7 +17,7 @@
 #error("This file assumes ARC")
 #endif
 
-#define DebugLog 0
+#define DebugLog 1
 #if DebugLog == 0
 #define NSLog(...) (void)0
 #endif
@@ -64,9 +64,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 @interface GameCell : UICollectionViewCell
 @property (readwrite, nonatomic, strong) UIImageView* image;
-@property (readwrite, nonatomic, strong) UILabel* title;
-@property (readwrite, nonatomic, strong) UILabel* detail;
-@property (readwrite, nonatomic, strong) UILabel* info;
+@property (readwrite, nonatomic, strong) UILabel* text;
 -(void)setHorizontal:(BOOL)horizontal;
 -(void)setTextInsets:(UIEdgeInsets)insets;
 -(void)setImageAspect:(CGFloat)aspect;
@@ -317,6 +315,7 @@ UIView* find_view(UIView* view, Class class) {
     [self.navigationController pushViewController:search animated:YES];
 }
 #endif
+
 -(void)showSettings
 {
     if (_selectGameCallback)
@@ -951,6 +950,60 @@ UIView* find_view(UIView* view, Class class) {
         
     return items[indexPath.item];
 }
+
+//  get the text based on the LayoutMode
+//
+//  TINY        SMALL                       LARGE or LIST
+//  ----        -----                       -------------
+//  romname     short Description           full Description
+//              short Manufacturer • Year   full Manufacturer • Year  • romname [parent-rom]
+//
+-(NSAttributedString*)getGameText:(NSDictionary*)info
+{
+    NSString* title;
+    NSString* detail;
+
+    if (_layoutMode == LayoutTiny) {
+        title = info[kGameInfoName];
+    }
+    else if (_layoutMode == LayoutSmall) {
+        title = [[info[kGameInfoDescription] componentsSeparatedByString:@" ("] firstObject];
+        detail = [NSString stringWithFormat:@"%@ • %@",
+                    [[info[kGameInfoManufacturer] componentsSeparatedByString:@" ("] firstObject],
+                    info[kGameInfoYear]];
+    }
+    else { // LayoutLarge and LayoutList
+        title = info[kGameInfoDescription];
+        detail = info[kGameInfoManufacturer];
+
+        if ([info[kGameInfoYear] length] > 1)
+            detail = [NSString stringWithFormat:@"%@ • %@", detail, info[kGameInfoYear]];
+        
+        if ([info[kGameInfoName] length] > 1)
+            detail = [NSString stringWithFormat:@"%@ • %@", detail, info[kGameInfoName]];
+
+        if ([info[kGameInfoParent] length] > 1)
+            detail = [NSString stringWithFormat:@"%@ [%@]", detail, info[kGameInfoParent]];
+    }
+    
+    NSMutableAttributedString* text = [[NSMutableAttributedString alloc] initWithString:title attributes:@{
+        NSFontAttributeName:CELL_TITLE_FONT,
+        NSForegroundColorAttributeName:CELL_TITLE_COLOR
+    }];
+
+    if (detail != nil)
+    {
+        detail = [@"\n" stringByAppendingString:detail];
+
+        [text appendAttributedString:[[NSAttributedString alloc] initWithString:detail attributes:@{
+            NSFontAttributeName:CELL_DETAIL_FONT,
+            NSForegroundColorAttributeName:CELL_DETAIL_COLOR
+        }]];
+    }
+    
+    return [text copy];
+}
+
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
 {
     NSLog(@"cellForItemAtIndexPath: %d.%d", (int)indexPath.section, (int)indexPath.item);
@@ -959,45 +1012,13 @@ UIView* find_view(UIView* view, Class class) {
     
     GameCell* cell = [collectionView dequeueReusableCellWithReuseIdentifier:CELL_IDENTIFIER forIndexPath:indexPath];
     
-    //  set the text based on the LayoutMode
-    //
-    //  TINY        SMALL                       LARGE or LIST
-    //  ----        -----                       -------------
-    //  romname     short Description           full Description
-    //              short Manufacturer • Year   full Manufacturer • Year  • romname [parent-rom]
-    //
-    if (_layoutMode == LayoutTiny) {
-        cell.title.font = [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
-        cell.title.text = info[kGameInfoName];
-        cell.title.numberOfLines = 1;
-        cell.title.adjustsFontSizeToFitWidth = TRUE;
-    }
-    else if (_layoutMode == LayoutSmall) {
-        cell.title.text = [[info[kGameInfoDescription] componentsSeparatedByString:@" ("] firstObject];
-        cell.detail.text = [NSString stringWithFormat:@"%@ • %@",
-                            [[info[kGameInfoManufacturer] componentsSeparatedByString:@" ("] firstObject],
-                            info[kGameInfoYear]];
-    }
-    else { // LayoutLarge and LayoutList
-        cell.title.text = info[kGameInfoDescription];
-
-        NSString* text = info[kGameInfoManufacturer];
-
-        if ([info[kGameInfoYear] length] > 1)
-            text = [NSString stringWithFormat:@"%@ • %@", text, info[kGameInfoYear]];
-        
-        if ([info[kGameInfoName] length] > 1)
-            text = [NSString stringWithFormat:@"%@ • %@", text, info[kGameInfoName]];
-
-        if ([info[kGameInfoParent] length] > 1)
-            text = [NSString stringWithFormat:@"%@ [%@]", text, info[kGameInfoParent]];
-
-        if ([text hasPrefix:@" • "])
-            text = [text substringFromIndex:3];
-
-        cell.detail.text = text;
-    }
+    cell.text.attributedText = [self getGameText:info];;
     
+    if (_layoutMode == LayoutTiny) {
+        cell.text.numberOfLines = 1;
+        cell.text.adjustsFontSizeToFitWidth = TRUE;
+    }
+
     [cell setHorizontal:_layoutMode == LayoutList];
 
     NSURL* url = [self getGameImageURL:info];
@@ -1082,9 +1103,9 @@ UIView* find_view(UIView* view, Class class) {
 {
     GameCell* cell = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:HEADER_IDENTIFIER forIndexPath:indexPath];
     [cell setHorizontal:TRUE];
-    cell.title.text = _gameSectionTitles[indexPath.section];
-    cell.title.font = [UIFont systemFontOfSize:cell.bounds.size.height * 0.8 weight:UIFontWeightHeavy];
-    cell.title.textColor = HEADER_TEXT_COLOR;
+    cell.text.text = _gameSectionTitles[indexPath.section];
+    cell.text.font = [UIFont systemFontOfSize:cell.bounds.size.height * 0.8 weight:UIFontWeightHeavy];
+    cell.text.textColor = HEADER_TEXT_COLOR;
     [cell setTextInsets:UIEdgeInsetsMake(2.0, self.safeAreaInsets.left + 2.0, 2.0, self.safeAreaInsets.right + 2.0)];
     cell.contentView.backgroundColor = [self.collectionView.backgroundColor colorWithAlphaComponent:0.5];
     cell.layer.cornerRadius = 0.0;
@@ -1550,15 +1571,13 @@ UIView* find_view(UIView* view, Class class) {
 // Two different cell typres, horz or vertical
 //
 // +-----------------+   +----------+-----------------+
-// |                 |   |          | Title           |
-// |                 |   |  Image   | detail          |
-// |    Image        |   |          | info            |
+// |                 |   |          |                 |
+// |                 |   |  Image   | Text            |
+// |    Image        |   |          |                 |
 // |                 |   +----------+-----------------+
 // |                 |
 // +-----------------+
-// | Title           |
-// | detail          |
-// | info            |
+// | Text            |
 // +-----------------+
 //
 - (instancetype)initWithFrame:(CGRect)frame
@@ -1566,11 +1585,9 @@ UIView* find_view(UIView* view, Class class) {
     self = [super initWithFrame:frame];
     
     _image = [[ImageView alloc] init];
-    _title = [[UILabel alloc] init];
-    _detail = [[UILabel alloc] init];
-    _info = [[UILabel alloc] init];
+    _text = [[UILabel alloc] init];
     
-    _stackText = [[UIStackView alloc] initWithArrangedSubviews:@[_title, _detail, _info]];
+    _stackText = [[UIStackView alloc] initWithArrangedSubviews:@[_text]];
     _stackView = [[UIStackView alloc] initWithArrangedSubviews:@[_image, _stackText]];
 
     _stackView.translatesAutoresizingMaskIntoConstraints = YES;
@@ -1603,23 +1620,12 @@ UIView* find_view(UIView* view, Class class) {
     self.layer.shadowRadius = 8.0;
     self.layer.shadowOpacity = 1.0;
     
-    _title.text = nil;
-    _title.font = CELL_TITLE_FONT;
-    _title.textColor = CELL_TITLE_COLOR;
-    _title.numberOfLines = 0;
-    _title.adjustsFontSizeToFitWidth = FALSE;
-    
-    _detail.text = nil;
-    _detail.font = CELL_DETAIL_FONT;
-    _detail.textColor = CELL_DETAIL_COLOR;
-    _detail.numberOfLines = 0;
-    _title.adjustsFontSizeToFitWidth = FALSE;
-
-    _info.text = nil;
-    _info.font = _detail.font;
-    _info.textColor = _detail.textColor;
-    _info.numberOfLines = 1;
-    _info.adjustsFontSizeToFitWidth = TRUE;
+    _text.text = nil;
+    _text.attributedText = nil;
+    _text.font = nil;
+    _text.textColor = nil;
+    _text.numberOfLines = 0;
+    _text.adjustsFontSizeToFitWidth = FALSE;
 
     _image.image = nil;
     _image.contentMode = UIViewContentModeScaleAspectFill;
@@ -1656,9 +1662,7 @@ UIView* find_view(UIView* view, Class class) {
 
     width -= (_stackText.layoutMargins.left + _stackText.layoutMargins.right);
 
-    _title.preferredMaxLayoutWidth = width;
-    _detail.preferredMaxLayoutWidth = width;
-    _info.preferredMaxLayoutWidth = width;
+    _text.preferredMaxLayoutWidth = width;
 
     [super updateConstraints];
 }
@@ -1717,16 +1721,15 @@ UIView* find_view(UIView* view, Class class) {
     self.contentView.backgroundColor = color;
     self.contentView.layer.borderColor = color.CGColor;
 }
-
 - (void)setHighlighted:(BOOL)highlighted
 {
-    NSLog(@"setHighlighted(%@): %@", self.title.text, highlighted ? @"YES" : @"NO");
+    NSLog(@"setHighlighted(%@): %@", self.text.text, highlighted ? @"YES" : @"NO");
     [super setHighlighted:highlighted];
     [self updateSelected];
 }
 - (void)setSelected:(BOOL)selected
 {
-    NSLog(@"setSelected(%@): %@", self.title.text, selected ? @"YES" : @"NO");
+    NSLog(@"setSelected(%@): %@", self.text.text, selected ? @"YES" : @"NO");
     [super setSelected:selected];
     [self updateSelected];
 }
