@@ -1256,7 +1256,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     
     if (externalView != nil)
     {
-        imageInfo = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"tv"] ?: [UIImage imageNamed:@"mame_logo"]];
+        imageInfo = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"airplayvideo"] ?: [UIImage imageNamed:@"mame_logo"]];
         imageInfo.contentMode = UIViewContentModeScaleAspectFit;
         imageInfo.frame = g_device_is_landscape ? rFrames[LANDSCAPE_VIEW_NOT_FULL] : rFrames[PORTRAIT_VIEW_NOT_FULL];
         [self.view addSubview:imageInfo];
