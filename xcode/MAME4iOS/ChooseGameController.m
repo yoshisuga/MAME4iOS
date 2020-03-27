@@ -17,7 +17,7 @@
 #error("This file assumes ARC")
 #endif
 
-#define DebugLog 1
+#define DebugLog 0
 #if DebugLog == 0
 #define NSLog(...) (void)0
 #endif
@@ -27,10 +27,14 @@
 #define CELL_TINY_WIDTH    100.0
 #define CELL_SMALL_WIDTH   200.0
 #define CELL_LARGE_WIDTH   400.0
+#define CELL_INSET_X       8.0
+#define CELL_INSET_Y       4.0
 #else
 #define CELL_TINY_WIDTH    200.0
 #define CELL_SMALL_WIDTH   400.0
 #define CELL_LARGE_WIDTH   600.0
+#define CELL_INSET_X       8.0
+#define CELL_INSET_Y       4.0
 #endif
 
 #define USE_TITLE_IMAGE         TRUE
@@ -66,6 +70,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 @property (readwrite, nonatomic, strong) UIImageView* image;
 @property (readwrite, nonatomic, strong) UILabel* text;
 -(void)setHorizontal:(BOOL)horizontal;
+-(void)setHeight:(CGFloat)height;
 -(void)setTextInsets:(UIEdgeInsets)insets;
 -(void)setImageAspect:(CGFloat)aspect;
 @end
@@ -109,7 +114,8 @@ UIView* find_view(UIView* view, Class class) {
     NSArray* _gameSectionTitles;// sorted section names
     NSString* _gameFilterText;  // text string to filter games by
     NSString* _gameFilterScope; // group results by Name,Year,Manufactuer
-    NSUInteger _layoutCollums;
+    NSUInteger _layoutCollums;  // number of collums in current layout.
+    NSMutableDictionary* _layoutRowHeightCache; // cache of row heights, we want all items in a row to be same height.
     LayoutMode _layoutMode;
     CGFloat _layoutWidth;
     UISearchController* _searchController;
@@ -274,6 +280,13 @@ UIView* find_view(UIView* view, Class class) {
     tap.allowedPressTypes = @[[NSNumber numberWithInteger:UIPressTypeMenu]];
     [self.navigationController.view addGestureRecognizer:tap];
 #endif
+    
+#ifdef XDEBUG
+    // delete all the cached TITLE images.
+    NSString* titles_path = [NSString stringWithUTF8String:get_documents_path("titles")];
+    [[NSFileManager defaultManager] removeItemAtPath:titles_path error:nil];
+    [[NSFileManager defaultManager] createDirectoryAtPath:titles_path withIntermediateDirectories:NO attributes:nil error:nil];
+#endif
 }
 -(void)scrollToTop
 {
@@ -367,6 +380,8 @@ UIView* find_view(UIView* view, Class class) {
     [self filterGameList];
 }
 
+#pragma mark - game images
+
 -(NSURL*)getGameImageURL:(NSDictionary*)info
 {
     NSString* name = info[kGameInfoDescription];
@@ -414,12 +429,16 @@ UIView* find_view(UIView* view, Class class) {
     if (url == nil)
         return size;
     
+    NSFileHandle* file = [NSFileHandle fileHandleForReadingFromURL:url error:nil];
+
+    if (file == nil)
+        return size;
+
     // because we only need the size, directly read the PNG header and get it.
     // [PNG header](https://en.wikipedia.org/wiki/Portable_Network_Graphics#File_header)
     // 0x89 'PNG' \r\n 0x1A \n [13] 'IHDR' [width] [height] (FYI PNG stores integers in big-endian)
     uint8_t png_header[] = {0x89, 'P','N','G', '\r','\n', 0x1A, '\n', 0,0,0,13, 'I','H','D','R'};
     
-    NSFileHandle* file = [NSFileHandle fileHandleForReadingFromURL:url error:nil];
     NSData* data = [file readDataOfLength:sizeof(png_header) + 4*2];
     const uint8_t* bytes = [data bytes];
     
@@ -437,6 +456,7 @@ UIView* find_view(UIView* view, Class class) {
     return size;
 }
 
+#pragma mark - game filter
 
 - (void)filterGameList
 {
@@ -707,6 +727,7 @@ UIView* find_view(UIView* view, Class class) {
 -(void)invalidateLayout
 {
     [self.collectionView.collectionViewLayout invalidateLayout];
+    _layoutRowHeightCache = nil;   // flush row height cache
     
     // HACK kick the layout in the head, so it gets the location of headers correct
     CGPoint offset = self.collectionView.contentOffset;
@@ -874,14 +895,16 @@ UIView* find_view(UIView* view, Class class) {
 
 -(void)updateImages
 {
-    if (self.collectionView.isDragging || self.collectionView.isTracking || self.collectionView.isDecelerating) {
+    static BOOL g_updating;
+    
+    if (g_updating || self.collectionView.isDragging || self.collectionView.isTracking || self.collectionView.isDecelerating) {
         NSLog(@"updateImages: SCROLLING (will try again)");
         [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateImages) object:nil];
         [self performSelector:@selector(updateImages) withObject:nil afterDelay:1.0];
         return;
     }
 
-    NSMutableArray* update_items = [[NSMutableArray alloc] init];
+    NSMutableSet* update_items = [[NSMutableSet alloc] init];
 
     // ok get all the *visible* indexPaths and see if any need a refresh/reload
     NSArray* vis_items = [self.collectionView indexPathsForVisibleItems];
@@ -889,8 +912,17 @@ UIView* find_view(UIView* view, Class class) {
     for (NSIndexPath* indexPath in vis_items) {
         NSDictionary* game = [self getGameInfo:indexPath];
         NSURL* url = [self getGameImageURL:game];
-        if ([_updated_urls containsObject:url])
-            [update_items addObject:indexPath];
+        if (![_updated_urls containsObject:url])
+            continue;
+        // we need to update the entire row
+        NSUInteger section = indexPath.section;
+        NSUInteger row_start = (indexPath.item / _layoutCollums) * _layoutCollums;
+        NSUInteger row_end = MIN(row_start + _layoutCollums, [self collectionView:self.collectionView numberOfItemsInSection:section]);
+        
+        [_layoutRowHeightCache removeObjectForKey:[NSIndexPath indexPathForItem:row_start inSection:section]];
+
+        for (NSUInteger item = row_start; item < row_end; item++)
+            [update_items addObject:[NSIndexPath indexPathForItem:item inSection:section]];
     }
     
     NSLog(@"updateImages: %d visible items, %d dirty images, %d cells need updated", (int)vis_items.count, (int)_updated_urls.count, (int)update_items.count);
@@ -901,17 +933,18 @@ UIView* find_view(UIView* view, Class class) {
         
         if (selectedIndexPath != nil && ![update_items containsObject:selectedIndexPath])
             selectedIndexPath = nil;
-        
+
+        g_updating = TRUE;
         [self.collectionView performBatchUpdates:^{
-            [self.collectionView reloadItemsAtIndexPaths:update_items];
+            [self.collectionView reloadItemsAtIndexPaths:[update_items allObjects]];
         } completion:^(BOOL finished) {
+            NSLog(@"updateImages DONE!");
+            g_updating = FALSE;
             if (selectedIndexPath != nil) {
                 [self.collectionView selectItemAtIndexPath:selectedIndexPath animated:NO scrollPosition:UICollectionViewScrollPositionCenteredVertically];
             }
         }];
     }
-
-    NSLog(@"updateImages DONE!");
 }
 
 // update all cells with this image
@@ -932,6 +965,8 @@ UIView* find_view(UIView* view, Class class) {
 }
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
 {
+    if (section >= _gameSectionTitles.count)
+        return 0;
     NSString* title = _gameSectionTitles[section];
     NSInteger num = [_gameData[title] count];
     if ([title isEqualToString:RECENT_GAMES_TITLE] && _layoutMode <= LayoutSmall)
@@ -962,6 +997,7 @@ UIView* find_view(UIView* view, Class class) {
 {
     NSString* title;
     NSString* detail;
+    NSString* str;
 
     if (_layoutMode == LayoutTiny) {
         title = info[kGameInfoName];
@@ -976,14 +1012,14 @@ UIView* find_view(UIView* view, Class class) {
         title = info[kGameInfoDescription];
         detail = info[kGameInfoManufacturer];
 
-        if ([info[kGameInfoYear] length] > 1)
-            detail = [NSString stringWithFormat:@"%@ • %@", detail, info[kGameInfoYear]];
+        if ((str = info[kGameInfoYear]) && [str length] > 1)
+            detail = [NSString stringWithFormat:@"%@ • %@", detail, str];
         
-        if ([info[kGameInfoName] length] > 1)
-            detail = [NSString stringWithFormat:@"%@ • %@", detail, info[kGameInfoName]];
+        if ((str = info[kGameInfoName]) && [str length] > 1)
+            detail = [NSString stringWithFormat:@"%@ • %@", detail, str];
 
-        if ([info[kGameInfoParent] length] > 1)
-            detail = [NSString stringWithFormat:@"%@ [%@]", detail, info[kGameInfoParent]];
+        if ((str = info[kGameInfoParent]) && [str length] > 1)
+            detail = [NSString stringWithFormat:@"%@ [%@]", detail, str];
     }
     
     NSMutableAttributedString* text = [[NSMutableAttributedString alloc] initWithString:title attributes:@{
@@ -1004,6 +1040,73 @@ UIView* find_view(UIView* view, Class class) {
     return [text copy];
 }
 
+// compute the size(s) of a single item. returns: (x = image_height, y = text_height)
+- (CGPoint)heightForItemAtIndexPath:(NSIndexPath *)indexPath
+{
+    UICollectionViewFlowLayout* layout = (UICollectionViewFlowLayout*)self.collectionView.collectionViewLayout;
+    NSDictionary* info = [self getGameInfo:indexPath];
+    NSAttributedString* text = [self getGameText:info];
+    
+    // start with the (estimatedSize.width,0.0)
+    CGFloat item_width = layout.estimatedItemSize.width;
+    CGFloat image_height, text_height;
+    
+    // get the title image size, assume the image is 3:4 if we dont know.
+    CGSize imageSize = [self getGameImageSize:info];
+    
+    if (imageSize.height == 0.0 || imageSize.width == 0.0 || imageSize.width < imageSize.height)
+        image_height = ceil(item_width * 4.0 / 3.0);
+    else
+        image_height = ceil(item_width * 3.0 / 4.0);
+
+    // get the text height, in LayoutTiny we only show one line.
+    CGSize textSize = CGSizeMake(item_width - CELL_INSET_X*2, 9999.0);
+    if (_layoutMode == LayoutTiny)
+        textSize.width = 9999.0;
+    textSize = [text boundingRectWithSize:textSize options:NSStringDrawingUsesLineFragmentOrigin context:nil].size;
+    
+    text_height = CELL_INSET_Y + ceil(textSize.height) + CELL_INSET_Y;
+    
+    NSLog(@"heightForItemAtIndexPath: %d.%d %@ -> %@", (int)indexPath.section, (int)indexPath.item, info[kGameInfoName], NSStringFromCGSize(CGSizeMake(image_height, text_height)));
+    return CGPointMake(image_height, text_height);
+}
+
+// compute (or return from cache) the height(s) of a single row. the height of a row is the maximum of all items in that row.
+// returns: (x = image_height, y = text_height)
+- (CGPoint)heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    // this code should not be called in this case
+    NSParameterAssert(!(_layoutMode == LayoutList || _layoutCollums <= 1));
+
+    // if we are in list mode, or we only have one collum, no need to do extra work computing sizes
+    if (_layoutMode == LayoutList || _layoutCollums <= 1)
+        return CGPointZero;
+    
+    NSUInteger section = indexPath.section;
+    NSUInteger row_start = (indexPath.item / _layoutCollums) * _layoutCollums;
+    NSUInteger row_end = MIN(row_start + _layoutCollums, [self collectionView:self.collectionView numberOfItemsInSection:section]);
+    indexPath = [NSIndexPath indexPathForItem:row_start inSection:section];
+
+    // check row height cache
+    NSValue* val = _layoutRowHeightCache[indexPath];
+    if (val != nil)
+        return [val CGPointValue];
+
+    // go over each item in the row and compute the max image_height and max text_height
+    CGPoint row_height = CGPointZero;
+    for (NSUInteger item = row_start; item < row_end; item++) {
+        CGPoint item_height = [self heightForItemAtIndexPath:[NSIndexPath indexPathForItem:item inSection:section]];
+        row_height.x = MAX(row_height.x, item_height.x);
+        row_height.y = MAX(row_height.y, item_height.y);
+    }
+    
+    NSLog(@"heightForRow: %d.%d -> %@ = %f", (int)indexPath.section, (int)indexPath.item, NSStringFromCGPoint(row_height), row_height.x + row_height.y);
+    _layoutRowHeightCache = _layoutRowHeightCache ?: [[NSMutableDictionary alloc] init];
+    _layoutRowHeightCache[indexPath] = [NSValue valueWithCGPoint:row_height];
+    return row_height;
+}
+
+// create a cell for an item.
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
 {
     NSLog(@"cellForItemAtIndexPath: %d.%d", (int)indexPath.section, (int)indexPath.item);
@@ -1020,14 +1123,16 @@ UIView* find_view(UIView* view, Class class) {
     }
 
     [cell setHorizontal:_layoutMode == LayoutList];
+    [cell setTextInsets:UIEdgeInsetsMake(CELL_INSET_Y, CELL_INSET_X, CELL_INSET_Y, CELL_INSET_X)];
+    
+    CGPoint row_height = CGPointZero;
+    if (_layoutMode != LayoutList && _layoutCollums > 1) {
+        row_height = [self heightForRowAtIndexPath:indexPath];
+        [cell setHeight:(row_height.x + row_height.y)];
+    }
 
     NSURL* url = [self getGameImageURL:info];
     NSURL* local = [self getGameImageLocalURL:info];
-    CGSize size = [self getGameImageSize:info];
-    
-    NSLog(@"    URL: %@", url);
-    NSLog(@"    PNG: %@", local);
-    NSLog(@"   SIZE: %@", NSStringFromCGSize(size));
 
     cell.tag = url.hash;
     [[ImageCache sharedInstance] getImage:url size:CGSizeZero localURL:local completionHandler:^(UIImage *image) {
@@ -1057,7 +1162,7 @@ UIView* find_view(UIView* view, Class class) {
                 // image is a landscape (4:3) image
                 CGFloat aspect = 4.0/3.0;
                 
-                if (self->_layoutMode == LayoutList || self->_layoutCollums == 1)
+                if (self->_layoutMode == LayoutList || self->_layoutCollums <= 1 || row_height.x <= ceil(cell.bounds.size.width * 3.0 / 4.0))
                     [cell setImageAspect:aspect];
                 else
                     image = [image scaledToSize:CGSizeMake(cell.bounds.size.width, cell.bounds.size.width * aspect) aspect:aspect mode:UIViewContentModeScaleAspectFit background:[image averageColor]];
@@ -1069,12 +1174,17 @@ UIView* find_view(UIView* view, Class class) {
         
         NSLog(@"CELL ASYNC LOAD: %@ %d:%d", info[kGameInfoName], (int)indexPath.section, (int)indexPath.item);
         [self updateImage:url];
-        
+        [self->_layoutRowHeightCache removeObjectForKey:[NSIndexPath indexPathForItem:(indexPath.item / self->_layoutCollums) inSection:indexPath.section]];
     }];
     
     // use a placeholder image if the image did not load right away.
-    if (cell.image.image == nil)
+    if (cell.image.image == nil) {
         cell.image.image = _loadingImage;
+        if (self->_layoutMode == LayoutList) {
+            [cell setImageAspect:4.0/3.0];
+            cell.image.contentMode = UIViewContentModeScaleAspectFit;
+        }
+    }
     
     return cell;
 }
@@ -1132,7 +1242,7 @@ UIView* find_view(UIView* view, Class class) {
 
 - (void)collectionView:(UICollectionView *)collectionView willDisplayCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    NSLog(@"willDisplayCell: %d.%d %@", (int)indexPath.section, (int)indexPath.row, [self getGameInfo:indexPath][kGameInfoName]);
+    //NSLog(@"willDisplayCell: %d.%d %@", (int)indexPath.section, (int)indexPath.row, [self getGameInfo:indexPath][kGameInfoName]);
 
     // if this cell still have the loading image, it went offscreen, got canceled, came back on screen ==> reload just to be safe.
     if ([cell isKindOfClass:[GameCell class]] && ((GameCell*)cell).image.image == _loadingImage)
@@ -1147,7 +1257,7 @@ UIView* find_view(UIView* view, Class class) {
 
 - (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    NSLog(@"endDisplayCell: %d.%d %@", (int)indexPath.section, (int)indexPath.row, [self getGameInfo:indexPath][kGameInfoName]);
+    //NSLog(@"endDisplayCell: %d.%d %@", (int)indexPath.section, (int)indexPath.row, [self getGameInfo:indexPath][kGameInfoName]);
     
     if ([cell isKindOfClass:[GameCell class]] && ((GameCell*)cell).image.image == _loadingImage)
     {
@@ -1563,6 +1673,7 @@ UIView* find_view(UIView* view, Class class) {
 @interface GameCell () {
     UIStackView* _stackView;
     UIStackView* _stackText;
+    CGFloat _height;
 }
 @end
 
@@ -1586,9 +1697,12 @@ UIView* find_view(UIView* view, Class class) {
     
     _image = [[ImageView alloc] init];
     _text = [[UILabel alloc] init];
-    
+    UIView* decoy = [[UIView alloc] init];
+#ifdef XDEBUG
+    decoy.backgroundColor = [UIColor systemOrangeColor];
+#endif
     _stackText = [[UIStackView alloc] initWithArrangedSubviews:@[_text]];
-    _stackView = [[UIStackView alloc] initWithArrangedSubviews:@[_image, _stackText]];
+    _stackView = [[UIStackView alloc] initWithArrangedSubviews:@[_image, _stackText, decoy]];
 
     _stackView.translatesAutoresizingMaskIntoConstraints = YES;
     _stackView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -1626,11 +1740,18 @@ UIView* find_view(UIView* view, Class class) {
     _text.textColor = nil;
     _text.numberOfLines = 0;
     _text.adjustsFontSizeToFitWidth = FALSE;
+    
+    _height = 0.0;
 
     _image.image = nil;
-    _image.contentMode = UIViewContentModeScaleAspectFill;
+    _image.contentMode = UIViewContentModeScaleAspectFit;
+    _image.layer.minificationFilter = kCAFilterTrilinear;
     ((ImageView*)_image).aspect = 0.0;
     [_image setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
+    [_image setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
+
+    [_image setContentHuggingPriority:UILayoutPriorityDefaultLow forAxis:UILayoutConstraintAxisVertical];
+    [_image setContentCompressionResistancePriority:UILayoutPriorityDefaultLow forAxis:UILayoutConstraintAxisVertical];
 
     _stackView.axis = UILayoutConstraintAxisVertical;
     _stackView.alignment = UIStackViewAlignmentFill;
@@ -1692,11 +1813,21 @@ UIView* find_view(UIView* view, Class class) {
     _image.contentMode = UIViewContentModeScaleToFill;
     ((ImageView*)_image).aspect = aspect;
 }
+-(void)setHeight:(CGFloat)height
+{
+    _height = height;
+    [self setNeedsUpdateConstraints];
+}
 
 - (CGSize)sizeThatFits:(CGSize)targetSize
 {
     if (_stackView.axis == UILayoutConstraintAxisHorizontal)
         return targetSize;
+    
+    if (_height != 0.0) {
+        targetSize.height = _height;
+        return targetSize;
+    }
     
     [self updateConstraintsIfNeeded];
     targetSize.height = ceil([_stackView systemLayoutSizeFittingSize:UILayoutFittingCompressedSize].height);
@@ -1723,13 +1854,13 @@ UIView* find_view(UIView* view, Class class) {
 }
 - (void)setHighlighted:(BOOL)highlighted
 {
-    NSLog(@"setHighlighted(%@): %@", self.text.text, highlighted ? @"YES" : @"NO");
+    //NSLog(@"setHighlighted(%@): %@", self.text.text, highlighted ? @"YES" : @"NO");
     [super setHighlighted:highlighted];
     [self updateSelected];
 }
 - (void)setSelected:(BOOL)selected
 {
-    NSLog(@"setSelected(%@): %@", self.text.text, selected ? @"YES" : @"NO");
+    //NSLog(@"setSelected(%@): %@", self.text.text, selected ? @"YES" : @"NO");
     [super setSelected:selected];
     [self updateSelected];
 }
