@@ -229,13 +229,25 @@ static ImageCache* sharedInstance = nil;
     }
 }
 
-
 @end
+                       
+#define lerp(a,b,f) ((a)*(1-(f)) + (b)*(f))
+
+static UIColor* blend(UIColor* c0, UIColor* c1, CGFloat f)
+{
+   CGFloat r0,g0,b0,a0;
+   CGFloat r1,g1,b1,a1;
+   
+   [c0 getRed:&r0 green:&g0 blue:&b0 alpha:&a0];
+   [c1 getRed:&r1 green:&g1 blue:&b1 alpha:&a1];
+   
+   return [UIColor colorWithRed:lerp(r0,r1,f) green:lerp(g0,g1,f) blue:lerp(b0,b1,f) alpha:lerp(a0,a1,f)];
+}
 
 //
 // background safe image resize
 //
-static UIImage* resizeImage(UIImage* image, CGFloat aspect, CGFloat width, CGFloat height, UIViewContentMode mode, UIColor* color)
+static UIImage* resizeImage(UIImage* image, CGFloat aspect, CGFloat width, CGFloat height, UIViewContentMode mode)
 {
     CGRect src;
     CGRect dst;
@@ -321,12 +333,27 @@ static UIImage* resizeImage(UIImage* image, CGFloat aspect, CGFloat width, CGFlo
     CGContextRef bitmap = CGBitmapContextCreate(NULL, width, height, 8, 4 * width, colorSpaceInfo, alphaInfo);
     CGContextSetInterpolationQuality(bitmap, kCGInterpolationHigh);
     
-    if (mode == UIViewContentModeScaleAspectFit && color != nil)
+    if (!CGRectEqualToRect(dst, CGRectMake(0,0,width,height)))
     {
+         UIColor* color;
+        
+        if (dst.origin.x > 0.0)
+        {
+            UIColor* left = [image averageColor:UIRectEdgeLeft width:2.0];
+            UIColor* right = [image averageColor:UIRectEdgeRight width:2.0];
+            color = blend(left, right, 0.5);
+        }
+        else
+        {
+            UIColor* top = [image averageColor:UIRectEdgeTop width:2.0];
+            UIColor* bot = [image averageColor:UIRectEdgeBottom width:2.0];
+            color = blend(top, bot, 0.5);
+        }
+ 
         CGContextSetFillColorWithColor(bitmap, color.CGColor);
         CGContextFillRect(bitmap, CGRectMake(0, 0, width, height));
     }
-        
+    
     CGImageRef source = CGImageCreateWithImageInRect(imageRef, src);
     CGContextDrawImage(bitmap, dst, source);
     CGImageRef ref = CGBitmapContextCreateImage(bitmap);
@@ -347,29 +374,43 @@ static UIImage* resizeImage(UIImage* image, CGFloat aspect, CGFloat width, CGFlo
 }
 
 @implementation UIImage (Resize)
-- (UIImage*)scaledToSize:(CGSize)size aspect:(CGFloat)aspect mode:(UIViewContentMode)mode background:(UIColor*)color
+- (UIImage*)scaledToSize:(CGSize)size aspect:(CGFloat)aspect mode:(UIViewContentMode)mode
 {
-    return resizeImage(self, aspect, size.width, size.height, mode, color);
+    return resizeImage(self, aspect, size.width, size.height, mode);
 }
 - (UIImage*)scaledToSize:(CGSize)size mode:(UIViewContentMode)mode
 {
-    return resizeImage(self, 0.0, size.width, size.height, mode, nil);
+    return resizeImage(self, 0.0, size.width, size.height, mode);
 }
 - (UIImage*)scaledToSize:(CGSize)size
 {
     return [self scaledToSize:size mode:UIViewContentModeScaleToFill];
 }
-- (UIColor*) averageColor
+- (UIColor*)averageColor:(UIRectEdge)edge width:(CGFloat)width
 {
     uint8_t rgba[4];
     CIImage* image = self.CIImage ?: [[CIImage alloc] initWithImage:self];
+    CGRect rect = image.extent;
+    switch (edge) {
+        case UIRectEdgeTop:     rect = CGRectMake(rect.origin.x, rect.origin.y, rect.size.width, width);  break;
+        case UIRectEdgeLeft:    rect = CGRectMake(rect.origin.x, rect.origin.y, width, rect.size.height); break;
+        case UIRectEdgeBottom:  rect = CGRectMake(rect.origin.x, rect.origin.y + rect.size.height-width, rect.size.width, width); break;
+        case UIRectEdgeRight:   rect = CGRectMake(rect.origin.x + rect.size.width - width, 0, width, image.extent.size.height); break;
+        default: break; // UIRectEdgeAll
+    }
     CIFilter* filter = [CIFilter filterWithName:@"CIAreaAverage" withInputParameters:@{
         kCIInputImageKey: image,
-        kCIInputExtentKey: [CIVector vectorWithCGRect:image.extent]
+        kCIInputExtentKey: [CIVector vectorWithCGRect:rect]
     }];
     CIContext* context = [CIContext contextWithOptions:nil];
     [context render:filter.outputImage toBitmap:rgba rowBytes:sizeof(rgba) bounds:CGRectMake(0, 0, 1, 1) format:kCIFormatRGBA8 colorSpace:nil];
     return [UIColor colorWithRed:rgba[0]/255.0 green:rgba[1]/255.0 blue:rgba[2]/255.0 alpha:rgba[3]/255.0];
 }
+- (UIColor*)averageColor
+{
+    return [self averageColor:UIRectEdgeAll width:1.0];
+}
+
 @end
+
 

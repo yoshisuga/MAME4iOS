@@ -1134,7 +1134,7 @@ UIView* find_view(UIView* view, Class class) {
                 CGFloat aspect = 3.0/4.0;
                 
                 if (self->_layoutMode == LayoutList)
-                    image = [image scaledToSize:CGSizeMake(cell.bounds.size.height / aspect, cell.bounds.size.height) aspect:aspect mode:UIViewContentModeScaleAspectFit background:[image averageColor]];
+                    image = [image scaledToSize:CGSizeMake(cell.bounds.size.height / aspect, cell.bounds.size.height) aspect:aspect mode:UIViewContentModeScaleAspectFit];
                 else
                     [cell setImageAspect:aspect];
             }
@@ -1145,7 +1145,7 @@ UIView* find_view(UIView* view, Class class) {
                 if (self->_layoutMode == LayoutList || self->_layoutCollums <= 1 || row_height.x <= ceil(cell.bounds.size.width * 3.0 / 4.0))
                     [cell setImageAspect:aspect];
                 else
-                    image = [image scaledToSize:CGSizeMake(cell.bounds.size.width, cell.bounds.size.width * aspect) aspect:aspect mode:UIViewContentModeScaleAspectFit background:[image averageColor]];
+                    image = [image scaledToSize:CGSizeMake(cell.bounds.size.width, cell.bounds.size.width * aspect) aspect:aspect mode:UIViewContentModeScaleAspectFit];
             }
 
             cell.image.image = image ?: self->_defaultImage;
