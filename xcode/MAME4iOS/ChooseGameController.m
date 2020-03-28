@@ -146,7 +146,7 @@ UIView* find_view(UIView* view, Class class) {
     
     // layout mode
     _layoutMode = [_userDefaults integerForKey:LAYOUT_MODE_KEY];
-    _layoutMode = MIN(MAX(_layoutMode,0), LayoutCount);
+    _layoutMode = CLAMP(_layoutMode, LayoutCount);
     
     _defaultImage = [UIImage imageNamed:@"default_game_icon"];
     _loadingImage = [UIImage imageNamed:@"loading_game_icon"];
@@ -255,7 +255,7 @@ UIView* find_view(UIView* view, Class class) {
             UIBarButtonItem* settings = [[UIBarButtonItem alloc] initWithImage:image style:UIBarButtonItemStylePlain target:self action:@selector(showSettings)];
             self.navigationItem.rightBarButtonItems = [@[settings] arrayByAddingObjectsFromArray:self.navigationItem.rightBarButtonItems];
         } else {
-            UIBarButtonItem* settings = [[UIBarButtonItem alloc] initWithTitle:@"⚙️" style:UIBarButtonItemStylePlain target:self action:@selector(showSettings)];
+            UIBarButtonItem* settings = [[UIBarButtonItem alloc] initWithTitle:@"Settings" style:UIBarButtonItemStylePlain target:self action:@selector(showSettings)];
             self.navigationItem.rightBarButtonItems = [@[settings] arrayByAddingObjectsFromArray:self.navigationItem.rightBarButtonItems];
         }
     }
@@ -508,9 +508,6 @@ UIView* find_view(UIView* view, Class class) {
         
         // a UICollectionView will scroll like crap if we have too many sections, so try to filter/combine similar ones.
         section = [[section componentsSeparatedByString:@" ("] firstObject];
-        //section = [[section componentsSeparatedByString:@" / "] firstObject];
-        //section = [[section componentsSeparatedByString:@"/"] firstObject];
-        
         section = [section stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
         
         if (![_gameFilterScope isEqualToString:@"Year"])
@@ -528,8 +525,6 @@ UIView* find_view(UIView* view, Class class) {
     if ([gameSectionTitles count] > 200) {
         NSLog(@"TOO MANY SECTIONS: %d!", (int)[gameSectionTitles count]);
         
-        NSMutableArray* new_titles = [[NSMutableArray alloc] init];
-        
         for (NSUInteger i=0; i<[gameSectionTitles count]-1; i++) {
             NSString* title_0 = gameSectionTitles[i+0];
             NSString* title_1 = gameSectionTitles[i+1];
@@ -540,19 +535,14 @@ UIView* find_view(UIView* view, Class class) {
                 NSString* new_title = [NSString stringWithFormat:@"%@ • %@", title_0, title_1];
                 
                 NSLog(@"   MERGE '%@' '%@' => '%@'", title_0, title_1, new_title);
-                
+
                 gameData[new_title] = [gameData[title_0] arrayByAddingObjectsFromArray:gameData[title_1]];
                 gameData[title_0] = nil;
                 gameData[title_1] = nil;
-                
-                [new_titles addObject:new_title];
                 i++;
             }
-            else {
-                [new_titles addObject:title_0];
-            }
         }
-        gameSectionTitles = [new_titles copy];
+        gameSectionTitles = [gameData.allKeys sortedArrayUsingSelector:@selector(localizedCompare:)];
         NSLog(@"SECTIONS AFTER MERGE: %d!", (int)[gameSectionTitles count]);
     }
     
@@ -570,10 +560,8 @@ UIView* find_view(UIView* view, Class class) {
     NSArray* recentGames = [[_userDefaults objectForKey:RECENT_GAMES_KEY]
         filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF IN %@", filteredGames]];
 
-    NSUInteger maxRecentGames = RECENT_GAMES_MAX;
-    
-    if ([recentGames count] > maxRecentGames)
-        recentGames = [recentGames subarrayWithRange:NSMakeRange(0, maxRecentGames)];
+    if ([recentGames count] > RECENT_GAMES_MAX)
+        recentGames = [recentGames subarrayWithRange:NSMakeRange(0, RECENT_GAMES_MAX)];
 
     if ([recentGames count] > 0) {
         //NSLog(@"RECENT GAMES: %@", recentGames);
@@ -659,18 +647,10 @@ UIView* find_view(UIView* view, Class class) {
 
 #pragma mark - UISearchControllerDelegate
 
-- (void)willPresentSearchController:(UISearchController *)searchController
-{
-    NSLog(@"willPresentSearchController: active=%d", searchController.active);
-}
 - (void)didPresentSearchController:(UISearchController *)searchController
 {
     NSLog(@"didPresentSearchController: active=%d", searchController.active);
     [self updateSearchCancelButton];
-}
-- (void)willDismissSearchController:(UISearchController *)searchController
-{
-    NSLog(@"willDismissSearchController: active=%d", searchController.active);
 }
 - (void)didDismissSearchController:(UISearchController *)searchController
 {
@@ -1354,9 +1334,6 @@ UIView* find_view(UIView* view, Class class) {
                     return;
                 
                 UIActivityViewController* activity = [[UIActivityViewController alloc] initWithActivityItems:@[url] applicationActivities:nil];
-                [activity setCompletionWithItemsHandler:^(UIActivityType activityType, BOOL completed, NSArray* _Nullable returnedItems, NSError* activityError) {
-                    NSLog(@"%@", activityType);
-                }];
 
                 if (activity.popoverPresentationController != nil) {
                     UIView* view = [self.collectionView cellForItemAtIndexPath:indexPath] ?: self.view;
@@ -1447,12 +1424,12 @@ UIView* find_view(UIView* view, Class class) {
 }
 #endif
 
+#pragma mark - LongPress menu (pre iOS 13 and tvOS only)
+
 - (void)collectionView:(UICollectionView *)collectionView didUpdateFocusInContext:(UICollectionViewFocusUpdateContext *)context withAnimationCoordinator:(UIFocusAnimationCoordinator *)coordinator {
     NSLog(@"didUpdateFocusInContext: %@ => %@", context.previouslyFocusedIndexPath, context.nextFocusedIndexPath);
     currentlyFocusedIndexPath = context.nextFocusedIndexPath;
 }
-
-#pragma mark - LongPress menu (pre iOS 13 and tvOS only)
 
 -(void)handleLongPress:(UIGestureRecognizer*)sender {
 
