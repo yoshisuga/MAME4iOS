@@ -1394,6 +1394,8 @@ UIView* find_view(UIView* view, Class class) {
 #if TARGET_OS_IOS
 
 - (UIContextMenuConfiguration *)collectionView:(UICollectionView *)collectionView contextMenuConfigurationForItemAtIndexPath:(NSIndexPath *)indexPath point:(CGPoint)point API_AVAILABLE(ios(13.0)) {
+    [self.collectionView selectItemAtIndexPath:indexPath animated:YES scrollPosition:UICollectionViewScrollPositionNone];
+
     NSArray* actions = [self menuActionsForItemAtIndexPath:indexPath];
     NSString* title = [self menuTitleForItemAtIndexPath:indexPath];
 
@@ -1440,6 +1442,7 @@ UIView* find_view(UIView* view, Class class) {
     NSIndexPath *indexPath = currentlyFocusedIndexPath;
 #else
     NSIndexPath *indexPath = [self.collectionView indexPathForItemAtPoint:[sender locationInView:self.collectionView]];
+    [self.collectionView selectItemAtIndexPath:indexPath animated:YES scrollPosition:UICollectionViewScrollPositionNone];
 #endif
     if (indexPath == nil)
         return;
