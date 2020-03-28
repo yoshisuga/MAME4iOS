@@ -1174,7 +1174,7 @@ UIView* find_view(UIView* view, Class class) {
         
         NSLog(@"CELL ASYNC LOAD: %@ %d:%d", info[kGameInfoName], (int)indexPath.section, (int)indexPath.item);
         [self updateImage:url];
-        [self->_layoutRowHeightCache removeObjectForKey:[NSIndexPath indexPathForItem:(indexPath.item / self->_layoutCollums) inSection:indexPath.section]];
+        [self->_layoutRowHeightCache removeObjectForKey:[NSIndexPath indexPathForItem:((indexPath.item / self->_layoutCollums) * self->_layoutCollums) inSection:indexPath.section]];
     }];
     
     // use a placeholder image if the image did not load right away.
