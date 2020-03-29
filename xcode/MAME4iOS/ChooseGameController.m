@@ -27,10 +27,14 @@
 #define CELL_TINY_WIDTH    100.0
 #define CELL_SMALL_WIDTH   200.0
 #define CELL_LARGE_WIDTH   400.0
+#define CELL_INSET_X       8.0
+#define CELL_INSET_Y       4.0
 #else
 #define CELL_TINY_WIDTH    200.0
 #define CELL_SMALL_WIDTH   400.0
 #define CELL_LARGE_WIDTH   600.0
+#define CELL_INSET_X       8.0
+#define CELL_INSET_Y       4.0
 #endif
 
 #define USE_TITLE_IMAGE         TRUE
@@ -40,8 +44,10 @@
 #define CELL_BACKGROUND_COLOR   [UIColor colorWithWhite:0.222 alpha:1.0]
 #define CELL_TITLE_COLOR        [UIColor whiteColor]
 #define CELL_DETAIL_COLOR       [UIColor lightGrayColor]
-#define CELL_INFO_COLOR         [UIColor lightGrayColor]
 #define CELL_SELECTED_COLOR     self.tintColor
+
+#define CELL_TITLE_FONT         [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
+#define CELL_DETAIL_FONT        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote]
 
 #define HEADER_IDENTIFIER   @"GameInfoHeader"
 
@@ -62,10 +68,9 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 @interface GameCell : UICollectionViewCell
 @property (readwrite, nonatomic, strong) UIImageView* image;
-@property (readwrite, nonatomic, strong) UILabel* title;
-@property (readwrite, nonatomic, strong) UILabel* detail;
-@property (readwrite, nonatomic, strong) UILabel* info;
+@property (readwrite, nonatomic, strong) UILabel* text;
 -(void)setHorizontal:(BOOL)horizontal;
+-(void)setHeight:(CGFloat)height;
 -(void)setTextInsets:(UIEdgeInsets)insets;
 -(void)setImageAspect:(CGFloat)aspect;
 @end
@@ -109,7 +114,8 @@ UIView* find_view(UIView* view, Class class) {
     NSArray* _gameSectionTitles;// sorted section names
     NSString* _gameFilterText;  // text string to filter games by
     NSString* _gameFilterScope; // group results by Name,Year,Manufactuer
-    NSUInteger _layoutCollums;
+    NSUInteger _layoutCollums;  // number of collums in current layout.
+    NSMutableDictionary* _layoutRowHeightCache; // cache of row heights, we want all items in a row to be same height.
     LayoutMode _layoutMode;
     CGFloat _layoutWidth;
     UISearchController* _searchController;
@@ -120,6 +126,7 @@ UIView* find_view(UIView* view, Class class) {
     UIImage* _defaultImage;
     UIImage* _loadingImage;
     NSMutableSet* _updated_urls;
+    NSMutableDictionary* _gameImageSize;
 }
 @end
 
@@ -139,7 +146,7 @@ UIView* find_view(UIView* view, Class class) {
     
     // layout mode
     _layoutMode = [_userDefaults integerForKey:LAYOUT_MODE_KEY];
-    _layoutMode = MIN(MAX(_layoutMode,0), LayoutCount);
+    _layoutMode = CLAMP(_layoutMode, LayoutCount);
     
     _defaultImage = [UIImage imageNamed:@"default_game_icon"];
     _loadingImage = [UIImage imageNamed:@"loading_game_icon"];
@@ -248,7 +255,7 @@ UIView* find_view(UIView* view, Class class) {
             UIBarButtonItem* settings = [[UIBarButtonItem alloc] initWithImage:image style:UIBarButtonItemStylePlain target:self action:@selector(showSettings)];
             self.navigationItem.rightBarButtonItems = [@[settings] arrayByAddingObjectsFromArray:self.navigationItem.rightBarButtonItems];
         } else {
-            UIBarButtonItem* settings = [[UIBarButtonItem alloc] initWithTitle:@"⚙️" style:UIBarButtonItemStylePlain target:self action:@selector(showSettings)];
+            UIBarButtonItem* settings = [[UIBarButtonItem alloc] initWithTitle:@"Settings" style:UIBarButtonItemStylePlain target:self action:@selector(showSettings)];
             self.navigationItem.rightBarButtonItems = [@[settings] arrayByAddingObjectsFromArray:self.navigationItem.rightBarButtonItems];
         }
     }
@@ -272,6 +279,13 @@ UIView* find_view(UIView* view, Class class) {
     UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(menuPress)];
     tap.allowedPressTypes = @[[NSNumber numberWithInteger:UIPressTypeMenu]];
     [self.navigationController.view addGestureRecognizer:tap];
+#endif
+    
+#ifdef XDEBUG
+    // delete all the cached TITLE images.
+    NSString* titles_path = [NSString stringWithUTF8String:get_documents_path("titles")];
+    [[NSFileManager defaultManager] removeItemAtPath:titles_path error:nil];
+    [[NSFileManager defaultManager] createDirectoryAtPath:titles_path withIntermediateDirectories:NO attributes:nil error:nil];
 #endif
 }
 -(void)scrollToTop
@@ -314,6 +328,7 @@ UIView* find_view(UIView* view, Class class) {
     [self.navigationController pushViewController:search animated:YES];
 }
 #endif
+
 -(void)showSettings
 {
     if (_selectGameCallback)
@@ -365,6 +380,8 @@ UIView* find_view(UIView* view, Class class) {
     [self filterGameList];
 }
 
+#pragma mark - game images
+
 -(NSURL*)getGameImageURL:(NSDictionary*)info
 {
     NSString* name = info[kGameInfoDescription];
@@ -393,6 +410,53 @@ UIView* find_view(UIView* view, Class class) {
     
     return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%s/%@.png", get_documents_path("titles"), name] isDirectory:NO];
 }
+
+-(CGSize)getGameImageSize:(NSDictionary*)info
+{
+    NSString* name = info[kGameInfoName];
+    CGSize size = CGSizeZero;
+
+    if (name == nil)
+        return size;
+    
+    NSValue* val = _gameImageSize[name];
+    
+    if (val != nil)
+        return [val CGSizeValue];
+    
+    NSURL* url = [self getGameImageLocalURL:info];
+    
+    if (url == nil)
+        return size;
+    
+    NSFileHandle* file = [NSFileHandle fileHandleForReadingFromURL:url error:nil];
+
+    if (file == nil)
+        return size;
+
+    // because we only need the size, directly read the PNG header and get it.
+    // [PNG header](https://en.wikipedia.org/wiki/Portable_Network_Graphics#File_header)
+    // 0x89 'PNG' \r\n 0x1A \n [13] 'IHDR' [width] [height] (FYI PNG stores integers in big-endian)
+    uint8_t png_header[] = {0x89, 'P','N','G', '\r','\n', 0x1A, '\n', 0,0,0,13, 'I','H','D','R'};
+    
+    NSData* data = [file readDataOfLength:sizeof(png_header) + 4*2];
+    const uint8_t* bytes = [data bytes];
+    
+    if ([data length] == (sizeof(png_header) + 4*2) && memcmp(png_header, bytes, sizeof(png_header)) == 0)
+    {
+        NSUInteger width  = (NSUInteger)bytes[sizeof(png_header) + 0*4 + 3] + ((NSUInteger)bytes[sizeof(png_header) + 0*4 + 2] << 8);
+        NSUInteger height = (NSUInteger)bytes[sizeof(png_header) + 1*4 + 3] + ((NSUInteger)bytes[sizeof(png_header) + 1*4 + 2] << 8);
+        size = CGSizeMake(width, height);
+    }
+    
+    // store this size in the cache, so next time we dont need to do any file I/O
+    _gameImageSize = _gameImageSize ?: [[NSMutableDictionary alloc] init];
+    _gameImageSize[name] = [NSValue valueWithCGSize:size];
+    
+    return size;
+}
+
+#pragma mark - game filter
 
 - (void)filterGameList
 {
@@ -444,9 +508,6 @@ UIView* find_view(UIView* view, Class class) {
         
         // a UICollectionView will scroll like crap if we have too many sections, so try to filter/combine similar ones.
         section = [[section componentsSeparatedByString:@" ("] firstObject];
-        //section = [[section componentsSeparatedByString:@" / "] firstObject];
-        //section = [[section componentsSeparatedByString:@"/"] firstObject];
-        
         section = [section stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
         
         if (![_gameFilterScope isEqualToString:@"Year"])
@@ -464,8 +525,6 @@ UIView* find_view(UIView* view, Class class) {
     if ([gameSectionTitles count] > 200) {
         NSLog(@"TOO MANY SECTIONS: %d!", (int)[gameSectionTitles count]);
         
-        NSMutableArray* new_titles = [[NSMutableArray alloc] init];
-        
         for (NSUInteger i=0; i<[gameSectionTitles count]-1; i++) {
             NSString* title_0 = gameSectionTitles[i+0];
             NSString* title_1 = gameSectionTitles[i+1];
@@ -476,19 +535,14 @@ UIView* find_view(UIView* view, Class class) {
                 NSString* new_title = [NSString stringWithFormat:@"%@ • %@", title_0, title_1];
                 
                 NSLog(@"   MERGE '%@' '%@' => '%@'", title_0, title_1, new_title);
-                
+
                 gameData[new_title] = [gameData[title_0] arrayByAddingObjectsFromArray:gameData[title_1]];
                 gameData[title_0] = nil;
                 gameData[title_1] = nil;
-                
-                [new_titles addObject:new_title];
                 i++;
             }
-            else {
-                [new_titles addObject:title_0];
-            }
         }
-        gameSectionTitles = [new_titles copy];
+        gameSectionTitles = [gameData.allKeys sortedArrayUsingSelector:@selector(localizedCompare:)];
         NSLog(@"SECTIONS AFTER MERGE: %d!", (int)[gameSectionTitles count]);
     }
     
@@ -506,10 +560,8 @@ UIView* find_view(UIView* view, Class class) {
     NSArray* recentGames = [[_userDefaults objectForKey:RECENT_GAMES_KEY]
         filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF IN %@", filteredGames]];
 
-    NSUInteger maxRecentGames = RECENT_GAMES_MAX;
-    
-    if ([recentGames count] > maxRecentGames)
-        recentGames = [recentGames subarrayWithRange:NSMakeRange(0, maxRecentGames)];
+    if ([recentGames count] > RECENT_GAMES_MAX)
+        recentGames = [recentGames subarrayWithRange:NSMakeRange(0, RECENT_GAMES_MAX)];
 
     if ([recentGames count] > 0) {
         //NSLog(@"RECENT GAMES: %@", recentGames);
@@ -595,18 +647,10 @@ UIView* find_view(UIView* view, Class class) {
 
 #pragma mark - UISearchControllerDelegate
 
-- (void)willPresentSearchController:(UISearchController *)searchController
-{
-    NSLog(@"willPresentSearchController: active=%d", searchController.active);
-}
 - (void)didPresentSearchController:(UISearchController *)searchController
 {
     NSLog(@"didPresentSearchController: active=%d", searchController.active);
     [self updateSearchCancelButton];
-}
-- (void)willDismissSearchController:(UISearchController *)searchController
-{
-    NSLog(@"willDismissSearchController: active=%d", searchController.active);
 }
 - (void)didDismissSearchController:(UISearchController *)searchController
 {
@@ -663,6 +707,7 @@ UIView* find_view(UIView* view, Class class) {
 -(void)invalidateLayout
 {
     [self.collectionView.collectionViewLayout invalidateLayout];
+    _layoutRowHeightCache = nil;   // flush row height cache
     
     // HACK kick the layout in the head, so it gets the location of headers correct
     CGPoint offset = self.collectionView.contentOffset;
@@ -830,14 +875,16 @@ UIView* find_view(UIView* view, Class class) {
 
 -(void)updateImages
 {
-    if (self.collectionView.isDragging || self.collectionView.isTracking || self.collectionView.isDecelerating) {
+    static BOOL g_updating;
+    
+    if (g_updating || self.collectionView.isDragging || self.collectionView.isTracking || self.collectionView.isDecelerating) {
         NSLog(@"updateImages: SCROLLING (will try again)");
         [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateImages) object:nil];
         [self performSelector:@selector(updateImages) withObject:nil afterDelay:1.0];
         return;
     }
 
-    NSMutableArray* update_items = [[NSMutableArray alloc] init];
+    NSMutableSet* update_items = [[NSMutableSet alloc] init];
 
     // ok get all the *visible* indexPaths and see if any need a refresh/reload
     NSArray* vis_items = [self.collectionView indexPathsForVisibleItems];
@@ -845,8 +892,17 @@ UIView* find_view(UIView* view, Class class) {
     for (NSIndexPath* indexPath in vis_items) {
         NSDictionary* game = [self getGameInfo:indexPath];
         NSURL* url = [self getGameImageURL:game];
-        if ([_updated_urls containsObject:url])
-            [update_items addObject:indexPath];
+        if (![_updated_urls containsObject:url])
+            continue;
+        // we need to update the entire row
+        NSUInteger section = indexPath.section;
+        NSUInteger row_start = (indexPath.item / _layoutCollums) * _layoutCollums;
+        NSUInteger row_end = MIN(row_start + _layoutCollums, [self collectionView:self.collectionView numberOfItemsInSection:section]);
+        
+        [_layoutRowHeightCache removeObjectForKey:[NSIndexPath indexPathForItem:row_start inSection:section]];
+
+        for (NSUInteger item = row_start; item < row_end; item++)
+            [update_items addObject:[NSIndexPath indexPathForItem:item inSection:section]];
     }
     
     NSLog(@"updateImages: %d visible items, %d dirty images, %d cells need updated", (int)vis_items.count, (int)_updated_urls.count, (int)update_items.count);
@@ -857,17 +913,18 @@ UIView* find_view(UIView* view, Class class) {
         
         if (selectedIndexPath != nil && ![update_items containsObject:selectedIndexPath])
             selectedIndexPath = nil;
-        
+
+        g_updating = TRUE;
         [self.collectionView performBatchUpdates:^{
-            [self.collectionView reloadItemsAtIndexPaths:update_items];
+            [self.collectionView reloadItemsAtIndexPaths:[update_items allObjects]];
         } completion:^(BOOL finished) {
+            NSLog(@"updateImages DONE!");
+            g_updating = FALSE;
             if (selectedIndexPath != nil) {
                 [self.collectionView selectItemAtIndexPath:selectedIndexPath animated:NO scrollPosition:UICollectionViewScrollPositionCenteredVertically];
             }
         }];
     }
-
-    NSLog(@"updateImages DONE!");
 }
 
 // update all cells with this image
@@ -888,6 +945,8 @@ UIView* find_view(UIView* view, Class class) {
 }
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
 {
+    if (section >= _gameSectionTitles.count)
+        return 0;
     NSString* title = _gameSectionTitles[section];
     NSInteger num = [_gameData[title] count];
     if ([title isEqualToString:RECENT_GAMES_TITLE] && _layoutMode <= LayoutSmall)
@@ -906,57 +965,155 @@ UIView* find_view(UIView* view, Class class) {
         
     return items[indexPath.item];
 }
+
+//  get the text based on the LayoutMode
+//
+//  TINY        SMALL                       LARGE or LIST
+//  ----        -----                       -------------
+//  romname     short Description           full Description
+//              short Manufacturer • Year   full Manufacturer • Year  • romname [parent-rom]
+//
+-(NSAttributedString*)getGameText:(NSDictionary*)info
+{
+    NSString* title;
+    NSString* detail;
+    NSString* str;
+
+    if (_layoutMode == LayoutTiny) {
+        title = info[kGameInfoName];
+    }
+    else if (_layoutMode == LayoutSmall) {
+        title = [[info[kGameInfoDescription] componentsSeparatedByString:@" ("] firstObject];
+        detail = [NSString stringWithFormat:@"%@ • %@",
+                    [[info[kGameInfoManufacturer] componentsSeparatedByString:@" ("] firstObject],
+                    info[kGameInfoYear]];
+    }
+    else { // LayoutLarge and LayoutList
+        title = info[kGameInfoDescription];
+        detail = info[kGameInfoManufacturer];
+
+        if ((str = info[kGameInfoYear]) && [str length] > 1)
+            detail = [NSString stringWithFormat:@"%@ • %@", detail, str];
+        
+        if ((str = info[kGameInfoName]) && [str length] > 1)
+            detail = [NSString stringWithFormat:@"%@ • %@", detail, str];
+
+        if ((str = info[kGameInfoParent]) && [str length] > 1)
+            detail = [NSString stringWithFormat:@"%@ [%@]", detail, str];
+    }
+    
+    NSMutableAttributedString* text = [[NSMutableAttributedString alloc] initWithString:title attributes:@{
+        NSFontAttributeName:CELL_TITLE_FONT,
+        NSForegroundColorAttributeName:CELL_TITLE_COLOR
+    }];
+
+    if (detail != nil)
+    {
+        detail = [@"\n" stringByAppendingString:detail];
+
+        [text appendAttributedString:[[NSAttributedString alloc] initWithString:detail attributes:@{
+            NSFontAttributeName:CELL_DETAIL_FONT,
+            NSForegroundColorAttributeName:CELL_DETAIL_COLOR
+        }]];
+    }
+    
+    return [text copy];
+}
+
+// compute the size(s) of a single item. returns: (x = image_height, y = text_height)
+- (CGPoint)heightForItemAtIndexPath:(NSIndexPath *)indexPath
+{
+    UICollectionViewFlowLayout* layout = (UICollectionViewFlowLayout*)self.collectionView.collectionViewLayout;
+    NSDictionary* info = [self getGameInfo:indexPath];
+    NSAttributedString* text = [self getGameText:info];
+    
+    // start with the (estimatedSize.width,0.0)
+    CGFloat item_width = layout.estimatedItemSize.width;
+    CGFloat image_height, text_height;
+    
+    // get the title image size, assume the image is 3:4 if we dont know.
+    CGSize imageSize = [self getGameImageSize:info];
+    
+    if (imageSize.height == 0.0 || imageSize.width == 0.0 || imageSize.width < imageSize.height)
+        image_height = ceil(item_width * 4.0 / 3.0);
+    else
+        image_height = ceil(item_width * 3.0 / 4.0);
+
+    // get the text height, in LayoutTiny we only show one line.
+    CGSize textSize = CGSizeMake(item_width - CELL_INSET_X*2, 9999.0);
+    if (_layoutMode == LayoutTiny)
+        textSize.width = 9999.0;
+    textSize = [text boundingRectWithSize:textSize options:NSStringDrawingUsesLineFragmentOrigin context:nil].size;
+    
+    text_height = CELL_INSET_Y + ceil(textSize.height) + CELL_INSET_Y;
+    
+    NSLog(@"heightForItemAtIndexPath: %d.%d %@ -> %@", (int)indexPath.section, (int)indexPath.item, info[kGameInfoName], NSStringFromCGSize(CGSizeMake(image_height, text_height)));
+    return CGPointMake(image_height, text_height);
+}
+
+// compute (or return from cache) the height(s) of a single row. the height of a row is the maximum of all items in that row.
+// returns: (x = image_height, y = text_height)
+- (CGPoint)heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    // this code should not be called in this case
+    NSParameterAssert(!(_layoutMode == LayoutList || _layoutCollums <= 1));
+
+    // if we are in list mode, or we only have one collum, no need to do extra work computing sizes
+    if (_layoutMode == LayoutList || _layoutCollums <= 1)
+        return CGPointZero;
+    
+    NSUInteger section = indexPath.section;
+    NSUInteger row_start = (indexPath.item / _layoutCollums) * _layoutCollums;
+    NSUInteger row_end = MIN(row_start + _layoutCollums, [self collectionView:self.collectionView numberOfItemsInSection:section]);
+    indexPath = [NSIndexPath indexPathForItem:row_start inSection:section];
+
+    // check row height cache
+    NSValue* val = _layoutRowHeightCache[indexPath];
+    if (val != nil)
+        return [val CGPointValue];
+
+    // go over each item in the row and compute the max image_height and max text_height
+    CGPoint row_height = CGPointZero;
+    for (NSUInteger item = row_start; item < row_end; item++) {
+        CGPoint item_height = [self heightForItemAtIndexPath:[NSIndexPath indexPathForItem:item inSection:section]];
+        row_height.x = MAX(row_height.x, item_height.x);
+        row_height.y = MAX(row_height.y, item_height.y);
+    }
+    
+    NSLog(@"heightForRow: %d.%d -> %@ = %f", (int)indexPath.section, (int)indexPath.item, NSStringFromCGPoint(row_height), row_height.x + row_height.y);
+    _layoutRowHeightCache = _layoutRowHeightCache ?: [[NSMutableDictionary alloc] init];
+    _layoutRowHeightCache[indexPath] = [NSValue valueWithCGPoint:row_height];
+    return row_height;
+}
+
+// create a cell for an item.
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    //NSLog(@"cellForItemAtIndexPath: %d.%d", (int)indexPath.section, (int)indexPath.item);
+    NSLog(@"cellForItemAtIndexPath: %d.%d", (int)indexPath.section, (int)indexPath.item);
     
     NSDictionary* info = [self getGameInfo:indexPath];
     
     GameCell* cell = [collectionView dequeueReusableCellWithReuseIdentifier:CELL_IDENTIFIER forIndexPath:indexPath];
     
-    //  set the text based on the LayoutMode
-    //
-    //  TINY        SMALL                       LARGE or LIST
-    //  ----        -----                       -------------
-    //  romname     short Description           full Description
-    //              short Manufacturer • Year   full Manufacturer • Year  • romname [parent-rom]
-    //
-    if (_layoutMode == LayoutTiny) {
-        cell.title.font = [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
-        cell.title.text = info[kGameInfoName];
-        cell.title.numberOfLines = 1;
-        cell.title.adjustsFontSizeToFitWidth = TRUE;
-    }
-    else if (_layoutMode == LayoutSmall) {
-        cell.title.text = [[info[kGameInfoDescription] componentsSeparatedByString:@" ("] firstObject];
-        cell.detail.text = [NSString stringWithFormat:@"%@ • %@",
-                            [[info[kGameInfoManufacturer] componentsSeparatedByString:@" ("] firstObject],
-                            info[kGameInfoYear]];
-    }
-    else { // LayoutLarge and LayoutList
-        cell.title.text = info[kGameInfoDescription];
-
-        NSString* text = info[kGameInfoManufacturer];
-
-        if ([info[kGameInfoYear] length] > 1)
-            text = [NSString stringWithFormat:@"%@ • %@", text, info[kGameInfoYear]];
-        
-        if ([info[kGameInfoName] length] > 1)
-            text = [NSString stringWithFormat:@"%@ • %@", text, info[kGameInfoName]];
-
-        if ([info[kGameInfoParent] length] > 1)
-            text = [NSString stringWithFormat:@"%@ [%@]", text, info[kGameInfoParent]];
-
-        if ([text hasPrefix:@" • "])
-            text = [text substringFromIndex:3];
-
-        cell.detail.text = text;
-    }
+    cell.text.attributedText = [self getGameText:info];;
     
+    if (_layoutMode == LayoutTiny) {
+        cell.text.numberOfLines = 1;
+        cell.text.adjustsFontSizeToFitWidth = TRUE;
+    }
+
     [cell setHorizontal:_layoutMode == LayoutList];
+    [cell setTextInsets:UIEdgeInsetsMake(CELL_INSET_Y, CELL_INSET_X, CELL_INSET_Y, CELL_INSET_X)];
+    
+    CGPoint row_height = CGPointZero;
+    if (_layoutMode != LayoutList && _layoutCollums > 1) {
+        row_height = [self heightForRowAtIndexPath:indexPath];
+        [cell setHeight:(row_height.x + row_height.y)];
+    }
 
     NSURL* url = [self getGameImageURL:info];
     NSURL* local = [self getGameImageLocalURL:info];
+
     cell.tag = url.hash;
     [[ImageCache sharedInstance] getImage:url size:CGSizeZero localURL:local completionHandler:^(UIImage *image) {
         
@@ -966,22 +1123,48 @@ UIView* find_view(UIView* view, Class class) {
         
         // if this is syncronous set image and be done
         if (cell.image.image == nil) {
-            cell.image.image = image ?: self->_defaultImage;
+            
+            image = image ?: self->_defaultImage;
+            
             // MAME games always ran on horz or vertical CRTs so it does not matter what the PAR of
-            // the title image is force a DAR of 3:4 or 4:3
-            if (image != nil)
-                [cell setImageAspect:image.size.width > image.size.height ? 4.0/3.0 : 3.0/4.0];
+            // the title image is force a aspect of 3:4 or 4:3
+            
+            if (image.size.width < image.size.height) {
+                // image is a portrait (3:4) image
+                CGFloat aspect = 3.0/4.0;
+                
+                if (self->_layoutMode == LayoutList)
+                    image = [image scaledToSize:CGSizeMake(cell.bounds.size.height / aspect, cell.bounds.size.height) aspect:aspect mode:UIViewContentModeScaleAspectFit];
+                else
+                    [cell setImageAspect:aspect];
+            }
+            else {
+                // image is a landscape (4:3) image
+                CGFloat aspect = 4.0/3.0;
+                
+                if (self->_layoutMode == LayoutList || self->_layoutCollums <= 1 || row_height.x <= ceil(cell.bounds.size.width * 3.0 / 4.0))
+                    [cell setImageAspect:aspect];
+                else
+                    image = [image scaledToSize:CGSizeMake(cell.bounds.size.width, cell.bounds.size.width * aspect) aspect:aspect mode:UIViewContentModeScaleAspectFit];
+            }
+
+            cell.image.image = image ?: self->_defaultImage;
             return;
         }
         
         NSLog(@"CELL ASYNC LOAD: %@ %d:%d", info[kGameInfoName], (int)indexPath.section, (int)indexPath.item);
         [self updateImage:url];
-        
+        [self->_layoutRowHeightCache removeObjectForKey:[NSIndexPath indexPathForItem:((indexPath.item / self->_layoutCollums) * self->_layoutCollums) inSection:indexPath.section]];
     }];
     
     // use a placeholder image if the image did not load right away.
-    if (cell.image.image == nil)
+    if (cell.image.image == nil) {
         cell.image.image = _loadingImage;
+        if (self->_layoutMode == LayoutList) {
+            [cell setImageAspect:4.0/3.0];
+            cell.image.contentMode = UIViewContentModeScaleAspectFit;
+        }
+    }
     
     return cell;
 }
@@ -1010,9 +1193,9 @@ UIView* find_view(UIView* view, Class class) {
 {
     GameCell* cell = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:HEADER_IDENTIFIER forIndexPath:indexPath];
     [cell setHorizontal:TRUE];
-    cell.title.text = _gameSectionTitles[indexPath.section];
-    cell.title.font = [UIFont systemFontOfSize:cell.bounds.size.height * 0.8 weight:UIFontWeightHeavy];
-    cell.title.textColor = HEADER_TEXT_COLOR;
+    cell.text.text = _gameSectionTitles[indexPath.section];
+    cell.text.font = [UIFont systemFontOfSize:cell.bounds.size.height * 0.8 weight:UIFontWeightHeavy];
+    cell.text.textColor = HEADER_TEXT_COLOR;
     [cell setTextInsets:UIEdgeInsetsMake(2.0, self.safeAreaInsets.left + 2.0, 2.0, self.safeAreaInsets.right + 2.0)];
     cell.contentView.backgroundColor = [self.collectionView.backgroundColor colorWithAlphaComponent:0.5];
     cell.layer.cornerRadius = 0.0;
@@ -1039,7 +1222,7 @@ UIView* find_view(UIView* view, Class class) {
 
 - (void)collectionView:(UICollectionView *)collectionView willDisplayCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    NSLog(@"willDisplayCell: %d.%d %@", (int)indexPath.section, (int)indexPath.row, [self getGameInfo:indexPath][kGameInfoName]);
+    //NSLog(@"willDisplayCell: %d.%d %@", (int)indexPath.section, (int)indexPath.row, [self getGameInfo:indexPath][kGameInfoName]);
 
     // if this cell still have the loading image, it went offscreen, got canceled, came back on screen ==> reload just to be safe.
     if ([cell isKindOfClass:[GameCell class]] && ((GameCell*)cell).image.image == _loadingImage)
@@ -1054,7 +1237,7 @@ UIView* find_view(UIView* view, Class class) {
 
 - (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    NSLog(@"endDisplayCell: %d.%d %@", (int)indexPath.section, (int)indexPath.row, [self getGameInfo:indexPath][kGameInfoName]);
+    //NSLog(@"endDisplayCell: %d.%d %@", (int)indexPath.section, (int)indexPath.row, [self getGameInfo:indexPath][kGameInfoName]);
     
     if ([cell isKindOfClass:[GameCell class]] && ((GameCell*)cell).image.image == _loadingImage)
     {
@@ -1151,9 +1334,6 @@ UIView* find_view(UIView* view, Class class) {
                     return;
                 
                 UIActivityViewController* activity = [[UIActivityViewController alloc] initWithActivityItems:@[url] applicationActivities:nil];
-                [activity setCompletionWithItemsHandler:^(UIActivityType activityType, BOOL completed, NSArray* _Nullable returnedItems, NSError* activityError) {
-                    NSLog(@"%@", activityType);
-                }];
 
                 if (activity.popoverPresentationController != nil) {
                     UIView* view = [self.collectionView cellForItemAtIndexPath:indexPath] ?: self.view;
@@ -1214,6 +1394,8 @@ UIView* find_view(UIView* view, Class class) {
 #if TARGET_OS_IOS
 
 - (UIContextMenuConfiguration *)collectionView:(UICollectionView *)collectionView contextMenuConfigurationForItemAtIndexPath:(NSIndexPath *)indexPath point:(CGPoint)point API_AVAILABLE(ios(13.0)) {
+    [self.collectionView selectItemAtIndexPath:indexPath animated:YES scrollPosition:UICollectionViewScrollPositionNone];
+
     NSArray* actions = [self menuActionsForItemAtIndexPath:indexPath];
     NSString* title = [self menuTitleForItemAtIndexPath:indexPath];
 
@@ -1244,12 +1426,12 @@ UIView* find_view(UIView* view, Class class) {
 }
 #endif
 
+#pragma mark - LongPress menu (pre iOS 13 and tvOS only)
+
 - (void)collectionView:(UICollectionView *)collectionView didUpdateFocusInContext:(UICollectionViewFocusUpdateContext *)context withAnimationCoordinator:(UIFocusAnimationCoordinator *)coordinator {
     NSLog(@"didUpdateFocusInContext: %@ => %@", context.previouslyFocusedIndexPath, context.nextFocusedIndexPath);
     currentlyFocusedIndexPath = context.nextFocusedIndexPath;
 }
-
-#pragma mark - LongPress menu (pre iOS 13 and tvOS only)
 
 -(void)handleLongPress:(UIGestureRecognizer*)sender {
 
@@ -1260,6 +1442,7 @@ UIView* find_view(UIView* view, Class class) {
     NSIndexPath *indexPath = currentlyFocusedIndexPath;
 #else
     NSIndexPath *indexPath = [self.collectionView indexPathForItemAtPoint:[sender locationInView:self.collectionView]];
+    [self.collectionView selectItemAtIndexPath:indexPath animated:YES scrollPosition:UICollectionViewScrollPositionNone];
 #endif
     if (indexPath == nil)
         return;
@@ -1458,6 +1641,8 @@ UIView* find_view(UIView* view, Class class) {
 -(CGFloat)aspect {
     if (_aspect != 0.0)
         return _aspect;
+    if (self.image.size.height == 0.0)
+        return 1.0;
     return self.image.size.width / self.image.size.height;
 }
 @end
@@ -1468,6 +1653,7 @@ UIView* find_view(UIView* view, Class class) {
 @interface GameCell () {
     UIStackView* _stackView;
     UIStackView* _stackText;
+    CGFloat _height;
 }
 @end
 
@@ -1476,15 +1662,13 @@ UIView* find_view(UIView* view, Class class) {
 // Two different cell typres, horz or vertical
 //
 // +-----------------+   +----------+-----------------+
-// |                 |   |          | Title           |
-// |                 |   |  Image   | detail          |
-// |    Image        |   |          | info            |
+// |                 |   |          |                 |
+// |                 |   |  Image   | Text            |
+// |    Image        |   |          |                 |
 // |                 |   +----------+-----------------+
 // |                 |
 // +-----------------+
-// | Title           |
-// | detail          |
-// | info            |
+// | Text            |
 // +-----------------+
 //
 - (instancetype)initWithFrame:(CGRect)frame
@@ -1492,12 +1676,13 @@ UIView* find_view(UIView* view, Class class) {
     self = [super initWithFrame:frame];
     
     _image = [[ImageView alloc] init];
-    _title = [[UILabel alloc] init];
-    _detail = [[UILabel alloc] init];
-    _info = [[UILabel alloc] init];
-    
-    _stackText = [[UIStackView alloc] initWithArrangedSubviews:@[_title, _detail, _info]];
-    _stackView = [[UIStackView alloc] initWithArrangedSubviews:@[_image, _stackText]];
+    _text = [[UILabel alloc] init];
+    UIView* decoy = [[UIView alloc] init];
+#ifdef XDEBUG
+    decoy.backgroundColor = [UIColor systemOrangeColor];
+#endif
+    _stackText = [[UIStackView alloc] initWithArrangedSubviews:@[_text]];
+    _stackView = [[UIStackView alloc] initWithArrangedSubviews:@[_image, _stackText, decoy]];
 
     _stackView.translatesAutoresizingMaskIntoConstraints = YES;
     _stackView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -1529,28 +1714,24 @@ UIView* find_view(UIView* view, Class class) {
     self.layer.shadowRadius = 8.0;
     self.layer.shadowOpacity = 1.0;
     
-    _title.text = nil;
-    _title.font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
-    _title.textColor = CELL_TITLE_COLOR;
-    _title.numberOfLines = 0;
-    _title.adjustsFontSizeToFitWidth = FALSE;
+    _text.text = nil;
+    _text.attributedText = nil;
+    _text.font = nil;
+    _text.textColor = nil;
+    _text.numberOfLines = 0;
+    _text.adjustsFontSizeToFitWidth = FALSE;
     
-    _detail.text = nil;
-    _detail.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
-    _detail.textColor = CELL_DETAIL_COLOR;
-    _detail.numberOfLines = 0;
-    _title.adjustsFontSizeToFitWidth = FALSE;
-
-    _info.text = nil;
-    _info.font = _detail.font;
-    _info.textColor = CELL_INFO_COLOR;
-    _info.numberOfLines = 1;
-    _info.adjustsFontSizeToFitWidth = TRUE;
+    _height = 0.0;
 
     _image.image = nil;
-    _image.contentMode = UIViewContentModeScaleAspectFill;
+    _image.contentMode = UIViewContentModeScaleAspectFit;
+    _image.layer.minificationFilter = kCAFilterTrilinear;
     ((ImageView*)_image).aspect = 0.0;
     [_image setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
+    [_image setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
+
+    [_image setContentHuggingPriority:UILayoutPriorityDefaultLow forAxis:UILayoutConstraintAxisVertical];
+    [_image setContentCompressionResistancePriority:UILayoutPriorityDefaultLow forAxis:UILayoutConstraintAxisVertical];
 
     _stackView.axis = UILayoutConstraintAxisVertical;
     _stackView.alignment = UIStackViewAlignmentFill;
@@ -1582,9 +1763,7 @@ UIView* find_view(UIView* view, Class class) {
 
     width -= (_stackText.layoutMargins.left + _stackText.layoutMargins.right);
 
-    _title.preferredMaxLayoutWidth = width;
-    _detail.preferredMaxLayoutWidth = width;
-    _info.preferredMaxLayoutWidth = width;
+    _text.preferredMaxLayoutWidth = width;
 
     [super updateConstraints];
 }
@@ -1614,11 +1793,21 @@ UIView* find_view(UIView* view, Class class) {
     _image.contentMode = UIViewContentModeScaleToFill;
     ((ImageView*)_image).aspect = aspect;
 }
+-(void)setHeight:(CGFloat)height
+{
+    _height = height;
+    [self setNeedsUpdateConstraints];
+}
 
 - (CGSize)sizeThatFits:(CGSize)targetSize
 {
     if (_stackView.axis == UILayoutConstraintAxisHorizontal)
         return targetSize;
+    
+    if (_height != 0.0) {
+        targetSize.height = _height;
+        return targetSize;
+    }
     
     [self updateConstraintsIfNeeded];
     targetSize.height = ceil([_stackView systemLayoutSizeFittingSize:UILayoutFittingCompressedSize].height);
@@ -1643,16 +1832,15 @@ UIView* find_view(UIView* view, Class class) {
     self.contentView.backgroundColor = color;
     self.contentView.layer.borderColor = color.CGColor;
 }
-
 - (void)setHighlighted:(BOOL)highlighted
 {
-    NSLog(@"setHighlighted(%@): %@", self.title.text, highlighted ? @"YES" : @"NO");
+    //NSLog(@"setHighlighted(%@): %@", self.text.text, highlighted ? @"YES" : @"NO");
     [super setHighlighted:highlighted];
     [self updateSelected];
 }
 - (void)setSelected:(BOOL)selected
 {
-    NSLog(@"setSelected(%@): %@", self.title.text, selected ? @"YES" : @"NO");
+    //NSLog(@"setSelected(%@): %@", self.text.text, selected ? @"YES" : @"NO");
     [super setSelected:selected];
     [self updateSelected];
 }
