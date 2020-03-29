@@ -1,5 +1,5 @@
 # MAME4iOS Reloaded
-### Version 2020.1 (Feb 2020) 
+### Version 2020.2 (Mar 2020) 
 ### MAME (0.139u1 )  by David Valdeita (Seleuco)
 
 ![Icon](MAME4iOS144.png)
