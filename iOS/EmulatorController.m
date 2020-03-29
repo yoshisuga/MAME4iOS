@@ -358,12 +358,13 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     
     sharedInstance = self;
     
-    NSDictionary* game = [[NSUserDefaults standardUserDefaults] dictionaryForKey:kSelectedGameKey];
-    NSString* name = game[kGameInfoName] ?: @"";
+    NSString* name = [[NSUserDefaults standardUserDefaults] stringForKey:kSelectedGameKey] ?: @"";
     if ([name isEqualToString:kGameInfoNameMameMenu])
         name = @" ";
     strncpy(g_mame_game, [name cStringUsingEncoding:NSUTF8StringEncoding], sizeof(g_mame_game));
     g_mame_game_error[0] = 0;
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:kSelectedGameKey];
+    [[NSUserDefaults standardUserDefaults] synchronize];
 	     		    				
     pthread_create(&main_tid, NULL, app_Thread_Start, NULL);
 		
@@ -563,6 +564,11 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
 
 - (void)runPause
 {
+    // this is called from bootstrapper when app is going into the background, save the current game we are playing so we can restore next time.
+    NSString* name = [NSString stringWithUTF8String:g_mame_game];
+    [[NSUserDefaults standardUserDefaults] setObject:name forKey:kSelectedGameKey];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+    
     if (self.presentedViewController != nil || g_emulation_paused)
         return;
 
@@ -1091,7 +1097,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     optionsController = [[TVOptionsController alloc] init];
     optionsController.emuController = self;
 #endif
-    [self updateUserActivity];
+    [self updateUserActivity:nil];      // TODO: look at if we need to do this here??
 }
 
 -(void)viewWillAppear:(BOOL)animated {
@@ -3991,12 +3997,10 @@ void myosd_handle_turbo() {
 
     if (name != nil) {
         strncpy(g_mame_game, [name cStringUsingEncoding:NSUTF8StringEncoding], sizeof(g_mame_game));
-        [[NSUserDefaults standardUserDefaults] setObject:game forKey:kSelectedGameKey];
-        [self updateUserActivity];
+        [self updateUserActivity:game];
     }
     else {
         g_mame_game[0] = 0;     // run the MENU
-        [[NSUserDefaults standardUserDefaults] removeObjectForKey:kSelectedGameKey];
     }
 
     g_emulation_paused = 0;
@@ -4028,7 +4032,6 @@ void myosd_handle_turbo() {
         NSString* msg = [NSString stringWithFormat:@"ERROR RUNNING GAME %s", g_mame_game_error];
         g_mame_game_error[0] = 0;
         g_mame_game[0] = 0;
-        [[NSUserDefaults standardUserDefaults] removeObjectForKey:kSelectedGameKey];
         
         [self showAlertWithTitle:@"MAME4iOS" message:msg buttons:@[@"Ok"] handler:^(NSUInteger button) {
             [self performSelectorOnMainThread:@selector(chooseGame:) withObject:games waitUntilDone:FALSE];
@@ -4046,7 +4049,6 @@ void myosd_handle_turbo() {
     [choose setGameList:games];
     g_emulation_paused = 1;
     change_pause(g_emulation_paused);
-    [[NSUserDefaults standardUserDefaults] removeObjectForKey:kSelectedGameKey];
     choose.selectGameCallback = ^(NSDictionary* game) {
         if ([game[kGameInfoName] isEqualToString:kGameInfoNameSettings]) {
             [self runSettings];
@@ -4084,10 +4086,8 @@ void myosd_handle_turbo() {
 
 #pragma mark NSUserActivty
 
--(void)updateUserActivity
+-(void)updateUserActivity:(NSDictionary*)game
 {
-    NSDictionary* game = [[NSUserDefaults standardUserDefaults] dictionaryForKey:kSelectedGameKey];
-    
     if (game == nil || game[kGameInfoName] == nil || [game[kGameInfoName] length] <= 1)
         return;
 
