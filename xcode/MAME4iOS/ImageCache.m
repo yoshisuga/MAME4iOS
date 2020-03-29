@@ -388,6 +388,7 @@ static UIImage* resizeImage(UIImage* image, CGFloat aspect, CGFloat width, CGFlo
 }
 - (UIColor*)averageColor:(UIRectEdge)edge width:(CGFloat)width
 {
+    uint8_t rgba[4];
     CIImage* image = self.CIImage ?: [[CIImage alloc] initWithImage:self];
     CGRect rect = image.extent;
     switch (edge) {
@@ -397,13 +398,13 @@ static UIImage* resizeImage(UIImage* image, CGFloat aspect, CGFloat width, CGFlo
         case UIRectEdgeRight:   rect = CGRectMake(rect.origin.x + rect.size.width - width, 0, width, image.extent.size.height); break;
         default: break; // UIRectEdgeAll
     }
-    CIFilter* filter = [CIFilter filterWithName:@"CIAreaAverage" withInputParameters:@{
-        kCIInputImageKey: image,
+    
+    CIImage* output = [image imageByApplyingFilter:@"CIAreaAverage" withInputParameters:@{
         kCIInputExtentKey: [CIVector vectorWithCGRect:rect]
     }];
     CIContext* context = [CIContext contextWithOptions:@{kCIContextWorkingColorSpace: [NSNull null]}];
-    uint8_t rgba[4];
-    [context render:filter.outputImage toBitmap:rgba rowBytes:sizeof(rgba) bounds:CGRectMake(0, 0, 1, 1) format:kCIFormatRGBA8 colorSpace:nil];
+    [context render:output toBitmap:rgba rowBytes:sizeof(rgba) bounds:CGRectMake(0, 0, 1, 1) format:kCIFormatRGBA8 colorSpace:nil];
+
     return [UIColor colorWithRed:rgba[0]/255.0 green:rgba[1]/255.0 blue:rgba[2]/255.0 alpha:rgba[3]/255.0];
 }
 - (UIColor*)averageColor
