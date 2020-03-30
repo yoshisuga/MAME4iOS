@@ -74,7 +74,8 @@
   ScreenView			* screenView;
   UIImageView	    * imageBack;
   UIImageView	    * imageOverlay;
-  UIImageView        * imageInfo;
+  UIImageView        * imageExternalDisplay;
+  UIImageView        * imageLogo;
 #if TARGET_OS_IOS
   DebugView         * dview;
   AnalogStickView   * analogStickView;

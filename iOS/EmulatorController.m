@@ -1182,15 +1182,30 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
         alpha = 1.0;
     else
         alpha = 0.0;
-    
+
     if (screenView.alpha != alpha) {
-        screenView.alpha = alpha;
-        imageOverlay.alpha = alpha;
         if (alpha == 0.0)
             NSLog(@"**** HIDING ScreenView ****");
         else
             NSLog(@"**** SHOWING ScreenView ****");
     }
+
+    screenView.alpha = alpha;
+    imageOverlay.alpha = alpha;
+    imageLogo.alpha = (1.0 - alpha);
+}
+
+-(void)buildLogoView {
+    // create a logo view to show when no-game is displayed. (place on external display, or in app.)
+    imageLogo = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"mame_logo"]];
+    imageLogo.contentMode = UIViewContentModeScaleAspectFit;
+    if (externalView != nil)
+        imageLogo.frame = externalView.bounds;
+    else if (g_device_is_fullscreen)
+        imageLogo.frame = self.view.bounds;
+    else
+        imageLogo.frame = g_device_is_landscape ? rFrames[LANDSCAPE_VIEW_NOT_FULL] : rFrames[PORTRAIT_VIEW_NOT_FULL];
+    [screenView.superview addSubview:imageLogo];
 }
 
 - (void)changeUI { @autoreleasepool {
@@ -1237,12 +1252,18 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
      imageOverlay = nil;
    }
     
-  if(imageInfo != nil)
+  if(imageLogo != nil)
   {
-      [imageInfo removeFromSuperview];
-      imageInfo = nil;
+      [imageLogo removeFromSuperview];
+      imageLogo = nil;
   }
-    
+
+  if(imageExternalDisplay != nil)
+  {
+      [imageExternalDisplay removeFromSuperview];
+      imageExternalDisplay = nil;
+  }
+
 #if TARGET_OS_IOS
     
 // this does not make any sence, iCadeView needs to become the first responder and get keyboard input, it cant do this on the external display?????
@@ -1262,10 +1283,10 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     
     if (externalView != nil)
     {
-        imageInfo = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"airplayvideo"] ?: [UIImage imageNamed:@"mame_logo"]];
-        imageInfo.contentMode = UIViewContentModeScaleAspectFit;
-        imageInfo.frame = g_device_is_landscape ? rFrames[LANDSCAPE_VIEW_NOT_FULL] : rFrames[PORTRAIT_VIEW_NOT_FULL];
-        [self.view addSubview:imageInfo];
+        imageExternalDisplay = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"airplayvideo"] ?: [UIImage imageNamed:@"mame_logo"]];
+        imageExternalDisplay.contentMode = UIViewContentModeScaleAspectFit;
+        imageExternalDisplay.frame = g_device_is_landscape ? rFrames[LANDSCAPE_VIEW_NOT_FULL] : rFrames[PORTRAIT_VIEW_NOT_FULL];
+        [self.view addSubview:imageExternalDisplay];
     }
 
    if (@available(iOS 11.0, *))
@@ -1275,8 +1296,9 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     // for tvOS, use "landscape" only
     [self buildLandscape];
 #endif
+    [self buildLogoView];
     [self updateScreenView];
-    
+
     if ( g_joy_used ) {
         [hideShowControlsForLightgun setImage:[UIImage imageNamed:@"menu"] forState:UIControlStateNormal];
     } else {
@@ -3232,6 +3254,7 @@ void myosd_handle_turbo() {
 #if TARGET_OS_IOS
 - (void)documentPickerWasCancelled:(UIDocumentPickerViewController *)controller {
     NSLog(@"IMPORT CANCELED");
+    [self performSelectorOnMainThread:@selector(playGame:) withObject:nil waitUntilDone:NO];
 }
 - (void)documentPicker:(UIDocumentPickerViewController *)controller didPickDocumentsAtURLs:(NSArray <NSURL *>*)urls {
     UIApplication* application = UIApplication.sharedApplication;
@@ -3260,14 +3283,16 @@ void myosd_handle_turbo() {
     
     // NOTE UIActivityViewController is kind of broken in the Simulator, if you find a crash or problem verify it on a real device.
     UIActivityViewController* activity = [[UIActivityViewController alloc] initWithActivityItems:@[item] applicationActivities:nil];
+    
+    UIViewController* top = self.topViewController;
 
     if (activity.popoverPresentationController != nil) {
-        activity.popoverPresentationController.sourceView = self.view;
+        activity.popoverPresentationController.sourceView = top.view;
         activity.popoverPresentationController.sourceRect = CGRectMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds), 0.0f, 0.0f);
         activity.popoverPresentationController.permittedArrowDirections = 0;
     }
     
-    [self.topViewController presentViewController:activity animated:YES completion:nil];
+    [top presentViewController:activity animated:YES completion:nil];
 }
 #endif
 
@@ -3898,11 +3923,10 @@ void myosd_handle_turbo() {
     }
 #if TARGET_OS_TV
     NSString* welcome = @"Welcome to MAME for AppleTV";
-    NSString* message = [NSString stringWithFormat:@"\nTo transfer ROMs from your computer go to one of these addresses in your web browser:\n\n%@",servers];
 #else
     NSString* welcome = @"Welcome to MAME4iOS";
-    NSString* message = [NSString stringWithFormat:@"\nTo transfer ROMs from your computer, use AirDrop, or go to one of these addresses in your web browser:\n\n%@",servers];
 #endif
+    NSString* message = [NSString stringWithFormat:@"\nTo transfer ROMs from your computer go to one of these addresses in your web browser:\n\n%@",servers];
     NSString* title = g_no_roms_found ? welcome : @"Web Server Started";
     NSString* done  = g_no_roms_found ? @"Reload ROMs" : @"Stop Server";
 
@@ -4022,8 +4046,27 @@ void myosd_handle_turbo() {
     }
     g_no_roms_found = [games count] == 0;
     if (g_no_roms_found) {
+#if TARGET_OS_IOS
+        NSLog(@"NO GAMES, ASK USER WHAT TO DO....");
+
+        NSString* title = @"Welcome to MAME4iOS";
+        NSString* message = @"\nTo transfer ROMs from your computer, Start Server, Import ROMs, or use AirDrop.";
+        
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
+        [alert addAction:[UIAlertAction actionWithTitle:@"Start Server" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"arrow.up.arrow.down.circle"] handler:^(UIAlertAction * _Nonnull action) {
+            [self runServer];
+        }]];
+        [alert addAction:[UIAlertAction actionWithTitle:@"Import ROMs" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"square.and.arrow.down"] handler:^(UIAlertAction * _Nonnull action) {
+            [self runImport];
+        }]];
+        [alert addAction:[UIAlertAction actionWithTitle:@"Reload ROMs" style:UIAlertActionStyleCancel image:[UIImage systemImageNamed:@"arrow.2.circlepath.circle"] handler:^(UIAlertAction * _Nonnull action) {
+            myosd_exitGame = 1;     /* exit mame menu and re-scan ROMs*/
+        }]];
+        [self.topViewController presentViewController:alert animated:YES completion:nil];
+#else
         NSLog(@"NO GAMES, START SERVER....");
         [self runServer];
+#endif
         return;
     }
     if (g_mame_game_error[0] != 0) {
