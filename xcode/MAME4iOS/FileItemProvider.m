@@ -14,6 +14,7 @@
     NSString* _title;
     NSString* _typeIdentifier;
     __weak UIActivityViewController* _activityViewController;
+    UIAlertController* _progressAlert;
     NSURL* _tempURL;
     FileItemProviderSaveHandler _saveHandler;
     double _progress;
@@ -47,6 +48,7 @@
 
 -(void)dealloc {
     // delete our temp file, we are all done with it.
+    NSLog(@"FileItemProvider(dealloc): %@", _tempURL);
     [[NSFileManager defaultManager] removeItemAtURL:[_tempURL URLByDeletingLastPathComponent] error:nil];
 }
 
@@ -79,28 +81,26 @@
     NSLog(@"PROGRESS: %f (main thread)", _progress);
     double progress = MAX(0.0, MIN(1.0, _progress));
     
-    if (_activityViewController == nil)
-        return;
-    
-    if (_activityViewController.presentedViewController == nil && progress < 1.0 && ![self isCancelled]) {
-        UIAlertController* alert = [UIAlertController alertControllerWithTitle:_title message:nil preferredStyle:UIAlertControllerStyleAlert];
-        [alert setProgress:progress];
-        [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+    if (_progressAlert == nil && progress < 1.0 && ![self isCancelled]) {
+        if (_activityViewController == nil)
+            return;
+        _progressAlert = [UIAlertController alertControllerWithTitle:_title message:nil preferredStyle:UIAlertControllerStyleAlert];
+        [_progressAlert setProgress:progress];
+        [_progressAlert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
             [self cancel];
         }]];
-        [_activityViewController presentViewController:alert animated:NO completion:nil];
+        [_activityViewController.topViewController presentViewController:_progressAlert animated:NO completion:nil];
         return;
     }
     
-    UIAlertController* alert = (UIAlertController*)_activityViewController.presentedViewController;
-    
-    if (![alert isKindOfClass:[UIAlertController class]])
+    if (_progressAlert == nil)
         return;
     
-    [alert setProgress:progress];
+    [_progressAlert setProgress:progress];
 
-    if (progress >= 1.0 && !alert.isBeingDismissed) {
-        [alert dismissViewControllerAnimated:NO completion:nil];
+    if (progress >= 1.0) {
+        [_progressAlert.presentingViewController dismissViewControllerAnimated:NO completion:nil];
+        _progressAlert = nil;
     }
 }
 
