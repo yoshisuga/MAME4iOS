@@ -52,9 +52,11 @@
 #define HEADER_IDENTIFIER   @"GameInfoHeader"
 
 #define LAYOUT_MODE_KEY     @"LayoutMode"
+#define LAYOUT_MODE_DEFAULT LayoutSmall
 #define SCOPE_MODE_KEY      @"ScopeMode"
-#define RECENT_GAMES_MAX    8
+#define SCOPE_MODE_DEFAULT  @"All"
 #define ALL_SCOPES          @[@"All", @"Manufacturer", @"Year", @"Genre"]
+#define RECENT_GAMES_MAX    8
 
 #define CLAMP(x, num) MIN(MAX(x,0), (num)-1)
 
@@ -142,11 +144,13 @@ UIView* find_view(UIView* view, Class class) {
     _gameFilterScope = [_userDefaults stringForKey:SCOPE_MODE_KEY];
     
     if (![ALL_SCOPES containsObject:_gameFilterScope])
-        _gameFilterScope = [ALL_SCOPES firstObject];
+        _gameFilterScope = SCOPE_MODE_DEFAULT;
     
     // layout mode
-    _layoutMode = [_userDefaults integerForKey:LAYOUT_MODE_KEY];
-    _layoutMode = CLAMP(_layoutMode, LayoutCount);
+    if ([_userDefaults objectForKey:LAYOUT_MODE_KEY] == nil)
+        _layoutMode = LAYOUT_MODE_DEFAULT;
+    else
+        _layoutMode = CLAMP([_userDefaults integerForKey:LAYOUT_MODE_KEY], LayoutCount);
     
     _defaultImage = [UIImage imageNamed:@"default_game_icon"];
     _loadingImage = [UIImage imageNamed:@"loading_game_icon"];
@@ -157,7 +161,8 @@ UIView* find_view(UIView* view, Class class) {
 - (void)viewDidLoad
 {
 #if USE_TITLE_IMAGE
-    UIImage* image = [[UIImage imageNamed:@"mame_logo"] scaledToSize:CGSizeMake(0.0, 44.0)];
+    CGFloat height = TARGET_OS_IOS ? 44.0 : (44.0 * 1.5);
+    UIImage* image = [[UIImage imageNamed:@"mame_logo"] scaledToSize:CGSizeMake(0.0, height)];
     UIImageView* title = [[UIImageView alloc] initWithImage:image];
 #else
     UILabel* title = [[UILabel alloc] init];
@@ -352,10 +357,10 @@ UIView* find_view(UIView* view, Class class) {
 
     games = [games arrayByAddingObject:@{
         kGameInfoName:kGameInfoNameMameMenu,
-        kGameInfoDescription:@"MAME Menu",
+        kGameInfoDescription:@"MAME UI",
         kGameInfoYear:@"2010",
-        kGameInfoManufacturer:@"MAME4iOS",
-        kGameInfoCategory:@"MAME4iOS"
+        kGameInfoManufacturer:@"MAME 0.139u1",
+        kGameInfoCategory:@"MAME"
     }];
     
     // then (re)sort the list by description

@@ -24,7 +24,7 @@
 
 // special "system" games
 #define kGameInfoNameSettings   @"settings"
-#define kGameInfoNameMameMenu   @"mamemenu"
+#define kGameInfoNameMameMenu   @"mameui"
 
 @interface ChooseGameController : UICollectionViewController
 

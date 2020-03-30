@@ -3717,6 +3717,11 @@ void myosd_handle_turbo() {
                 }
 #endif
                 NSLog(@"%d: %@", index, element);
+                // in iOS 13.4 sometimes we get passed the wrong gamepad???
+                if (gamepad != ((GCController*)controllers[index]).microGamepad) {
+                    NSLog(@"WTF! %8@ != %8@", gamepad, ((GCController*)controllers[index]).microGamepad);
+                    gamepad = ((GCController*)controllers[index]).microGamepad;
+                }
                 if (element == gamepad.buttonA) {
                     if (gamepad.buttonA.pressed) {
                         myosd_joy_status[index] |= MYOSD_A;
@@ -3737,12 +3742,18 @@ void myosd_handle_turbo() {
             MFIController.microGamepad.dpad.valueChangedHandler = ^ (GCControllerDirectionPad *directionpad, float xValue, float yValue) {
                 NSLog(@"%d: %@", index, directionpad);
                 
-                // emulate a analog joystick and a dpad
-                joy_analog_x[index][0] = directionpad.xAxis.value;
-                if (STICK2WAY)
+                // emulate a analog joystick and a dpad, except when in a menu only a dpad
+                if (myosd_inGame && !myosd_in_menu) {
+                    joy_analog_x[index][0] = directionpad.xAxis.value;
+                    if (STICK2WAY)
+                        joy_analog_y[index][0] = 0.0;
+                    else
+                        joy_analog_y[index][0] = directionpad.yAxis.value;
+                }
+                else {
+                    joy_analog_x[index][0] = 0.0;
                     joy_analog_y[index][0] = 0.0;
-                else
-                    joy_analog_y[index][0] = directionpad.yAxis.value;
+                }
 
                 if (directionpad.up.pressed) {
                     myosd_joy_status[index] |= MYOSD_UP;
@@ -3773,7 +3784,7 @@ void myosd_handle_turbo() {
                      myosd_joy_status[index] &= ~(MYOSD_UP | MYOSD_DOWN);
                 }
                 else if (STICK4WAY) {
-                    if (fabs(joy_analog_y[index][0]) > fabs(joy_analog_x[index][0]))
+                    if (fabs(directionpad.yAxis.value) > fabs(directionpad.xAxis.value))
                         myosd_joy_status[index] &= ~(MYOSD_LEFT|MYOSD_RIGHT);
                     else
                         myosd_joy_status[index] &= ~(MYOSD_DOWN|MYOSD_UP);
