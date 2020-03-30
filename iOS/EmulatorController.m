@@ -446,7 +446,13 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
 
     int enable_menu_exit_option = TRUE; // (myosd_inGame && myosd_in_menu==0) || !myosd_inGame;
     
-    menu = [UIAlertController alertControllerWithTitle:@"MAME4iOS" message:nil preferredStyle:UIAlertControllerStyleActionSheet];
+#if TARGET_OS_IOS
+    NSString* title = g_device_is_landscape ? nil : @"MAME4iOS";
+#else
+    NSString* title = nil; // @"MAME4tvOS";
+#endif
+    
+    menu = [UIAlertController alertControllerWithTitle:title message:nil preferredStyle:UIAlertControllerStyleActionSheet];
 
     CGFloat size = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].pointSize * 1.5;
 
