@@ -101,7 +101,6 @@ int btnStates[NUM_BUTTONS];
 int touchDirectionalCyclesAfterMoved = 0;
 
 int g_isIpad = 0;
-int g_isIphone5 = 0;
 
 int g_emulation_paused = 0;
 int g_emulation_initiated=0;
@@ -1559,7 +1558,8 @@ void myosd_handle_turbo() {
     BOOL touch_buttons_disabled = myosd_mouse == 1 && g_pref_touch_analog_enabled && g_pref_touch_analog_hide_buttons;
     for(i=0; i<NUM_BUTTONS;i++)
     {
-        if(!change_layout && (g_device_is_landscape || g_device_is_fullscreen))
+        // hide buttons that are not used in fullscreen mode (and not laying out)
+        if (g_device_is_fullscreen && !change_layout)
         {
             if(i==BTN_X && (g_pref_full_num_buttons < 4 && myosd_inGame))continue;
             if(i==BTN_Y && (g_pref_full_num_buttons < 3 || !myosd_inGame))continue;
@@ -1577,9 +1577,6 @@ void myosd_handle_turbo() {
         buttonViews[i].frame = rButtonImages[i];
         
         if (g_device_is_fullscreen)
-            [buttonViews[i] setAlpha:((float)g_controller_opacity / 100.0f)];
-        
-        if (g_device_is_landscape && !g_device_is_fullscreen && g_isIphone5 /*&& skin_data==1*/ && (i==BTN_Y || i==BTN_A || i==BTN_L1 || i==BTN_R1))
             [buttonViews[i] setAlpha:((float)g_controller_opacity / 100.0f)];
         
         [self.view addSubview: buttonViews[i]];
@@ -1797,7 +1794,7 @@ void myosd_handle_turbo() {
    {
 	   if(g_isIpad)
 	     imageBack = [ [ UIImageView alloc ] initWithImage:[self loadImage:[NSString stringWithFormat:@"./SKIN_%d/back_landscape_iPad.png",g_pref_skin]]];
-       else if(g_isIphone5)
+       else if (UIScreen.mainScreen.nativeBounds.size.width <= 640.0)
          imageBack = [ [ UIImageView alloc ] initWithImage:[self loadImage:[NSString stringWithFormat:@"./SKIN_%d/back_landscape_iPhone_5.png",g_pref_skin]]];
 	   else
 	     imageBack = [ [ UIImageView alloc ] initWithImage:[self loadImage:[NSString stringWithFormat:@"./SKIN_%d/back_landscape_iPhone_6.png",g_pref_skin]]];
