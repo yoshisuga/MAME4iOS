@@ -3530,8 +3530,9 @@ void myosd_handle_turbo() {
         //
         void (^menuButtonHandler)(BOOL) = ^(BOOL pressed){
             static int g_menu_modifier_button_pressed[4];
+            int player = isSiriRemote ? 0 : index; // siri remote is always player 1
             
-            NSLog(@"%d: MENU %s", index, pressed ? "DOWN" : "UP");
+            NSLog(@"%d(%d): MENU %s", index, player, pressed ? "DOWN" : "UP");
 #if TARGET_OS_TV
             // disable button presses while alert is shown
             if ([self controllerUserInteractionEnabled]) {
@@ -3540,60 +3541,60 @@ void myosd_handle_turbo() {
 #endif
             // on MENU button up, if no modifier was pressed then show menu
             if (!pressed) {
-                if (g_menu_modifier_button_pressed[index] == FALSE) {
+                if (g_menu_modifier_button_pressed[player] == FALSE) {
                     // Show or Cancel Action Sheet (aka MAME4iOS) Menu
                     if ([self.presentedViewController isKindOfClass:[UIAlertController class]]) {
                         if (!self.presentedViewController.isBeingDismissed)
                             [(UIAlertController*)self.presentedViewController dismissWithCancel];
                     }
                     else {
-                        [self runMenu:index];
+                        [self runMenu:player];
                     }
                 }
-                g_menu_modifier_button_pressed[index] = FALSE;  // reset for next time.
+                g_menu_modifier_button_pressed[player] = FALSE;  // reset for next time.
                 return;
             }
 
              // Add Coin
              if (MFIController.extendedGamepad.leftShoulder.pressed) {
-                 NSLog(@"%d: MENU+L1 => COIN", index);
-                 myosd_joy_status[index] &= ~MYOSD_L1;
-                 push_mame_button(index, MYOSD_SELECT);
+                 NSLog(@"%d: MENU+L1 => COIN", player);
+                 myosd_joy_status[player] &= ~MYOSD_L1;
+                 push_mame_button(player, MYOSD_SELECT);
              }
              // Start
              else if (MFIController.extendedGamepad.rightShoulder.pressed) {
-                 NSLog(@"%d: MENU+R1 => START", index);
-                 myosd_joy_status[index] &= ~MYOSD_R1;
-                 push_mame_button(index, MYOSD_START);
+                 NSLog(@"%d: MENU+R1 => START", player);
+                 myosd_joy_status[player] &= ~MYOSD_R1;
+                 push_mame_button(player, MYOSD_START);
              }
              //Show Mame menu (Start + Coin)
              else if (MFIController.extendedGamepad.buttonB.pressed) {
-                 NSLog(@"%d: MENU+B => MAME MENU", index);
-                 myosd_joy_status[index] &= ~MYOSD_B;
-                 push_mame_button(index, MYOSD_SELECT|MYOSD_START);
+                 NSLog(@"%d: MENU+B => MAME MENU", player);
+                 myosd_joy_status[player] &= ~MYOSD_B;
+                 push_mame_button(player, MYOSD_SELECT|MYOSD_START);
              }
              //Exit Game
              else if (MFIController.microGamepad.buttonX.pressed) {
-                 NSLog(@"%d: MENU+X => EXIT GAME", index);
+                 NSLog(@"%d: MENU+X => EXIT GAME", player);
                  if (myosd_inGame && myosd_in_menu == 0) {
-                     myosd_joy_status[index] &= ~MYOSD_X;
+                     myosd_joy_status[player] &= ~MYOSD_X;
                      [self runExit];
                  }
              }
              // Load State
              else if (MFIController.microGamepad.buttonA.pressed ) {
-                 NSLog(@"%d: MENU+A => LOAD STATE", index);
+                 NSLog(@"%d: MENU+A => LOAD STATE", player);
                  [self runLoadState];
              }
              // Save State
              else if (MFIController.extendedGamepad.buttonY.pressed ) {
-                 NSLog(@"%d: MENU+Y => SAVE STATE", index);
+                 NSLog(@"%d: MENU+Y => SAVE STATE", player);
                  [self runSaveState];
              }
              else {
                  return;
              }
-             g_menu_modifier_button_pressed[index] = TRUE;
+             g_menu_modifier_button_pressed[player] = TRUE;
         };
         
         MFIController.extendedGamepad.valueChangedHandler = ^(GCExtendedGamepad* gamepad, GCControllerElement* element) {
@@ -3716,7 +3717,8 @@ void myosd_handle_turbo() {
                     return;
                 }
 #endif
-                NSLog(@"%d: %@", index, element);
+                int player = 0; // siri remote is always player 1
+                NSLog(@"%d(%d): %@", index, player, element);
                 // in iOS 13.4 sometimes we get passed the wrong gamepad???
                 if (gamepad != ((GCController*)controllers[index]).microGamepad) {
                     NSLog(@"WTF! %8@ != %8@", gamepad, ((GCController*)controllers[index]).microGamepad);
@@ -3724,70 +3726,72 @@ void myosd_handle_turbo() {
                 }
                 if (element == gamepad.buttonA) {
                     if (gamepad.buttonA.pressed) {
-                        myosd_joy_status[index] |= MYOSD_A;
+                        myosd_joy_status[player] |= MYOSD_A;
                     }
                     else {
-                        myosd_joy_status[index] &= ~MYOSD_A;
+                        myosd_joy_status[player] &= ~MYOSD_A;
                     }
                 }
                 if (element == gamepad.buttonX) {
                     if (gamepad.buttonX.pressed) {
-                        myosd_joy_status[index] |= MYOSD_X;
+                        myosd_joy_status[player] |= MYOSD_X;
                     }
                     else {
-                        myosd_joy_status[index] &= ~MYOSD_X;
+                        myosd_joy_status[player] &= ~MYOSD_X;
                     }
                 }
             };
             MFIController.microGamepad.dpad.valueChangedHandler = ^ (GCControllerDirectionPad *directionpad, float xValue, float yValue) {
-                NSLog(@"%d: %@", index, directionpad);
+                NSInteger player = 0; // siri remote is always player 1
+
+                NSLog(@"%d(%d): %@", index, player, directionpad);
                 
                 // emulate a analog joystick and a dpad, except when in a menu only a dpad
                 if (myosd_inGame && !myosd_in_menu) {
-                    joy_analog_x[index][0] = directionpad.xAxis.value;
+                    joy_analog_x[player][0] = directionpad.xAxis.value;
                     if (STICK2WAY)
-                        joy_analog_y[index][0] = 0.0;
+                        joy_analog_y[player][0] = 0.0;
                     else
-                        joy_analog_y[index][0] = directionpad.yAxis.value;
+                        joy_analog_y[player][0] = directionpad.yAxis.value;
                 }
                 else {
-                    joy_analog_x[index][0] = 0.0;
-                    joy_analog_y[index][0] = 0.0;
+                    joy_analog_x[player][0] = 0.0;
+                    joy_analog_y[player][0] = 0.0;
                 }
 
                 if (directionpad.up.pressed) {
-                    myosd_joy_status[index] |= MYOSD_UP;
+                    myosd_joy_status[player] |= MYOSD_UP;
                 }
                 else {
-                    myosd_joy_status[index] &= ~MYOSD_UP;
+                    myosd_joy_status[player] &= ~MYOSD_UP;
                 }
                 if (directionpad.down.pressed) {
-                    myosd_joy_status[index] |= MYOSD_DOWN;
+                    myosd_joy_status[player] |= MYOSD_DOWN;
                 }
                 else {
-                    myosd_joy_status[index] &= ~MYOSD_DOWN;
+                    myosd_joy_status[player] &= ~MYOSD_DOWN;
                 }
                 if (directionpad.left.pressed) {
-                    myosd_joy_status[index] |= MYOSD_LEFT;
+                    myosd_joy_status[player] |= MYOSD_LEFT;
                 }
                 else {
-                    myosd_joy_status[index] &= ~MYOSD_LEFT;
+                    myosd_joy_status[player] &= ~MYOSD_LEFT;
                 }
                 if (directionpad.right.pressed) {
-                    myosd_joy_status[index] |= MYOSD_RIGHT;
+                    myosd_joy_status[player] |= MYOSD_RIGHT;
                 }
                 else {
-                    myosd_joy_status[index] &= ~MYOSD_RIGHT;
+                    myosd_joy_status[player] &= ~MYOSD_RIGHT;
                 }
                 
                 if (STICK2WAY) {
-                     myosd_joy_status[index] &= ~(MYOSD_UP | MYOSD_DOWN);
+                     myosd_joy_status[player] &= ~(MYOSD_UP | MYOSD_DOWN);
                 }
                 else if (STICK4WAY) {
                     if (fabs(directionpad.yAxis.value) > fabs(directionpad.xAxis.value))
-                        myosd_joy_status[index] &= ~(MYOSD_LEFT|MYOSD_RIGHT);
+                        myosd_joy_status[player] &= ~(MYOSD_LEFT|MYOSD_RIGHT);
                     else
-                        myosd_joy_status[index] &= ~(MYOSD_DOWN|MYOSD_UP);
+                        myosd_joy_status[player] &= ~(MYOSD_DOWN|MYOSD_UP);
                 }
             };
         }
