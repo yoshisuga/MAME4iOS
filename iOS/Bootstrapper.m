@@ -205,7 +205,7 @@ unsigned long read_mfi_controller(unsigned long res){
 	
 	deviceWindow = [[UIWindow alloc] initWithFrame:rect];
 #if TARGET_OS_TV
-    //deviceWindow.backgroundColor = UIColor.darkGrayColor;
+    deviceWindow.backgroundColor = [UIColor colorWithWhite:0.125 alpha:1.0];
     deviceWindow.tintColor = [UIColor colorWithRed:0.0 green:122.0/255.0 blue:1.0 alpha:1.0];
 #endif
 #ifdef DEBUG

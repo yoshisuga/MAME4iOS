@@ -209,7 +209,7 @@ UIView* find_view(UIView* view, Class class) {
     if (self.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular) {
         UISegmentedControl* seg = [[UISegmentedControl alloc] initWithItems:ALL_SCOPES];
         seg.selectedSegmentIndex = [ALL_SCOPES indexOfObject:_gameFilterScope];
-        //seg.apportionsSegmentWidthsByContent = YES;
+        seg.apportionsSegmentWidthsByContent = TARGET_OS_IOS ? NO : YES;
         [seg addTarget:self action:@selector(scopeChange:) forControlEvents:UIControlEventValueChanged];
         self.navigationItem.titleView = seg;
     }
@@ -250,19 +250,17 @@ UIView* find_view(UIView* view, Class class) {
     self.navigationItem.hidesSearchBarWhenScrolling = TRUE;
 #else   // tvOS
     if (self.navigationController != nil) {
-        // add a search button on tvOS
         UIBarButtonItem* search = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSearch target:self action:@selector(showSearch)];
-        self.navigationItem.rightBarButtonItems = [@[search] arrayByAddingObjectsFromArray:self.navigationItem.rightBarButtonItems];
-        
-        // add a settings button on tvOS
+
+        UIBarButtonItem* settings;
         if (@available(tvOS 13.0, *)) {
-            UIImage* image = [UIImage systemImageNamed:@"gear" withPointSize:title.bounds.size.height weight:UIFontWeightHeavy];
-            UIBarButtonItem* settings = [[UIBarButtonItem alloc] initWithImage:image style:UIBarButtonItemStylePlain target:self action:@selector(showSettings)];
-            self.navigationItem.rightBarButtonItems = [@[settings] arrayByAddingObjectsFromArray:self.navigationItem.rightBarButtonItems];
-        } else {
-            UIBarButtonItem* settings = [[UIBarButtonItem alloc] initWithTitle:@"Settings" style:UIBarButtonItemStylePlain target:self action:@selector(showSettings)];
-            self.navigationItem.rightBarButtonItems = [@[settings] arrayByAddingObjectsFromArray:self.navigationItem.rightBarButtonItems];
+            UIImage* image = [UIImage systemImageNamed:@"gear" withPointSize:44.0 weight:UIFontWeightHeavy];
+            settings = [[UIBarButtonItem alloc] initWithImage:image style:UIBarButtonItemStylePlain target:self action:@selector(showSettings)];
         }
+        else {
+            settings = [[UIBarButtonItem alloc] initWithTitle:@"Settings" style:UIBarButtonItemStylePlain target:self action:@selector(showSettings)];
+        }
+        self.navigationItem.rightBarButtonItems = [@[settings, search] arrayByAddingObjectsFromArray:self.navigationItem.rightBarButtonItems];
     }
 #endif
     
