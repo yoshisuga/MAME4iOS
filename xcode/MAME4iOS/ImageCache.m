@@ -263,28 +263,21 @@ static CGColorRef averageColorRGBA(uint32_t* image_ptr, NSInteger image_width, N
       image_ptr += (image_width - dx);
    }
   
-   NSUInteger n = (dx * dy);
-   vec[0] /= n;
-   vec[1] /= n;
-   vec[2] /= n;
-   vec[3] /= n;
+   CGFloat f = 1.0 / (255.0 * dx * dy);
+   CGFloat r = vec[0] * f;
+   CGFloat g = vec[1] * f;
+   CGFloat b = vec[2] * f;
+   CGFloat a = vec[3] * f;
    
-   CGFloat r,g,b,a;
-   
-   if (alpha == kCGImageAlphaLast || alpha == kCGImageAlphaPremultipliedLast || alpha == kCGImageAlphaNoneSkipLast) {
-       r = vec[0] / 255.0;
-       g = vec[1] / 255.0;
-       b = vec[2] / 255.0;
-       a = vec[3] / 255.0;
-   }
-   else {
-       r = vec[1] / 255.0;
-       g = vec[2] / 255.0;
-       b = vec[3] / 255.0;
-       a = vec[0] / 255.0;
+   if (alpha == kCGImageAlphaFirst || alpha == kCGImageAlphaPremultipliedFirst || alpha == kCGImageAlphaNoneSkipFirst) {
+       CGFloat t = r;
+       r = g;
+       g = b;
+       b = a;
+       a = t;
    }
 
-   if (alpha == kCGImageAlphaPremultipliedLast || alpha == kCGImageAlphaPremultipliedFirst) {
+   if ((alpha == kCGImageAlphaPremultipliedLast || alpha == kCGImageAlphaPremultipliedFirst) && a != 0.0) {
        r /= a;
        g /= a;
        b /= a;
@@ -297,7 +290,7 @@ static CGColorRef averageColorRGBA(uint32_t* image_ptr, NSInteger image_width, N
    CGFloat rgba[] = {r,g,b,a};
    return CGColorCreate(colorSpace, rgba);
 }
-
+                       
 //
 // background safe image resize
 //
