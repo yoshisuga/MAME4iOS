@@ -402,7 +402,7 @@ static UIImage* resizeImage(UIImage* image, CGFloat aspect, CGFloat width, CGFlo
     if (!CGRectEqualToRect(dst, CGRectMake(0,0,width,height)))
     {
         uint32_t* image_ptr = CGBitmapContextGetData(bitmap);
-        NSInteger w = 2; // number of scanline/rows to average
+        NSInteger w = 1; // number of scanline/rows to average
 
         if (dst.origin.x > 0.0)
         {
