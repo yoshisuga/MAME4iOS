@@ -38,6 +38,7 @@
 #endif
 
 #define USE_TITLE_IMAGE         TRUE
+#define TVOS_PARALLAX           TRUE
 #define BACKGROUND_COLOR        [UIColor blackColor]
 #define TITLE_COLOR             [UIColor whiteColor]
 #define HEADER_TEXT_COLOR       [UIColor whiteColor]
@@ -1251,27 +1252,6 @@ UIView* find_view(UIView* view, Class class) {
         if (url != nil)
             [self updateImage:url];
     }
-    
-#if 0 // TARGET_OS_TV
-    //
-    // on tvOS we flatten the cell into a single image so the parallax selection works.
-    //
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if (!cell.image.adjustsImageWhenAncestorFocused && cell.image.image != _loadingImage) {
-            CGRect rect = cell.bounds;
-            UIImage* image = [[[UIGraphicsImageRenderer alloc] initWithSize:rect.size] imageWithActions:^(UIGraphicsImageRendererContext * context) {
-                [cell drawViewHierarchyInRect:rect afterScreenUpdates:NO];
-            }];
-            cell.image.adjustsImageWhenAncestorFocused = YES;
-            cell.image.image = image;
-            cell.text.text = nil;
-            [cell setTextInsets:UIEdgeInsetsZero];
-            [cell setImageAspect:0.0];
-            [cell setBorderWidth:0.0];
-            cell.contentView.clipsToBounds = NO;
-        }
-    });
-#endif
 }
 
 - (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(GameCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath
@@ -1736,6 +1716,7 @@ UIView* find_view(UIView* view, Class class) {
     
     return self;
 }
+
 - (void)prepareForReuse
 {
     [super prepareForReuse];
@@ -1909,17 +1890,19 @@ UIView* find_view(UIView* view, Class class) {
 - (void)updateSelected
 {
     BOOL selected = self.selected || self.focused;
-#if 1 // TARGET_OS_IOS
+#if TARGET_OS_IOS || !TVOS_PARALLAX
     UIColor* color = selected ? CELL_SELECTED_COLOR : CELL_BACKGROUND_COLOR;
     self.contentView.backgroundColor = color;
     self.contentView.layer.borderColor = color.CGColor;
     self.transform = selected ? CGAffineTransformMakeScale(1.02, 1.02) : (self.highlighted ? CGAffineTransformMakeScale(0.98, 0.98) : CGAffineTransformIdentity);
     self.layer.shadowColor = selected ? color.CGColor : UIColor.clearColor.CGColor;
 #endif
+#if TARGET_OS_TV && TVOS_PARALLAX
     if (selected)
         [self.superview bringSubviewToFront:self];
     else
         [self.superview sendSubviewToBack:self];
+#endif
 }
 - (void)setHighlighted:(BOOL)highlighted
 {
@@ -1933,6 +1916,36 @@ UIView* find_view(UIView* view, Class class) {
     [super setSelected:selected];
     [self updateSelected];
 }
+
+#if TARGET_OS_TV && TVOS_PARALLAX
+//- (void)displayLayer:(CALayer *)layer
+-(void)drawRect:(CGRect)rect
+{
+    //[super displayLayer:layer];
+        
+    //
+    // on tvOS we flatten the cell into a single image so the parallax selection works.
+    //
+    if (!_image.adjustsImageWhenAncestorFocused && _image.subviews.count == 0) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (!self.image.adjustsImageWhenAncestorFocused && self.image.subviews.count == 0) {
+                CGRect rect = self.bounds;
+                UIImage* image = [[[UIGraphicsImageRenderer alloc] initWithSize:rect.size] imageWithActions:^(UIGraphicsImageRendererContext * context) {
+                    [self drawViewHierarchyInRect:rect afterScreenUpdates:NO];
+                }];
+                self.image.adjustsImageWhenAncestorFocused = YES;
+                self.image.image = image;
+                self.text.text = nil;
+                [self setTextInsets:UIEdgeInsetsZero];
+                [self setImageAspect:0.0];
+                [self setBorderWidth:0.0];
+                self.contentView.clipsToBounds = NO;
+            }
+        });
+    }
+}
+#endif
+
 #if TARGET_OS_TV
 - (void)didUpdateFocusInContext:(UIFocusUpdateContext *)context withAnimationCoordinator:(UIFocusAnimationCoordinator *)coordinator
 {
