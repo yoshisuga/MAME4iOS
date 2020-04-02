@@ -75,6 +75,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 -(void)setHeight:(CGFloat)height;
 -(void)setTextInsets:(UIEdgeInsets)insets;
 -(void)setImageAspect:(CGFloat)aspect;
+-(void)setBorderWidth:(CGFloat)width;
+-(void)setCornerRadius:(CGFloat)radius;
 -(void)startWait;
 -(void)stopWait;
 @end
@@ -1212,13 +1214,10 @@ UIView* find_view(UIView* view, Class class) {
     cell.text.text = _gameSectionTitles[indexPath.section];
     cell.text.font = [UIFont systemFontOfSize:cell.bounds.size.height * 0.8 weight:UIFontWeightHeavy];
     cell.text.textColor = HEADER_TEXT_COLOR;
-    [cell setTextInsets:UIEdgeInsetsMake(2.0, self.safeAreaInsets.left + 2.0, 2.0, self.safeAreaInsets.right + 2.0)];
     cell.contentView.backgroundColor = [self.collectionView.backgroundColor colorWithAlphaComponent:0.5];
-    cell.layer.cornerRadius = 0.0;
-    cell.contentView.layer.cornerRadius = 0.0;
-    cell.contentView.layer.borderWidth = 0.0;
-    cell.layer.shadowRadius = 0.0;
-    cell.layer.shadowOpacity = 0.0;
+    [cell setTextInsets:UIEdgeInsetsMake(2.0, self.safeAreaInsets.left + 2.0, 2.0, self.safeAreaInsets.right + 2.0)];
+    [cell setCornerRadius:0.0];
+    [cell setBorderWidth:0.0];
 
     return cell;
 }
@@ -1236,12 +1235,15 @@ UIView* find_view(UIView* view, Class class) {
         self.selectGameCallback(game);
 }
 
-- (void)collectionView:(UICollectionView *)collectionView willDisplayCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath
+- (void)collectionView:(UICollectionView *)collectionView willDisplayCell:(GameCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath
 {
     //NSLog(@"willDisplayCell: %d.%d %@", (int)indexPath.section, (int)indexPath.row, [self getGameInfo:indexPath][kGameInfoName]);
+    
+    if (![cell isKindOfClass:[GameCell class]])
+        return;
 
     // if this cell still have the loading image, it went offscreen, got canceled, came back on screen ==> reload just to be safe.
-    if ([cell isKindOfClass:[GameCell class]] && ((GameCell*)cell).image.image == _loadingImage)
+    if (cell.image.image == _loadingImage)
     {
         NSDictionary* game = [self getGameInfo:indexPath];
         NSURL* url = [self getGameImageURL:game];
@@ -1249,13 +1251,37 @@ UIView* find_view(UIView* view, Class class) {
         if (url != nil)
             [self updateImage:url];
     }
+    
+#if TARGET_OS_TV
+    //
+    // on tvOS we flatten the cell into a single image so the parallax selection works.
+    //
+    if (!cell.image.adjustsImageWhenAncestorFocused && cell.image.image != _loadingImage) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            CGRect rect = cell.bounds;
+            UIImage* image = [[[UIGraphicsImageRenderer alloc] initWithSize:rect.size] imageWithActions:^(UIGraphicsImageRendererContext * context) {
+                [cell drawViewHierarchyInRect:rect afterScreenUpdates:NO];
+            }];
+            cell.image.adjustsImageWhenAncestorFocused = YES;
+            cell.image.image = image;
+            cell.text.text = nil;
+            [cell setTextInsets:UIEdgeInsetsZero];
+            [cell setImageAspect:0.0];
+            [cell setBorderWidth:0.0];
+            cell.contentView.clipsToBounds = NO;
+        });
+    }
+#endif
 }
 
-- (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath
+- (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(GameCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath
 {
     //NSLog(@"endDisplayCell: %d.%d %@", (int)indexPath.section, (int)indexPath.row, [self getGameInfo:indexPath][kGameInfoName]);
-    
-    if ([cell isKindOfClass:[GameCell class]] && ((GameCell*)cell).image.image == _loadingImage)
+
+    if (![cell isKindOfClass:[GameCell class]])
+        return;
+
+    if (cell.image.image == _loadingImage)
     {
         NSDictionary* game = [self getGameInfo:indexPath];
         NSURL* url = [self getGameImageURL:game];
@@ -1444,7 +1470,7 @@ UIView* find_view(UIView* view, Class class) {
 #pragma mark - LongPress menu (pre iOS 13 and tvOS only)
 
 - (void)collectionView:(UICollectionView *)collectionView didUpdateFocusInContext:(UICollectionViewFocusUpdateContext *)context withAnimationCoordinator:(UIFocusAnimationCoordinator *)coordinator {
-    NSLog(@"didUpdateFocusInContext: %@ => %@", context.previouslyFocusedIndexPath, context.nextFocusedIndexPath);
+    NSLog(@"didUpdateFocusInContext: %d.%d => %d.%d", (int)context.previouslyFocusedIndexPath.section, (int)context.previouslyFocusedIndexPath.item, (int)context.nextFocusedIndexPath.section, (int)context.nextFocusedIndexPath.item);
     currentlyFocusedIndexPath = context.nextFocusedIndexPath;
 }
 
@@ -1751,6 +1777,9 @@ UIView* find_view(UIView* view, Class class) {
     [_image setContentHuggingPriority:UILayoutPriorityDefaultLow forAxis:UILayoutConstraintAxisVertical];
     [_image setContentCompressionResistancePriority:UILayoutPriorityDefaultLow forAxis:UILayoutConstraintAxisVertical];
 
+#if TARGET_OS_TV
+    _image.adjustsImageWhenAncestorFocused = NO;
+#endif
     [self stopWait];
 
     _stackView.axis = UILayoutConstraintAxisVertical;
@@ -1818,6 +1847,17 @@ UIView* find_view(UIView* view, Class class) {
     _height = height;
     [self setNeedsUpdateConstraints];
 }
+-(void)setBorderWidth:(CGFloat)width
+{
+    self.contentView.layer.borderWidth = width;
+    self.contentView.layer.borderColor = self.contentView.backgroundColor.CGColor;
+}
+-(void)setCornerRadius:(CGFloat)radius
+{
+    self.layer.cornerRadius = radius;
+    self.contentView.layer.cornerRadius = radius;
+    self.contentView.clipsToBounds = radius != 0.0;
+}
 -(void)startWait
 {
     UIActivityIndicatorView* wait = _image.subviews.lastObject;
@@ -1869,11 +1909,17 @@ UIView* find_view(UIView* view, Class class) {
 - (void)updateSelected
 {
     BOOL selected = self.selected || self.focused;
-    self.transform = selected ? CGAffineTransformMakeScale(1.02, 1.02) : (self.highlighted ? CGAffineTransformMakeScale(0.98, 0.98) : CGAffineTransformIdentity);
+#if TARGET_OS_IOS
     UIColor* color = selected ? CELL_SELECTED_COLOR : CELL_BACKGROUND_COLOR;
-    self.layer.shadowColor = selected ? color.CGColor : UIColor.clearColor.CGColor;
     self.contentView.backgroundColor = color;
     self.contentView.layer.borderColor = color.CGColor;
+    self.transform = selected ? CGAffineTransformMakeScale(1.02, 1.02) : (self.highlighted ? CGAffineTransformMakeScale(0.98, 0.98) : CGAffineTransformIdentity);
+    self.layer.shadowColor = selected ? color.CGColor : UIColor.clearColor.CGColor;
+#endif
+    if (selected)
+        [self.superview bringSubviewToFront:self];
+    else
+        [self.superview sendSubviewToBack:self];
 }
 - (void)setHighlighted:(BOOL)highlighted
 {
