@@ -153,7 +153,7 @@ UIView* find_view(UIView* view, Class class) {
         _layoutMode = CLAMP([_userDefaults integerForKey:LAYOUT_MODE_KEY], LayoutCount);
     
     _defaultImage = [UIImage imageNamed:@"default_game_icon"];
-    _loadingImage = [UIImage imageNamed:@"loading_game_icon"];
+    _loadingImage = [UIImage imageWithColor:[UIColor clearColor] size:CGSizeMake(1, 1)];
 
     return self;
 }
@@ -1061,13 +1061,13 @@ UIView* find_view(UIView* view, Class class) {
     CGFloat item_width = layout.estimatedItemSize.width;
     CGFloat image_height, text_height;
     
-    // get the title image size, assume the image is 3:4 if we dont know.
+    // get the title image size, assume the image is 4:3 if we dont know.
     CGSize imageSize = [self getGameImageSize:info];
     
-    if (imageSize.height == 0.0 || imageSize.width == 0.0 || imageSize.width < imageSize.height)
-        image_height = ceil(item_width * 4.0 / 3.0);
-    else
+    if (imageSize.height == 0.0 || imageSize.width == 0.0 || imageSize.width > imageSize.height)
         image_height = ceil(item_width * 3.0 / 4.0);
+    else
+        image_height = ceil(item_width * 4.0 / 3.0);
 
     // get the text height, in LayoutTiny we only show one line.
     CGSize textSize = CGSizeMake(item_width - CELL_INSET_X*2, 9999.0);
@@ -1184,16 +1184,11 @@ UIView* find_view(UIView* view, Class class) {
         
         NSLog(@"CELL ASYNC LOAD: %@ %d:%d", info[kGameInfoName], (int)indexPath.section, (int)indexPath.item);
         [self updateImage:url];
-        [self->_layoutRowHeightCache removeObjectForKey:[NSIndexPath indexPathForItem:((indexPath.item / self->_layoutCollums) * self->_layoutCollums) inSection:indexPath.section]];
     }];
     
     // use a placeholder image if the image did not load right away.
     if (cell.image.image == nil) {
         cell.image.image = _loadingImage;
-        if (self->_layoutMode == LayoutList) {
-            [cell setImageAspect:4.0/3.0];
-            cell.image.contentMode = UIViewContentModeScaleAspectFit;
-        }
     }
     
     return cell;
