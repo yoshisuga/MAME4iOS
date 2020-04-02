@@ -450,6 +450,10 @@ UIView* find_view(UIView* view, Class class) {
     if (val != nil)
         return [val CGSizeValue];
     
+    // Apple has a special [PNG format](http://fileformats.archiveteam.org/wiki/CgBI), and Xcode converts all resources!
+    if ([self isSystem:info])
+        return CGSizeMake(640, 480);
+    
     NSURL* url = [self getGameImageLocalURL:info];
     
     if (url == nil)
