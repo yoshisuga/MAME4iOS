@@ -194,13 +194,22 @@ UIView* find_view(UIView* view, Class class) {
     // layout
     UISegmentedControl* seg;
     
+#if TARGET_OS_IOS
     seg = [[UISegmentedControl alloc] initWithItems:@[
         [UIImage systemImageNamed:@"square.grid.4x3.fill"]    ?: @"⚏",
         [UIImage systemImageNamed:@"rectangle.grid.2x2.fill"] ?: @"☷",
         [UIImage systemImageNamed:@"rectangle.stack.fill"]    ?: @"▢",
         [UIImage systemImageNamed:@"rectangle.grid.1x2.fill"] ?: @"☰"
     ]];
-
+#else
+    seg = [[UISegmentedControl alloc] initWithItems:@[
+        [UIImage systemImageNamed:@"square.grid.4x3.fill" withPointSize:32.0]    ?: @"⚏",
+        [UIImage systemImageNamed:@"rectangle.grid.2x2.fill" withPointSize:32.0] ?: @"☷",
+        [UIImage systemImageNamed:@"rectangle.stack.fill" withPointSize:32.0]    ?: @"▢",
+        [UIImage systemImageNamed:@"rectangle.grid.1x2.fill" withPointSize:32.0] ?: @"☰"
+    ]];
+#endif
+    
     seg.selectedSegmentIndex = _layoutMode;
     [seg addTarget:self action:@selector(viewChange:) forControlEvents:UIControlEventValueChanged];
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:seg];
@@ -268,7 +277,7 @@ UIView* find_view(UIView* view, Class class) {
             settings = [[UIBarButtonItem alloc] initWithTitle:@"Settings" style:UIBarButtonItemStylePlain target:self action:@selector(showSettings)];
         }
         // on tvOS we dont show the logo in the navbar, we need room for the settings and search button
-        self.navigationItem.leftBarButtonItems = @[settings, search];
+        self.navigationItem.rightBarButtonItems = [self.navigationItem.rightBarButtonItems arrayByAddingObjectsFromArray:@[settings, search]];
     }
 #endif
     

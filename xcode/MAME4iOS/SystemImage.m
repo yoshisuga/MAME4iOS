@@ -26,6 +26,23 @@
 #endif
 
 // a helpers to create a system image of a specific size and weight or based on a font
+
++(nullable UIImage*)systemImageNamed:(NSString*)name withStyle:(UIFontTextStyle)style
+{
+    if (@available(iOS 13.0, tvOS 13.0, *))
+        return [[self systemImageNamed:name] imageByApplyingSymbolConfiguration:[UIImageSymbolConfiguration configurationWithTextStyle:style]];
+    else
+        return [self systemImageNamed:name];
+}
+
++(nullable UIImage*)systemImageNamed:(NSString*)name withScale:(NSInteger)scale
+{
+    if (@available(iOS 13.0, tvOS 13.0, *))
+        return [[self systemImageNamed:name] imageByApplyingSymbolConfiguration:[UIImageSymbolConfiguration configurationWithScale:(UIImageSymbolScale)scale]];
+    else
+        return [self systemImageNamed:name];
+}
+
 +(nullable UIImage*)systemImageNamed:(NSString*)name withPointSize:(CGFloat)pointSize weight:(UIFontWeight)weight
 {
     if (@available(iOS 13.0, tvOS 13.0, *))
