@@ -153,7 +153,7 @@ UIView* find_view(UIView* view, Class class) {
         _layoutMode = CLAMP([_userDefaults integerForKey:LAYOUT_MODE_KEY], LayoutCount);
     
     _defaultImage = [UIImage imageNamed:@"default_game_icon"];
-    _loadingImage = [UIImage imageWithColor:[UIColor clearColor] size:CGSizeMake(1, 1)];
+    _loadingImage = [UIImage imageWithColor:[UIColor clearColor] size:CGSizeMake(4, 3)];
 
     return self;
 }
@@ -1189,6 +1189,7 @@ UIView* find_view(UIView* view, Class class) {
     // use a placeholder image if the image did not load right away.
     if (cell.image.image == nil) {
         cell.image.image = _loadingImage;
+        [cell setImageAspect:(cell.bounds.size.width / row_height.x)];
     }
     
     return cell;
