@@ -1252,12 +1252,12 @@ UIView* find_view(UIView* view, Class class) {
             [self updateImage:url];
     }
     
-#if TARGET_OS_TV
+#if 0 // TARGET_OS_TV
     //
     // on tvOS we flatten the cell into a single image so the parallax selection works.
     //
-    if (!cell.image.adjustsImageWhenAncestorFocused && cell.image.image != _loadingImage) {
-        dispatch_async(dispatch_get_main_queue(), ^{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (!cell.image.adjustsImageWhenAncestorFocused && cell.image.image != _loadingImage) {
             CGRect rect = cell.bounds;
             UIImage* image = [[[UIGraphicsImageRenderer alloc] initWithSize:rect.size] imageWithActions:^(UIGraphicsImageRendererContext * context) {
                 [cell drawViewHierarchyInRect:rect afterScreenUpdates:NO];
@@ -1269,8 +1269,8 @@ UIView* find_view(UIView* view, Class class) {
             [cell setImageAspect:0.0];
             [cell setBorderWidth:0.0];
             cell.contentView.clipsToBounds = NO;
-        });
-    }
+        }
+    });
 #endif
 }
 
@@ -1909,7 +1909,7 @@ UIView* find_view(UIView* view, Class class) {
 - (void)updateSelected
 {
     BOOL selected = self.selected || self.focused;
-#if TARGET_OS_IOS
+#if 1 // TARGET_OS_IOS
     UIColor* color = selected ? CELL_SELECTED_COLOR : CELL_BACKGROUND_COLOR;
     self.contentView.backgroundColor = color;
     self.contentView.layer.borderColor = color.CGColor;
