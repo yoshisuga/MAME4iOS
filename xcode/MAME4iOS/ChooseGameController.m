@@ -161,18 +161,14 @@ UIView* find_view(UIView* view, Class class) {
 - (void)viewDidLoad
 {
 #if USE_TITLE_IMAGE
-    CGFloat height = TARGET_OS_IOS ? 44.0 : (44.0 * 1.5);
+    CGFloat height = TARGET_OS_IOS ? 44.0 : (44.0 * 2.0);
     UIImage* image = [[UIImage imageNamed:@"mame_logo"] scaledToSize:CGSizeMake(0.0, height)];
     UIImageView* title = [[UIImageView alloc] initWithImage:image];
 #else
     UILabel* title = [[UILabel alloc] init];
-    #if TARGET_OS_IOS
-    title.text = @"MAME4iOS";
-    title.font = [UIFont boldSystemFontOfSize:44.0 * 0.6];
-    #else
-    title.text = @"MAME4tvOS";
-    title.font = [UIFont boldSystemFontOfSize:44.0 * 1.5];
-    #endif
+    CGFloat height = TARGET_OS_IOS ? (44.0 * 0.6) : (44.0 * 1.5);
+    title.text = TARGET_OS_IOS ? @"MAME4iOS" : @"MAME4tvOS";
+    title.font = [UIFont boldSystemFontOfSize:height];
     title.textColor = TITLE_COLOR;
     [title sizeToFit];
 #endif
@@ -193,22 +189,13 @@ UIView* find_view(UIView* view, Class class) {
 
     // layout
     UISegmentedControl* seg;
-    
-#if TARGET_OS_IOS
+    height = TARGET_OS_IOS ? 16.0 : 32.0;
     seg = [[UISegmentedControl alloc] initWithItems:@[
-        [UIImage systemImageNamed:@"square.grid.4x3.fill"]    ?: @"⚏",
-        [UIImage systemImageNamed:@"rectangle.grid.2x2.fill"] ?: @"☷",
-        [UIImage systemImageNamed:@"rectangle.stack.fill"]    ?: @"▢",
-        [UIImage systemImageNamed:@"rectangle.grid.1x2.fill"] ?: @"☰"
+        [UIImage systemImageNamed:@"square.grid.4x3.fill" withPointSize:height]    ?: @"⚏",
+        [UIImage systemImageNamed:@"rectangle.grid.2x2.fill" withPointSize:height] ?: @"☷",
+        [UIImage systemImageNamed:@"rectangle.stack.fill" withPointSize:height]    ?: @"▢",
+        [UIImage systemImageNamed:@"rectangle.grid.1x2.fill" withPointSize:height] ?: @"☰"
     ]];
-#else
-    seg = [[UISegmentedControl alloc] initWithItems:@[
-        [UIImage systemImageNamed:@"square.grid.4x3.fill" withPointSize:32.0]    ?: @"⚏",
-        [UIImage systemImageNamed:@"rectangle.grid.2x2.fill" withPointSize:32.0] ?: @"☷",
-        [UIImage systemImageNamed:@"rectangle.stack.fill" withPointSize:32.0]    ?: @"▢",
-        [UIImage systemImageNamed:@"rectangle.grid.1x2.fill" withPointSize:32.0] ?: @"☰"
-    ]];
-#endif
     
     seg.selectedSegmentIndex = _layoutMode;
     [seg addTarget:self action:@selector(viewChange:) forControlEvents:UIControlEventValueChanged];
