@@ -204,11 +204,6 @@ unsigned long read_mfi_controller(unsigned long res){
     deviceWindow.backgroundColor = [UIColor colorWithWhite:0.111 alpha:1.0];
     deviceWindow.tintColor = [UIColor colorWithRed:0.0 green:122.0/255.0 blue:1.0 alpha:1.0];
 #endif
-#ifdef DEBUG
-    deviceWindow.backgroundColor = [UIColor redColor];
-#endif
-    
-	//[deviceWindow addSubview: hrViewController.view ];//LO CAMBIO PARA QUE GIRE EN iOS 6.0	
     [deviceWindow setRootViewController:hrViewController];
     
     [hrViewController startEmulation];

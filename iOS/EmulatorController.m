@@ -458,23 +458,28 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     if(myosd_inGame && myosd_in_menu==0)
     {
         // MENU item to insert a coin and do a start. usefull for fullscreen and AppleTV siri remote, and discoverability on a GameController
-        [menu addAction:[UIAlertAction actionWithTitle:@"Coin+Start" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"centsign.circle" withPointSize:size] handler:^(UIAlertAction * _Nonnull action) {
+        if (controllers.count > 1)
+            title = [NSString stringWithFormat:@"Coin+Start Player %d", player+1];
+        else
+            title = @"Coin+Start";
+            
+        [menu addAction:[UIAlertAction actionWithTitle:title style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"centsign.circle" withPointSize:size] handler:^(UIAlertAction* action) {
             push_mame_buttons(player, MYOSD_SELECT, MYOSD_SELECT); // some games need 2 credits to play, so enter two coins
             push_mame_button(player, MYOSD_START);
             [self endMenu];
         }]];
-        [menu addAction:[UIAlertAction actionWithTitle:@"Load State" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"bookmark.fill" withPointSize:size] handler:^(UIAlertAction * _Nonnull action) {
+        [menu addAction:[UIAlertAction actionWithTitle:@"Load State" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"bookmark.fill" withPointSize:size] handler:^(UIAlertAction* action) {
             [self runLoadState];
         }]];
-        [menu addAction:[UIAlertAction actionWithTitle:@"Save State" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"bookmark" withPointSize:size] handler:^(UIAlertAction * _Nonnull action) {
+        [menu addAction:[UIAlertAction actionWithTitle:@"Save State" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"bookmark" withPointSize:size] handler:^(UIAlertAction* action) {
             [self runSaveState];
         }]];
-        [menu addAction:[UIAlertAction actionWithTitle:@"MAME Menu" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"slider.horizontal.3" withPointSize:size] handler:^(UIAlertAction * _Nonnull action) {
+        [menu addAction:[UIAlertAction actionWithTitle:@"MAME Menu" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"slider.horizontal.3" withPointSize:size] handler:^(UIAlertAction* action) {
             push_mame_button(0, (MYOSD_SELECT|MYOSD_START));
             [self endMenu];
         }]];
     }
-    [menu addAction:[UIAlertAction actionWithTitle:@"Settings" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"gear" withPointSize:size] handler:^(UIAlertAction * _Nonnull action) {
+    [menu addAction:[UIAlertAction actionWithTitle:@"Settings" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"gear" withPointSize:size] handler:^(UIAlertAction* action) {
         [self runSettings];
     }]];
 
@@ -487,29 +492,13 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     */
 
     if(enable_menu_exit_option) {
-        [menu addAction:[UIAlertAction actionWithTitle:((myosd_inGame && myosd_in_menu==0) ? @"Exit Game" : @"Exit") style:UIAlertActionStyleDestructive image:[UIImage systemImageNamed:@"arrow.uturn.left.circle" withPointSize:size] handler:^(UIAlertAction * _Nonnull action) {
-            //[self runExit];   -- the user just selected "Exit Game" from a menu, dont ask again
-            //this is the exact same logic in runExit, except we dont ask for permission to exit.
-            if (myosd_inGame && myosd_in_menu == 0)
-            {
-                if (g_mame_game[0] != ' ')
-                    g_mame_game[0] = 0;
-                myosd_exitGame = 1;
-            }
-            else if (myosd_inGame && myosd_in_menu != 0)
-            {
-                myosd_exitGame = 1;
-            }
-            else
-            {
-                g_mame_game[0] = 0;
-                myosd_exitGame = 1;
-            }
+        [menu addAction:[UIAlertAction actionWithTitle:((myosd_inGame && myosd_in_menu==0) ? @"Exit Game" : @"Exit") style:UIAlertActionStyleDestructive image:[UIImage systemImageNamed:@"arrow.uturn.left.circle" withPointSize:size] handler:^(UIAlertAction* action) {
             [self endMenu];
+            [self runExit:NO]; // the user just selected "Exit Game" from a menu, dont ask again
         }]];
     }
     
-    [menu addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+    [menu addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction* action) {
         [self endMenu];
     }]];
 #if TARGET_OS_IOS // UIPopoverPresentationController does not exist on tvOS.
@@ -527,12 +516,12 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     [self runMenu:0];
 }
 
-- (void)runExit
+- (void)runExit:(BOOL)ask_user
 {
     if (self.presentedViewController != nil)
         return;
 
-    if (myosd_inGame && myosd_in_menu == 0)
+    if (myosd_inGame && myosd_in_menu == 0 && ask_user)
     {
         [self startMenu];
         
@@ -546,15 +535,19 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
         UIAlertController *exitAlertController = [UIAlertController alertControllerWithTitle:@"" message:@"Are you sure you want to exit the game?" preferredStyle:UIAlertControllerStyleAlert];
         [exitAlertController addAction:[UIAlertAction actionWithTitle:yes style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
             [self endMenu];
-            if (g_mame_game[0] != ' ')
-                g_mame_game[0] = 0;
-            myosd_exitGame = 1;
+            [self runExit:NO];
         }]];
         [exitAlertController addAction:[UIAlertAction actionWithTitle:no style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
             [self endMenu];
         }]];
         exitAlertController.preferredAction = exitAlertController.actions.firstObject;
         [self presentViewController:exitAlertController animated:YES completion:nil];
+    }
+    else if (myosd_inGame && myosd_in_menu == 0)
+    {
+        if (g_mame_game[0] != ' ')
+            g_mame_game[0] = 0;
+        myosd_exitGame = 1;
     }
     else if (myosd_inGame && myosd_in_menu != 0)
     {
@@ -565,6 +558,11 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
         g_mame_game[0] = 0;
         myosd_exitGame = 1;
     }
+}
+
+- (void)runExit
+{
+    [self runExit:YES];
 }
 
 - (void)runPause
@@ -596,6 +594,12 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
 #endif
     if (@available(iOS 13.0, tvOS 13.0, *)) {
         navController.modalInPresentation = YES;    // disable iOS 13 swipe to dismiss...
+#if TARGET_OS_TV
+        // buttons look like-crap in UIUserInterfaceStyleDark! on tvOS
+        navController.overrideUserInterfaceStyle = UIUserInterfaceStyleLight;
+#else
+        navController.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
+#endif
     }
     [self.topViewController presentViewController:navController animated:YES completion:nil];
 }
@@ -1201,6 +1205,10 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
 }
 
 -(void)buildLogoView {
+    // no need to show logo in fullscreen.
+    if (g_device_is_fullscreen || TARGET_OS_TV)
+        return;
+
     // create a logo view to show when no-game is displayed. (place on external display, or in app.)
     imageLogo = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"mame_logo"]];
     imageLogo.contentMode = UIViewContentModeScaleAspectFit;

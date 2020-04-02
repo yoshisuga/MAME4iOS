@@ -250,6 +250,13 @@ UIView* find_view(UIView* view, Class class) {
     self.navigationItem.hidesSearchBarWhenScrolling = TRUE;
 #else   // tvOS
     if (self.navigationController != nil) {
+        // force light-mode so our buttons look good in navbar
+        // force dark-mode so the segmented controll looks good.
+        if (@available(tvOS 13.0, *)) {
+            self.navigationController.overrideUserInterfaceStyle = UIUserInterfaceStyleLight;
+            self.navigationItem.titleView.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
+        }
+        
         UIBarButtonItem* search = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSearch target:self action:@selector(showSearch)];
 
         UIBarButtonItem* settings;
@@ -260,7 +267,8 @@ UIView* find_view(UIView* view, Class class) {
         else {
             settings = [[UIBarButtonItem alloc] initWithTitle:@"Settings" style:UIBarButtonItemStylePlain target:self action:@selector(showSettings)];
         }
-        self.navigationItem.rightBarButtonItems = [@[settings, search] arrayByAddingObjectsFromArray:self.navigationItem.rightBarButtonItems];
+        // on tvOS we dont show the logo in the navbar, we need room for the settings and search button
+        self.navigationItem.leftBarButtonItems = @[settings, search];
     }
 #endif
     
@@ -293,10 +301,12 @@ UIView* find_view(UIView* view, Class class) {
 }
 -(void)scrollToTop
 {
+#if TARGET_OS_IOS
     if (@available(iOS 11.0, *))
         [self.collectionView setContentOffset:CGPointMake(0, (self.collectionView.adjustedContentInset.top - _searchController.searchBar.bounds.size.height) * -1.0) animated:TRUE];
     else
         [self.collectionView setContentOffset:CGPointMake(0, self.collectionView.contentInset.top * -1.0) animated:TRUE];
+#endif
 }
 -(void)viewDidAppear:(BOOL)animated
 {
@@ -325,9 +335,10 @@ UIView* find_view(UIView* view, Class class) {
     //self.definesPresentationContext = TRUE;
     UIViewController* search = [[UISearchContainerViewController alloc] initWithSearchController:_searchController];
     self.navigationController.navigationBarHidden = TRUE;
-    //[self presentViewController:search animated:YES completion:nil];
-    //[self presentViewController:[[UINavigationController alloc] initWithRootViewController:search] animated:YES completion:nil];
-    
+    if (@available(tvOS 13.0, *)) {
+        // force dark-mode so the search controller looks ok!
+        search.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
+    }
     [self.navigationController pushViewController:search animated:YES];
 }
 #endif
@@ -351,18 +362,21 @@ UIView* find_view(UIView* view, Class class) {
 
 - (void)setGameList:(NSArray*)games
 {
-    // add a *special* system game that will run the DOS MAME menu.
+    // add a *special* system game that will run the DOS MAME menu. (only if not already in list)
 
-    games = [games arrayByAddingObject:@{
-        kGameInfoName:kGameInfoNameMameMenu,
-        kGameInfoDescription:@"MAME UI",
-        kGameInfoYear:@"2010",
-        kGameInfoManufacturer:@"MAME 0.139u1",
-        kGameInfoCategory:@"MAME"
-    }];
-    
-    // then (re)sort the list by description
-    games = [games sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:kGameInfoDescription ascending:TRUE]]];
+    if ([games filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"%K = %@", kGameInfoName, kGameInfoNameMameMenu]].count == 0)
+    {
+        games = [games arrayByAddingObject:@{
+            kGameInfoName:kGameInfoNameMameMenu,
+            kGameInfoDescription:@"MAME UI",
+            kGameInfoYear:@"2010",
+            kGameInfoManufacturer:@"MAME 0.139u1",
+            kGameInfoCategory:@"MAME"
+        }];
+        
+        // then (re)sort the list by description
+        games = [games sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:kGameInfoDescription ascending:TRUE]]];
+    }
     
     _gameList = games;
     [self filterGameList];
@@ -1361,8 +1375,7 @@ UIView* find_view(UIView* view, Class class) {
                 [self setRecent:game isRecent:FALSE];
                 [self setFavorite:game isFavorite:FALSE];
 
-                self->_gameList = [self->_gameList filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF != %@", game]];
-                [self filterGameList];
+                [self setGameList:[self->_gameList filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF != %@", game]]];
 
                 // if we have deleted the last game, excpet for the MAMEMENU, then exit with no game selected and let a re-scan happen.
                 if ([self->_gameList count] <= 1) {
@@ -1607,6 +1620,8 @@ UIView* find_view(UIView* view, Class class) {
     // [yuck](https://stackoverflow.com/questions/34522004/allow-menu-button-to-exit-tvos-app-when-pressed-on-presented-modal-view-controll)
     if ([self.navigationController topViewController] == self)
         exit(0);
+    else
+        [self.navigationController popToRootViewControllerAnimated:YES];
 }
 #endif
 
