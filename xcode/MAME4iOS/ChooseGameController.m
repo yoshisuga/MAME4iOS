@@ -75,6 +75,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 -(void)setHeight:(CGFloat)height;
 -(void)setTextInsets:(UIEdgeInsets)insets;
 -(void)setImageAspect:(CGFloat)aspect;
+-(void)startWait;
+-(void)stopWait;
 @end
 
 #pragma mark Safe Area helper for UIViewController (for pre and post iOS11)
@@ -263,7 +265,6 @@ UIView* find_view(UIView* view, Class class) {
         else {
             settings = [[UIBarButtonItem alloc] initWithTitle:@"Settings" style:UIBarButtonItemStylePlain target:self action:@selector(showSettings)];
         }
-        // on tvOS we dont show the logo in the navbar, we need room for the settings and search button
         self.navigationItem.rightBarButtonItems = [self.navigationItem.rightBarButtonItems arrayByAddingObjectsFromArray:@[settings, search]];
     }
 #endif
@@ -1178,6 +1179,7 @@ UIView* find_view(UIView* view, Class class) {
         cell.image.image = _loadingImage;
         if (row_height.x != 0.0)
             [cell setImageAspect:(cell.bounds.size.width / row_height.x)];
+        [cell startWait];
     }
     
     return cell;
@@ -1739,6 +1741,7 @@ UIView* find_view(UIView* view, Class class) {
     _height = 0.0;
 
     _image.image = nil;
+    _image.highlightedImage = nil;
     _image.contentMode = UIViewContentModeScaleAspectFit;
     _image.layer.minificationFilter = kCAFilterTrilinear;
     ((ImageView*)_image).aspect = 0.0;
@@ -1747,6 +1750,8 @@ UIView* find_view(UIView* view, Class class) {
 
     [_image setContentHuggingPriority:UILayoutPriorityDefaultLow forAxis:UILayoutConstraintAxisVertical];
     [_image setContentCompressionResistancePriority:UILayoutPriorityDefaultLow forAxis:UILayoutConstraintAxisVertical];
+
+    [self stopWait];
 
     _stackView.axis = UILayoutConstraintAxisVertical;
     _stackView.alignment = UIStackViewAlignmentFill;
@@ -1812,6 +1817,29 @@ UIView* find_view(UIView* view, Class class) {
 {
     _height = height;
     [self setNeedsUpdateConstraints];
+}
+-(void)startWait
+{
+    UIActivityIndicatorView* wait = _image.subviews.lastObject;
+    if (![wait isKindOfClass:[UIActivityIndicatorView class]])
+    {
+        wait = [[UIActivityIndicatorView alloc] initWithFrame:CGRectZero];
+        wait.activityIndicatorViewStyle = self.bounds.size.width <= 100.0 ? UIActivityIndicatorViewStyleWhite : UIActivityIndicatorViewStyleWhiteLarge;
+        [wait sizeToFit];
+        
+        wait.color = self.tintColor;
+        [_image addSubview:wait];
+
+        wait.translatesAutoresizingMaskIntoConstraints = NO;
+        [wait.centerXAnchor constraintEqualToAnchor:_image.centerXAnchor].active = TRUE;
+        [wait.centerYAnchor constraintEqualToAnchor:_image.centerYAnchor].active = TRUE;
+    }
+    [wait startAnimating];
+}
+-(void)stopWait
+{
+    for (UIView* view in _image.subviews)
+        [view removeFromSuperview];
 }
 
 - (CGSize)sizeThatFits:(CGSize)targetSize

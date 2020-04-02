@@ -9,7 +9,7 @@
 
 #define ImageCacheDebug 0
 #define ImageCacheLog 0
-#if !ImageCacheLog
+#if !(ImageCacheLog || ImageCacheDebug)
 #define NSLog(...) (void)0
 #endif
 
