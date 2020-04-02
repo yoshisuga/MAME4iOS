@@ -1189,7 +1189,8 @@ UIView* find_view(UIView* view, Class class) {
     // use a placeholder image if the image did not load right away.
     if (cell.image.image == nil) {
         cell.image.image = _loadingImage;
-        [cell setImageAspect:(cell.bounds.size.width / row_height.x)];
+        if (row_height.x != 0.0)
+            [cell setImageAspect:(cell.bounds.size.width / row_height.x)];
     }
     
     return cell;
