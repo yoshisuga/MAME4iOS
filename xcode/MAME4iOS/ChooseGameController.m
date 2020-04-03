@@ -10,6 +10,7 @@
 #import "ChooseGameController.h"
 #import "ImageCache.h"
 #import "SystemImage.h"
+#import "Alert.h"
 #import "Globals.h"
 #import "myosd.h"
 
@@ -1368,25 +1369,33 @@ UIView* find_view(UIView* view, Class class) {
             }],
 #endif
             [self actionWithTitle:@"Delete" image:[UIImage systemImageNamed:@"trash"] destructive:YES handler:^(id action) {
-                NSArray* paths = @[@"roms/%@.zip", @"artwork/%@.zip", @"titles/%@.png", @"samples/%@.zip", @"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@", @"hi/%@.hi"];
-                
-                NSString* root = [NSString stringWithUTF8String:get_documents_path("")];
-                for (NSString* path in paths) {
-                    NSString* delete_path = [root stringByAppendingPathComponent:[NSString stringWithFormat:path, game[kGameInfoName]]];
-                    NSLog(@"DELETE: %@", delete_path);
-                    [[NSFileManager defaultManager] removeItemAtPath:delete_path error:nil];
-                }
-                
-                [self setRecent:game isRecent:FALSE];
-                [self setFavorite:game isFavorite:FALSE];
+                NSString* title = [NSString stringWithFormat:@"Delete %@?",
+                                   [game[kGameInfoDescription] componentsSeparatedByString:@" ("].firstObject];
+                NSString* message = nil;
 
-                [self setGameList:[self->_gameList filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF != %@", game]]];
+                [self showAlertWithTitle:title message:message buttons:@[@"Delete", @"Cancel"] handler:^(NSUInteger button) {
+                    if (button != 0)
+                        return;
+                    NSArray* paths = @[@"roms/%@.zip", @"artwork/%@.zip", @"titles/%@.png", @"samples/%@.zip", @"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@", @"hi/%@.hi"];
+                    
+                    NSString* root = [NSString stringWithUTF8String:get_documents_path("")];
+                    for (NSString* path in paths) {
+                        NSString* delete_path = [root stringByAppendingPathComponent:[NSString stringWithFormat:path, game[kGameInfoName]]];
+                        NSLog(@"DELETE: %@", delete_path);
+                        [[NSFileManager defaultManager] removeItemAtPath:delete_path error:nil];
+                    }
+                    
+                    [self setRecent:game isRecent:FALSE];
+                    [self setFavorite:game isFavorite:FALSE];
 
-                // if we have deleted the last game, excpet for the MAMEMENU, then exit with no game selected and let a re-scan happen.
-                if ([self->_gameList count] <= 1) {
-                    if (self.selectGameCallback != nil)
-                        self.selectGameCallback(nil);
-                }
+                    [self setGameList:[self->_gameList filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF != %@", game]]];
+
+                    // if we have deleted the last game, excpet for the MAMEMENU, then exit with no game selected and let a re-scan happen.
+                    if ([self->_gameList count] <= 1) {
+                        if (self.selectGameCallback != nil)
+                            self.selectGameCallback(nil);
+                    }
+                }];
             }]
         ]];
     }
@@ -1918,14 +1927,10 @@ UIView* find_view(UIView* view, Class class) {
 }
 
 #if TARGET_OS_TV && TVOS_PARALLAX
-//- (void)displayLayer:(CALayer *)layer
 -(void)drawRect:(CGRect)rect
 {
-    //[super displayLayer:layer];
-        
-    //
     // on tvOS we flatten the cell into a single image so the parallax selection works.
-    //
+    // NOTE we do this in drawRect so we know the cell is ready to be displayed, passing afterScreenUpdates:YES is crazy slow.
     if (!_image.adjustsImageWhenAncestorFocused && _image.subviews.count == 0) {
         dispatch_async(dispatch_get_main_queue(), ^{
             if (!self.image.adjustsImageWhenAncestorFocused && self.image.subviews.count == 0) {
