@@ -8,7 +8,8 @@
 #import "ImageCache.h"
 
 #define ImageCacheDebug 0
-#if !ImageCacheDebug
+#define ImageCacheLog 0
+#if !(ImageCacheLog || ImageCacheDebug)
 #define NSLog(...) (void)0
 #endif
 
@@ -107,7 +108,7 @@ static ImageCache* sharedInstance = nil;
     });
 }
 
-- (void)getImage:(NSURL*)url size:(CGSize)size localURL:(NSURL*)localURL completionHandler:(ImageCacheCallback)handler;
+- (void)getImage:(NSURL*)url size:(CGSize)size localURL:(NSURL*)localURL completionHandler:(ImageCacheCallback)handler
 {
     NSParameterAssert([NSThread isMainThread]);
     NSParameterAssert(handler != nil);
@@ -208,7 +209,7 @@ static ImageCache* sharedInstance = nil;
     }];
 }
 
-- (void)getImage:(NSURL*)url size:(CGSize)size completionHandler:(ImageCacheCallback)handler;
+- (void)getImage:(NSURL*)url size:(CGSize)size completionHandler:(ImageCacheCallback)handler
 {
     [self getImage:url size:size localURL:nil completionHandler:handler];
 }
@@ -233,17 +234,63 @@ static ImageCache* sharedInstance = nil;
                        
 #define lerp(a,b,f) ((a)*(1-(f)) + (b)*(f))
 
-static UIColor* blend(UIColor* c0, UIColor* c1, CGFloat f)
+static CGColorRef blend(CGColorRef c0, CGColorRef c1, CGFloat f)
 {
-   CGFloat r0,g0,b0,a0;
-   CGFloat r1,g1,b1,a1;
-   
-   [c0 getRed:&r0 green:&g0 blue:&b0 alpha:&a0];
-   [c1 getRed:&r1 green:&g1 blue:&b1 alpha:&a1];
-   
-   return [UIColor colorWithRed:lerp(r0,r1,f) green:lerp(g0,g1,f) blue:lerp(b0,b1,f) alpha:lerp(a0,a1,f)];
+    assert(CGColorGetColorSpace(c0) == CGColorGetColorSpace(c1));
+    
+    const CGFloat* cc0 = CGColorGetComponents(c0);
+    const CGFloat* cc1 = CGColorGetComponents(c1);
+    CGFloat rgba[4] = {lerp(cc0[0],cc1[0],f),lerp(cc0[1],cc1[1],f),lerp(cc0[2],cc1[2],f),lerp(cc0[3],cc1[3],f)};
+    
+    return CGColorCreate(CGColorGetColorSpace(c0), rgba);
 }
 
+// compute/create a average color from a bunch of raw RGBA pixels
+static CGColorRef averageColorRGBA(uint32_t* image_ptr, NSInteger image_width, NSInteger image_height, CGColorSpaceRef colorSpace, CGImageAlphaInfo alpha, NSInteger x, NSInteger y, NSInteger dx, NSInteger dy)
+{
+   y = image_height-(y+dy);    // CoreGraphics images are stored bottom up, not top down
+   image_ptr += (image_width * y) + x;
+
+   NSUInteger vec[4] = {0,0,0,0};
+   for (NSInteger y = 0; y < dy; y++) {
+      for (NSInteger x = 0; x < dx; x++) {
+          NSUInteger pixel = OSSwapHostToLittleInt32(*image_ptr++);
+          vec[0] += ((pixel >>  0) & 0xFF);
+          vec[1] += ((pixel >>  8) & 0xFF);
+          vec[2] += ((pixel >> 16) & 0xFF);
+          vec[3] += ((pixel >> 24) & 0xFF);
+      }
+      image_ptr += (image_width - dx);
+   }
+  
+   CGFloat f = 1.0 / (255.0 * dx * dy);
+   CGFloat r = vec[0] * f;
+   CGFloat g = vec[1] * f;
+   CGFloat b = vec[2] * f;
+   CGFloat a = vec[3] * f;
+   
+   if (alpha == kCGImageAlphaFirst || alpha == kCGImageAlphaPremultipliedFirst || alpha == kCGImageAlphaNoneSkipFirst) {
+       CGFloat t = r;
+       r = g;
+       g = b;
+       b = a;
+       a = t;
+   }
+
+   if ((alpha == kCGImageAlphaPremultipliedLast || alpha == kCGImageAlphaPremultipliedFirst) && a != 0.0) {
+       r /= a;
+       g /= a;
+       b /= a;
+   }
+   
+   if (alpha == kCGImageAlphaNoneSkipLast || alpha == kCGImageAlphaNoneSkipFirst) {
+       a = 1.0;
+   }
+   
+   CGFloat rgba[] = {r,g,b,a};
+   return CGColorCreate(colorSpace, rgba);
+}
+                       
 //
 // background safe image resize
 //
@@ -252,15 +299,18 @@ static UIImage* resizeImage(UIImage* image, CGFloat aspect, CGFloat width, CGFlo
     CGRect src;
     CGRect dst;
     CGFloat scale;
-    
+
     if (image == nil)
         return nil;
     
     if (width == 0.0 && height == 0.0)
         return image;
 
+    CGFloat image_width = image.size.width;
+    CGFloat image_height = image.size.height;
+
     if (aspect == 0.0)
-        aspect = image.size.width / image.size.height;
+        aspect = image_width / image_height;
         
     if (width == 0.0)
         width = floor(height * aspect);
@@ -268,9 +318,13 @@ static UIImage* resizeImage(UIImage* image, CGFloat aspect, CGFloat width, CGFlo
     if (height == 0.0)
         height = floor(width / aspect);
     
-    if (width == image.size.width && height == image.size.height)
+    if (width == image_width && height == image_height)
         return image;
-    
+
+    scale = image.scale;
+    image_width = image_width * scale;
+    image_height = image_height * scale;
+
     if ([UIImage respondsToSelector:@selector(imageWithCGImage:scale:orientation:)])
         scale = [[UIScreen mainScreen] scale];
     else
@@ -283,16 +337,16 @@ static UIImage* resizeImage(UIImage* image, CGFloat aspect, CGFloat width, CGFlo
     {
         // Aspect Fit
         CGFloat w = width;
-        CGFloat h = width / aspect;
+        CGFloat h = floor(width / aspect);
         
         if (h > height)
         {
-            w = height * aspect;
+            w = floor(height * aspect);
             h = height;
         }
         
-        src = CGRectMake(0,0,image.size.width,image.size.height);
-        dst = CGRectMake((width - w)/2,(height-h)/2,w,h);
+        src = CGRectMake(0,0,image_width,image_height);
+        dst = CGRectMake(floor((width - w)/2),floor((height-h)/2),w,h);
     }
     else if (mode == UIViewContentModeScaleAspectFill)
     {
@@ -302,26 +356,26 @@ static UIImage* resizeImage(UIImage* image, CGFloat aspect, CGFloat width, CGFlo
         
         if (aspect <= (width / height))
         {
-            CGFloat w = image.size.width;
-            CGFloat h = image.size.width * height / width;
-            src = CGRectMake(0,(image.size.height - h)/2,w,h);
+            CGFloat w = image_width;
+            CGFloat h = floor(image_width * height / width);
+            src = CGRectMake(0,floor((image_height - h)/2),w,h);
         }
         else
         {
-            CGFloat w = image.size.height * width / height;
-            CGFloat h = image.size.height;
-            src = CGRectMake((image.size.width - w)/2,0,w,h);
+            CGFloat w = floor(image_height * width / height);
+            CGFloat h = image_height;
+            src = CGRectMake(floor((image_width - w)/2),0,w,h);
         }
     }
     else // if (mode == UIViewContentModeScaleToFill)
     {
-        src = CGRectMake(0,0,image.size.width,image.size.height);
+        src = CGRectMake(0,0,image_width,image_height);
         dst = CGRectMake(0,0,width,height);
     }
     
     CGImageRef imageRef = [image CGImage];
     CGImageAlphaInfo alphaInfo = CGImageGetAlphaInfo(imageRef);
-    CGColorSpaceRef colorSpaceInfo = CGColorSpaceCreateDeviceRGB();
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
     
     if (alphaInfo == kCGImageAlphaNone)
         alphaInfo = kCGImageAlphaNoneSkipLast;
@@ -330,45 +384,66 @@ static UIImage* resizeImage(UIImage* image, CGFloat aspect, CGFloat width, CGFlo
     if (alphaInfo == kCGImageAlphaLast)
         alphaInfo = kCGImageAlphaPremultipliedFirst;
 
-    CGContextRef bitmap = CGBitmapContextCreate(NULL, width, height, 8, 4 * width, colorSpaceInfo, alphaInfo);
-    CGContextSetInterpolationQuality(bitmap, kCGInterpolationHigh);
+    CGContextRef bitmap = CGBitmapContextCreate(NULL, width, height, 8, 4 * width, colorSpace, alphaInfo);
+    //CGContextSetInterpolationQuality(bitmap, kCGInterpolationHigh);
     
+    if (mode == UIViewContentModeScaleAspectFill && !CGRectEqualToRect(src, CGRectMake(0,0,image_width,image_height)))
+    {
+        CGImageRef source = CGImageCreateWithImageInRect(imageRef, src);
+        CGContextDrawImage(bitmap, dst, source);
+        CGImageRelease(source);
+    }
+    else
+    {
+        CGContextDrawImage(bitmap, dst, imageRef);
+    }
+    
+    // in the AspectFit case fill in the top/bottom or left/right with a average color from the image.
     if (!CGRectEqualToRect(dst, CGRectMake(0,0,width,height)))
     {
-         UIColor* color;
-        
+        uint32_t* image_ptr = CGBitmapContextGetData(bitmap);
+        NSInteger w = 1; // number of scanline/rows to average
+
         if (dst.origin.x > 0.0)
         {
-            UIColor* left = [image averageColor:UIRectEdgeLeft width:2.0];
-            UIColor* right = [image averageColor:UIRectEdgeRight width:2.0];
-            color = blend(left, right, 0.5);
+            CGColorRef left = averageColorRGBA(image_ptr, width, height, colorSpace, alphaInfo, dst.origin.x, dst.origin.y, w, dst.size.height);
+            CGColorRef right = averageColorRGBA(image_ptr, width, height, colorSpace, alphaInfo, dst.origin.x + dst.size.width - w, dst.origin.y, w, dst.size.height);
+            CGColorRef color = blend(left, right, 0.5);
+
+            CGContextSetFillColorWithColor(bitmap, color);
+            CGContextFillRect(bitmap, CGRectMake(0, 0, dst.origin.x, height));
+            CGContextFillRect(bitmap, CGRectMake(dst.origin.x + dst.size.width, 0, width - (dst.origin.x + dst.size.width), height));
+            CGColorRelease(left);
+            CGColorRelease(right);
+            CGColorRelease(color);
         }
         else
         {
-            UIColor* top = [image averageColor:UIRectEdgeTop width:2.0];
-            UIColor* bot = [image averageColor:UIRectEdgeBottom width:2.0];
-            color = blend(top, bot, 0.5);
+            CGColorRef top = averageColorRGBA(image_ptr, width, height, colorSpace, alphaInfo, dst.origin.x, dst.origin.y, dst.size.width, w);
+            CGColorRef bot = averageColorRGBA(image_ptr, width, height, colorSpace, alphaInfo, dst.origin.x, dst.origin.y + dst.size.height - w, dst.size.width, w);
+            CGColorRef color = blend(top, bot, 0.5);
+
+            CGContextSetFillColorWithColor(bitmap, color);
+            CGContextFillRect(bitmap, CGRectMake(0, 0, width, dst.origin.y));
+            CGContextFillRect(bitmap, CGRectMake(0, dst.origin.y + dst.size.height, width, height - (dst.origin.y + dst.size.height)));
+            CGColorRelease(top);
+            CGColorRelease(bot);
+            CGColorRelease(color);
         }
- 
-        CGContextSetFillColorWithColor(bitmap, color.CGColor);
-        CGContextFillRect(bitmap, CGRectMake(0, 0, width, height));
     }
     
-    CGImageRef source = CGImageCreateWithImageInRect(imageRef, src);
-    CGContextDrawImage(bitmap, dst, source);
-    CGImageRef ref = CGBitmapContextCreateImage(bitmap);
+    CGImageRef newImageRef = CGBitmapContextCreateImage(bitmap);
     
     UIImage* newImage;
     
     if (scale == 1.0)
-        newImage = [UIImage imageWithCGImage:ref];
+        newImage = [UIImage imageWithCGImage:newImageRef];
     else
-        newImage = [UIImage imageWithCGImage:ref scale:scale orientation:UIImageOrientationUp];
+        newImage = [UIImage imageWithCGImage:newImageRef scale:scale orientation:UIImageOrientationUp];
     
     CGContextRelease(bitmap);
-    CGImageRelease(source);
-    CGImageRelease(ref);
-    CGColorSpaceRelease(colorSpaceInfo);
+    CGImageRelease(newImageRef);
+    CGColorSpaceRelease(colorSpace);
     
     return newImage;
 }
@@ -386,32 +461,13 @@ static UIImage* resizeImage(UIImage* image, CGFloat aspect, CGFloat width, CGFlo
 {
     return [self scaledToSize:size mode:UIViewContentModeScaleToFill];
 }
-- (UIColor*)averageColor:(UIRectEdge)edge width:(CGFloat)width
++ (UIImage*)imageWithColor:(UIColor*)color size:(CGSize)size
 {
-    uint8_t rgba[4];
-    CIImage* image = self.CIImage ?: [[CIImage alloc] initWithImage:self];
-    CGRect rect = image.extent;
-    switch (edge) {
-        case UIRectEdgeTop:     rect = CGRectMake(rect.origin.x, rect.origin.y, rect.size.width, width);  break;
-        case UIRectEdgeLeft:    rect = CGRectMake(rect.origin.x, rect.origin.y, width, rect.size.height); break;
-        case UIRectEdgeBottom:  rect = CGRectMake(rect.origin.x, rect.origin.y + rect.size.height-width, rect.size.width, width); break;
-        case UIRectEdgeRight:   rect = CGRectMake(rect.origin.x + rect.size.width - width, 0, width, image.extent.size.height); break;
-        default: break; // UIRectEdgeAll
-    }
-    
-    CIImage* output = [image imageByApplyingFilter:@"CIAreaAverage" withInputParameters:@{
-        kCIInputExtentKey: [CIVector vectorWithCGRect:rect]
+    return [[[UIGraphicsImageRenderer alloc] initWithSize:size] imageWithActions:^(UIGraphicsImageRendererContext * context) {
+        [color setFill];
+        [context fillRect:CGRectMake(0, 0, size.width, size.height)];
     }];
-    CIContext* context = [CIContext contextWithOptions:@{kCIContextWorkingColorSpace: [NSNull null]}];
-    [context render:output toBitmap:rgba rowBytes:sizeof(rgba) bounds:CGRectMake(0, 0, 1, 1) format:kCIFormatRGBA8 colorSpace:nil];
-
-    return [UIColor colorWithRed:rgba[0]/255.0 green:rgba[1]/255.0 blue:rgba[2]/255.0 alpha:rgba[3]/255.0];
 }
-- (UIColor*)averageColor
-{
-    return [self averageColor:UIRectEdgeAll width:1.0];
-}
-
 @end
 
 

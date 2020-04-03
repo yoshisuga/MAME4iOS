@@ -152,12 +152,10 @@
 		EF301CF1240460C5000510FD /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF301CF0240460C5000510FD /* Alert.m */; };
 		EF301CF2240460C5000510FD /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF301CF0240460C5000510FD /* Alert.m */; };
 		EF301CF3240460F3000510FD /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF27F36323F73CD400B1E50A /* ZipFile.m */; };
-		EF40996B240EB4BF00FACC5D /* loading_game_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = EF40996A240EB4BF00FACC5D /* loading_game_icon.png */; };
-		EF40996C240EB4BF00FACC5D /* loading_game_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = EF40996A240EB4BF00FACC5D /* loading_game_icon.png */; };
 		EF7B232C23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
 		EF7B232D23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
-		EFA756FF2405585D00A02AAB /* mamemenu.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA756FE2405585D00A02AAB /* mamemenu.png */; };
-		EFA757002405585D00A02AAB /* mamemenu.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA756FE2405585D00A02AAB /* mamemenu.png */; };
+		EFA756FF2405585D00A02AAB /* mameui.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA756FE2405585D00A02AAB /* mameui.png */; };
+		EFA757002405585D00A02AAB /* mameui.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA756FE2405585D00A02AAB /* mameui.png */; };
 		EFA7570524057FD800A02AAB /* default_game_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA7570424057FD800A02AAB /* default_game_icon.png */; };
 		EFA7570624057FD800A02AAB /* default_game_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA7570424057FD800A02AAB /* default_game_icon.png */; };
 		EFA757082405B9EA00A02AAB /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA757072405B9EA00A02AAB /* AVFoundation.framework */; };
@@ -166,8 +164,6 @@
 		EFA7570E2406D64600A02AAB /* SystemImage.m in Sources */ = {isa = PBXBuildFile; fileRef = EFA7570B2406D64600A02AAB /* SystemImage.m */; };
 		EFA757222408488D00A02AAB /* iCadeControls.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA757212408488D00A02AAB /* iCadeControls.png */; };
 		EFD4D14A23C0F6AB00857A76 /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = CE30090316FA47CB000EDCF1 /* Category.ini */; };
-		EFE1D708242C05CF0081EEC6 /* CoreImage.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFE1D707242C05CE0081EEC6 /* CoreImage.framework */; };
-		EFE1D70A242C1D840081EEC6 /* CoreImage.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFE1D709242C1D840081EEC6 /* CoreImage.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -351,9 +347,8 @@
 		EF29C8832402E51100AFFA4E /* config_iPad_gen_7.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = config_iPad_gen_7.txt; path = "../../iOS-res/Applications/MAME4iOS.app/config_iPad_gen_7.txt"; sourceTree = "<group>"; };
 		EF301CEF240460C5000510FD /* Alert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Alert.h; sourceTree = "<group>"; };
 		EF301CF0240460C5000510FD /* Alert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Alert.m; sourceTree = "<group>"; };
-		EF40996A240EB4BF00FACC5D /* loading_game_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = loading_game_icon.png; sourceTree = "<group>"; };
 		EF9F9C9E240070E700352554 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../../README.md; sourceTree = "<group>"; };
-		EFA756FE2405585D00A02AAB /* mamemenu.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = mamemenu.png; sourceTree = "<group>"; };
+		EFA756FE2405585D00A02AAB /* mameui.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = mameui.png; sourceTree = "<group>"; };
 		EFA7570424057FD800A02AAB /* default_game_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = default_game_icon.png; sourceTree = "<group>"; };
 		EFA757072405B9EA00A02AAB /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS13.2.sdk/System/Library/Frameworks/AVFoundation.framework; sourceTree = DEVELOPER_DIR; };
 		EFA757092405BA0200A02AAB /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
@@ -380,7 +375,6 @@
 				925ABCBB1E46DCC500997182 /* CoreFoundation.framework in Frameworks */,
 				925ABCBC1E46DCC500997182 /* AudioToolbox.framework in Frameworks */,
 				925ABCBD1E46DCC500997182 /* QuartzCore.framework in Frameworks */,
-				EFE1D708242C05CF0081EEC6 /* CoreImage.framework in Frameworks */,
 				EFA7570A2405BA0200A02AAB /* AVFoundation.framework in Frameworks */,
 				925ABCBE1E46DCC500997182 /* UIKit.framework in Frameworks */,
 				925ABCC01E46DCC500997182 /* Foundation.framework in Frameworks */,
@@ -404,7 +398,6 @@
 				92ECB90621EA998000D1E3D0 /* CoreFoundation.framework in Frameworks */,
 				EFA757082405B9EA00A02AAB /* AVFoundation.framework in Frameworks */,
 				92ECB90421EA997A00D1E3D0 /* GameController.framework in Frameworks */,
-				EFE1D70A242C1D840081EEC6 /* CoreImage.framework in Frameworks */,
 				92ECB90121EA993E00D1E3D0 /* libc++.tbd in Frameworks */,
 				92ECB8FF21EA992100D1E3D0 /* libmamearm64-tvos.a in Frameworks */,
 			);
@@ -570,9 +563,8 @@
 			isa = PBXGroup;
 			children = (
 				EFA7570424057FD800A02AAB /* default_game_icon.png */,
-				EF40996A240EB4BF00FACC5D /* loading_game_icon.png */,
 				EF26AE07241848800078FD30 /* mame_logo.png */,
-				EFA756FE2405585D00A02AAB /* mamemenu.png */,
+				EFA756FE2405585D00A02AAB /* mameui.png */,
 				B5FAE31621FCDE0C003F44D0 /* scanline_tvOS201901.png */,
 				920BBDED201FC29700AE7D50 /* dpad.png */,
 				920BBDF020210C3700AE7D50 /* menu.png */,
@@ -827,9 +819,8 @@
 				925ABCD71E46DCC500997182 /* LICENSE in Resources */,
 				92A533D021EBDDF20089FBB9 /* GCDWebUploader.bundle in Resources */,
 				925ABCD81E46DCC500997182 /* MAME4iOS72.png in Resources */,
-				EFA756FF2405585D00A02AAB /* mamemenu.png in Resources */,
+				EFA756FF2405585D00A02AAB /* mameui.png in Resources */,
 				EFA757222408488D00A02AAB /* iCadeControls.png in Resources */,
-				EF40996B240EB4BF00FACC5D /* loading_game_icon.png in Resources */,
 				925ABCD91E46DCC500997182 /* MAME4iOS114.png in Resources */,
 				925ABCDA1E46DCC500997182 /* MAME4iOS144.png in Resources */,
 				925ABCDB1E46DCC500997182 /* MAME4iOS57.png in Resources */,
@@ -848,9 +839,8 @@
 				926C771221F39D2500103EDE /* cheat.zip in Resources */,
 				926C770721F26DFA00103EDE /* crt-2.png in Resources */,
 				EF26AE09241848800078FD30 /* mame_logo.png in Resources */,
-				EF40996C240EB4BF00FACC5D /* loading_game_icon.png in Resources */,
 				926C770921F26E0000103EDE /* scanline-2.png in Resources */,
-				EFA757002405585D00A02AAB /* mamemenu.png in Resources */,
+				EFA757002405585D00A02AAB /* mameui.png in Resources */,
 				EFA7570624057FD800A02AAB /* default_game_icon.png in Resources */,
 				926C770621F26DEA00103EDE /* crt-1.png in Resources */,
 				92ECB8F721EA985000D1E3D0 /* Assets.xcassets in Resources */,

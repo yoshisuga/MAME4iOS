@@ -55,11 +55,9 @@
 
 #include <sys/stat.h>
 
-#define IS_WIDESCREEN ( fabs( ( double )[ [ UIScreen mainScreen ] bounds ].size.height - ( double )568 ) < DBL_EPSILON )
 #define IS_IPAD   ( [ [ [ UIDevice currentDevice ] model ] isEqualToString: @"iPad" ] )
 #define IS_IPHONE ( [ [ [ UIDevice currentDevice ] model ] isEqualToString: @"iPhone" ] )
 #define IS_IPOD   ( [ [ [ UIDevice currentDevice ] model ] isEqualToString: @"iPod touch" ] )
-#define IS_IPHONE_5 ( IS_IPHONE && IS_WIDESCREEN )
 
 const char* get_resource_path(const char* file)
 {
@@ -198,21 +196,14 @@ unsigned long read_mfi_controller(unsigned long res){
 #endif
 
     g_isIpad = IS_IPAD;
-    g_isIphone5 = IS_WIDESCREEN; //Really want to know if widescreen
-    //g_isIphone5 = true; g_isIpad = false;//TEST
     
 	hrViewController = [[EmulatorController alloc] init];
 	
 	deviceWindow = [[UIWindow alloc] initWithFrame:rect];
 #if TARGET_OS_TV
-    deviceWindow.backgroundColor = UIColor.darkGrayColor;
+    deviceWindow.backgroundColor = [UIColor colorWithWhite:0.111 alpha:1.0];
     deviceWindow.tintColor = [UIColor colorWithRed:0.0 green:122.0/255.0 blue:1.0 alpha:1.0];
 #endif
-#ifdef DEBUG
-    deviceWindow.backgroundColor = [UIColor redColor];
-#endif
-    
-	//[deviceWindow addSubview: hrViewController.view ];//LO CAMBIO PARA QUE GIRE EN iOS 6.0	
     [deviceWindow setRootViewController:hrViewController];
     
     [hrViewController startEmulation];

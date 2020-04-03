@@ -91,7 +91,6 @@ extern float joy_analog_x[4][4];
 extern float joy_analog_y[4][2];
 
 extern int g_isIpad;
-extern int g_isIphone5;
 
 extern int g_emulation_initiated;
 extern int g_emulation_paused;

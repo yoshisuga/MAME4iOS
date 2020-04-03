@@ -20,6 +20,8 @@ NS_ASSUME_NONNULL_BEGIN
 #endif
 
 // a helper to create a system time of a specific size and weight
++(nullable UIImage*)systemImageNamed:(NSString*)name withStyle:(UIFontTextStyle)style;
++(nullable UIImage*)systemImageNamed:(NSString*)name withScale:(NSInteger)scale;
 +(nullable UIImage*)systemImageNamed:(NSString*)name withPointSize:(CGFloat)pointSize weight:(UIFontWeight)weight;
 +(nullable UIImage*)systemImageNamed:(NSString*)name withPointSize:(CGFloat)pointSize;
 +(nullable UIImage*)systemImageNamed:(NSString*)name withFont:(UIFont*)font;
