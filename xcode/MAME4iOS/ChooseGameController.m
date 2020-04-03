@@ -726,16 +726,20 @@ UIView* find_view(UIView* view, Class class) {
 
 #pragma mark - UICollectionView
 
--(void)invalidateLayout
+-(void)kickLayout
 {
-    [self.collectionView.collectionViewLayout invalidateLayout];
-    _layoutRowHeightCache = nil;   // flush row height cache
-    
     // HACK kick the layout in the head, so it gets the location of headers correct
     CGPoint offset = self.collectionView.contentOffset;
     [self.collectionView setContentOffset:CGPointMake(offset.x, offset.y + 0.5)];
     [self.collectionView layoutIfNeeded];
     [self.collectionView setContentOffset:offset];
+}
+
+-(void)invalidateLayout
+{
+    [self.collectionView.collectionViewLayout invalidateLayout];
+    _layoutRowHeightCache = nil;   // flush row height cache
+    [self kickLayout];
 }
 
 -(void)reloadData
@@ -945,6 +949,7 @@ UIView* find_view(UIView* view, Class class) {
             if (selectedIndexPath != nil) {
                 [self.collectionView selectItemAtIndexPath:selectedIndexPath animated:NO scrollPosition:UICollectionViewScrollPositionCenteredVertically];
             }
+            [self kickLayout];
         }];
     }
 }
