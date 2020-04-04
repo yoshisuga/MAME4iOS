@@ -1461,7 +1461,7 @@ void myosd_handle_turbo() {
         for (int i=0; i<sizeof(turboButtons)/sizeof(turboButtons[0]); i++) {
             
             int button = turboButtons[i].button;
-            int myosdButton = turboButtons[i].button;
+            int myosdButton = turboButtons[i].myosdButton;
             
             if ( controllers.count > 0 ) {
                 // For mFi Controllers
