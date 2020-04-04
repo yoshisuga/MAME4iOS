@@ -413,6 +413,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     NSString* state2 = controllers.count > 0 ? @"Ⓑ State B" : @"State 2";
 #endif
     
+    [self startMenu];
     [self showAlertWithTitle:nil message:message buttons:@[state1, state2] handler:^(NSUInteger button) {
         if (load)
             myosd_loadstate = 1;
@@ -445,12 +446,14 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
 
     int enable_menu_exit_option = TRUE; // (myosd_inGame && myosd_in_menu==0) || !myosd_inGame;
     
-#if TARGET_OS_IOS
-    NSString* title = g_device_is_landscape ? nil : @"MAME4iOS";
-#else
-    NSString* title = nil; // @"MAME4tvOS";
-#endif
+    NSString* title = TARGET_OS_IOS ? @"MAME4iOS" : @"MAME4tvOS";
     
+    if (controllers.count > 1)
+        title = [NSString stringWithFormat:@"Player %d", player+1];
+    
+    if (g_device_is_landscape || self.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassCompact)
+        title = nil;
+
     menu = [UIAlertController alertControllerWithTitle:title message:nil preferredStyle:UIAlertControllerStyleActionSheet];
 
     CGFloat size = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].pointSize * 1.5;
@@ -458,7 +461,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     if(myosd_inGame && myosd_in_menu==0)
     {
         // MENU item to insert a coin and do a start. usefull for fullscreen and AppleTV siri remote, and discoverability on a GameController
-        if (controllers.count > 1)
+        if (title == nil && controllers.count > 1)
             title = [NSString stringWithFormat:@"Coin+Start Player %d", player+1];
         else
             title = @"Coin+Start";
