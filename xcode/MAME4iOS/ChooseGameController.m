@@ -1277,31 +1277,73 @@ UIView* find_view(UIView* view, Class class) {
     }
 }
 
-#pragma mark UICollectionView index (only on tvOS)
+#pragma mark - game context menu actions...
 
-#if TARGET_OS_TV
-- (NSArray*)indexTitlesForCollectionView:(UICollectionView *)collectionView
+-(void)deleteOrReset:(NSDictionary*)game delete:(BOOL)delete
 {
-    if ([_gameFilterScope isEqualToString:@"All"])
-        return @[];
+    NSString* verb = delete ? @"Delete" : @"Reset";
+    NSString* title = [NSString stringWithFormat:@"%@ %@?", verb, [game[kGameInfoDescription] componentsSeparatedByString:@" ("].firstObject];
+    NSString* message = nil;
 
-    NSMutableSet* set = [[NSMutableSet alloc] init];
-    for (NSString* section in _gameSectionTitles) {
-        if ([section isEqualToString:RECENT_GAMES_TITLE] || [section isEqualToString:FAVORITE_GAMES_TITLE])
-            continue;
-        if ([_gameFilterScope isEqualToString:@"Year"])
-            [set addObject:section];
-        else
-            [set addObject:[section substringToIndex:1]];
-    }
-    return [[set allObjects] sortedArrayUsingSelector:@selector(localizedCompare:)];
+    [self showAlertWithTitle:title message:message buttons:@[verb, @"Cancel"] handler:^(NSUInteger button) {
+        if (button != 0)
+            return;
+        
+        NSArray* paths = @[@"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@", @"hi/%@.hi", @"nvram/%@.nv", @"inp/%@.inp"];
+        
+        if (delete)
+            paths = [paths arrayByAddingObjectsFromArray:@[@"roms/%@.zip", @"roms/%@", @"artwork/%@.zip", @"titles/%@.png", @"samples/%@.zip"]];
+        
+        NSString* root = [NSString stringWithUTF8String:get_documents_path("")];
+        for (NSString* path in paths) {
+            NSString* delete_path = [root stringByAppendingPathComponent:[NSString stringWithFormat:path, game[kGameInfoName]]];
+            NSLog(@"DELETE: %@", delete_path);
+            [[NSFileManager defaultManager] removeItemAtPath:delete_path error:nil];
+        }
+        
+        if (delete) {
+            [self setRecent:game isRecent:FALSE];
+            [self setFavorite:game isFavorite:FALSE];
+
+            [self setGameList:[self->_gameList filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF != %@", game]]];
+
+            // if we have deleted the last game, excpet for the MAMEMENU, then exit with no game selected and let a re-scan happen.
+            if ([self->_gameList count] <= 1) {
+                if (self.selectGameCallback != nil)
+                    self.selectGameCallback(nil);
+            }
+        }
+    }];
 }
 
-/// Returns the index path that corresponds to the given title / index. (e.g. "B",1)
-/// Return an index path with a single index to indicate an entire section, instead of a specific item.
-- (NSIndexPath *)collectionView:(UICollectionView *)collectionView indexPathForIndexTitle:(NSString *)title atIndex:(NSInteger)index
+-(void)delete:(NSDictionary*)game
 {
-    return [[NSIndexPath alloc] initWithIndex:0];
+    [self deleteOrReset:game delete:YES];
+}
+
+-(void)reset:(NSDictionary*)game
+{
+    [self deleteOrReset:game delete:NO];
+}
+
+#if TARGET_OS_IOS
+-(void)share:(NSDictionary*)game
+{
+    NSURL* url = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%s/%@.zip", get_documents_path("roms"), game[kGameInfoName]]];
+    
+    if (![[NSFileManager defaultManager] fileExistsAtPath:url.path])
+        return;
+    
+    UIActivityViewController* activity = [[UIActivityViewController alloc] initWithActivityItems:@[url] applicationActivities:nil];
+
+    if (activity.popoverPresentationController != nil) {
+        UIView* view = self.view;
+        activity.popoverPresentationController.sourceView = view;
+        activity.popoverPresentationController.sourceRect = CGRectMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds), 0.0f, 0.0f);
+        activity.popoverPresentationController.permittedArrowDirections = 0;
+    }
+
+    [self presentViewController:activity animated:YES completion:nil];
 }
 #endif
 
@@ -1355,52 +1397,14 @@ UIView* find_view(UIView* view, Class class) {
         actions = [actions arrayByAddingObjectsFromArray:@[
 #if TARGET_OS_IOS
             [self actionWithTitle:@"Share" image:[UIImage systemImageNamed:@"square.and.arrow.up"] destructive:NO handler:^(id action) {
-                
-                NSURL* url = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%s/%@.zip", get_documents_path("roms"), game[kGameInfoName]]];
-                
-                if (![[NSFileManager defaultManager] fileExistsAtPath:url.path])
-                    return;
-                
-                UIActivityViewController* activity = [[UIActivityViewController alloc] initWithActivityItems:@[url] applicationActivities:nil];
-
-                if (activity.popoverPresentationController != nil) {
-                    UIView* view = [self.collectionView cellForItemAtIndexPath:indexPath] ?: self.view;
-                    activity.popoverPresentationController.sourceView = view;
-                    activity.popoverPresentationController.sourceRect = view.bounds;
-                    activity.popoverPresentationController.permittedArrowDirections = UIPopoverArrowDirectionAny;
-                }
-
-                [self presentViewController:activity animated:YES completion:nil];
+                [self share:game];
             }],
 #endif
+            [self actionWithTitle:@"Reset" image:[UIImage systemImageNamed:@"backward.end"] destructive:YES handler:^(id action) {
+                [self reset:game];
+            }],
             [self actionWithTitle:@"Delete" image:[UIImage systemImageNamed:@"trash"] destructive:YES handler:^(id action) {
-                NSString* title = [NSString stringWithFormat:@"Delete %@?",
-                                   [game[kGameInfoDescription] componentsSeparatedByString:@" ("].firstObject];
-                NSString* message = nil;
-
-                [self showAlertWithTitle:title message:message buttons:@[@"Delete", @"Cancel"] handler:^(NSUInteger button) {
-                    if (button != 0)
-                        return;
-                    NSArray* paths = @[@"roms/%@.zip", @"artwork/%@.zip", @"titles/%@.png", @"samples/%@.zip", @"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@", @"hi/%@.hi"];
-                    
-                    NSString* root = [NSString stringWithUTF8String:get_documents_path("")];
-                    for (NSString* path in paths) {
-                        NSString* delete_path = [root stringByAppendingPathComponent:[NSString stringWithFormat:path, game[kGameInfoName]]];
-                        NSLog(@"DELETE: %@", delete_path);
-                        [[NSFileManager defaultManager] removeItemAtPath:delete_path error:nil];
-                    }
-                    
-                    [self setRecent:game isRecent:FALSE];
-                    [self setFavorite:game isFavorite:FALSE];
-
-                    [self setGameList:[self->_gameList filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF != %@", game]]];
-
-                    // if we have deleted the last game, excpet for the MAMEMENU, then exit with no game selected and let a re-scan happen.
-                    if ([self->_gameList count] <= 1) {
-                        if (self.selectGameCallback != nil)
-                            self.selectGameCallback(nil);
-                    }
-                }];
+                [self delete:game];
             }]
         ]];
     }
