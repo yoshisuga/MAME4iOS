@@ -127,6 +127,10 @@
 {
     return [self dismissWithAction:self.cancelAction completion:nil];
 }
+-(void)dismissWithTitle:(NSString*)title
+{
+    [self dismissWithAction:[self.actions filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"title BEGINSWITH[c] %@", title]].firstObject completion:nil];
+}
 -(void)moveDefaultAction:(NSUInteger)direction
 {
     NSInteger index = [self.actions indexOfObjectIdenticalTo:self.preferredAction];

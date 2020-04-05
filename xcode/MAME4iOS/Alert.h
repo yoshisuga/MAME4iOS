@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)dismissWithAction:(UIAlertAction*)action completion: (void (^ __nullable)(void))completion;
 -(void)dismissWithDefault;
 -(void)dismissWithCancel;
+-(void)dismissWithTitle:(NSString*)title;
 -(void)moveDefaultAction:(NSUInteger)direction;
 @end
 

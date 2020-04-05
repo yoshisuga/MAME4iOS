@@ -933,9 +933,9 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
         if (pad_status & MYOSD_B)
             [alert dismissWithCancel];
         if (pad_status & MYOSD_Y)
-            [alert dismissWithAction:[alert.actions filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"title BEGINSWITH 'Ⓨ'"]].firstObject completion:nil];
+            [alert dismissWithTitle:@"Ⓨ"];
         if (pad_status & MYOSD_X)
-            [alert dismissWithAction:[alert.actions filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"title BEGINSWITH 'Ⓧ'"]].firstObject completion:nil];
+            [alert dismissWithTitle:@"Ⓧ"];
         if ((pad_status & MYOSD_UP))
             [alert moveDefaultAction:-1];
         if ((pad_status & MYOSD_DOWN))
