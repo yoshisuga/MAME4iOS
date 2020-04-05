@@ -1417,6 +1417,17 @@ void myosd_handle_turbo() {
             });
         }
         
+        // dont do turbo mode in MAME menus.
+        if (!(myosd_inGame && myosd_in_menu == 0))
+            return;
+        
+        // also dont do turbo mode if all checks are off
+        if ((turboBtnEnabled[BTN_X] | turboBtnEnabled[BTN_Y] |
+             turboBtnEnabled[BTN_A] | turboBtnEnabled[BTN_B] |
+             turboBtnEnabled[BTN_L1] | turboBtnEnabled[BTN_R1]) == 0) {
+            return;
+        }
+        
         // poll mfi controllers and read state of button presses
         for (int index = 0; index < controllers.count; index++) {
             GCController *mfiController = [controllers objectAtIndex:index];
@@ -1452,7 +1463,7 @@ void myosd_handle_turbo() {
                 mfiBtnStates[index][BTN_R1] = BUTTON_NO_PRESS;
             }
         }
-     
+        
         static struct {int button, myosdButton;} turboButtons[] = {
             {BTN_X, MYOSD_X}, {BTN_Y, MYOSD_Y},
             {BTN_A, MYOSD_A}, {BTN_B, MYOSD_B},
