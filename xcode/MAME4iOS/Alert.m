@@ -20,9 +20,6 @@
         if ([buttons[i] caseInsensitiveCompare:@"Cancel"] == NSOrderedSame)
             style = UIAlertActionStyleCancel;
         
-        if (buttons.count == 2 && alert.preferredAction != nil)
-            style = UIAlertActionStyleCancel;
-        
         [alert addAction:[UIAlertAction actionWithTitle:buttons[i] style:style handler:^(UIAlertAction* action) {
             if (handler != nil)
                 handler(i);
@@ -129,6 +126,10 @@
 -(void)dismissWithCancel
 {
     return [self dismissWithAction:self.cancelAction completion:nil];
+}
+-(void)dismissWithTitle:(NSString*)title
+{
+    [self dismissWithAction:[self.actions filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"title BEGINSWITH[c] %@", title]].firstObject completion:nil];
 }
 -(void)moveDefaultAction:(NSUInteger)direction
 {

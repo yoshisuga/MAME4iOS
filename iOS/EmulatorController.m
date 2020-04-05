@@ -409,21 +409,23 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     NSString* state1 = @"State 1";
     NSString* state2 = @"State 2";
 #else
-    NSString* state1 = controllers.count > 0 ? @"Ⓐ State A" : @"State 1";
-    NSString* state2 = controllers.count > 0 ? @"Ⓑ State B" : @"State 2";
+    NSString* state1 = controllers.count > 0 ? @"Ⓧ State 1" : @"State 1";
+    NSString* state2 = controllers.count > 0 ? @"Ⓨ State 2" : @"State 2";
 #endif
     
-    [self showAlertWithTitle:nil message:message buttons:@[state1, state2] handler:^(NSUInteger button) {
-        if (load)
-            myosd_loadstate = 1;
-        else
-            myosd_savestate = 1;
+    [self startMenu];
+    [self showAlertWithTitle:nil message:message buttons:@[state1, state2, @"Cancel"] handler:^(NSUInteger button) {
+        if (button <= 1) {
+            if (load)
+                myosd_loadstate = 1;
+            else
+                myosd_savestate = 1;
 
-        if (button == 0)
-            push_mame_buttons(0, MYOSD_NONE, MYOSD_B);       // delay, slot 1
-        else
-            push_mame_buttons(0, MYOSD_NONE, MYOSD_X);       // delay, slot 2
-        
+            if (button == 0)
+                push_mame_buttons(0, MYOSD_NONE, MYOSD_B);       // delay, slot 1
+            else
+                push_mame_buttons(0, MYOSD_NONE, MYOSD_X);       // delay, slot 2
+        }
         [self endMenu];
     }];
 }
@@ -445,12 +447,14 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
 
     int enable_menu_exit_option = TRUE; // (myosd_inGame && myosd_in_menu==0) || !myosd_inGame;
     
-#if TARGET_OS_IOS
-    NSString* title = g_device_is_landscape ? nil : @"MAME4iOS";
-#else
-    NSString* title = nil; // @"MAME4tvOS";
-#endif
+    NSString* title = TARGET_OS_IOS ? @"MAME4iOS" : @"MAME4tvOS";
     
+    if (controllers.count > 1)
+        title = [NSString stringWithFormat:@"Player %d", player+1];
+    
+    if (g_device_is_landscape || self.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassCompact)
+        title = nil;
+
     menu = [UIAlertController alertControllerWithTitle:title message:nil preferredStyle:UIAlertControllerStyleActionSheet];
 
     CGFloat size = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].pointSize * 1.5;
@@ -458,7 +462,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     if(myosd_inGame && myosd_in_menu==0)
     {
         // MENU item to insert a coin and do a start. usefull for fullscreen and AppleTV siri remote, and discoverability on a GameController
-        if (controllers.count > 1)
+        if (title == nil && controllers.count > 1)
             title = [NSString stringWithFormat:@"Coin+Start Player %d", player+1];
         else
             title = @"Coin+Start";
@@ -928,6 +932,10 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
             [alert dismissWithDefault];
         if (pad_status & MYOSD_B)
             [alert dismissWithCancel];
+        if (pad_status & MYOSD_Y)
+            [alert dismissWithTitle:@"Ⓨ"];
+        if (pad_status & MYOSD_X)
+            [alert dismissWithTitle:@"Ⓧ"];
         if ((pad_status & MYOSD_UP))
             [alert moveDefaultAction:-1];
         if ((pad_status & MYOSD_DOWN))
@@ -1383,9 +1391,7 @@ static void push_mame_buttons(int player, int button1, int button2)
 
 // called from inside MAME droid_ios_poll_input
 void myosd_handle_turbo() {
-    if ( !myosd_inGame ) {
-        return;
-    }
+
     // this is called on the MAME thread, need to be carefull and clean up!
     @autoreleasepool {
         
@@ -1412,6 +1418,17 @@ void myosd_handle_turbo() {
                     g_mame_buttons[MAME_BUTTONS-1] = 0;
                 });
             });
+        }
+        
+        // dont do turbo mode in MAME menus.
+        if (!(myosd_inGame && myosd_in_menu == 0))
+            return;
+        
+        // also dont do turbo mode if all checks are off
+        if ((turboBtnEnabled[BTN_X] | turboBtnEnabled[BTN_Y] |
+             turboBtnEnabled[BTN_A] | turboBtnEnabled[BTN_B] |
+             turboBtnEnabled[BTN_L1] | turboBtnEnabled[BTN_R1]) == 0) {
+            return;
         }
         
         // poll mfi controllers and read state of button presses
@@ -1449,7 +1466,7 @@ void myosd_handle_turbo() {
                 mfiBtnStates[index][BTN_R1] = BUTTON_NO_PRESS;
             }
         }
-     
+        
         static struct {int button, myosdButton;} turboButtons[] = {
             {BTN_X, MYOSD_X}, {BTN_Y, MYOSD_Y},
             {BTN_A, MYOSD_A}, {BTN_B, MYOSD_B},
@@ -1458,7 +1475,7 @@ void myosd_handle_turbo() {
         for (int i=0; i<sizeof(turboButtons)/sizeof(turboButtons[0]); i++) {
             
             int button = turboButtons[i].button;
-            int myosdButton = turboButtons[i].button;
+            int myosdButton = turboButtons[i].myosdButton;
             
             if ( controllers.count > 0 ) {
                 // For mFi Controllers
@@ -2209,7 +2226,9 @@ void myosd_handle_turbo() {
     myosd_pad_status &= ~MYOSD_START;
     myosd_pad_status &= ~MYOSD_L1;
     myosd_pad_status &= ~MYOSD_R1;
-    
+    myosd_pad_status &= ~MYOSD_L2;  /* aka EXIT */
+    myosd_pad_status &= ~MYOSD_R2;  /* aka MENU */
+
     for(i=0; i<NUM_BUTTONS;i++)
     {
         btnStates[i] = BUTTON_NO_PRESS;
@@ -2533,12 +2552,14 @@ void myosd_handle_turbo() {
             }
             else if (buttonViews[BTN_L2] != nil && !buttonViews[BTN_L2].hidden && MyCGRectContainsPoint(rInput[BTN_L2_RECT], point)) {
                 //NSLog(@"MYOSD_L2");
+                myosd_pad_status |= MYOSD_L2;
                 btnStates[BTN_L2] = BUTTON_PRESS;
                 buttonTouched = YES;
                 [handledTouches addObject:touch];
             }
             else if (buttonViews[BTN_R2] != nil && !buttonViews[BTN_R2].hidden && MyCGRectContainsPoint(rInput[BTN_R2_RECT], point) ) {
                 //NSLog(@"MYOSD_R2");
+                myosd_pad_status |= MYOSD_R2;
                 btnStates[BTN_R2] = BUTTON_PRESS;
                 buttonTouched = YES;
                 [handledTouches addObject:touch];
@@ -3641,6 +3662,7 @@ void myosd_handle_turbo() {
                     myosd_joy_status[index] |= MYOSD_X;
                 }
                 else {
+                    [self handle_MENU];     // handle menu on button UP
                     myosd_joy_status[index] &= ~MYOSD_X;
                 }
             }
@@ -3649,6 +3671,7 @@ void myosd_handle_turbo() {
                     myosd_joy_status[index] |= MYOSD_Y;
                 }
                 else {
+                    [self handle_MENU];     // handle menu on button UP
                     myosd_joy_status[index] &= ~MYOSD_Y;
                 }
             }

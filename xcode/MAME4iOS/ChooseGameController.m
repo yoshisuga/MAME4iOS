@@ -130,7 +130,7 @@ UIView* find_view(UIView* view, Class class) {
     NSUserDefaults* _userDefaults;
     NSArray* _key_commands;
     BOOL _searchCancel;
-    NSIndexPath* currentlyFocusedIndexPath;
+    NSIndexPath* _currentlyFocusedIndexPath;
     UIImage* _defaultImage;
     UIImage* _loadingImage;
     NSMutableSet* _updated_urls;
@@ -293,7 +293,7 @@ UIView* find_view(UIView* view, Class class) {
     [self.navigationController.view addGestureRecognizer:tap];
 #endif
     
-#ifdef XDEBUG
+#ifdef DEBUG
     // delete all the cached TITLE images.
     NSString* titles_path = [NSString stringWithUTF8String:get_documents_path("titles")];
     [[NSFileManager defaultManager] removeItemAtPath:titles_path error:nil];
@@ -406,13 +406,19 @@ UIView* find_view(UIView* view, Class class) {
     
     if (name == nil)
         return nil;
+
+#if 0
+    NSString* titleURL = @"http://thumbnails.libretro.com/MAME/Named_Titles";
+#else
+    NSString* titleURL = @"https://raw.githubusercontent.com/libretro-thumbnails/MAME/master/Named_Titles";
+#endif
     
     /// from [libretro docs](https://docs.libretro.com/guides/roms-playlists-thumbnails/)
     /// The following characters in titles must be replaced with _ in the corresponding filename: &*/:`<>?\|
     for (NSString* str in @[@"&", @"*", @"/", @":", @"`", @"<", @">", @"?", @"\\", @"|"])
         name = [name stringByReplacingOccurrencesOfString:str withString:@"_"];
     
-    return [NSURL URLWithString:[NSString stringWithFormat:@"http://thumbnails.libretro.com/MAME/Named_Titles/%@.png",
+    return [NSURL URLWithString:[NSString stringWithFormat:@"%@/%@.png", titleURL,
                                  [name stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLPathAllowedCharacterSet]]]];
 }
 
@@ -976,7 +982,8 @@ UIView* find_view(UIView* view, Class class) {
         return 0;
     NSString* title = _gameSectionTitles[section];
     NSInteger num = [_gameData[title] count];
-    if ([title isEqualToString:RECENT_GAMES_TITLE] && _layoutMode <= LayoutSmall)
+    // restrict the Recent items to a single row, unless we only have one item per row, then show them all
+    if ([title isEqualToString:RECENT_GAMES_TITLE] && _layoutCollums > 1)
         num = MIN(num, _layoutCollums);
     return num;
 }
@@ -1277,31 +1284,73 @@ UIView* find_view(UIView* view, Class class) {
     }
 }
 
-#pragma mark UICollectionView index (only on tvOS)
+#pragma mark - game context menu actions...
 
-#if TARGET_OS_TV
-- (NSArray*)indexTitlesForCollectionView:(UICollectionView *)collectionView
+-(void)deleteOrReset:(NSDictionary*)game delete:(BOOL)delete
 {
-    if ([_gameFilterScope isEqualToString:@"All"])
-        return @[];
+    NSString* verb = delete ? @"Delete" : @"Reset";
+    NSString* title = [NSString stringWithFormat:@"%@ %@?", verb, [game[kGameInfoDescription] componentsSeparatedByString:@" ("].firstObject];
+    NSString* message = nil;
 
-    NSMutableSet* set = [[NSMutableSet alloc] init];
-    for (NSString* section in _gameSectionTitles) {
-        if ([section isEqualToString:RECENT_GAMES_TITLE] || [section isEqualToString:FAVORITE_GAMES_TITLE])
-            continue;
-        if ([_gameFilterScope isEqualToString:@"Year"])
-            [set addObject:section];
-        else
-            [set addObject:[section substringToIndex:1]];
-    }
-    return [[set allObjects] sortedArrayUsingSelector:@selector(localizedCompare:)];
+    [self showAlertWithTitle:title message:message buttons:@[verb, @"Cancel"] handler:^(NSUInteger button) {
+        if (button != 0)
+            return;
+        
+        NSArray* paths = @[@"titles/%@.png", @"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@", @"hi/%@.hi", @"nvram/%@.nv", @"inp/%@.inp"];
+        
+        if (delete)
+            paths = [paths arrayByAddingObjectsFromArray:@[@"roms/%@.zip", @"roms/%@", @"artwork/%@.zip", @"samples/%@.zip"]];
+        
+        NSString* root = [NSString stringWithUTF8String:get_documents_path("")];
+        for (NSString* path in paths) {
+            NSString* delete_path = [root stringByAppendingPathComponent:[NSString stringWithFormat:path, game[kGameInfoName]]];
+            NSLog(@"DELETE: %@", delete_path);
+            [[NSFileManager defaultManager] removeItemAtPath:delete_path error:nil];
+        }
+        
+        if (delete) {
+            [self setRecent:game isRecent:FALSE];
+            [self setFavorite:game isFavorite:FALSE];
+
+            [self setGameList:[self->_gameList filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF != %@", game]]];
+
+            // if we have deleted the last game, excpet for the MAMEMENU, then exit with no game selected and let a re-scan happen.
+            if ([self->_gameList count] <= 1) {
+                if (self.selectGameCallback != nil)
+                    self.selectGameCallback(nil);
+            }
+        }
+    }];
 }
 
-/// Returns the index path that corresponds to the given title / index. (e.g. "B",1)
-/// Return an index path with a single index to indicate an entire section, instead of a specific item.
-- (NSIndexPath *)collectionView:(UICollectionView *)collectionView indexPathForIndexTitle:(NSString *)title atIndex:(NSInteger)index
+-(void)delete:(NSDictionary*)game
 {
-    return [[NSIndexPath alloc] initWithIndex:0];
+    [self deleteOrReset:game delete:YES];
+}
+
+-(void)reset:(NSDictionary*)game
+{
+    [self deleteOrReset:game delete:NO];
+}
+
+#if TARGET_OS_IOS
+-(void)share:(NSDictionary*)game
+{
+    NSURL* url = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%s/%@.zip", get_documents_path("roms"), game[kGameInfoName]]];
+    
+    if (![[NSFileManager defaultManager] fileExistsAtPath:url.path])
+        return;
+    
+    UIActivityViewController* activity = [[UIActivityViewController alloc] initWithActivityItems:@[url] applicationActivities:nil];
+
+    if (activity.popoverPresentationController != nil) {
+        UIView* view = self.view;
+        activity.popoverPresentationController.sourceView = view;
+        activity.popoverPresentationController.sourceRect = CGRectMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds), 0.0f, 0.0f);
+        activity.popoverPresentationController.permittedArrowDirections = 0;
+    }
+
+    [self presentViewController:activity animated:YES completion:nil];
 }
 #endif
 
@@ -1355,52 +1404,14 @@ UIView* find_view(UIView* view, Class class) {
         actions = [actions arrayByAddingObjectsFromArray:@[
 #if TARGET_OS_IOS
             [self actionWithTitle:@"Share" image:[UIImage systemImageNamed:@"square.and.arrow.up"] destructive:NO handler:^(id action) {
-                
-                NSURL* url = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%s/%@.zip", get_documents_path("roms"), game[kGameInfoName]]];
-                
-                if (![[NSFileManager defaultManager] fileExistsAtPath:url.path])
-                    return;
-                
-                UIActivityViewController* activity = [[UIActivityViewController alloc] initWithActivityItems:@[url] applicationActivities:nil];
-
-                if (activity.popoverPresentationController != nil) {
-                    UIView* view = [self.collectionView cellForItemAtIndexPath:indexPath] ?: self.view;
-                    activity.popoverPresentationController.sourceView = view;
-                    activity.popoverPresentationController.sourceRect = view.bounds;
-                    activity.popoverPresentationController.permittedArrowDirections = UIPopoverArrowDirectionAny;
-                }
-
-                [self presentViewController:activity animated:YES completion:nil];
+                [self share:game];
             }],
 #endif
+            [self actionWithTitle:@"Reset" image:[UIImage systemImageNamed:@"backward.end"] destructive:YES handler:^(id action) {
+                [self reset:game];
+            }],
             [self actionWithTitle:@"Delete" image:[UIImage systemImageNamed:@"trash"] destructive:YES handler:^(id action) {
-                NSString* title = [NSString stringWithFormat:@"Delete %@?",
-                                   [game[kGameInfoDescription] componentsSeparatedByString:@" ("].firstObject];
-                NSString* message = nil;
-
-                [self showAlertWithTitle:title message:message buttons:@[@"Delete", @"Cancel"] handler:^(NSUInteger button) {
-                    if (button != 0)
-                        return;
-                    NSArray* paths = @[@"roms/%@.zip", @"artwork/%@.zip", @"titles/%@.png", @"samples/%@.zip", @"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@", @"hi/%@.hi"];
-                    
-                    NSString* root = [NSString stringWithUTF8String:get_documents_path("")];
-                    for (NSString* path in paths) {
-                        NSString* delete_path = [root stringByAppendingPathComponent:[NSString stringWithFormat:path, game[kGameInfoName]]];
-                        NSLog(@"DELETE: %@", delete_path);
-                        [[NSFileManager defaultManager] removeItemAtPath:delete_path error:nil];
-                    }
-                    
-                    [self setRecent:game isRecent:FALSE];
-                    [self setFavorite:game isFavorite:FALSE];
-
-                    [self setGameList:[self->_gameList filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF != %@", game]]];
-
-                    // if we have deleted the last game, excpet for the MAMEMENU, then exit with no game selected and let a re-scan happen.
-                    if ([self->_gameList count] <= 1) {
-                        if (self.selectGameCallback != nil)
-                            self.selectGameCallback(nil);
-                    }
-                }];
+                [self delete:game];
             }]
         ]];
     }
@@ -1463,22 +1474,8 @@ UIView* find_view(UIView* view, Class class) {
 
 #pragma mark - LongPress menu (pre iOS 13 and tvOS only)
 
-- (void)collectionView:(UICollectionView *)collectionView didUpdateFocusInContext:(UICollectionViewFocusUpdateContext *)context withAnimationCoordinator:(UIFocusAnimationCoordinator *)coordinator {
-    NSLog(@"didUpdateFocusInContext: %d.%d => %d.%d", (int)context.previouslyFocusedIndexPath.section, (int)context.previouslyFocusedIndexPath.item, (int)context.nextFocusedIndexPath.section, (int)context.nextFocusedIndexPath.item);
-    currentlyFocusedIndexPath = context.nextFocusedIndexPath;
-}
+-(void)runMenu:(NSIndexPath*)indexPath {
 
--(void)handleLongPress:(UIGestureRecognizer*)sender {
-
-    if (sender.state != UIGestureRecognizerStateBegan)
-        return;
-
-#if TARGET_OS_TV
-    NSIndexPath *indexPath = currentlyFocusedIndexPath;
-#else
-    NSIndexPath *indexPath = [self.collectionView indexPathForItemAtPoint:[sender locationInView:self.collectionView]];
-    [self.collectionView selectItemAtIndexPath:indexPath animated:YES scrollPosition:UICollectionViewScrollPositionNone];
-#endif
     if (indexPath == nil)
         return;
     
@@ -1503,6 +1500,30 @@ UIView* find_view(UIView* view, Class class) {
     }
 
     [self presentViewController:alert animated:YES completion:nil];
+}
+
+- (void)collectionView:(UICollectionView *)collectionView didUpdateFocusInContext:(UICollectionViewFocusUpdateContext *)context withAnimationCoordinator:(UIFocusAnimationCoordinator *)coordinator {
+
+    if (context.nextFocusedIndexPath != nil)
+        NSLog(@"didUpdateFocusInContext: %d.%d", (int)context.nextFocusedIndexPath.section, (int)context.nextFocusedIndexPath.item);
+    else
+        NSLog(@"didUpdateFocusInContext: %@", NSStringFromClass(context.nextFocusedItem.class));
+
+    _currentlyFocusedIndexPath = context.nextFocusedIndexPath;
+}
+
+-(void)handleLongPress:(UIGestureRecognizer*)sender {
+
+    if (sender.state != UIGestureRecognizerStateBegan)
+        return;
+
+#if TARGET_OS_TV
+    NSIndexPath *indexPath = _currentlyFocusedIndexPath;
+#else
+    NSIndexPath *indexPath = [self.collectionView indexPathForItemAtPoint:[sender locationInView:self.collectionView]];
+    [self.collectionView selectItemAtIndexPath:indexPath animated:YES scrollPosition:UICollectionViewScrollPositionNone];
+#endif
+    [self runMenu:indexPath];
 }
 
 #pragma mark Keyboard and Game Controller navigation
@@ -1634,13 +1655,22 @@ UIView* find_view(UIView* view, Class class) {
 #if TARGET_OS_TV
 -(void)menuPress {
     NSLog(@"MENU PRESS");
-    // exit the app (to the aTV home screen) when the user hits MENU at the root
-    // if we dont do this tvOS will just dismiss us (with no game to play)
-    // [yuck](https://stackoverflow.com/questions/34522004/allow-menu-button-to-exit-tvos-app-when-pressed-on-presented-modal-view-controll)
-    if ([self.navigationController topViewController] == self)
-        exit(0);
-    else
+    if ([self.navigationController topViewController] == self) {
+        if ([self.topViewController isKindOfClass:[UIAlertController class]]) {
+            NSLog(@"MENU PRESS: DISSMIS MENU");
+            [(UIAlertController*)self.topViewController dismissWithCancel];
+        }
+        else if (_currentlyFocusedIndexPath != nil) {
+            NSLog(@"MENU PRESS: SHOW MENU");
+            [self runMenu:_currentlyFocusedIndexPath];
+        } else {
+            NSLog(@"MENU PRESS: IGNORE!");
+        }
+    }
+    else {
+        NSLog(@"MENU PRESS: POP TO ROOT");
         [self.navigationController popToRootViewControllerAnimated:YES];
+    }
 }
 #endif
 
