@@ -130,7 +130,7 @@ UIView* find_view(UIView* view, Class class) {
     NSUserDefaults* _userDefaults;
     NSArray* _key_commands;
     BOOL _searchCancel;
-    NSIndexPath* currentlyFocusedIndexPath;
+    NSIndexPath* _currentlyFocusedIndexPath;
     UIImage* _defaultImage;
     UIImage* _loadingImage;
     NSMutableSet* _updated_urls;
@@ -1467,22 +1467,8 @@ UIView* find_view(UIView* view, Class class) {
 
 #pragma mark - LongPress menu (pre iOS 13 and tvOS only)
 
-- (void)collectionView:(UICollectionView *)collectionView didUpdateFocusInContext:(UICollectionViewFocusUpdateContext *)context withAnimationCoordinator:(UIFocusAnimationCoordinator *)coordinator {
-    NSLog(@"didUpdateFocusInContext: %d.%d => %d.%d", (int)context.previouslyFocusedIndexPath.section, (int)context.previouslyFocusedIndexPath.item, (int)context.nextFocusedIndexPath.section, (int)context.nextFocusedIndexPath.item);
-    currentlyFocusedIndexPath = context.nextFocusedIndexPath;
-}
+-(void)runMenu:(NSIndexPath*)indexPath {
 
--(void)handleLongPress:(UIGestureRecognizer*)sender {
-
-    if (sender.state != UIGestureRecognizerStateBegan)
-        return;
-
-#if TARGET_OS_TV
-    NSIndexPath *indexPath = currentlyFocusedIndexPath;
-#else
-    NSIndexPath *indexPath = [self.collectionView indexPathForItemAtPoint:[sender locationInView:self.collectionView]];
-    [self.collectionView selectItemAtIndexPath:indexPath animated:YES scrollPosition:UICollectionViewScrollPositionNone];
-#endif
     if (indexPath == nil)
         return;
     
@@ -1507,6 +1493,27 @@ UIView* find_view(UIView* view, Class class) {
     }
 
     [self presentViewController:alert animated:YES completion:nil];
+}
+
+- (void)collectionView:(UICollectionView *)collectionView didUpdateFocusInContext:(UICollectionViewFocusUpdateContext *)context withAnimationCoordinator:(UIFocusAnimationCoordinator *)coordinator {
+    NSLog(@"didUpdateFocusInContext: %@", context.nextFocusedItem);
+    if (context.nextFocusedIndexPath != nil)
+        NSLog(@"    => %d.%d", (int)context.nextFocusedIndexPath.section, (int)context.nextFocusedIndexPath.item);
+    _currentlyFocusedIndexPath = context.nextFocusedIndexPath;
+}
+
+-(void)handleLongPress:(UIGestureRecognizer*)sender {
+
+    if (sender.state != UIGestureRecognizerStateBegan)
+        return;
+
+#if TARGET_OS_TV
+    NSIndexPath *indexPath = _currentlyFocusedIndexPath;
+#else
+    NSIndexPath *indexPath = [self.collectionView indexPathForItemAtPoint:[sender locationInView:self.collectionView]];
+    [self.collectionView selectItemAtIndexPath:indexPath animated:YES scrollPosition:UICollectionViewScrollPositionNone];
+#endif
+    [self runMenu:indexPath];
 }
 
 #pragma mark Keyboard and Game Controller navigation
@@ -1638,13 +1645,22 @@ UIView* find_view(UIView* view, Class class) {
 #if TARGET_OS_TV
 -(void)menuPress {
     NSLog(@"MENU PRESS");
-    // exit the app (to the aTV home screen) when the user hits MENU at the root
-    // if we dont do this tvOS will just dismiss us (with no game to play)
-    // [yuck](https://stackoverflow.com/questions/34522004/allow-menu-button-to-exit-tvos-app-when-pressed-on-presented-modal-view-controll)
-    if ([self.navigationController topViewController] == self)
-        exit(0);
-    else
+    if ([self.navigationController topViewController] == self) {
+        if ([self.topViewController isKindOfClass:[UIAlertController class]]) {
+            NSLog(@"MENU PRESS: DISSMIS MENU");
+            [(UIAlertController*)self.topViewController dismissWithCancel];
+        }
+        else if (_currentlyFocusedIndexPath != nil) {
+            NSLog(@"MENU PRESS: SHOW MENU");
+            [self runMenu:_currentlyFocusedIndexPath];
+        } else {
+            NSLog(@"MENU PRESS: IGNORE!");
+        }
+    }
+    else {
+        NSLog(@"MENU PRESS: POP TO ROOT");
         [self.navigationController popToRootViewControllerAnimated:YES];
+    }
 }
 #endif
 
