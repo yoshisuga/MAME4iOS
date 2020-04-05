@@ -207,8 +207,8 @@
         
         filterKeyword = nil;
         
-        lowlsound = 0;
-        vsync = 0;
+        lowlsound = 1;
+        vsync = 1;
         threaded = 1;
         dblbuff = 1;
         
