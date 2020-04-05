@@ -58,10 +58,6 @@ The emulator controls are the following ones:
 
 **Button START** Start (UP+START = 2P start, RIGHT+START = 3P start, DOWN+START = 4P start).
 
-**Buttons A+COIN** Load State.
-
-**Buttons A+START** Save State.
-
 **Button EXIT** Exit to selection menu to select another game.
 
 **Button MENU** Open MAME4iOS menu, global settings.
@@ -217,8 +213,8 @@ MENU+L1     |Insert coin
 MENU+R1     |Start Game               
 MENU+X       |Exit Game                 
 MENU+B       |Open MAME menu   
-MENU+A       |Load State  B (slot1) or X (slot 2)            
-MENU+Y       |Save State  B (slot1) or X (slot 2)              
+MENU+A       |Load State  X (slot1) or Y (slot 2)            
+MENU+Y       |Save State  X (slot1) or Y (slot 2)              
 OPTION         |Insert Coin and Start   
 
 **NOTE** on versions prior to iOS 13 only MiFi controllers are reconized and when doing multiple button combinations the secondary button must be pressed first.  For example to insert a coin hold down L1 and hit MENU.  on iOS 13+ you can hold MENU and then hit L1.
