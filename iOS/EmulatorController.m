@@ -409,22 +409,23 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     NSString* state1 = @"State 1";
     NSString* state2 = @"State 2";
 #else
-    NSString* state1 = controllers.count > 0 ? @"Ⓐ State A" : @"State 1";
-    NSString* state2 = controllers.count > 0 ? @"Ⓑ State B" : @"State 2";
+    NSString* state1 = controllers.count > 0 ? @"Ⓧ State 1" : @"State 1";
+    NSString* state2 = controllers.count > 0 ? @"Ⓨ State 2" : @"State 2";
 #endif
     
     [self startMenu];
-    [self showAlertWithTitle:nil message:message buttons:@[state1, state2] handler:^(NSUInteger button) {
-        if (load)
-            myosd_loadstate = 1;
-        else
-            myosd_savestate = 1;
+    [self showAlertWithTitle:nil message:message buttons:@[state1, state2, @"Cancel"] handler:^(NSUInteger button) {
+        if (button <= 1) {
+            if (load)
+                myosd_loadstate = 1;
+            else
+                myosd_savestate = 1;
 
-        if (button == 0)
-            push_mame_buttons(0, MYOSD_NONE, MYOSD_B);       // delay, slot 1
-        else
-            push_mame_buttons(0, MYOSD_NONE, MYOSD_X);       // delay, slot 2
-        
+            if (button == 0)
+                push_mame_buttons(0, MYOSD_NONE, MYOSD_B);       // delay, slot 1
+            else
+                push_mame_buttons(0, MYOSD_NONE, MYOSD_X);       // delay, slot 2
+        }
         [self endMenu];
     }];
 }
@@ -931,8 +932,10 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
             [alert dismissWithDefault];
         if (pad_status & MYOSD_B)
             [alert dismissWithCancel];
+        if (pad_status & MYOSD_Y)
+            [alert dismissWithAction:[alert.actions filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"title BEGINSWITH 'Ⓨ'"]].firstObject completion:nil];
         if (pad_status & MYOSD_X)
-            [alert dismissWithCancel];
+            [alert dismissWithAction:[alert.actions filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"title BEGINSWITH 'Ⓧ'"]].firstObject completion:nil];
         if ((pad_status & MYOSD_UP))
             [alert moveDefaultAction:-1];
         if ((pad_status & MYOSD_DOWN))
@@ -3659,6 +3662,7 @@ void myosd_handle_turbo() {
                     myosd_joy_status[index] |= MYOSD_X;
                 }
                 else {
+                    [self handle_MENU];     // handle menu on button UP
                     myosd_joy_status[index] &= ~MYOSD_X;
                 }
             }
@@ -3667,6 +3671,7 @@ void myosd_handle_turbo() {
                     myosd_joy_status[index] |= MYOSD_Y;
                 }
                 else {
+                    [self handle_MENU];     // handle menu on button UP
                     myosd_joy_status[index] &= ~MYOSD_Y;
                 }
             }

@@ -20,9 +20,6 @@
         if ([buttons[i] caseInsensitiveCompare:@"Cancel"] == NSOrderedSame)
             style = UIAlertActionStyleCancel;
         
-        if (buttons.count == 2 && alert.preferredAction != nil)
-            style = UIAlertActionStyleCancel;
-        
         [alert addAction:[UIAlertAction actionWithTitle:buttons[i] style:style handler:^(UIAlertAction* action) {
             if (handler != nil)
                 handler(i);
