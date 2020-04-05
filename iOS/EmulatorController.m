@@ -931,6 +931,8 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
             [alert dismissWithDefault];
         if (pad_status & MYOSD_B)
             [alert dismissWithCancel];
+        if (pad_status & MYOSD_X)
+            [alert dismissWithCancel];
         if ((pad_status & MYOSD_UP))
             [alert moveDefaultAction:-1];
         if ((pad_status & MYOSD_DOWN))
@@ -1386,9 +1388,7 @@ static void push_mame_buttons(int player, int button1, int button2)
 
 // called from inside MAME droid_ios_poll_input
 void myosd_handle_turbo() {
-    if ( !myosd_inGame ) {
-        return;
-    }
+
     // this is called on the MAME thread, need to be carefull and clean up!
     @autoreleasepool {
         
@@ -2223,7 +2223,9 @@ void myosd_handle_turbo() {
     myosd_pad_status &= ~MYOSD_START;
     myosd_pad_status &= ~MYOSD_L1;
     myosd_pad_status &= ~MYOSD_R1;
-    
+    myosd_pad_status &= ~MYOSD_L2;  /* aka EXIT */
+    myosd_pad_status &= ~MYOSD_R2;  /* aka MENU */
+
     for(i=0; i<NUM_BUTTONS;i++)
     {
         btnStates[i] = BUTTON_NO_PRESS;
@@ -2547,12 +2549,14 @@ void myosd_handle_turbo() {
             }
             else if (buttonViews[BTN_L2] != nil && !buttonViews[BTN_L2].hidden && MyCGRectContainsPoint(rInput[BTN_L2_RECT], point)) {
                 //NSLog(@"MYOSD_L2");
+                myosd_pad_status |= MYOSD_L2;
                 btnStates[BTN_L2] = BUTTON_PRESS;
                 buttonTouched = YES;
                 [handledTouches addObject:touch];
             }
             else if (buttonViews[BTN_R2] != nil && !buttonViews[BTN_R2].hidden && MyCGRectContainsPoint(rInput[BTN_R2_RECT], point) ) {
                 //NSLog(@"MYOSD_R2");
+                myosd_pad_status |= MYOSD_R2;
                 btnStates[BTN_R2] = BUTTON_PRESS;
                 buttonTouched = YES;
                 [handledTouches addObject:touch];

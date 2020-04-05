@@ -976,7 +976,8 @@ UIView* find_view(UIView* view, Class class) {
         return 0;
     NSString* title = _gameSectionTitles[section];
     NSInteger num = [_gameData[title] count];
-    if ([title isEqualToString:RECENT_GAMES_TITLE] && _layoutMode <= LayoutSmall)
+    // restrict the Recent items to a single row, unless we only have one item per row, then show them all
+    if ([title isEqualToString:RECENT_GAMES_TITLE] && _layoutCollums > 1)
         num = MIN(num, _layoutCollums);
     return num;
 }
@@ -1496,9 +1497,12 @@ UIView* find_view(UIView* view, Class class) {
 }
 
 - (void)collectionView:(UICollectionView *)collectionView didUpdateFocusInContext:(UICollectionViewFocusUpdateContext *)context withAnimationCoordinator:(UIFocusAnimationCoordinator *)coordinator {
-    NSLog(@"didUpdateFocusInContext: %@", context.nextFocusedItem);
+
     if (context.nextFocusedIndexPath != nil)
-        NSLog(@"    => %d.%d", (int)context.nextFocusedIndexPath.section, (int)context.nextFocusedIndexPath.item);
+        NSLog(@"didUpdateFocusInContext: %d.%d", (int)context.nextFocusedIndexPath.section, (int)context.nextFocusedIndexPath.item);
+    else
+        NSLog(@"didUpdateFocusInContext: %@", NSStringFromClass(context.nextFocusedItem.class));
+
     _currentlyFocusedIndexPath = context.nextFocusedIndexPath;
 }
 
