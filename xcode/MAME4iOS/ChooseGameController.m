@@ -293,7 +293,7 @@ UIView* find_view(UIView* view, Class class) {
     [self.navigationController.view addGestureRecognizer:tap];
 #endif
     
-#ifdef XDEBUG
+#ifdef DEBUG
     // delete all the cached TITLE images.
     NSString* titles_path = [NSString stringWithUTF8String:get_documents_path("titles")];
     [[NSFileManager defaultManager] removeItemAtPath:titles_path error:nil];
@@ -406,13 +406,19 @@ UIView* find_view(UIView* view, Class class) {
     
     if (name == nil)
         return nil;
+
+#if 0
+    NSString* titleURL = @"http://thumbnails.libretro.com/MAME/Named_Titles";
+#else
+    NSString* titleURL = @"https://raw.githubusercontent.com/libretro-thumbnails/MAME/master/Named_Titles";
+#endif
     
     /// from [libretro docs](https://docs.libretro.com/guides/roms-playlists-thumbnails/)
     /// The following characters in titles must be replaced with _ in the corresponding filename: &*/:`<>?\|
     for (NSString* str in @[@"&", @"*", @"/", @":", @"`", @"<", @">", @"?", @"\\", @"|"])
         name = [name stringByReplacingOccurrencesOfString:str withString:@"_"];
     
-    return [NSURL URLWithString:[NSString stringWithFormat:@"http://thumbnails.libretro.com/MAME/Named_Titles/%@.png",
+    return [NSURL URLWithString:[NSString stringWithFormat:@"%@/%@.png", titleURL,
                                  [name stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLPathAllowedCharacterSet]]]];
 }
 
@@ -1290,10 +1296,10 @@ UIView* find_view(UIView* view, Class class) {
         if (button != 0)
             return;
         
-        NSArray* paths = @[@"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@", @"hi/%@.hi", @"nvram/%@.nv", @"inp/%@.inp"];
+        NSArray* paths = @[@"titles/%@.png", @"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@", @"hi/%@.hi", @"nvram/%@.nv", @"inp/%@.inp"];
         
         if (delete)
-            paths = [paths arrayByAddingObjectsFromArray:@[@"roms/%@.zip", @"roms/%@", @"artwork/%@.zip", @"titles/%@.png", @"samples/%@.zip"]];
+            paths = [paths arrayByAddingObjectsFromArray:@[@"roms/%@.zip", @"roms/%@", @"artwork/%@.zip", @"samples/%@.zip"]];
         
         NSString* root = [NSString stringWithUTF8String:get_documents_path("")];
         for (NSString* path in paths) {
