@@ -11,6 +11,7 @@
 #import "ImageCache.h"
 #import "SystemImage.h"
 #import "Alert.h"
+#import "PopupSegmentedControl.h"
 #import "Globals.h"
 #import "myosd.h"
 
@@ -104,16 +105,6 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 }
 @end
 
-UIView* find_view(UIView* view, Class class) {
-    if ([view isKindOfClass:class])
-        return view;
-    for (UIView* subview in view.subviews) {
-        if ((view = find_view(subview, class)))
-            return view;
-    }
-    return nil;
-}
-
 #pragma mark ChooseGameController
 
 @interface ChooseGameController () <UISearchResultsUpdating, UISearchBarDelegate, UISearchControllerDelegate> {
@@ -188,15 +179,14 @@ UIView* find_view(UIView* view, Class class) {
     self.navigationController.navigationBar.translucent = YES;
     self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
     self.navigationController.navigationBar.barTintColor = BACKGROUND_COLOR;
-    [self.navigationController.navigationBar addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(scrollToTop)]];
+    [title addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(scrollToTop)]];
 #else
     self.navigationController.navigationBar.translucent = NO;
 #endif
 
     // layout
-    UISegmentedControl* seg;
     height = TARGET_OS_IOS ? 16.0 : 32.0;
-    seg = [[UISegmentedControl alloc] initWithItems:@[
+    UISegmentedControl* seg = [[PopupSegmentedControl alloc] initWithItems:@[
         [UIImage systemImageNamed:@"square.grid.4x3.fill" withPointSize:height]    ?: @"⚏",
         [UIImage systemImageNamed:@"rectangle.grid.2x2.fill" withPointSize:height] ?: @"☷",
         [UIImage systemImageNamed:@"rectangle.stack.fill" withPointSize:height]    ?: @"▢",
@@ -205,16 +195,21 @@ UIView* find_view(UIView* view, Class class) {
     
     seg.selectedSegmentIndex = _layoutMode;
     [seg addTarget:self action:@selector(viewChange:) forControlEvents:UIControlEventValueChanged];
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:seg];
+    UIBarButtonItem* layout = [[UIBarButtonItem alloc] initWithCustomView:seg];
+
+    // group/scope
+    seg = [[PopupSegmentedControl alloc] initWithItems:ALL_SCOPES];
+    seg.selectedSegmentIndex = [ALL_SCOPES indexOfObject:_gameFilterScope];
+    seg.apportionsSegmentWidthsByContent = TARGET_OS_IOS ? NO : YES;
+    [seg addTarget:self action:@selector(scopeChange:) forControlEvents:UIControlEventValueChanged];
+    UIBarButtonItem* scope = [[UIBarButtonItem alloc] initWithCustomView:seg];
     
-    // put scope buttons in title (if iPad or tvOS)
-    if (self.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular) {
-        UISegmentedControl* seg = [[UISegmentedControl alloc] initWithItems:ALL_SCOPES];
-        seg.selectedSegmentIndex = [ALL_SCOPES indexOfObject:_gameFilterScope];
-        seg.apportionsSegmentWidthsByContent = TARGET_OS_IOS ? NO : YES;
-        [seg addTarget:self action:@selector(scopeChange:) forControlEvents:UIControlEventValueChanged];
-        self.navigationItem.titleView = seg;
-    }
+    // settings
+    UIBarButtonItem* settings = [[UIBarButtonItem alloc]
+         initWithImage:[UIImage systemImageNamed:@"gear" withPointSize:height] ?: [[UIImage imageNamed:@"menu"] scaledToSize:CGSizeMake(height, height)]
+         style:UIBarButtonItemStylePlain target:self action:@selector(showSettings)];
+    
+    self.navigationItem.rightBarButtonItems = @[settings, layout, scope];
     
 #if TARGET_OS_IOS
     if (@available(iOS 13.0, *)) {
@@ -230,21 +225,11 @@ UIView* find_view(UIView* view, Class class) {
     _searchController.delegate = self;
     _searchController.searchBar.delegate = self;
     _searchController.obscuresBackgroundDuringPresentation = NO;
-    _searchController.searchBar.scopeButtonTitles = ALL_SCOPES;
-
-    if ([UIScreen mainScreen].bounds.size.width <= 375) {
-        UISegmentedControl* seg = (UISegmentedControl*)find_view(_searchController.searchBar, [UISegmentedControl class]);
-        [seg setApportionsSegmentWidthsByContent:YES];
-    }
-
-    _searchController.searchBar.selectedScopeButtonIndex = [ALL_SCOPES indexOfObject:_gameFilterScope];
-    _searchController.searchBar.placeholder = @"Filter";
+     _searchController.searchBar.placeholder = @"Filter";
     
     // make the cancel button say Done
-    //[[UIBarButtonItem appearanceWhenContainedInInstancesOfClasses:@[[UISearchBar class]]] setTitle:@"Done"];
-    _searchController.searchBar.showsCancelButton = YES;
-    [self updateSearchCancelButton];
-
+    [[UIBarButtonItem appearanceWhenContainedInInstancesOfClasses:@[[UISearchBar class]]] setTitle:@"Done"];
+ 
     self.definesPresentationContext = TRUE;
 
     // put search in navbar...
@@ -260,16 +245,7 @@ UIView* find_view(UIView* view, Class class) {
         }
         
         UIBarButtonItem* search = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSearch target:self action:@selector(showSearch)];
-
-        UIBarButtonItem* settings;
-        if (@available(tvOS 13.0, *)) {
-            UIImage* image = [UIImage systemImageNamed:@"gear" withPointSize:44.0 weight:UIFontWeightHeavy];
-            settings = [[UIBarButtonItem alloc] initWithImage:image style:UIBarButtonItemStylePlain target:self action:@selector(showSettings)];
-        }
-        else {
-            settings = [[UIBarButtonItem alloc] initWithTitle:@"Settings" style:UIBarButtonItemStylePlain target:self action:@selector(showSettings)];
-        }
-        self.navigationItem.rightBarButtonItems = [self.navigationItem.rightBarButtonItems arrayByAddingObjectsFromArray:@[settings, search]];
+        self.navigationItem.rightBarButtonItems = [@[search] arrayByAddingObjectsFromArray:self.navigationItem.rightBarButtonItems];
     }
 #endif
     
@@ -620,11 +596,9 @@ UIView* find_view(UIView* view, Class class) {
         return;
     }
     NSString* text = searchBar.text;
-    NSString* scope = ALL_SCOPES[searchBar.selectedScopeButtonIndex];
     
-    if (![_gameFilterText isEqualToString:text] || ![_gameFilterScope isEqualToString:scope]) {
+    if (![_gameFilterText isEqualToString:text]) {
         _gameFilterText = text;
-        _gameFilterScope = scope;
         [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(filterGameList) object:nil];
         [self performSelector:@selector(filterGameList) withObject:nil afterDelay:0.500];
     }
@@ -635,24 +609,11 @@ UIView* find_view(UIView* view, Class class) {
 - (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar
 {
     NSLog(@"searchBarTextDidBeginEditing");
-
     _searchCancel = FALSE;
-    searchBar.selectedScopeButtonIndex = [ALL_SCOPES indexOfObject:_gameFilterScope];
 }
 - (void)searchBarTextDidEndEditing:(UISearchBar *)searchBar
 {
     NSLog(@"searchBarTextDidEndEditing");
-    
-    UISegmentedControl* seg = (UISegmentedControl*)self.navigationItem.titleView;
-    if ([seg isKindOfClass:[UISegmentedControl class]]) {
-        seg.selectedSegmentIndex = [ALL_SCOPES indexOfObject:_gameFilterScope];
-    }
-}
-- (void)searchBar:(UISearchBar *)searchBar selectedScopeButtonIndexDidChange:(NSInteger)selectedScope
-{
-    _gameFilterScope = ALL_SCOPES[selectedScope];
-    [_userDefaults setValue:_gameFilterScope forKey:SCOPE_MODE_KEY];
-    [self filterGameList];
 }
 
 #if TARGET_OS_IOS
@@ -678,56 +639,10 @@ UIView* find_view(UIView* view, Class class) {
 - (void)didPresentSearchController:(UISearchController *)searchController
 {
     NSLog(@"didPresentSearchController: active=%d", searchController.active);
-    [self updateSearchCancelButton];
 }
 - (void)didDismissSearchController:(UISearchController *)searchController
 {
     NSLog(@"didDismissSearchController: active=%d", searchController.active);
-    [self updateSearchCancelButton];
-}
-
-#pragma mark - SearchBar cancel button
-
-//
-// we have hijacked the meaning of the search cancel button.
-//
-//    * it is allways shown, even when we are not searching.
-//    * when we are searching the text says "Done" and it will end search mode
-//    * when we are not searching the text says "Settings" and it will go to Settings
-//
-// if we cant find the button, seartch still works, just no Settings button, user can get to it via in-game-menu
-//
--(void)updateSearchCancelButton
-{
-#if TARGET_OS_IOS
-    UISearchBar* searchBar = _searchController.searchBar;
-    UIButton* button = (UIButton*)find_view(searchBar, NSClassFromString(@"UINavigationButton"));
-
-    if (button == nil) {
-        NSLog(@"CANT FIND CANCEL BUTTON!");
-        searchBar.showsCancelButton = NO;
-        return;
-    }
-
-    if (_searchController.active) {
-        [button setTitle:@"Done" forState:UIControlStateNormal];
-        [button setImage:nil forState:UIControlStateNormal];
-    }
-    else {
-        if (@available(iOS 13.0, *)) {
-            UIImage* image = [UIImage systemImageNamed:@"gear" withPointSize:searchBar.searchTextField.font.pointSize weight:UIFontWeightHeavy];
-            [button setTitle:@"" forState:UIControlStateNormal];
-            [button setImage:image forState:UIControlStateNormal];
-        }
-        else {
-            [button setTitle:@"Settings" forState:UIControlStateNormal];
-            [button setTitleEdgeInsets:UIEdgeInsetsMake(-4.0, 0, 0, 0)];
-        }
-    }
-    searchBar.showsCancelButton = YES;
-    [button invalidateIntrinsicContentSize];
-    [button.superview setNeedsLayout];
-#endif
 }
 
 #pragma mark - UICollectionView
@@ -982,8 +897,8 @@ UIView* find_view(UIView* view, Class class) {
         return 0;
     NSString* title = _gameSectionTitles[section];
     NSInteger num = [_gameData[title] count];
-    // restrict the Recent items to a single row, unless we only have one item per row, then show them all
-    if ([title isEqualToString:RECENT_GAMES_TITLE] && _layoutCollums > 1)
+    // restrict the Recent items to a single row, always
+    if ([title isEqualToString:RECENT_GAMES_TITLE])
         num = MIN(num, _layoutCollums);
     return num;
 }

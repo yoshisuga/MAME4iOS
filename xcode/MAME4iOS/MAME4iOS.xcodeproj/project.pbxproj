@@ -140,6 +140,8 @@
 		EF0E08AE2401840700E98F01 /* help.md in Resources */ = {isa = PBXBuildFile; fileRef = EF0E08AC2401840700E98F01 /* help.md */; };
 		EF19F22C235D1BDF00C8EE7F /* ChooseGameController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF19F229235D1BDF00C8EE7F /* ChooseGameController.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		EF19F22D235D1BDF00C8EE7F /* ChooseGameController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF19F229235D1BDF00C8EE7F /* ChooseGameController.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		EF23D331243CB9CF006B3EE2 /* PopupSegmentedControl.m in Sources */ = {isa = PBXBuildFile; fileRef = EF23D330243CB9CE006B3EE2 /* PopupSegmentedControl.m */; };
+		EF23D332243CB9CF006B3EE2 /* PopupSegmentedControl.m in Sources */ = {isa = PBXBuildFile; fileRef = EF23D330243CB9CE006B3EE2 /* PopupSegmentedControl.m */; };
 		EF24933A236264DA00DD0A6C /* ImageCache.m in Sources */ = {isa = PBXBuildFile; fileRef = EF249336236264D900DD0A6C /* ImageCache.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		EF24933B236264DA00DD0A6C /* ImageCache.m in Sources */ = {isa = PBXBuildFile; fileRef = EF249336236264D900DD0A6C /* ImageCache.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		EF26AE08241848800078FD30 /* mame_logo.png in Resources */ = {isa = PBXBuildFile; fileRef = EF26AE07241848800078FD30 /* mame_logo.png */; };
@@ -335,6 +337,8 @@
 		EF0E08AC2401840700E98F01 /* help.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = help.md; path = "../../iOS-res/Applications/MAME4iOS.app/help.md"; sourceTree = "<group>"; };
 		EF19F229235D1BDF00C8EE7F /* ChooseGameController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ChooseGameController.m; sourceTree = "<group>"; };
 		EF19F22E235D1C0300C8EE7F /* ChooseGameController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ChooseGameController.h; sourceTree = "<group>"; };
+		EF23D32F243CB9CE006B3EE2 /* PopupSegmentedControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PopupSegmentedControl.h; sourceTree = "<group>"; };
+		EF23D330243CB9CE006B3EE2 /* PopupSegmentedControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PopupSegmentedControl.m; sourceTree = "<group>"; };
 		EF249336236264D900DD0A6C /* ImageCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageCache.m; sourceTree = "<group>"; };
 		EF249337236264DA00DD0A6C /* ImageCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageCache.h; sourceTree = "<group>"; };
 		EF26AE07241848800078FD30 /* mame_logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = mame_logo.png; sourceTree = "<group>"; };
@@ -552,6 +556,8 @@
 				EF27F36323F73CD400B1E50A /* ZipFile.m */,
 				EF26AE0A241AA6900078FD30 /* FileItemProvider.h */,
 				EF26AE0B241AA6900078FD30 /* FileItemProvider.m */,
+				EF23D32F243CB9CE006B3EE2 /* PopupSegmentedControl.h */,
+				EF23D330243CB9CE006B3EE2 /* PopupSegmentedControl.m */,
 				CEBFBC0E163C5BD300A05CD0 /* resources */,
 				92A533D521EE601D0089FBB9 /* WebServer.h */,
 				92A533D621EE601D0089FBB9 /* WebServer.m */,
@@ -897,6 +903,7 @@
 				925ABCB71E46DCC500997182 /* DefaultOptionController.m in Sources */,
 				EF7B232C23FD0469001FF51D /* (null) in Sources */,
 				92A533B421EBDBAD0089FBB9 /* GCDWebServerErrorResponse.m in Sources */,
+				EF23D331243CB9CF006B3EE2 /* PopupSegmentedControl.m in Sources */,
 				EF19F22C235D1BDF00C8EE7F /* ChooseGameController.m in Sources */,
 				92A533AE21EBDBAD0089FBB9 /* GCDWebServer.m in Sources */,
 				92A5332321EB57F00089FBB9 /* Options.m in Sources */,
@@ -941,6 +948,7 @@
 				92ECB91121EA9BBB00D1E3D0 /* iph_main.m in Sources */,
 				926C771D21F5034100103EDE /* TVInputOptionsController.m in Sources */,
 				92A5332521EBC7F40089FBB9 /* iCadeView.m in Sources */,
+				EF23D332243CB9CF006B3EE2 /* PopupSegmentedControl.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1006,7 +1014,7 @@
 				MARKETING_VERSION = 2020.4;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4ios;
+				PRODUCT_BUNDLE_IDENTIFIER = com.toddla.mame4ios;
 				PRODUCT_NAME = MAME4iOS;
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
