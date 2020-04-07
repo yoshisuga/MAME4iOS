@@ -193,14 +193,14 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         [UIImage systemImageNamed:@"rectangle.grid.1x2.fill" withPointSize:height] ?: @"☰"
     ]];
     
-    seg.momentary = YES;
+    seg.momentary = TARGET_OS_IOS ? YES : NO;
     seg.selectedSegmentIndex = _layoutMode;
     [seg addTarget:self action:@selector(viewChange:) forControlEvents:UIControlEventValueChanged];
     UIBarButtonItem* layout = [[UIBarButtonItem alloc] initWithCustomView:seg];
 
     // group/scope
     seg = [[PopupSegmentedControl alloc] initWithItems:ALL_SCOPES];
-    seg.momentary = YES;
+    seg.momentary = TARGET_OS_IOS ? YES : NO;
     seg.selectedSegmentIndex = [ALL_SCOPES indexOfObject:_gameFilterScope];
     seg.apportionsSegmentWidthsByContent = TARGET_OS_IOS ? NO : YES;
     [seg addTarget:self action:@selector(scopeChange:) forControlEvents:UIControlEventValueChanged];
@@ -212,8 +212,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     UIBarButtonItem* settings = [[UIBarButtonItem alloc] initWithImage:settingsImage style:UIBarButtonItemStylePlain target:self action:@selector(showSettings)];
 #else
     seg = [[UISegmentedControl alloc] initWithItems:@[settingsImage]];
-    seg.momentary = YES;
-    seg.selectedSegmentIndex = 0;
+    seg.momentary = TARGET_OS_IOS ? YES : NO;
     [seg addTarget:self action:@selector(showSettings) forControlEvents:UIControlEventValueChanged];
     UIBarButtonItem* settings = [[UIBarButtonItem alloc] initWithCustomView:seg];
 #endif
@@ -234,7 +233,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     _searchController.delegate = self;
     _searchController.searchBar.delegate = self;
     _searchController.obscuresBackgroundDuringPresentation = NO;
-     _searchController.searchBar.placeholder = @"Filter";
+    _searchController.searchBar.placeholder = @"Filter";
     
     // make the cancel button say Done
     [[UIBarButtonItem appearanceWhenContainedInInstancesOfClasses:@[[UISearchBar class]]] setTitle:@"Done"];

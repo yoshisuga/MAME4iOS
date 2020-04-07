@@ -23,6 +23,7 @@
     NSArray* _items;
     NSInteger _selectedSegmentIndex;
     BOOL _momentary;
+    BOOL _inMenu;
     id _topItem;
 }
 
@@ -47,6 +48,8 @@
 }
 
 -(NSInteger)selectedSegmentIndex {
+    if (super.numberOfSegments > 1)
+        return super.selectedSegmentIndex;
     return _selectedSegmentIndex;
 }
 
@@ -116,7 +119,9 @@
     else
         [super setTitle:item forSegmentAtIndex:0];
     
-    if (_selectedSegmentIndex < 0 || _momentary)
+    if (_inMenu)
+        super.selectedSegmentIndex = 0;
+    else if (_selectedSegmentIndex < 0 || _momentary)
         super.selectedSegmentIndex = UISegmentedControlNoSegment;
     else
         super.selectedSegmentIndex = 0;
@@ -125,11 +130,14 @@
 }
 
 -(void)showAlert {
+    _inMenu = TRUE;
+    [self update];
     UIAlertController* alert = [UIAlertController alertControllerWithTitle:nil message:nil preferredStyle:UIAlertControllerStyleAlert];
     for (NSInteger index=0; index < self.numberOfSegments; index++) {
         NSString* title = [self titleForSegmentAtIndex:index] ?: @"";
         UIImage* image = [self imageForSegmentAtIndex:index];
         [alert addAction:[UIAlertAction actionWithTitle:title style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
+            self->_inMenu = FALSE;
             self.selectedSegmentIndex = index;
             [self sendActionsForControlEvents:UIControlEventValueChanged];
         }]];
@@ -139,6 +147,7 @@
             alert.preferredAction = alert.actions.lastObject;
     }
     [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction* action) {
+        self->_inMenu = FALSE;
         [self update];
     }]];
     
@@ -147,16 +156,111 @@
         vc = vc.presentedViewController;
     [vc presentViewController:alert animated:YES completion:nil];
 }
--(void)showPopup {
+#if TARGET_OS_TV
+- (void)didUpdateFocusInContext:(UIFocusUpdateContext *)context withAnimationCoordinator:(UIFocusAnimationCoordinator *)coordinator
+{
+    [super didUpdateFocusInContext:context withAnimationCoordinator:coordinator];
     
+    if (context.previouslyFocusedItem != self)
+        return;
+
+    if (super.numberOfSegments == 1)
+        return;
+
+    [self shrink];
 }
+-(void)grow {
+    _inMenu = TRUE;
+    [super removeAllSegments];
+    for (id item in _items) {
+        if ([item isKindOfClass:[UIImage class]])
+            [super insertSegmentWithImage:item atIndex:self.numberOfSegments animated:NO];
+        else
+            [super insertSegmentWithTitle:item atIndex:self.numberOfSegments animated:NO];
+    }
+    super.selectedSegmentIndex = _selectedSegmentIndex;
+    [self sizeToFit];
+}
+-(void)shrink {
+    _inMenu = FALSE;
+    _selectedSegmentIndex = super.selectedSegmentIndex;
+    [super removeAllSegments];
+    [super insertSegmentWithTitle:@"" atIndex:0 animated:NO];
+    [self update];
+}
+#endif
+
+#if TARGET_OS_IOS
+// create a clone of the segmented controll and present it in a popup
+-(void)showMenu {
+    _inMenu = TRUE;
+    [self update];
+    
+    UISegmentedControl* seg = [[UISegmentedControl alloc] initWithItems:_items];
+    seg.apportionsSegmentWidthsByContent = YES;
+    [seg addTarget:self action:@selector(popupChange:) forControlEvents:UIControlEventValueChanged];
+    
+    UIViewController* menu = [[UIViewController alloc] init];
+    [seg sizeToFit];
+    seg.selectedSegmentIndex = _selectedSegmentIndex;
+    menu.preferredContentSize = seg.bounds.size;
+    //menu.view.backgroundColor = [UIColor blackColor];
+    [menu.view addSubview:seg];
+    seg.translatesAutoresizingMaskIntoConstraints = NO;
+    [seg.bottomAnchor constraintEqualToAnchor:menu.view.bottomAnchor].active = TRUE;
+
+    if (@available(iOS 13.0, *)) {
+        seg.selectedSegmentTintColor = self.selectedSegmentTintColor;
+        // TODO: dont hardcode these colors! figure out how to query the UIBarButtonItem or UINavBar, etc.
+        [seg setTitleTextAttributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]} forState:UIControlStateNormal];
+        menu.view.backgroundColor = [UIColor colorWithWhite:0.165 alpha:1.0];
+    }
+
+    menu.modalPresentationStyle = UIModalPresentationPopover;
+    menu.popoverPresentationController.delegate = (id<UIPopoverPresentationControllerDelegate>)self;
+    menu.popoverPresentationController.sourceView = self;
+    menu.popoverPresentationController.sourceRect = self.bounds;
+    menu.popoverPresentationController.permittedArrowDirections = UIPopoverArrowDirectionUp;
+    
+    UIViewController* vc = UIApplication.sharedApplication.keyWindow.rootViewController;
+    while (vc.presentedViewController != nil)
+        vc = vc.presentedViewController;
+    [vc presentViewController:menu animated:YES completion:nil];
+}
+-(void)popupChange:(UISegmentedControl*)sender {
+    self.selectedSegmentIndex = sender.selectedSegmentIndex;
+    [self sendActionsForControlEvents:UIControlEventValueChanged];
+    /*
+    UIViewController* vc = (UIViewController*)sender.superview.nextResponder;
+    NSParameterAssert([vc isKindOfClass:[UIViewController class]]);
+    if ([vc isKindOfClass:[UIViewController class]])
+        [vc.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+    */
+}
+// Returning UIModalPresentationNone will indicate that an adaptation should not happen.
+- (UIModalPresentationStyle)adaptivePresentationStyleForPresentationController:(UIPresentationController *)controller traitCollection:(UITraitCollection *)traitCollection {
+    return UIModalPresentationNone;
+}
+// Called on the delegate when the user has taken action to dismiss the presentation successfully, after all animations are finished.
+// This is not called if the presentation is dismissed programatically.
+- (void)presentationControllerDidDismiss:(UIPresentationController *)presentationController {
+    _inMenu = FALSE;
+    [self update];
+}
+// Called on the delegate when the user has taken action to dismiss the popover. This is not called when the popover is dimissed programatically.
+- (void)popoverPresentationControllerDidDismissPopover:(UIPopoverPresentationController *)popoverPresentationController {
+     _inMenu = FALSE;
+     [self update];
+}
+#endif
 
 -(void)tap:(UITapGestureRecognizer*)tap {
-    if (_momentary)
-        super.selectedSegmentIndex = 0;
-
-    [self showAlert];
+    if (_inMenu)
+        return;
+#if TARGET_OS_IOS
+    [self showMenu];
+#else
+    [self grow]; //[self showAlert];
+#endif
 }
-
-
 @end
