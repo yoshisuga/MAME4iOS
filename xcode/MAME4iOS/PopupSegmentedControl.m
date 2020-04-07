@@ -22,6 +22,7 @@
 @implementation PopupSegmentedControl {
     NSArray* _items;
     NSInteger _selectedSegmentIndex;
+    BOOL _momentary;
     id _topItem;
 }
 
@@ -39,6 +40,10 @@
 
 -(NSUInteger)numberOfSegments {
     return _items.count;
+}
+
+- (void)setMomentary:(BOOL)momentary {
+    _momentary = momentary;     // dont pass on
 }
 
 -(NSInteger)selectedSegmentIndex {
@@ -88,7 +93,7 @@
     NSParameterAssert(FALSE);   // NOT IMPL
 }
 - (void)removeAllSegments {
-    NSParameterAssert(FALSE);   // NOT IMPL
+    _items = @[];
 }
 
 #pragma mark - PopupSegmentedControl stuff
@@ -111,7 +116,7 @@
     else
         [super setTitle:item forSegmentAtIndex:0];
     
-    if (_selectedSegmentIndex < 0 || self.isMomentary)
+    if (_selectedSegmentIndex < 0 || _momentary)
         super.selectedSegmentIndex = UISegmentedControlNoSegment;
     else
         super.selectedSegmentIndex = 0;
@@ -130,10 +135,12 @@
         }]];
         if (image != nil)
             [alert.actions.lastObject setValue:image forKey:@"image"];
-
+        if (index == self.selectedSegmentIndex)
+            alert.preferredAction = alert.actions.lastObject;
     }
-    alert.preferredAction = alert.actions[self.selectedSegmentIndex];
-    [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
+    [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction* action) {
+        [self update];
+    }]];
     
     UIViewController* vc = UIApplication.sharedApplication.keyWindow.rootViewController;
     while (vc.presentedViewController != nil)
@@ -145,6 +152,9 @@
 }
 
 -(void)tap:(UITapGestureRecognizer*)tap {
+    if (_momentary)
+        super.selectedSegmentIndex = 0;
+
     [self showAlert];
 }
 
