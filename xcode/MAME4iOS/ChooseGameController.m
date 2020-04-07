@@ -29,12 +29,14 @@
 #define CELL_TINY_WIDTH    100.0
 #define CELL_SMALL_WIDTH   200.0
 #define CELL_LARGE_WIDTH   400.0
+#define CELL_LIST_WIDTH    400.0
 #define CELL_INSET_X       8.0
 #define CELL_INSET_Y       4.0
 #else
 #define CELL_TINY_WIDTH    200.0
-#define CELL_SMALL_WIDTH   400.0
-#define CELL_LARGE_WIDTH   600.0
+#define CELL_SMALL_WIDTH   300.0
+#define CELL_LARGE_WIDTH   400.0
+#define CELL_LIST_WIDTH    800.0
 #define CELL_INSET_X       8.0
 #define CELL_INSET_Y       4.0
 #endif
@@ -249,12 +251,11 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         // force dark-mode so the segmented controll looks good.
         if (@available(tvOS 13.0, *)) {
             self.navigationController.overrideUserInterfaceStyle = UIUserInterfaceStyleLight;
-            self.navigationItem.titleView.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
         }
         
         UIBarButtonItem* search = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSearch target:self action:@selector(showSearch)];
         self.navigationItem.rightBarButtonItems = [@[search] arrayByAddingObjectsFromArray:self.navigationItem.rightBarButtonItems];
-    }
+}
 #endif
     
     // attach long press gesture to collectionView (only on pre-iOS 13, and tvOS)
@@ -715,6 +716,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         _layoutCollums = MAX(2,round(width / CELL_TINY_WIDTH));
     else if (_layoutMode == LayoutSmall)
         _layoutCollums = MAX(2,round(width / CELL_SMALL_WIDTH));
+    else if (_layoutMode == LayoutList)
+        _layoutCollums = MAX(1,round(width / CELL_LIST_WIDTH));
     else
         _layoutCollums = MAX(1,round(width / CELL_LARGE_WIDTH));
     
