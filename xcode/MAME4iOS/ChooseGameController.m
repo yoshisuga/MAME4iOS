@@ -1286,14 +1286,15 @@ UIView* find_view(UIView* view, Class class) {
 
 #pragma mark - game context menu actions...
 
--(void)deleteOrReset:(NSDictionary*)game delete:(BOOL)delete
+-(void)delete:(NSDictionary*)game
 {
-    NSString* verb = delete ? @"Delete" : @"Reset";
-    NSString* title = [NSString stringWithFormat:@"%@ %@?", verb, [game[kGameInfoDescription] componentsSeparatedByString:@" ("].firstObject];
+    NSString* title = [game[kGameInfoDescription] componentsSeparatedByString:@" ("].firstObject;
     NSString* message = nil;
 
-    [self showAlertWithTitle:title message:message buttons:@[verb, @"Cancel"] handler:^(NSUInteger button) {
-        if (button != 0)
+    [self showAlertWithTitle:title message:message buttons:@[@"Reset All Settings", @"Delete All Files", @"Cancel"] handler:^(NSUInteger button) {
+        BOOL delete = (button == 1);
+        
+        if (button == 2)
             return;
         
         NSArray* paths = @[@"titles/%@.png", @"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@", @"hi/%@.hi", @"nvram/%@.nv", @"inp/%@.inp"];
@@ -1321,16 +1322,6 @@ UIView* find_view(UIView* view, Class class) {
             }
         }
     }];
-}
-
--(void)delete:(NSDictionary*)game
-{
-    [self deleteOrReset:game delete:YES];
-}
-
--(void)reset:(NSDictionary*)game
-{
-    [self deleteOrReset:game delete:NO];
 }
 
 #if TARGET_OS_IOS
@@ -1407,9 +1398,6 @@ UIView* find_view(UIView* view, Class class) {
                 [self share:game];
             }],
 #endif
-            [self actionWithTitle:@"Reset" image:[UIImage systemImageNamed:@"backward.end"] destructive:YES handler:^(id action) {
-                [self reset:game];
-            }],
             [self actionWithTitle:@"Delete" image:[UIImage systemImageNamed:@"trash"] destructive:YES handler:^(id action) {
                 [self delete:game];
             }]
