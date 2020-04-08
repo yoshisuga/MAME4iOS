@@ -33,7 +33,7 @@
 - (instancetype)initWithItems:(NSArray *)items {
     _items = items;
     _selectedSegmentIndex = UISegmentedControlNoSegment;
-    _dismissPopupAfterChange = FALSE;
+    _dismissPopupAfterChange = TRUE;
     self = [super initWithItems:@[items.firstObject]];
     [self addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap:)]];
     return self;
