@@ -216,7 +216,7 @@
         videoPriority = 5;
         
         autofire = 0;
-        hiscore = 0;
+        hiscore = 1;
         
         stickSize = 2;
         buttonSize= 2;
