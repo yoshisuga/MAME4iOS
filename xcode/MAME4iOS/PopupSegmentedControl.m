@@ -24,6 +24,8 @@
     NSInteger _selectedSegmentIndex;
     BOOL _momentary;
     BOOL _dismissPopupAfterChange;
+    BOOL _allText;
+    CGSize _fullSize;
     UIViewController* _popup;
     id _topItem;
 }
@@ -34,7 +36,13 @@
     _items = items;
     _selectedSegmentIndex = UISegmentedControlNoSegment;
     _dismissPopupAfterChange = TRUE;
-    self = [super initWithItems:@[items.firstObject]];
+    _allText = TRUE;
+    for (id item in items)
+        _allText = _allText && [item isKindOfClass:[NSString class]];
+    self = [super initWithItems:items];
+    _fullSize = [self sizeThatFits:CGSizeZero];
+    [super removeAllSegments];
+    [super insertSegmentWithTitle:items.firstObject atIndex:0 animated:NO];
     [self addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap:)]];
     return self;
 }
@@ -162,6 +170,44 @@
 #endif
 
 #if TARGET_OS_IOS
+-(void)showAlert {
+    if (_popup != nil)
+        return;
+
+    UIAlertController* alert = [UIAlertController alertControllerWithTitle:nil message:nil preferredStyle:UIAlertControllerStyleActionSheet];
+    for (NSInteger index=0; index < self.numberOfSegments; index++) {
+        NSString* title = [self titleForSegmentAtIndex:index] ?: @"";
+        UIImage* image = [self imageForSegmentAtIndex:index];
+        [alert addAction:[UIAlertAction actionWithTitle:title style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
+            self->_popup = nil;
+            self.selectedSegmentIndex = index;
+            [self sendActionsForControlEvents:UIControlEventValueChanged];
+        }]];
+        if (image != nil)
+            [alert.actions.lastObject setValue:image forKey:@"image"];
+        if (index == self.selectedSegmentIndex)
+            alert.preferredAction = alert.actions.lastObject;
+    }
+    [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction* action) {
+        self->_popup = nil;
+        [self update];
+    }]];
+    
+    alert.modalPresentationStyle = UIModalPresentationPopover;
+    alert.popoverPresentationController.delegate = (id<UIPopoverPresentationControllerDelegate>)self;
+    alert.popoverPresentationController.sourceView = self;
+    alert.popoverPresentationController.sourceRect = self.bounds;
+    alert.popoverPresentationController.permittedArrowDirections = UIPopoverArrowDirectionUp;
+
+    _popup = alert;
+    [self update];
+
+    UIViewController* vc = UIApplication.sharedApplication.keyWindow.rootViewController;
+    while (vc.presentedViewController != nil)
+        vc = vc.presentedViewController;
+    [vc presentViewController:alert animated:YES completion:nil];
+}
+
 // create a clone of the segmented controll and present it in a popup
 -(void)showMenu {
     if (_popup != nil)
@@ -221,7 +267,10 @@
 
 -(void)tap:(UITapGestureRecognizer*)tap {
 #if TARGET_OS_IOS
-    [self showMenu];
+    if (_allText && _fullSize.width >= (self.window.bounds.size.width * 0.8))
+        [self showAlert];
+    else
+        [self showMenu];
 #else
     if (super.numberOfSegments <= 1)
         [self grow];
