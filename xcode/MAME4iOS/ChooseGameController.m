@@ -1349,10 +1349,11 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if (game == nil || [game[kGameInfoName] length] == 0)
         return nil;
     
-    return [NSString stringWithFormat:@"%@\n%@ • %@\n%@",
+    return [NSString stringWithFormat:@"%@\n%@ • %@\n%@%@",
             game[kGameInfoDescription],
             game[kGameInfoManufacturer],
             game[kGameInfoYear],
+            [game[kGameInfoDriver] isEqualToString:game[kGameInfoName]] ? @"" : [game[kGameInfoDriver] stringByAppendingString:@" • "],
             ([game[kGameInfoParent] length] > 1) ?
                 [NSString stringWithFormat:@"%@ [%@]", game[kGameInfoName], game[kGameInfoParent]] :
                 game[kGameInfoName]
