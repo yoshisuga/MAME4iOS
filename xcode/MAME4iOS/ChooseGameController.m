@@ -214,7 +214,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     UIBarButtonItem* settings = [[UIBarButtonItem alloc] initWithImage:settingsImage style:UIBarButtonItemStylePlain target:self action:@selector(showSettings)];
 #else
     seg = [[UISegmentedControl alloc] initWithItems:@[settingsImage]];
-    seg.momentary = TARGET_OS_IOS ? YES : NO;
+    seg.momentary = YES;
     [seg addTarget:self action:@selector(showSettings) forControlEvents:UIControlEventValueChanged];
     UIBarButtonItem* settings = [[UIBarButtonItem alloc] initWithCustomView:seg];
 #endif
@@ -248,9 +248,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 #else   // tvOS
     if (self.navigationController != nil) {
         // force light-mode so our buttons look good in navbar
-        // force dark-mode so the segmented controll looks good.
+        // force dark-mode so the (scope) segmented controll looks good.
         if (@available(tvOS 13.0, *)) {
             self.navigationController.overrideUserInterfaceStyle = UIUserInterfaceStyleLight;
+            seg.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
         }
         
         UIBarButtonItem* search = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSearch target:self action:@selector(showSearch)];
