@@ -1219,7 +1219,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     NSString* title = [game[kGameInfoDescription] componentsSeparatedByString:@" ("].firstObject;
     NSString* message = nil;
 
-    [self showAlertWithTitle:title message:message buttons:@[@"Reset All Settings", @"Delete All Files", @"Cancel"] handler:^(NSUInteger button) {
+    [self showAlertWithTitle:title message:message buttons:@[@"Delete Settings", @"Delete All Files", @"Cancel"] handler:^(NSUInteger button) {
         BOOL delete = (button == 1);
         
         if (button == 2)
