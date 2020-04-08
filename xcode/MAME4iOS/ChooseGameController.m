@@ -60,7 +60,7 @@
 #define LAYOUT_MODE_DEFAULT LayoutSmall
 #define SCOPE_MODE_KEY      @"ScopeMode"
 #define SCOPE_MODE_DEFAULT  @"All"
-#define ALL_SCOPES          @[@"All", @"Manufacturer", @"Year", @"Genre"]
+#define ALL_SCOPES          @[@"All", @"Manufacturer", @"Year", @"Genre", @"Driver", @"Parent"]
 #define RECENT_GAMES_MAX    8
 
 #define CLAMP(x, num) MIN(MAX(x,0), (num)-1)
@@ -356,10 +356,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     {
         games = [games arrayByAddingObject:@{
             kGameInfoName:kGameInfoNameMameMenu,
+            kGameInfoParent:@"",
             kGameInfoDescription:@"MAME UI",
             kGameInfoYear:@"2010",
             kGameInfoManufacturer:@"MAME 0.139u1",
-            kGameInfoCategory:@"MAME"
         }];
         
         // then (re)sort the list by description
@@ -507,7 +507,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     
     // group games by category into sections
     NSMutableDictionary* gameData = [[NSMutableDictionary alloc] init];
-    NSString* key = @"";
+    NSString* key = nil;
     
     if ([_gameFilterScope isEqualToString:@"Year"])
         key = kGameInfoYear;
@@ -517,16 +517,24 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         key = kGameInfoCategory;
     if ([_gameFilterScope isEqualToString:@"Genre"])
         key = kGameInfoCategory;
+    if ([_gameFilterScope isEqualToString:@"Driver"])
+        key = kGameInfoDriver;
+    if ([_gameFilterScope isEqualToString:@"Parent"])
+        key = kGameInfoParent;
 
     for (NSDictionary* game in filteredGames) {
-        NSString* section = game[key] ?: @"All";
+        NSString* section = key ? (game[key] ?: @"Unknown") : @"All";
         
         // a UICollectionView will scroll like crap if we have too many sections, so try to filter/combine similar ones.
         section = [[section componentsSeparatedByString:@" ("] firstObject];
         section = [section stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
         
-        if (![_gameFilterScope isEqualToString:@"Year"])
+        if (key != (void*)kGameInfoYear)
             section = [section stringByTrimmingCharactersInSet:[NSCharacterSet punctuationCharacterSet]];
+        
+        // if we dont have a parent, we are our own parent!
+        if (key == (void*)kGameInfoParent && [section length] <= 1)
+            section = game[kGameInfoName];
 
         if (gameData[section] == nil)
             gameData[section] = [[NSMutableArray alloc] init];

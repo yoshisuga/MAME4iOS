@@ -278,6 +278,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
             if (game_info[i] == NULL)
                 continue;
             [games addObject:@{
+                kGameInfoDriver:      [[NSString stringWithUTF8String:game_info[i]->source_file ?: ""].lastPathComponent stringByDeletingPathExtension],
                 kGameInfoParent:      [NSString stringWithUTF8String:game_info[i]->parent ?: ""],
                 kGameInfoName:        [NSString stringWithUTF8String:game_info[i]->name],
                 kGameInfoDescription: [NSString stringWithUTF8String:game_info[i]->description],
@@ -3772,7 +3773,7 @@ void myosd_handle_turbo() {
             MFIController.microGamepad.dpad.valueChangedHandler = ^ (GCControllerDirectionPad *directionpad, float xValue, float yValue) {
                 NSInteger player = 0; // siri remote is always player 1
 
-                NSLog(@"%d(%d): %@", index, player, directionpad);
+                NSLog(@"%d(%d): %@", index, (int)player, directionpad);
                 
                 // emulate a analog joystick and a dpad, except when in a menu only a dpad
                 if (myosd_inGame && !myosd_in_menu) {
