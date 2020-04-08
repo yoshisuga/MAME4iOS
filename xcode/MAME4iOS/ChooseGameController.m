@@ -188,35 +188,35 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
     // layout
     height = TARGET_OS_IOS ? 16.0 : 32.0;
-    UISegmentedControl* seg = [[PopupSegmentedControl alloc] initWithItems:@[
+    UISegmentedControl* seg1 = [[PopupSegmentedControl alloc] initWithItems:@[
         [UIImage systemImageNamed:@"square.grid.4x3.fill" withPointSize:height]    ?: @"⚏",
         [UIImage systemImageNamed:@"rectangle.grid.2x2.fill" withPointSize:height] ?: @"☷",
         [UIImage systemImageNamed:@"rectangle.stack.fill" withPointSize:height]    ?: @"▢",
         [UIImage systemImageNamed:@"rectangle.grid.1x2.fill" withPointSize:height] ?: @"☰"
     ]];
     
-    seg.momentary = TARGET_OS_IOS ? YES : NO;
-    seg.selectedSegmentIndex = _layoutMode;
-    [seg addTarget:self action:@selector(viewChange:) forControlEvents:UIControlEventValueChanged];
-    UIBarButtonItem* layout = [[UIBarButtonItem alloc] initWithCustomView:seg];
+    seg1.momentary = TARGET_OS_IOS ? YES : NO;
+    seg1.selectedSegmentIndex = _layoutMode;
+    [seg1 addTarget:self action:@selector(viewChange:) forControlEvents:UIControlEventValueChanged];
+    UIBarButtonItem* layout = [[UIBarButtonItem alloc] initWithCustomView:seg1];
 
     // group/scope
-    seg = [[PopupSegmentedControl alloc] initWithItems:ALL_SCOPES];
-    seg.momentary = TARGET_OS_IOS ? YES : NO;
-    seg.selectedSegmentIndex = [ALL_SCOPES indexOfObject:_gameFilterScope];
-    seg.apportionsSegmentWidthsByContent = TARGET_OS_IOS ? NO : YES;
-    [seg addTarget:self action:@selector(scopeChange:) forControlEvents:UIControlEventValueChanged];
-    UIBarButtonItem* scope = [[UIBarButtonItem alloc] initWithCustomView:seg];
+    UISegmentedControl* seg2 = [[PopupSegmentedControl alloc] initWithItems:ALL_SCOPES];
+    seg2.momentary = TARGET_OS_IOS ? YES : NO;
+    seg2.selectedSegmentIndex = [ALL_SCOPES indexOfObject:_gameFilterScope];
+    seg2.apportionsSegmentWidthsByContent = TARGET_OS_IOS ? NO : YES;
+    [seg2 addTarget:self action:@selector(scopeChange:) forControlEvents:UIControlEventValueChanged];
+    UIBarButtonItem* scope = [[UIBarButtonItem alloc] initWithCustomView:seg2];
     
     // settings
     UIImage* settingsImage = [UIImage systemImageNamed:@"gear" withPointSize:height] ?: [[UIImage imageNamed:@"menu"] scaledToSize:CGSizeMake(height, height)];
 #if TARGET_OS_TV
     UIBarButtonItem* settings = [[UIBarButtonItem alloc] initWithImage:settingsImage style:UIBarButtonItemStylePlain target:self action:@selector(showSettings)];
 #else
-    seg = [[UISegmentedControl alloc] initWithItems:@[settingsImage]];
-    seg.momentary = YES;
-    [seg addTarget:self action:@selector(showSettings) forControlEvents:UIControlEventValueChanged];
-    UIBarButtonItem* settings = [[UIBarButtonItem alloc] initWithCustomView:seg];
+    UISegmentedControl* seg3 = [[UISegmentedControl alloc] initWithItems:@[settingsImage]];
+    seg3.momentary = YES;
+    [seg3 addTarget:self action:@selector(showSettings) forControlEvents:UIControlEventValueChanged];
+    UIBarButtonItem* settings = [[UIBarButtonItem alloc] initWithCustomView:seg3];
 #endif
     
     self.navigationItem.rightBarButtonItems = @[settings, layout, scope];
@@ -251,7 +251,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         // force dark-mode so the (scope) segmented controll looks good.
         if (@available(tvOS 13.0, *)) {
             self.navigationController.overrideUserInterfaceStyle = UIUserInterfaceStyleLight;
-            seg.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
+            seg1.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
+            seg2.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
         }
         
         UIBarButtonItem* search = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSearch target:self action:@selector(showSearch)];
