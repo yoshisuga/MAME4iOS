@@ -25,6 +25,7 @@
     BOOL _momentary;
     BOOL _dismissPopupAfterChange;
     BOOL _allText;
+    UIEdgeInsets _popupMargin;
     CGSize _fullSize;
     UIViewController* _popup;
     id _topItem;
@@ -36,11 +37,15 @@
     _items = items;
     _selectedSegmentIndex = UISegmentedControlNoSegment;
     _dismissPopupAfterChange = TRUE;
+    _popupMargin = UIEdgeInsetsMake(4.0, 4.0, 4.0, 4.0);
     _allText = TRUE;
     for (id item in items)
         _allText = _allText && [item isKindOfClass:[NSString class]];
     self = [super initWithItems:items];
+    self.apportionsSegmentWidthsByContent = YES;
     _fullSize = [self sizeThatFits:CGSizeZero];
+    _fullSize.width += _popupMargin.left + _popupMargin.right;
+    _fullSize.height += _popupMargin.top + _popupMargin.bottom;
     [super removeAllSegments];
     [super insertSegmentWithTitle:items.firstObject atIndex:0 animated:NO];
     [self addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap:)]];
@@ -170,6 +175,36 @@
 #endif
 
 #if TARGET_OS_IOS
+
+-(void)showPopup:(UIViewController*)popup {
+    
+    popup.modalPresentationStyle = UIModalPresentationPopover;
+    UIPopoverPresentationController* ppc = popup.popoverPresentationController;
+    if (ppc != nil) {
+        ppc.delegate = (id<UIPopoverPresentationControllerDelegate>)self;
+        ppc.sourceView = self;
+        ppc.sourceRect = self.bounds;
+        ppc.permittedArrowDirections = UIPopoverArrowDirectionUp;
+    }
+
+    _popup = popup;
+    [self update];
+
+    UIViewController* vc = UIApplication.sharedApplication.keyWindow.rootViewController;
+    while (vc.presentedViewController != nil)
+        vc = vc.presentedViewController;
+    [vc presentViewController:popup animated:YES completion:nil];
+}
+// Returning UIModalPresentationNone will indicate that an adaptation should not happen.
+- (UIModalPresentationStyle)adaptivePresentationStyleForPresentationController:(UIPresentationController *)controller traitCollection:(UITraitCollection *)traitCollection {
+    return UIModalPresentationNone;
+}
+// Called on the delegate when the user has taken action to dismiss the popover. This is not called when the popover is dimissed programatically.
+- (void)popoverPresentationControllerDidDismissPopover:(UIPopoverPresentationController *)popoverPresentationController {
+     _popup = nil;
+     [self update];
+}
+
 -(void)showAlert {
     if (_popup != nil)
         return;
@@ -193,19 +228,7 @@
         [self update];
     }]];
     
-    alert.modalPresentationStyle = UIModalPresentationPopover;
-    alert.popoverPresentationController.delegate = (id<UIPopoverPresentationControllerDelegate>)self;
-    alert.popoverPresentationController.sourceView = self;
-    alert.popoverPresentationController.sourceRect = self.bounds;
-    alert.popoverPresentationController.permittedArrowDirections = UIPopoverArrowDirectionUp;
-
-    _popup = alert;
-    [self update];
-
-    UIViewController* vc = UIApplication.sharedApplication.keyWindow.rootViewController;
-    while (vc.presentedViewController != nil)
-        vc = vc.presentedViewController;
-    [vc presentViewController:alert animated:YES completion:nil];
+    [self showPopup:alert];
 }
 
 // create a clone of the segmented controll and present it in a popup
@@ -220,10 +243,11 @@
     UIViewController* menu = [[UIViewController alloc] init];
     [seg sizeToFit];
     seg.selectedSegmentIndex = _selectedSegmentIndex;
-    menu.preferredContentSize = seg.bounds.size;
+    menu.preferredContentSize = _fullSize;
     [menu.view addSubview:seg];
     seg.translatesAutoresizingMaskIntoConstraints = NO;
-    [seg.bottomAnchor constraintEqualToAnchor:menu.view.bottomAnchor].active = TRUE;
+    [seg.centerXAnchor constraintEqualToAnchor:menu.view.safeAreaLayoutGuide.centerXAnchor].active = TRUE;
+    [seg.centerYAnchor constraintEqualToAnchor:menu.view.safeAreaLayoutGuide.centerYAnchor].active = TRUE;
 
     if (@available(iOS 13.0, *)) {
         seg.selectedSegmentTintColor = self.selectedSegmentTintColor;
@@ -232,19 +256,7 @@
         menu.view.backgroundColor = [UIColor colorWithWhite:0.165 alpha:1.0];
     }
 
-    menu.modalPresentationStyle = UIModalPresentationPopover;
-    menu.popoverPresentationController.delegate = (id<UIPopoverPresentationControllerDelegate>)self;
-    menu.popoverPresentationController.sourceView = self;
-    menu.popoverPresentationController.sourceRect = self.bounds;
-    menu.popoverPresentationController.permittedArrowDirections = UIPopoverArrowDirectionUp;
-
-    _popup = menu;
-    [self update];
-
-    UIViewController* vc = UIApplication.sharedApplication.keyWindow.rootViewController;
-    while (vc.presentedViewController != nil)
-        vc = vc.presentedViewController;
-    [vc presentViewController:menu animated:YES completion:nil];
+    [self showPopup:menu];
 }
 -(void)popupChange:(UISegmentedControl*)sender {
     self.selectedSegmentIndex = sender.selectedSegmentIndex;
@@ -254,20 +266,11 @@
         [self popoverPresentationControllerDidDismissPopover:_popup.popoverPresentationController];
     }
 }
-// Returning UIModalPresentationNone will indicate that an adaptation should not happen.
-- (UIModalPresentationStyle)adaptivePresentationStyleForPresentationController:(UIPresentationController *)controller traitCollection:(UITraitCollection *)traitCollection {
-    return UIModalPresentationNone;
-}
-// Called on the delegate when the user has taken action to dismiss the popover. This is not called when the popover is dimissed programatically.
-- (void)popoverPresentationControllerDidDismissPopover:(UIPopoverPresentationController *)popoverPresentationController {
-     _popup = nil;
-     [self update];
-}
 #endif
 
 -(void)tap:(UITapGestureRecognizer*)tap {
 #if TARGET_OS_IOS
-    if (_allText && _fullSize.width >= (self.window.bounds.size.width * 0.8))
+    if (_allText && _fullSize.width >= (self.window.bounds.size.width * 0.9))
         [self showAlert];
     else
         [self showMenu];
