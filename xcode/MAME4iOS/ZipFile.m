@@ -698,30 +698,78 @@
     return data;
 }
 
-// from [gist](https://gist.github.com/antfarm/695fa78e0730b67eb094c77d53942216)
-- (uint32_t) crc32
+/// compute CRC32 (Slicing-by-8 algorithm) from [Stephan Brumme](https://create.stephan-brumme.com/crc32)
+static uint32_t crc32_8bytes(const void* data, size_t length, uint32_t previousCrc32)
 {
-    static uint32_t table[256];
-    
-    if (table[0] == 0)
+    const uint32_t Polynomial = 0xEDB88320; /// zlib's CRC32 polynomial
+    static uint32_t Crc32Lookup[8][256];
+
+    if (Crc32Lookup[0][1] == 0)
     {
-        for (int i=0; i<256; i++)
+        for (unsigned int i = 0; i <= 0xFF; i++)
         {
-            uint32_t c = i;
-            for (int j=0; j<8; j++)
-                c = (c % 2 == 0) ? (c >> 1) : (0xEDB88320 ^ (c >> 1));
-            table[i] = c;
+            uint32_t crc = i;
+            for (unsigned int j = 0; j < 8; j++)
+            crc = (crc >> 1) ^ ((crc & 1) * Polynomial);
+            Crc32Lookup[0][i] = crc;
+        }
+        for (unsigned int i = 0; i <= 0xFF; i++)
+        {
+            Crc32Lookup[1][i] = (Crc32Lookup[0][i] >> 8) ^ Crc32Lookup[0][Crc32Lookup[0][i] & 0xFF];
+            Crc32Lookup[2][i] = (Crc32Lookup[1][i] >> 8) ^ Crc32Lookup[0][Crc32Lookup[1][i] & 0xFF];
+            Crc32Lookup[3][i] = (Crc32Lookup[2][i] >> 8) ^ Crc32Lookup[0][Crc32Lookup[2][i] & 0xFF];
+            Crc32Lookup[4][i] = (Crc32Lookup[3][i] >> 8) ^ Crc32Lookup[0][Crc32Lookup[3][i] & 0xFF];
+            Crc32Lookup[5][i] = (Crc32Lookup[4][i] >> 8) ^ Crc32Lookup[0][Crc32Lookup[4][i] & 0xFF];
+            Crc32Lookup[6][i] = (Crc32Lookup[5][i] >> 8) ^ Crc32Lookup[0][Crc32Lookup[5][i] & 0xFF];
+            Crc32Lookup[7][i] = (Crc32Lookup[6][i] >> 8) ^ Crc32Lookup[0][Crc32Lookup[6][i] & 0xFF];
         }
     }
     
+    uint32_t crc = ~previousCrc32; // same as previousCrc32 ^ 0xFFFFFFFF
+    const uint32_t* current = (const uint32_t*) data;
+
+    // process eight bytes at once (Slicing-by-8)
+    while (length >= 8)
+    {
+#ifdef __BIG_ENDIAN__
+        uint32_t one = *current++ ^ OSSwapInt32(crc);
+        uint32_t two = *current++;
+        crc = Crc32Lookup[0][ two      & 0xFF] ^
+              Crc32Lookup[1][(two>> 8) & 0xFF] ^
+              Crc32Lookup[2][(two>>16) & 0xFF] ^
+              Crc32Lookup[3][(two>>24) & 0xFF] ^
+              Crc32Lookup[4][ one      & 0xFF] ^
+              Crc32Lookup[5][(one>> 8) & 0xFF] ^
+              Crc32Lookup[6][(one>>16) & 0xFF] ^
+              Crc32Lookup[7][(one>>24) & 0xFF];
+#else
+        uint32_t one = *current++ ^ crc;
+        uint32_t two = *current++;
+        crc = Crc32Lookup[0][(two>>24) & 0xFF] ^
+              Crc32Lookup[1][(two>>16) & 0xFF] ^
+              Crc32Lookup[2][(two>> 8) & 0xFF] ^
+              Crc32Lookup[3][ two      & 0xFF] ^
+              Crc32Lookup[4][(one>>24) & 0xFF] ^
+              Crc32Lookup[5][(one>>16) & 0xFF] ^
+              Crc32Lookup[6][(one>> 8) & 0xFF] ^
+              Crc32Lookup[7][ one      & 0xFF];
+#endif
+        length -= 8;
+    }
+
+    const uint8_t* currentChar = (const uint8_t*) current;
+    // remaining 1 to 7 bytes (standard algorithm)
+    while (length-- != 0)
+    crc = (crc >> 8) ^ Crc32Lookup[0][(crc & 0xFF) ^ *currentChar++];
+
+    return ~crc; // same as crc ^ 0xFFFFFFFF
+}
+
+- (uint32_t) crc32
+{
     const uint8_t* bytes = [self bytes];
     NSUInteger length = [self length];
-    
-    uint32_t crc = ~0;
-    while (length-- != 0)
-        crc = (crc >> 8) ^ table[(crc ^ *bytes++) & 0xFF];
-    
-    return ~crc;
+    return crc32_8bytes(bytes, length, 0);
 }
 @end
 
