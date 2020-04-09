@@ -48,7 +48,6 @@
 
 -(void)dealloc {
     // delete our temp file, we are all done with it.
-    NSLog(@"FileItemProvider(dealloc): %@", _tempURL);
     [[NSFileManager defaultManager] removeItemAtURL:[_tempURL URLByDeletingLastPathComponent] error:nil];
 }
 
@@ -56,7 +55,6 @@
 - (id)item {
     
     BOOL result = _saveHandler(_tempURL, ^BOOL(double progress) {
-        NSLog(@"PROGRESS: %f", progress);
         self->_progress = progress;
         NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
         if (now - self->_progressUpdateTime > 2.5) {
@@ -78,7 +76,6 @@
 #pragma mark Progress
 
 -(void)updateProgress {
-    NSLog(@"PROGRESS: %f (main thread)", _progress);
     double progress = MAX(0.0, MIN(1.0, _progress));
     
     if (_progressAlert == nil && progress < 1.0 && ![self isCancelled]) {
