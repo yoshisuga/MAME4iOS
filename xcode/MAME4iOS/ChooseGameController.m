@@ -60,7 +60,7 @@
 #define LAYOUT_MODE_DEFAULT LayoutSmall
 #define SCOPE_MODE_KEY      @"ScopeMode"
 #define SCOPE_MODE_DEFAULT  @"All"
-#define ALL_SCOPES          @[@"All", @"Manufacturer", @"Year", @"Genre", @"Driver", @"Parent"]
+#define ALL_SCOPES          @[@"All", @"Manufacturer", @"Year", @"Genre", @"Driver"]
 #define RECENT_GAMES_MAX    8
 
 #define CLAMP(x, num) MIN(MAX(x,0), (num)-1)
