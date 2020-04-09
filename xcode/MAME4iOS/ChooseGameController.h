@@ -15,6 +15,7 @@
 #define RECENT_GAMES_TITLE      @"Recently Played"
 
 // keys used in a GameInfo dictionary
+#define kGameInfoDriver         @"driver"
 #define kGameInfoName           @"name"
 #define kGameInfoParent         @"parent"
 #define kGameInfoYear           @"year"
