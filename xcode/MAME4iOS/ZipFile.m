@@ -18,19 +18,14 @@
 #define ERROR(...)  FALSE
 #endif
 
-@interface NSFileHandle (NSFileHandle_Read)
+@interface NSFileHandle (NSFileHandle_ReadWrite)
 - (NSData*) readDataOfLengthSafe:(size_t)length;    // a *safe* version of readDataOfLength:
 - (BOOL) writeDataSafe:(NSData*)data;               // a *safe* version of writeData:
-- (BOOL) readBytes:(void *)bytes length:(size_t)length;
 - (BOOL) writeBytes:(const void *)bytes length:(size_t)length;
-- (uint16_t) read2;
-- (uint32_t) read4;
-- (uint64_t) read8;
-- (void) skip:(NSInteger)skip;
 @end
 
 @interface NSData (NSData_Compression)
-- (NSData*) inflated:(NSUInteger)length;
+- (NSData*) inflated:(NSUInteger)expected_length;
 - (NSData*) deflated;
 - (uint32_t) crc32;
 @end
@@ -73,20 +68,37 @@
         return ERROR(@"cant open file");
     
     NSUInteger num_files = 0;
+    NSUInteger central_dir_size;
+    uint64_t   central_dir_offset;
     
+    NSData*         buffer_data;
+    const uint8_t*  buffer_ptr;
+    NSUInteger      buffer_len;
+
+#define LOAD(file, offset, num_bytes) \
+    [file seekToFileOffset:offset]; \
+    buffer_data = [file readDataOfLengthSafe:num_bytes]; \
+    buffer_ptr = [buffer_data bytes]; \
+    buffer_len = [buffer_data length];
+    
+#define READ2()  (buffer_ptr += 2, buffer_len -= 2, OSReadLittleInt16(buffer_ptr, -2))
+#define READ4()  (buffer_ptr += 4, buffer_len -= 4, OSReadLittleInt32(buffer_ptr, -4))
+#define READ8()  (buffer_ptr += 8, buffer_len -= 8, OSReadLittleInt64(buffer_ptr, -8))
+#define READN(n) (buffer_ptr += n, buffer_len -= n, [NSData dataWithBytes:buffer_ptr - n length:n])
+#define SKIP(n)  (buffer_ptr += n, buffer_len -= n)
+
     //  seek to the end and look for the EOCD
-    [file seekToFileOffset:[file seekToEndOfFile] - 512];
-    NSData* data = [file readDataToEndOfFile];
+    LOAD(file, [file seekToEndOfFile] - 512, 512);
     uint8_t eocd_sig[] = {0x50, 0x4b, 0x05, 0x06};
-    NSRange r = [data rangeOfData:[NSData dataWithBytes:&eocd_sig length:4] options:0 range:NSMakeRange(0, [data length])];
+    NSRange r = [buffer_data rangeOfData:[NSData dataWithBytes:&eocd_sig length:4] options:0 range:NSMakeRange(0, [buffer_data length])];
 
     if (r.location == NSNotFound)
         return ERROR(@"bad zip file (cant find central directory)");
 
-    [file seekToFileOffset:[file seekToEndOfFile] - [data length] + r.location - 20];
-    
+    SKIP(r.location - 20);
+
     // see if we have a ZIP64 EOCD header
-    if ([file read4] == 0x07064b50)
+    if (READ4() == 0x07064b50)
     {
         // zip64 end of central dir locator
         // signature                4 bytes  (0x07064b50)
@@ -94,10 +106,10 @@
         // offset to EOCD64         8 bytes
         // total number of disks    4 bytes
 
-        if ([file read4] != 0)
+        if (READ4() != 0)
             return ERROR(@"unsupported zip file (cant handle multifile)");
 
-        [file seekToFileOffset:[file read8]];
+        LOAD(file, READ8(), 512);
         
         // zip64 end of central dir
         // signature                            4 bytes  (0x06064b50)
@@ -111,18 +123,19 @@
         // size of the central directory        8 bytes
         // offset of start of central directory 8 bytes
         // zip64 extensible data sector         (variable size)
-        if ([file read4] != 0x06064b50)
+        if (READ4() != 0x06064b50)
             return ERROR(@"bad zip file (cant find central directory)");
-        [file skip:20];         // size + versions + disk numbers
-        num_files = [file read8];
-        if ([file read8] != num_files)
+        SKIP(20);         // size + versions + disk numbers
+        num_files = READ8();
+        if (READ8() != num_files)
             return ERROR(@"unsupported zip file (cant handle multifile)");
-        [file skip:8];          // size
-        [file seekToFileOffset:[file read8]];
+                    
+        central_dir_size = READ8();
+        central_dir_offset = READ8();
     }
     else
     {
-        [file skip:16];
+        SKIP(16);
 
         //  End of central directory record (EOCD)
         //  Offset   Bytes  Description
@@ -135,16 +148,16 @@
         //  16       4      Offset of start of central directory, relative to start of archive
         //  20       2      Comment length (n)
         //  22       n      Comment
-        if ([file read4] != 0x06054b50)
+        if (READ4() != 0x06054b50)
             return ERROR(@"bad zip file (cant find central directory)");
 
-        [file skip:4];
-        num_files = [file read2];
-        if ([file read2] != num_files)
+        SKIP(4);  // disk num
+        num_files = READ2();
+        if (READ2() != num_files)
             return ERROR(@"unsupported zip file (cant handle multifile)");
         
-        [file skip:4];      // size of central directory
-        [file seekToFileOffset:[file read4]];
+        central_dir_size = READ4(); // size of central directory
+        central_dir_offset = READ4();
     }
 
     if (num_files == 0)
@@ -152,6 +165,12 @@
     
     if (block == nil)
         return TRUE;
+    
+    // read the entire central directory into memory
+    LOAD(file, central_dir_offset, central_dir_size);
+    
+    if ([buffer_data length] != central_dir_size)
+        return ERROR(@"bad zip file (cant read central directory)");
     
     for (int i=0; i<num_files; i++) @autoreleasepool {
         
@@ -179,42 +198,43 @@
         //        46        n    File name
         //        46+n      m    Extra field
         //        46+n+m    k    File comment
-        if ([file read4] != 0x02014b50)
+        if (READ4()!= 0x02014b50)
             return ERROR(@"bad zip file (cant find central directory)");
-        [file skip:6];   // versions, bit flag
-        uint16_t compression = [file read2];
+        SKIP(6);   // versions, bit flag
+        uint16_t compression = READ2();
         if (!(compression == 0 || compression == 8))
             return ERROR(@"unsupported zip file (bad compression)");
-        uint32_t datetime = [file read4];
-        uint32_t crc32 = [file read4];
-        uint64_t compressed_size = [file read4];
-        uint64_t uncompressed_size = [file read4];
-        uint16_t name_len = [file read2];
-        uint16_t extra_len = [file read2];
-        uint16_t comment_len = [file read2];
-        [file skip:8];  // disk_num, internal_attr, external_attr
-        uint64_t local_offset = [file read4];
-        uint64_t next_entry = [file offsetInFile] + name_len + extra_len + comment_len;
-        NSData* name = [file readDataOfLength:name_len];
+        uint32_t datetime = READ4();
+        uint32_t crc32 = READ4();
+        uint64_t compressed_size = READ4();
+        uint64_t uncompressed_size = READ4();
+        uint16_t name_len = READ2();
+        uint16_t extra_len = READ2();
+        uint16_t comment_len = READ2();
+        SKIP(8);  // disk_num, internal_attr, external_attr
+        uint64_t local_offset = READ4();
+        NSData* name = READN(name_len);
         
         // get ZIP64 offset and size
         while (extra_len > 0)
         {
-            uint16_t tag = [file read2];
-            uint16_t size = [file read2];
-            uint64_t next = [file offsetInFile] + size;
+            uint16_t tag = READ2();
+            uint16_t size = READ2();
             if (tag == 0x0001)
             {
                 if (compressed_size == 0xFFFFFFFF)
-                    compressed_size = [file read8];
+                    compressed_size = READ8();
                 if (uncompressed_size == 0xFFFFFFFF)
-                    uncompressed_size = [file read8];
+                    uncompressed_size = READ8();
                 if (local_offset == 0xFFFFFFFF)
-                    local_offset = [file read8];
+                    local_offset = READ8();
             }
-            [file seekToFileOffset:next];
+            else {
+                SKIP(size);
+            }
             extra_len -= (size + 4);
         }
+        SKIP(comment_len);
         
         // if the name is valid UTF8 use that, else assume [dosLatinUS](https://en.wikipedia.org/wiki/Code_page_437)
         info.name = [[NSString alloc] initWithData:name encoding:NSUTF8StringEncoding] ?:
@@ -226,40 +246,45 @@
         info.method = compression;
         info.date = [NSDate dateWithDosDateTime:datetime];
         
-        // seek to the local file header and find location of the data
-        [file seekToFileOffset:local_offset];
-        
-        //  Local file header
-        //  Offset    Bytes   Description
-        //  0         4       Local file header signature = 0x04034b50 (read as a little-endian number)
-        //  4         2       Version needed to extract (minimum)
-        //  6         2       General purpose bit flag
-        //  8         2       Compression method
-        //  10        2       File last modification time
-        //  12        2       File last modification date
-        //  14        4       CRC-32
-        //  18        4       Compressed size
-        //  22        4       Uncompressed size
-        //  26        2       File name length (n)
-        //  28        2       Extra field length (m)
-        //  30        n       File name
-        //  30+n      m       Extra field
-        if ([file read4] != 0x04034b50)
-            return ERROR(@"bad zip file (cant find local file header)");
-        [file skip:22];    // verion, flags, compression. datetime, crc32, compressed size, uncompressed size
-        name_len = [file read2];
-        extra_len = [file read2];
-        info.offset = [file offsetInFile] + name_len + extra_len;
-        
-        // if the caller wants the data, go get it!
-        if (options & ZipFileEnumLoadData)
+        if (uncompressed_size != 0)
         {
-            if (![info loadDataFromFile:file])
-                return FALSE;
+            NSData*         buffer_data;
+            const uint8_t*  buffer_ptr;
+            NSUInteger      buffer_len;
+            
+            // seek to the local file header and find location of the data
+            LOAD(file, local_offset, 512);
+            
+            //  Local file header
+            //  Offset    Bytes   Description
+            //  0         4       Local file header signature = 0x04034b50 (read as a little-endian number)
+            //  4         2       Version needed to extract (minimum)
+            //  6         2       General purpose bit flag
+            //  8         2       Compression method
+            //  10        2       File last modification time
+            //  12        2       File last modification date
+            //  14        4       CRC-32
+            //  18        4       Compressed size
+            //  22        4       Uncompressed size
+            //  26        2       File name length (n)
+            //  28        2       Extra field length (m)
+            //  30        n       File name
+            //  30+n      m       Extra field
+            if (READ4() != 0x04034b50)
+                return ERROR(@"bad zip file (cant find local file header)");
+            SKIP(22);    // verion, flags, compression. datetime, crc32, compressed size, uncompressed size
+            name_len = READ2();
+            extra_len = READ2();
+            info.offset = local_offset + 30 + name_len + extra_len;
+            
+            // if the caller wants the data, go get it!
+            if (options & ZipFileEnumLoadData)
+            {
+                if (![info loadDataFromFile:file])
+                    return FALSE;
+            }
         }
 
-        [file seekToFileOffset:next_entry];
-        
         if (!(options & ZipFileEnumDirectories) && info.isDirectory)
             continue;
         
@@ -611,63 +636,40 @@
 }
 @end
 
-#pragma mark - NSFileHandle read word, dword, qword
+#pragma mark - NSFileHandle read/write
 
-@implementation NSFileHandle (NSFileHandle_Read)
+@implementation NSFileHandle (NSFileHandle_ReadWrite)
 
 - (NSData*) readDataOfLengthSafe:(size_t)length
 {
-    @try {
-        return [self readDataOfLength:length];
-    } @catch (NSException *exception) {
-        return nil;
+    if (@available(macOS 10.15, iOS 13.0, *)) {
+        return [self readDataUpToLength:length error:nil];
+    }
+    else {
+        @try {
+            return [self readDataOfLength:length];
+        } @catch (NSException *exception) {
+            return nil;
+        }
     }
 }
 - (BOOL) writeDataSafe:(NSData*)data
 {
-    @try {
-        [self writeData:data];
-        return TRUE;
-    } @catch (NSException *exception) {
-        return FALSE;
+    if (@available(macOS 10.15, iOS 13.0, *)) {
+        return [self writeData:data error:nil];
     }
-}
-- (BOOL) readBytes:(void *)bytes length:(size_t)length
-{
-    NSData* data = [self readDataOfLengthSafe:length];
-    if (data.length != 0)
-        memcpy(bytes, data.bytes, MIN(length, data.length));
-    return length == data.length;
+    else {
+        @try {
+            [self writeData:data];
+            return TRUE;
+        } @catch (NSException *exception) {
+            return FALSE;
+        }
+    }
 }
 - (BOOL) writeBytes:(const void *)bytes length:(size_t)length
 {
     return [self writeDataSafe:[NSData dataWithBytes:bytes length:length]];
-}
-- (uint16_t) read2
-{
-    uint16_t u16 = 0;
-    [self readBytes:&u16 length:2];
-    return OSSwapLittleToHostInt16(u16);
-}
-- (uint32_t) read4
-{
-    uint32_t u32 = 0;
-    [self readBytes:&u32 length:4];
-    return OSSwapLittleToHostInt32(u32);
-}
-- (uint64_t) read8
-{
-    uint64_t u64 = 0;
-    [self readBytes:&u64 length:8];
-    return OSSwapLittleToHostInt64(u64);
-}
-- (void) skip:(NSInteger)skip
-{
-    @try {
-        [self seekToFileOffset:[self offsetInFile] + skip];
-    }
-    @catch (NSException *exception) {
-    }
 }
 @end
 
@@ -675,54 +677,104 @@
 
 @implementation NSData (NSData_Compression)
 
-- (NSData*) inflated:(NSUInteger)length
+- (NSData*) inflated:(NSUInteger)expected_length
 {
-    NSMutableData* data = [[NSMutableData alloc] initWithLength:length];
-
-    length = compression_decode_buffer(data.mutableBytes, [data length], self.bytes, [self length], nil, COMPRESSION_ZLIB);
-    
-    if (length != [data length])
-        return nil;
-    
-    return data;
+    if (@available(macOS 10.15, iOS 13.0, *)) {
+        return [self decompressedDataUsingAlgorithm:NSDataCompressionAlgorithmZlib error:nil];
+    }
+    else {
+        NSMutableData* data = [[NSMutableData alloc] initWithLength:expected_length];
+        if (compression_decode_buffer(data.mutableBytes, [data length], self.bytes, [self length], nil, COMPRESSION_ZLIB) != expected_length)
+            return nil;
+        return data;
+    }
 }
 - (NSData*) deflated
 {
-    NSMutableData* data = [[NSMutableData alloc] initWithLength:[self length]];
-
-    data.length = compression_encode_buffer(data.mutableBytes, [data length], self.bytes, [self length], nil, COMPRESSION_ZLIB);
-    
-    if (data.length == 0)
-        return nil;
-
-    return data;
+    if (@available(macOS 10.15, iOS 13.0, *)) {
+        return [self compressedDataUsingAlgorithm:NSDataCompressionAlgorithmZlib error:nil];
+    }
+    else {
+        NSMutableData* data = [[NSMutableData alloc] initWithLength:[self length]];
+        data.length = compression_encode_buffer(data.mutableBytes, [data length], self.bytes, [self length], nil, COMPRESSION_ZLIB);
+        return ([data length] != 0) ? data : nil;
+    }
 }
 
-// from [gist](https://gist.github.com/antfarm/695fa78e0730b67eb094c77d53942216)
-- (uint32_t) crc32
+/// compute CRC32 (Slicing-by-8 algorithm) from [Stephan Brumme](https://create.stephan-brumme.com/crc32)
+static uint32_t crc32_8bytes(const void* data, size_t length, uint32_t previousCrc32)
 {
-    static uint32_t table[256];
-    
-    if (table[0] == 0)
+    const uint32_t Polynomial = 0xEDB88320; /// zlib's CRC32 polynomial
+    static uint32_t Crc32Lookup[8][256];
+
+    if (Crc32Lookup[0][1] == 0)
     {
-        for (int i=0; i<256; i++)
+        for (unsigned int i = 0; i <= 0xFF; i++)
         {
-            uint32_t c = i;
-            for (int j=0; j<8; j++)
-                c = (c % 2 == 0) ? (c >> 1) : (0xEDB88320 ^ (c >> 1));
-            table[i] = c;
+            uint32_t crc = i;
+            for (unsigned int j = 0; j < 8; j++)
+            crc = (crc >> 1) ^ ((crc & 1) * Polynomial);
+            Crc32Lookup[0][i] = crc;
+        }
+        for (unsigned int i = 0; i <= 0xFF; i++)
+        {
+            Crc32Lookup[1][i] = (Crc32Lookup[0][i] >> 8) ^ Crc32Lookup[0][Crc32Lookup[0][i] & 0xFF];
+            Crc32Lookup[2][i] = (Crc32Lookup[1][i] >> 8) ^ Crc32Lookup[0][Crc32Lookup[1][i] & 0xFF];
+            Crc32Lookup[3][i] = (Crc32Lookup[2][i] >> 8) ^ Crc32Lookup[0][Crc32Lookup[2][i] & 0xFF];
+            Crc32Lookup[4][i] = (Crc32Lookup[3][i] >> 8) ^ Crc32Lookup[0][Crc32Lookup[3][i] & 0xFF];
+            Crc32Lookup[5][i] = (Crc32Lookup[4][i] >> 8) ^ Crc32Lookup[0][Crc32Lookup[4][i] & 0xFF];
+            Crc32Lookup[6][i] = (Crc32Lookup[5][i] >> 8) ^ Crc32Lookup[0][Crc32Lookup[5][i] & 0xFF];
+            Crc32Lookup[7][i] = (Crc32Lookup[6][i] >> 8) ^ Crc32Lookup[0][Crc32Lookup[6][i] & 0xFF];
         }
     }
     
+    uint32_t crc = ~previousCrc32; // same as previousCrc32 ^ 0xFFFFFFFF
+    const uint32_t* current = (const uint32_t*) data;
+
+    // process eight bytes at once (Slicing-by-8)
+    while (length >= 8)
+    {
+#ifdef __BIG_ENDIAN__
+        uint32_t one = *current++ ^ OSSwapInt32(crc);
+        uint32_t two = *current++;
+        crc = Crc32Lookup[0][ two      & 0xFF] ^
+              Crc32Lookup[1][(two>> 8) & 0xFF] ^
+              Crc32Lookup[2][(two>>16) & 0xFF] ^
+              Crc32Lookup[3][(two>>24) & 0xFF] ^
+              Crc32Lookup[4][ one      & 0xFF] ^
+              Crc32Lookup[5][(one>> 8) & 0xFF] ^
+              Crc32Lookup[6][(one>>16) & 0xFF] ^
+              Crc32Lookup[7][(one>>24) & 0xFF];
+#else
+        uint32_t one = *current++ ^ crc;
+        uint32_t two = *current++;
+        crc = Crc32Lookup[0][(two>>24) & 0xFF] ^
+              Crc32Lookup[1][(two>>16) & 0xFF] ^
+              Crc32Lookup[2][(two>> 8) & 0xFF] ^
+              Crc32Lookup[3][ two      & 0xFF] ^
+              Crc32Lookup[4][(one>>24) & 0xFF] ^
+              Crc32Lookup[5][(one>>16) & 0xFF] ^
+              Crc32Lookup[6][(one>> 8) & 0xFF] ^
+              Crc32Lookup[7][ one      & 0xFF];
+#endif
+        length -= 8;
+    }
+
+    const uint8_t* currentChar = (const uint8_t*) current;
+    // remaining 1 to 7 bytes (standard algorithm)
+    while (length-- != 0)
+    crc = (crc >> 8) ^ Crc32Lookup[0][(crc & 0xFF) ^ *currentChar++];
+
+    return ~crc; // same as crc ^ 0xFFFFFFFF
+}
+
+- (uint32_t) crc32
+{
     const uint8_t* bytes = [self bytes];
     NSUInteger length = [self length];
-    
-    uint32_t crc = ~0;
-    while (length-- != 0)
-        crc = (crc >> 8) ^ table[(crc ^ *bytes++) & 0xFF];
-    
-    return ~crc;
+    return crc32_8bytes(bytes, length, 0);
 }
+
 @end
 
 #pragma mark - NSDate MSDOS

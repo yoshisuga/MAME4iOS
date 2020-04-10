@@ -3066,12 +3066,17 @@ void myosd_handle_turbo() {
 // we handle three kinds of ZIP files...
 //
 //  * zipset, if the ZIP contains other ZIP files, then it is a zip of romsets, aka zipset?.
+//  * chdset, if the ZIP has CHDs in it, unzip and place in roms folder.
 //  * artwork, if the ZIP contains a .LAY file, then it is artwork
 //  * romset, if the ZIP has "normal" files in it assume it is a romset.
 //
+//  because we are registered to open *any* zip file, we also verify that a romset looks
+//  valid, we dont want to copy "Funny Cat Pictures.zip" to our roms directory, no one wants that.
+//  a valid romset must be a 8.3 name, and only contain 8.3 files.
+//
 //  we will move a artwork zip file to the artwork directory
 //  we will move a romset zip file to the roms directory
-//  we will unzip (in place) a zipset
+//  we will unzip (in place) a zipset or chdset
 //
 -(BOOL)moveROM:(NSString*)romName progressBlock:(void (^)(double progress))block {
 
@@ -3088,8 +3093,8 @@ void myosd_handle_turbo() {
     NSString *romPath = [rootPath stringByAppendingPathComponent:romName];
     
     // if the ROM had a name like "foobar 1.zip", "foobar (1).zip" use only the first word as the ROM name.
-    // this most likley came when a user downloaded the zip and a foobar.zip already existed, MAME ROMs are <8 char and no spaces.
-    if ([romName containsString:@" "])
+    // this most likley came when a user downloaded the zip and a foobar.zip already existed, MAME ROMs are <=8 char and no spaces.
+    if ([romName containsString:@" "] && [romName componentsSeparatedByString:@" "].count == 2)
         romName = [[romName componentsSeparatedByString:@" "].firstObject stringByAppendingPathExtension:@"zip"];
 
     NSLog(@"ROM NAME: '%@' PATH:%@", romName, romPath);
@@ -3098,23 +3103,29 @@ void myosd_handle_turbo() {
     // scan the ZIP file to see what kind it is.
     //
     //  * zipset, if the ZIP contains other ZIP files, then it is a zip of romsets, aka zipset?.
+    //  * chdset, if the ZIP has CHDs in it.
     //  * artwork, if the ZIP contains a .LAY file, then it is artwork
     //  * samples, if the ZIP contains a .WAV file, then it is samples
     //  * romset, if the ZIP has "normal" files in it assume it is a romset.
     //
     int __block numLAY = 0;
     int __block numZIP = 0;
+    int __block numCHD = 0;
     int __block numWAV = 0;
+    int __block maxLEN = 0;
     int __block numFiles = 0;
     BOOL result = [ZipFile enumerate:romPath withOptions:ZipFileEnumFiles usingBlock:^(ZipFileInfo* info) {
         NSString* ext = [info.name.pathExtension uppercaseString];
         numFiles++;
+        maxLEN = MAX(maxLEN, (int)[info.name.lastPathComponent length]);
         if ([ext isEqualToString:@"LAY"])
             numLAY++;
         if ([ext isEqualToString:@"ZIP"])
             numZIP++;
         if ([ext isEqualToString:@"WAV"])
             numWAV++;
+        if ([ext isEqualToString:@"CHD"])
+            numCHD++;
     }];
 
     NSString* toPath = nil;
@@ -3122,9 +3133,8 @@ void myosd_handle_turbo() {
     if (!result)
     {
         NSLog(@"%@ is a CORRUPT ZIP (deleting)", romPath);
-        [[NSFileManager defaultManager] removeItemAtPath:romPath error:nil];
     }
-    else if (numZIP != 0)
+    else if (numZIP != 0 || numCHD != 0)
     {
         NSLog(@"%@ is a ZIPSET", [romPath lastPathComponent]);
         int maxFiles = numFiles;
@@ -3133,14 +3143,23 @@ void myosd_handle_turbo() {
             NSString* toPath = nil;
             NSString* ext = [info.name.pathExtension uppercaseString];
             
-            NSLog(@"...UNZIP: %@", info.name);
-
             // only UNZIP files to specific directories, send a ZIP file with a unspecifed directory to roms/
             if ([info.name hasPrefix:@"roms/"] || [info.name hasPrefix:@"artwork/"] || [info.name hasPrefix:@"titles/"] || [info.name hasPrefix:@"samples/"] ||
-                [info.name hasPrefix:@"cfg/"] || [info.name hasPrefix:@"ini/"] || [info.name hasPrefix:@"sta/"] || [info.name hasPrefix:@"hi/"] )
+                [info.name hasPrefix:@"cfg/"] || [info.name hasPrefix:@"ini/"] || [info.name hasPrefix:@"sta/"] || [info.name hasPrefix:@"hi/"])
                 toPath = [rootPath stringByAppendingPathComponent:info.name];
             else if ([ext isEqualToString:@"ZIP"])
                 toPath = [romsPath stringByAppendingPathComponent:[info.name lastPathComponent]];
+            else if ([ext isEqualToString:@"CHD"] && [info.name containsString:@"/"]) {
+                // CHD will be of the form XXXXXXX/ROMNAME/file.chd, so move to roms/ROMNAME/file.chd
+                NSString* romname = info.name.stringByDeletingLastPathComponent.lastPathComponent;
+                NSString* chdname = [romname stringByAppendingPathComponent:info.name.lastPathComponent];
+                toPath = [romsPath stringByAppendingPathComponent:chdname];
+            }
+
+            if (toPath != nil)
+                NSLog(@"...UNZIP: %@ => %@", info.name, toPath);
+            else
+                NSLog(@"...UNZIP: %@ (ignoring)", info.name);
 
             if (toPath != nil)
             {
@@ -3166,10 +3185,14 @@ void myosd_handle_turbo() {
         NSLog(@"%@ is a SAMPLES file", romName);
         toPath = [sampPath stringByAppendingPathComponent:romName];
     }
-    else
+    else if ([romName length] <= 12 && maxLEN <= 12) // 8.3 filenames only
     {
         NSLog(@"%@ is a ROMSET", romName);
         toPath = [romsPath stringByAppendingPathComponent:romName];
+    }
+    else
+    {
+        NSLog(@"%@ is a NOT a ROMSET (deleting)", romName);
     }
 
     // move file to either ROMS, ARTWORK or SAMPLES
@@ -3186,7 +3209,11 @@ void myosd_handle_turbo() {
             NSLog(@"Unable to move rom: %@", [error localizedDescription]);
             result = FALSE;
         }
-        block(1.0);
+    }
+    else
+    {
+        NSLog(@"DELETE: %@", romPath);
+        [[NSFileManager defaultManager] removeItemAtPath:romPath error:nil];
     }
     return result;
 }
