@@ -48,17 +48,11 @@ NS_ASSUME_NONNULL_BEGIN
 // enumerate all files in a ZipFile, and if requested also load the data.
 + (BOOL)enumerate:(NSString*)path withOptions:(ZipFileEnumOptions)options usingBlock:(nullable void (^)(ZipFileInfo* info))block;
 
-// destructivly enumerate all the files in a zip archive, this is used to unzip a large zip file "in place" saving disk space. when this call returns the zip file is gone.
-+ (BOOL)destructiveEnumerate:(NSString*)path withOptions:(ZipFileEnumOptions)options usingBlock:(void (^)(ZipFileInfo* info))block;
-
 // create a ZipFile from any user supplied data
 + (BOOL)exportTo:(NSString*)path fromItems:(NSArray*)items withOptions:(ZipFileWriteOptions)options usingBlock:(ZipFileInfo* (^)(id item))loadHandler;
 
-// create a ZipFile from files.
-+ (BOOL)exportTo:(NSString*)path fromFiles:(NSArray<NSString*>*)files fromDirectory:(NSString*)root withOptions:(ZipFileWriteOptions)options progressBlock:(nullable BOOL (^)(double progress))block;
-
-// create a ZipFile from directory.
-+ (BOOL)exportTo:(NSString*)path fromDirectory:(NSString*)root withOptions:(ZipFileWriteOptions)options progressBlock:(nullable BOOL (^)(double progress))block;
+// create a ZipFile from files in a directory.
++ (BOOL)exportTo:(NSString*)path fromDirectory:(NSString*)root withFiles:(nullable NSArray<NSString*>*)files withOptions:(ZipFileWriteOptions)options progressBlock:(nullable BOOL (^)(double progress))block;
 
 @end
 
