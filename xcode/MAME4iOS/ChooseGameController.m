@@ -122,6 +122,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     UISearchController* _searchController;
     NSUserDefaults* _userDefaults;
     NSArray* _key_commands;
+    NSInteger _key_commands_type;
     BOOL _searchCancel;
     NSIndexPath* _currentlyFocusedIndexPath;
     UIImage* _defaultImage;
@@ -841,6 +842,13 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 #pragma mark Update Images
 
+-(void)invalidateRowHeight:(NSIndexPath*)indexPath
+{
+    NSUInteger section = indexPath.section;
+    NSUInteger row_start = (indexPath.item / _layoutCollums) * _layoutCollums;
+    [_layoutRowHeightCache removeObjectForKey:[NSIndexPath indexPathForItem:row_start inSection:section]];
+}
+
 -(void)updateImages
 {
     static BOOL g_updating;
@@ -862,13 +870,14 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         NSURL* url = [self getGameImageURL:game];
         if (![_updated_urls containsObject:url])
             continue;
+
+        [self invalidateRowHeight:indexPath];
+
         // we need to update the entire row
         NSUInteger section = indexPath.section;
         NSUInteger row_start = (indexPath.item / _layoutCollums) * _layoutCollums;
         NSUInteger row_end = MIN(row_start + _layoutCollums, [self collectionView:self.collectionView numberOfItemsInSection:section]);
         
-        [_layoutRowHeightCache removeObjectForKey:[NSIndexPath indexPathForItem:row_start inSection:section]];
-
         for (NSUInteger item = row_start; item < row_end; item++)
             [update_items addObject:[NSIndexPath indexPathForItem:item inSection:section]];
     }
@@ -1124,6 +1133,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         
         NSLog(@"CELL ASYNC LOAD: %@ %d:%d", info[kGameInfoName], (int)indexPath.section, (int)indexPath.item);
         [self updateImage:url];
+        [self invalidateRowHeight:indexPath];
     }];
     
     // use a placeholder image if the image did not load right away.
@@ -1532,8 +1542,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if (_searchController.isActive)
         return @[];
     
-    if (_key_commands == nil) {
-
+    if (_key_commands == nil || g_pref_ext_control_type != _key_commands_type) {
+        
         // standard keyboard
         _key_commands = @[
             [UIKeyCommand keyCommandWithInput:@"\r" modifierFlags:0 action:@selector(onCommandSelect) discoverabilityTitle:@"SELECT"],
@@ -1542,7 +1552,9 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
             [UIKeyCommand keyCommandWithInput:UIKeyInputLeftArrow modifierFlags:0 action:@selector(onCommandLeft) discoverabilityTitle:@"LEFT"],
             [UIKeyCommand keyCommandWithInput:UIKeyInputRightArrow modifierFlags:0 action:@selector(onCommandRight) discoverabilityTitle:@"RIGHT"]
         ];
-        
+
+        _key_commands_type = g_pref_ext_control_type;
+
         if (g_pref_ext_control_type >= EXT_CONTROL_ICADE) {
             // iCade
             _key_commands = [_key_commands arrayByAddingObjectsFromArray:@[
