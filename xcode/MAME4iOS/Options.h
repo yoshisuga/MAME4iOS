@@ -121,6 +121,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)loadOptions;
 - (void)saveOptions;
++ (void)resetOptions;
 
 @property (readwrite,assign) int keepAspectRatioPort;
 @property (readwrite,assign) int keepAspectRatioLand;
