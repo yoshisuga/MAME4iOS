@@ -286,6 +286,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     NSString* titles_path = [NSString stringWithUTF8String:get_documents_path("titles")];
     [[NSFileManager defaultManager] removeItemAtPath:titles_path error:nil];
     [[NSFileManager defaultManager] createDirectoryAtPath:titles_path withIntermediateDirectories:NO attributes:nil error:nil];
+    [[ImageCache sharedInstance] flush:nil size:CGSizeZero];
 #endif
 }
 -(void)scrollToTop
@@ -1255,6 +1256,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
             [[NSFileManager defaultManager] removeItemAtPath:delete_path error:nil];
         }
         
+        [[ImageCache sharedInstance] flush:[self getGameImageURL:game] size:CGSizeZero];
+        
         if (delete) {
             [self setRecent:game isRecent:FALSE];
             [self setFavorite:game isFavorite:FALSE];
@@ -1363,7 +1366,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
             game[kGameInfoDescription],
             game[kGameInfoManufacturer],
             game[kGameInfoYear],
-            [game[kGameInfoDriver] isEqualToString:game[kGameInfoName]] ? @"" : [game[kGameInfoDriver] stringByAppendingString:@" • "],
+            (game[kGameInfoDriver] == nil || [game[kGameInfoDriver] isEqualToString:game[kGameInfoName]]) ? @"" : [game[kGameInfoDriver] stringByAppendingString:@" • "],
             ([game[kGameInfoParent] length] > 1) ?
                 [NSString stringWithFormat:@"%@ [%@]", game[kGameInfoName], game[kGameInfoParent]] :
                 game[kGameInfoName]

@@ -51,9 +51,12 @@ static ImageCache* sharedInstance = nil;
         sharedInstance = nil;
 }
 
-- (void)flush
-{    
-    [cache removeAllObjects];
+- (void)flush:(NSURL*)url size:(CGSize)size
+{
+    if (url == nil)
+        [cache removeAllObjects];
+    else
+        [cache removeObjectForKey:[self getKey:url size:size]];
 }
 
 - (void)getData:(NSURL*)url localURL:(NSURL*)localURL completionHandler:(void (^)(NSData* data, NSError* error))handler
@@ -108,6 +111,11 @@ static ImageCache* sharedInstance = nil;
     });
 }
 
+- (NSString*)getKey:(NSURL*)url size:(CGSize)size
+{
+    return [NSString stringWithFormat:@"%@[%f,%f]", url.path, size.width, size.height];
+}
+
 - (void)getImage:(NSURL*)url size:(CGSize)size localURL:(NSURL*)localURL completionHandler:(ImageCacheCallback)handler
 {
     NSParameterAssert([NSThread isMainThread]);
@@ -116,7 +124,7 @@ static ImageCache* sharedInstance = nil;
 
     NSLog(@"IMAGE CACHE: getImage: %@ [%f,%f]", url.path, size.width, size.height);
     
-    NSString* key = [NSString stringWithFormat:@"%@[%f,%f]", url.path, size.width, size.height];
+    NSString* key = [self getKey:url size:size];
     id val = [cache objectForKey:key];
     
     if ([val isKindOfClass:[UIImage class]])
@@ -179,8 +187,12 @@ static ImageCache* sharedInstance = nil;
 #endif
             self->task_dict[url] = nil;
             NSArray* callbacks = [self->cache objectForKey:key];
-
-            if (image == nil && error != nil && [error.domain isEqualToString:NSURLErrorDomain] && error.code == NSURLErrorCancelled) {
+            
+            if (![callbacks isKindOfClass:[NSArray class]]) {
+                NSLog(@"IMAGE LOAD CANCELED: %@", url.lastPathComponent);
+                [self->cache removeObjectForKey:key];
+            }
+            else if (image == nil && error != nil && [error.domain isEqualToString:NSURLErrorDomain] && error.code == NSURLErrorCancelled) {
                 NSLog(@"IMAGE LOAD CANCELED: %@ [%d clients]", url.lastPathComponent, (int)[callbacks count]);
                 [self->cache removeObjectForKey:key];
             }
