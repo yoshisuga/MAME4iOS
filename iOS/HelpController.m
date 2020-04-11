@@ -45,16 +45,26 @@
 #import "HelpController.h"
 #import "Globals.h"
 
-@implementation HelpController
+@implementation HelpController {
+    UIWebView *aWebView;
+    NSString* html_name;
+    NSString* html_title;
+}
 
-
-- (id)init {
+- (id)initWithName:(NSString*)name title:(NSString*)title {
 
     if (self = [super init]) {
-        aWebView  = nil;
+        aWebView = nil;
+        html_name = name;
+        html_title = title;
     }
 
     return self;
+}
+
+
+- (id)init {
+    return [self initWithName:@"help.html" title:@"Help"];
 }
 
 - (void)loadView {
@@ -75,15 +85,11 @@
     [ self.view addSubview: aWebView ];
 }
 
--(void)viewDidLoad{	
-
-}
-
 -(void)viewWillAppear:(BOOL)animated
 {
     aWebView.delegate = self;
-    
-    [self loadHTML];
+    [self loadHTML:html_name];
+    self.title = html_title;
 }
 
 -(void)viewWillDisappear:(BOOL)animated
@@ -101,8 +107,9 @@
     return YES;
 }
 
-- (void)loadHTML{
-    NSString *HTMLData = [[NSString alloc] initWithContentsOfFile: [NSString stringWithUTF8String:get_resource_path("help.html")] encoding:NSUTF8StringEncoding error:nil];
+- (void)loadHTML:(NSString*)name {
+    
+    NSString *HTMLData = [[NSString alloc] initWithContentsOfFile:[NSString stringWithUTF8String:get_resource_path([name UTF8String])] encoding:NSUTF8StringEncoding error:nil];
     
     NSURL *aURL = [NSURL fileURLWithPath:[NSString stringWithUTF8String:get_resource_path("")]];
     
