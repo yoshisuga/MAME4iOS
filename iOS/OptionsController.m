@@ -58,9 +58,6 @@
 
 @implementation OptionsController
 
-@synthesize emuController;
-
-
 - (id)init {
     
     if (self = [super init]) {
@@ -109,32 +106,9 @@
     return self;
 }
 
-- (void)loadView {
-    
-
-    UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithTitle:@"Done"
-                                                                   style:UIBarButtonItemStyleDone
-                                                                  target: emuController  action:  @selector(done:) ];
-    self.navigationItem.rightBarButtonItem = backButton;
-    
+- (void)viewDidLoad {
+    [super viewDidLoad];
     self.title = NSLocalizedString(@"Settings", @"");
-    
-    UITableViewStyle style = UITableViewStyleGrouped;
-#if TARGET_OS_IOS
-    if (@available(iOS 13.0, *)) {
-        style = UITableViewStyleInsetGrouped;
-    }
-#endif
-    UITableView *tableView = [[UITableView alloc] 
-                              initWithFrame:CGRectMake(0, 0, 240, 200) style:style];
-          
-    tableView.delegate = self;
-    tableView.dataSource = self;
-    tableView.autoresizesSubviews = YES;
-#if TARGET_OS_TV
-    self.view.backgroundColor = UIColor.darkGrayColor;
-#endif
-    self.view = tableView;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -166,7 +140,14 @@
                    cell.imageView.image = [UIImage systemImageNamed:@"questionmark.circle"];
                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                    break;
-               }                   
+               }
+               case 1:
+               {
+                   cell.textLabel.text   = @"What's New";
+                   cell.imageView.image = [UIImage systemImageNamed:@"info.circle"];
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   break;
+               }
            }
            break;
        }
@@ -471,6 +452,24 @@
            }
            break;
         }
+        case kResetSection:
+        {
+            switch (indexPath.row)
+            {
+                case 0:
+                {
+                    cell.textLabel.text = @"Reset to Defaults";
+                    cell.textLabel.textColor = [UIColor whiteColor];
+                    cell.textLabel.shadowColor = [UIColor blackColor];
+                    cell.textLabel.textAlignment = NSTextAlignmentCenter;
+                    cell.textLabel.font = [UIFont boldSystemFontOfSize:24.0];
+                    cell.backgroundColor = [UIColor systemRedColor];
+                    break;
+                }
+            }
+            break;
+         }
+
    }
 
    return cell;
@@ -485,13 +484,17 @@
 		
     switch (section)
     {
-        case kSupportSection: return @"Support";
+        case kSupportSection:
+            return [NSString stringWithFormat:@"%@ %@",
+                    [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"],
+                    [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"]];
         case kPortraitSection: return @"Portrait";
         case kLandscapeSection: return @"Landscape";
         case kMiscSection: return @"Options";
         case kFilterSection: return @"Game Filter";
         case kOtherSection: return @""; // @"Other";
         case kImportSection: return @"Import and Export";
+        case kResetSection: return @"";
     }
     return @"Error!";
 }
@@ -501,19 +504,16 @@
    
       switch (section)
       {
-          case kSupportSection: return 1;
+          case kSupportSection: return 2;
           case kPortraitSection: return 6;
           case kLandscapeSection: return 6;
           case kOtherSection: return 3;
           case kMiscSection: return 10;
           case kFilterSection: return 2;
           case kImportSection: return 3;
+          case kResetSection: return 1;
       }
     return -1;
-}
-
--(void)viewDidLoad{	
-    [super viewDidLoad];
 }
 
 - (void)optionChanged:(id)sender
@@ -597,29 +597,27 @@
                 HelpController *controller = [[HelpController alloc] init];
                 [[self navigationController] pushViewController:controller animated:YES];
             }
+            if (row==1){
+                HelpController *controller = [[HelpController alloc] initWithName:@"whatsnew.html" title:@"What's New"];
+                [[self navigationController] pushViewController:controller animated:YES];
+            }
             break;
         }
         case kOtherSection:
         {
             if(row==0)
             {
-                NetplayController *netplayOptController = [[NetplayController alloc] init];
-                netplayOptController.emuController = self.emuController;
-                
+                NetplayController *netplayOptController = [[NetplayController alloc]  initWithEmuController:self.emuController];
                 [[self navigationController] pushViewController:netplayOptController animated:YES];
                 [tableView reloadData];
             }
             if (row==1){
-                InputOptionController *inputOptController = [[InputOptionController alloc] init];
-                inputOptController.emuController = self.emuController;
-                
+                InputOptionController *inputOptController = [[InputOptionController alloc] initWithEmuController:self.emuController];
                 [[self navigationController] pushViewController:inputOptController animated:YES];
                 [tableView reloadData];
             }
             if (row==2){
-                DefaultOptionController *defaultOptController = [[DefaultOptionController alloc] init];
-                defaultOptController.emuController = self.emuController;
-                
+                DefaultOptionController *defaultOptController = [[DefaultOptionController alloc] initWithEmuController:self.emuController];
                 [[self navigationController] pushViewController:defaultOptController animated:YES];
                 [tableView reloadData];
             }
@@ -653,23 +651,24 @@
         case kImportSection:
         {
             if (row==0) {
-                [emuController runServer];
+                [self.emuController runServer];
             }
             if (row==1) {
-                [emuController runImport];
+                [self.emuController runImport];
             }
             if (row==2) {
-                [emuController runExport];
+                [self.emuController runExport];
+            }
+            break;
+        }
+        case kResetSection:
+        {
+            if (row==0) {
+                [self.emuController runReset];
             }
             break;
         }
     }
-}
-
-- (void) viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-    UITableView *tableView = (UITableView *)self.view;
-    [tableView reloadData];
 }
 
 @end

@@ -53,8 +53,6 @@
 
 @implementation InputOptionController
 
-@synthesize emuController;
-
 - (id)init {
     UITableViewStyle style = UITableViewStyleGrouped;
 #if TARGET_OS_IOS
@@ -117,16 +115,6 @@
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     
     return 11;
-}
-
-- (void)loadView {
-    
-    [super loadView];
-    
-    UIBarButtonItem *button = [[UIBarButtonItem alloc] initWithTitle:@"Done"
-                                                               style:UIBarButtonItemStylePlain
-                                                              target: emuController  action:  @selector(done:) ];
-    self.navigationItem.rightBarButtonItem = button;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
@@ -609,11 +597,11 @@
     
     if(section==4 && row==0)
     {
-        [emuController beginCustomizeCurrentLayout];
+        [self.emuController beginCustomizeCurrentLayout];
     }
     if(section==4 && row==1)
     {
-        [emuController resetCurrentLayout];
+        [self.emuController resetCurrentLayout];
         [tableView reloadData];
     }
 

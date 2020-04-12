@@ -43,10 +43,11 @@
  */
 
 #import <UIKit/UIKit.h>
+#include "OptionsTableViewController.h"
 
 @class EmulatorController;
 
-@interface FilterOptionController:  UITableViewController <UITextFieldDelegate> {
+@interface FilterOptionController: OptionsTableViewController <UITextFieldDelegate> {
     
 #if TARGET_OS_IOS
     UISwitch *switchFilterClones;
@@ -59,7 +60,5 @@
     NSMutableArray  *arrayDriverSourceValue;
     NSMutableArray  *arrayCategoryValue;
 }
-
-@property (nonatomic, assign) EmulatorController *emuController;
 
 @end

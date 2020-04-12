@@ -10,7 +10,6 @@
 #import "TVOptionsController.h"
 
 @interface TVInputOptionsController ()
-@property(nonatomic,retain) UITableView *tableView;
 @property(nonatomic,retain) Options *options;
 @end
 
@@ -24,29 +23,9 @@
     return self;
 }
     
-- (void)loadView {
-    self.view = [[UIView alloc] initWithFrame:CGRectZero];
-    self.view.backgroundColor = UIColor.darkGrayColor;
-    UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithTitle:@"Done"
-                                                                   style:UIBarButtonItemStyleDone
-                                                                  target: self.emuController  action:  @selector(done:) ];
-    self.navigationItem.rightBarButtonItem = backButton;
-    self.title = NSLocalizedString(@"Input Options", @"");
-    self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStyleGrouped];
-    self.tableView.delegate = self;
-    self.tableView.dataSource = self;
-    self.tableView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.view addSubview:self.tableView];
-    [[self.tableView.topAnchor constraintEqualToAnchor:self.view.topAnchor] setActive:YES];
-    [[self.tableView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor] setActive:YES];
-    [[self.tableView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor] setActive:YES];
-    [[self.tableView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor] setActive:YES];
-    self.options = [[Options alloc] init];
-}
-    
 - (void)viewDidLoad {
-    [super viewDidLoad];
-    // Do any additional setup after loading the view.
+    self.title = NSLocalizedString(@"Input Options", @"");
+    self.options = [[Options alloc] init];
 }
     
 #pragma mark UITableViewDataSource

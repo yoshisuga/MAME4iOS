@@ -13,15 +13,10 @@
 #import "TVInputOptionsController.h"
 
 @interface TVOptionsController ()
-
-@property(nonatomic,retain) UITableView *tableView;
 @property(nonatomic,retain) Options *options;
-    
 @end
 
 @implementation TVOptionsController
-
-@synthesize emuController;
 
 - (id)init {
     if (self = [super init]) {
@@ -36,29 +31,13 @@
     return self;
 }
 
-- (void)loadView {
-    self.view = [[UIView alloc] initWithFrame:CGRectZero];
-    self.view.backgroundColor = UIColor.darkGrayColor;
-    UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithTitle:@"Done"
-                                                                   style:UIBarButtonItemStyleDone
-                                                                  target: emuController  action:  @selector(done:) ];
-    self.navigationItem.rightBarButtonItem = backButton;
+- (void)viewDidLoad {
     self.title = NSLocalizedString(@"Settings", @"");
-    self.navigationController.navigationBar.titleTextAttributes = @{NSForegroundColorAttributeName : UIColor.whiteColor};
-    self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStyleGrouped];
-    self.tableView.delegate = self;
-    self.tableView.dataSource = self;
-    self.tableView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.view addSubview:self.tableView];
-    [[self.tableView.topAnchor constraintEqualToAnchor:self.view.topAnchor] setActive:YES];
-    [[self.tableView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor] setActive:YES];
-    [[self.tableView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor] setActive:YES];
-    [[self.tableView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor] setActive:YES];
     self.options = [[Options alloc] init];
     
     UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(menuPress)];
     tap.allowedPressTypes = @[[NSNumber numberWithInteger:UIPressTypeMenu]];
-    [self.navigationController.view addGestureRecognizer:tap];
+    [self.view addGestureRecognizer:tap];
 }
 
 -(void)menuPress {
@@ -110,6 +89,8 @@
         return 1;
     } else if ( section == kServerSection ) {
         return 1;
+    } else if ( section == kResetSection ) {
+        return 1;
     }
     return 0;
 }
@@ -121,6 +102,10 @@
     if ( section == kFilterSection ) {
         return @"ROM Options";
     }
+    if ( section == kResetSection ) {
+        return @"Reset";
+    }
+
     return @"";
 }
     
@@ -132,6 +117,11 @@
     }
     cell.accessoryType = UITableViewCellAccessoryNone;
     cell.accessoryView = nil;
+    cell.textLabel.text = nil;
+    cell.textLabel.textColor = nil;
+    cell.detailTextLabel.text = nil;
+    cell.backgroundColor = nil;
+
     if ( indexPath.section == kFilterSection ) {
         if ( indexPath.row == 0 ) {
             cell.textLabel.text   = @"Hide Clones";
@@ -193,6 +183,10 @@
     } else if ( indexPath.section == kInputSection ) {
         cell.textLabel.text = @"Game Input";
         cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+    } else if ( indexPath.section == kResetSection ) {
+        cell.textLabel.text = @"Reset to Defaults";
+        cell.textLabel.textColor = [UIColor whiteColor];
+        cell.backgroundColor = [UIColor systemRedColor];
     }
     return cell;
 }
@@ -210,7 +204,7 @@
         }
     } else if ( indexPath.section == kServerSection ) {
         if ( indexPath.row == 0 ) {
-            [emuController runServer];
+            [self.emuController runServer];
         }
     } else if ( indexPath.section == kScreenSection ) {
         if ( indexPath.row == 0 ) {
@@ -232,16 +226,16 @@
             self.options.showFPS = self.options.showFPS ? 0 : 1;
             [TVOptionsController setOnOffValueForCell:cell optionValue:self.options.showFPS];
         } else if ( indexPath.row == 1 ) {
-            ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped                                                                                          type:kTypeEmuRes list:arrayEmuRes];
+            ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped type:kTypeEmuRes list:arrayEmuRes];
             [[self navigationController] pushViewController:listController animated:YES];
         } else if ( indexPath.row == 2 ) {
-            ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped                                                                                          type:kTypeEmuSpeed list:arrayEmuSpeed];
+            ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped type:kTypeEmuSpeed list:arrayEmuSpeed];
             [[self navigationController] pushViewController:listController animated:YES];
         } else if ( indexPath.row == 3 ) {
             self.options.throttle = self.options.throttle ? 0 : 1;
             [TVOptionsController setOnOffValueForCell:cell optionValue:self.options.throttle];
         } else if ( indexPath.row == 4 ) {
-            ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped                                                                                          type:kTypeFSValue list:arrayFSValue];
+            ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped type:kTypeFSValue list:arrayFSValue];
             [[self navigationController] pushViewController:listController animated:YES];
         } else if ( indexPath.row == 5 ) {
             self.options.forcepxa = self.options.forcepxa ? 0 : 1;
@@ -254,13 +248,13 @@
             [TVOptionsController setOnOffValueForCell:cell optionValue:self.options.lowlsound];
         }
     } else if ( indexPath.section == kDefaultsSection ) {
-        DefaultOptionController *defaultOptController = [[DefaultOptionController alloc] init];
-        defaultOptController.emuController = self.emuController;
+        DefaultOptionController *defaultOptController = [[DefaultOptionController alloc] initWithEmuController:self.emuController];
         [[self navigationController] pushViewController:defaultOptController animated:YES];
     } else if ( indexPath.section == kInputSection ) {
-        TVInputOptionsController *inputController = [[TVInputOptionsController alloc] init];
-        inputController.emuController = self.emuController;
+        TVInputOptionsController *inputController = [[TVInputOptionsController alloc] initWithEmuController:self.emuController];
         [self.navigationController pushViewController:inputController animated:YES];
+    } else if ( indexPath.section == kResetSection ) {
+        [self.emuController runReset];
     }
     [self.options saveOptions];
 }

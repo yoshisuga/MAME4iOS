@@ -226,6 +226,8 @@ void* app_Thread_Start(void* args)
         
         // reset MAME by deleteing CFG files, cfg/default.cfg and cfg/ROMNAME.cfg
         if (g_mame_reset) {
+            // NOTE we need to delete the default.cfg file, and the one for the current game here, because MAME saves cfg files on exit.
+            // TODO: maybe we should delete *all* the cfg files, not just default.cfg and the current game?
             NSString *cfg_path = [NSString stringWithUTF8String:get_documents_path("cfg")];
             NSString *path = [cfg_path stringByAppendingPathComponent:@"default.cfg"];
             
@@ -604,11 +606,10 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     [self startMenu];
     
 #if TARGET_OS_IOS
-    OptionsController* optionsController = [[OptionsController alloc] init];
+    OptionsController* optionsController = [[OptionsController alloc] initWithEmuController:self];
 #elif TARGET_OS_TV
-    TVOptionsController *optionsController = [[TVOptionsController alloc] init];
+    TVOptionsController *optionsController = [[TVOptionsController alloc] initWithEmuController:self];
 #endif
-    optionsController.emuController = self;
 
     UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:optionsController];
 #if TARGET_OS_IOS
@@ -3353,6 +3354,7 @@ void myosd_handle_turbo() {
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:nil message:msg preferredStyle:UIAlertControllerStyleAlert];
     [alert addAction:[UIAlertAction actionWithTitle:@"Reset" style:UIAlertActionStyleDestructive handler:^(UIAlertAction* action) {
         [Options resetOptions];
+        [ChooseGameController reset];
         g_mame_reset = TRUE;
         [self done:self];
     }]];

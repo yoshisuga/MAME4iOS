@@ -11,6 +11,7 @@
 #import "Options.h"
 #import "Globals.h"
 #import "EmulatorController.h"
+#import "OptionsTableViewController.h"
 
 enum OptionSections
 {
@@ -20,6 +21,7 @@ enum OptionSections
     kMiscSection,
     kDefaultsSection,
     kFilterSection,
+    kResetSection,
     kNumSections
 };
 
@@ -54,19 +56,14 @@ enum ListOptionType
     kTypeMainThreadTypeValue
 };
 
-
-
 NS_ASSUME_NONNULL_BEGIN
 
-@interface TVOptionsController : UIViewController<UITableViewDataSource, UITableViewDelegate> {
-    EmulatorController*  emuController;
+@interface TVOptionsController : OptionsTableViewController {
     NSArray *arrayEmuRes;
     NSArray *arrayFSValue;
     NSArray *arrayOverscanValue;
     NSArray *arrayEmuSpeed;
 }
-
-@property (nonatomic, strong) EmulatorController *emuController;
 
 +(UILabel*)labelForOnOffValue:(int)optionValue;
 +(void)setOnOffValueForCell:(UITableViewCell*)cell optionValue:(int)optionValue;
