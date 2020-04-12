@@ -372,6 +372,20 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     [self filterGameList];
 }
 
++ (void)reset
+{
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    
+    for (NSString* key in @[LAYOUT_MODE_KEY, SCOPE_MODE_KEY, RECENT_GAMES_KEY, FAVORITE_GAMES_KEY])
+        [userDefaults removeObjectForKey:key];
+    
+    // delete all the cached TITLE images.
+    NSString* titles_path = [NSString stringWithUTF8String:get_documents_path("titles")];
+    [[NSFileManager defaultManager] removeItemAtPath:titles_path error:nil];
+    [[NSFileManager defaultManager] createDirectoryAtPath:titles_path withIntermediateDirectories:NO attributes:nil error:nil];
+    [[ImageCache sharedInstance] flush:nil size:CGSizeZero];
+}
+
 -(void)viewChange:(UISegmentedControl*)sender
 {
     NSLog(@"VIEW CHANGE: %d", (int)sender.selectedSegmentIndex);
