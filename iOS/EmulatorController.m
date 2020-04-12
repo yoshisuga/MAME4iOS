@@ -3073,9 +3073,10 @@ void myosd_handle_turbo() {
     NSString *romPath = [rootPath stringByAppendingPathComponent:romName];
     
     // if the ROM had a name like "foobar 1.zip", "foobar (1).zip" use only the first word as the ROM name.
-    // this most likley came when a user downloaded the zip and a foobar.zip already existed, MAME ROMs are <=8 char and no spaces.
-    if ([romName containsString:@" "] && [romName componentsSeparatedByString:@" "].count == 2)
-        romName = [[romName componentsSeparatedByString:@" "].firstObject stringByAppendingPathExtension:@"zip"];
+    // this most likley came when a user downloaded the zip and a foobar.zip already existed, MAME ROMs are <=20 char and no spaces.
+    NSArray* words = [[romName stringByDeletingPathExtension] componentsSeparatedByString:@" "];
+    if (words.count == 2 && [words.lastObject stringByTrimmingCharactersInSet:[NSCharacterSet punctuationCharacterSet]].intValue != 0)
+        romName = [words.firstObject stringByAppendingPathExtension:@"zip"];
 
     NSLog(@"ROM NAME: '%@' PATH:%@", romName, romPath);
 
