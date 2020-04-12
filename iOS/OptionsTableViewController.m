@@ -79,9 +79,9 @@
 
     tableView.translatesAutoresizingMaskIntoConstraints = NO;
     [tableView.widthAnchor constraintEqualToAnchor:view.safeAreaLayoutGuide.widthAnchor multiplier:0.5].active = TRUE;
-    [tableView.topAnchor constraintEqualToAnchor:view.safeAreaLayoutGuide.topAnchor].active = TRUE;
+    [tableView.topAnchor constraintEqualToAnchor:view.topAnchor].active = TRUE;
     [tableView.trailingAnchor constraintEqualToAnchor:view.safeAreaLayoutGuide.trailingAnchor].active = TRUE;
-    [tableView.bottomAnchor constraintEqualToAnchor:view.safeAreaLayoutGuide.bottomAnchor].active = TRUE;
+    [tableView.bottomAnchor constraintEqualToAnchor:view.bottomAnchor].active = TRUE;
 
     UIImageView* logo = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"mame_logo"]];
     logo.contentMode = UIViewContentModeScaleAspectFit;
