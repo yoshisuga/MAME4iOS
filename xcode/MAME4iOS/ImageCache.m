@@ -51,12 +51,14 @@ static ImageCache* sharedInstance = nil;
         sharedInstance = nil;
 }
 
+- (void)flush
+{
+    [cache removeAllObjects];
+}
+
 - (void)flush:(NSURL*)url size:(CGSize)size
 {
-    if (url == nil)
-        [cache removeAllObjects];
-    else
-        [cache removeObjectForKey:[self getKey:url size:size]];
+    [cache removeObjectForKey:[self getKey:url size:size]];
 }
 
 - (void)getData:(NSURL*)url localURL:(NSURL*)localURL completionHandler:(void (^)(NSData* data, NSError* error))handler

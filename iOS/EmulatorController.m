@@ -226,13 +226,16 @@ void* app_Thread_Start(void* args)
         
         // reset MAME by deleteing CFG files, cfg/default.cfg and cfg/ROMNAME.cfg
         if (g_mame_reset) {
-            // NOTE we need to delete the default.cfg file, and the one for the current game here, because MAME saves cfg files on exit.
-            // delete *all* the cfg files, not just default.cfg so we reset settings for all games.
             NSString *cfg_path = [NSString stringWithUTF8String:get_documents_path("cfg")];
             
+            // NOTE we need to delete the default.cfg file here because MAME saves cfg files on exit.
+            [[NSFileManager defaultManager] removeItemAtPath: [cfg_path stringByAppendingPathComponent:@"default.cfg"] error:nil];
+
+#if 0 // should we use this big of hammer? the user can always delete settings on a game by game basis via context menu in ChooseGameController.
+            // delete *all* the cfg files, not just default.cfg so we reset settings for all games.
             [[NSFileManager defaultManager] removeItemAtPath:cfg_path error:nil];
             [[NSFileManager defaultManager] createDirectoryAtPath:cfg_path withIntermediateDirectories:NO attributes:nil error:nil];
-
+#endif
             g_mame_reset = FALSE;
         }
         

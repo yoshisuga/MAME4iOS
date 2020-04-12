@@ -286,7 +286,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     NSString* titles_path = [NSString stringWithUTF8String:get_documents_path("titles")];
     [[NSFileManager defaultManager] removeItemAtPath:titles_path error:nil];
     [[NSFileManager defaultManager] createDirectoryAtPath:titles_path withIntermediateDirectories:NO attributes:nil error:nil];
-    [[ImageCache sharedInstance] flush:nil size:CGSizeZero];
+    [[ImageCache sharedInstance] flush];
 #endif
 }
 -(void)scrollToTop
@@ -383,7 +383,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     NSString* titles_path = [NSString stringWithUTF8String:get_documents_path("titles")];
     [[NSFileManager defaultManager] removeItemAtPath:titles_path error:nil];
     [[NSFileManager defaultManager] createDirectoryAtPath:titles_path withIntermediateDirectories:NO attributes:nil error:nil];
-    [[ImageCache sharedInstance] flush:nil size:CGSizeZero];
+    [[ImageCache sharedInstance] flush];
 }
 
 -(void)viewChange:(UISegmentedControl*)sender
