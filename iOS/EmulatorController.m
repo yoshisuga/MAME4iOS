@@ -227,16 +227,12 @@ void* app_Thread_Start(void* args)
         // reset MAME by deleteing CFG files, cfg/default.cfg and cfg/ROMNAME.cfg
         if (g_mame_reset) {
             // NOTE we need to delete the default.cfg file, and the one for the current game here, because MAME saves cfg files on exit.
-            // TODO: maybe we should delete *all* the cfg files, not just default.cfg and the current game?
+            // delete *all* the cfg files, not just default.cfg so we reset settings for all games.
             NSString *cfg_path = [NSString stringWithUTF8String:get_documents_path("cfg")];
-            NSString *path = [cfg_path stringByAppendingPathComponent:@"default.cfg"];
             
-            [[NSFileManager defaultManager] removeItemAtPath:path error:nil];
+            [[NSFileManager defaultManager] removeItemAtPath:cfg_path error:nil];
+            [[NSFileManager defaultManager] createDirectoryAtPath:cfg_path withIntermediateDirectories:NO attributes:nil error:nil];
 
-            if (g_mame_game[0] != 0) {
-                NSString *path = [cfg_path stringByAppendingPathComponent:[NSString stringWithFormat:@"%s.cfg", g_mame_game]];
-                [[NSFileManager defaultManager] removeItemAtPath:path error:nil];
-            }
             g_mame_reset = FALSE;
         }
         
@@ -3347,9 +3343,8 @@ void myosd_handle_turbo() {
 - (void)runReset {
     NSLog(@"RESET: %s", g_mame_game);
     
-    NSString* msg = [NSString stringWithFormat:@"Reset %@%@ back to factory defaults?",
-            TARGET_OS_IOS ? @"MAME4iOS" : @"MAME4tvOS",
-            (strlen(g_mame_game) > 1) ? [NSString stringWithFormat:@" and %s", g_mame_game] : @""];
+    NSString* msg = [NSString stringWithFormat:@"Reset %@ back to factory defaults?",
+            TARGET_OS_IOS ? @"MAME4iOS" : @"MAME4tvOS"];
 
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:nil message:msg preferredStyle:UIAlertControllerStyleAlert];
     [alert addAction:[UIAlertAction actionWithTitle:@"Reset" style:UIAlertActionStyleDestructive handler:^(UIAlertAction* action) {
