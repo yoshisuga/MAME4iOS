@@ -186,7 +186,7 @@
     } else if ( indexPath.section == kResetSection ) {
         cell.textLabel.text = @"Reset to Defaults";
         cell.textLabel.textColor = [UIColor whiteColor];
-        cell.backgroundColor = [UIColor systemRedColor];
+        cell.contentView.backgroundColor = [UIColor systemRedColor];
     }
     return cell;
 }
