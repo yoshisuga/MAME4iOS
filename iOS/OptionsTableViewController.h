@@ -42,10 +42,13 @@
  * under a MAME license, as set out in http://mamedev.org/
  */
 
-#import "Bootstrapper.h"
+#import <UIKit/UIKit.h>
+#import "EmulatorController.h"
 
-int main(int argc, char **argv){
-    @autoreleasepool {
-        return UIApplicationMain(argc, argv, nil, @"Bootstrapper");
-    }
-}
+@interface OptionsTableViewController : UITableViewController
+
+@property (nonatomic, assign) EmulatorController *emuController;
+
+- (instancetype)initWithEmuController:(EmulatorController*)emulatorController;
+
+@end

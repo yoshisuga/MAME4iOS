@@ -43,6 +43,7 @@
  */
 
 #import <UIKit/UIKit.h>
+#import "OptionsTableViewController.h"
 
 enum OptionSections
 {
@@ -53,6 +54,7 @@ enum OptionSections
     kLandscapeSection,
     kMiscSection,
     kFilterSection,
+    kResetSection,
     kNumSections
 };
 
@@ -89,10 +91,8 @@ enum ListOptionType
 
 @class EmulatorController;
 
-@interface OptionsController : UIViewController  <UITableViewDelegate, UITableViewDataSource>
+@interface OptionsController : OptionsTableViewController
 {
-    EmulatorController*  emuController;
-    
     UISwitch*		  switchKeepAspectPort;
     UISwitch*		  switchKeepAspectLand;
     UISwitch*		  switchSmoothedPort;
@@ -122,7 +122,5 @@ enum ListOptionType
 }
 
 - (void)optionChanged:(id)sender;
-
-@property (nonatomic, strong) EmulatorController *emuController;
 
 @end

@@ -30,6 +30,7 @@
 @interface ChooseGameController : UICollectionViewController
 
 - (void)setGameList:(NSArray*)games;
++ (void)reset;
 
 @property(nonatomic, strong) void (^selectGameCallback)(NSDictionary* info);
 

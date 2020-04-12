@@ -12,7 +12,6 @@
 		921CC323216A903600A39154 /* config_iPad_pro_10_5.txt in Resources */ = {isa = PBXBuildFile; fileRef = 921CC321216A903600A39154 /* config_iPad_pro_10_5.txt */; };
 		921CC326216A936800A39154 /* config_iPad_pro_12_9.txt in Resources */ = {isa = PBXBuildFile; fileRef = 921CC324216A936800A39154 /* config_iPad_pro_12_9.txt */; };
 		925ABCA61E46DCC500997182 /* iCadeView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8D87DC1653121200685BC4 /* iCadeView.m */; };
-		925ABCA71E46DCC500997182 /* iph_main.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680A81635BAF400051BC2 /* iph_main.m */; };
 		925ABCA81E46DCC500997182 /* ListOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE90575B166A89D000653872 /* ListOptionController.m */; };
 		925ABCA91E46DCC500997182 /* OptionsController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680C01635BB6100051BC2 /* OptionsController.m */; };
 		925ABCAA1E46DCC500997182 /* DebugView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8F0D7C16585C2B0048D63C /* DebugView.m */; };
@@ -130,7 +129,6 @@
 		92ECB90C21EA999C00D1E3D0 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92ECB90B21EA999C00D1E3D0 /* Foundation.framework */; };
 		92ECB90E21EA99A200D1E3D0 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92ECB90D21EA99A200D1E3D0 /* CoreGraphics.framework */; };
 		92ECB91021EA99B600D1E3D0 /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92ECB90F21EA99B600D1E3D0 /* GameKit.framework */; };
-		92ECB91121EA9BBB00D1E3D0 /* iph_main.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680A81635BAF400051BC2 /* iph_main.m */; };
 		92ECB91221EAA1B700D1E3D0 /* EmulatorController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680B51635BB4900051BC2 /* EmulatorController.m */; };
 		92ECB91821EAD57400D1E3D0 /* ScreenView.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680C21635BB6100051BC2 /* ScreenView.m */; };
 		92ECB91921EAD57900D1E3D0 /* UIView+Toast.m in Sources */ = {isa = PBXBuildFile; fileRef = 92B99F0D2022706600CC44E3 /* UIView+Toast.m */; };
@@ -154,8 +152,11 @@
 		EF301CF1240460C5000510FD /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF301CF0240460C5000510FD /* Alert.m */; };
 		EF301CF2240460C5000510FD /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF301CF0240460C5000510FD /* Alert.m */; };
 		EF301CF3240460F3000510FD /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF27F36323F73CD400B1E50A /* ZipFile.m */; };
+		EF63E1C124424D2300CFE85D /* whatsnew.md in Resources */ = {isa = PBXBuildFile; fileRef = EF63E1C024424D2300CFE85D /* whatsnew.md */; };
 		EF7B232C23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
 		EF7B232D23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
+		EF941F0024427D1200D58F7F /* OptionsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF941EFF24427D1200D58F7F /* OptionsTableViewController.m */; };
+		EF941F0124427D1200D58F7F /* OptionsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF941EFF24427D1200D58F7F /* OptionsTableViewController.m */; };
 		EFA756FF2405585D00A02AAB /* mameui.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA756FE2405585D00A02AAB /* mameui.png */; };
 		EFA757002405585D00A02AAB /* mameui.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA756FE2405585D00A02AAB /* mameui.png */; };
 		EFA7570524057FD800A02AAB /* default_game_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA7570424057FD800A02AAB /* default_game_icon.png */; };
@@ -316,7 +317,6 @@
 		CEE6809D1635BA7000051BC2 /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x.png"; sourceTree = "<group>"; };
 		CEE6809F1635BA7000051BC2 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		CEE680A61635BAA400051BC2 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
-		CEE680A81635BAF400051BC2 /* iph_main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = iph_main.m; path = ../../iOS/iph_main.m; sourceTree = "<group>"; };
 		CEE680AA1635BB2700051BC2 /* AnalogStick.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AnalogStick.h; path = ../../iOS/AnalogStick.h; sourceTree = "<group>"; };
 		CEE680AB1635BB2700051BC2 /* AnalogStick.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AnalogStick.m; path = ../../iOS/AnalogStick.m; sourceTree = "<group>"; };
 		CEE680AC1635BB2700051BC2 /* Bootstrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Bootstrapper.h; path = ../../iOS/Bootstrapper.h; sourceTree = "<group>"; };
@@ -351,6 +351,9 @@
 		EF29C8832402E51100AFFA4E /* config_iPad_gen_7.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = config_iPad_gen_7.txt; path = "../../iOS-res/Applications/MAME4iOS.app/config_iPad_gen_7.txt"; sourceTree = "<group>"; };
 		EF301CEF240460C5000510FD /* Alert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Alert.h; sourceTree = "<group>"; };
 		EF301CF0240460C5000510FD /* Alert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Alert.m; sourceTree = "<group>"; };
+		EF63E1C024424D2300CFE85D /* whatsnew.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = whatsnew.md; path = "../../iOS-res/Applications/MAME4iOS.app/whatsnew.md"; sourceTree = "<group>"; };
+		EF941EFE24427D1200D58F7F /* OptionsTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OptionsTableViewController.h; path = ../../iOS/OptionsTableViewController.h; sourceTree = "<group>"; };
+		EF941EFF24427D1200D58F7F /* OptionsTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OptionsTableViewController.m; path = ../../iOS/OptionsTableViewController.m; sourceTree = "<group>"; };
 		EF9F9C9E240070E700352554 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../../README.md; sourceTree = "<group>"; };
 		EFA756FE2405585D00A02AAB /* mameui.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = mameui.png; sourceTree = "<group>"; };
 		EFA7570424057FD800A02AAB /* default_game_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = default_game_icon.png; sourceTree = "<group>"; };
@@ -410,17 +413,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		926C76FC21F1C82F00103EDE /* tvOS */ = {
-			isa = PBXGroup;
-			children = (
-				926C76FD21F1C87700103EDE /* TVOptionsController.h */,
-				926C76FE21F1C87700103EDE /* TVOptionsController.m */,
-				926C771B21F5034100103EDE /* TVInputOptionsController.h */,
-				926C771C21F5034100103EDE /* TVInputOptionsController.m */,
-			);
-			name = tvOS;
-			sourceTree = "<group>";
-		};
 		92A5338421EBDBAD0089FBB9 /* GCDWebServer */ = {
 			isa = PBXGroup;
 			children = (
@@ -503,47 +495,30 @@
 		CEAC6C2716AAA73900AF3275 /* RELOADED */ = {
 			isa = PBXGroup;
 			children = (
-				926C76FC21F1C82F00103EDE /* tvOS */,
+				EF1EC8A82441074400CC743D /* Options */,
 				CEE680AA1635BB2700051BC2 /* AnalogStick.h */,
 				CEE680AB1635BB2700051BC2 /* AnalogStick.m */,
 				CEE680AC1635BB2700051BC2 /* Bootstrapper.h */,
 				CEE680AD1635BB2700051BC2 /* Bootstrapper.m */,
 				CE8F0D7B16585C2A0048D63C /* DebugView.h */,
+				CE8F0D7C16585C2B0048D63C /* DebugView.m */,
 				EF19F22E235D1C0300C8EE7F /* ChooseGameController.h */,
 				EF19F229235D1BDF00C8EE7F /* ChooseGameController.m */,
 				EF249337236264DA00DD0A6C /* ImageCache.h */,
 				EF249336236264D900DD0A6C /* ImageCache.m */,
-				CE8F0D7C16585C2B0048D63C /* DebugView.m */,
-				CE8F088617435C3A00E2D5FB /* DefaultOptionController.h */,
-				CE8F088717435C3A00E2D5FB /* DefaultOptionController.m */,
 				9268D8572166840F00AB0470 /* DeviceScreenResolver.h */,
 				9268D8582166840F00AB0470 /* DeviceScreenResolver.m */,
 				CEE680B41635BB4900051BC2 /* EmulatorController.h */,
 				CEE680B51635BB4900051BC2 /* EmulatorController.m */,
-				CE9454D61731DF2600B81C32 /* FilterOptionController.h */,
-				CE9454D71731DF2700B81C32 /* FilterOptionController.m */,
 				CE8D87DF16541AC400685BC4 /* Globals.h */,
-				CEE680B61635BB4900051BC2 /* HelpController.h */,
-				CEE680B71635BB4900051BC2 /* HelpController.m */,
 				CE8D87DB1653121100685BC4 /* iCadeView.h */,
 				CE8D87DC1653121200685BC4 /* iCadeView.m */,
-				CE8F08821741580100E2D5FB /* InputOptionController.h */,
-				CE8F08831741580100E2D5FB /* InputOptionController.m */,
-				CEE680A81635BAF400051BC2 /* iph_main.m */,
 				CE6D6E1016D8CADF00F265B7 /* LayoutData.h */,
 				CE6D6E1116D8CADF00F265B7 /* LayoutData.m */,
 				CE6D6E1216D8CADF00F265B7 /* LayoutView.h */,
 				CE6D6E1316D8CADF00F265B7 /* LayoutView.m */,
-				CE90575A166A89D000653872 /* ListOptionController.h */,
-				CE90575B166A89D000653872 /* ListOptionController.m */,
-				CE9454CA173160A200B81C32 /* NetplayController.h */,
-				CE9454CB173160A300B81C32 /* NetplayController.m */,
 				CE9454D21731DE4D00B81C32 /* NetplayGameKit.h */,
 				CE9454D31731DE4D00B81C32 /* NetplayGameKit.m */,
-				CEE680BF1635BB6100051BC2 /* OptionsController.h */,
-				CEE680C01635BB6100051BC2 /* OptionsController.m */,
-				92A5332021EB57F00089FBB9 /* Options.h */,
-				92A5332121EB57F00089FBB9 /* Options.m */,
 				CEE680C11635BB6100051BC2 /* ScreenView.h */,
 				CEE680C21635BB6100051BC2 /* ScreenView.m */,
 				92B99F0C2022706600CC44E3 /* UIView+Toast.h */,
@@ -558,9 +533,9 @@
 				EF26AE0B241AA6900078FD30 /* FileItemProvider.m */,
 				EF23D32F243CB9CE006B3EE2 /* PopupSegmentedControl.h */,
 				EF23D330243CB9CE006B3EE2 /* PopupSegmentedControl.m */,
-				CEBFBC0E163C5BD300A05CD0 /* resources */,
 				92A533D521EE601D0089FBB9 /* WebServer.h */,
 				92A533D621EE601D0089FBB9 /* WebServer.m */,
+				CEBFBC0E163C5BD300A05CD0 /* resources */,
 			);
 			name = RELOADED;
 			sourceTree = "<group>";
@@ -578,6 +553,7 @@
 				CE30090316FA47CB000EDCF1 /* Category.ini */,
 				CE30090016FA47BD000EDCF1 /* cheat.zip */,
 				EF0E08AC2401840700E98F01 /* help.md */,
+				EF63E1C024424D2300CFE85D /* whatsnew.md */,
 				EFA7571E2408308000A02AAB /* help images */,
 				9268D84821661CA500AB0470 /* config_iPhone_xr_xs_max.txt */,
 				9268D84B21661E3800AB0470 /* config_iPhone_x.txt */,
@@ -705,6 +681,35 @@
 			path = MAME4iOS;
 			sourceTree = "<group>";
 		};
+		EF1EC8A82441074400CC743D /* Options */ = {
+			isa = PBXGroup;
+			children = (
+				92A5332021EB57F00089FBB9 /* Options.h */,
+				92A5332121EB57F00089FBB9 /* Options.m */,
+				EF941EFE24427D1200D58F7F /* OptionsTableViewController.h */,
+				EF941EFF24427D1200D58F7F /* OptionsTableViewController.m */,
+				CEE680BF1635BB6100051BC2 /* OptionsController.h */,
+				CEE680C01635BB6100051BC2 /* OptionsController.m */,
+				CE8F088617435C3A00E2D5FB /* DefaultOptionController.h */,
+				CE8F088717435C3A00E2D5FB /* DefaultOptionController.m */,
+				CE9454D61731DF2600B81C32 /* FilterOptionController.h */,
+				CE9454D71731DF2700B81C32 /* FilterOptionController.m */,
+				CEE680B61635BB4900051BC2 /* HelpController.h */,
+				CEE680B71635BB4900051BC2 /* HelpController.m */,
+				CE8F08821741580100E2D5FB /* InputOptionController.h */,
+				CE8F08831741580100E2D5FB /* InputOptionController.m */,
+				CE9454CA173160A200B81C32 /* NetplayController.h */,
+				CE9454CB173160A300B81C32 /* NetplayController.m */,
+				CE90575A166A89D000653872 /* ListOptionController.h */,
+				CE90575B166A89D000653872 /* ListOptionController.m */,
+				926C76FD21F1C87700103EDE /* TVOptionsController.h */,
+				926C76FE21F1C87700103EDE /* TVOptionsController.m */,
+				926C771B21F5034100103EDE /* TVInputOptionsController.h */,
+				926C771C21F5034100103EDE /* TVInputOptionsController.m */,
+			);
+			name = Options;
+			sourceTree = "<group>";
+		};
 		EFA7571E2408308000A02AAB /* help images */ = {
 			isa = PBXGroup;
 			children = (
@@ -822,6 +827,7 @@
 				925ABCD41E46DCC500997182 /* SKIN_3 in Resources */,
 				925ABCD51E46DCC500997182 /* config_iPhone_5.txt in Resources */,
 				920BBDF220210C3800AE7D50 /* menu.png in Resources */,
+				EF63E1C124424D2300CFE85D /* whatsnew.md in Resources */,
 				925ABCD71E46DCC500997182 /* LICENSE in Resources */,
 				92A533D021EBDDF20089FBB9 /* GCDWebUploader.bundle in Resources */,
 				925ABCD81E46DCC500997182 /* MAME4iOS72.png in Resources */,
@@ -867,8 +873,8 @@
 			files = (
 				92A533B121EBDBAD0089FBB9 /* GCDWebServerConnection.m in Sources */,
 				925ABCA61E46DCC500997182 /* iCadeView.m in Sources */,
-				925ABCA71E46DCC500997182 /* iph_main.m in Sources */,
 				92A533B721EBDBAD0089FBB9 /* GCDWebServerFileResponse.m in Sources */,
+				EF941F0024427D1200D58F7F /* OptionsTableViewController.m in Sources */,
 				92A533D321EBDDF20089FBB9 /* GCDWebUploader.m in Sources */,
 				92A533C921EBDBAD0089FBB9 /* GCDWebServerFileRequest.m in Sources */,
 				925ABCA81E46DCC500997182 /* ListOptionController.m in Sources */,
@@ -945,7 +951,7 @@
 				EF301CF2240460C5000510FD /* Alert.m in Sources */,
 				92A533CA21EBDBAD0089FBB9 /* GCDWebServerFileRequest.m in Sources */,
 				92A533BB21EBDBAD0089FBB9 /* GCDWebServerDataResponse.m in Sources */,
-				92ECB91121EA9BBB00D1E3D0 /* iph_main.m in Sources */,
+				EF941F0124427D1200D58F7F /* OptionsTableViewController.m in Sources */,
 				926C771D21F5034100103EDE /* TVInputOptionsController.m in Sources */,
 				92A5332521EBC7F40089FBB9 /* iCadeView.m in Sources */,
 				EF23D332243CB9CF006B3EE2 /* PopupSegmentedControl.m in Sources */,

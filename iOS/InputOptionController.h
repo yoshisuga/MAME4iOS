@@ -43,10 +43,11 @@
  */
 
 #import <UIKit/UIKit.h>
+#import "OptionsTableViewController.h"
 
 @class EmulatorController;
 
-@interface InputOptionController : UITableViewController{
+@interface InputOptionController : OptionsTableViewController {
     UISwitch *switchAnimatedButtons;
     
     NSArray *arrayTouchType;
@@ -85,7 +86,5 @@
     
     UISlider *sliderTouchControlsOpacity;
 }
-
-@property (nonatomic, assign) EmulatorController *emuController;
 
 @end

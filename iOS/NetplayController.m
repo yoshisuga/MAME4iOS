@@ -80,21 +80,13 @@ static void netplay_warn_callback(char *msg)
 
 @implementation NetplayController
 
-@synthesize emuController;
-
 + (void)showAlert:(NSString *)msg {
     UIViewController* root = UIApplication.sharedApplication.keyWindow.rootViewController;
     [root showAlertWithTitle:@"Netplay" message:msg /*timeout:1.5*/];
 }
 
 - (id)init {
-    UITableViewStyle style = UITableViewStyleGrouped;
-#if TARGET_OS_IOS
-    if (@available(iOS 13.0, *)) {
-        style = UITableViewStyleInsetGrouped;
-    }
-#endif
-    if (self = [super initWithStyle:style]) {
+    if (self = [super init]) {
         
         arrayWFframeSync = [[NSArray alloc] initWithObjects:@"Auto", @"1", @"2", @"3",@"4", @"5", @"6", @"7", @"8", @"9", @"10",nil];
         arrayWPANtype = [[NSArray alloc] initWithObjects:@"Wi-Fi", @"Bluetooth",nil];
@@ -122,16 +114,6 @@ static void netplay_warn_callback(char *msg)
         btMgr = nil;
     }
     btState =  BluetoothNotSet;
-}
-
-- (void)loadView {
-    
-    [super loadView];
-    
-    UIBarButtonItem *button = [[UIBarButtonItem alloc] initWithTitle:@"Done"
-                                                               style:UIBarButtonItemStylePlain
-                                                              target: emuController  action:  @selector(done:) ];
-    self.navigationItem.rightBarButtonItem = button;
 }
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
@@ -414,9 +396,6 @@ static void netplay_warn_callback(char *msg)
 
 - (void) viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    UITableView *tableView = (UITableView *)self.view;
-    [tableView reloadData];
-    
     [self setNetplayOptions];
 }
 

@@ -167,6 +167,7 @@
 - (void)runExit;
 - (void)runPause;
 - (void)runServer;
+- (void)runReset;
 - (void)endMenu;
 #if TARGET_OS_IOS
 - (void)runImport;

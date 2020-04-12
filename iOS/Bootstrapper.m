@@ -419,3 +419,9 @@ unsigned long read_mfi_controller(unsigned long res){
 #endif
 
 @end
+
+int main(int argc, char **argv){
+    @autoreleasepool {
+        return UIApplicationMain(argc, argv, nil, @"Bootstrapper");
+    }
+}

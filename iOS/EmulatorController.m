@@ -187,6 +187,7 @@ static int change_layout=0;
 #endif
 
 #define kSelectedGameKey @"selected_game"
+static BOOL g_mame_reset = FALSE;           // do a full reset (delete cfg files) before running MAME
 static char g_mame_game[MAX_GAME_NAME];     // game MAME should run (or empty is menu)
 static char g_mame_game_error[MAX_GAME_NAME];
 static BOOL g_no_roms_found = FALSE;
@@ -222,6 +223,21 @@ void* app_Thread_Start(void* args)
     while (1) {
         prev_myosd_mouse = myosd_mouse = 0;
         prev_myosd_light_gun = myosd_light_gun = 0;
+        
+        // reset MAME by deleteing CFG files, cfg/default.cfg and cfg/ROMNAME.cfg
+        if (g_mame_reset) {
+            NSString *cfg_path = [NSString stringWithUTF8String:get_documents_path("cfg")];
+            
+            // NOTE we need to delete the default.cfg file here because MAME saves cfg files on exit.
+            [[NSFileManager defaultManager] removeItemAtPath: [cfg_path stringByAppendingPathComponent:@"default.cfg"] error:nil];
+
+#if 0 // should we use this big of hammer? the user can always delete settings on a game by game basis via context menu in ChooseGameController.
+            // delete *all* the cfg files, not just default.cfg so we reset settings for all games.
+            [[NSFileManager defaultManager] removeItemAtPath:cfg_path error:nil];
+            [[NSFileManager defaultManager] createDirectoryAtPath:cfg_path withIntermediateDirectories:NO attributes:nil error:nil];
+#endif
+            g_mame_reset = FALSE;
+        }
         
         if (run_mame(g_mame_game) != 0 && g_mame_game[0]) {
             strncpy(g_mame_game_error, g_mame_game, sizeof(g_mame_game_error));
@@ -308,11 +324,6 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     CGPoint touchDirectionalMoveStartLocation;
     CGPoint touchDirectionalMoveInitialLocation;
     CGSize  layoutSize;
-#if TARGET_OS_IOS
-    OptionsController *optionsController;
-#elif TARGET_OS_TV
-    TVOptionsController *optionsController;
-#endif
 }
 @end
 
@@ -592,6 +603,12 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     g_settings_roms_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:[NSString stringWithUTF8String:get_documents_path("roms")] error:nil] count];
 
     [self startMenu];
+    
+#if TARGET_OS_IOS
+    OptionsController* optionsController = [[OptionsController alloc] initWithEmuController:self];
+#elif TARGET_OS_TV
+    TVOptionsController *optionsController = [[TVOptionsController alloc] initWithEmuController:self];
+#endif
 
     UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:optionsController];
 #if TARGET_OS_IOS
@@ -599,12 +616,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
 #endif
     if (@available(iOS 13.0, tvOS 13.0, *)) {
         navController.modalInPresentation = YES;    // disable iOS 13 swipe to dismiss...
-#if TARGET_OS_TV
-        // buttons look like-crap in UIUserInterfaceStyleDark! on tvOS
-        navController.overrideUserInterfaceStyle = UIUserInterfaceStyleLight;
-#else
         navController.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
-#endif
     }
     [self.topViewController presentViewController:navController animated:YES completion:nil];
 }
@@ -873,7 +885,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     
     // have the parent of the options/setting dialog dismiss
     // we present settings two ways, from in-game menu (we are parent) and from ChooseGameUI (it is the parent)
-    UIViewController* parent = optionsController.navigationController.presentingViewController;
+    UIViewController* parent = self.topViewController.presentingViewController;
     [(parent ?: self) dismissViewControllerAnimated:YES completion:^{
         if(global_low_latency_sound != [op lowlsound])
         {
@@ -886,7 +898,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
         }
         
         // if we are at the root menu, exit and restart.
-        if (myosd_inGame == 0)
+        if (myosd_inGame == 0 || g_mame_reset)
             myosd_exitGame = 1;
 
         [self updateOptions];
@@ -903,9 +915,9 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
 
         if (g_settings_file_count != file_count)
             [self performSelector:@selector(moveROMS) withObject:nil afterDelay:0.0];
-        else if (g_settings_roms_count != roms_count)
+        else if (g_settings_roms_count != roms_count || (g_mame_reset && myosd_inGame == 0))
             [self performSelector:@selector(playGame:) withObject:nil afterDelay:0.0];
-
+        
         // dont call endMenu (and unpause MAME) if we still have a dialog up.
         if (self.presentedViewController == nil)
             [self endMenu];
@@ -1108,13 +1120,6 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     mouseInitialLocation = CGPointMake(9111, 9111);
     mouseTouchStartLocation = mouseInitialLocation;
 
-#if TARGET_OS_IOS
-    optionsController =[[OptionsController alloc] init];
-    optionsController.emuController = self;
-#elif TARGET_OS_TV
-    optionsController = [[TVOptionsController alloc] init];
-    optionsController.emuController = self;
-#endif
     [self updateUserActivity:nil];      // TODO: look at if we need to do this here??
 }
 
@@ -2944,31 +2949,6 @@ void myosd_handle_turbo() {
 #endif
 }
 
-- (void)dealloc {
-    [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name:GCControllerDidConnectNotification
-                                                  object:nil];
-    [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name:GCControllerDidDisconnectNotification
-                                                  object:nil];
-    
-    [self removeTouchControllerViews];
-    
-    screenView = nil;
-    
-    imageBack = nil;
-    
-    imageOverlay = nil;
-
-#if TARGET_OS_IOS
-    dview= nil;
-#endif
-
-    optionsController = nil;
-    icadeView = nil;
-    
-}
-
 - (CGRect *)getDebugRects{
     return debug_rects;
 }
@@ -3072,7 +3052,7 @@ void myosd_handle_turbo() {
 //
 //  because we are registered to open *any* zip file, we also verify that a romset looks
 //  valid, we dont want to copy "Funny Cat Pictures.zip" to our roms directory, no one wants that.
-//  a valid romset must be a 8.3 name, and only contain 8.3 files.
+//  a valid romset must be a short <= 20 name with no spaces.
 //
 //  we will move a artwork zip file to the artwork directory
 //  we will move a romset zip file to the roms directory
@@ -3093,9 +3073,10 @@ void myosd_handle_turbo() {
     NSString *romPath = [rootPath stringByAppendingPathComponent:romName];
     
     // if the ROM had a name like "foobar 1.zip", "foobar (1).zip" use only the first word as the ROM name.
-    // this most likley came when a user downloaded the zip and a foobar.zip already existed, MAME ROMs are <=8 char and no spaces.
-    if ([romName containsString:@" "] && [romName componentsSeparatedByString:@" "].count == 2)
-        romName = [[romName componentsSeparatedByString:@" "].firstObject stringByAppendingPathExtension:@"zip"];
+    // this most likley came when a user downloaded the zip and a foobar.zip already existed, MAME ROMs are <=20 char and no spaces.
+    NSArray* words = [[romName stringByDeletingPathExtension] componentsSeparatedByString:@" "];
+    if (words.count == 2 && [words.lastObject stringByTrimmingCharactersInSet:[NSCharacterSet punctuationCharacterSet]].intValue != 0)
+        romName = [words.firstObject stringByAppendingPathExtension:@"zip"];
 
     NSLog(@"ROM NAME: '%@' PATH:%@", romName, romPath);
 
@@ -3112,12 +3093,10 @@ void myosd_handle_turbo() {
     int __block numZIP = 0;
     int __block numCHD = 0;
     int __block numWAV = 0;
-    int __block maxLEN = 0;
     int __block numFiles = 0;
     BOOL result = [ZipFile enumerate:romPath withOptions:ZipFileEnumFiles usingBlock:^(ZipFileInfo* info) {
         NSString* ext = [info.name.pathExtension uppercaseString];
         numFiles++;
-        maxLEN = MAX(maxLEN, (int)[info.name.lastPathComponent length]);
         if ([ext isEqualToString:@"LAY"])
             numLAY++;
         if ([ext isEqualToString:@"ZIP"])
@@ -3193,7 +3172,7 @@ void myosd_handle_turbo() {
         NSLog(@"%@ is a SAMPLES file", romName);
         toPath = [sampPath stringByAppendingPathComponent:romName];
     }
-    else if ([romName length] <= 12 && maxLEN <= 12) // 8.3 filenames only
+    else if ([romName length] <= 20 && ![romName containsString:@" "])
     {
         NSLog(@"%@ is a ROMSET", romName);
         toPath = [romsPath stringByAppendingPathComponent:romName];
@@ -3367,6 +3346,25 @@ void myosd_handle_turbo() {
 - (void)runServer {
     [[WebServer sharedInstance] startUploader];
     [WebServer sharedInstance].webUploader.delegate = self;
+}
+
+#pragma mark - RESET
+
+- (void)runReset {
+    NSLog(@"RESET: %s", g_mame_game);
+    
+    NSString* msg = [NSString stringWithFormat:@"Reset %@ back to factory defaults?",
+            TARGET_OS_IOS ? @"MAME4iOS" : @"MAME4tvOS"];
+
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:nil message:msg preferredStyle:UIAlertControllerStyleAlert];
+    [alert addAction:[UIAlertAction actionWithTitle:@"Reset" style:UIAlertActionStyleDestructive handler:^(UIAlertAction* action) {
+        [Options resetOptions];
+        [ChooseGameController reset];
+        g_mame_reset = TRUE;
+        [self done:self];
+    }]];
+    [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
+    [self.topViewController presentViewController:alert animated:YES completion:nil];
 }
 
 #pragma mark - CUSTOM LAYOUT

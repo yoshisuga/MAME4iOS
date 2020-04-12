@@ -50,22 +50,12 @@
 #import "TVOptionsController.h"
 #endif
 #import "ListOptionController.h"
-#import "EmulatorController.h" // for @selector(done:)
-
 #include "myosd.h"
 
 @implementation FilterOptionController
 
-@synthesize emuController;
-
 - (id)init {
-    UITableViewStyle style = UITableViewStyleGrouped;
-#if TARGET_OS_IOS
-    if (@available(iOS 13.0, *)) {
-        style = UITableViewStyleInsetGrouped;
-    }
-#endif
-    if (self = [super initWithStyle:style]) {
+    if (self = [super init]) {
 
 #if TARGET_OS_IOS
         switchFilterClones = nil;
@@ -111,16 +101,6 @@
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     
     return 5;
-}
-
-- (void)loadView {
-    
-    [super loadView];
-    
-    UIBarButtonItem *button = [[UIBarButtonItem alloc] initWithTitle:@"Done"
-                                                               style:UIBarButtonItemStylePlain
-                                                              target: emuController  action:  @selector(done:) ];
-    self.navigationItem.rightBarButtonItem = button;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
@@ -387,13 +367,6 @@
         [tableView reloadData];
     }
 
-}
-
-
-- (void) viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-    UITableView *tableView = (UITableView *)self.view;
-    [tableView reloadData];
 }
 
 - (void) textFieldDidBeginEditing:(UITextField *)textField {

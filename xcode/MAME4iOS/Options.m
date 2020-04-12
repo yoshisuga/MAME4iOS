@@ -118,6 +118,12 @@
     return self;
 }
 
++ (void)resetOptions
+{
+    NSString *path=[NSString stringWithUTF8String:get_documents_path("iOS/options_v23.bin")];
+    [[NSFileManager defaultManager] removeItemAtPath:path error:nil];
+}
+
 - (void)loadOptions
 {
     NSString *path=[NSString stringWithUTF8String:get_documents_path("iOS/options_v23.bin")];
