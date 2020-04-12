@@ -120,7 +120,7 @@
     cell.textLabel.text = nil;
     cell.textLabel.textColor = nil;
     cell.detailTextLabel.text = nil;
-    cell.backgroundColor = nil;
+    cell.contentView.backgroundColor = nil;
 
     if ( indexPath.section == kFilterSection ) {
         if ( indexPath.row == 0 ) {
