@@ -126,6 +126,20 @@ static NSString* dark_mode_style =
     
     NSString *HTMLData = [[NSString alloc] initWithContentsOfFile:[NSString stringWithUTF8String:get_resource_path([name UTF8String])] encoding:NSUTF8StringEncoding error:nil];
     
+    // replace special tags in HTML....
+    //
+    //      $APP_VERSION - application version
+    //      $APP_DATE    - build date
+    //
+    NSString* version = [NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleVersion"];
+    HTMLData = [HTMLData stringByReplacingOccurrencesOfString:@"${APP_VERSION}" withString:version];
+
+    // TODO: this is not the build date, it is the last date Info.plist was modifed, if you do a clean build, or change the version, it is the build date.
+    NSString *path = [[NSBundle mainBundle] pathForResource: @"Info" ofType: @"plist"];
+    NSDate* date = [[[NSFileManager defaultManager] attributesOfItemAtPath:path error:nil] fileModificationDate];
+    NSString* app_date = [NSDateFormatter localizedStringFromDate:date dateStyle:NSDateFormatterMediumStyle timeStyle:NSDateFormatterNoStyle];
+    HTMLData = [HTMLData stringByReplacingOccurrencesOfString:@"${APP_DATE}" withString:app_date];
+    
     // hack in our dark-mode style sheet at the end of the <head></head> only if the HTML does not have a inline style for dark mode already.
     if (aWebView.backgroundColor == UIColor.blackColor && !([HTMLData containsString:@"<style"] && [HTMLData containsString:@"prefers-color-scheme"])) {
         HTMLData = [HTMLData stringByReplacingOccurrencesOfString:@"</head>" withString:[dark_mode_style stringByAppendingString:@"</head>"]];

@@ -66,6 +66,19 @@
     return self;
 }
 
+- (NSString*)applicationVersionInfo {
+    
+    NSString* bundle_ident = NSBundle.mainBundle.bundleIdentifier;
+    NSString* display_name = [NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleDisplayName"];
+    NSString* version = [NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleVersion"];
+    NSString* version_num = [NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
+    
+    if (![version isEqualToString:version_num])
+        version = [NSString stringWithFormat:@"%@ (%@)", version, version_num];
+    
+    return [NSString stringWithFormat:@"%@\n%@\n%@", display_name, bundle_ident, version];
+}
+
 #if TARGET_OS_TV
 - (void)loadView {
     UIView* view = [[UIView alloc] initWithFrame:CGRectZero];
@@ -88,16 +101,13 @@
     logo.translatesAutoresizingMaskIntoConstraints = NO;
     [self.view addSubview:logo];
     [logo.widthAnchor constraintEqualToAnchor:view.safeAreaLayoutGuide.widthAnchor multiplier:0.4].active = TRUE;
-    [logo.heightAnchor constraintEqualToAnchor:view.safeAreaLayoutGuide.heightAnchor multiplier:0.6].active = TRUE;
+    [logo.heightAnchor constraintEqualToAnchor:view.safeAreaLayoutGuide.heightAnchor multiplier:0.4].active = TRUE;
     [logo.topAnchor constraintEqualToAnchor:view.safeAreaLayoutGuide.topAnchor].active = TRUE;
     [logo.leadingAnchor constraintEqualToAnchor:view.safeAreaLayoutGuide.leadingAnchor].active = TRUE;
     
     UILabel* version = [[UILabel alloc] initWithFrame:CGRectZero];
-    
-    version.text = [NSString stringWithFormat:@"%@ %@",
-                    [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"],
-                    [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"]];
-     
+    version.text = self.applicationVersionInfo;
+    version.numberOfLines = 0;
     version.textColor = [UIColor lightGrayColor];
     version.textAlignment = NSTextAlignmentCenter;
     [version sizeToFit];
