@@ -3052,7 +3052,7 @@ void myosd_handle_turbo() {
 //
 //  because we are registered to open *any* zip file, we also verify that a romset looks
 //  valid, we dont want to copy "Funny Cat Pictures.zip" to our roms directory, no one wants that.
-//  a valid romset must be a 8.3 name, and only contain 8.3 files.
+//  a valid romset must be a 8.3 name.
 //
 //  we will move a artwork zip file to the artwork directory
 //  we will move a romset zip file to the roms directory
@@ -3092,12 +3092,10 @@ void myosd_handle_turbo() {
     int __block numZIP = 0;
     int __block numCHD = 0;
     int __block numWAV = 0;
-    int __block maxLEN = 0;
     int __block numFiles = 0;
     BOOL result = [ZipFile enumerate:romPath withOptions:ZipFileEnumFiles usingBlock:^(ZipFileInfo* info) {
         NSString* ext = [info.name.pathExtension uppercaseString];
         numFiles++;
-        maxLEN = MAX(maxLEN, (int)[info.name.lastPathComponent length]);
         if ([ext isEqualToString:@"LAY"])
             numLAY++;
         if ([ext isEqualToString:@"ZIP"])
@@ -3173,7 +3171,7 @@ void myosd_handle_turbo() {
         NSLog(@"%@ is a SAMPLES file", romName);
         toPath = [sampPath stringByAppendingPathComponent:romName];
     }
-    else if ([romName length] <= 12 && maxLEN <= 12) // 8.3 filenames only
+    else if ([romName length] <= 12) // a MAME rom is 8.3 only
     {
         NSLog(@"%@ is a ROMSET", romName);
         toPath = [romsPath stringByAppendingPathComponent:romName];
