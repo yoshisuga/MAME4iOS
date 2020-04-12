@@ -3119,7 +3119,11 @@ void myosd_handle_turbo() {
         NSLog(@"%@ is a ZIPSET", [romPath lastPathComponent]);
         int maxFiles = numFiles;
         numFiles = 0;
-        [ZipFile destructiveEnumerate:romPath withOptions:ZipFileEnumFiles usingBlock:^(ZipFileInfo* info) {
+        [ZipFile enumerate:romPath withOptions:(ZipFileEnumFiles + ZipFileEnumLoadData) usingBlock:^(ZipFileInfo* info) {
+            
+            if (info.data == nil)
+                return;
+            
             NSString* toPath = nil;
             NSString* ext = [info.name.pathExtension uppercaseString];
             
@@ -3132,8 +3136,7 @@ void myosd_handle_turbo() {
             else if ([ext isEqualToString:@"CHD"] && [info.name containsString:@"/"]) {
                 // CHD will be of the form XXXXXXX/ROMNAME/file.chd, so move to roms/ROMNAME/file.chd
                 NSString* romname = info.name.stringByDeletingLastPathComponent.lastPathComponent;
-                NSString* chdname = [romname stringByAppendingPathComponent:info.name.lastPathComponent];
-                toPath = [romsPath stringByAppendingPathComponent:chdname];
+                toPath = [[romsPath stringByAppendingPathComponent:romname] stringByAppendingPathComponent:info.name.lastPathComponent];
             }
 
             if (toPath != nil)
@@ -3143,11 +3146,16 @@ void myosd_handle_turbo() {
 
             if (toPath != nil)
             {
-                if (![NSFileManager.defaultManager createDirectoryAtPath:[toPath stringByDeletingLastPathComponent] withIntermediateDirectories:TRUE attributes:nil error:nil])
-                    NSLog(@"ERROR CREATING DIRECTORY: %@", [info.name stringByDeletingLastPathComponent]);
-
                 if (![info.data writeToFile:toPath atomically:YES])
-                    NSLog(@"ERROR UNZIPing %@", info.name);
+                {
+                    NSLog(@"ERROR UNZIPing %@ (trying to create directory)", info.name);
+                    
+                    if (![NSFileManager.defaultManager createDirectoryAtPath:[toPath stringByDeletingLastPathComponent] withIntermediateDirectories:TRUE attributes:nil error:nil])
+                        NSLog(@"ERROR CREATING DIRECTORY: %@", [info.name stringByDeletingLastPathComponent]);
+
+                    if (![info.data writeToFile:toPath atomically:YES])
+                        NSLog(@"ERROR UNZIPing %@", info.name);
+                }
             }
             
             numFiles++;
@@ -3286,7 +3294,7 @@ void myosd_handle_turbo() {
     NSLog(@"saveROMS: ROMS: %@", roms);
     NSLog(@"saveROMS: FILES: %@", files);
     
-    return [ZipFile exportTo:url.path fromFiles:files fromDirectory:rootPath withOptions:(ZipFileWriteFiles | ZipFileWriteAtomic | ZipFileWriteNoCompress) progressBlock:block];
+    return [ZipFile exportTo:url.path fromDirectory:rootPath withFiles:files withOptions:(ZipFileWriteFiles | ZipFileWriteAtomic | ZipFileWriteNoCompress) progressBlock:block];
 }
 
 #pragma mark - IMPORT and EXPORT

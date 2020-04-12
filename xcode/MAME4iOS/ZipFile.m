@@ -19,7 +19,8 @@
 #endif
 
 @interface NSFileHandle (NSFileHandle_ReadWrite)
-- (NSData*) readDataOfLengthSafe:(size_t)length;    // a *safe* version of readDataOfLength:
+- (uint64_t)length;
+- (NSData*) readDataOfLength:(size_t)length atOffset:(uint64_t)offset;
 - (BOOL) writeDataSafe:(NSData*)data;               // a *safe* version of writeData:
 - (BOOL) writeBytes:(const void *)bytes length:(size_t)length;
 @end
@@ -76,8 +77,7 @@
     NSUInteger      buffer_len;
 
 #define LOAD(file, offset, num_bytes) \
-    [file seekToFileOffset:offset]; \
-    buffer_data = [file readDataOfLengthSafe:num_bytes]; \
+    buffer_data = [file readDataOfLength:num_bytes atOffset:offset]; \
     buffer_ptr = [buffer_data bytes]; \
     buffer_len = [buffer_data length];
     
@@ -88,7 +88,7 @@
 #define SKIP(n)  (buffer_ptr += n, buffer_len -= n)
 
     //  seek to the end and look for the EOCD
-    LOAD(file, [file seekToEndOfFile] - 512, 512);
+    LOAD(file, file.length - 512, 512);
     uint8_t eocd_sig[] = {0x50, 0x4b, 0x05, 0x06};
     NSRange r = [buffer_data rangeOfData:[NSData dataWithBytes:&eocd_sig length:4] options:0 range:NSMakeRange(0, [buffer_data length])];
 
@@ -300,52 +300,6 @@
     return TRUE;
 }}
 
-#pragma mark - ZipFile destructive reading
-
-// destructivly enumerate all the files in a zip archive, this is used to unzip a large zip file "in place" saving disk space. when this call returns the zip file is gone.
-+ (BOOL)destructiveEnumerate:(NSString*)path withOptions:(ZipFileEnumOptions)options usingBlock:(void (^)(ZipFileInfo* info))block;
-{ @autoreleasepool {
-    NSMutableArray* all_info = [[NSMutableArray alloc] init];
-    
-    BOOL result = [self enumerate:path withOptions:(options & ~ZipFileEnumLoadData) usingBlock:^(ZipFileInfo* info) {
-        [all_info addObject:info];
-    }];
-    
-    if (!result)
-        return FALSE;
-
-    // sort info by offset in file
-    [all_info sortUsingComparator:^NSComparisonResult(ZipFileInfo* lhs, ZipFileInfo* rhs) {
-        return (lhs.offset == rhs.offset) ? NSOrderedSame : ((lhs.offset < rhs.offset) ? NSOrderedAscending : NSOrderedDescending);
-    }];
-    
-    NSFileHandle* file = [NSFileHandle fileHandleForUpdatingAtPath:path];
-    
-    if (file == nil)
-        return ERROR(@"cant open for writing");
-    
-    // walk the files backward, so we can truncate the file from the top down
-    for (ZipFileInfo* info in [all_info reverseObjectEnumerator]) @autoreleasepool {
-        result = [info loadDataFromFile:file];
-        if (!result)
-            break;
-        [file truncateFileAtOffset:info.offset];
-        block(info);
-        info.data = nil;
-    }
-    
-    // close the file before trying to delete it.
-    file = nil;
-    
-    NSError* error = nil;
-    result = [[NSFileManager defaultManager] removeItemAtPath:path error:&error];
-
-    if (!result)
-        return ERROR(@"removeItemAtPath ERROR: %@", error);
-    
-    return result;
-}}
-
 #pragma mark - ZipFile writing
 
 // create a ZipFile from any user supplied data, callback is required to convert item in array to a ZipFileInfo
@@ -542,8 +496,8 @@
     return result;
 }
 
-// create a ZipFile from files.
-+ (BOOL)exportTo:(NSString*)path fromFiles:(NSArray<NSString*>*)files fromDirectory:(NSString*)root withOptions:(ZipFileWriteOptions)options progressBlock:(nullable BOOL (^)(double progress))block
+// create a ZipFile from files in a directory.
++ (BOOL)exportTo:(NSString*)path fromDirectory:(NSString*)root withFiles:(nullable NSArray<NSString*>*)files withOptions:(ZipFileWriteOptions)options progressBlock:(nullable BOOL (^)(double progress))block
 {
     BOOL isDirectory;
     if (!([NSFileManager.defaultManager fileExistsAtPath:root isDirectory:&isDirectory] && isDirectory))
@@ -551,6 +505,9 @@
     
     if (![root hasSuffix:@"/"])
         root = [root stringByAppendingString:@"/"];
+
+    if (files == nil)
+        files = [[NSFileManager.defaultManager enumeratorAtPath:root] allObjects];
 
     if (files.count == 0 && (options & ZipFileWriteDirectoryName))
         files = @[@""];
@@ -564,7 +521,9 @@
         
         if ([name hasPrefix:root])
             name = [name substringFromIndex:[root length]];
+        
         NSString* path = [root stringByAppendingPathComponent:name];
+        
         if (options & ZipFileWriteDirectoryName)
             name = [[root lastPathComponent] stringByAppendingPathComponent:name];
         
@@ -591,13 +550,6 @@
     return result;
 }
 
-// create a ZipFile from directory.
-+ (BOOL)exportTo:(NSString*)path fromDirectory:(NSString*)root withOptions:(ZipFileWriteOptions)options progressBlock:(nullable BOOL (^)(double progress))block
-{
-    NSArray* files = [[NSFileManager.defaultManager enumeratorAtPath:root] allObjects];
-    return [self exportTo:path fromFiles:files fromDirectory:root withOptions:options progressBlock:block];
-}
-
 @end
 
 #pragma mark - ZipFileInfo
@@ -606,8 +558,7 @@
 
 - (BOOL)loadDataFromFile:(NSFileHandle*)file
 {
-    [file seekToFileOffset:self.offset];
-    NSData* data = [file readDataOfLengthSafe:self.compressed_size];
+    NSData* data = [file readDataOfLength:self.compressed_size atOffset:self.offset];
     self.data = nil;
 
     if ([data length] != self.compressed_size)
@@ -640,19 +591,39 @@
 
 @implementation NSFileHandle (NSFileHandle_ReadWrite)
 
-- (NSData*) readDataOfLengthSafe:(size_t)length
+- (uint64_t)length
+{
+    uint64_t length = 0;
+    if (@available(macOS 10.15, iOS 13.0, *)) {
+        [self seekToEndReturningOffset:&length error:nil];
+    }
+    else {
+        @try {
+            length = [self seekToEndOfFile];
+        } @catch (NSException *exception) {
+            return 0;
+        }
+    }
+    return length;
+}
+
+
+- (NSData*) readDataOfLength:(size_t)length atOffset:(uint64_t)offset
 {
     if (@available(macOS 10.15, iOS 13.0, *)) {
+        [self seekToOffset:offset error:nil];
         return [self readDataUpToLength:length error:nil];
     }
     else {
         @try {
+            [self seekToFileOffset:offset];
             return [self readDataOfLength:length];
         } @catch (NSException *exception) {
             return nil;
         }
     }
 }
+
 - (BOOL) writeDataSafe:(NSData*)data
 {
     if (@available(macOS 10.15, iOS 13.0, *)) {
@@ -701,11 +672,11 @@
     }
 }
 
-/// compute CRC32 (Slicing-by-8 algorithm) from [Stephan Brumme](https://create.stephan-brumme.com/crc32)
-static uint32_t crc32_8bytes(const void* data, size_t length, uint32_t previousCrc32)
+/// compute CRC32 (Slicing-by-16 algorithm)  from [Stephan Brumme](https://create.stephan-brumme.com/crc32)
+uint32_t crc32_16bytes(const void* data, size_t length, uint32_t previousCrc32)
 {
     const uint32_t Polynomial = 0xEDB88320; /// zlib's CRC32 polynomial
-    static uint32_t Crc32Lookup[8][256];
+    static uint32_t Crc32Lookup[16][256];
 
     if (Crc32Lookup[0][1] == 0)
     {
@@ -716,55 +687,71 @@ static uint32_t crc32_8bytes(const void* data, size_t length, uint32_t previousC
             crc = (crc >> 1) ^ ((crc & 1) * Polynomial);
             Crc32Lookup[0][i] = crc;
         }
-        for (unsigned int i = 0; i <= 0xFF; i++)
-        {
-            Crc32Lookup[1][i] = (Crc32Lookup[0][i] >> 8) ^ Crc32Lookup[0][Crc32Lookup[0][i] & 0xFF];
-            Crc32Lookup[2][i] = (Crc32Lookup[1][i] >> 8) ^ Crc32Lookup[0][Crc32Lookup[1][i] & 0xFF];
-            Crc32Lookup[3][i] = (Crc32Lookup[2][i] >> 8) ^ Crc32Lookup[0][Crc32Lookup[2][i] & 0xFF];
-            Crc32Lookup[4][i] = (Crc32Lookup[3][i] >> 8) ^ Crc32Lookup[0][Crc32Lookup[3][i] & 0xFF];
-            Crc32Lookup[5][i] = (Crc32Lookup[4][i] >> 8) ^ Crc32Lookup[0][Crc32Lookup[4][i] & 0xFF];
-            Crc32Lookup[6][i] = (Crc32Lookup[5][i] >> 8) ^ Crc32Lookup[0][Crc32Lookup[5][i] & 0xFF];
-            Crc32Lookup[7][i] = (Crc32Lookup[6][i] >> 8) ^ Crc32Lookup[0][Crc32Lookup[6][i] & 0xFF];
+        
+        for (unsigned int i = 0; i <= 0xFF; i++) for (unsigned int slice = 1; slice < 16; slice++) {
+            Crc32Lookup[slice][i] = (Crc32Lookup[slice - 1][i] >> 8) ^ Crc32Lookup[0][Crc32Lookup[slice - 1][i] & 0xFF];
         }
     }
     
     uint32_t crc = ~previousCrc32; // same as previousCrc32 ^ 0xFFFFFFFF
     const uint32_t* current = (const uint32_t*) data;
-
-    // process eight bytes at once (Slicing-by-8)
-    while (length >= 8)
+    // enabling optimization (at least -O2) automatically unrolls the for-loop
+    const size_t Unroll = 1;    // uroll == 1 means dont unroll, unrolling did not seam to make a diff
+    const size_t BytesAtOnce = 16 * Unroll;
+    while (length >= BytesAtOnce)
     {
+        for (size_t unrolling = 0; unrolling < Unroll; unrolling++)
+        {
 #ifdef __BIG_ENDIAN__
-        uint32_t one = *current++ ^ OSSwapInt32(crc);
-        uint32_t two = *current++;
-        crc = Crc32Lookup[0][ two      & 0xFF] ^
-              Crc32Lookup[1][(two>> 8) & 0xFF] ^
-              Crc32Lookup[2][(two>>16) & 0xFF] ^
-              Crc32Lookup[3][(two>>24) & 0xFF] ^
-              Crc32Lookup[4][ one      & 0xFF] ^
-              Crc32Lookup[5][(one>> 8) & 0xFF] ^
-              Crc32Lookup[6][(one>>16) & 0xFF] ^
-              Crc32Lookup[7][(one>>24) & 0xFF];
+            uint32_t one   = *current++ ^ OSSwapInt32(crc);
+            uint32_t two   = *current++;
+            uint32_t three = *current++;
+            uint32_t four  = *current++;
+            crc  = Crc32Lookup[ 0][ four         & 0xFF] ^
+                 Crc32Lookup[ 1][(four  >>  8) & 0xFF] ^
+                 Crc32Lookup[ 2][(four  >> 16) & 0xFF] ^
+                 Crc32Lookup[ 3][(four  >> 24) & 0xFF] ^
+                 Crc32Lookup[ 4][ three        & 0xFF] ^
+                 Crc32Lookup[ 5][(three >>  8) & 0xFF] ^
+                 Crc32Lookup[ 6][(three >> 16) & 0xFF] ^
+                 Crc32Lookup[ 7][(three >> 24) & 0xFF] ^
+                 Crc32Lookup[ 8][ two          & 0xFF] ^
+                 Crc32Lookup[ 9][(two   >>  8) & 0xFF] ^
+                 Crc32Lookup[10][(two   >> 16) & 0xFF] ^
+                 Crc32Lookup[11][(two   >> 24) & 0xFF] ^
+                 Crc32Lookup[12][ one          & 0xFF] ^
+                 Crc32Lookup[13][(one   >>  8) & 0xFF] ^
+                 Crc32Lookup[14][(one   >> 16) & 0xFF] ^
+                 Crc32Lookup[15][(one   >> 24) & 0xFF];
 #else
-        uint32_t one = *current++ ^ crc;
-        uint32_t two = *current++;
-        crc = Crc32Lookup[0][(two>>24) & 0xFF] ^
-              Crc32Lookup[1][(two>>16) & 0xFF] ^
-              Crc32Lookup[2][(two>> 8) & 0xFF] ^
-              Crc32Lookup[3][ two      & 0xFF] ^
-              Crc32Lookup[4][(one>>24) & 0xFF] ^
-              Crc32Lookup[5][(one>>16) & 0xFF] ^
-              Crc32Lookup[6][(one>> 8) & 0xFF] ^
-              Crc32Lookup[7][ one      & 0xFF];
+          uint32_t one   = *current++ ^ crc;
+          uint32_t two   = *current++;
+          uint32_t three = *current++;
+          uint32_t four  = *current++;
+          crc  = Crc32Lookup[ 0][(four  >> 24) & 0xFF] ^
+                 Crc32Lookup[ 1][(four  >> 16) & 0xFF] ^
+                 Crc32Lookup[ 2][(four  >>  8) & 0xFF] ^
+                 Crc32Lookup[ 3][ four         & 0xFF] ^
+                 Crc32Lookup[ 4][(three >> 24) & 0xFF] ^
+                 Crc32Lookup[ 5][(three >> 16) & 0xFF] ^
+                 Crc32Lookup[ 6][(three >>  8) & 0xFF] ^
+                 Crc32Lookup[ 7][ three        & 0xFF] ^
+                 Crc32Lookup[ 8][(two   >> 24) & 0xFF] ^
+                 Crc32Lookup[ 9][(two   >> 16) & 0xFF] ^
+                 Crc32Lookup[10][(two   >>  8) & 0xFF] ^
+                 Crc32Lookup[11][ two          & 0xFF] ^
+                 Crc32Lookup[12][(one   >> 24) & 0xFF] ^
+                 Crc32Lookup[13][(one   >> 16) & 0xFF] ^
+                 Crc32Lookup[14][(one   >>  8) & 0xFF] ^
+                 Crc32Lookup[15][ one          & 0xFF];
 #endif
-        length -= 8;
+        }
+        length -= BytesAtOnce;
     }
-
     const uint8_t* currentChar = (const uint8_t*) current;
-    // remaining 1 to 7 bytes (standard algorithm)
+    // remaining 1 to 63 bytes (standard algorithm)
     while (length-- != 0)
-    crc = (crc >> 8) ^ Crc32Lookup[0][(crc & 0xFF) ^ *currentChar++];
-
+        crc = (crc >> 8) ^ Crc32Lookup[0][(crc & 0xFF) ^ *currentChar++];
     return ~crc; // same as crc ^ 0xFFFFFFFF
 }
 
@@ -772,7 +759,7 @@ static uint32_t crc32_8bytes(const void* data, size_t length, uint32_t previousC
 {
     const uint8_t* bytes = [self bytes];
     NSUInteger length = [self length];
-    return crc32_8bytes(bytes, length, 0);
+    return crc32_16bytes(bytes, length, 0);
 }
 
 @end
