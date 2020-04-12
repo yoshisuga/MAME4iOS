@@ -77,9 +77,13 @@
     self.view.autoresizesSubviews = TRUE;
         
     aWebView =[ [ UIWebView alloc ] initWithFrame: view.frame];
-    
-    //aWebView.scalesPageToFit = YES;
-    
+    aWebView.backgroundColor = UIColor.whiteColor;
+    if (@available(iOS 12.0, *)) {
+        if (self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark) {
+            aWebView.backgroundColor = UIColor.blackColor;
+            aWebView.opaque = NO;
+        }
+    }
     aWebView.autoresizingMask = (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
     
     [ self.view addSubview: aWebView ];
@@ -107,9 +111,25 @@
     return YES;
 }
 
+static NSString* dark_mode_style =
+@"<style>\n\
+@media (prefers-color-scheme: dark) {\n\
+    html {background-color: black; color: white;}\n\
+    table tbody tr:nth-child(2n) {background-color: #333333;}\n\
+    table tbody tr:nth-child(2n-1) {background-color: #222222;}\n\
+    a:link, a:visited {color: dodgerblue;}\n\
+    img {opacity: .75;}\n\
+}\n\
+</style>\n";
+
 - (void)loadHTML:(NSString*)name {
     
     NSString *HTMLData = [[NSString alloc] initWithContentsOfFile:[NSString stringWithUTF8String:get_resource_path([name UTF8String])] encoding:NSUTF8StringEncoding error:nil];
+    
+    // hack in our dark-mode style sheet at the end of the <head></head> only if the HTML does not have a inline style for dark mode already.
+    if (aWebView.backgroundColor == UIColor.blackColor && !([HTMLData containsString:@"<style"] && [HTMLData containsString:@"prefers-color-scheme"])) {
+        HTMLData = [HTMLData stringByReplacingOccurrencesOfString:@"</head>" withString:[dark_mode_style stringByAppendingString:@"</head>"]];
+    }
     
     NSURL *aURL = [NSURL fileURLWithPath:[NSString stringWithUTF8String:get_resource_path("")]];
     
