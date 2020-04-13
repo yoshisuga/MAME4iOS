@@ -111,14 +111,16 @@
     return YES;
 }
 
-static NSString* dark_mode_style =
+static NSString* html_custom_style =
 @"<style>\n\
+code {background-color:lightgray; width:100%; overflow-x:scroll}\n\
 @media (prefers-color-scheme: dark) {\n\
     html {background-color: black; color: white;}\n\
     table tbody tr:nth-child(2n) {background-color: #333333;}\n\
     table tbody tr:nth-child(2n-1) {background-color: #222222;}\n\
     a:link, a:visited {color: dodgerblue;}\n\
     img {opacity: .75;}\n\
+    code {background-color:#404040;}\n\
 }\n\
 </style>\n";
 
@@ -128,21 +130,21 @@ static NSString* dark_mode_style =
     
     // replace special tags in HTML....
     //
-    //      $APP_VERSION - application version
-    //      $APP_DATE    - build date
+    //      $(APP_VERSION) - application version
+    //      $(APP_DATE)    - file date of Info.plist, this ususally is the built-on date.
     //
     NSString* version = [NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleVersion"];
-    HTMLData = [HTMLData stringByReplacingOccurrencesOfString:@"${APP_VERSION}" withString:version];
+    HTMLData = [HTMLData stringByReplacingOccurrencesOfString:@"$(APP_VERSION)" withString:version];
 
-    // TODO: this is not the build date, it is the last date Info.plist was modifed, if you do a clean build, or change the version, it is the build date.
+    // this last date Info.plist was modifed, if you do a clean build, or change the version, it is the build date.
     NSString *path = [[NSBundle mainBundle] pathForResource: @"Info" ofType: @"plist"];
     NSDate* date = [[[NSFileManager defaultManager] attributesOfItemAtPath:path error:nil] fileModificationDate];
     NSString* app_date = [NSDateFormatter localizedStringFromDate:date dateStyle:NSDateFormatterMediumStyle timeStyle:NSDateFormatterNoStyle];
-    HTMLData = [HTMLData stringByReplacingOccurrencesOfString:@"${APP_DATE}" withString:app_date];
+    HTMLData = [HTMLData stringByReplacingOccurrencesOfString:@"$(APP_DATE)" withString:app_date];
     
-    // hack in our dark-mode style sheet at the end of the <head></head> only if the HTML does not have a inline style for dark mode already.
-    if (aWebView.backgroundColor == UIColor.blackColor && !([HTMLData containsString:@"<style"] && [HTMLData containsString:@"prefers-color-scheme"])) {
-        HTMLData = [HTMLData stringByReplacingOccurrencesOfString:@"</head>" withString:[dark_mode_style stringByAppendingString:@"</head>"]];
+    // hack in our style sheet at the end of the <head></head> only if the HTML does not have a dark-mode compatible inline style already.
+    if (!([HTMLData containsString:@"<style"] && [HTMLData containsString:@"prefers-color-scheme"])) {
+        HTMLData = [HTMLData stringByReplacingOccurrencesOfString:@"</head>" withString:[html_custom_style stringByAppendingString:@"</head>"]];
     }
     
     NSURL *aURL = [NSURL fileURLWithPath:[NSString stringWithUTF8String:get_resource_path("")]];
