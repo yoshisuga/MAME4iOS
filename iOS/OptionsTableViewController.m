@@ -76,7 +76,7 @@
     if (![version isEqualToString:version_num])
         version = [NSString stringWithFormat:@"%@ (%@)", version, version_num];
 #ifdef DEBUG
-    version = [NSString stringWithFormat:@"%@ (DEBUG)", version];
+    version = [NSString stringWithFormat:@"%@ • DEBUG", version];
 #endif
     
     // this is the last date Info.plist was modifed, if you do a clean build, or change the version, it is the build date.
@@ -93,8 +93,8 @@
     if ([git_branch isEqualToString:@"master"])
         git_branch = nil;
     
-    if ([git_commit length] > 8)
-        git_commit = [git_commit substringToIndex:8];
+    if ([git_commit length] > 7)
+        git_commit = [git_commit substringToIndex:7];
     
     if (git_branch && git_commit)
         build_info = [NSString stringWithFormat:@"%@ (%@, %@)", build_date, git_branch, git_commit];
