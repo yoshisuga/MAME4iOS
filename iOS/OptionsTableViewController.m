@@ -70,13 +70,38 @@
     
     NSString* bundle_ident = NSBundle.mainBundle.bundleIdentifier;
     NSString* display_name = [NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleDisplayName"];
+
     NSString* version = [NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleVersion"];
     NSString* version_num = [NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
-    
     if (![version isEqualToString:version_num])
         version = [NSString stringWithFormat:@"%@ (%@)", version, version_num];
+#ifdef DEBUG
+    version = [NSString stringWithFormat:@"%@ (DEBUG)", version];
+#endif
     
-    return [NSString stringWithFormat:@"%@\n%@\n%@", display_name, bundle_ident, version];
+    // this is the last date Info.plist was modifed, if you do a clean build, or change the version, it is the build date.
+    NSString *path = [[NSBundle mainBundle] pathForResource: @"Info" ofType: @"plist"];
+    NSDate* date = [[[NSFileManager defaultManager] attributesOfItemAtPath:path error:nil] fileModificationDate];
+    NSString* build_date = [NSDateFormatter localizedStringFromDate:date dateStyle:NSDateFormatterMediumStyle timeStyle:NSDateFormatterNoStyle];
+    
+    NSString* build_info = build_date;
+    
+    // look for GIT build information in Info.plist, if it is there display it.
+    NSString* git_branch = [NSBundle.mainBundle objectForInfoDictionaryKey:@"git-branch"];
+    NSString* git_commit = [NSBundle.mainBundle objectForInfoDictionaryKey:@"git-commit"];
+
+    if ([git_branch isEqualToString:@"master"])
+        git_branch = nil;
+    
+    if ([git_commit length] > 8)
+        git_commit = [git_commit substringToIndex:8];
+    
+    if (git_branch && git_commit)
+        build_info = [NSString stringWithFormat:@"%@ (%@, %@)", build_date, git_branch, git_commit];
+    else if (git_commit)
+        build_info = [NSString stringWithFormat:@"%@ (%@)", build_date, git_commit];
+
+    return [NSString stringWithFormat:@"%@ • %@\n%@\n%@", display_name, version, bundle_ident, build_info];
 }
 
 #if TARGET_OS_TV

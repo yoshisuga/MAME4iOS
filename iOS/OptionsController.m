@@ -111,6 +111,9 @@
     [super viewDidLoad];
     self.title = NSLocalizedString(@"Settings", @"");
     
+    UILabel* pad = [[UILabel alloc] init];
+    pad.text = @" ";
+    
     UIImageView* logo = [[UIImageView alloc] initWithImage:[[UIImage imageNamed:@"mame_logo"] scaledToSize:CGSizeMake(300, 0)]];
     logo.contentMode = UIViewContentModeScaleAspectFit;
     
@@ -118,23 +121,15 @@
     info.text = [self.applicationVersionInfo stringByAppendingString:@"\n"];
     info.textAlignment = NSTextAlignmentCenter;
     info.numberOfLines = 0;
-    [info sizeToFit];
     
-    UIStackView* stack = [[UIStackView alloc] initWithArrangedSubviews:@[logo, info]];
+    UIStackView* stack = [[UIStackView alloc] initWithArrangedSubviews:@[pad, logo, info]];
     stack.axis = UILayoutConstraintAxisVertical;
     stack.alignment = UIStackViewAlignmentFill;
     stack.distribution = UIStackViewDistributionEqualSpacing;
-    stack.layoutMargins = UIEdgeInsetsMake(4.0, 0.0, 4.0, 0.0);
     
-    [stack setNeedsLayout];
-    [stack layoutIfNeeded];
-    
-    CGSize headerSize = [stack systemLayoutSizeFittingSize:UILayoutFittingCompressedSize];
-    CGFloat height = headerSize.height;
-    CGRect frame = stack.frame;
-    
-    frame.size.height = height;
-    stack.frame = frame;
+    [stack setNeedsLayout]; [stack layoutIfNeeded];
+    CGFloat height = [stack systemLayoutSizeFittingSize:UILayoutFittingCompressedSize].height;
+    stack.frame =  CGRectMake(0, 0, self.view.bounds.size.width, height);
      
     self.tableView.tableHeaderView = stack;
 }
