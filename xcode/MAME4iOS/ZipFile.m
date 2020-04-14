@@ -19,7 +19,8 @@
 #endif
 
 @interface NSFileHandle (NSFileHandle_ReadWrite)
-- (uint64_t)length;
+- (uint64_t)lengthOfFile;
+- (uint64_t)offsetInFileSafe;
 - (NSData*) readDataOfLength:(size_t)length atOffset:(uint64_t)offset;
 - (BOOL) writeDataSafe:(NSData*)data;               // a *safe* version of writeData:
 - (BOOL) writeBytes:(const void *)bytes length:(size_t)length;
@@ -87,10 +88,10 @@
 #define READN(n) (buffer_ptr += n, buffer_len -= n, [NSData dataWithBytes:buffer_ptr - n length:n])
 #define SKIP(n)  (buffer_ptr += n, buffer_len -= n)
 
-    //  seek to the end and look for the EOCD
-    LOAD(file, file.length - 512, 512);
+    // seek to the end and look for the EOCD, very very important! search backward! we dont want to find signature in an embedded zip!
+    LOAD(file, file.lengthOfFile - 512, 512);
     uint8_t eocd_sig[] = {0x50, 0x4b, 0x05, 0x06};
-    NSRange r = [buffer_data rangeOfData:[NSData dataWithBytes:&eocd_sig length:4] options:0 range:NSMakeRange(0, [buffer_data length])];
+    NSRange r = [buffer_data rangeOfData:[NSData dataWithBytes:&eocd_sig length:4] options:NSDataSearchBackwards range:NSMakeRange(0, [buffer_data length])];
 
     if (r.location == NSNotFound)
         return ERROR(@"bad zip file (cant find central directory)");
@@ -308,12 +309,12 @@
     if (options & ZipFileWriteAtomic) {
         NSError* error = nil;
         NSURL* fileURL = [NSURL fileURLWithPath:path];
-        NSURL* tempURL = [[NSFileManager defaultManager] URLForDirectory:NSItemReplacementDirectory inDomain:NSUserDomainMask appropriateForURL:fileURL create:TRUE error:&error];
-        
+        NSURL* tempDIR = [[NSFileManager defaultManager] URLForDirectory:NSItemReplacementDirectory inDomain:NSUserDomainMask appropriateForURL:fileURL create:TRUE error:&error];
+
         if (error != nil)
             return ERROR(@"CANT CREATE TEMP DIRECTORY: %@", error);
         
-        tempURL = [tempURL URLByAppendingPathComponent:[fileURL lastPathComponent]];
+        NSURL* tempURL = [tempDIR URLByAppendingPathComponent:[fileURL lastPathComponent]];
     
         BOOL result = [ZipFile exportTo:tempURL.path fromItems:items withOptions:(options & ~ZipFileWriteAtomic) usingBlock:loadHandler];
         
@@ -324,8 +325,8 @@
                 return ERROR(@"CANT REPLACE FILE: %@ => %@ (%@)", tempURL, fileURL, error);
         }
         
-        if (!result)
-            [NSFileManager.defaultManager removeItemAtURL:tempURL error:nil];
+        // delete the temp directory and everything in it.
+        [NSFileManager.defaultManager removeItemAtURL:tempDIR error:nil];
         
         return result;
     }
@@ -387,10 +388,10 @@
         };
         [file writeBytes:local_file_header length:sizeof(local_file_header)];
         [file writeDataSafe:name_data];
-        info.offset = [file offsetInFile];
+        info.offset = [file offsetInFileSafe];
         [file writeDataSafe:data];
         
-        if (([file offsetInFile] - info.offset) != data.length)
+        if (([file offsetInFileSafe] - info.offset) != data.length)
             return ERROR("write error");
 
         info.crc32 = crc32;
@@ -399,7 +400,7 @@
         [all_info addObject:info];
     }
     
-    uint64_t central_directory_offset = [file offsetInFile];
+    uint64_t central_directory_offset = [file offsetInFileSafe];
     
     for (ZipFileInfo* info in all_info) @autoreleasepool {
         
@@ -453,22 +454,22 @@
             [file writeBytes:extra length:sizeof(extra)];
         }
     }
-    uint64_t central_directory_size = [file offsetInFile] - central_directory_offset;
-    uint64_t central_directory_num  = [all_info count];
+    uint64_t central_directory_size = [file offsetInFileSafe] - central_directory_offset;
+    uint64_t central_directory_count = [all_info count];
     
     // handle ZIP64
     if (central_directory_offset >= 0xFFFFFFFF || (options & ZipFileWriteZip64)) {
-        uint64_t offset = [file offsetInFile];
+        uint64_t offset = [file offsetInFileSafe];
 
-        uint8_t zip64_central_directory_end[] = {
+        uint8_t central_directory_end_64[] = {
             BYTE4(0x06064b50),              // Zip64 End of central directory signature = 0x06064b50
             BYTE8(44),                      // size of this record
             BYTE2(45),                      // Version made by
             BYTE2(45),                      // Version needed
             BYTE4(0),                       // Number of this disk
             BYTE4(0),                       // Disk where central directory starts
-            BYTE8(central_directory_num),   // Number of central directory records on this disk
-            BYTE8(central_directory_num),   // Total number of central directory records
+            BYTE8(central_directory_count), // Number of central directory records on this disk
+            BYTE8(central_directory_count), // Total number of central directory records
             BYTE8(central_directory_size),  // Size of central directory (bytes)
             BYTE8(central_directory_offset),// Offset of start of central directory
             
@@ -477,16 +478,17 @@
             BYTE8(offset),                  // offset to EOCD64
             BYTE4(1),                       // total number of disks
         };
-        [file writeBytes:zip64_central_directory_end length:sizeof(zip64_central_directory_end)];
+        [file writeBytes:central_directory_end_64 length:sizeof(central_directory_end_64)];
         central_directory_offset = 0xFFFFFFFF;
+        central_directory_size = 0xFFFFFFFF;
     }
     
     uint8_t central_directory_end[] = {
         BYTE4(0x06054b50),              // End of central directory signature = 0x06054b50
         BYTE2(0),                       // Number of this disk
         BYTE2(0),                       // Disk where central directory starts
-        BYTE2(central_directory_num),   // Number of central directory records on this disk
-        BYTE2(central_directory_num),   // Total number of central directory records
+        BYTE2(central_directory_count), // Number of central directory records on this disk
+        BYTE2(central_directory_count), // Total number of central directory records
         BYTE4(central_directory_size),  // Size of central directory (bytes)
         BYTE4(central_directory_offset),// Offset of start of central directory
         BYTE2(0),                       // Comment length
@@ -591,7 +593,7 @@
 
 @implementation NSFileHandle (NSFileHandle_ReadWrite)
 
-- (uint64_t)length
+- (uint64_t)lengthOfFile
 {
     uint64_t length = 0;
     if (@available(macOS 10.15, iOS 13.0, *)) {
@@ -607,6 +609,21 @@
     return length;
 }
 
+- (uint64_t) offsetInFileSafe
+{
+    if (@available(macOS 10.15, iOS 13.0, *)) {
+        uint64_t offset = 0;
+        [self getOffset:&offset error:nil];
+        return offset;
+    }
+    else {
+        @try {
+            return [self offsetInFile];
+        } @catch (NSException *exception) {
+            return 0;
+        }
+    }
+}
 
 - (NSData*) readDataOfLength:(size_t)length atOffset:(uint64_t)offset
 {
