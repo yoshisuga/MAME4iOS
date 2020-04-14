@@ -596,7 +596,7 @@
 - (uint64_t)lengthOfFile
 {
     uint64_t length = 0;
-    if (@available(macOS 10.15, iOS 13.0, *)) {
+    if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
         [self seekToEndReturningOffset:&length error:nil];
     }
     else {
@@ -611,7 +611,7 @@
 
 - (uint64_t) offsetInFileSafe
 {
-    if (@available(macOS 10.15, iOS 13.0, *)) {
+    if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
         uint64_t offset = 0;
         [self getOffset:&offset error:nil];
         return offset;
@@ -627,7 +627,7 @@
 
 - (NSData*) readDataOfLength:(size_t)length atOffset:(uint64_t)offset
 {
-    if (@available(macOS 10.15, iOS 13.0, *)) {
+    if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
         [self seekToOffset:offset error:nil];
         return [self readDataUpToLength:length error:nil];
     }
@@ -643,7 +643,7 @@
 
 - (BOOL) writeDataSafe:(NSData*)data
 {
-    if (@available(macOS 10.15, iOS 13.0, *)) {
+    if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
         return [self writeData:data error:nil];
     }
     else {
@@ -667,7 +667,7 @@
 
 - (NSData*) inflated:(NSUInteger)expected_length
 {
-    if (@available(macOS 10.15, iOS 13.0, *)) {
+    if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
         return [self decompressedDataUsingAlgorithm:NSDataCompressionAlgorithmZlib error:nil];
     }
     else {
@@ -679,7 +679,7 @@
 }
 - (NSData*) deflated
 {
-    if (@available(macOS 10.15, iOS 13.0, *)) {
+    if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
         return [self compressedDataUsingAlgorithm:NSDataCompressionAlgorithmZlib error:nil];
     }
     else {

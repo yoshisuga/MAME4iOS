@@ -8,14 +8,17 @@
 #import <UIKit/UIKit.h>
 #import <GameController/GameController.h>
 #import "ChooseGameController.h"
-#import "FileItemProvider.h"
-#import "ZipFile.h"
 #import "ImageCache.h"
 #import "SystemImage.h"
 #import "Alert.h"
 #import "PopupSegmentedControl.h"
 #import "Globals.h"
 #import "myosd.h"
+
+#if TARGET_OS_IOS
+#import "FileItemProvider.h"
+#import "ZipFile.h"
+#endif
 
 #if !__has_feature(objc_arc)
 #error("This file assumes ARC")
