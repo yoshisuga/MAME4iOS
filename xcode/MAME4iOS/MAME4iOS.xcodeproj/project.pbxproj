@@ -884,7 +884,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
-			shellScript = "PLISTBUDDY=\"/usr/libexec/PlistBuddy\"\nINFOPLIST=\"${BUILT_PRODUCTS_DIR}/${INFOPLIST_PATH}\"\n\nGIT_COMMIT=`git rev-parse HEAD`\nGIT_BRANCH=`git rev-parse --abbrev-ref HEAD`\n\n$PLISTBUDDY -c \"Add :git-commit string $GIT_COMMIT\" \"${INFOPLIST}\"\n$PLISTBUDDY -c \"Add :git-branch string $GIT_BRANCH\" \"${INFOPLIST}\"\n";
+			shellScript = "PLISTBUDDY=\"/usr/libexec/PlistBuddy\"\nINFOPLIST=\"${BUILT_PRODUCTS_DIR}/${INFOPLIST_PATH}\"\n\nGIT_COMMIT=`git rev-parse HEAD`\nGIT_BRANCH=`git rev-parse --abbrev-ref HEAD`\n\n$PLISTBUDDY -c \"Delete :git-commit\" \"${INFOPLIST}\" || true\n$PLISTBUDDY -c \"Delete :git-branch\" \"${INFOPLIST}\" || true\n\n$PLISTBUDDY -c \"Add :git-commit string $GIT_COMMIT\" \"${INFOPLIST}\"\n$PLISTBUDDY -c \"Add :git-branch string $GIT_BRANCH\" \"${INFOPLIST}\"\n";
 			showEnvVarsInLog = 0;
 		};
 		EF0E58CF2444F0C000D7588F /* ShellScript */ = {
@@ -902,7 +902,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
-			shellScript = "PLISTBUDDY=\"/usr/libexec/PlistBuddy\"\nINFOPLIST=\"${BUILT_PRODUCTS_DIR}/${INFOPLIST_PATH}\"\n\nGIT_COMMIT=`git rev-parse HEAD`\nGIT_BRANCH=`git rev-parse --abbrev-ref HEAD`\n\n$PLISTBUDDY -c \"Add :git-commit string $GIT_COMMIT\" \"${INFOPLIST}\"\n$PLISTBUDDY -c \"Add :git-branch string $GIT_BRANCH\" \"${INFOPLIST}\"\n";
+			shellScript = "PLISTBUDDY=\"/usr/libexec/PlistBuddy\"\nINFOPLIST=\"${BUILT_PRODUCTS_DIR}/${INFOPLIST_PATH}\"\n\nGIT_COMMIT=`git rev-parse HEAD`\nGIT_BRANCH=`git rev-parse --abbrev-ref HEAD`\n\n$PLISTBUDDY -c \"Delete :git-commit\" \"${INFOPLIST}\" || true\n$PLISTBUDDY -c \"Delete :git-branch\" \"${INFOPLIST}\" || true\n\n$PLISTBUDDY -c \"Add :git-commit string $GIT_COMMIT\" \"${INFOPLIST}\"\n$PLISTBUDDY -c \"Add :git-branch string $GIT_BRANCH\" \"${INFOPLIST}\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
