@@ -3284,6 +3284,7 @@ void myosd_handle_turbo() {
         if (![ext isEqualToString:@"ZIP"])
             continue;
         
+        //TODO: support exporting CHDs
         NSArray* paths = @[@"roms/%@.zip", @"artwork/%@.zip", @"titles/%@.png", @"samples/%@.zip", @"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@/1.sta", @"sta/%@/2.sta", @"hi/%@.hi"];
         for (NSString* path in paths) {
             [files addObject:[NSString stringWithFormat:path, [rom stringByDeletingPathExtension]]];

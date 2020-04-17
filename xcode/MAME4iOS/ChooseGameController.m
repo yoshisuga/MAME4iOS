@@ -15,6 +15,11 @@
 #import "Globals.h"
 #import "myosd.h"
 
+#if TARGET_OS_IOS
+#import "FileItemProvider.h"
+#import "ZipFile.h"
+#endif
+
 #if !__has_feature(objc_arc)
 #error("This file assumes ARC")
 #endif
@@ -1247,32 +1252,49 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 #pragma mark - game context menu actions...
 
+// get the files associated with a game, if allFiles is NO only the settings files are returned.
+// file paths are relative to our document root.
+-(NSArray*)getGameFiles:(NSDictionary*)game allFiles:(BOOL)all
+{
+    NSString* name = game[kGameInfoName];
+    
+    NSMutableArray* files = [[NSMutableArray alloc] init];
+    
+    for (NSString* file in @[@"titles/%@.png", @"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@/1.sta", @"sta/%@/2.sta", @"hi/%@.hi", @"nvram/%@.nv", @"inp/%@.inp"])
+        [files addObject:[NSString stringWithFormat:file, name]];
+    
+    if (all) {
+        for (NSString* file in @[@"roms/%@.zip", @"roms/%@/", @"artwork/%@.zip", @"samples/%@.zip"])
+            [files addObject:[NSString stringWithFormat:file, name]];
+    }
+    
+    return files;
+}
+
 -(void)delete:(NSDictionary*)game
 {
     NSString* title = [game[kGameInfoDescription] componentsSeparatedByString:@" ("].firstObject;
     NSString* message = nil;
 
     [self showAlertWithTitle:title message:message buttons:@[@"Delete Settings", @"Delete All Files", @"Cancel"] handler:^(NSUInteger button) {
-        BOOL delete = (button == 1);
-        
+        // cancel get out!
         if (button == 2)
             return;
         
-        NSArray* paths = @[@"titles/%@.png", @"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@", @"hi/%@.hi", @"nvram/%@.nv", @"inp/%@.inp"];
-        
-        if (delete)
-            paths = [paths arrayByAddingObjectsFromArray:@[@"roms/%@.zip", @"roms/%@", @"artwork/%@.zip", @"samples/%@.zip"]];
+        // 0=Settings, 1=All Files
+        BOOL allFiles = (button == 1);
+        NSArray* files = [self getGameFiles:game allFiles:allFiles];
         
         NSString* root = [NSString stringWithUTF8String:get_documents_path("")];
-        for (NSString* path in paths) {
-            NSString* delete_path = [root stringByAppendingPathComponent:[NSString stringWithFormat:path, game[kGameInfoName]]];
+        for (NSString* file in files) {
+            NSString* delete_path = [root stringByAppendingPathComponent:file];
             NSLog(@"DELETE: %@", delete_path);
             [[NSFileManager defaultManager] removeItemAtPath:delete_path error:nil];
         }
         
         [[ImageCache sharedInstance] flush:[self getGameImageURL:game] size:CGSizeZero];
         
-        if (delete) {
+        if (allFiles) {
             [self setRecent:game isRecent:FALSE];
             [self setFavorite:game isFavorite:FALSE];
 
@@ -1288,14 +1310,18 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 }
 
 #if TARGET_OS_IOS
+// Export a game as a ZIP file with all the game state and settings, make the export file be named "SHORT-DESCRIPTION (ROMNAME).zip"
 -(void)share:(NSDictionary*)game
 {
-    NSURL* url = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%s/%@.zip", get_documents_path("roms"), game[kGameInfoName]]];
+    NSString* title = [NSString stringWithFormat:@"%@ (%@)",[[game[kGameInfoDescription] componentsSeparatedByString:@" ("] firstObject], game[kGameInfoName]];
     
-    if (![[NSFileManager defaultManager] fileExistsAtPath:url.path])
-        return;
-    
-    UIActivityViewController* activity = [[UIActivityViewController alloc] initWithActivityItems:@[url] applicationActivities:nil];
+    FileItemProvider* item = [[FileItemProvider alloc] initWithTitle:title typeIdentifier:@"public.zip-archive" saveHandler:^BOOL(NSURL* url, FileItemProviderProgressHandler progressHandler) {
+        NSString *rootPath = [NSString stringWithUTF8String:get_documents_path("")];
+        NSArray* files = [self getGameFiles:game allFiles:YES];
+        //TODO: support exporting CHDs
+        return [ZipFile exportTo:url.path fromDirectory:rootPath withFiles:files withOptions:(ZipFileWriteFiles | ZipFileWriteAtomic) progressBlock:progressHandler];
+    }];
+    UIActivityViewController* activity = [[UIActivityViewController alloc] initWithActivityItems:@[item] applicationActivities:nil];
 
     if (activity.popoverPresentationController != nil) {
         UIView* view = self.view;
@@ -1306,6 +1332,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
     [self presentViewController:activity animated:YES completion:nil];
 }
+
 #endif
 
 #pragma mark - Context Menu
