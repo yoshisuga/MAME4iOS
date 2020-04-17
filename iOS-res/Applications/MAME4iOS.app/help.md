@@ -1,5 +1,5 @@
 # MAME4iOS Reloaded
-### Version 2020.3 (Apr 2020) 
+### Version $(APP_VERSION) ($(APP_DATE)) 
 ### MAME (0.139u1 )  by David Valdeita (Seleuco)
 
 ![Icon](MAME4iOS144.png)
@@ -150,11 +150,29 @@ NOTE: To type OK when MAME requires it, press LEFT and then RIGHT.
 
 ## FAVORITES
 
-You can mark (or unmark) your ROMS in the MAME4iOS game selection window as favorites by long pressing to get a context menu (you can also delete the GAME physical files). 
+You can mark (or unmark) your ROMS in the MAME4iOS game selection window as favorites by long pressing to get a context menu. 
 
 You can mark (or unmark) your ROMS in the MAME DOS MENU by pressing the X button. A favorite ROM appears in blue in the game list. The favorites are saved to the file: Favorites.ini. This file is compatible with the standard MAME Favorites.ini file format so you can copy this over from your PC version of MAME to the iOS version.
 
-In the filtering options you can filter your ROMS by favorites, category, manufacturer, driver source and year plus you can also filter out ROM clones.
+## RESET
+when you make a mistake and need to undo
+
+### Global Settings Reset (aka Factory Reset)
+`Settings` > `Reset to Defaults`
+* restore all MAME4iOS settings to default.
+* delete Recent and Favorite games.
+* delete all cached Title Images. 
+* delete all MAME key mappings or settings. 
+
+### Per Game Settings Reset
+context menu, select `Delete`, then choose `Delete Settings`. 
+* delete any MAME key mappings or settings for game
+* delete any hiscores
+* delete any saved state.
+* delete cached Title image. 
+
+### Delete Game 
+You can also remove a game totally, context menu `Delete`, choose `Delete All Files`
 
 ## Hardware keyboard
 

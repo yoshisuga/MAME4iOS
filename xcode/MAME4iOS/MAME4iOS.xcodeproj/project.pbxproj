@@ -728,6 +728,7 @@
 				925ABCA51E46DCC500997182 /* Sources */,
 				925ABCB81E46DCC500997182 /* Frameworks */,
 				925ABCC61E46DCC500997182 /* Resources */,
+				EF0E58CE2444E61000D7588F /* ShellScript */,
 			);
 			buildRules = (
 				EF0E08AF2401853D00E98F01 /* PBXBuildRule */,
@@ -746,6 +747,7 @@
 				92ECB8E721EA984D00D1E3D0 /* Sources */,
 				92ECB8E821EA984D00D1E3D0 /* Frameworks */,
 				92ECB8E921EA984D00D1E3D0 /* Resources */,
+				EF0E58CF2444F0C000D7588F /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -865,6 +867,45 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		EF0E58CE2444E61000D7588F /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/bash;
+			shellScript = "PLISTBUDDY=\"/usr/libexec/PlistBuddy\"\nINFOPLIST=\"${BUILT_PRODUCTS_DIR}/${INFOPLIST_PATH}\"\n\nGIT_COMMIT=`git rev-parse HEAD`\nGIT_BRANCH=`git rev-parse --abbrev-ref HEAD`\n\n$PLISTBUDDY -c \"Delete :git-commit\" \"${INFOPLIST}\" || true\n$PLISTBUDDY -c \"Delete :git-branch\" \"${INFOPLIST}\" || true\n\n$PLISTBUDDY -c \"Add :git-commit string $GIT_COMMIT\" \"${INFOPLIST}\"\n$PLISTBUDDY -c \"Add :git-branch string $GIT_BRANCH\" \"${INFOPLIST}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		EF0E58CF2444F0C000D7588F /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/bash;
+			shellScript = "PLISTBUDDY=\"/usr/libexec/PlistBuddy\"\nINFOPLIST=\"${BUILT_PRODUCTS_DIR}/${INFOPLIST_PATH}\"\n\nGIT_COMMIT=`git rev-parse HEAD`\nGIT_BRANCH=`git rev-parse --abbrev-ref HEAD`\n\n$PLISTBUDDY -c \"Delete :git-commit\" \"${INFOPLIST}\" || true\n$PLISTBUDDY -c \"Delete :git-branch\" \"${INFOPLIST}\" || true\n\n$PLISTBUDDY -c \"Add :git-commit string $GIT_COMMIT\" \"${INFOPLIST}\"\n$PLISTBUDDY -c \"Add :git-branch string $GIT_BRANCH\" \"${INFOPLIST}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		925ABCA51E46DCC500997182 /* Sources */ = {

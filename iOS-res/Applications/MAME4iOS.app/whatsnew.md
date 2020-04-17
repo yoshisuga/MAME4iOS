@@ -169,10 +169,10 @@ Removed devtag_get_device(); use machine->device() instead.
 
 Removed the global clock accessors and cpu_* aliases: [Aaron Giles]
 
-   cpu_get_clock == device->unscaled_clock
-   cpu_set_clock == device->set_unscaled_clock
-   cpu_get_clockscale == device->get_clock_scale 
-   cpu_set_clockscale == device->set_clock_scale
+    cpu_get_clock == device->unscaled_clock
+    cpu_set_clock == device->set_unscaled_clock
+    cpu_get_clockscale == device->get_clock_scale 
+    cpu_set_clockscale == device->set_clock_scale
 
 Fix bad loop condition that shows up with -cheat enabled. [Aaron Giles]
 
@@ -521,11 +521,11 @@ Moved global machine-level operations and accessors into methods on
 the running_machine class. For the most part, this doesn't affect
 drivers except for a few occasional bits: [Aaron Giles]
 
-  mame_get_phase() == machine->phase() 
-  add_reset_callback() == machine->add_notifier(MACHINE_NOTIFY_RESET, ...) 
-  add_exit_callback() == machine->add_notifier(MACHINE_NOTIFY_EXIT, ...)
-  mame_get_base_datetime() == machine->base_datetime()
-  mame_get_current_datetime() == machine->current_datetime()
+    mame_get_phase() == machine->phase() 
+    add_reset_callback() == machine->add_notifier(MACHINE_NOTIFY_RESET, ...) 
+    add_exit_callback() == machine->add_notifier(MACHINE_NOTIFY_EXIT, ...)
+    mame_get_base_datetime() == machine->base_datetime()
+    mame_get_current_datetime() == machine->current_datetime()
 
 Cleaned up the region_info class, removing most global region
 accessors except for memory_region() and memory_region_length().
@@ -556,9 +556,10 @@ are internal clock after dividers/multipliers.) [Aaron Giles]
 Removed most other instances of cpu_get_total_cycles. [Aaron Giles]
 
 Removed the following functions: [Aaron Giles]
-  cpu_get_total_cycles()   == cpudevice->total_cycles()
-  cpu_clocks_to_attotime() == cpudevice->cycles_to_attotime()
-  cpu_attotime_to_clocks() == cpudevice->attotime_to_cycles()
+        
+    cpu_get_total_cycles()   == cpudevice->total_cycles()
+    cpu_clocks_to_attotime() == cpudevice->cycles_to_attotime()
+    cpu_attotime_to_clocks() == cpudevice->attotime_to_cycles()
 
 Correct dipswitch location order in World Rally to match actual dips
 as seen by the game / service menu. [Brian Troha]
@@ -873,16 +874,16 @@ Hooked up color prom in Kick Boy [Angelo Salese]
 
 Defined two new casting helpers: [Aaron Giles]
 
-  downcast<type>(value) should be used for safe and efficient
-  downcasting from a base class to a derived class. It wraps
-  static_cast<> by adding an assert that a matching dynamic_cast<>
-  returns the same result in debug builds.
+    downcast<type>(value) should be used for safe and efficient
+    downcasting from a base class to a derived class. It wraps
+    static_cast<> by adding an assert that a matching dynamic_cast<>
+    returns the same result in debug builds.
 
-  crosscast<type>(value) should be used for safe casting from one type
-  to another in multiple inheritance scenarios. It compiles to a
-  dynamic_cast<> plus an assert on the result. Since it does not
-  optimize down to static_cast<>, you should prefer downcast<> over
-  crosscast<> when you can.
+    crosscast<type>(value) should be used for safe casting from one type
+    to another in multiple inheritance scenarios. It compiles to a
+    dynamic_cast<> plus an assert on the result. Since it does not
+    optimize down to static_cast<>, you should prefer downcast<> over
+    crosscast<> when you can.
 
 Redefined running_device to be a proper C++ class (now called
 device_t). Same for device_config (still called device_config). All
@@ -940,41 +941,41 @@ simply SCREEN. The various global functions that were previously used
 to access information or modify the state of these devices are now
 replaced by methods on the device classes. Specifically:
 
-  video_screen_configure()             == screen->configure()
-  video_screen_set_visarea()           == screen->set_visible_area()
-  video_screen_update_partial()        == screen->update_partial()
-  video_screen_update_now()            == screen->update_now()
-  video_screen_get_vpos()              == screen->vpos()
-  video_screen_get_hpos()              == screen->hpos()
-  video_screen_get_vblank()            == screen->vblank()
-  video_screen_get_hblank()            == screen->hblank()
-  video_screen_get_width()             == screen->width()
-  video_screen_get_height()            == screen->height()
-  video_screen_get_visible_area()      == screen->visible_area()
-  video_screen_get_time_until_pos()    == screen->time_until_pos()
-  video_screen_get_time_until_vblank_start() ==
+    video_screen_configure()             == screen->configure()
+    video_screen_set_visarea()           == screen->set_visible_area()
+    video_screen_update_partial()        == screen->update_partial()
+    video_screen_update_now()            == screen->update_now()
+    video_screen_get_vpos()              == screen->vpos()
+    video_screen_get_hpos()              == screen->hpos()
+    video_screen_get_vblank()            == screen->vblank()
+    video_screen_get_hblank()            == screen->hblank()
+    video_screen_get_width()             == screen->width()
+    video_screen_get_height()            == screen->height()
+    video_screen_get_visible_area()      == screen->visible_area()
+    video_screen_get_time_until_pos()    == screen->time_until_pos()
+    video_screen_get_time_until_vblank_start() ==
                                screen->time_until_vblank_start()
-  video_screen_get_time_until_vblank_end() ==
+    video_screen_get_time_until_vblank_end() ==
                                screen->time_until_vblank_end() 
-  video_screen_get_time_until_update() == 
+    video_screen_get_time_until_update() == 
                                screen->time_until_update() 
-  video_screen_get_scan_period()       == screen->scan_period() 
-  video_screen_get_frame_period()      == screen->frame_period() 
-  video_screen_get_frame_number()      == screen->frame_number()
+    video_screen_get_scan_period()       == screen->scan_period() 
+    video_screen_get_frame_period()      == screen->frame_period() 
+    video_screen_get_frame_number()      == screen->frame_number()
 
-  timer_device_adjust_oneshot()        == timer->adjust()
-  timer_device_adjust_periodic()       == timer->adjust()
-  timer_device_reset()                 == timer->reset()
-  timer_device_enable()                == timer->enable()
-  timer_device_enabled()               == timer->enabled()
-  timer_device_get_param()             == timer->param()
-  timer_device_set_param()             == timer->set_param()
-  timer_device_get_ptr()               == timer->get_ptr()
-  timer_device_set_ptr()               == timer->set_ptr()
-  timer_device_timeelapsed()           == timer->time_elapsed()
-  timer_device_timeleft()              == timer->time_left()
-  timer_device_starttime()             == timer->start_time()
-  timer_device_firetime()              == timer->fire_time()
+    timer_device_adjust_oneshot()        == timer->adjust()
+    timer_device_adjust_periodic()       == timer->adjust()
+    timer_device_reset()                 == timer->reset()
+    timer_device_enable()                == timer->enable()
+    timer_device_enabled()               == timer->enabled()
+    timer_device_get_param()             == timer->param()
+    timer_device_set_param()             == timer->set_param()
+    timer_device_get_ptr()               == timer->get_ptr()
+    timer_device_set_ptr()               == timer->set_ptr()
+    timer_device_timeelapsed()           == timer->time_elapsed()
+    timer_device_timeleft()              == timer->time_left()
+    timer_device_starttime()             == timer->start_time()
+    timer_device_firetime()              == timer->fire_time()
 
 Updated all drivers that use the above functions to fetch the specific
 device type (timer_device or screen_device) and call the appropriate
@@ -1060,10 +1061,11 @@ Dumped internal ROM for Pinkiri 8 [Charles MacDonald]
 Dumped internal ROM for Janshi [Charles MacDonald]
 
 Documentation update [Stefan Lindberg, Dumping Union] 
- segas16b.c, taito_f2.c, taito_f3.c & taito_x.c: 
-  Corrected rom names and or added PCB locations to Ray Force, 
-  Arabian Magic, Liquid Kids, Twin Hawk. Added additional Sega game 
-  ID info for an Alien Syndrome set.
+
+    segas16b.c, taito_f2.c, taito_f3.c & taito_x.c: 
+    Corrected rom names and or added PCB locations to Ray Force, 
+    Arabian Magic, Liquid Kids, Twin Hawk. Added additional Sega game 
+    ID info for an Alien Syndrome set.
 
 model3.c: Correct sound rom loading for the Scud & Scud Plus sets
 [Alex's Blog]
@@ -1307,34 +1309,34 @@ Super Game III [Mariusz Wojcieszek, Guru]
 
 New clones added
 ----------------
-Golden Tee 2K (v1.00) (alt protection) [Guru, Brian Troha]
-1943 (Euro) [Stefan Lindberg]
-Fantasy Zone (NEC 0317-5000 encrypted Z80)
-  [Cools, Andrew Welburn, The Dumping Union]
-X-Men Vs. Street Fighter (Asia 960910) [ANY, The Dumping Union]
-X Multiply (Japan, M81) [hap, porchy]
-The Crystal Maze (2 sets) [James Wallace]
-The Crystsl Maze Team Challenge (2 sets) [James Wallace]
-The New Crystal Maze Featuring Ocean Zone (2 sets) [James Wallace]
-Road Riot's Revenge (prototype, set 3) [Siftware]
-Indoor Soccer (set 2) [Siftware]
-Ms. Pacman Champion Edition / Zola-Puc Gal
-  [Andrew Welburn, The Dumping Union]
-Heavyweight Champ (Japan, FD1094) [Team Japump, Dumping Union]
-Super Draw Poker (bootleg) [f205v]
-Ms. Pac-Man/Galaga - 20 Year Reunion (2 sets) 
-  [Brian Troha, The Dumping Union]
+Golden Tee 2K (v1.00) (alt protection) [Guru, Brian Troha]   
+1943 (Euro) [Stefan Lindberg]  
+Fantasy Zone (NEC 0317-5000 encrypted Z80)  
+  [Cools, Andrew Welburn, The Dumping Union]  
+X-Men Vs. Street Fighter (Asia 960910) [ANY, The Dumping Union]  
+X Multiply (Japan, M81) [hap, porchy]  
+The Crystal Maze (2 sets) [James Wallace]  
+The Crystsl Maze Team Challenge (2 sets) [James Wallace]  
+The New Crystal Maze Featuring Ocean Zone (2 sets) [James Wallace]  
+Road Riot's Revenge (prototype, set 3) [Siftware]  
+Indoor Soccer (set 2) [Siftware]  
+Ms. Pacman Champion Edition / Zola-Puc Gal  
+  [Andrew Welburn, The Dumping Union]  
+Heavyweight Champ (Japan, FD1094) [Team Japump, Dumping Union]  
+Super Draw Poker (bootleg) [f205v]  
+Ms. Pac-Man/Galaga - 20 Year Reunion (2 sets)   
+  [Brian Troha, The Dumping Union]  
 
 
 
 New games marked as GAME_NOT_WORKING
 ------------------------------------
-Win Win Bingo (2 sets) [f205v, Filippo Tarderia]
-Zoo [Brian Troha, The Dumping Union]
-X Five Jokers [f205v]
-Magic Number (Italian Gambling Game) [f205v]
-Magic Class [f205v]
-Abacus [f205v]
-Euro Class [f205v]
-Book Theatre [f205v]
-Super Famicom Box BIOS [Angelo Salese]
+Win Win Bingo (2 sets) [f205v, Filippo Tarderia]  
+Zoo [Brian Troha, The Dumping Union]  
+X Five Jokers [f205v]  
+Magic Number (Italian Gambling Game) [f205v]  
+Magic Class [f205v]  
+Abacus [f205v]  
+Euro Class [f205v]  
+Book Theatre [f205v]  
+Super Famicom Box BIOS [Angelo Salese]  

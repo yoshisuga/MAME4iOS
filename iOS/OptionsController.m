@@ -55,6 +55,7 @@
 #import "HelpController.h"
 #import "EmulatorController.h"
 #import "SystemImage.h"
+#import "ImageCache.h"
 
 @implementation OptionsController
 
@@ -109,6 +110,28 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.title = NSLocalizedString(@"Settings", @"");
+    
+    UILabel* pad = [[UILabel alloc] init];
+    pad.text = @" ";
+    
+    UIImageView* logo = [[UIImageView alloc] initWithImage:[[UIImage imageNamed:@"mame_logo"] scaledToSize:CGSizeMake(300, 0)]];
+    logo.contentMode = UIViewContentModeScaleAspectFit;
+    
+    UILabel* info = [[UILabel alloc] init];
+    info.text = [self.applicationVersionInfo stringByAppendingString:@"\n"];
+    info.textAlignment = NSTextAlignmentCenter;
+    info.numberOfLines = 0;
+    
+    UIStackView* stack = [[UIStackView alloc] initWithArrangedSubviews:@[pad, logo, info]];
+    stack.axis = UILayoutConstraintAxisVertical;
+    stack.alignment = UIStackViewAlignmentFill;
+    stack.distribution = UIStackViewDistributionEqualSpacing;
+    
+    [stack setNeedsLayout]; [stack layoutIfNeeded];
+    CGFloat height = [stack systemLayoutSizeFittingSize:UILayoutFittingCompressedSize].height;
+    stack.frame =  CGRectMake(0, 0, self.view.bounds.size.width, height);
+     
+    self.tableView.tableHeaderView = stack;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -484,10 +507,7 @@
 		
     switch (section)
     {
-        case kSupportSection:
-            return [NSString stringWithFormat:@"%@ %@",
-                    [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"],
-                    [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"]];
+        case kSupportSection: return @"";
         case kPortraitSection: return @"Portrait";
         case kLandscapeSection: return @"Landscape";
         case kMiscSection: return @"Options";

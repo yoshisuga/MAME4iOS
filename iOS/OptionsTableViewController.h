@@ -51,4 +51,6 @@
 
 - (instancetype)initWithEmuController:(EmulatorController*)emulatorController;
 
+- (NSString*)applicationVersionInfo;
+
 @end
