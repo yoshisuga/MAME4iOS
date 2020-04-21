@@ -166,3 +166,7 @@ Under Settings -> Game Input, there's a section called "Turbo Mode Toggle", that
 Also in Settings -> Game Input, you'll find a section called "Touch Analog" and "Touch Directional Input". "Touch Analog" lets you use your touchscreen as an analog device for games using input controls such as trackballs and knobs. These include games like Arkanoid or Crystal Castles. You can adjust the sensitivity of the analog controls, and also choose to hide the d-pad/analog stick in this mode.
 
 "Touch Directional Input" is rather experimental and is for vertical shooters so you can move around using your finger. It still needs some work so just a word of caution :)
+
+## License
+
+MAME4iOS is distributed under the terms of the GNU General Public License, 2 (GPL-2.0).
