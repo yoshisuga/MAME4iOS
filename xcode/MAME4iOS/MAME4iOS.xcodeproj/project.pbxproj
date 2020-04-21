@@ -155,6 +155,14 @@
 		EF63E1C124424D2300CFE85D /* whatsnew.md in Resources */ = {isa = PBXBuildFile; fileRef = EF63E1C024424D2300CFE85D /* whatsnew.md */; };
 		EF7B232C23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
 		EF7B232D23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
+		EF8EAA86244F7F5D00DA02BB /* SteamControllerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA7F244F7F5D00DA02BB /* SteamControllerManager.m */; };
+		EF8EAA87244F7F5D00DA02BB /* SteamControllerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA7F244F7F5D00DA02BB /* SteamControllerManager.m */; };
+		EF8EAA88244F7F5D00DA02BB /* SteamController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA80244F7F5D00DA02BB /* SteamController.m */; };
+		EF8EAA89244F7F5D00DA02BB /* SteamController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA80244F7F5D00DA02BB /* SteamController.m */; };
+		EF8EAA8A244F7F5D00DA02BB /* SteamControllerExtendedGamepad.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA82244F7F5D00DA02BB /* SteamControllerExtendedGamepad.m */; };
+		EF8EAA8B244F7F5D00DA02BB /* SteamControllerExtendedGamepad.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA82244F7F5D00DA02BB /* SteamControllerExtendedGamepad.m */; };
+		EF8EAA8C244F7F5D00DA02BB /* SteamControllerInput.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA83244F7F5D00DA02BB /* SteamControllerInput.m */; };
+		EF8EAA8D244F7F5D00DA02BB /* SteamControllerInput.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA83244F7F5D00DA02BB /* SteamControllerInput.m */; };
 		EF941F0024427D1200D58F7F /* OptionsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF941EFF24427D1200D58F7F /* OptionsTableViewController.m */; };
 		EF941F0124427D1200D58F7F /* OptionsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF941EFF24427D1200D58F7F /* OptionsTableViewController.m */; };
 		EFA756FF2405585D00A02AAB /* mameui.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA756FE2405585D00A02AAB /* mameui.png */; };
@@ -352,6 +360,16 @@
 		EF301CEF240460C5000510FD /* Alert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Alert.h; sourceTree = "<group>"; };
 		EF301CF0240460C5000510FD /* Alert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Alert.m; sourceTree = "<group>"; };
 		EF63E1C024424D2300CFE85D /* whatsnew.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = whatsnew.md; path = "../../iOS-res/Applications/MAME4iOS.app/whatsnew.md"; sourceTree = "<group>"; };
+		EF8EAA7E244F7F5D00DA02BB /* SteamControllerExtendedGamepad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SteamControllerExtendedGamepad.h; sourceTree = "<group>"; };
+		EF8EAA7F244F7F5D00DA02BB /* SteamControllerManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SteamControllerManager.m; sourceTree = "<group>"; };
+		EF8EAA80244F7F5D00DA02BB /* SteamController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SteamController.m; sourceTree = "<group>"; };
+		EF8EAA81244F7F5D00DA02BB /* SteamControllerInput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SteamControllerInput.h; sourceTree = "<group>"; };
+		EF8EAA82244F7F5D00DA02BB /* SteamControllerExtendedGamepad.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SteamControllerExtendedGamepad.m; sourceTree = "<group>"; };
+		EF8EAA83244F7F5D00DA02BB /* SteamControllerInput.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SteamControllerInput.m; sourceTree = "<group>"; };
+		EF8EAA84244F7F5D00DA02BB /* SteamController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SteamController.h; sourceTree = "<group>"; };
+		EF8EAA85244F7F5D00DA02BB /* SteamControllerManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SteamControllerManager.h; sourceTree = "<group>"; };
+		EF8EAA8E244F822C00DA02BB /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		EF8EAA8F244F822C00DA02BB /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		EF941EFE24427D1200D58F7F /* OptionsTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OptionsTableViewController.h; path = ../../iOS/OptionsTableViewController.h; sourceTree = "<group>"; };
 		EF941EFF24427D1200D58F7F /* OptionsTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OptionsTableViewController.m; path = ../../iOS/OptionsTableViewController.m; sourceTree = "<group>"; };
 		EF9F9C9E240070E700352554 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../../README.md; sourceTree = "<group>"; };
@@ -583,9 +601,10 @@
 			isa = PBXGroup;
 			children = (
 				EF9F9C9E240070E700352554 /* README.md */,
+				CEAC6C2716AAA73900AF3275 /* RELOADED */,
 				92A5338421EBDBAD0089FBB9 /* GCDWebServer */,
 				92A533CB21EBDDF20089FBB9 /* GCDWebUploader */,
-				CEAC6C2716AAA73900AF3275 /* RELOADED */,
+				EF8EAA7D244F7F5D00DA02BB /* SteamController */,
 				CEE6808F1635BA7000051BC2 /* MAME4iOS */,
 				92ECB8EC21EA984E00D1E3D0 /* MAME tvOS */,
 				CEE680C51635BB8500051BC2 /* Includes */,
@@ -708,6 +727,23 @@
 				926C771C21F5034100103EDE /* TVInputOptionsController.m */,
 			);
 			name = Options;
+			sourceTree = "<group>";
+		};
+		EF8EAA7D244F7F5D00DA02BB /* SteamController */ = {
+			isa = PBXGroup;
+			children = (
+				EF8EAA8E244F822C00DA02BB /* README.md */,
+				EF8EAA8F244F822C00DA02BB /* LICENSE */,
+				EF8EAA7E244F7F5D00DA02BB /* SteamControllerExtendedGamepad.h */,
+				EF8EAA7F244F7F5D00DA02BB /* SteamControllerManager.m */,
+				EF8EAA80244F7F5D00DA02BB /* SteamController.m */,
+				EF8EAA81244F7F5D00DA02BB /* SteamControllerInput.h */,
+				EF8EAA82244F7F5D00DA02BB /* SteamControllerExtendedGamepad.m */,
+				EF8EAA83244F7F5D00DA02BB /* SteamControllerInput.m */,
+				EF8EAA84244F7F5D00DA02BB /* SteamController.h */,
+				EF8EAA85244F7F5D00DA02BB /* SteamControllerManager.h */,
+			);
+			path = SteamController;
 			sourceTree = "<group>";
 		};
 		EFA7571E2408308000A02AAB /* help images */ = {
@@ -922,6 +958,8 @@
 				92A533C621EBDBAD0089FBB9 /* GCDWebServerDataRequest.m in Sources */,
 				92A533A821EBDBAD0089FBB9 /* GCDWebServerRequest.m in Sources */,
 				925ABCA91E46DCC500997182 /* OptionsController.m in Sources */,
+				EF8EAA8A244F7F5D00DA02BB /* SteamControllerExtendedGamepad.m in Sources */,
+				EF8EAA8C244F7F5D00DA02BB /* SteamControllerInput.m in Sources */,
 				92A533C021EBDBAD0089FBB9 /* GCDWebServerURLEncodedFormRequest.m in Sources */,
 				92A533D821EE601D0089FBB9 /* WebServer.m in Sources */,
 				EF301CF1240460C5000510FD /* Alert.m in Sources */,
@@ -940,6 +978,7 @@
 				92A533BD21EBDBAD0089FBB9 /* GCDWebServerStreamedResponse.m in Sources */,
 				9268D85A2166841000AB0470 /* DeviceScreenResolver.m in Sources */,
 				925ABCB21E46DCC500997182 /* LayoutView.m in Sources */,
+				EF8EAA86244F7F5D00DA02BB /* SteamControllerManager.m in Sources */,
 				92A533A521EBDBAD0089FBB9 /* GCDWebServerResponse.m in Sources */,
 				925ABCB31E46DCC500997182 /* NetplayController.m in Sources */,
 				925ABCB41E46DCC500997182 /* NetplayGameKit.m in Sources */,
@@ -952,6 +991,7 @@
 				92A533B421EBDBAD0089FBB9 /* GCDWebServerErrorResponse.m in Sources */,
 				EF23D331243CB9CF006B3EE2 /* PopupSegmentedControl.m in Sources */,
 				EF19F22C235D1BDF00C8EE7F /* ChooseGameController.m in Sources */,
+				EF8EAA88244F7F5D00DA02BB /* SteamController.m in Sources */,
 				92A533AE21EBDBAD0089FBB9 /* GCDWebServer.m in Sources */,
 				92A5332321EB57F00089FBB9 /* Options.m in Sources */,
 				EF301CF3240460F3000510FD /* ZipFile.m in Sources */,
@@ -970,20 +1010,24 @@
 				926C76FF21F1C87700103EDE /* TVOptionsController.m in Sources */,
 				92A5332621EBC8D00089FBB9 /* Bootstrapper.m in Sources */,
 				92A533A921EBDBAD0089FBB9 /* GCDWebServerRequest.m in Sources */,
+				EF8EAA8B244F7F5D00DA02BB /* SteamControllerExtendedGamepad.m in Sources */,
 				92A533B221EBDBAD0089FBB9 /* GCDWebServerConnection.m in Sources */,
 				92A533B821EBDBAD0089FBB9 /* GCDWebServerFileResponse.m in Sources */,
 				92A533C121EBDBAD0089FBB9 /* GCDWebServerURLEncodedFormRequest.m in Sources */,
 				92ECB91921EAD57900D1E3D0 /* UIView+Toast.m in Sources */,
 				92ECB91821EAD57400D1E3D0 /* ScreenView.m in Sources */,
 				EF19F22D235D1BDF00C8EE7F /* ChooseGameController.m in Sources */,
+				EF8EAA89244F7F5D00DA02BB /* SteamController.m in Sources */,
 				92A533A621EBDBAD0089FBB9 /* GCDWebServerResponse.m in Sources */,
 				92A533D921EE601D0089FBB9 /* WebServer.m in Sources */,
 				92A533D421EBDDF20089FBB9 /* GCDWebUploader.m in Sources */,
 				92ECB91221EAA1B700D1E3D0 /* EmulatorController.m in Sources */,
+				EF8EAA87244F7F5D00DA02BB /* SteamControllerManager.m in Sources */,
 				926C771A21F4F78300103EDE /* DefaultOptionController.m in Sources */,
 				92A533AC21EBDBAD0089FBB9 /* GCDWebServerFunctions.m in Sources */,
 				EF7B232D23FD0469001FF51D /* (null) in Sources */,
 				92A533AF21EBDBAD0089FBB9 /* GCDWebServer.m in Sources */,
+				EF8EAA8D244F7F5D00DA02BB /* SteamControllerInput.m in Sources */,
 				EFA7570E2406D64600A02AAB /* SystemImage.m in Sources */,
 				92A533B521EBDBAD0089FBB9 /* GCDWebServerErrorResponse.m in Sources */,
 				926C770B21F31B1400103EDE /* FilterOptionController.m in Sources */,
