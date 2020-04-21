@@ -54,13 +54,7 @@
 @implementation InputOptionController
 
 - (id)init {
-    UITableViewStyle style = UITableViewStyleGrouped;
-#if TARGET_OS_IOS
-    if (@available(iOS 13.0, *)) {
-        style = UITableViewStyleInsetGrouped;
-    }
-#endif
-    if (self = [super initWithStyle:style]) {
+    if (self = [super init]) {
         
         switchAnimatedButtons=nil;
 
@@ -74,7 +68,7 @@
                               @"Speed 4", @"Speed 5",@"Speed 6",@"Speed 7",@"Speed 8",@"Speed 9",nil];
         arrayButtonSizeValue = [[NSArray alloc] initWithObjects:@"Smaller", @"Small", @"Normal", @"Big", @"Bigger",nil];
         
-        arrayControlType = [[NSArray alloc] initWithObjects:@"None",@"iCade",@"iCP, Gametel",@"iMpulse", nil];
+        arrayControlType = [[NSArray alloc] initWithObjects:@"Keyboard or 8BitDo",@"iCade or compatible",@"iCP, Gametel",@"iMpulse", nil];
         
         switchP1aspx = nil;
         
@@ -108,8 +102,7 @@
 
 - (void) viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    UITableView *tableView = (UITableView *)self.view;
-    [tableView reloadData];
+    [self.tableView reloadData];
 }
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {

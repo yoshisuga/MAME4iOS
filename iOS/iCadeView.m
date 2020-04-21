@@ -121,7 +121,9 @@
     if (g_pref_ext_control_type < EXT_CONTROL_ICADE)
         return;
 
+#if TARGET_OS_IOS
     [self iCadeKey:text];
+#endif
     
 #if 0  // TODO: is this really nessesarry???
     static int cycleResponder = 0;
@@ -791,9 +793,6 @@
 // Overloaded _keyCommandForEvent (UIResponder.h) // Only exists in iOS 9+
 -(UIKeyCommand *)_keyCommandForEvent:(UIEvent *)event { // UIPhysicalKeyboardEvent
     
-    if (g_pref_ext_control_type != EXT_CONTROL_NONE)
-        return nil;
-    
     static BOOL g_keyboard_state[256];
     
     int keyCode = [[event valueForKey:@"_keyCode"] intValue];
@@ -806,6 +805,15 @@
 
     NSLog(@"_keyCommandForEvent:'%@' '%@' keyCode:%@ isKeyDown:%@ time:%f", [event valueForKey:@"_unmodifiedInput"], [event valueForKey:@"_modifiedInput"], [event valueForKey:@"_keyCode"], [event valueForKey:@"_isKeyDown"], [event timestamp]);
 
+    if (g_pref_ext_control_type != EXT_CONTROL_NONE)
+    {
+#if TARGET_OS_TV
+        if (isKeyDown)
+            [self iCadeKey:[event valueForKey:@"_unmodifiedInput"]];
+#endif
+        return nil;
+    }
+    
     NSString* iCadeKey = nil;
     
     // MAME keys
