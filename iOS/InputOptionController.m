@@ -116,7 +116,7 @@
     {
         case 0: return 2;
         case 1: return 3;
-        case 2: return 4;
+        case 2: return 5;
         case 3: return 1;
         case 4: return 2;
         case 5: return 1;
@@ -265,6 +265,16 @@
                     cell.textLabel.text   = @"Buttons Size";
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                     cell.detailTextLabel.text = [arrayButtonSizeValue objectAtIndex:op.buttonSize];
+                    break;
+                }
+                case 4:
+                {
+                    cell.textLabel.text   = @"Nintendo Button Layout";
+                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                    switchBAYX  = [[UISwitch alloc] initWithFrame:CGRectZero];
+                    cell.accessoryView = switchBAYX;
+                    [switchBAYX setOn:[op nintendoBAYX] animated:NO];
+                    [switchBAYX addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
                     break;
                 }
             }
@@ -533,6 +543,8 @@
         op.touchDirectionalEnabled = [switchTouchDirectionalEnabled isOn];
     if ( sender == sliderTouchControlsOpacity )
         op.touchControlsOpacity = [sliderTouchControlsOpacity value];
+    if(sender == switchBAYX)
+        op.nintendoBAYX = [sender isOn];
 
     [op saveOptions];
 }
