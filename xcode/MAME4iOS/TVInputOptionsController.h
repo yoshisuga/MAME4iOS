@@ -14,9 +14,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface TVInputOptionsController : OptionsTableViewController {
-    NSArray  *arrayAutofireValue;
-}
+@interface TVInputOptionsController : OptionsTableViewController
 
 @end
 

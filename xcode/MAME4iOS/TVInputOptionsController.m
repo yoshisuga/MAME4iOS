@@ -8,17 +8,19 @@
 
 #import "TVInputOptionsController.h"
 #import "TVOptionsController.h"
+#import "ListOptionController.h"
 
 @interface TVInputOptionsController ()
 @property(nonatomic,retain) Options *options;
 @end
 
-@implementation TVInputOptionsController
+@implementation TVInputOptionsController {
+    NSArray  *arrayControlType;
+}
 
 - (id)init {
     if (self = [super init]) {
-        arrayAutofireValue = [[NSArray alloc] initWithObjects:@"Disabled", @"Speed 1", @"Speed 2",@"Speed 3",
-                              @"Speed 4", @"Speed 5",@"Speed 6",@"Speed 7",@"Speed 8",@"Speed 9",nil];
+        arrayControlType = @[@"Keyboard or 8BitDo",@"iCade or compatible",@"iCP, Gametel",@"iMpulse"];
     }
     return self;
 }
@@ -26,6 +28,12 @@
 - (void)viewDidLoad {
     self.title = NSLocalizedString(@"Input Options", @"");
     self.options = [[Options alloc] init];
+}
+
+- (void) viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    self.options = [[Options alloc] init];
+    [self.tableView reloadData];
 }
     
 #pragma mark UITableViewDataSource
@@ -36,7 +44,7 @@
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     if ( section == 0 ) {
         // general
-        return 1;
+        return 2;
     } else if ( section == 1 ) {
         // turbo
         return 6;
@@ -64,8 +72,22 @@
     cell.accessoryView = nil;
     cell.accessoryType = UITableViewCellAccessoryNone;
     if ( indexPath.section == 0 ) {
-        cell.textLabel.text   = @"P1 as P2,P3,P4";
-        cell.accessoryView = [TVOptionsController labelForOnOffValue:self.options.p1aspx];
+        switch (indexPath.row)
+        {
+            case 0:
+            {
+                cell.textLabel.text   = @"P1 as P2,P3,P4";
+                cell.accessoryView = [TVOptionsController labelForOnOffValue:self.options.p1aspx];
+                break;
+            }
+            case 1:
+            {
+                cell.textLabel.text   = @"External Controller";
+                cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                cell.detailTextLabel.text = [arrayControlType objectAtIndex:self.options.controltype];
+                break;
+            }
+        }
     } else if ( indexPath.section == 1 ) {
         switch (indexPath.row)
         {
@@ -114,8 +136,14 @@
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
     if ( indexPath.section == 0 ) {
-        self.options.p1aspx = self.options.p1aspx ? 0 : 1;
-        [TVOptionsController setOnOffValueForCell:cell optionValue:self.options.p1aspx];
+        if ( indexPath.row == 0 ) {
+            self.options.p1aspx = self.options.p1aspx ? 0 : 1;
+            [TVOptionsController setOnOffValueForCell:cell optionValue:self.options.p1aspx];
+        } else if ( indexPath.row == 1 ) {
+            ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
+                                                                                          type:kTypeControlType list:arrayControlType];
+            [[self navigationController] pushViewController:listController animated:YES];
+        }
     } else if (indexPath.section == 1) {
         if ( indexPath.row == 0 ) {
             self.options.turboXEnabled = self.options.turboXEnabled ? 0 : 1;
