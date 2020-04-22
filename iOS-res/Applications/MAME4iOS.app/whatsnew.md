@@ -2,16 +2,17 @@
 
 # Version 2020.7
 
+* Added tvOS support for iCade 
 * Steam Controller support, controller must be in [bluetooth mode and paired](https://support.steampowered.com/kb_article.php?ref=7728-QESJ-4420)
 
 # Version 2020.6
 
-* Version and Build info shown in Settings.
+* Version and Build info shown in Settings
 * Export all data for a game from Share context menu 
 
 # Version 2020.5
 
-* added Reset option in Settings.
+* added Reset option in Settings
 
 # Version 2020.4
 
