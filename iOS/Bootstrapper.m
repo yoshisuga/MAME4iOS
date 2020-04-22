@@ -43,6 +43,7 @@
  */
 
 #import <UIKit/UIKit.h>
+#import <AVFoundation/AVFoundation.h>
 
 #import "Bootstrapper.h"
 #import "Globals.h"
@@ -224,6 +225,12 @@ unsigned long read_mfi_controller(unsigned long res){
     
     [self prepareScreen];
 #endif
+    
+    NSError *audioSessionError;
+    [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryAmbient error:&audioSessionError];
+    if (error) {
+        NSLog(@"Could not set audio session category: %@",audioSessionError.localizedDescription);
+    }
 
     return TRUE;
 }
