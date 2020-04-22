@@ -184,7 +184,7 @@
     [array addObject: d];
     
     //rest
-    d = [[LayoutData alloc] initWithType:kType_DPadImgRect subtype:kSubtype_CONTROLLER value:-1 rect: emuController.rDPadImage];
+    d = [[LayoutData alloc] initWithType:kType_DPadImgRect subtype:kSubtype_CONTROLLER value:-1 rect: emuController.rStickWindow];
     [array addObject: d];
     d = [[LayoutData alloc] initWithType:kType_StickRect subtype:kSubtype_CONTROLLER value:-1 rect: emuController.rStickWindow];
     [array addObject: d];
@@ -249,7 +249,6 @@
                     [emuController getInputRects][ld.value].origin.y = [ld getNewRect].origin.y;
                     break;
                 case kType_DPadImgRect:
-                    emuController.rDPadImage = [ld getNewRect];
                     break;
                 case kType_StickRect:
                     emuController.rStickWindow = CGRectMake( [ld getNewRect].origin.x, [ld getNewRect].origin.y,

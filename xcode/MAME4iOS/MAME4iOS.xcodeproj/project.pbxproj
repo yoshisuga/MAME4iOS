@@ -14,7 +14,6 @@
 		925ABCA61E46DCC500997182 /* iCadeView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8D87DC1653121200685BC4 /* iCadeView.m */; };
 		925ABCA81E46DCC500997182 /* ListOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE90575B166A89D000653872 /* ListOptionController.m */; };
 		925ABCA91E46DCC500997182 /* OptionsController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680C01635BB6100051BC2 /* OptionsController.m */; };
-		925ABCAA1E46DCC500997182 /* DebugView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8F0D7C16585C2B0048D63C /* DebugView.m */; };
 		925ABCAB1E46DCC500997182 /* ScreenView.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680C21635BB6100051BC2 /* ScreenView.m */; };
 		925ABCAD1E46DCC500997182 /* EmulatorController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680B51635BB4900051BC2 /* EmulatorController.m */; };
 		925ABCAE1E46DCC500997182 /* HelpController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680B71635BB4900051BC2 /* HelpController.m */; };
@@ -289,8 +288,6 @@
 		CE8F08831741580100E2D5FB /* InputOptionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = InputOptionController.m; path = ../../iOS/InputOptionController.m; sourceTree = "<group>"; };
 		CE8F088617435C3A00E2D5FB /* DefaultOptionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DefaultOptionController.h; path = ../../iOS/DefaultOptionController.h; sourceTree = "<group>"; };
 		CE8F088717435C3A00E2D5FB /* DefaultOptionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DefaultOptionController.m; path = ../../iOS/DefaultOptionController.m; sourceTree = "<group>"; };
-		CE8F0D7B16585C2A0048D63C /* DebugView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = DebugView.h; path = ../../iOS/DebugView.h; sourceTree = "<group>"; };
-		CE8F0D7C16585C2B0048D63C /* DebugView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = DebugView.m; path = ../../iOS/DebugView.m; sourceTree = "<group>"; };
 		CE8F1C5F1735199400D3F527 /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
 		CE90575A166A89D000653872 /* ListOptionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ListOptionController.h; path = ../../iOS/ListOptionController.h; sourceTree = "<group>"; };
 		CE90575B166A89D000653872 /* ListOptionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ListOptionController.m; path = ../../iOS/ListOptionController.m; sourceTree = "<group>"; };
@@ -518,8 +515,6 @@
 				CEE680AB1635BB2700051BC2 /* AnalogStick.m */,
 				CEE680AC1635BB2700051BC2 /* Bootstrapper.h */,
 				CEE680AD1635BB2700051BC2 /* Bootstrapper.m */,
-				CE8F0D7B16585C2A0048D63C /* DebugView.h */,
-				CE8F0D7C16585C2B0048D63C /* DebugView.m */,
 				EF19F22E235D1C0300C8EE7F /* ChooseGameController.h */,
 				EF19F229235D1BDF00C8EE7F /* ChooseGameController.m */,
 				EF249337236264DA00DD0A6C /* ImageCache.h */,
@@ -964,7 +959,6 @@
 				92A533D821EE601D0089FBB9 /* WebServer.m in Sources */,
 				EF301CF1240460C5000510FD /* Alert.m in Sources */,
 				92A533BA21EBDBAD0089FBB9 /* GCDWebServerDataResponse.m in Sources */,
-				925ABCAA1E46DCC500997182 /* DebugView.m in Sources */,
 				925ABCAB1E46DCC500997182 /* ScreenView.m in Sources */,
 				EF24933A236264DA00DD0A6C /* ImageCache.m in Sources */,
 				92B99F0F2022706600CC44E3 /* UIView+Toast.m in Sources */,

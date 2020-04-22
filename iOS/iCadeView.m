@@ -643,26 +643,6 @@
         myosd_num_of_joys = 2;
     }
     //printf(" %d %d\n",myosd_num_of_joys,g_joy_used);
-    
-    int dpad_state = 0;
-    
-    // calculate dpad_state
-    switch (myosd_joy_status[0] & (MYOSD_UP|MYOSD_DOWN|MYOSD_LEFT|MYOSD_RIGHT))
-    {
-        case    MYOSD_UP:    dpad_state = DPAD_UP; break;
-        case    MYOSD_DOWN:  dpad_state = DPAD_DOWN; break;
-        case    MYOSD_LEFT:  dpad_state = DPAD_LEFT; break;
-        case    MYOSD_RIGHT: dpad_state = DPAD_RIGHT; break;
-            
-        case    MYOSD_UP | MYOSD_LEFT:  dpad_state = DPAD_UP_LEFT; break;
-        case    MYOSD_UP | MYOSD_RIGHT: dpad_state = DPAD_UP_RIGHT; break;
-        case    MYOSD_DOWN | MYOSD_LEFT:  dpad_state = DPAD_DOWN_LEFT; break;
-        case    MYOSD_DOWN | MYOSD_RIGHT: dpad_state = DPAD_DOWN_RIGHT; break;
-            
-        default: dpad_state = DPAD_NONE;
-    }
-    
-    emuController.dpad_state = dpad_state;
 
     // emulate a analog joystick
     joy_analog_y[0][0] = (myosd_joy_status[0] & MYOSD_UP)    ? +1.0 : (myosd_joy_status[0] & MYOSD_DOWN) ? -1.0 : 0.0;

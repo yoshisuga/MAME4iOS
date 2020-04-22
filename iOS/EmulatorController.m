@@ -66,7 +66,6 @@
 #endif
 
 #import "iCadeView.h"
-#import "DebugView.h"
 #ifdef BTJOY
 #import "BTJoyHelper.h"
 #endif
@@ -150,6 +149,7 @@ int g_pref_analog_DZ_value = 2;
 int g_pref_ext_control_type = 1;
 
 int g_pref_aplusb = 0;
+int g_pref_nintendoBAYX = 0;
 
 int g_pref_nativeTVOUT = 1;
 int g_pref_overscanTVOUT = 1;
@@ -330,13 +330,9 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
 
 @implementation EmulatorController
 
-@synthesize dpad_state;
-@synthesize num_debug_rects;
 @synthesize externalView;
 @synthesize stick_radio;
 @synthesize rStickWindow;
-@synthesize rStickArea;
-@synthesize rDPadImage;
 
 
 - (int *)getBtnStates{
@@ -356,7 +352,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     return buttonViews[i];
 }
 - (UIView *)getDPADView{
-    return dpadView;
+    return analogStickView;
 }
 
 - (UIView *)getStickView{
@@ -715,7 +711,9 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     myosd_sleep = [op sleep];
     
     g_pref_aplusb = [op aplusb];
-    
+
+    g_pref_nintendoBAYX = [op nintendoBAYX];
+
     int nbuttons = [op numbuttons];
     
     if(nbuttons != 0)
@@ -1016,20 +1014,8 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
    nameImgButton_Press[BTN_L2] = @"button_Press_R_L2.png";
    nameImgButton_Press[BTN_R2] = @"button_Press_R_R2.png";
          
-   nameImgDPad[DPAD_NONE]=@"DPad_NotPressed.png";
-   nameImgDPad[DPAD_UP]= @"DPad_U.png";
-   nameImgDPad[DPAD_DOWN]= @"DPad_D.png";
-   nameImgDPad[DPAD_LEFT]= @"DPad_L.png";
-   nameImgDPad[DPAD_RIGHT]= @"DPad_R.png";
-   nameImgDPad[DPAD_UP_LEFT]= @"DPad_UL.png";
-   nameImgDPad[DPAD_UP_RIGHT]= @"DPad_UR.png";
-   nameImgDPad[DPAD_DOWN_LEFT]= @"DPad_DL.png";
-   nameImgDPad[DPAD_DOWN_RIGHT]= @"DPad_DR.png";
-      
-   dpadView=nil;
 #if TARGET_OS_IOS
    analogStickView = nil;
-   dview = nil;
 #endif
    int i;
    for(i=0; i<NUM_BUTTONS;i++)
@@ -1179,10 +1165,6 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
         return;
     }
     areControlsHidden = !areControlsHidden;
-    if(dpadView!=nil)
-    {
-        dpadView.hidden = areControlsHidden;
-    }
     
     if(analogStickView!=nil)
     {
@@ -1527,12 +1509,6 @@ void myosd_handle_turbo() {
 #else
    int i;
    
-   if(dpadView!=nil)
-   {
-      [dpadView removeFromSuperview];
-      dpadView=nil;
-   }
-   
    if(analogStickView!=nil)
    {
       [analogStickView removeFromSuperview];
@@ -1554,9 +1530,6 @@ void myosd_handle_turbo() {
 #if TARGET_OS_TV
     return;
 #else
-   int i;
-   
-   
    [self removeTouchControllerViews];
     
    g_joy_used = myosd_num_of_joys!=0; 
@@ -1564,32 +1537,16 @@ void myosd_handle_turbo() {
    if (g_joy_used && g_device_is_fullscreen)
      return;
    
-   NSString *name;
-    
     BOOL touch_dpad_disabled = (myosd_mouse == 1 && g_pref_touch_analog_enabled && g_pref_touch_analog_hide_dpad) ||
                                (g_pref_touch_directional_enabled && g_pref_touch_analog_hide_dpad);
     if ( !touch_dpad_disabled || !myosd_inGame ) {
-        if(g_pref_input_touch_type == TOUCH_INPUT_DPAD)
-        {
-            name = [NSString stringWithFormat:@"./SKIN_%d/%@",g_pref_skin,nameImgDPad[DPAD_NONE]];
-            dpadView = [ [ UIImageView alloc ] initWithImage:[self loadImage:name]];
-            dpadView.frame = rDPadImage;
-            if (g_device_is_fullscreen)
-                [dpadView setAlpha:((float)g_controller_opacity / 100.0f)];
-            [self.view addSubview: dpadView];
-            dpad_state = old_dpad_state = DPAD_NONE;
-        }
-        else
-        {
-            //analogStickView
-            analogStickView = [[AnalogStickView alloc] initWithFrame:rStickWindow withEmuController:self];
-            [self.view addSubview:analogStickView];
-            [analogStickView setNeedsDisplay];
-        }
+        //analogStickView
+        analogStickView = [[AnalogStickView alloc] initWithFrame:rStickWindow withEmuController:self];
+        [self.view addSubview:analogStickView];
     }
    
     BOOL touch_buttons_disabled = myosd_mouse == 1 && g_pref_touch_analog_enabled && g_pref_touch_analog_hide_buttons;
-    for(i=0; i<NUM_BUTTONS;i++)
+    for (int i=0; i<NUM_BUTTONS; i++)
     {
         // hide buttons that are not used in fullscreen mode (and not laying out)
         if (g_device_is_fullscreen && !change_layout)
@@ -1605,8 +1562,9 @@ void myosd_handle_turbo() {
             if (touch_buttons_disabled && (i != BTN_SELECT && i != BTN_START && i != BTN_L2 && i != BTN_R2 )) continue;
         }
         
-        name = [NSString stringWithFormat:@"./SKIN_%d/%@",g_pref_skin,nameImgButton_NotPress[i]];
-        buttonViews[i] = [ [ UIImageView alloc ] initWithImage:[self loadImage:name]];
+        NSString *name_up = nameImgButton_NotPress[i];
+        NSString *name_down = nameImgButton_Press[i];
+        buttonViews[i] = [ [ UIImageView alloc ] initWithImage:[self loadImage:name_up] highlightedImage:[self loadImage:name_down]];
         buttonViews[i].frame = rButtonImages[i];
         
         if (g_device_is_fullscreen)
@@ -1624,9 +1582,9 @@ void myosd_handle_turbo() {
    if(!g_device_is_fullscreen)
    {
 	   if(g_isIpad)
-	     imageBack = [ [ UIImageView alloc ] initWithImage:[self loadImage:[NSString stringWithFormat:@"./SKIN_%d/back_portrait_iPad.png",g_pref_skin]]];
+	     imageBack = [ [ UIImageView alloc ] initWithImage:[self loadImage:@"back_portrait_iPad.png"]];
 	   else
-	     imageBack = [ [ UIImageView alloc ] initWithImage:[self loadImage:[NSString stringWithFormat:@"./SKIN_%d/back_portrait_iPhone.png",g_pref_skin]]];
+	     imageBack = [ [ UIImageView alloc ] initWithImage:[self loadImage:@"back_portrait_iPhone.png"]];
 	   
 	   imageBack.frame = rFrames[PORTRAIT_IMAGE_BACK]; // Set the frame in which the UIImage should be drawn in.
 	   
@@ -1723,27 +1681,7 @@ void myosd_handle_turbo() {
        [screenView.superview addSubview: imageOverlay];
   }
 
-  //DPAD---   
-  [self buildTouchControllerViews];   
-  /////
-   
-  /////////////////
-  if(g_enable_debug_view)
-  {
-	  if(dview!=nil)
-	  {
-	    [dview removeFromSuperview];
-	  }  	 
-	
-	  dview = [[DebugView alloc] initWithFrame:self.view.bounds withEmuController:self];
-	  
-	  [self.view addSubview:dview];   
-	
-	  [self filldebugRects];
-	  
-	  [dview setNeedsDisplay];
-  }
-  ////////////////
+  [self buildTouchControllerViews];
 }
 
 - (void)buildPortrait {
@@ -1826,11 +1764,11 @@ void myosd_handle_turbo() {
    if (!g_device_is_fullscreen)
    {
 	   if(g_isIpad)
-	     imageBack = [ [ UIImageView alloc ] initWithImage:[self loadImage:[NSString stringWithFormat:@"./SKIN_%d/back_landscape_iPad.png",g_pref_skin]]];
+	     imageBack = [ [ UIImageView alloc ] initWithImage:[self loadImage:@"back_landscape_iPad.png"]];
        else if (UIScreen.mainScreen.nativeBounds.size.width <= 640.0)
-         imageBack = [ [ UIImageView alloc ] initWithImage:[self loadImage:[NSString stringWithFormat:@"./SKIN_%d/back_landscape_iPhone_5.png",g_pref_skin]]];
+         imageBack = [ [ UIImageView alloc ] initWithImage:[self loadImage:@"back_landscape_iPhone_5.png"]];
 	   else
-	     imageBack = [ [ UIImageView alloc ] initWithImage:[self loadImage:[NSString stringWithFormat:@"./SKIN_%d/back_landscape_iPhone_6.png",g_pref_skin]]];
+	     imageBack = [ [ UIImageView alloc ] initWithImage:[self loadImage:@"back_landscape_iPhone_6.png"]];
 	   
 	   imageBack.frame = rFrames[LANDSCAPE_IMAGE_BACK]; // Set the frame in which the UIImage should be drawn in.
 	   
@@ -1931,28 +1869,7 @@ void myosd_handle_turbo() {
 	  	   
     }
    
-    //DPAD---   
-    [self buildTouchControllerViews];   
-    /////
-  
-   //////////////////
-#if TARGET_OS_IOS
-   if(g_enable_debug_view)
-   {
-	  if(dview!=nil)
-	  {
-        [dview removeFromSuperview];
-      }	 	  
-	  
-	  dview = [[DebugView alloc] initWithFrame:self.view.bounds withEmuController:self];
-		 	  
-	  [self filldebugRects];
-	  
-	  [self.view addSubview:dview];   
-	  [dview setNeedsDisplay];
-  }
-#endif
-  /////////////////	
+    [self buildTouchControllerViews];
 }
 
 - (void)buildLandscape{
@@ -2038,53 +1955,24 @@ void myosd_handle_turbo() {
         return;
     }
 
-    if(dpad_state!=old_dpad_state && dpadView != nil && ![dpadView isHidden])
-    {
-       //printf("cambia depad %d %d\n",old_dpad_state,dpad_state);
-       NSString *imgName;
-       imgName = nameImgDPad[dpad_state];
-       if(imgName!=nil)
-       {
-         NSString *name = [NSString stringWithFormat:@"./SKIN_%d/%@",g_pref_skin,imgName];
-         //printf("%s\n",[name UTF8String]);
-         UIImage *img = [self loadImage: name];
-         [dpadView setImage:img];
-         [dpadView setNeedsDisplay];
-       }
-       old_dpad_state = dpad_state;
-        
-        NSLog(@"dpad moved");
-        if (dpad_state == DPAD_NONE) {
-            [self.selectionFeedback selectionChanged];
-        } else {
-            [self.impactFeedback impactOccurred];
-        }
-    }
-    
     int i = 0;
     for(i=0; i< NUM_BUTTONS;i++)
     {
         if(btnStates[i] != old_btnStates[i])
         {
-           NSString *imgName;
-           if(btnStates[i] == BUTTON_PRESS)
-           {
-               [self.impactFeedback impactOccurred];
-               imgName = nameImgButton_Press[i];
-           }
-           else
-           {
-               [self.selectionFeedback selectionChanged];
-               imgName = nameImgButton_NotPress[i];
-           }
-           if(imgName!=nil)
-           {
-              NSString *name = [NSString stringWithFormat:@"./SKIN_%d/%@",g_pref_skin,imgName];
-              UIImage *img = [self loadImage:name];
-              [buttonViews[i] setImage:img];
-              [buttonViews[i] setNeedsDisplay];
-           }
-           old_btnStates[i] = btnStates[i];
+            buttonViews[i].highlighted = (btnStates[i] == BUTTON_PRESS);
+            
+            if(btnStates[i] == BUTTON_PRESS)
+            {
+                NSLog(@"****** BUZZ! *******: %@", [nameImgButton_Press[i] stringByDeletingPathExtension]);
+                [self.impactFeedback impactOccurred];
+            }
+            else
+            {
+                NSLog(@"****** BONK! *******");
+                [self.selectionFeedback selectionChanged];
+            }
+            old_btnStates[i] = btnStates[i];
         }
     }
     
@@ -2267,162 +2155,11 @@ void myosd_handle_turbo() {
                 (myosd_mouse == 1 && g_pref_touch_analog_enabled && g_pref_touch_analog_hide_dpad) ||
                 // OR directional touch is enabled and hiding dpad, and running a game
                 (g_pref_touch_directional_enabled && g_pref_touch_analog_hide_dpad && myosd_inGame);
-            if(g_pref_input_touch_type == TOUCH_INPUT_DPAD && !touch_dpad_disabled )
-            {
-                if (MyCGRectContainsPoint(rInput[DPAD_UP_RECT], point) && !STICK2WAY) {
-                    //NSLog(@"MYOSD_UP");
-                    myosd_pad_status |= MYOSD_UP;
-                    dpad_state = DPAD_UP;
-                    
-                    myosd_pad_status &= ~MYOSD_DOWN;
-                    myosd_pad_status &= ~MYOSD_LEFT;
-                    myosd_pad_status &= ~MYOSD_RIGHT;
-                    
-                    stickTouch = touch;
-                    stickWasTouched = YES;
-                    [handledTouches addObject:touch];
-                }
-                else if (MyCGRectContainsPoint(rInput[DPAD_DOWN_RECT], point) && !STICK2WAY) {
-                    //NSLog(@"MYOSD_DOWN");
-                    myosd_pad_status |= MYOSD_DOWN;
-                    dpad_state = DPAD_DOWN;
-                    
-                    myosd_pad_status &= ~MYOSD_UP;
-                    myosd_pad_status &= ~MYOSD_LEFT;
-                    myosd_pad_status &= ~MYOSD_RIGHT;
-                    
-                    stickTouch = touch;
-                    stickWasTouched = YES;
-                    [handledTouches addObject:touch];
-                }
-                else if (MyCGRectContainsPoint(rInput[DPAD_LEFT_RECT], point)) {
-                    //NSLog(@"MYOSD_LEFT");
-                    myosd_pad_status |= MYOSD_LEFT;
-                    dpad_state = DPAD_LEFT;
-                    
-                    myosd_pad_status &= ~MYOSD_UP;
-                    myosd_pad_status &= ~MYOSD_DOWN;
-                    myosd_pad_status &= ~MYOSD_RIGHT;
-                    
-                    stickTouch = touch;
-                    stickWasTouched = YES;
-                    [handledTouches addObject:touch];
-                }
-                else if (MyCGRectContainsPoint(rInput[DPAD_RIGHT_RECT], point)) {
-                    //NSLog(@"MYOSD_RIGHT");
-                    myosd_pad_status |= MYOSD_RIGHT;
-                    dpad_state = DPAD_RIGHT;
-                    
-                    myosd_pad_status &= ~MYOSD_UP;
-                    myosd_pad_status &= ~MYOSD_DOWN;
-                    myosd_pad_status &= ~MYOSD_LEFT;
-                    
-                    stickTouch = touch;
-                    stickWasTouched = YES;
-                    [handledTouches addObject:touch];
-                }
-                else if (MyCGRectContainsPoint(rInput[DPAD_UP_LEFT_RECT], point)) {
-                    //NSLog(@"MYOSD_UP | MYOSD_LEFT");
-                    if(!STICK2WAY && !STICK4WAY)
-                    {
-                        myosd_pad_status |= MYOSD_UP | MYOSD_LEFT;
-                        dpad_state = DPAD_UP_LEFT;
-                        
-                        myosd_pad_status &= ~MYOSD_DOWN;
-                        myosd_pad_status &= ~MYOSD_RIGHT;
-                    }
-                    else
-                    {
-                        myosd_pad_status |= MYOSD_LEFT;
-                        dpad_state = DPAD_LEFT;
-                        
-                        myosd_pad_status &= ~MYOSD_UP;
-                        myosd_pad_status &= ~MYOSD_DOWN;
-                        myosd_pad_status &= ~MYOSD_RIGHT;
-                    }
-                    stickWasTouched = YES;
-                    stickTouch = touch;
-                    [handledTouches addObject:touch];
-                }
-                else if (MyCGRectContainsPoint(rInput[DPAD_UP_RIGHT_RECT], point)) {
-                    //NSLog(@"MYOSD_UP | MYOSD_RIGHT");
-                    
-                    if(!STICK2WAY && !STICK4WAY)
-                    {
-                        myosd_pad_status |= MYOSD_UP | MYOSD_RIGHT;
-                        dpad_state = DPAD_UP_RIGHT;
-                        
-                        myosd_pad_status &= ~MYOSD_DOWN;
-                        myosd_pad_status &= ~MYOSD_LEFT;
-                    }
-                    else
-                    {
-                        myosd_pad_status |= MYOSD_RIGHT;
-                        dpad_state = DPAD_RIGHT;
-                        
-                        myosd_pad_status &= ~MYOSD_UP;
-                        myosd_pad_status &= ~MYOSD_DOWN;
-                        myosd_pad_status &= ~MYOSD_LEFT;
-                    }
-                    stickWasTouched = YES;
-                    stickTouch = touch;
-                    [handledTouches addObject:touch];
-                }
-                else if (MyCGRectContainsPoint(rInput[DPAD_DOWN_LEFT_RECT], point)) {
-                    //NSLog(@"MYOSD_DOWN | MYOSD_LEFT");
-                    
-                    if(!STICK2WAY && !STICK4WAY)
-                    {
-                        myosd_pad_status |= MYOSD_DOWN | MYOSD_LEFT;
-                        dpad_state = DPAD_DOWN_LEFT;
-                        
-                        myosd_pad_status &= ~MYOSD_UP;
-                        myosd_pad_status &= ~MYOSD_RIGHT;
-                    }
-                    else
-                    {
-                        myosd_pad_status |= MYOSD_LEFT;
-                        dpad_state = DPAD_LEFT;
-                        
-                        myosd_pad_status &= ~MYOSD_DOWN;
-                        myosd_pad_status &= ~MYOSD_UP;
-                        myosd_pad_status &= ~MYOSD_RIGHT;
-                    }
-                    stickWasTouched = YES;
-                    stickTouch = touch;
-                    [handledTouches addObject:touch];
-                }
-                else if (MyCGRectContainsPoint(rInput[DPAD_DOWN_RIGHT_RECT], point)) {
-                    //NSLog(@"MYOSD_DOWN | MYOSD_RIGHT");
-                    if(!STICK2WAY && !STICK4WAY)
-                    {
-                        myosd_pad_status |= MYOSD_DOWN | MYOSD_RIGHT;
-                        dpad_state = DPAD_DOWN_RIGHT;
-                        
-                        myosd_pad_status &= ~MYOSD_UP;
-                        myosd_pad_status &= ~MYOSD_LEFT;
-                    }
-                    else
-                    {
-                        myosd_pad_status |= MYOSD_RIGHT;
-                        dpad_state = DPAD_RIGHT;
-                        
-                        myosd_pad_status &= ~MYOSD_DOWN;
-                        myosd_pad_status &= ~MYOSD_UP;
-                        myosd_pad_status &= ~MYOSD_LEFT;
-                    }
-                    stickWasTouched = YES;
-                    stickTouch = touch;
-                    [handledTouches addObject:touch];
-                }
-            }
-            else
+            if(!touch_dpad_disabled )
             {
                 if(MyCGRectContainsPoint(analogStickView.frame, point) || stickTouch == touch)
                 {
-                    //if(stickTouch==nil)
                     stickTouch = touch;
-                    //if(touch == stickTouch)
                     [analogStickView analogTouches:touch withEvent:event];
                 }
             }
@@ -2588,19 +2325,8 @@ void myosd_handle_turbo() {
         {
             if(touch == stickTouch)
             {
-                if(g_pref_input_touch_type == TOUCH_INPUT_DPAD)
-                {
-                    myosd_pad_status &= ~MYOSD_UP;
-                    myosd_pad_status &= ~MYOSD_DOWN;
-                    myosd_pad_status &= ~MYOSD_LEFT;
-                    myosd_pad_status &= ~MYOSD_RIGHT;
-                    dpad_state = DPAD_NONE;
-                }
-                else
-                {
-                    [analogStickView analogTouches:touch withEvent:event];
-                    stickWasTouched = YES;
-                }
+                [analogStickView analogTouches:touch withEvent:event];
+                stickWasTouched = YES;
                 stickTouch = nil;
             }
         }
@@ -2756,16 +2482,16 @@ void myosd_handle_turbo() {
 	if(!orientation)
 	{
         if (g_device_is_fullscreen)
-            fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_portrait_full_%@.txt", g_skin_data, deviceName] UTF8String]];
+            fp = [self loadFile:[NSString stringWithFormat:@"controller_portrait_full_%@.txt", deviceName]];
         else
-            fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_portrait_%@.txt", g_skin_data, deviceName] UTF8String]];
+            fp = [self loadFile:[NSString stringWithFormat:@"controller_portrait_%@.txt", deviceName]];
     }
 	else
 	{
         if (g_device_is_fullscreen)
-            fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_landscape_full_%@.txt", g_skin_data,deviceName] UTF8String]];
+            fp = [self loadFile:[NSString stringWithFormat:@"controller_landscape_full_%@.txt",deviceName]];
         else
-            fp = [self loadFile:[[NSString stringWithFormat:@"/SKIN_%d/controller_landscape_%@.txt", g_skin_data, deviceName] UTF8String]];
+            fp = [self loadFile:[NSString stringWithFormat:@"controller_landscape_%@.txt", deviceName]];
 	}
 	
 	if (fp) 
@@ -2815,7 +2541,7 @@ void myosd_handle_turbo() {
             case 25:   rButtonImages[BTN_X]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
             case 26:   rButtonImages[BTN_A]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
             case 27:   rButtonImages[BTN_Y]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 28:   rDPadImage  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+            case 28:   /*rDPadImage  = CGRectMake( coords[0], coords[1], coords[2], coords[3] );*/ break;
             case 29:   rButtonImages[BTN_SELECT]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
             case 30:   rButtonImages[BTN_START]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
             case 31:   rButtonImages[BTN_L1] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
@@ -2824,13 +2550,28 @@ void myosd_handle_turbo() {
             case 34:   rButtonImages[BTN_R2] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
             
             case 35:   rStickWindow = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 36:   rStickArea = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); rStickWindow = rStickArea;break;
+            case 36:   rStickWindow = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
             case 37:   stick_radio =coords[0]; break;            
 //            case 38:   g_controller_opacity= coords[0]; break;
 			}
       i++;
     }
     fclose(fp);
+        
+#define SWAPRECT(a,b) {CGRect t = a; a = b; b = t;}
+        
+    // swap A and B, swap X and Y
+    if(g_pref_nintendoBAYX)
+    {
+        SWAPRECT(rButtonImages[BTN_A], rButtonImages[BTN_B]);
+        SWAPRECT(rButtonImages[BTN_X], rButtonImages[BTN_Y]);
+
+        SWAPRECT(rInput[BTN_A_RECT], rInput[BTN_B_RECT]);
+        SWAPRECT(rInput[BTN_X_RECT], rInput[BTN_Y_RECT]);
+
+        SWAPRECT(rInput[BTN_X_A_RECT], rInput[BTN_B_Y_RECT]);
+        SWAPRECT(rInput[BTN_A_Y_RECT], rInput[BTN_B_X_RECT]);
+    }
     
     if(g_pref_touch_DZ)
     {
@@ -2911,7 +2652,7 @@ void myosd_handle_turbo() {
     
     NSLog(@"USING CONFIG: %s", config);
     
-    FILE *fp = [self loadFile:config];
+    FILE *fp = [self loadFile:[NSString stringWithUTF8String:config]];
 
     if (fp)
     {
@@ -2951,51 +2692,6 @@ void myosd_handle_turbo() {
 #endif
 }
 
-- (CGRect *)getDebugRects{
-    return debug_rects;
-}
-
-- (void)filldebugRects {
-
-	    	debug_rects[0]=rInput[BTN_X_A_RECT];
-	    	debug_rects[1]=rInput[BTN_X_RECT];
-	    	debug_rects[2]=rInput[BTN_B_X_RECT];
-	    	debug_rects[3]=rInput[BTN_A_RECT];
-	    	debug_rects[4]=rInput[BTN_B_RECT];
-	    	debug_rects[5]=rInput[BTN_A_Y_RECT];
-	    	debug_rects[6]=rInput[BTN_Y_RECT];
-	        debug_rects[7]=rInput[BTN_B_Y_RECT];
-    		debug_rects[8]=rInput[BTN_SELECT_RECT];
-    		debug_rects[9]=rInput[BTN_START_RECT];
-    		debug_rects[10]=rInput[BTN_L1_RECT];
-    		debug_rects[11]=rInput[BTN_R1_RECT];
-    		debug_rects[12]=rInput[BTN_MENU_RECT];
-    		debug_rects[13]=rInput[BTN_L2_RECT];
-    		debug_rects[14]=rInput[BTN_R2_RECT];
-    		debug_rects[15]= CGRectZero;
-    		
-    		if(g_pref_input_touch_type==TOUCH_INPUT_DPAD)
-    		{
-				debug_rects[16]=rInput[DPAD_DOWN_LEFT_RECT];
-				debug_rects[17]=rInput[DPAD_DOWN_RECT];
-				debug_rects[18]=rInput[DPAD_DOWN_RIGHT_RECT];
-				debug_rects[19]=rInput[DPAD_LEFT_RECT];
-				debug_rects[20]=rInput[DPAD_RIGHT_RECT];
-				debug_rects[21]=rInput[DPAD_UP_LEFT_RECT];
-				debug_rects[22]=rInput[DPAD_UP_RECT];
-				debug_rects[23]=rInput[DPAD_UP_RIGHT_RECT];
-	    		
-	            num_debug_rects = 24;     
-            }
-            else
-            {
-  	    		debug_rects[16]=rStickWindow;
-	    		debug_rects[17]=rStickArea;
-	    		
-	            num_debug_rects = 18;
-            }   
-}
-
 - (UIImage *)loadImage:(NSString *)name{
     
     NSString *path = nil;
@@ -3013,31 +2709,31 @@ void myosd_handle_turbo() {
     if (img != nil)
         return nil;
     
-    path=[NSString stringWithUTF8String:get_documents_path((char *)[name UTF8String])];
+    path = [NSString stringWithUTF8String:get_resource_path("")];
+    img = [UIImage imageWithContentsOfFile:[path stringByAppendingPathComponent:name]];
     
-    img = [UIImage imageWithContentsOfFile:path];
-    
-    if(img==nil)
+    if (img == nil)
     {
-       path=[NSString stringWithUTF8String:get_resource_path((char *)[name UTF8String])];
-       img = [UIImage imageWithContentsOfFile:path];
+        name = [NSString stringWithFormat:@"SKIN_%d/%@", g_pref_skin, name];
+        img = [UIImage imageWithContentsOfFile:[path stringByAppendingPathComponent:name]];
     }
+
     [g_image_cache setObject:(img ?: [NSNull null]) forKey:name];
     return img;
 }
 
 
--(FILE *)loadFile:(const char *)name{
+-(FILE *)loadFile:(NSString*)name {
     NSString *path = nil;
     FILE *fp;
     
-    path = [NSString stringWithFormat:@"%s%s", get_documents_path("/"),name];
-    fp = fopen([path UTF8String], "r");
-    
+    path = [NSString stringWithUTF8String:get_resource_path("")];
+    fp = fopen([path stringByAppendingPathComponent:name].UTF8String, "r");
+
     if(!fp)
     {
-        path = [NSString stringWithFormat:@"%s%s", get_resource_path("/"),name];
-        fp = fopen([path UTF8String], "r");
+        name = [NSString stringWithFormat:@"SKIN_%d/%@", g_pref_skin, name];
+        fp = fopen([path stringByAppendingPathComponent:name].UTF8String, "r");
     }
     
     return fp;
@@ -3272,6 +2968,7 @@ void myosd_handle_turbo() {
 
 // ZIP up all the important files in our documents directory
 // TODO: maybe we should also export the settings.bin or the UserDefaults plist
+// NOTE we specificaly *dont* export CHDs because they are too big, we support importing CHDs just not exporting
 -(BOOL)saveROMS:(NSURL*)url progressBlock:(BOOL (^)(double progress))block {
 
     NSString *rootPath = [NSString stringWithUTF8String:get_documents_path("")];
@@ -3286,7 +2983,6 @@ void myosd_handle_turbo() {
         if (![ext isEqualToString:@"ZIP"])
             continue;
         
-        //TODO: support exporting CHDs
         NSArray* paths = @[@"roms/%@.zip", @"artwork/%@.zip", @"titles/%@.png", @"samples/%@.zip", @"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@/1.sta", @"sta/%@/2.sta", @"hi/%@.hi"];
         for (NSString* path in paths) {
             [files addObject:[NSString stringWithFormat:path, [rom stringByDeletingPathExtension]]];
@@ -3382,6 +3078,9 @@ void myosd_handle_turbo() {
     else
     {
         [self dismissViewControllerAnimated:YES completion:nil];
+        
+        if (g_pref_input_touch_type == TOUCH_INPUT_DPAD)
+            g_pref_input_touch_type = TOUCH_INPUT_DSTICK;
 
         [self changeUI]; //ensure GUI
         
@@ -3427,6 +3126,11 @@ void myosd_handle_turbo() {
     }];
 }
 
+// scale a CGRect but dont move the center
+CGRect scale_rect(CGRect rect, CGFloat scale) {
+    return CGRectInset(rect, -0.5 * rect.size.width * (scale - 1.0), -0.5 * rect.size.height * (scale - 1.0));
+}
+
 -(void)adjustSizes{
     
     int i= 0;
@@ -3444,9 +3148,7 @@ void myosd_handle_turbo() {
            i==BTN_L1_RECT ||
            i==BTN_R1_RECT
            ){
-        
-              rInput[i].size.height *= g_buttons_size;
-              rInput[i].size.width *= g_buttons_size;
+           rInput[i] = scale_rect(rInput[i], g_buttons_size);
         }
     }
     
@@ -3454,15 +3156,13 @@ void myosd_handle_turbo() {
     {
         if(i==BTN_A || i==BTN_B || i==BTN_X || i==BTN_Y || i==BTN_R1 || i==BTN_L1)
         {
-           rButtonImages[i].size.height *= g_buttons_size;
-           rButtonImages[i].size.width *= g_buttons_size;
+            rButtonImages[i] = scale_rect(rButtonImages[i], g_buttons_size);
         }
     }
     
     if (g_device_is_fullscreen)
     {
-       rStickWindow.size.height *= g_stick_size;
-       rStickWindow.size.width *= g_stick_size;
+       rStickWindow = scale_rect(rStickWindow, g_buttons_size);
     }
 }
 #endif
