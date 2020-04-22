@@ -46,7 +46,7 @@ Building MAME4iOS requires a prebuilt MAME binary (it has not been included in t
   <sup>(alternatively, you can drag & drop a folder on Terminal after `cd` if don't know how to get the directory path)</sup><br>
 
 3. Create the MAME binary by building it yourself from scratch: <br>
-    *** for Catalina users, please give full permissions to the terminal application in order to complete a successful builds *** <br>
+    *** FOR CATALINA USERS, PLEASE GIVE FULL PERMISSION TO THE TERMINAL APPLICATION IN ORDER TO COMPLETE A SUCCESFUL BUILD *** <br>
 - Build it in the above selected terminal by chosing one of the following scripts (depending on which device you are building for):<br>
         - iOS 64-bit: `./make-ios.sh`<br>
         <sup>For iPhone 5S, iPad Air, iPad mini, and up…</sup><br>
