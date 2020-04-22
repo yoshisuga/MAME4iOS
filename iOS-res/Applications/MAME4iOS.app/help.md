@@ -222,6 +222,12 @@ To start playing a game using a controller, do one of the following.
 * hit MENU and select "Coin + Start".
 * hit MENU+L1 to add a Coin, then hit MENU+R1 to Start.
 
+## Steam Game Controlers
+
+<img src="https://images-na.ssl-images-amazon.com/images/I/81oyj8wrlCL._SL1500_.jpg" width=30%>
+
+To use a Steam Controller, make sure it is updated to BLE Firmware, and it paired with iOS device, see [here](https://support.steampowered.com/kb_article.php?ref=7728-QESJ-4420).
+
 ## MENU/OPTION button on game controllers
 
 | | |  
@@ -236,6 +242,21 @@ MENU+Y       |Save State  X (slot1) or Y (slot 2)
 OPTION         |Insert Coin and Start   
 
 **NOTE** on versions prior to iOS 13 only MiFi controllers are reconized and when doing multiple button combinations the secondary button must be pressed first.  For example to insert a coin hold down L1 and hit MENU.  on iOS 13+ you can hold MENU and then hit L1.
+
+## Multiplayer game start using game controllers
+
+If a user inserts a COIN or hits START with a game controller, it will be interpeted as a COIN/START for that player.  
+
+You can insert a COIN or do a START for another player from the main Game Controller by pressing one of the following.
+
+| | |  
+-|-
+MENU+L1+UP     |Player 2 insert COINT           
+MENU+R1+UP     |Player 2 START
+MENU+L1+RIGHT     |Player 3 Insert COIN          
+MENU+R1+RIGHT    |Player 3 START
+MENU+L1+DOWN     |Player 4 insert COIN          
+MENU+R1+DOWN     |Player 4 START
 
 ## SAVE/LOAD STATE
 

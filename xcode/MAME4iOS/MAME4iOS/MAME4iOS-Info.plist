@@ -82,7 +82,7 @@
 		<true/>
 	</dict>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>We need bluetooth for peer play</string>
+	<string>We need bluetooth for peer play and steam controllers</string>
 	<key>NSUserActivityTypes</key>
 	<array>
 		<string>$(PRODUCT_BUNDLE_IDENTIFIER).play</string>

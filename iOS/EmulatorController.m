@@ -79,6 +79,7 @@
 #import "Alert.h"
 #import "ZipFile.h"
 #import "SystemImage.h"
+#import "SteamController.h"
 
 #define DebugLog 0
 #if DebugLog == 0
@@ -1130,6 +1131,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
+    [self scanForDevices];
 }
 
 #if TARGET_OS_IOS
@@ -3500,6 +3502,7 @@ void myosd_handle_turbo() {
     // build list of controlers, put any non-game controllers (like the siri remote) at the end
     [controllers removeAllObjects];
     
+    // add all the controllers with a extendedGamepad profile first
     for (GCController* controler in GCController.controllers) {
 #if TARGET_IPHONE_SIMULATOR // ignore the bogus controller in the simulator
         if ([controler.vendorName isEqualToString:@"Generic Controller"])
@@ -3508,6 +3511,14 @@ void myosd_handle_turbo() {
         if (controler.extendedGamepad != nil)
             [controllers addObject:controler];
     }
+    
+    // now add any Steam Controllers, these should always have a extendedGamepad profile
+    for (GCController* controler in SteamControllerManager.sharedManager.controllers) {
+        if (controler.extendedGamepad != nil)
+            [controllers addObject:controler];
+    }
+
+    // add all the controllers without a extendedGamepad profile last, ie the Siri Remote.
     for (GCController* controler in GCController.controllers) {
         if (controler.extendedGamepad == nil)
             [controllers addObject:controler];
@@ -3543,31 +3554,30 @@ void myosd_handle_turbo() {
         MFIController.extendedGamepad.dpad.valueChangedHandler = ^ (GCControllerDirectionPad *directionpad, float xValue, float yValue) {
             NSLog(@"%d: %@", index, directionpad);
             
-            if (directionpad.up.pressed) {
+            unsigned long dpad_status = myosd_joy_status[index];
+            
+            if (directionpad.up.pressed)
                 myosd_joy_status[index] |= MYOSD_UP;
-            }
-            else {
+            else
                 myosd_joy_status[index] &= ~MYOSD_UP;
-            }
-            if (directionpad.down.pressed) {
+            
+            if (directionpad.down.pressed)
                 myosd_joy_status[index] |= MYOSD_DOWN;
-            }
-            else {
+            else
                 myosd_joy_status[index] &= ~MYOSD_DOWN;
-            }
-            if (directionpad.left.pressed) {
+
+            if (directionpad.left.pressed)
                 myosd_joy_status[index] |= MYOSD_LEFT;
-            }
-            else {
+            else
                 myosd_joy_status[index] &= ~MYOSD_LEFT;
-            }
-            if (directionpad.right.pressed) {
+
+            if (directionpad.right.pressed)
                 myosd_joy_status[index] |= MYOSD_RIGHT;
-            }
-            else {
+            else
                 myosd_joy_status[index] &= ~MYOSD_RIGHT;
-            }
-            [self handle_MENU];
+            
+            if (dpad_status != myosd_joy_status[index])
+                [self handle_MENU];
         };
         
         //
@@ -3955,6 +3965,7 @@ void myosd_handle_turbo() {
 
 -(void)scanForDevices{
     [GCController startWirelessControllerDiscoveryWithCompletionHandler:nil];
+    [[SteamControllerManager sharedManager] scanForControllers];
 }
 
 -(void)MFIControllerConnected:(NSNotification*)notif{
