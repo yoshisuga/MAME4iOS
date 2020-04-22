@@ -1994,6 +1994,13 @@ void myosd_handle_turbo() {
 #elif TARGET_OS_TV
     r = [[UIScreen mainScreen] bounds];
 #endif
+    
+   // Handle Safe Area (iPhone X) adjust the view down away from the notch, before adjusting for aspect
+   if ( @available(iOS 11, *) ) {
+       if ( externalView == nil ) {
+            r = CGRectIntersection(r, UIEdgeInsetsInsetRect(self.view.bounds, self.view.safeAreaInsets));
+       }
+   }
    
    if(g_pref_keep_aspect_ratio_land)
    {
