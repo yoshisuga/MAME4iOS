@@ -2,7 +2,7 @@
 
 # Version 2020.7
 
-* Added tvOS support for iCade 
+* Added in iCade support for tvOS 
 * Steam Controller support, controller must be in [bluetooth mode and paired](https://support.steampowered.com/kb_article.php?ref=7728-QESJ-4420)
 
 # Version 2020.6
@@ -12,13 +12,31 @@
 
 # Version 2020.5
 
-* added Reset option in Settings
+* Allow for the exporting of a game and all of its state (hiscores, saved state, artwork, etc)
+* Show app version number, and build info in Settings for easier tracking of builds
+* Added Reset option in Settings
 
 # Version 2020.4
 
+* Updated default game icon when icons are not in the game database such as neogeo.zip and others
+* Added a RESET TO DEFAULTS button 
+* tvOS Settings page update and other UI/Layout improvements
+* Massive Zip import speed increase and refactoring
+* Added a means to filter by game driver such as CPS1, CPS2, etc
+
 # Version 2020.3
 
+* Turbo mode updates and Ux fixes
+* Only show one row of recent games
+* Menu context button updates
+* Use alternate source location for title images
+
 # Version 2020.2
+
+* tvOS UI cleanup
+* Add in Parralax Ui behaviour in tvOS menu
+* Mame logo and general branding updates
+* General UI performance updates
 
 # Version 2020.1
 
