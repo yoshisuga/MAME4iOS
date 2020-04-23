@@ -93,6 +93,7 @@
 
 @synthesize buttonSize;
 @synthesize stickSize;
+@synthesize nintendoBAYX;
 
 @synthesize wpantype;
 @synthesize wfpeeraddr;
@@ -226,7 +227,8 @@
         
         stickSize = 2;
         buttonSize= 2;
-        
+        nintendoBAYX=0;
+
         wpantype = 0;
         wfpeeraddr = nil;
         wfport = NETPLAY_PORT;
@@ -358,6 +360,7 @@
         
         buttonSize =  [[[optionsArray objectAtIndex:0] objectForKey:@"buttonSize"] intValue];
         stickSize =  [[[optionsArray objectAtIndex:0] objectForKey:@"stickSize"] intValue];
+        nintendoBAYX = [[[optionsArray objectAtIndex:0] objectForKey:@"nintendoBAYX"] intValue];
         
         wpantype  =  [[[optionsArray objectAtIndex:0] objectForKey:@"wpantype"] intValue];
         wfpeeraddr  =  [[optionsArray objectAtIndex:0] objectForKey:@"wfpeeraddr"];
@@ -477,7 +480,8 @@
                              
                              [NSString stringWithFormat:@"%d", stickSize], @"stickSize",
                              [NSString stringWithFormat:@"%d", buttonSize], @"buttonSize",
-                             
+                             [NSString stringWithFormat:@"%d", nintendoBAYX], @"nintendoBAYX",
+
                              [NSString stringWithFormat:@"%d", wpantype], @"wpantype",
                              [NSString stringWithFormat:@"%d", wfport], @"wfport",
                              [NSString stringWithFormat:@"%d", wfframesync], @"wfframesync",

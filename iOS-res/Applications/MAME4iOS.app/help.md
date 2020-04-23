@@ -98,6 +98,8 @@ NOTE: To type OK when MAME requires it, press LEFT and then RIGHT.
 
 **Fullscreen Stick Size** Lets you change the stick size (not DPAD) on lanscape or portrait fullscreen mode.
 
+**Nintendo Button Layout** if enabled the 🅐 🅑 and 🅧 🅨 buttons will be swapped to match a Nintendo layout.  This option has no effect on a custom layout, or a physical game controller.
+
 **External Controller** Enable external controller: iCade, iControlPad as iCade mode or iMpulse.
 
 **P4,P3,P2 as P1** Send Player 1 input data to Player2,3,4 so you can use the 2-4 players at the same time. Funny :). It makes some weird problems with some roms like D&D.

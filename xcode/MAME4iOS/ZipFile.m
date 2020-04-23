@@ -15,7 +15,7 @@
 #ifdef DEBUG
 #define ERROR(...) (NSLog(@"ZipFile: " __VA_ARGS__), FALSE)
 #else
-#define ERROR(...)  FALSE
+#define ERROR(...) FALSE
 #endif
 
 @interface NSFileHandle (NSFileHandle_ReadWrite)
@@ -35,10 +35,6 @@
 @interface NSDate (NSDate_MSDOS)
 + (NSDate*) dateWithDosDateTime:(NSUInteger)datetime;
 - (NSUInteger) dosDateTime;
-@end
-
-@interface ZipFileInfo ()
-- (BOOL)loadDataFromFile:(NSFileHandle*)file;
 @end
 
 @implementation ZipFile
@@ -246,7 +242,9 @@
         info.crc32 = crc32;
         info.method = compression;
         info.date = [NSDate dateWithDosDateTime:datetime];
-        
+        info.file = file;
+        info.data = nil;
+
         if (uncompressed_size != 0)
         {
             NSData*         buffer_data;
@@ -278,10 +276,10 @@
             extra_len = READ2();
             info.offset = local_offset + 30 + name_len + extra_len;
             
-            // if the caller wants the data, go get it!
+            // if the caller wants the data, load it and fail if error.
             if (options & ZipFileEnumLoadData)
             {
-                if (![info loadDataFromFile:file])
+                if (info.data == nil)
                     return FALSE;
             }
         }
@@ -293,9 +291,6 @@
             continue;
         
         block(info);
-        
-        if (info.cancel)
-            break;
     }
     
     return TRUE;
@@ -346,8 +341,11 @@
     
     for (id item in items) @autoreleasepool {
         ZipFileInfo* info = loadHandler(item);
+        
+        if (info == nil)
+            break;
     
-        if (info == nil || info.name == nil)
+        if (info.name == nil || info.name.length == 0)
             continue;
         
         if (!(options & ZipFileWriteDirectories) && [info isDirectory])
@@ -356,11 +354,7 @@
         if (!(options & ZipFileWriteHidden) && [info isHidden])
             continue;
         
-        if (info.cancel)
-            break;
-
         NSData* data = info.data;
-        info.data = nil;
         uint32_t crc32 = [data crc32];
         uint64_t uncompressed_size = [data length];
         uint32_t datetime = (uint32_t)info.date.dosDateTime;
@@ -397,6 +391,7 @@
         info.crc32 = crc32;
         info.uncompressed_size = uncompressed_size;
         info.compressed_size = compressed_size;
+        info.data = nil;
         [all_info addObject:info];
     }
     
@@ -480,7 +475,6 @@
         };
         [file writeBytes:central_directory_end_64 length:sizeof(central_directory_end_64)];
         central_directory_offset = 0xFFFFFFFF;
-        central_directory_size = 0xFFFFFFFF;
     }
     
     uint8_t central_directory_end[] = {
@@ -518,9 +512,12 @@
         
         ZipFileInfo* info = [[ZipFileInfo alloc] init];
 
-        if (block)
-            info.cancel = block((double)[files indexOfObject:name] / [files count]);
-        
+        if (block) {
+            BOOL cancel = block((double)[files indexOfObject:name] / [files count]);
+            if (cancel)
+                return nil;
+        }
+            
         if ([name hasPrefix:root])
             name = [name substringFromIndex:[root length]];
         
@@ -531,7 +528,7 @@
         
         BOOL isDirectory;
         if (![NSFileManager.defaultManager fileExistsAtPath:path isDirectory:&isDirectory])
-            return nil;
+            return info; // info.name == nil, item will be skiped.
 
         if (isDirectory) {
             if (![name hasSuffix:@"/"])
@@ -558,34 +555,52 @@
 
 @implementation ZipFileInfo
 
-- (BOOL)loadDataFromFile:(NSFileHandle*)file
+- (instancetype)init
 {
-    NSData* data = [file readDataOfLength:self.compressed_size atOffset:self.offset];
-    self.data = nil;
+    self = [super init];
+    _name = @"";
+    _date = [NSDate distantPast];
+    return self;
+}
 
-    if ([data length] != self.compressed_size)
-        return ERROR(@"read error (%d != %d)", (int)self.compressed_size, (int)[data length]);
+// load data on-demand
+- (NSData*)data {
+    
+    if (_data != nil)
+        return _data;
+
+    if (_uncompressed_size == 0)
+        return [[NSData alloc] init];
+
+    if (_file == nil)
+        return nil;
+    
+    NSData* data = [_file readDataOfLength:_compressed_size atOffset:_offset];
+    _file = nil;    // we dont need a ref to the file after data is loaded.
+
+    if ([data length] != _compressed_size)
+        return ERROR(@"read error (%d != %d)", (int)self.compressed_size, (int)[data length]) ? nil : nil;
 
     if (self.method == 8)
-        data = [data inflated:self.uncompressed_size];
+        data = [data inflated:_uncompressed_size];
     
-    if ([data length] != self.uncompressed_size)
-        return ERROR(@"inflate error (%d != %d)", (int)self.uncompressed_size, (int)[data length]);
+    if ([data length] != _uncompressed_size)
+        return ERROR(@"inflate error (%d != %d)", (int)self.uncompressed_size, (int)[data length]) ? nil : nil;
 
-    if ([data crc32] != self.crc32)
-        return ERROR(@"crc32 error (%08X != %08X)", (int)self.crc32, [data crc32]);
+    if ([data crc32] != _crc32)
+        return ERROR(@"crc32 error (%08X != %08X)", (int)self.crc32, [data crc32]) ? nil : nil;
     
-    self.data = data;
-    return TRUE;
+    _data = data;
+    return _data;
 }
 
 -(BOOL)isDirectory
 {
-    return ([self.name hasSuffix:@"/"] || [self.name hasSuffix:@"\\"]);
+    return ([_name hasSuffix:@"/"] || [_name hasSuffix:@"\\"]);
 }
 -(BOOL)isHidden
 {
-    return [[self.name lastPathComponent] hasPrefix:@"."] || [self.name hasPrefix:@"__MACOSX"];
+    return [[_name lastPathComponent] hasPrefix:@"."] || [_name hasPrefix:@"__MACOSX"];
 }
 @end
 

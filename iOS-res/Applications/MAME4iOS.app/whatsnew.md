@@ -5,6 +5,8 @@
 * Added in iCade support for tvOS 
 * Steam Controller support, controller must be in [bluetooth mode and paired](https://support.steampowered.com/kb_article.php?ref=7728-QESJ-4420)
 * Fixed issue where audio would stop when playing back content from another source or being interrupted by a phone call
+* Make the 🅐 🅑 🅧 🅨 layout consistent across iPhone and iPad.
+* Added a `Nintendo Button Layout` option.  if enabled the 🅐 🅑 and 🅧 🅨 buttons will be swapped to match a Nintendo layout.  This option has no effect on a custom layout, or a physical game controller.
 
 # Version 2020.6
 

@@ -56,7 +56,6 @@
 @end
 
 #if TARGET_OS_IOS
-@class DebugView;
 @class AnalogStickView;
 @class LayoutView;
 @class NetplayGameKit;
@@ -77,14 +76,12 @@
   UIImageView        * imageExternalDisplay;
   UIImageView        * imageLogo;
 #if TARGET_OS_IOS
-  DebugView         * dview;
   AnalogStickView   * analogStickView;
     LayoutView        *layoutView;    
     NetplayGameKit     *netplayHelper;
 #endif
   @public UIView	* externalView;
 
-  UIImageView	    * dpadView;
   UIImageView	    * buttonViews[NUM_BUTTONS];
 
     
@@ -102,25 +99,16 @@
   //views frames
   CGRect rFrames[FRAME_RECT_LAST_VALUE];
 
-  //buttons & Dpad images & states
-  CGRect rDPadImage;
-  NSString *nameImgDPad[NUM_DPAD_ELEMENTS];
-
   CGRect rButtonImages[NUM_BUTTONS];
 
   NSString *nameImgButton_Press[NUM_BUTTONS];
   NSString *nameImgButton_NotPress[NUM_BUTTONS];
     
-  int dpad_state;
-  int old_dpad_state;
-    
-  
   int old_btnStates[NUM_BUTTONS];
     
   //analog stick stuff
   int stick_radio;
   CGRect rStickWindow;
-  CGRect rStickArea;
     
   //input debug stuff
   CGRect debug_rects[100];
@@ -179,11 +167,8 @@
 
 - (void)updateOptions;
 
-- (CGRect *)getDebugRects;
-- (void)filldebugRects;
-
 - (UIImage *)loadImage:(NSString *)name;
-- (FILE *)loadFile:(const char *)name;
+- (FILE *)loadFile:(NSString *)name;
 
 - (void)moveROMS;
 - (void)playGame:(NSDictionary*)game;
@@ -198,12 +183,8 @@
 #endif
 
 @property (readwrite,strong)  UIView *externalView;
-@property (readwrite,assign) int dpad_state;
-@property (readonly,assign) int num_debug_rects;
 @property (readonly,assign) int stick_radio;
-@property (readonly,assign) CGRect rStickArea;
 @property (assign) CGRect rStickWindow;
-@property (assign) CGRect rDPadImage;
 #if TARGET_OS_IOS
 @property (strong, nonatomic) UIImpactFeedbackGenerator* impactFeedback;
 @property (strong, nonatomic) UISelectionFeedbackGenerator* selectionFeedback;
