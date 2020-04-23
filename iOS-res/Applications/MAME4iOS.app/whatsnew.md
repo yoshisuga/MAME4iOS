@@ -4,6 +4,7 @@
 
 * Added in iCade support for tvOS 
 * Steam Controller support, controller must be in [bluetooth mode and paired](https://support.steampowered.com/kb_article.php?ref=7728-QESJ-4420)
+* Fixed issue where audio would stop when playing back content from another source or being interrupted by a phone call
 
 # Version 2020.6
 
@@ -34,7 +35,7 @@
 # Version 2020.2
 
 * tvOS UI cleanup
-* Add in Parralax Ui behaviour in tvOS menu
+* Add in Parallax UI behaviour in tvOS menu
 * Mame logo and general branding updates
 * General UI performance updates
 
