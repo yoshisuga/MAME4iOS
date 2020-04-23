@@ -1311,6 +1311,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 #if TARGET_OS_IOS
 // Export a game as a ZIP file with all the game state and settings, make the export file be named "SHORT-DESCRIPTION (ROMNAME).zip"
+// NOTE we specificaly *dont* export CHDs because they are huge
 -(void)share:(NSDictionary*)game
 {
     NSString* title = [NSString stringWithFormat:@"%@ (%@)",[[game[kGameInfoDescription] componentsSeparatedByString:@" ("] firstObject], game[kGameInfoName]];
@@ -1318,7 +1319,6 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     FileItemProvider* item = [[FileItemProvider alloc] initWithTitle:title typeIdentifier:@"public.zip-archive" saveHandler:^BOOL(NSURL* url, FileItemProviderProgressHandler progressHandler) {
         NSString *rootPath = [NSString stringWithUTF8String:get_documents_path("")];
         NSArray* files = [self getGameFiles:game allFiles:YES];
-        //TODO: support exporting CHDs
         return [ZipFile exportTo:url.path fromDirectory:rootPath withFiles:files withOptions:(ZipFileWriteFiles | ZipFileWriteAtomic) progressBlock:progressHandler];
     }];
     UIActivityViewController* activity = [[UIActivityViewController alloc] initWithActivityItems:@[item] applicationActivities:nil];

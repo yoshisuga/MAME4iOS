@@ -33,12 +33,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, strong) NSString* name;
 @property(nonatomic, strong) NSDate* date;
 @property(nonatomic, strong, nullable) NSData* data;
+@property(nonatomic, strong, nullable) NSFileHandle* file;
 @property(nonatomic, assign) NSUInteger method;
 @property(nonatomic, assign) NSUInteger uncompressed_size;
 @property(nonatomic, assign) NSUInteger compressed_size;
 @property(nonatomic, assign) uint32_t crc32;
 @property(nonatomic, assign) uint64_t offset;
-@property(nonatomic, assign) BOOL cancel;
 -(BOOL)isDirectory;
 -(BOOL)isHidden;
 @end

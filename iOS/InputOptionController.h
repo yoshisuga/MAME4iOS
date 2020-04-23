@@ -56,6 +56,7 @@
     
     NSArray *arrayNumbuttons;
     UISwitch *switchAplusB;
+    UISwitch *switchBAYX;
     NSArray  *arrayAutofireValue;
     NSArray  *arrayButtonSizeValue;
     
