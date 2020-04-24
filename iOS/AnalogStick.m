@@ -211,7 +211,7 @@
     
     NSString* name = @"DPad_NotPressed.png";
     
-    switch (myosd_pad_status & (MYOSD_UP|MYOSD_DOWN|MYOSD_LEFT|MYOSD_RIGHT))
+    switch ((myosd_pad_status | myosd_joy_status[0]) & (MYOSD_UP|MYOSD_DOWN|MYOSD_LEFT|MYOSD_RIGHT))
     {
         case MYOSD_UP:    name = @"DPad_U.png"; break;
         case MYOSD_DOWN:  name = @"DPad_D.png"; break;
