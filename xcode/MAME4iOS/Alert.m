@@ -24,9 +24,14 @@
             if (handler != nil)
                 handler(i);
         }]];
-        
-        if (style != UIAlertActionStyleCancel && alert.preferredAction == nil)
+    }
+    
+    if (alert.cancelAction != nil && buttons.count == 2)
+    {
+        if (alert.cancelAction == alert.actions.firstObject)
             alert.preferredAction = alert.actions.lastObject;
+        else
+            alert.preferredAction = alert.actions.firstObject;
     }
         
     [self.topViewController presentViewController:alert animated:YES completion:nil];
@@ -181,8 +186,31 @@
     if ([self respondsToSelector:@selector(_representer)])
     {
         id view = [self valueForKey:@"_representer"];
+        
         if ([view respondsToSelector:@selector(setHighlighted:)])
             [view setHighlighted:value];
+        
+        // scroll the just hilighted menu item into view.
+        if (value && [view isKindOfClass:[UIView class]])
+        {
+            UIScrollView* scroll = view;
+            while (scroll != nil && ![scroll isKindOfClass:[UIScrollView class]])
+                scroll = (UIScrollView*)[scroll superview];
+            
+            if (scroll != nil)
+            {
+                CGRect scroll_bounds = scroll.bounds;
+                CGRect rect = [view convertRect:[view bounds] toView:scroll];
+
+                if (CGRectGetMaxY(rect) >= CGRectGetMaxY(scroll_bounds) - rect.size.height * 0.5)
+                    rect = CGRectOffset(rect, 0, rect.size.height);
+                
+                if (CGRectGetMinY(rect) <= CGRectGetMinY(scroll_bounds) + rect.size.height * 0.5)
+                    rect = CGRectOffset(rect, 0, -rect.size.height);
+
+                [scroll scrollRectToVisible:rect animated:YES];
+            }
+        }
     }
 }
 #pragma clang diagnostic pop
