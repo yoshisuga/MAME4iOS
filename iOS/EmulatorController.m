@@ -2001,7 +2001,7 @@ void myosd_handle_turbo() {
 
 // handle_INPUT - called when input happens on a controller, keyboard, or screen
 - (void)handle_INPUT {
-#ifdef DEBUG
+#if defined(DEBUG) && DebugLog
     for (int i=0; i<MAX(1, myosd_num_of_joys); i++) {
         unsigned long pad_status = myosd_joy_status[i] | (i == 0 ? myosd_pad_status : 0);
         
