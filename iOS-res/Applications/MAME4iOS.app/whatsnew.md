@@ -4,9 +4,15 @@
 
 * Added in iCade support for tvOS 
 * Steam Controller support, controller must be in [bluetooth mode and paired](https://support.steampowered.com/kb_article.php?ref=7728-QESJ-4420)
-* Fixed issue where audio would stop when playing back content from another source or being interrupted by a phone call
+* Fixed issue where audio would stop when playing back content from another source or being interrupted by a phone call.
+* Set the audio catefory to `AVAudioSessionCategoryAmbient` so MAME4iOS will play nice with other audio apps.
 * Make the 🅐 🅑 🅧 🅨 layout consistent across iPhone and iPad.
 * Added a `Nintendo Button Layout` option.  if enabled the 🅐 🅑 and 🅧 🅨 buttons will be swapped to match a Nintendo layout.  This option has no effect on a custom layout, or a physical game controller.
+* Better handling for 2 Player games, a 1 Player and a 2 Player Start option will be on the in-game menu.  We try to detect how many Players, Inputs, and Coins the current game is looking for and try to adapt to that.
+* Downgrade controllers, if you are trying to use Controller 3 on a game that only takes 2 inputs, Controller 3 will be mapped to Player 1.
+* Controller Identify, when you hit `MENU` on a controller the Player number is displayed as the title of the in-game menu.
+* Supports Controler trigger buttons `L2`, `R2`.  `MENU+L2` will Insert a `P2 COIN`, and `MENU+R2` will do a `P2 START`.
+* Removed separate `Load State` and `Save State` from the in-game menu, to make room, the menu is cramped in landscape and tvOS
 
 # Version 2020.6
 
@@ -22,7 +28,7 @@
 # Version 2020.4
 
 * Updated default game icon when icons are not in the game database such as neogeo.zip and others
-* Added a RESET TO DEFAULTS button 
+* Added a `RESET TO DEFAULTS` button 
 * tvOS Settings page update and other UI/Layout improvements
 * Massive Zip import speed increase and refactoring
 * Added a means to filter by game driver such as CPS1, CPS2, etc

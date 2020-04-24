@@ -235,8 +235,10 @@ To use a Steam Controller, make sure it is updated to BLE Firmware, and it paire
 | | |  
 -|-
 MENU           |Open MAME4iOS MENU   
-MENU+L1     |Insert coin                 
-MENU+R1     |Start Game               
+MENU+L1     |Player 1 Coin                 
+MENU+R1     |Player 1 Start               
+MENU+L2     |Player 2 Coin                
+MENU+R2     |Player 2 Start               
 MENU+X       |Exit Game                 
 MENU+B       |Open MAME menu   
 MENU+A       |Load State  X (slot1) or Y (slot 2)            
@@ -244,6 +246,8 @@ MENU+Y       |Save State  X (slot1) or Y (slot 2)
 OPTION         |Insert Coin and Start   
 
 **NOTE** on versions prior to iOS 13 only MiFi controllers are reconized and when doing multiple button combinations the secondary button must be pressed first.  For example to insert a coin hold down L1 and hit MENU.  on iOS 13+ you can hold MENU and then hit L1.
+
+**NOTE** you can also use OPTION as a modifier, for example either MENU+L1 or OPTION+L1 will insert a coin.
 
 ## Multiplayer game start using game controllers
 
@@ -253,11 +257,11 @@ You can insert a COIN or do a START for another player from the main Game Contro
 
 | | |  
 -|-
-MENU+L1+UP     |Player 2 insert COINT           
+MENU+L1+UP     |Player 2 COIN           
 MENU+R1+UP     |Player 2 START
-MENU+L1+RIGHT     |Player 3 Insert COIN          
+MENU+L1+RIGHT     |Player 3 COIN          
 MENU+R1+RIGHT    |Player 3 START
-MENU+L1+DOWN     |Player 4 insert COIN          
+MENU+L1+DOWN     |Player 4 COIN          
 MENU+R1+DOWN     |Player 4 START
 
 ## SAVE/LOAD STATE
