@@ -69,8 +69,7 @@
 @interface EmulatorController : GCEventViewController<GCDWebUploaderDelegate>
 #endif
 {
-
-  ScreenView			* screenView;
+  @public ScreenView			* screenView;
   UIImageView	    * imageBack;
   UIImageView	    * imageOverlay;
   UIImageView        * imageExternalDisplay;
@@ -81,15 +80,13 @@
     NetplayGameKit     *netplayHelper;
 #endif
   @public UIView	* externalView;
-
+  UIView            * inputView;    // parent view of all the input views
   UIImageView	    * buttonViews[NUM_BUTTONS];
 
     
   iCadeView         *icadeView;
     
 
-  UIAlertController *menu;
-  
   //input rects
   CGRect rInput[INPUT_LAST_VALUE];
     
@@ -104,22 +101,14 @@
   NSString *nameImgButton_Press[NUM_BUTTONS];
   NSString *nameImgButton_NotPress[NUM_BUTTONS];
     
-  int old_btnStates[NUM_BUTTONS];
-    
   //analog stick stuff
   int stick_radio;
   CGRect rStickWindow;
-    
-  //input debug stuff
-  CGRect debug_rects[100];
-  int num_debug_rects;
     
   UIButton *hideShowControlsForLightgun;
   BOOL areControlsHidden;
 
 }
-
-- (int *)getBtnStates;
 
 #if TARGET_OS_IOS
 - (CGRect *)getInputRects;
@@ -136,9 +125,6 @@
 
 - (void)done:(id)sender;
 
-- (void)removeTouchControllerViews;
-- (void)buildTouchControllerViews;
-
 - (void)changeUI;
 
 #if TARGET_OS_IOS
@@ -146,6 +132,8 @@
 - (void)buildPortraitImageOverlay;
 - (void)buildPortrait;
 - (void)buildLandscapeImageBack;
+- (void)removeTouchControllerViews;
+- (void)buildTouchControllerViews;
 #endif
 - (void)buildLandscapeImageOverlay;
 - (void)buildLandscape;
@@ -162,8 +150,7 @@
 - (void)runExport;
 #endif
 
-- (void)handle_DPAD;
-- (void)handle_MENU;
+- (void)handle_INPUT;
 
 - (void)updateOptions;
 
