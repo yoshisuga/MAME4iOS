@@ -212,6 +212,17 @@ we suppoprt a small subset of the keys supported by the command line MAME.
 
 <img src="https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/HNKT2?wid=1144&hei=1144&fmt=jpeg&qlt=95&op_usm=0.5%2C0.5&.v=1573236530750" width=30%> <img src="https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/HNKS2?wid=1144&hei=1144&fmt=jpeg&qlt=95&op_usm=0.5%2C0.5&.v=1573236454283" width=30%> <img src="https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/HJ162?wid=1144&hei=1144&fmt=jpeg&qlt=95&op_usm=0.5%2C0.5&.v=1477094888716" width=30%>
 
+Some of the supported game controllers include, but are not limited to:
+* Xbox Wireless Controller with Bluetooth (Model 1708)
+* PlayStation DUALSHOCK®4 Wireless Controller
+* MFi (Made for iOS) Bluetooth controllers, like the SteelSeries Nimbus, Horipad Ultimate, and more may be supported.
+* iCade
+* 8BitDo M30, Zero, and others
+* Steam Game Controllers
+* iMpulse
+
+Some of the new features added to the Controller experience include:
+
 * supports new controller types on iOS 13
 * new buttons (MENU, OPTIONS) on iOS 13+
 * you can now navigate a iOS Alert.
