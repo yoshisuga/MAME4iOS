@@ -221,6 +221,7 @@ Some of the supported game controllers include, but are not limited to:
 * Steam Game Controllers
 * iMpulse
 
+
 * supports new controller types on iOS 13
 * new buttons (MENU, OPTIONS) on iOS 13+
 * you can now navigate a iOS Alert.
