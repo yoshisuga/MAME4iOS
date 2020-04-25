@@ -52,7 +52,7 @@ int  myosd_force_pxaspect = 0;
 
 int  myosd_pxasp1 = 1;
 int  myosd_service = 0;
-int  myosd_num_buttons = 0;
+int  myosd_configure = 0;
 
 int myosd_video_threaded=-1;
 int myosd_dbl_buffer=1;
@@ -78,7 +78,12 @@ char myosd_filter_keyword[MAX_FILTER_KEYWORD] = {'\0'};
 
 int myosd_reset_filter = 0;
 
+int myosd_num_buttons = 0;
 int myosd_num_ways = 8;
+int myosd_num_players = 0;
+int myosd_num_coins = 0;
+int myosd_num_inputs = 0;
+
 
 int myosd_vsync = -1;
 int myosd_autofire=1;
@@ -206,14 +211,13 @@ unsigned long myosd_joystick_read(int n)
 
     }
 
-	if (n<myosd_num_of_joys)
-	{
 #ifdef BTJOY
+	if (n<myosd_num_of_joys)
         res |= bt_joy_poll(n);
 #endif
-        res |= myosd_joy_status[n];
-	}
-    
+
+    res |= myosd_joy_status[n];
+
 	return res;
 }
 

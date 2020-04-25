@@ -30,6 +30,7 @@ enum
 	KEY_PGUP,
 	KEY_PGDN,
 	KEY_SERVICE,
+    KEY_CONFIGURE,
 	KEY_TOTAL
 };
 
@@ -55,7 +56,7 @@ static input_device *keyboard_device;
 
 // the states
 static int keyboard_state[KEY_TOTAL];
-static int joy_buttons[4][10];
+static int joy_buttons[4][12];
 static int joy_axis[4][6];
 static int joy_hats[4][4];
 
@@ -110,11 +111,14 @@ void droid_ios_init_input(running_machine *machine)
 		input_device_item_add(devinfo, "L", &joy_buttons[i][4], ITEM_ID_BUTTON5, my_get_state);
 		input_device_item_add(devinfo, "R", &joy_buttons[i][5], ITEM_ID_BUTTON6, my_get_state);
 
-		input_device_item_add(devinfo, "Coin", &joy_buttons[i][6], ITEM_ID_BUTTON7, my_get_state);
-		input_device_item_add(devinfo, "Start", &joy_buttons[i][7], ITEM_ID_BUTTON8, my_get_state);
+		input_device_item_add(devinfo, "L2", &joy_buttons[i][6], ITEM_ID_BUTTON7, my_get_state);
+		input_device_item_add(devinfo, "R2", &joy_buttons[i][7], ITEM_ID_BUTTON8, my_get_state);
 
 		input_device_item_add(devinfo, "L3", &joy_buttons[i][8], ITEM_ID_BUTTON9, my_get_state);
 		input_device_item_add(devinfo, "R3", &joy_buttons[i][9], ITEM_ID_BUTTON10, my_get_state);
+
+        input_device_item_add(devinfo, "Coin", &joy_buttons[i][10], ITEM_ID_SELECT, my_get_state);
+        input_device_item_add(devinfo, "Start", &joy_buttons[i][11], ITEM_ID_START, my_get_state);
 
 		input_device_item_add(devinfo, "D-Pad Up", &joy_hats[i][0],(input_item_id)( ITEM_ID_HAT1UP+i*4), my_get_state);
 		input_device_item_add(devinfo, "D-Pad Down", &joy_hats[i][1],(input_item_id)( ITEM_ID_HAT1DOWN+i*4), my_get_state);
@@ -138,8 +142,9 @@ void droid_ios_init_input(running_machine *machine)
 	input_device_item_add(keyboard_device, "PGUP", &keyboard_state[KEY_PGUP], ITEM_ID_PGUP, my_get_state);
 	input_device_item_add(keyboard_device, "PGDN", &keyboard_state[KEY_PGDN], ITEM_ID_PGDN, my_get_state);
 
-	input_device_item_add(keyboard_device, "Service", &keyboard_state[KEY_SERVICE], ITEM_ID_F2, my_get_state);
-    
+    input_device_item_add(keyboard_device, "Service", &keyboard_state[KEY_SERVICE], ITEM_ID_F2, my_get_state);
+    input_device_item_add(keyboard_device, "Configure", &keyboard_state[KEY_CONFIGURE], ITEM_ID_TAB, my_get_state);
+
     for (int i = 0; i < 4; i++)
     {
         char name[10];
@@ -177,14 +182,57 @@ void my_poll_ports(running_machine *machine)
     if(poll_ports)
     {
         int way8 = 0;
-        int counter = 0;
         myosd_num_buttons = 0;
         myosd_light_gun = 0;
+        myosd_num_players = 1;
+        myosd_num_coins = 1;
+        myosd_num_inputs = 1;
         for (port = machine->m_portlist.first(); port != NULL; port = port->next())
         {
             for (field = port->fieldlist; field != NULL; field = field->next)
             {
-                if (field->player!=0)continue;
+//                printf("FIELD: %s player=%d type=%d\n", input_field_name(field), field->player, field->type);
+                
+                // walk the input seq and look for highest device/joystick
+                if ((field->type >= __ipt_digital_joystick_start && field->type <= __ipt_digital_joystick_end) ||
+                    (field->type >= IPT_BUTTON1 && field->type <= IPT_BUTTON12))
+                {
+                    const input_seq* seq = input_field_seq(field, SEQ_TYPE_STANDARD);
+                    
+//                    astring str;
+//                    input_seq_name(machine, str, seq);
+//                    printf("    SEQ: %s\n", str.text);
+                
+                    for (int i=0; i<ARRAY_LENGTH(seq->code) && seq->code[i] != SEQCODE_END; i++)
+                    {
+                        input_code code = seq->code[i];
+                        if (INPUT_CODE_DEVINDEX(code) >= myosd_num_inputs)
+                            myosd_num_inputs = INPUT_CODE_DEVINDEX(code)+1;
+                    }
+                }
+                
+                // count the number of COIN buttons.
+                if (field->type == IPT_COIN2 && myosd_num_coins < 2)
+                    myosd_num_coins = 2;
+                if (field->type == IPT_COIN3 && myosd_num_coins < 3)
+                    myosd_num_coins = 3;
+                if (field->type == IPT_COIN4 && myosd_num_coins < 4)
+                    myosd_num_coins = 4;
+                
+                // count the number of players, by looking at the types of START buttons.
+                if (field->type == IPT_START2 && myosd_num_players < 2)
+                    myosd_num_players = 2;
+                if (field->type == IPT_START3 && myosd_num_players < 3)
+                    myosd_num_players = 3;
+                if (field->type == IPT_START4 && myosd_num_players < 4)
+                    myosd_num_players = 4;
+                if (field->player >= myosd_num_players)
+                    myosd_num_players = field->player+1;
+                
+                if (field->player!=0)
+                    continue;   // only count ways and buttons for Player 1
+                
+                // count the number of buttons
                 if(field->type == IPT_BUTTON1)
                     if(myosd_num_buttons<1)myosd_num_buttons=1;
                 if(field->type == IPT_BUTTON2)
@@ -201,11 +249,15 @@ void my_poll_ports(running_machine *machine)
                     if(myosd_num_buttons<4)myosd_num_buttons=4;
                 if(field->type == IPT_POSITIONAL)//positional is mapped with two last buttons
                     if(myosd_num_buttons<6)myosd_num_buttons=6;
+                
+                // count the number of ways (joystick directions)
                 if(field->type == IPT_JOYSTICK_UP || field->type == IPT_JOYSTICK_DOWN || field->type == IPT_JOYSTICKLEFT_UP || field->type == IPT_JOYSTICKLEFT_DOWN)
                     way8= 1;
                 if(field->type == IPT_AD_STICK_X || field->type == IPT_LIGHTGUN_X || field->type == IPT_MOUSE_X ||
                    field->type == IPT_TRACKBALL_X || field->type == IPT_PEDAL)
                     way8= 1;
+                
+                // detect if mouse or lightgun input is wanted.
                 if(field->type == IPT_DIAL || field->type == IPT_PADDLE || field->type == IPT_POSITIONAL ||
                    field->type == IPT_DIAL_V || field->type == IPT_PADDLE_V || field->type == IPT_POSITIONAL_V)
                     myosd_mouse = 1;
@@ -217,13 +269,16 @@ void my_poll_ports(running_machine *machine)
         
         //8 si analog o lightgun o up o down
         if (myosd_num_ways!=4){
-            if(way8 || counter>1)
+            if(way8)
                 myosd_num_ways = 8;
             else
                 myosd_num_ways = 2;
         }
         printf("Num Buttons %d\n",myosd_num_buttons);
         printf("Num WAYS %d\n",myosd_num_ways);
+        printf("Num PLAYERS %d\n",myosd_num_players);
+        printf("Num COINS %d\n",myosd_num_coins);
+        printf("Num INPUTS %d\n",myosd_num_inputs);
     }
     
 }
@@ -352,6 +407,17 @@ void droid_ios_poll_input(running_machine *machine)
 	    {
 			keyboard_state[KEY_SERVICE] = 0;
         }
+        
+        // enter MAME MENU (aka CONFIGURE)
+        if(myosd_configure)
+        {
+            keyboard_state[KEY_CONFIGURE] = 0x80;
+            myosd_configure = 0;
+        }
+        else
+        {
+            keyboard_state[KEY_CONFIGURE] = 0;
+        }
 
 		keyboard_state[KEY_LOAD] =  0;
 		keyboard_state[KEY_SAVE] =  0;
@@ -431,18 +497,21 @@ void droid_ios_poll_input(running_machine *machine)
 				}
 			}
 
-            // lo cambio de 0 a i...
-            if(joystick_read_analog(i, 'x') == 0 && joystick_read_analog(i, 'y')==0 && joystick_read_analog(i, 'X') == 0 && joystick_read_analog(i, 'Y')==0)
-            {
-                joy_hats[i][0] = ((_pad_status & MYOSD_UP) != 0) ? 0x80 : 0;
-                joy_hats[i][1] = ((_pad_status & MYOSD_DOWN) != 0) ? 0x80 : 0;
-                joy_hats[i][2] = ((_pad_status & MYOSD_LEFT) != 0) ? 0x80 : 0;
-                joy_hats[i][3] = ((_pad_status & MYOSD_RIGHT) != 0) ? 0x80 : 0;
-                joy_axis[i][0] = 0;
-                joy_axis[i][1] = 0;
-                joy_axis[i][2] = 0;
-                joy_axis[i][3] = 0;
+            joy_axis[i][0] = (int)(joystick_read_analog(i, 'x') *  32767 *  2 );
+            joy_axis[i][1] = (int)(joystick_read_analog(i, 'y') *  32767 * -2 );
+            joy_axis[i][2] = (int)(joystick_read_analog(i, 'X') *  32767 *  2 );
+            joy_axis[i][3] = (int)(joystick_read_analog(i, 'Y') *  32767 * -2 );
+            joy_axis[i][4] = (int)(joystick_read_analog(i, 'z') *  32767 *  2 );
+            joy_axis[i][5] = (int)(joystick_read_analog(i, 'Z') *  32767 *  2 );
+            
+            joy_hats[i][0] = ((_pad_status & MYOSD_UP) != 0) ? 0x80 : 0;
+            joy_hats[i][1] = ((_pad_status & MYOSD_DOWN) != 0) ? 0x80 : 0;
+            joy_hats[i][2] = ((_pad_status & MYOSD_LEFT) != 0) ? 0x80 : 0;
+            joy_hats[i][3] = ((_pad_status & MYOSD_RIGHT) != 0) ? 0x80 : 0;
 
+            // ignore lightgun and mouse, if we have any joystick input. (why?)
+            if(joy_axis[i][0] == 0 && joy_axis[i][1] == 0 && joy_axis[i][2] == 0 && joy_axis[i][3] == 0)
+            {
                 lightgun_axis[i][0] = (int)(lightgun_x[0] *  32767 *  2 );
                 lightgun_axis[i][1] = (int)(lightgun_y[0] *  32767 *  -2 );
 
@@ -451,27 +520,12 @@ void droid_ios_poll_input(running_machine *machine)
             }
             else
             {
-                joy_axis[i][0] = (int)(joystick_read_analog(i, 'x') *  32767 *  2 );
-                joy_axis[i][1] = (int)(joystick_read_analog(i, 'y') *  32767 * -2 );
-                joy_axis[i][2] = (int)(joystick_read_analog(i, 'X') *  32767 *  2 );
-                joy_axis[i][3] = (int)(joystick_read_analog(i, 'Y') *  32767 * -2 );
-                joy_hats[i][0] = 0;
-                joy_hats[i][1] = 0;
-                joy_hats[i][2] = 0;
-                joy_hats[i][3] = 0;
-
-                lightgun_x[i] = 0;
-                lightgun_y[i] = 0;
                 lightgun_axis[i][0] = 0;
                 lightgun_axis[i][1] = 0;
 
-				mouse_axis[i][0] = 0;
-				mouse_axis[i][1] = 0;
-
+                mouse_axis[i][0] = 0;
+                mouse_axis[i][1] = 0;
             }
-            
-            joy_axis[i][4] = (int)(joystick_read_analog(i, 'z') *  32767 *  2 );
-            joy_axis[i][5] = (int)(joystick_read_analog(i, 'Z') *  32767 * 2 );
             
             if(myosd_inGame && !myosd_in_menu && myosd_autofire && !netplay)
             {
@@ -518,15 +572,17 @@ void droid_ios_poll_input(running_machine *machine)
 			joy_buttons[i][4]  = ((_pad_status & MYOSD_L1) != 0) ? 0x80 : 0;
 			joy_buttons[i][5]  = ((_pad_status & MYOSD_R1) != 0) ? 0x80 : 0;
 
-			if(i!=0  && (myosd_num_of_joys==1 || myosd_num_of_joys==0) && !netplay)
-				continue;
-
-			joy_buttons[i][6]  = ((_pad_status & MYOSD_SELECT ) != 0) ? 0x80 : 0;
-			joy_buttons[i][7]  = ((_pad_status & MYOSD_START  ) != 0) ? 0x80 : 0;
+			joy_buttons[i][6]  = ((_pad_status & MYOSD_L2) != 0) ? 0x80 : 0;
+			joy_buttons[i][7]  = ((_pad_status & MYOSD_R2) != 0) ? 0x80 : 0;
 
 			joy_buttons[i][8]  = ((_pad_status & MYOSD_L3 ) != 0) ? 0x80 : 0;
 			joy_buttons[i][9]  = ((_pad_status & MYOSD_R3  ) != 0) ? 0x80 : 0;
 
+            if(i != 0 && myosd_pxasp1 && myosd_num_of_joys <= 1 && !netplay)
+                continue;
+
+            joy_buttons[i][10]  = ((_pad_status & MYOSD_SELECT ) != 0) ? 0x80 : 0;
+            joy_buttons[i][11]  = ((_pad_status & MYOSD_START  ) != 0) ? 0x80 : 0;
 		}
 	}
 	else if(mystate == STATE_LOADSAVE)
@@ -643,37 +699,39 @@ void osd_customize_input_type_list(input_type_desc *typelist)
 		switch (typedesc->type)
 		{
 			case IPT_UI_CONFIGURE:
-				input_seq_set_2(&typedesc->seq[SEQ_TYPE_STANDARD], INPUT_CODE_SET_DEVINDEX(JOYCODE_BUTTON7, 0), INPUT_CODE_SET_DEVINDEX(JOYCODE_BUTTON8, 0));
+                // having SELECT+START bring up the MAME MENU has the side effect of inserting a COIN and/or STARTing the game, not ideal.
+                // input_seq_set_2(&typedesc->seq[SEQ_TYPE_STANDARD], INPUT_CODE_SET_DEVINDEX(JOYCODE_SELECT, 0), INPUT_CODE_SET_DEVINDEX(JOYCODE_START, 0));
+                input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD], KEYCODE_TAB);
 				break;
 			case IPT_COIN1:
-				input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD], INPUT_CODE_SET_DEVINDEX(JOYCODE_BUTTON7, 0));
+				input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD], INPUT_CODE_SET_DEVINDEX(JOYCODE_SELECT, 0));
 				break;
 			case IPT_START1:
-				input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD], INPUT_CODE_SET_DEVINDEX(JOYCODE_BUTTON8, 0));
+				input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD], INPUT_CODE_SET_DEVINDEX(JOYCODE_START, 0));
 				break;
 			case IPT_COIN2:
-				input_seq_set_5(&typedesc->seq[SEQ_TYPE_STANDARD], INPUT_CODE_SET_DEVINDEX(JOYCODE_BUTTON7, 0), INPUT_CODE_SET_DEVINDEX(STANDARD_CODE(JOYSTICK, 0, SWITCH, NONE, HAT1UP),0),SEQCODE_OR, INPUT_CODE_SET_DEVINDEX(JOYCODE_BUTTON7, 0), INPUT_CODE_SET_DEVINDEX(JOYCODE_Y_UP_SWITCH, 0));
-				input_seq_append_or(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(JOYCODE_BUTTON7, 1));
-				break;
+                input_seq_set_4(&typedesc->seq[SEQ_TYPE_STANDARD], INPUT_CODE_SET_DEVINDEX(JOYCODE_SELECT, 1), SEQCODE_OR,
+                                                                   INPUT_CODE_SET_DEVINDEX(JOYCODE_SELECT, 0), INPUT_CODE_SET_DEVINDEX(STANDARD_CODE(JOYSTICK, 0, SWITCH, NONE, HAT1UP),0));
+                break;
 			case IPT_START2:
-				input_seq_set_5(&typedesc->seq[SEQ_TYPE_STANDARD], INPUT_CODE_SET_DEVINDEX(JOYCODE_BUTTON8, 0), STANDARD_CODE(JOYSTICK, 0, SWITCH, NONE, HAT1UP),SEQCODE_OR, INPUT_CODE_SET_DEVINDEX(JOYCODE_BUTTON8, 0), INPUT_CODE_SET_DEVINDEX(JOYCODE_Y_UP_SWITCH, 0));
-				input_seq_append_or(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(JOYCODE_BUTTON8, 1));
-				break;
+                input_seq_set_4(&typedesc->seq[SEQ_TYPE_STANDARD], INPUT_CODE_SET_DEVINDEX(JOYCODE_START, 1), SEQCODE_OR,
+                                                                   INPUT_CODE_SET_DEVINDEX(JOYCODE_START, 0), STANDARD_CODE(JOYSTICK, 0, SWITCH, NONE, HAT1UP));
+                break;
 			case IPT_COIN3:
-				input_seq_set_5(&typedesc->seq[SEQ_TYPE_STANDARD], INPUT_CODE_SET_DEVINDEX(JOYCODE_BUTTON7, 0), INPUT_CODE_SET_DEVINDEX(STANDARD_CODE(JOYSTICK, 0, SWITCH, NONE, HAT1RIGHT),0),SEQCODE_OR, INPUT_CODE_SET_DEVINDEX(JOYCODE_BUTTON7, 0), INPUT_CODE_SET_DEVINDEX(JOYCODE_X_RIGHT_SWITCH, 0));
-				input_seq_append_or(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(JOYCODE_BUTTON7, 2));
+                input_seq_set_4(&typedesc->seq[SEQ_TYPE_STANDARD], INPUT_CODE_SET_DEVINDEX(JOYCODE_SELECT, 2), SEQCODE_OR,
+                                                                   INPUT_CODE_SET_DEVINDEX(JOYCODE_SELECT, 0), INPUT_CODE_SET_DEVINDEX(STANDARD_CODE(JOYSTICK, 0, SWITCH, NONE, HAT1RIGHT),0));
 				break;
 			case IPT_START3:
-				input_seq_set_5(&typedesc->seq[SEQ_TYPE_STANDARD], INPUT_CODE_SET_DEVINDEX(JOYCODE_BUTTON8, 0), STANDARD_CODE(JOYSTICK, 0, SWITCH, NONE, HAT1RIGHT),SEQCODE_OR, INPUT_CODE_SET_DEVINDEX(JOYCODE_BUTTON8, 0), INPUT_CODE_SET_DEVINDEX(JOYCODE_X_RIGHT_SWITCH, 0));
-				input_seq_append_or(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(JOYCODE_BUTTON8, 2));
+				input_seq_set_4(&typedesc->seq[SEQ_TYPE_STANDARD], INPUT_CODE_SET_DEVINDEX(JOYCODE_START, 2), SEQCODE_OR,
+                                                                   INPUT_CODE_SET_DEVINDEX(JOYCODE_START, 0), STANDARD_CODE(JOYSTICK, 0, SWITCH, NONE, HAT1RIGHT));
 				break;
 			case IPT_COIN4:
-				input_seq_set_5(&typedesc->seq[SEQ_TYPE_STANDARD], INPUT_CODE_SET_DEVINDEX(JOYCODE_BUTTON7, 0), INPUT_CODE_SET_DEVINDEX(STANDARD_CODE(JOYSTICK, 0, SWITCH, NONE, HAT1DOWN),0),SEQCODE_OR, INPUT_CODE_SET_DEVINDEX(JOYCODE_BUTTON7, 0), INPUT_CODE_SET_DEVINDEX(JOYCODE_Y_DOWN_SWITCH, 0));
-				input_seq_append_or(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(JOYCODE_BUTTON7, 3));
+				input_seq_set_4(&typedesc->seq[SEQ_TYPE_STANDARD], INPUT_CODE_SET_DEVINDEX(JOYCODE_SELECT, 3), SEQCODE_OR,
+                                                                   INPUT_CODE_SET_DEVINDEX(JOYCODE_SELECT, 0), INPUT_CODE_SET_DEVINDEX(STANDARD_CODE(JOYSTICK, 0, SWITCH, NONE, HAT1DOWN),0));
 				break;
 			case IPT_START4:
-				input_seq_set_5(&typedesc->seq[SEQ_TYPE_STANDARD], INPUT_CODE_SET_DEVINDEX(JOYCODE_BUTTON8, 0), STANDARD_CODE(JOYSTICK, 0, SWITCH, NONE, HAT1DOWN),SEQCODE_OR, INPUT_CODE_SET_DEVINDEX(JOYCODE_BUTTON8, 0), INPUT_CODE_SET_DEVINDEX(JOYCODE_Y_DOWN_SWITCH, 0));
-				input_seq_append_or(&typedesc->seq[SEQ_TYPE_STANDARD],INPUT_CODE_SET_DEVINDEX(JOYCODE_BUTTON8, 3));
+				input_seq_set_4(&typedesc->seq[SEQ_TYPE_STANDARD], INPUT_CODE_SET_DEVINDEX(JOYCODE_START, 3), SEQCODE_OR,
+                                                                   INPUT_CODE_SET_DEVINDEX(JOYCODE_START, 0), STANDARD_CODE(JOYSTICK, 0, SWITCH, NONE, HAT1DOWN));
 				break;
 			case IPT_UI_LOAD_STATE:
 				input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD], KEYCODE_F7);

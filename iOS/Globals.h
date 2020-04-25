@@ -55,8 +55,8 @@
 
 #define absf(x)			    ((x >= 0) ? (x) : (x * -1.0f))
 
-#define NUM_BUTTONS 10
-#define NUM_DPAD_ELEMENTS 9
+#define NUM_JOY 4
+
 //#define STICK4WAY (myosd_waysStick == 4 && myosd_inGame)
 #define STICK4WAY (myosd_waysStick == 4 || !myosd_inGame || myosd_in_menu)
 #define STICK2WAY (myosd_waysStick == 2 && myosd_inGame && !myosd_in_menu)
@@ -66,11 +66,6 @@
 (point.y >= rect.origin.y) &&							\
 (point.x <= rect.origin.x + rect.size.width) &&			\
 (point.y <= rect.origin.y + rect.size.height)) ? 1 : 0)
-
-
-// See http://omegadelta.net/2011/11/04/oh-my-god-they-killed-parentviewcontroller/
-#define self_parentViewController (([self parentViewController] != nil || ![self respondsToSelector:@selector(presentingViewController)]) ? [self parentViewController] : [self presentingViewController])
-#define my_parentViewController(c) (([c parentViewController] != nil || ![c respondsToSelector:@selector(presentingViewController)]) ? [c parentViewController] : [c presentingViewController])
 
 extern int myosd_video_threaded;
 extern int myosd_video_width;
@@ -86,9 +81,9 @@ extern void change_pause(int value);
 extern int iOS_main (int argc, char **argv);
 
 extern unsigned long myosd_pad_status;
-extern unsigned long myosd_joy_status[4];
-extern float joy_analog_x[4][4];
-extern float joy_analog_y[4][2];
+extern unsigned long myosd_joy_status[NUM_JOY];
+extern float joy_analog_x[NUM_JOY][4];
+extern float joy_analog_y[NUM_JOY][2];
 
 extern int g_isIpad;
 
@@ -137,9 +132,6 @@ extern int g_skin_data;
 extern float g_buttons_size;
 extern float g_stick_size;
 
-extern int ga_btnStates[NUM_BUTTONS];
-extern int g_dpad_state;
-
 enum { PORTRAIT_VIEW_FULL=0,
     PORTRAIT_VIEW_NOT_FULL=1,
     PORTRAIT_IMAGE_BACK=2,
@@ -172,14 +164,15 @@ enum {
     BTN_START_RECT=17,
     BTN_L1_RECT=18,
     BTN_R1_RECT=19,
-    BTN_L2_RECT=20,
-    BTN_R2_RECT=21,
+    BTN_L2_RECT=20, BTN_EXIT_RECT=20,
+    BTN_R2_RECT=21, BTN_OPTION_RECT=21,
     BTN_MENU_RECT=22,
     INPUT_LAST_VALUE=23
 };
 
-enum { BTN_B=0,BTN_X=1,BTN_A=2,BTN_Y=3,BTN_SELECT=4,BTN_START=5,BTN_L1=6,BTN_R1=7,BTN_L2=8,BTN_R2=9};
-enum { BUTTON_PRESS=0,BUTTON_NO_PRESS=1};
+enum { BTN_B=0,BTN_X,BTN_A,BTN_Y,BTN_SELECT,BTN_START,BTN_L1,BTN_R1,BTN_EXIT,BTN_OPTION,NUM_BUTTONS};
+#define BTN_L2 BTN_EXIT
+#define BTN_R2 BTN_OPTION
 
 enum { TOUCH_INPUT_DPAD=0,TOUCH_INPUT_DSTICK=1, TOUCH_INPUT_ANALOG=2};
 

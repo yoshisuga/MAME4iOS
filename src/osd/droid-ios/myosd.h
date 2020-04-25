@@ -29,7 +29,7 @@ enum  { MYOSD_UP=0x1,       MYOSD_LEFT=0x4,       MYOSD_DOWN=0x10,   MYOSD_RIGHT
         MYOSD_START=1<<8,   MYOSD_SELECT=1<<9,    MYOSD_L1=1<<10,    MYOSD_R1=1<<11,
         MYOSD_A=1<<12,      MYOSD_B=1<<13,        MYOSD_X=1<<14,     MYOSD_Y=1<<15,
         MYOSD_L3=1<<16,     MYOSD_R3=1<<17,       MYOSD_L2=1<<18,    MYOSD_R2=1<<19,
-        MYOSD_MENU=1<<20,   MYOSD_OPTION=1<<21,   MYOSD_EXIT=1<<22,  MYOSD_NONE=1<<23,
+        MYOSD_EXIT=1<<20,   MYOSD_OPTION=1<<21,
 };
     
 #define MAX_FILTER_KEYWORD 30
@@ -60,9 +60,10 @@ extern int  myosd_in_menu;
 extern int  myosd_res;
 extern int  myosd_force_pxaspect;
 extern int  myosd_num_of_joys;
+extern int  myosd_pxasp1;
 extern int  myosd_video_threaded;
 extern int  myosd_service;
-extern int  myosd_num_buttons;
+extern int  myosd_configure;
 
 extern unsigned long myosd_pad_status;
     
@@ -93,8 +94,12 @@ extern int myosd_filter_category;
 extern char myosd_filter_keyword[MAX_FILTER_KEYWORD];
 extern int myosd_reset_filter;
 
+extern int myosd_num_buttons;
 extern int myosd_num_ways;
-    
+extern int myosd_num_players;
+extern int myosd_num_coins;
+extern int myosd_num_inputs;
+
 extern int myosd_vsync;
 extern int myosd_dbl_buffer;
 extern int myosd_autofire;
