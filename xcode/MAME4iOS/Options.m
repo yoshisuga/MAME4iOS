@@ -93,6 +93,7 @@
 
 @synthesize buttonSize;
 @synthesize stickSize;
+@synthesize nintendoBAYX;
 
 @synthesize wpantype;
 @synthesize wfpeeraddr;
@@ -116,6 +117,12 @@
     }
     
     return self;
+}
+
++ (void)resetOptions
+{
+    NSString *path=[NSString stringWithUTF8String:get_documents_path("iOS/options_v23.bin")];
+    [[NSFileManager defaultManager] removeItemAtPath:path error:nil];
 }
 
 - (void)loadOptions
@@ -207,8 +214,8 @@
         
         filterKeyword = nil;
         
-        lowlsound = 0;
-        vsync = 0;
+        lowlsound = 1;
+        vsync = 1;
         threaded = 1;
         dblbuff = 1;
         
@@ -216,11 +223,12 @@
         videoPriority = 5;
         
         autofire = 0;
-        hiscore = 0;
+        hiscore = 1;
         
         stickSize = 2;
         buttonSize= 2;
-        
+        nintendoBAYX=0;
+
         wpantype = 0;
         wfpeeraddr = nil;
         wfport = NETPLAY_PORT;
@@ -352,6 +360,7 @@
         
         buttonSize =  [[[optionsArray objectAtIndex:0] objectForKey:@"buttonSize"] intValue];
         stickSize =  [[[optionsArray objectAtIndex:0] objectForKey:@"stickSize"] intValue];
+        nintendoBAYX = [[[optionsArray objectAtIndex:0] objectForKey:@"nintendoBAYX"] intValue];
         
         wpantype  =  [[[optionsArray objectAtIndex:0] objectForKey:@"wpantype"] intValue];
         wfpeeraddr  =  [[optionsArray objectAtIndex:0] objectForKey:@"wfpeeraddr"];
@@ -471,7 +480,8 @@
                              
                              [NSString stringWithFormat:@"%d", stickSize], @"stickSize",
                              [NSString stringWithFormat:@"%d", buttonSize], @"buttonSize",
-                             
+                             [NSString stringWithFormat:@"%d", nintendoBAYX], @"nintendoBAYX",
+
                              [NSString stringWithFormat:@"%d", wpantype], @"wpantype",
                              [NSString stringWithFormat:@"%d", wfport], @"wfport",
                              [NSString stringWithFormat:@"%d", wfframesync], @"wfframesync",

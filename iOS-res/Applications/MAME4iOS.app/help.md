@@ -1,5 +1,5 @@
 # MAME4iOS Reloaded
-### Version 2020.1 (Feb 2020) 
+### Version $(APP_VERSION) ($(APP_DATE)) 
 ### MAME (0.139u1 )  by David Valdeita (Seleuco)
 
 ![Icon](MAME4iOS144.png)
@@ -58,10 +58,6 @@ The emulator controls are the following ones:
 
 **Button START** Start (UP+START = 2P start, RIGHT+START = 3P start, DOWN+START = 4P start).
 
-**Buttons A+COIN** Load State.
-
-**Buttons A+START** Save State.
-
 **Button EXIT** Exit to selection menu to select another game.
 
 **Button MENU** Open MAME4iOS menu, global settings.
@@ -101,6 +97,8 @@ NOTE: To type OK when MAME requires it, press LEFT and then RIGHT.
 **Buttons Size** Lets you change the touch buttons size.
 
 **Fullscreen Stick Size** Lets you change the stick size (not DPAD) on lanscape or portrait fullscreen mode.
+
+**Nintendo Button Layout** if enabled the 🅐 🅑 and 🅧 🅨 buttons will be swapped to match a Nintendo layout.  This option has no effect on a custom layout, or a physical game controller.
 
 **External Controller** Enable external controller: iCade, iControlPad as iCade mode or iMpulse.
 
@@ -154,11 +152,29 @@ NOTE: To type OK when MAME requires it, press LEFT and then RIGHT.
 
 ## FAVORITES
 
-You can mark (or unmark) your ROMS in the MAME4iOS game selection window as favorites by long pressing to get a context menu (you can also delete the GAME physical files). 
+You can mark (or unmark) your ROMS in the MAME4iOS game selection window as favorites by long pressing to get a context menu. 
 
 You can mark (or unmark) your ROMS in the MAME DOS MENU by pressing the X button. A favorite ROM appears in blue in the game list. The favorites are saved to the file: Favorites.ini. This file is compatible with the standard MAME Favorites.ini file format so you can copy this over from your PC version of MAME to the iOS version.
 
-In the filtering options you can filter your ROMS by favorites, category, manufacturer, driver source and year plus you can also filter out ROM clones.
+## RESET
+when you make a mistake and need to undo
+
+### Global Settings Reset (aka Factory Reset)
+`Settings` > `Reset to Defaults`
+* restore all MAME4iOS settings to default.
+* delete Recent and Favorite games.
+* delete all cached Title Images. 
+* delete all MAME key mappings or settings. 
+
+### Per Game Settings Reset
+context menu, select `Delete`, then choose `Delete Settings`. 
+* delete any MAME key mappings or settings for game
+* delete any hiscores
+* delete any saved state.
+* delete cached Title image. 
+
+### Delete Game 
+You can also remove a game totally, context menu `Delete`, choose `Delete All Files`
 
 ## Hardware keyboard
 
@@ -196,6 +212,17 @@ we suppoprt a small subset of the keys supported by the command line MAME.
 
 <img src="https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/HNKT2?wid=1144&hei=1144&fmt=jpeg&qlt=95&op_usm=0.5%2C0.5&.v=1573236530750" width=30%> <img src="https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/HNKS2?wid=1144&hei=1144&fmt=jpeg&qlt=95&op_usm=0.5%2C0.5&.v=1573236454283" width=30%> <img src="https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/HJ162?wid=1144&hei=1144&fmt=jpeg&qlt=95&op_usm=0.5%2C0.5&.v=1477094888716" width=30%>
 
+Some of the supported game controllers include, but are not limited to:
+* Xbox Wireless Controller with Bluetooth (Model 1708)
+* PlayStation DUALSHOCK®4 Wireless Controller
+* MFi (Made for iOS) Bluetooth controllers, like the SteelSeries Nimbus, Horipad Ultimate, and more may be supported.
+* iCade
+* 8BitDo M30, Zero, and others
+* Steam Game Controllers
+* iMpulse
+
+Some of the new features added to the Controller experience include:
+
 * supports new controller types on iOS 13
 * new buttons (MENU, OPTIONS) on iOS 13+
 * you can now navigate a iOS Alert.
@@ -208,20 +235,45 @@ To start playing a game using a controller, do one of the following.
 * hit MENU and select "Coin + Start".
 * hit MENU+L1 to add a Coin, then hit MENU+R1 to Start.
 
+## Steam Game Controlers
+
+<img src="https://images-na.ssl-images-amazon.com/images/I/81oyj8wrlCL._SL1500_.jpg" width=30%>
+
+To use a Steam Controller, make sure it is updated to BLE Firmware, and it paired with iOS device, see [here](https://support.steampowered.com/kb_article.php?ref=7728-QESJ-4420).
+
 ## MENU/OPTION button on game controllers
 
 | | |  
 -|-
 MENU           |Open MAME4iOS MENU   
-MENU+L1     |Insert coin                 
-MENU+R1     |Start Game               
+MENU+L1     |Player 1 Coin                 
+MENU+R1     |Player 1 Start               
+MENU+L2     |Player 2 Coin                
+MENU+R2     |Player 2 Start               
 MENU+X       |Exit Game                 
 MENU+B       |Open MAME menu   
-MENU+A       |Load State  B (slot1) or X (slot 2)            
-MENU+Y       |Save State  B (slot1) or X (slot 2)              
+MENU+A       |Load State  X (slot1) or Y (slot 2)            
+MENU+Y       |Save State  X (slot1) or Y (slot 2)              
 OPTION         |Insert Coin and Start   
 
 **NOTE** on versions prior to iOS 13 only MiFi controllers are reconized and when doing multiple button combinations the secondary button must be pressed first.  For example to insert a coin hold down L1 and hit MENU.  on iOS 13+ you can hold MENU and then hit L1.
+
+**NOTE** you can also use OPTION as a modifier, for example either MENU+L1 or OPTION+L1 will insert a coin.
+
+## Multiplayer game start using game controllers
+
+If a user inserts a COIN or hits START with a game controller, it will be interpeted as a COIN/START for that player.  
+
+You can insert a COIN or do a START for another player from the main Game Controller by pressing one of the following.
+
+| | |  
+-|-
+MENU+L1+UP     |Player 2 COIN           
+MENU+R1+UP     |Player 2 START
+MENU+L1+RIGHT     |Player 3 COIN          
+MENU+R1+RIGHT    |Player 3 START
+MENU+L1+DOWN     |Player 4 COIN          
+MENU+R1+DOWN     |Player 4 START
 
 ## SAVE/LOAD STATE
 

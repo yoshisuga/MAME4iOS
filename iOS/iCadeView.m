@@ -121,7 +121,9 @@
     if (g_pref_ext_control_type < EXT_CONTROL_ICADE)
         return;
 
+#if TARGET_OS_IOS
     [self iCadeKey:text];
+#endif
     
 #if 0  // TODO: is this really nessesarry???
     static int cycleResponder = 0;
@@ -162,8 +164,6 @@
         myosd_num_of_joys = 1;
         [emuController changeUI];
     }
-    
-    int *ga_btnStates = [emuController getBtnStates];
     
     int joy1 = 0;
     int joy2 = 0;
@@ -265,7 +265,6 @@
             if(g_pref_ext_control_type != EXT_CONTROL_IMPULSE)
             {
                myosd_joy_status[0] |= MYOSD_Y;
-               ga_btnStates[BTN_Y] = BUTTON_PRESS;
                joy1 = 1;
             }
             else
@@ -284,7 +283,6 @@
             if(g_pref_ext_control_type != EXT_CONTROL_IMPULSE)
             {
                 myosd_joy_status[0] &= ~MYOSD_Y;
-                ga_btnStates[BTN_Y] = BUTTON_NO_PRESS;
                 joy1 = 1;
             }
             else
@@ -305,12 +303,10 @@
             if(g_pref_ext_control_type != EXT_CONTROL_IMPULSE)
             {
                myosd_joy_status[0] |= MYOSD_X;
-               ga_btnStates[BTN_X] = BUTTON_PRESS;
             }
             else
             {
                 myosd_joy_status[0] |= MYOSD_A;
-                ga_btnStates[BTN_A] = BUTTON_PRESS;
             }
             joy1 = 1;
             break;
@@ -318,12 +314,10 @@
             if(g_pref_ext_control_type != EXT_CONTROL_IMPULSE)
             {
                myosd_joy_status[0] &= ~MYOSD_X;
-               ga_btnStates[BTN_X] = BUTTON_NO_PRESS;
             }
             else
             {
                myosd_joy_status[0] &= ~MYOSD_A;
-               ga_btnStates[BTN_A] = BUTTON_NO_PRESS;
             }
             joy1 = 1;
             break;
@@ -333,12 +327,10 @@
             if(g_pref_ext_control_type != EXT_CONTROL_IMPULSE)
             {
                myosd_joy_status[0] |= MYOSD_A;
-               ga_btnStates[BTN_A] = BUTTON_PRESS;
             }
             else
             {
                myosd_joy_status[0] |= MYOSD_X;
-               ga_btnStates[BTN_X] = BUTTON_PRESS;
             }
             joy1 = 1;
             break;
@@ -346,12 +338,10 @@
             if(g_pref_ext_control_type != EXT_CONTROL_IMPULSE)
             {
                myosd_joy_status[0] &= ~MYOSD_A;
-               ga_btnStates[BTN_A] = BUTTON_NO_PRESS;
             }
             else
             {
                myosd_joy_status[0] &= ~MYOSD_X;
-               ga_btnStates[BTN_X] = BUTTON_NO_PRESS;
             }
             joy1 = 1;
             break;
@@ -361,12 +351,10 @@
             if(g_pref_ext_control_type != EXT_CONTROL_IMPULSE)
             {
                myosd_joy_status[0] |= MYOSD_B;
-               ga_btnStates[BTN_B] = BUTTON_PRESS;
             }
             else
             {
                myosd_joy_status[0] |= MYOSD_Y;
-               ga_btnStates[BTN_Y] = BUTTON_PRESS;
             }
             joy1 = 1;
             break;
@@ -374,12 +362,10 @@
             if(g_pref_ext_control_type != EXT_CONTROL_IMPULSE)
             {
                myosd_joy_status[0] &= ~MYOSD_B;
-               ga_btnStates[BTN_B] = BUTTON_NO_PRESS;
             }
             else
             {
                myosd_joy_status[0] &= ~MYOSD_Y;
-               ga_btnStates[BTN_Y] = BUTTON_NO_PRESS;
             }
             joy1 = 1;
             break;
@@ -390,12 +376,10 @@
             if(g_pref_ext_control_type != EXT_CONTROL_IMPULSE)
             {
                myosd_joy_status[0] |= MYOSD_SELECT;
-               ga_btnStates[BTN_SELECT] = BUTTON_PRESS;
             }
             else
             {
                myosd_joy_status[0] |= MYOSD_B;
-               ga_btnStates[BTN_B] = BUTTON_PRESS;
             }
             joy1 = 1;
             break;
@@ -404,12 +388,10 @@
             if(g_pref_ext_control_type != EXT_CONTROL_IMPULSE)
             {
                myosd_joy_status[0] &= ~MYOSD_SELECT;
-               ga_btnStates[BTN_SELECT] = BUTTON_NO_PRESS;
             }
             else
             {
                myosd_joy_status[0] &= ~MYOSD_B;
-               ga_btnStates[BTN_B] = BUTTON_NO_PRESS;
             }
             joy1 = 1;
             break;
@@ -418,12 +400,10 @@
         case 'u':   //button down
             if(g_pref_ext_control_type <= EXT_CONTROL_ICADE) {
                 myosd_joy_status[0] |= MYOSD_L1;
-                ga_btnStates[BTN_L1] = BUTTON_PRESS;
                 joy1 = 1;
             }
             else if(g_pref_ext_control_type == EXT_CONTROL_ICP){
                 myosd_joy_status[0] |= MYOSD_START;
-                ga_btnStates[BTN_START] = BUTTON_PRESS;
                 joy1 = 1;
             }
             else {
@@ -441,12 +421,10 @@
         case 'f':   //button up
             if(g_pref_ext_control_type <= EXT_CONTROL_ICADE) {
                 myosd_joy_status[0] &= ~MYOSD_L1;
-                ga_btnStates[BTN_L1] = BUTTON_NO_PRESS;
                 joy1 = 1;
             }
             else if(g_pref_ext_control_type == EXT_CONTROL_ICP){
                 myosd_joy_status[0] &= ~MYOSD_START;
-                ga_btnStates[BTN_START] = BUTTON_NO_PRESS;
                 joy1 = 1;
             }
             else{
@@ -466,32 +444,26 @@
         case 'h':   //button down
             if(g_pref_ext_control_type <= EXT_CONTROL_ICADE) {
                 myosd_joy_status[0] |= MYOSD_START;
-                ga_btnStates[BTN_START] = BUTTON_PRESS;
             }
             else if(g_pref_ext_control_type == EXT_CONTROL_ICP){
                 myosd_joy_status[0] |= MYOSD_L1;
-                ga_btnStates[BTN_L1] = BUTTON_PRESS;
             }
             else
             {
                 myosd_joy_status[0] |= MYOSD_SELECT;
-                ga_btnStates[BTN_SELECT] = BUTTON_PRESS;
             }
             joy1 = 1;
             break;
         case 'r':   //button up
             if(g_pref_ext_control_type <= EXT_CONTROL_ICADE) {
                 myosd_joy_status[0] &= ~MYOSD_START;
-                ga_btnStates[BTN_START] = BUTTON_NO_PRESS;
             }
             else if(g_pref_ext_control_type == EXT_CONTROL_ICP){
                 myosd_joy_status[0] &= ~MYOSD_L1;
-                ga_btnStates[BTN_L1] = BUTTON_NO_PRESS;
             }
             else
             {
                 myosd_joy_status[0] &= ~MYOSD_SELECT;
-                ga_btnStates[BTN_SELECT] = BUTTON_NO_PRESS;
             }
             joy1 = 1;
             break;
@@ -501,12 +473,10 @@
             if(g_pref_ext_control_type != EXT_CONTROL_IMPULSE)
             {
                myosd_joy_status[0] |= MYOSD_R1;
-               ga_btnStates[BTN_R1] = BUTTON_PRESS;
             }
             else
             {
                myosd_joy_status[0] |= MYOSD_START;
-               ga_btnStates[BTN_START] = BUTTON_PRESS;
             }
             joy1 = 1;
             break;
@@ -514,12 +484,10 @@
             if(g_pref_ext_control_type != EXT_CONTROL_IMPULSE)
             {
                myosd_joy_status[0] &= ~MYOSD_R1;
-               ga_btnStates[BTN_R1] = BUTTON_NO_PRESS;
             }
             else
             {
                myosd_joy_status[0] &= ~MYOSD_START;
-               ga_btnStates[BTN_START] = BUTTON_NO_PRESS;
             }
             joy1 = 1;
             break;
@@ -641,26 +609,6 @@
         myosd_num_of_joys = 2;
     }
     //printf(" %d %d\n",myosd_num_of_joys,g_joy_used);
-    
-    int dpad_state = 0;
-    
-    // calculate dpad_state
-    switch (myosd_joy_status[0] & (MYOSD_UP|MYOSD_DOWN|MYOSD_LEFT|MYOSD_RIGHT))
-    {
-        case    MYOSD_UP:    dpad_state = DPAD_UP; break;
-        case    MYOSD_DOWN:  dpad_state = DPAD_DOWN; break;
-        case    MYOSD_LEFT:  dpad_state = DPAD_LEFT; break;
-        case    MYOSD_RIGHT: dpad_state = DPAD_RIGHT; break;
-            
-        case    MYOSD_UP | MYOSD_LEFT:  dpad_state = DPAD_UP_LEFT; break;
-        case    MYOSD_UP | MYOSD_RIGHT: dpad_state = DPAD_UP_RIGHT; break;
-        case    MYOSD_DOWN | MYOSD_LEFT:  dpad_state = DPAD_DOWN_LEFT; break;
-        case    MYOSD_DOWN | MYOSD_RIGHT: dpad_state = DPAD_DOWN_RIGHT; break;
-            
-        default: dpad_state = DPAD_NONE;
-    }
-    
-    emuController.dpad_state = dpad_state;
 
     // emulate a analog joystick
     joy_analog_y[0][0] = (myosd_joy_status[0] & MYOSD_UP)    ? +1.0 : (myosd_joy_status[0] & MYOSD_DOWN) ? -1.0 : 0.0;
@@ -669,8 +617,7 @@
     // also set the pad_status
     myosd_pad_status = myosd_joy_status[0];
 
-    [emuController handle_DPAD];
-    [emuController handle_MENU];
+    [emuController handle_INPUT];
 }
 
 - (void)deleteBackward {
@@ -791,9 +738,6 @@
 // Overloaded _keyCommandForEvent (UIResponder.h) // Only exists in iOS 9+
 -(UIKeyCommand *)_keyCommandForEvent:(UIEvent *)event { // UIPhysicalKeyboardEvent
     
-    if (g_pref_ext_control_type != EXT_CONTROL_NONE)
-        return nil;
-    
     static BOOL g_keyboard_state[256];
     
     int keyCode = [[event valueForKey:@"_keyCode"] intValue];
@@ -806,6 +750,15 @@
 
     NSLog(@"_keyCommandForEvent:'%@' '%@' keyCode:%@ isKeyDown:%@ time:%f", [event valueForKey:@"_unmodifiedInput"], [event valueForKey:@"_modifiedInput"], [event valueForKey:@"_keyCode"], [event valueForKey:@"_isKeyDown"], [event timestamp]);
 
+    if (g_pref_ext_control_type != EXT_CONTROL_NONE)
+    {
+#if TARGET_OS_TV
+        if (isKeyDown)
+            [self iCadeKey:[event valueForKey:@"_unmodifiedInput"]];
+#endif
+        return nil;
+    }
+    
     NSString* iCadeKey = nil;
     
     // MAME keys
@@ -858,8 +811,10 @@
         case KEY_6+KEY_DOWN:        myosd_pad_status |=  (MYOSD_SELECT|MYOSD_UP); break;
 
         // MAME MENU
-        case KEY_TAB:               myosd_pad_status &= ~(MYOSD_SELECT|MYOSD_START); break;
-        case KEY_TAB+KEY_DOWN:      myosd_pad_status |=  (MYOSD_SELECT|MYOSD_START); break;
+        case KEY_TAB:               myosd_configure = 1; break;
+        case KEY_TAB+KEY_DOWN:      break;
+            
+        // EXIT
         case KEY_ESCAPE:            [emuController runExit]; break;
         case KEY_ESCAPE+KEY_DOWN:   break;
             

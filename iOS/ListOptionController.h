@@ -43,8 +43,9 @@
  */
 
 #import <UIKit/UIKit.h>
+#import "OptionsTableViewController.h"
 
-@interface ListOptionController : UITableViewController {
+@interface ListOptionController : OptionsTableViewController {
     BOOL indexed;
     NSInteger type;
     NSArray *list;
@@ -53,6 +54,7 @@
 }
 
 - (id)initWithStyle:(UITableViewStyle)style type:(NSInteger)typeValue list:(NSArray *)listValue;
+- (id)initWithType:(NSInteger)typeValue list:(NSArray *)listValue;
 - (NSString *)retrieveIndexedCellText:(NSIndexPath *)indexPath;
 
 @end

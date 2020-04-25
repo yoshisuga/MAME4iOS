@@ -53,16 +53,8 @@
 
 @implementation InputOptionController
 
-@synthesize emuController;
-
 - (id)init {
-    UITableViewStyle style = UITableViewStyleGrouped;
-#if TARGET_OS_IOS
-    if (@available(iOS 13.0, *)) {
-        style = UITableViewStyleInsetGrouped;
-    }
-#endif
-    if (self = [super initWithStyle:style]) {
+    if (self = [super init]) {
         
         switchAnimatedButtons=nil;
 
@@ -76,7 +68,7 @@
                               @"Speed 4", @"Speed 5",@"Speed 6",@"Speed 7",@"Speed 8",@"Speed 9",nil];
         arrayButtonSizeValue = [[NSArray alloc] initWithObjects:@"Smaller", @"Small", @"Normal", @"Big", @"Bigger",nil];
         
-        arrayControlType = [[NSArray alloc] initWithObjects:@"None",@"iCade",@"iCP, Gametel",@"iMpulse", nil];
+        arrayControlType = [[NSArray alloc] initWithObjects:@"Keyboard or 8BitDo",@"iCade or compatible",@"iCP, Gametel",@"iMpulse", nil];
         
         switchP1aspx = nil;
         
@@ -110,23 +102,12 @@
 
 - (void) viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    UITableView *tableView = (UITableView *)self.view;
-    [tableView reloadData];
+    [self.tableView reloadData];
 }
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     
     return 11;
-}
-
-- (void)loadView {
-    
-    [super loadView];
-    
-    UIBarButtonItem *button = [[UIBarButtonItem alloc] initWithTitle:@"Done"
-                                                               style:UIBarButtonItemStylePlain
-                                                              target: emuController  action:  @selector(done:) ];
-    self.navigationItem.rightBarButtonItem = button;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
@@ -135,7 +116,7 @@
     {
         case 0: return 2;
         case 1: return 3;
-        case 2: return 4;
+        case 2: return 5;
         case 3: return 1;
         case 4: return 2;
         case 5: return 1;
@@ -284,6 +265,16 @@
                     cell.textLabel.text   = @"Buttons Size";
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                     cell.detailTextLabel.text = [arrayButtonSizeValue objectAtIndex:op.buttonSize];
+                    break;
+                }
+                case 4:
+                {
+                    cell.textLabel.text   = @"Nintendo Button Layout";
+                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                    switchBAYX  = [[UISwitch alloc] initWithFrame:CGRectZero];
+                    cell.accessoryView = switchBAYX;
+                    [switchBAYX setOn:[op nintendoBAYX] animated:NO];
+                    [switchBAYX addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
                     break;
                 }
             }
@@ -552,6 +543,8 @@
         op.touchDirectionalEnabled = [switchTouchDirectionalEnabled isOn];
     if ( sender == sliderTouchControlsOpacity )
         op.touchControlsOpacity = [sliderTouchControlsOpacity value];
+    if(sender == switchBAYX)
+        op.nintendoBAYX = [sender isOn];
 
     [op saveOptions];
 }
@@ -609,11 +602,11 @@
     
     if(section==4 && row==0)
     {
-        [emuController beginCustomizeCurrentLayout];
+        [self.emuController beginCustomizeCurrentLayout];
     }
     if(section==4 && row==1)
     {
-        [emuController resetCurrentLayout];
+        [self.emuController resetCurrentLayout];
         [tableView reloadData];
     }
 

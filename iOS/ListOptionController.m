@@ -52,15 +52,7 @@
 
 @implementation ListOptionController;
 
-
 - (id)initWithStyle:(UITableViewStyle)style type:(NSInteger)typeValue list:(NSArray *)listValue{
-    
-#if TARGET_OS_IOS
-    if (@available(iOS 13.0, *)) {
-        if (style == UITableViewStyleGrouped)
-            style = UITableViewStyleInsetGrouped;
-    }
-#endif
     
     if(self = [super initWithStyle:style])
     {
@@ -89,12 +81,8 @@
     }
     return self;
 }
-
-- (void)viewDidLoad {
-    [super viewDidLoad];
-#if TARGET_OS_TV
-    self.view.backgroundColor = UIColor.lightGrayColor;
-#endif
+- (id)initWithType:(NSInteger)typeValue list:(NSArray *)listValue {
+    return [self initWithStyle:UITableViewStyleGrouped type:typeValue list:listValue];
 }
 
 - (void)viewWillAppear:(BOOL)animated {

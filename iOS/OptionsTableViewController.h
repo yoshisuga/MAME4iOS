@@ -41,72 +41,16 @@
  * MAME4iOS is dual-licensed: Alternatively, you can license MAME4iOS
  * under a MAME license, as set out in http://mamedev.org/
  */
-#import "DebugView.h"
 
-@implementation DebugView
+#import <UIKit/UIKit.h>
+#import "EmulatorController.h"
 
+@interface OptionsTableViewController : UITableViewController
 
-- (id)initWithFrame:(CGRect)frame withEmuController:(EmulatorController*)emulatorController{
-    if (self = [super initWithFrame:frame]) {
-        // Initialization code
-		self.backgroundColor = [UIColor clearColor];
-		self.multipleTouchEnabled = NO;
-	    self.userInteractionEnabled = NO;
-	
-	    emuController = emulatorController;
-    }
-    return self;
-}
+@property (nonatomic, assign) EmulatorController *emuController;
 
+- (instancetype)initWithEmuController:(EmulatorController*)emulatorController;
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-
-- (void)drawRect:(CGRect)rect {
-	//printf("draw dview\n");
-	
-    
-   // printf("Drawing Rect");
-    
-    //Get the CGContext from this view
-	CGContextRef context = UIGraphicsGetCurrentContext();
-	 
-   	//Set the stroke (pen) color
-	CGContextSetStrokeColorWithColor(context, [UIColor redColor].CGColor);
-	//Set the width of the pen mark
-	CGContextSetLineWidth(context, 2.0);
-	
-    int i=0;
-    int ndrects = [emuController num_debug_rects];
-    CGRect *drects = [emuController getDebugRects];
-    
-	for(i=0; i<ndrects;i++)
-	  CGContextStrokeRect(context, drects[i]);
-    
-	
-	//CGContextAddRect(context, drects[1]);
-	//Draw it
-	CGContextFillPath(context);
-	       
-    CGContextSelectFont(context, "Helvetica", 16, kCGEncodingMacRoman); 
-    CGContextSetTextDrawingMode (context, kCGTextFillStroke);
-    CGContextSetRGBFillColor (context, 0, 5, 0, .5);
-    CGRect viewBounds = self.bounds;
-    CGContextTranslateCTM(context, 0, viewBounds.size.height);
-    CGContextScaleCTM(context, 1, -1);
-    CGContextSetRGBStrokeColor (context, 0, 1, 1, 1);
- 
-   if(!g_isIpad)
-   {
- //     CGContextShowTextAtPoint(context, 10, 10, "Es un iPhone",12 );
-   }
-   else
-   {
-      //CGContextShowTextAtPoint(context, 10, 10, "Es un iPad",10 );
-   }
-		
-}
-
-#pragma clang diagnostic pop
+- (NSString*)applicationVersionInfo;
 
 @end

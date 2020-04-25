@@ -43,11 +43,12 @@
  */
 
 #import <UIKit/UIKit.h>
+#import "OptionsTableViewController.h"
 
 @class EmulatorController;
 
-@interface DefaultOptionController : UITableViewController {
-
+@interface DefaultOptionController : OptionsTableViewController {
+    
 #if TARGET_OS_IOS
     UISwitch*  switchVBean2x;
     UISwitch*  switchVAntialias;
@@ -68,7 +69,5 @@
     NSArray  *arrayVideoThreadTypeValue;
     
 }
-
-@property (nonatomic, assign) EmulatorController *emuController;
 
 @end

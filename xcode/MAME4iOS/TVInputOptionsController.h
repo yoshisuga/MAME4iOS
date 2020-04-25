@@ -9,15 +9,12 @@
 #import <UIKit/UIKit.h>
 #import "Options.h"
 #import "Globals.h"
+#import "OptionsTableViewController.h"
 #import "EmulatorController.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface TVInputOptionsController : UIViewController<UITableViewDataSource, UITableViewDelegate> {
-    NSArray  *arrayAutofireValue;
-}
-
-@property (nonatomic, assign) EmulatorController *emuController;
+@interface TVInputOptionsController : OptionsTableViewController
 
 @end
 

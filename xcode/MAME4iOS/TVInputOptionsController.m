@@ -8,45 +8,32 @@
 
 #import "TVInputOptionsController.h"
 #import "TVOptionsController.h"
+#import "ListOptionController.h"
 
 @interface TVInputOptionsController ()
-@property(nonatomic,retain) UITableView *tableView;
 @property(nonatomic,retain) Options *options;
 @end
 
-@implementation TVInputOptionsController
+@implementation TVInputOptionsController {
+    NSArray  *arrayControlType;
+}
 
 - (id)init {
     if (self = [super init]) {
-        arrayAutofireValue = [[NSArray alloc] initWithObjects:@"Disabled", @"Speed 1", @"Speed 2",@"Speed 3",
-                              @"Speed 4", @"Speed 5",@"Speed 6",@"Speed 7",@"Speed 8",@"Speed 9",nil];
+        arrayControlType = @[@"Keyboard or 8BitDo",@"iCade or compatible",@"iCP, Gametel",@"iMpulse"];
     }
     return self;
 }
     
-- (void)loadView {
-    self.view = [[UIView alloc] initWithFrame:CGRectZero];
-    self.view.backgroundColor = UIColor.darkGrayColor;
-    UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithTitle:@"Done"
-                                                                   style:UIBarButtonItemStyleDone
-                                                                  target: self.emuController  action:  @selector(done:) ];
-    self.navigationItem.rightBarButtonItem = backButton;
+- (void)viewDidLoad {
     self.title = NSLocalizedString(@"Input Options", @"");
-    self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStyleGrouped];
-    self.tableView.delegate = self;
-    self.tableView.dataSource = self;
-    self.tableView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.view addSubview:self.tableView];
-    [[self.tableView.topAnchor constraintEqualToAnchor:self.view.topAnchor] setActive:YES];
-    [[self.tableView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor] setActive:YES];
-    [[self.tableView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor] setActive:YES];
-    [[self.tableView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor] setActive:YES];
     self.options = [[Options alloc] init];
 }
-    
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    // Do any additional setup after loading the view.
+
+- (void) viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    self.options = [[Options alloc] init];
+    [self.tableView reloadData];
 }
     
 #pragma mark UITableViewDataSource
@@ -57,7 +44,7 @@
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     if ( section == 0 ) {
         // general
-        return 1;
+        return 2;
     } else if ( section == 1 ) {
         // turbo
         return 6;
@@ -85,8 +72,22 @@
     cell.accessoryView = nil;
     cell.accessoryType = UITableViewCellAccessoryNone;
     if ( indexPath.section == 0 ) {
-        cell.textLabel.text   = @"P1 as P2,P3,P4";
-        cell.accessoryView = [TVOptionsController labelForOnOffValue:self.options.p1aspx];
+        switch (indexPath.row)
+        {
+            case 0:
+            {
+                cell.textLabel.text   = @"P1 as P2,P3,P4";
+                cell.accessoryView = [TVOptionsController labelForOnOffValue:self.options.p1aspx];
+                break;
+            }
+            case 1:
+            {
+                cell.textLabel.text   = @"External Controller";
+                cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                cell.detailTextLabel.text = [arrayControlType objectAtIndex:self.options.controltype];
+                break;
+            }
+        }
     } else if ( indexPath.section == 1 ) {
         switch (indexPath.row)
         {
@@ -135,8 +136,14 @@
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
     if ( indexPath.section == 0 ) {
-        self.options.p1aspx = self.options.p1aspx ? 0 : 1;
-        [TVOptionsController setOnOffValueForCell:cell optionValue:self.options.p1aspx];
+        if ( indexPath.row == 0 ) {
+            self.options.p1aspx = self.options.p1aspx ? 0 : 1;
+            [TVOptionsController setOnOffValueForCell:cell optionValue:self.options.p1aspx];
+        } else if ( indexPath.row == 1 ) {
+            ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
+                                                                                          type:kTypeControlType list:arrayControlType];
+            [[self navigationController] pushViewController:listController animated:YES];
+        }
     } else if (indexPath.section == 1) {
         if ( indexPath.row == 0 ) {
             self.options.turboXEnabled = self.options.turboXEnabled ? 0 : 1;

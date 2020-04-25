@@ -44,23 +44,16 @@
 #import "ScreenView.h"
 #import "Globals.h"
 
-static ScreenView *sharedInstance = nil;
-
 //static
 unsigned short img_buffer [1024 * 768 * 4];//max driver res?
 
-void iphone_UpdateScreen()
-{
-    
-    if(sharedInstance==nil) return;
-    
-    [sharedInstance performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone:NO];
-    if ( [sharedInstance didUpdateScreenCallback] ) {
-        sharedInstance.didUpdateScreenCallback();
-    }
-}
 
-@implementation ScreenLayer
+@interface ScreenLayer : CALayer
+@end
+
+@implementation ScreenLayer {
+    CGContextRef bitmapContext;
+}
 
 + (id) defaultActionForKey:(NSString *)key
 {
@@ -86,11 +79,6 @@ void iphone_UpdateScreen()
         
         CFRelease(colorSpace);
         
-        
-        //rotateTransform = CGAffineTransformMakeRotation(DEGREE_TO_RAD(90));
-        rotateTransform = CGAffineTransformIdentity;
-        self.affineTransform = rotateTransform;
-        
 		if((g_pref_smooth_land && g_device_is_landscape) || (g_pref_smooth_port && !g_device_is_landscape))
 		{
             [self setMagnificationFilter:kCAFilterLinear];
@@ -98,7 +86,6 @@ void iphone_UpdateScreen()
 		}
 		else
 		{
-            
             [self setMagnificationFilter:kCAFilterNearest];
             [self setMinificationFilter:kCAFilterNearest];
   	    }
@@ -128,7 +115,6 @@ void iphone_UpdateScreen()
 
 @implementation ScreenView
 
-
 + (Class) layerClass
 {
     return [ScreenLayer class];
@@ -140,22 +126,13 @@ void iphone_UpdateScreen()
         
         self.opaque = YES;
         self.clearsContextBeforeDrawing = NO;
-#ifndef TARGET_OS_TV
+#if TARGET_OS_IOS
         self.multipleTouchEnabled = NO;
 #endif
         self.userInteractionEnabled = NO;
-        
-        sharedInstance = self;
 	}
     
 	return self;
-}
-
-
-- (void)dealloc
-{
-    if (sharedInstance == self)
-        sharedInstance = nil;
 }
 
 - (void)drawRect:(CGRect)rect

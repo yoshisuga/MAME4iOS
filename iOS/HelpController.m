@@ -45,16 +45,26 @@
 #import "HelpController.h"
 #import "Globals.h"
 
-@implementation HelpController
+@implementation HelpController {
+    UIWebView *aWebView;
+    NSString* html_name;
+    NSString* html_title;
+}
 
-
-- (id)init {
+- (id)initWithName:(NSString*)name title:(NSString*)title {
 
     if (self = [super init]) {
-        aWebView  = nil;
+        aWebView = nil;
+        html_name = name;
+        html_title = title;
     }
 
     return self;
+}
+
+
+- (id)init {
+    return [self initWithName:@"help.html" title:@"Help"];
 }
 
 - (void)loadView {
@@ -67,23 +77,23 @@
     self.view.autoresizesSubviews = TRUE;
         
     aWebView =[ [ UIWebView alloc ] initWithFrame: view.frame];
-    
-    //aWebView.scalesPageToFit = YES;
-    
+    aWebView.backgroundColor = UIColor.whiteColor;
+    if (@available(iOS 12.0, *)) {
+        if (self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark) {
+            aWebView.backgroundColor = UIColor.blackColor;
+            aWebView.opaque = NO;
+        }
+    }
     aWebView.autoresizingMask = (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
     
     [ self.view addSubview: aWebView ];
 }
 
--(void)viewDidLoad{	
-
-}
-
 -(void)viewWillAppear:(BOOL)animated
 {
     aWebView.delegate = self;
-    
-    [self loadHTML];
+    [self loadHTML:html_name];
+    self.title = html_title;
 }
 
 -(void)viewWillDisappear:(BOOL)animated
@@ -101,8 +111,41 @@
     return YES;
 }
 
-- (void)loadHTML{
-    NSString *HTMLData = [[NSString alloc] initWithContentsOfFile: [NSString stringWithUTF8String:get_resource_path("help.html")] encoding:NSUTF8StringEncoding error:nil];
+static NSString* html_custom_style =
+@"<style>\n\
+code {background-color:lightgray; width:100%; overflow-x:scroll}\n\
+@media (prefers-color-scheme: dark) {\n\
+    html {background-color: black; color: white;}\n\
+    table tbody tr:nth-child(2n) {background-color: #333333;}\n\
+    table tbody tr:nth-child(2n-1) {background-color: #222222;}\n\
+    a:link, a:visited {color: dodgerblue;}\n\
+    img {opacity: .75;}\n\
+    code {background-color:#404040;}\n\
+}\n\
+</style>\n";
+
+- (void)loadHTML:(NSString*)name {
+    
+    NSString *HTMLData = [[NSString alloc] initWithContentsOfFile:[NSString stringWithUTF8String:get_resource_path([name UTF8String])] encoding:NSUTF8StringEncoding error:nil];
+    
+    // replace special tags in HTML....
+    //
+    //      $(APP_VERSION) - application version
+    //      $(APP_DATE)    - file date of Info.plist, this ususally is the built-on date.
+    //
+    NSString* version = [NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleVersion"];
+    HTMLData = [HTMLData stringByReplacingOccurrencesOfString:@"$(APP_VERSION)" withString:version];
+
+    // this last date Info.plist was modifed, if you do a clean build, or change the version, it is the build date.
+    NSString *path = [[NSBundle mainBundle] pathForResource: @"Info" ofType: @"plist"];
+    NSDate* date = [[[NSFileManager defaultManager] attributesOfItemAtPath:path error:nil] fileModificationDate];
+    NSString* app_date = [NSDateFormatter localizedStringFromDate:date dateStyle:NSDateFormatterMediumStyle timeStyle:NSDateFormatterNoStyle];
+    HTMLData = [HTMLData stringByReplacingOccurrencesOfString:@"$(APP_DATE)" withString:app_date];
+    
+    // hack in our style sheet at the end of the <head></head> only if the HTML does not have a dark-mode compatible inline style already.
+    if (!([HTMLData containsString:@"<style"] && [HTMLData containsString:@"prefers-color-scheme"])) {
+        HTMLData = [HTMLData stringByReplacingOccurrencesOfString:@"</head>" withString:[html_custom_style stringByAppendingString:@"</head>"]];
+    }
     
     NSURL *aURL = [NSURL fileURLWithPath:[NSString stringWithUTF8String:get_resource_path("")]];
     

@@ -83,6 +83,7 @@ NS_ASSUME_NONNULL_BEGIN
     
 @public int buttonSize;
 @public int stickSize;
+@public int nintendoBAYX;
     
 @public int wpantype;
 @public NSString *wfpeeraddr;
@@ -121,6 +122,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)loadOptions;
 - (void)saveOptions;
++ (void)resetOptions;
 
 @property (readwrite,assign) int keepAspectRatioPort;
 @property (readwrite,assign) int keepAspectRatioLand;
@@ -194,6 +196,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readwrite,assign) int buttonSize;
 @property (readwrite,assign) int stickSize;
+@property (readwrite,assign) int nintendoBAYX;
 
 @property (readwrite,assign) int wpantype;
 @property (readwrite,strong,nullable) NSString *wfpeeraddr;

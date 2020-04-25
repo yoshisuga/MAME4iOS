@@ -11,21 +11,21 @@
 12,392,82,82//l1
 931,392,82,82//r1
 0,0,0,0//menu (select+ start) YO b + up
-830,660,70,70//button down left* X + A
-692,621,82,82//button up* --> X
+830,670,70,70//button down left* X + A
+792,622,82,82//buton left * --> X
 950,610,70,70//button down right X + B
 892,622,82,82//buttondown*  --> A
 932,522,82,82//button right* -> B
 790,595,70,70//button up left* --> Y + A
-792,622,82,82//buton left * --> Y
+827,522,82,82//button up* --> Y
 870,495,70,70//button up right* Y + B
 7,16,103,43//lpad2
 915,16,103,43//rpad2
 0,0,0,0//showkyboard*
 920,510,105,105//B img
-680,620,105,105//X img
-880,620,105,105//A img
-780,620,105,105//Y img
+780,610,105,105//X img
+880,610,105,105//A img
+815,510,105,105//Y img
 45,517,205,205//DPad img
 0,66,117,58//select img
 908,66,117,58//start img

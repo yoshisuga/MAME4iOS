@@ -57,16 +57,8 @@
 
 @implementation DefaultOptionController
 
-@synthesize emuController;
-
 - (id)init {
-    UITableViewStyle style = UITableViewStyleGrouped;
-#if TARGET_OS_IOS
-    if (@available(iOS 13.0, *)) {
-        style = UITableViewStyleInsetGrouped;
-    }
-#endif
-    if (self = [super initWithStyle:style]) {
+    if (self = [super init]) {
 #if TARGET_OS_IOS
         switchTvoutNative = nil;
         switchCheats = nil;
@@ -90,25 +82,9 @@
     return self;
 }
 
-- (void) viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-    UITableView *tableView = (UITableView *)self.view;
-    [tableView reloadData];
-}
-
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     
     return 3;
-}
-
-- (void)loadView {
-    
-    [super loadView];
-    
-    UIBarButtonItem *button = [[UIBarButtonItem alloc] initWithTitle:@"Done"
-                                                               style:UIBarButtonItemStyleDone
-                                                              target: emuController  action:  @selector(done:) ];
-    self.navigationItem.rightBarButtonItem = button;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section

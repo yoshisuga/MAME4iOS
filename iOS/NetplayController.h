@@ -43,6 +43,7 @@
  */
 
 #import <UIKit/UIKit.h>
+#import "OptionsTableViewController.h"
 
 @class EmulatorController;
 
@@ -55,7 +56,7 @@ typedef enum {
     BluetoothOn,
 } BluetoothState;
 
-@interface NetplayController : UITableViewController <UITextFieldDelegate, CBCentralManagerDelegate> {
+@interface NetplayController : OptionsTableViewController <UITextFieldDelegate, CBCentralManagerDelegate> {
     
     NSArray *arrayWPANtype;
     NSArray *arrayWFframeSync;
@@ -64,8 +65,5 @@ typedef enum {
     BluetoothState btState;
     CBCentralManager *btMgr;
 }
-
-@property (nonatomic, assign) EmulatorController *emuController;
-
 
 @end

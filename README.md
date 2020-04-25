@@ -4,7 +4,7 @@ Original Author: David Valdeita (Seleuco)<br/>
 
 This is a port of MAME 0.139u1 for iOS, iPadOS, and tvOS.
 
-[Download iOS IPA (v2020.1)](https://mega.nz/#!OEAimSTQ!Z_QEZOJGPyVc8bqGkaGpqJ3xn-FOdtW53GKev1Lzt8w) | [Download tvOS IPA (v2020.1)](https://mega.nz/#!OQJylQZS!XLsDkdDf_RD3idDEFdcnJ92QQC7AN6ffrcXFoyuxZTQ)
+[Download iOS IPA (v2020.6)](https://mega.nz/file/uNpnUTaa#VVXlSbumg70I2-WEZ0zULWTY3F8KItEvkMs9w361g3A) | [Download tvOS IPA (v2020.6)](https://mega.nz/file/bZolUDYa#ZcBdAXTl3tfrrxO6TRSJD2S0wI1XRylwW0EVgfhm0Ng)
 
 [Chat on Discord!](https://discord.gg/ZC6wkmU)
 
@@ -45,14 +45,15 @@ Building MAME4iOS requires a prebuilt MAME binary (it has not been included in t
 2. In Terminal: `cd [path to MAME4iOS root]`<br>
   <sup>(alternatively, you can drag & drop a folder on Terminal after `cd` if don't know how to get the directory path)</sup><br>
 
-3. Create the MAME binary by building it yourself from scratch:
-    - Build it in the above selected terminal by chosing one of the following scripts (depending on which device you are building for):
+3. Create the needed MAME binary by building it yourself from scratch: <br>
+    *** FOR CATALINA USERS, IN THE SECURITY & PRIVACY SETTINGS, PLEASE ALLOW "TERMINAL" "TO RUN SOFTWARE LOCALLY THAT DOES NOT MEET THE SYSTEMS SECURITY POLICY" IN THE DEVELOPER TOOLS CATEGORY ON THE PRIVACY PAGE IN ORDER TO COMPLETE A SUCCESFUL BUILD *** <br>
+- Build it in the above selected terminal by chosing one of the following scripts (depending on which device you are building for):<br>
         - iOS 64-bit: `./make-ios.sh`<br>
         <sup>For iPhone 5S, iPad Air, iPad mini, and up…</sup><br>
         - tvOS: `./make-tvos.sh`<br>
-        <sup>AppleTV (4/4k and above)</sup>
+        <sup>AppleTV (4/4k and above)</sup><br>
         - simulator: `./make-sim.sh`<br>
-        <sup>iOS/tvOS (version 10.0 and above)</sup>
+        <sup>iOS/tvOS (version 10.0 and above)</sup><br>
 
 4. Choose the appropriate build target in Xcode:
     - `MAME4iOS 64-bit Release` (iPhone/iPad)
@@ -165,3 +166,7 @@ Under Settings -> Game Input, there's a section called "Turbo Mode Toggle", that
 Also in Settings -> Game Input, you'll find a section called "Touch Analog" and "Touch Directional Input". "Touch Analog" lets you use your touchscreen as an analog device for games using input controls such as trackballs and knobs. These include games like Arkanoid or Crystal Castles. You can adjust the sensitivity of the analog controls, and also choose to hide the d-pad/analog stick in this mode.
 
 "Touch Directional Input" is rather experimental and is for vertical shooters so you can move around using your finger. It still needs some work so just a word of caution :)
+
+## License
+
+MAME4iOS is distributed under the terms of the GNU General Public License, 2 (GPL-2.0).

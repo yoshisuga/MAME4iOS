@@ -45,20 +45,10 @@
 #import <UIKit/UIKit.h>
 #import <QuartzCore/CALayer.h>
 
-@interface ScreenLayer : CALayer {
-	CGAffineTransform rotateTransform;
-	CGContextRef bitmapContext;
-}
-
-@end
 
 @interface ScreenView : UIView
-{
-}
 
 - (id)initWithFrame:(CGRect)frame;
 - (void)drawRect:(CGRect)rect;
-
-@property (nonatomic, copy) void (^didUpdateScreenCallback)(void);
 
 @end

@@ -15,6 +15,7 @@
 #define RECENT_GAMES_TITLE      @"Recently Played"
 
 // keys used in a GameInfo dictionary
+#define kGameInfoDriver         @"driver"
 #define kGameInfoName           @"name"
 #define kGameInfoParent         @"parent"
 #define kGameInfoYear           @"year"
@@ -24,11 +25,12 @@
 
 // special "system" games
 #define kGameInfoNameSettings   @"settings"
-#define kGameInfoNameMameMenu   @"mamemenu"
+#define kGameInfoNameMameMenu   @"mameui"
 
 @interface ChooseGameController : UICollectionViewController
 
 - (void)setGameList:(NSArray*)games;
++ (void)reset;
 
 @property(nonatomic, strong) void (^selectGameCallback)(NSDictionary* info);
 
