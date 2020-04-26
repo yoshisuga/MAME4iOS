@@ -40,7 +40,6 @@ extern unsigned short *myosd_screen15;
 extern int  myosd_fps;
 extern int  myosd_showinfo;
 extern int  myosd_sleep;
-extern int  myosd_inGame;
 extern int  myosd_exitGame;
 extern int  myosd_pause;
 extern int  myosd_exitPause;
@@ -64,6 +63,18 @@ extern int  myosd_pxasp1;
 extern int  myosd_video_threaded;
 extern int  myosd_service;
 extern int  myosd_configure;
+
+//
+// inGame   in_menu
+//    0        0        - at top level select game menu (exit will quit app)
+//    0        1        - in a menu (exit will exit menu)
+//    0        2        - in configure input menu
+//    1        0        - running a machine/game no menu is up (exit will quit app)
+//    1        1        - running a machine/game with menu up (exit will exit menu)
+//    1        2        - running a machine/game with configure input menu up
+//
+extern int  myosd_inGame;
+extern int  myosd_in_menu;
 
 extern unsigned long myosd_pad_status;
     

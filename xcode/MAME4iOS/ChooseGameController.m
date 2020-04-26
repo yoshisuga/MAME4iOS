@@ -1260,11 +1260,11 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     
     NSMutableArray* files = [[NSMutableArray alloc] init];
     
-    for (NSString* file in @[@"titles/%@.png", @"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@/1.sta", @"sta/%@/2.sta", @"hi/%@.hi", @"nvram/%@.nv", @"inp/%@.inp"])
+    for (NSString* file in @[@"artwork/%@.zip", @"samples/%@.zip", @"roms/%@/", @"titles/%@.png", @"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@/1.sta", @"sta/%@/2.sta", @"hi/%@.hi", @"nvram/%@.nv", @"inp/%@.inp"])
         [files addObject:[NSString stringWithFormat:file, name]];
     
     if (all) {
-        for (NSString* file in @[@"roms/%@.zip", @"roms/%@/", @"artwork/%@.zip", @"samples/%@.zip"])
+        for (NSString* file in @[@"roms/%@.zip"])
             [files addObject:[NSString stringWithFormat:file, name]];
     }
     
@@ -1273,10 +1273,11 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 -(void)delete:(NSDictionary*)game
 {
-    NSString* title = [game[kGameInfoDescription] componentsSeparatedByString:@" ("].firstObject;
+    NSString* title = [self menuTitleForGame:game];
     NSString* message = nil;
 
-    [self showAlertWithTitle:title message:message buttons:@[@"Delete Settings", @"Delete All Files", @"Cancel"] handler:^(NSUInteger button) {
+    [self showAlertWithTitle:title message:message buttons:@[@"Delete All Settings", @"Delete Everything", @"Cancel"] handler:^(NSUInteger button) {
+        
         // cancel get out!
         if (button == 2)
             return;
@@ -1397,9 +1398,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 }
 
 // get the title for the ContextMenu
-- (NSString*)menuTitleForItemAtIndexPath:(NSIndexPath *)indexPath {
-    NSDictionary* game = [self getGameInfo:indexPath];
-    
+- (NSString*)menuTitleForGame:(NSDictionary *)game {
+
     if (game == nil || [game[kGameInfoName] length] == 0)
         return nil;
     
@@ -1412,6 +1412,9 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
                 [NSString stringWithFormat:@"%@ [%@]", game[kGameInfoName], game[kGameInfoParent]] :
                 game[kGameInfoName]
             ];
+}
+- (NSString*)menuTitleForItemAtIndexPath:(NSIndexPath *)indexPath {
+    return [self menuTitleForGame:[self getGameInfo:indexPath]];
 }
 
 #pragma mark - UIContextMenu (iOS 13+ only)
