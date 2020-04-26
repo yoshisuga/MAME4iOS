@@ -478,7 +478,7 @@ void droid_ios_poll_input(running_machine *machine)
 
 		for(int i=0; i<4; i++)
 		{
-			if(i!=0  && myosd_in_menu==1 && myosd_num_of_joys <=1)//to avoid mapping issues when pxasp1 is active
+			if(i!=0 && myosd_in_menu && myosd_num_of_joys <=1)//to avoid mapping issues when pxasp1 is active
 				break;
 
 			_pad_status = joystick_read(i);

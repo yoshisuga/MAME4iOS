@@ -675,7 +675,6 @@ void mame_state(int load_save, int slot)
     if (old_joy_used != g_joy_used)
         [self changeUI];
     
-    myosd_exitPause = 1;
     g_emulation_paused = 0;
     change_pause(0);
     
@@ -1026,9 +1025,8 @@ void mame_state(int load_save, int slot)
         [self runMenu];
     }
     
-    // exit MAME MENU with B
-    // TODO: this prevents user from re-mapping B button in MAME interface
-    if (myosd_in_menu && (pad_status & MYOSD_B))
+    // exit MAME MENU with B (but only if we are not mapping a input)
+    if (myosd_in_menu == 1 && (pad_status & MYOSD_B))
     {
         [self runExit];
     }
@@ -1259,9 +1257,11 @@ void mame_state(int load_save, int slot)
 
   int prev_emulation_paused = g_emulation_paused;
    
-  g_emulation_paused = 1;
-  change_pause(1);
-  
+  if (g_emulation_paused == 0) {
+    g_emulation_paused = 1;
+    change_pause(1);
+  }
+    
   [self getConf];
     
   //printf("%d %d %d\n",ways_auto,myosd_num_ways,myosd_waysStick);
@@ -1352,8 +1352,6 @@ void mame_state(int load_save, int slot)
         [hideShowControlsForLightgun setImage:[UIImage imageNamed:@"dpad"] forState:UIControlStateNormal];
     }
     
-   myosd_exitPause = 1;
-	
    if(prev_emulation_paused!=1)
    {
 	   g_emulation_paused = 0;
@@ -1947,21 +1945,21 @@ void myosd_handle_turbo() {
    {
         r = rFrames[LANDSCAPE_VIEW_FULL];
    }
+
+    // Handle Safe Area (iPhone X) adjust the view down away from the notch, before adjusting for aspect
+    if ( @available(iOS 11, *) ) {
+        if ( externalView == nil ) {
+            // in fullscreen mode, we dont want to correct for the bottom inset, because we hide the home indicator.
+            UIEdgeInsets safeArea = self.view.safeAreaInsets;
+            if (g_device_is_fullscreen)
+                safeArea.bottom = 0.0;
+            r = CGRectIntersection(r, UIEdgeInsetsInsetRect(self.view.bounds, safeArea));
+        }
+    }
 #elif TARGET_OS_TV
     r = [[UIScreen mainScreen] bounds];
 #endif
     
-   // Handle Safe Area (iPhone X) adjust the view down away from the notch, before adjusting for aspect
-   if ( @available(iOS 11, *) ) {
-       if ( externalView == nil ) {
-           // in fullscreen mode, we dont want to correct for the bottom inset, because we hide the home indicator.
-           UIEdgeInsets safeArea = self.view.safeAreaInsets;
-           if (g_device_is_fullscreen)
-               safeArea.bottom = 0.0;
-           r = CGRectIntersection(r, UIEdgeInsetsInsetRect(self.view.bounds, safeArea));
-       }
-   }
-   
    if(g_pref_keep_aspect_ratio_land)
    {
        r = AVMakeRectWithAspectRatioInsideRect(CGSizeMake(myosd_vis_video_width, myosd_vis_video_height), r);
@@ -2005,7 +2003,7 @@ void myosd_handle_turbo() {
     for (int i=0; i<MAX(1, myosd_num_of_joys); i++) {
         unsigned long pad_status = myosd_joy_status[i] | (i == 0 ? myosd_pad_status : 0);
         
-        NSLog(@"%s[%d]: %s%s%s%s (%+1.3f,%+1.3f) %s%s%s%s %s%s%s%s%s%s %s%s%s%s (%+1.3f,%+1.3f) (%1.3f,%1.3f)",
+        NSLog(@"%s[%d]: %s%s%s%s (%+1.3f,%+1.3f) %s%s%s%s %s%s%s%s%s%s %s%s%s%s (%+1.3f,%+1.3f) (%1.3f,%1.3f) inGame=%d, inMenu=%d",
               i==0 ? "handle_INPUT" : "            ", i,
               (pad_status & MYOSD_UP) ?   "U" : "-", (pad_status & MYOSD_DOWN) ?  "D" : "-",
               (pad_status & MYOSD_LEFT) ? "L" : "-", (pad_status & MYOSD_RIGHT) ? "R" : "-",
@@ -2022,7 +2020,9 @@ void myosd_handle_turbo() {
               (pad_status & MYOSD_SELECT) ? "C" : "-", (pad_status & MYOSD_EXIT) ? "X" : "-",
               (pad_status & MYOSD_OPTION) ? "M" : "-", (pad_status & MYOSD_START) ? "S" : "-",
 
-              joy_analog_x[i][1], joy_analog_y[i][1], joy_analog_x[i][2],joy_analog_x[i][3]
+              joy_analog_x[i][1], joy_analog_y[i][1], joy_analog_x[i][2],joy_analog_x[i][3],
+              
+              myosd_inGame, myosd_in_menu
               );
     }
 #endif
