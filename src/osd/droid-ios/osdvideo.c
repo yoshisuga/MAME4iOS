@@ -203,7 +203,13 @@ void droid_ios_video_render(render_target *our_target)
 			   case 7:{minwidth = 640;minheight = 400;break;}
 			   case 8:{minwidth = 640;minheight = 480;break;}
 			   case 9:{minwidth = 800;minheight = 600;break;}
-			   case 10:{minwidth = 1024;minheight = 768;break;}
+         case 10:{minwidth = 1024;minheight = 768;break;}
+         case 11:{minwidth = 1280;minheight = 960;break;}
+         case 12:{minwidth = 1440;minheight = 1080;break;} // Optimal HD: added for 1080P displays
+         case 13:{minwidth = 1600;minheight = 1200;break;}
+         case 14:{minwidth = 1920;minheight = 1440;break;}
+         case 15:{minwidth = 2048;minheight = 1536;break;}
+         case 16:{minwidth = 2880;minheight = 2160;break;} // Optimal UHD: added for Consumer 4K/UHD displays
 			}
 			render_target_compute_visible_area(our_target,minwidth,minheight,4/3,render_target_get_orientation(our_target),&minwidth,&minheight);
 			viswidth = minwidth;

@@ -119,10 +119,10 @@ unsigned long myosd_pad_status = 0;
 unsigned long myosd_joy_status[4];
 unsigned short myosd_ext_status = 0;
 
-static unsigned short myosd_screen [1024 * 768 * 4];
+static unsigned short myosd_screen [2880 * 2880 * 4]; //max res squared
 unsigned short 	*myosd_screen15 = NULL;
 
-extern unsigned short img_buffer[1024 * 768 * 4];
+extern unsigned short img_buffer[2880 * 2880 * 4]; // max res squared
 
 typedef struct AQCallbackStruct {
     AudioQueueRef queue;
@@ -200,7 +200,7 @@ unsigned long myosd_joystick_read(int n)
     if(n==0 || myosd_pxasp1 && (myosd_num_of_joys==0 || myosd_num_of_joys==1))
     {
        res = myosd_pad_status;
-        
+
        if(myosd_pxasp1 && myosd_num_of_joys==1)
        {
 #ifdef BTJOY
@@ -224,7 +224,7 @@ unsigned long myosd_joystick_read(int n)
 float myosd_joystick_read_analog(int n, char axis)
 {
     float res = 0.0;
-    
+
     if(n==0 || myosd_pxasp1 && (myosd_num_of_joys==0 || myosd_num_of_joys==1))
     {
 #ifdef BTJOY
@@ -240,7 +240,7 @@ float myosd_joystick_read_analog(int n, char axis)
         else if(axis=='z') res = joy_analog_x[0][2];
         else if(axis=='Z') res = joy_analog_x[0][3];
     }
-    
+
     if (n<myosd_num_of_joys)
     {
 #ifdef BTJOY
@@ -253,7 +253,7 @@ float myosd_joystick_read_analog(int n, char axis)
         else if(axis=='z') res = joy_analog_x[n][2];
         else if(axis=='Z') res = joy_analog_x[n][3];
     }
-    
+
     return res;
 }
 
@@ -267,7 +267,7 @@ void myosd_init(void)
 	   printf("myosd_init\n");
 
 	   //myosd_set_video_mode(320,240,320,240);
-        
+
        printf("myosd_dbl_buffer %d\n",myosd_dbl_buffer);
 	   if(myosd_dbl_buffer)
 	      myosd_screen15 = myosd_screen;
@@ -283,7 +283,7 @@ void myosd_init(void)
 		   //param.sched_priority = 50;
 		   //param.sched_priority = 46;
 		   //param.sched_priority = 100;
-           
+
             printf("video priority %d\n",video_thread_priority);
 		    param.sched_priority = video_thread_priority;
 		    int policy;
@@ -318,11 +318,11 @@ void myosd_closeSound(void) {
 	{
 		printf("myosd_closeSound\n");
 
-		
+
         if(global_low_latency_sound)
            sound_close_AudioUnit();
         else
-           sound_close_AudioQueue();  
+           sound_close_AudioQueue();
 
 	   	soundInit = 0;
 	}
@@ -341,7 +341,7 @@ void myosd_openSound(int rate,int stereo) {
 		    printf("myosd_openSound NORMAL rate:%d stereo:%d \n",rate,stereo);
             sound_open_AudioQueue(rate, 16, stereo);
         }
-       
+
 		soundInit = 1;
 	}
 }
@@ -571,9 +571,9 @@ static OSStatus playbackCallback(void *inRefCon,
     // Notes: ioData contains buffers (may be more than one!)
     // Fill them up as much as you can. Remember to set the size value in each buffer to match how
     // much data is in the buffer.
-    
+
 	unsigned  char *coreAudioBuffer;
-    
+
     int i;
     for (i = 0 ; i < ioData->mNumberBuffers; i++)
     {
@@ -582,23 +582,23 @@ static OSStatus playbackCallback(void *inRefCon,
         dequeue(coreAudioBuffer,inNumberFrames * 4);
         ioData->mBuffers[i].mDataByteSize = inNumberFrames * 4;
     }
-    
+
     return noErr;
 }
 
 int sound_close_AudioUnit(){
-    
+
 	if( soundInit == 1 )
 	{
 		OSStatus status = AudioOutputUnitStop(audioUnit);
 		checkStatus(status);
-        
+
 		AudioUnitUninitialize(audioUnit);
 		soundInit = 0;
         head = 0;
         tail = 0;
 	}
-    
+
 	return 1;
 }
 
@@ -609,7 +609,7 @@ int sound_open_AudioUnit(int rate, int bits, int stereo){
     {
         sound_close_AudioUnit();
     }
-    
+
     if(rate==44100)
         sampleRate = 44100.0;
     if(rate==32000)
@@ -618,27 +618,27 @@ int sound_open_AudioUnit(int rate, int bits, int stereo){
         sampleRate = 22050.0;
     else if(rate==11025)
         sampleRate = 11025.0;
-    
+
     //audioBufferSize =  (rate / 60) * 2 * (stereo==1 ? 2 : 1) ;
-    
+
     OSStatus status;
-    
+
     // Describe audio component
     AudioComponentDescription desc;
     desc.componentType = kAudioUnitType_Output;
     desc.componentSubType = kAudioUnitSubType_RemoteIO;
-    
+
     desc.componentFlags = 0;
     desc.componentFlagsMask = 0;
     desc.componentManufacturer = kAudioUnitManufacturer_Apple;
-    
+
     // Get component
     AudioComponent inputComponent = AudioComponentFindNext(NULL, &desc);
-    
+
     // Get audio units
     status = AudioComponentInstanceNew(inputComponent, &audioUnit);
     checkStatus(status);
-    
+
     UInt32 flag = 1;
     // Enable IO for playback
     status = AudioUnitSetProperty(audioUnit,
@@ -648,11 +648,11 @@ int sound_open_AudioUnit(int rate, int bits, int stereo){
                                   &flag,
                                   sizeof(flag));
     checkStatus(status);
-    
+
     AudioStreamBasicDescription audioFormat;
-    
+
     memset (&audioFormat, 0, sizeof (audioFormat));
-    
+
     audioFormat.mSampleRate = sampleRate;
     audioFormat.mFormatID = kAudioFormatLinearPCM;
     audioFormat.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger  | kAudioFormatFlagIsPacked;
@@ -661,7 +661,7 @@ int sound_open_AudioUnit(int rate, int bits, int stereo){
     audioFormat.mBytesPerFrame = (stereo ==  1? 4 : 2);
     audioFormat.mChannelsPerFrame = (stereo == 1 ? 2 : 1);
     audioFormat.mBitsPerChannel = 16;
-    
+
     status = AudioUnitSetProperty(audioUnit,
                                   kAudioUnitProperty_StreamFormat,
                                   kAudioUnitScope_Input,
@@ -669,7 +669,7 @@ int sound_open_AudioUnit(int rate, int bits, int stereo){
                                   &audioFormat,
                                   sizeof(audioFormat));
     checkStatus(status);
-    
+
     struct AURenderCallbackStruct callbackStruct;
     // Set output callback
     callbackStruct.inputProc = playbackCallback;
@@ -681,15 +681,14 @@ int sound_open_AudioUnit(int rate, int bits, int stereo){
                                   &callbackStruct,
                                   sizeof(callbackStruct));
     checkStatus(status);
-    
+
     status = AudioUnitInitialize(audioUnit);
     checkStatus(status);
-    
+
     //ARRANCAR
     soundInit = 1;
     status = AudioOutputUnitStart(audioUnit);
     checkStatus(status);
-    
+
     return 1;
 }
-
