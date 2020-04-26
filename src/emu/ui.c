@@ -181,6 +181,7 @@ static INT32 slider_crossoffset(running_machine *machine, void *arg, astring *st
 
 INLINE UINT32 ui_set_handler(UINT32 (*callback)(running_machine *, render_container *, UINT32), UINT32 param)
 {
+    myosd_in_menu = callback != handler_ingame;
 	ui_handler_callback = callback;
 	ui_handler_param = param;
 	return param;
@@ -380,8 +381,6 @@ void ui_set_startup_text(running_machine *machine, const char *text, int force)
 
 void ui_update_and_render(running_machine *machine, render_container *container)
 {
-	myosd_in_menu = ui_handler_callback!= handler_ingame;
-
 	/* always start clean */
 	render_container_empty(container);
 

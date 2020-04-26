@@ -13,6 +13,7 @@
 * Controller Identify, when you hit `MENU` on a controller the Player number is displayed as the title of the in-game menu.
 * Supports Controler trigger buttons `L2`, `R2`.  `MENU+L2` will Insert a `P2 COIN`, and `MENU+R2` will do a `P2 START`.
 * Removed separate `Load State` and `Save State` from the in-game menu, to make room, the menu is cramped in landscape and tvOS
+* 🅑 will exit a `MAME` menu
 
 # Version 2020.6
 
