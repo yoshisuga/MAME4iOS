@@ -22,6 +22,8 @@
 #define kGameInfoDescription    @"description"
 #define kGameInfoManufacturer   @"manufacturer"
 #define kGameInfoCategory       @"category"
+#define kGameInfoHistory        @"history"
+#define kGameInfoMameInfo       @"mameinfo"
 
 // special "system" games
 #define kGameInfoNameSettings   @"settings"
