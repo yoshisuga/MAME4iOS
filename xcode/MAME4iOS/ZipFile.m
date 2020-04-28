@@ -682,26 +682,16 @@
 
 - (NSData*) inflated:(NSUInteger)expected_length
 {
-    if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
-        return [self decompressedDataUsingAlgorithm:NSDataCompressionAlgorithmZlib error:nil];
-    }
-    else {
-        NSMutableData* data = [[NSMutableData alloc] initWithLength:expected_length];
-        if (compression_decode_buffer(data.mutableBytes, [data length], self.bytes, [self length], nil, COMPRESSION_ZLIB) != expected_length)
-            return nil;
-        return data;
-    }
+    NSMutableData* data = [[NSMutableData alloc] initWithLength:expected_length];
+    if (compression_decode_buffer(data.mutableBytes, [data length], self.bytes, [self length], nil, COMPRESSION_ZLIB) != expected_length)
+        return nil;
+    return data;
 }
 - (NSData*) deflated
 {
-    if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
-        return [self compressedDataUsingAlgorithm:NSDataCompressionAlgorithmZlib error:nil];
-    }
-    else {
-        NSMutableData* data = [[NSMutableData alloc] initWithLength:[self length]];
-        data.length = compression_encode_buffer(data.mutableBytes, [data length], self.bytes, [self length], nil, COMPRESSION_ZLIB);
-        return ([data length] != 0) ? data : nil;
-    }
+    NSMutableData* data = [[NSMutableData alloc] initWithLength:[self length]];
+    data.length = compression_encode_buffer(data.mutableBytes, [data length], self.bytes, [self length], nil, COMPRESSION_ZLIB);
+    return ([data length] != 0) ? data : nil;
 }
 
 /// compute CRC32 (Slicing-by-16 algorithm)  from [Stephan Brumme](https://create.stephan-brumme.com/crc32)
