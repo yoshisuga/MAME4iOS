@@ -254,10 +254,16 @@ void* app_Thread_Start(void* args)
     }
 }
 
+#ifdef DEBUG
+NSDictionary* g_category_dict = nil;
+#endif
+
 // find the category for a game/rom using Category.ini (a copy of a similar function from uimenu.c)
 NSString* find_category(NSString* name)
 {
+#ifndef DEBUG
     static NSDictionary* g_category_dict = nil;
+#endif
     
     if (g_category_dict == nil)
     {
@@ -584,23 +590,19 @@ void mame_state(int load_save, int slot)
     if (self.presentedViewController != nil)
         return;
 
-    if (myosd_inGame && myosd_in_menu == 0 && ask_user)
+    if (myosd_in_menu == 0 && ask_user)
     {
+        NSString* yes = (controllers.count > 0 && TARGET_OS_IOS) ? @"Ⓐ Yes" : @"Yes";
+        NSString* no  = (controllers.count > 0 && TARGET_OS_IOS) ? @"Ⓑ No" : @"No";
+
+        UIAlertController *exitAlertController = [UIAlertController alertControllerWithTitle:@"" message:@"Are you sure you want to exit?" preferredStyle:UIAlertControllerStyleAlert];
+
         [self startMenu];
-        
-#if TARGET_OS_TV
-        NSString* yes = @"Yes";
-        NSString* no  = @"No";
-#else
-        NSString* yes = controllers.count > 0 ? @"Ⓐ Yes" : @"Yes";
-        NSString* no  = controllers.count > 0 ? @"Ⓑ No" : @"No";
-#endif
-        UIAlertController *exitAlertController = [UIAlertController alertControllerWithTitle:@"" message:@"Are you sure you want to exit the game?" preferredStyle:UIAlertControllerStyleAlert];
-        [exitAlertController addAction:[UIAlertAction actionWithTitle:yes style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [exitAlertController addAction:[UIAlertAction actionWithTitle:yes style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
             [self endMenu];
             [self runExit:NO];
         }]];
-        [exitAlertController addAction:[UIAlertAction actionWithTitle:no style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+        [exitAlertController addAction:[UIAlertAction actionWithTitle:no style:UIAlertActionStyleCancel handler:^(UIAlertAction* action) {
             [self endMenu];
         }]];
         exitAlertController.preferredAction = exitAlertController.actions.firstObject;
@@ -636,6 +638,10 @@ void mame_state(int load_save, int slot)
     [[NSUserDefaults standardUserDefaults] synchronize];
     
     if (self.presentedViewController != nil || g_emulation_paused)
+        return;
+    
+    // dont pause the MAME select game menu.
+    if (!myosd_inGame)
         return;
 
     [self startMenu];
@@ -2819,6 +2825,7 @@ void myosd_handle_turbo() {
     NSString *romsPath = [NSString stringWithUTF8String:get_documents_path("roms")];
     NSString *artwPath = [NSString stringWithUTF8String:get_documents_path("artwork")];
     NSString *sampPath = [NSString stringWithUTF8String:get_documents_path("samples")];
+    NSString *datsPath = [NSString stringWithUTF8String:get_documents_path("dats")];
 
     NSString *romPath = [rootPath stringByAppendingPathComponent:romName];
     
@@ -2835,14 +2842,20 @@ void myosd_handle_turbo() {
     //
     //  * zipset, if the ZIP contains other ZIP files, then it is a zip of romsets, aka zipset?.
     //  * chdset, if the ZIP has CHDs in it.
+    //  * datset, if the ZIP has DATs in it. *NOTE* many ROMSETs have .DAT files, so we only check a whitelist of files.
     //  * artwork, if the ZIP contains a .LAY file, then it is artwork
     //  * samples, if the ZIP contains a .WAV file, then it is samples
     //  * romset, if the ZIP has "normal" files in it assume it is a romset.
     //
+
+    // whitelist of valid .DAT files we will copy to the dats folder
+    NSArray* dat_files = @[@"HISTORY.DAT", @"MAMEINFO.DAT"];
+    
     int __block numLAY = 0;
     int __block numZIP = 0;
     int __block numCHD = 0;
     int __block numWAV = 0;
+    int __block numDAT = 0;
     int __block numFiles = 0;
     BOOL result = [ZipFile enumerate:romPath withOptions:ZipFileEnumFiles usingBlock:^(ZipFileInfo* info) {
         NSString* ext = [info.name.pathExtension uppercaseString];
@@ -2855,6 +2868,8 @@ void myosd_handle_turbo() {
             numWAV++;
         if ([ext isEqualToString:@"CHD"])
             numCHD++;
+        if ([dat_files containsObject:info.name.lastPathComponent.uppercaseString])
+            numDAT++;
     }];
 
     NSString* toPath = nil;
@@ -2863,7 +2878,7 @@ void myosd_handle_turbo() {
     {
         NSLog(@"%@ is a CORRUPT ZIP (deleting)", romPath);
     }
-    else if (numZIP != 0 || numCHD != 0)
+    else if (numZIP != 0 || numCHD != 0 || numDAT != 0)
     {
         NSLog(@"%@ is a ZIPSET", [romPath lastPathComponent]);
         int maxFiles = numFiles;
@@ -2880,6 +2895,8 @@ void myosd_handle_turbo() {
             if ([info.name hasPrefix:@"roms/"] || [info.name hasPrefix:@"artwork/"] || [info.name hasPrefix:@"titles/"] || [info.name hasPrefix:@"samples/"] ||
                 [info.name hasPrefix:@"cfg/"] || [info.name hasPrefix:@"ini/"] || [info.name hasPrefix:@"sta/"] || [info.name hasPrefix:@"hi/"])
                 toPath = [rootPath stringByAppendingPathComponent:info.name];
+            else if ([ext isEqualToString:@"DAT"])
+                toPath = [datsPath stringByAppendingPathComponent:[info.name lastPathComponent]];
             else if ([ext isEqualToString:@"ZIP"])
                 toPath = [romsPath stringByAppendingPathComponent:[info.name lastPathComponent]];
             else if ([ext isEqualToString:@"CHD"] && [info.name containsString:@"/"]) {
@@ -3336,7 +3353,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         //      MENU+R1 = Pn START
         //      MENU+L2 = P2 COIN/SELECT
         //      MENU+R2 = P2 START
-        //      MENU+X  = EXIT GAME
+        //      MENU+X  = EXIT
         //      MENU+B  = MAME MENU
         //      MENU+A  = LOAD STATE
         //      MENU+Y  = SAVE STATE
@@ -3394,11 +3411,9 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
              }
              //Exit Game
              else if (MFIController.extendedGamepad.buttonX.pressed) {
-                 NSLog(@"%d: MENU+X => EXIT GAME", player);
-                 if (myosd_inGame && myosd_in_menu == 0) {
-                     myosd_joy_status[player] &= ~MYOSD_X;
-                     [self runExit];
-                 }
+                 NSLog(@"%d: MENU+X => EXIT", player);
+                 myosd_joy_status[player] &= ~MYOSD_X;
+                 [self runExit];
              }
              // Load State
              else if (MFIController.extendedGamepad.buttonA.pressed ) {
