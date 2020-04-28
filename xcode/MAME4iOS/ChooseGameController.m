@@ -2017,7 +2017,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 {
     // on tvOS we flatten the cell into a single image so the parallax selection works.
     // NOTE we do this in drawRect so we know the cell is ready to be displayed, passing afterScreenUpdates:YES is crazy slow.
-    if (!_image.adjustsImageWhenAncestorFocused && _image.subviews.count == 0) {
+    if (!_image.adjustsImageWhenAncestorFocused && _image.subviews.count == 0 && self.bounds.size.height < self.window.bounds.size.height) {
         dispatch_async(dispatch_get_main_queue(), ^{
             if (!self.image.adjustsImageWhenAncestorFocused && self.image.subviews.count == 0) {
                 CGRect rect = self.bounds;
@@ -2080,7 +2080,9 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     self.textContainerInset = UIEdgeInsetsZero;
     self.textContainer.lineFragmentPadding = 0;
     self.layoutManager.usesFontLeading = NO;
+#if TARGET_OS_IOS
     self.editable = NO;
+#endif
     self.selectable = YES;
     self.scrollEnabled = NO;
     self.backgroundColor = UIColor.clearColor;
@@ -2108,13 +2110,16 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     
     self.collectionView.backgroundColor = BACKGROUND_COLOR;
     self.collectionView.alwaysBounceVertical = YES;
-    self.collectionView.allowsSelection = NO;
+    
+    self.collectionView.allowsSelection = TARGET_OS_IOS ? NO : YES;
 
-    if (@available(iOS 13.0, *)) {
+    if (@available(iOS 13.0, tvOS 13.0, *)) {
         self.navigationController.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
     }
+#if TARGET_OS_IOS
     // we are a self dismissing controller
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(done)];
+#endif
 }
 - (void)viewWillLayoutSubviews {
     [super viewWillLayoutSubviews];
