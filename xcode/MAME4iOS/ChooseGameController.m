@@ -2062,10 +2062,12 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
     if (self.attributedText.length == 0)
         return CGSizeZero;
-
+    
     CGSize size = CGSizeMake(self.preferredMaxLayoutWidth, 9999.0);
+    if (size.width == 0.0)
+        size.width = 9999.0;
     size = [self.attributedText boundingRectWithSize:size options:NSStringDrawingUsesLineFragmentOrigin context:nil].size;
-
+    size.height = ceil(size.height);
     return size;
 }
 - (void)setPreferredMaxLayoutWidth:(CGFloat)width {
