@@ -232,6 +232,20 @@ static ImageCache* sharedInstance = nil;
 {
     [self getImage:url size:CGSizeZero completionHandler:handler];
 }
+     
+// get a image from the cache without loading.
+- (UIImage*)getImage:(NSURL*)url size:(CGSize)size
+{
+    NSParameterAssert([NSThread isMainThread]);
+
+    NSString* key = [self getKey:url size:size];
+    id val = [cache objectForKey:key];
+
+    if ([val isKindOfClass:[UIImage class]])
+        return val;
+    
+    return nil;
+}
                        
 - (void)cancelImage:(NSURL*)url
 {

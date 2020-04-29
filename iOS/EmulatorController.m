@@ -254,10 +254,16 @@ void* app_Thread_Start(void* args)
     }
 }
 
+#ifdef DEBUG
+NSDictionary* g_category_dict = nil;
+#endif
+
 // find the category for a game/rom using Category.ini (a copy of a similar function from uimenu.c)
 NSString* find_category(NSString* name)
 {
+#ifndef DEBUG
     static NSDictionary* g_category_dict = nil;
+#endif
     
     if (g_category_dict == nil)
     {
@@ -2819,6 +2825,7 @@ void myosd_handle_turbo() {
     NSString *romsPath = [NSString stringWithUTF8String:get_documents_path("roms")];
     NSString *artwPath = [NSString stringWithUTF8String:get_documents_path("artwork")];
     NSString *sampPath = [NSString stringWithUTF8String:get_documents_path("samples")];
+    NSString *datsPath = [NSString stringWithUTF8String:get_documents_path("dats")];
 
     NSString *romPath = [rootPath stringByAppendingPathComponent:romName];
     
@@ -2835,14 +2842,20 @@ void myosd_handle_turbo() {
     //
     //  * zipset, if the ZIP contains other ZIP files, then it is a zip of romsets, aka zipset?.
     //  * chdset, if the ZIP has CHDs in it.
+    //  * datset, if the ZIP has DATs in it. *NOTE* many ROMSETs have .DAT files, so we only check a whitelist of files.
     //  * artwork, if the ZIP contains a .LAY file, then it is artwork
     //  * samples, if the ZIP contains a .WAV file, then it is samples
     //  * romset, if the ZIP has "normal" files in it assume it is a romset.
     //
+
+    // whitelist of valid .DAT files we will copy to the dats folder
+    NSArray* dat_files = @[@"HISTORY.DAT", @"MAMEINFO.DAT"];
+    
     int __block numLAY = 0;
     int __block numZIP = 0;
     int __block numCHD = 0;
     int __block numWAV = 0;
+    int __block numDAT = 0;
     int __block numFiles = 0;
     BOOL result = [ZipFile enumerate:romPath withOptions:ZipFileEnumFiles usingBlock:^(ZipFileInfo* info) {
         NSString* ext = [info.name.pathExtension uppercaseString];
@@ -2855,6 +2868,8 @@ void myosd_handle_turbo() {
             numWAV++;
         if ([ext isEqualToString:@"CHD"])
             numCHD++;
+        if ([dat_files containsObject:info.name.lastPathComponent.uppercaseString])
+            numDAT++;
     }];
 
     NSString* toPath = nil;
@@ -2863,7 +2878,7 @@ void myosd_handle_turbo() {
     {
         NSLog(@"%@ is a CORRUPT ZIP (deleting)", romPath);
     }
-    else if (numZIP != 0 || numCHD != 0)
+    else if (numZIP != 0 || numCHD != 0 || numDAT != 0)
     {
         NSLog(@"%@ is a ZIPSET", [romPath lastPathComponent]);
         int maxFiles = numFiles;
@@ -2880,6 +2895,8 @@ void myosd_handle_turbo() {
             if ([info.name hasPrefix:@"roms/"] || [info.name hasPrefix:@"artwork/"] || [info.name hasPrefix:@"titles/"] || [info.name hasPrefix:@"samples/"] ||
                 [info.name hasPrefix:@"cfg/"] || [info.name hasPrefix:@"ini/"] || [info.name hasPrefix:@"sta/"] || [info.name hasPrefix:@"hi/"])
                 toPath = [rootPath stringByAppendingPathComponent:info.name];
+            else if ([ext isEqualToString:@"DAT"])
+                toPath = [datsPath stringByAppendingPathComponent:[info.name lastPathComponent]];
             else if ([ext isEqualToString:@"ZIP"])
                 toPath = [romsPath stringByAppendingPathComponent:[info.name lastPathComponent]];
             else if ([ext isEqualToString:@"CHD"] && [info.name containsString:@"/"]) {

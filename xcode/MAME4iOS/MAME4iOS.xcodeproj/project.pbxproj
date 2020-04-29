@@ -154,6 +154,8 @@
 		EF63E1C124424D2300CFE85D /* whatsnew.md in Resources */ = {isa = PBXBuildFile; fileRef = EF63E1C024424D2300CFE85D /* whatsnew.md */; };
 		EF7B232C23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
 		EF7B232D23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
+		EF8505992458D00F0089F340 /* dats.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF8505962458CF2A0089F340 /* dats.zip */; };
+		EF85059A2458D00F0089F340 /* dats.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF8505962458CF2A0089F340 /* dats.zip */; };
 		EF8EAA86244F7F5D00DA02BB /* SteamControllerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA7F244F7F5D00DA02BB /* SteamControllerManager.m */; };
 		EF8EAA87244F7F5D00DA02BB /* SteamControllerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA7F244F7F5D00DA02BB /* SteamControllerManager.m */; };
 		EF8EAA88244F7F5D00DA02BB /* SteamController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA80244F7F5D00DA02BB /* SteamController.m */; };
@@ -174,6 +176,8 @@
 		EFA7570E2406D64600A02AAB /* SystemImage.m in Sources */ = {isa = PBXBuildFile; fileRef = EFA7570B2406D64600A02AAB /* SystemImage.m */; };
 		EFA757222408488D00A02AAB /* iCadeControls.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA757212408488D00A02AAB /* iCadeControls.png */; };
 		EFD4D14A23C0F6AB00857A76 /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = CE30090316FA47CB000EDCF1 /* Category.ini */; };
+		EFE4B6AB2453D7F80009A6F1 /* InfoDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE4B6AA2453D7F80009A6F1 /* InfoDatabase.m */; };
+		EFE4B6AC2453D7F80009A6F1 /* InfoDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE4B6AA2453D7F80009A6F1 /* InfoDatabase.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -357,6 +361,7 @@
 		EF301CEF240460C5000510FD /* Alert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Alert.h; sourceTree = "<group>"; };
 		EF301CF0240460C5000510FD /* Alert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Alert.m; sourceTree = "<group>"; };
 		EF63E1C024424D2300CFE85D /* whatsnew.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = whatsnew.md; path = "../../iOS-res/Applications/MAME4iOS.app/whatsnew.md"; sourceTree = "<group>"; };
+		EF8505962458CF2A0089F340 /* dats.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = dats.zip; path = "../../iOS-res/Applications/MAME4iOS.app/dats.zip"; sourceTree = "<group>"; };
 		EF8EAA7E244F7F5D00DA02BB /* SteamControllerExtendedGamepad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SteamControllerExtendedGamepad.h; sourceTree = "<group>"; };
 		EF8EAA7F244F7F5D00DA02BB /* SteamControllerManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SteamControllerManager.m; sourceTree = "<group>"; };
 		EF8EAA80244F7F5D00DA02BB /* SteamController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SteamController.m; sourceTree = "<group>"; };
@@ -379,6 +384,8 @@
 		EFA757212408488D00A02AAB /* iCadeControls.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = iCadeControls.png; sourceTree = "<group>"; };
 		EFE1D707242C05CE0081EEC6 /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = System/Library/Frameworks/CoreImage.framework; sourceTree = SDKROOT; };
 		EFE1D709242C1D840081EEC6 /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS13.2.sdk/System/Library/Frameworks/CoreImage.framework; sourceTree = DEVELOPER_DIR; };
+		EFE4B6A92453D7F80009A6F1 /* InfoDatabase.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InfoDatabase.h; sourceTree = "<group>"; };
+		EFE4B6AA2453D7F80009A6F1 /* InfoDatabase.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = InfoDatabase.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -538,6 +545,8 @@
 				92B99F0D2022706600CC44E3 /* UIView+Toast.m */,
 				EF301CEF240460C5000510FD /* Alert.h */,
 				EF301CF0240460C5000510FD /* Alert.m */,
+				EFE4B6A92453D7F80009A6F1 /* InfoDatabase.h */,
+				EFE4B6AA2453D7F80009A6F1 /* InfoDatabase.m */,
 				EFA7570C2406D64600A02AAB /* SystemImage.h */,
 				EFA7570B2406D64600A02AAB /* SystemImage.m */,
 				EF27F36423F73CD400B1E50A /* ZipFile.h */,
@@ -565,6 +574,7 @@
 				CE30090616FA47E4000EDCF1 /* hiscore.dat */,
 				CE30090316FA47CB000EDCF1 /* Category.ini */,
 				CE30090016FA47BD000EDCF1 /* cheat.zip */,
+				EF8505962458CF2A0089F340 /* dats.zip */,
 				EF0E08AC2401840700E98F01 /* help.md */,
 				EF63E1C024424D2300CFE85D /* whatsnew.md */,
 				EFA7571E2408308000A02AAB /* help images */,
@@ -864,6 +874,7 @@
 				925ABCD71E46DCC500997182 /* LICENSE in Resources */,
 				92A533D021EBDDF20089FBB9 /* GCDWebUploader.bundle in Resources */,
 				925ABCD81E46DCC500997182 /* MAME4iOS72.png in Resources */,
+				EF8505992458D00F0089F340 /* dats.zip in Resources */,
 				EFA756FF2405585D00A02AAB /* mameui.png in Resources */,
 				EFA757222408488D00A02AAB /* iCadeControls.png in Resources */,
 				925ABCD91E46DCC500997182 /* MAME4iOS114.png in Resources */,
@@ -894,6 +905,7 @@
 				92A533D121EBDDF20089FBB9 /* GCDWebUploader.bundle in Resources */,
 				926C771321F39D2F00103EDE /* hiscore.dat in Resources */,
 				B5FAE31921FCE64D003F44D0 /* MAME_tvOS.lsr in Resources */,
+				EF85059A2458D00F0089F340 /* dats.zip in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -976,6 +988,7 @@
 				92A533A521EBDBAD0089FBB9 /* GCDWebServerResponse.m in Sources */,
 				925ABCB31E46DCC500997182 /* NetplayController.m in Sources */,
 				925ABCB41E46DCC500997182 /* NetplayGameKit.m in Sources */,
+				EFE4B6AB2453D7F80009A6F1 /* InfoDatabase.m in Sources */,
 				925ABCB51E46DCC500997182 /* FilterOptionController.m in Sources */,
 				925ABCB61E46DCC500997182 /* InputOptionController.m in Sources */,
 				92A533C321EBDBAD0089FBB9 /* GCDWebServerMultiPartFormRequest.m in Sources */,
@@ -1025,6 +1038,7 @@
 				EFA7570E2406D64600A02AAB /* SystemImage.m in Sources */,
 				92A533B521EBDBAD0089FBB9 /* GCDWebServerErrorResponse.m in Sources */,
 				926C770B21F31B1400103EDE /* FilterOptionController.m in Sources */,
+				EFE4B6AC2453D7F80009A6F1 /* InfoDatabase.m in Sources */,
 				EF24933B236264DA00DD0A6C /* ImageCache.m in Sources */,
 				92A5332421EB57F00089FBB9 /* Options.m in Sources */,
 				EF301CF2240460C5000510FD /* Alert.m in Sources */,
