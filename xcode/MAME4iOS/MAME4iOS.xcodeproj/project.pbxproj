@@ -47,8 +47,6 @@
 		925ABCD01E46DCC500997182 /* scanline-1.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC1B163C5DA100A05CD0 /* scanline-1.png */; };
 		925ABCD11E46DCC500997182 /* scanline-2.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC1C163C5DA100A05CD0 /* scanline-2.png */; };
 		925ABCD21E46DCC500997182 /* SKIN_1 in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC1D163C5DA100A05CD0 /* SKIN_1 */; };
-		925ABCD31E46DCC500997182 /* SKIN_2 in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC1E163C5DA100A05CD0 /* SKIN_2 */; };
-		925ABCD41E46DCC500997182 /* SKIN_3 in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC1F163C5DA100A05CD0 /* SKIN_3 */; };
 		925ABCD51E46DCC500997182 /* config_iPhone_5.txt in Resources */ = {isa = PBXBuildFile; fileRef = CE8D87D7164FE4BE00685BC4 /* config_iPhone_5.txt */; };
 		925ABCD71E46DCC500997182 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = CEB8E0DB16A3311500A6FEDC /* LICENSE */; };
 		925ABCD81E46DCC500997182 /* MAME4iOS72.png in Resources */ = {isa = PBXBuildFile; fileRef = CEB6982516AAB39F0005E140 /* MAME4iOS72.png */; };
@@ -867,9 +865,7 @@
 				920BBDEF201FC29700AE7D50 /* dpad.png in Resources */,
 				EF29C8822401C73A00AFFA4E /* Launch Screen.storyboard in Resources */,
 				925ABCD21E46DCC500997182 /* SKIN_1 in Resources */,
-				925ABCD31E46DCC500997182 /* SKIN_2 in Resources */,
 				9268D85621661F8E00AB0470 /* config_iPhone_6.txt in Resources */,
-				925ABCD41E46DCC500997182 /* SKIN_3 in Resources */,
 				925ABCD51E46DCC500997182 /* config_iPhone_5.txt in Resources */,
 				920BBDF220210C3800AE7D50 /* menu.png in Resources */,
 				EF63E1C124424D2300CFE85D /* whatsnew.md in Resources */,
