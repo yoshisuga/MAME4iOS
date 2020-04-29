@@ -152,11 +152,19 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 @implementation ChooseGameController
 
++ (NSArray<NSString*>*) allSettingsKeys {
+    return @[LAYOUT_MODE_KEY, SCOPE_MODE_KEY, RECENT_GAMES_KEY, FAVORITE_GAMES_KEY];
+}
+
++ (NSUserDefaults*) getUserDefaults {
+    return [NSUserDefaults standardUserDefaults];
+}
+
 - (instancetype)init
 {
     self = [self initWithCollectionViewLayout:[[UICollectionViewFlowLayout alloc] init]];
     
-    _userDefaults = [NSUserDefaults standardUserDefaults];
+    _userDefaults = [[self class] getUserDefaults];
 
     // filter scope
     _gameFilterScope = [_userDefaults stringForKey:SCOPE_MODE_KEY];
@@ -398,9 +406,9 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 + (void)reset
 {
-    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    NSUserDefaults* userDefaults = [self getUserDefaults];
     
-    for (NSString* key in @[LAYOUT_MODE_KEY, SCOPE_MODE_KEY, RECENT_GAMES_KEY, FAVORITE_GAMES_KEY])
+    for (NSString* key in [self allSettingsKeys])
         [userDefaults removeObjectForKey:key];
     
     // delete all the cached TITLE images.
