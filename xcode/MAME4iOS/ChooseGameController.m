@@ -1359,12 +1359,13 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     GameInfoController* gameInfoController = [[GameInfoController alloc] initWithGame:game];
     gameInfoController.title = @"Info";
 
-    UINavigationController* nav = [[UINavigationController alloc] initWithRootViewController:gameInfoController];
-
 #if TARGET_OS_IOS
+    UINavigationController* nav = [[UINavigationController alloc] initWithRootViewController:gameInfoController];
     nav.modalPresentationStyle = UIModalPresentationPageSheet;
-#endif
     [self presentViewController:nav animated:YES completion:nil];
+#else
+    [self presentViewController:gameInfoController animated:YES completion:nil];
+#endif
 }
 
 #pragma mark - Context Menu
