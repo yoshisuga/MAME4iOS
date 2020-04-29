@@ -1337,8 +1337,7 @@ void mame_state(int load_save, int slot)
         [self.view addSubview:imageExternalDisplay];
     }
 
-   if (@available(iOS 11.0, *))
-       [self setNeedsUpdateOfHomeIndicatorAutoHidden];
+    [self setNeedsUpdateOfHomeIndicatorAutoHidden];
     
 #elif TARGET_OS_TV
     // for tvOS, use "landscape" only
@@ -1753,14 +1752,12 @@ void myosd_handle_turbo() {
    }
     
     // Handle Safe Area (iPhone X) adjust the view down away from the notch, before adjusting for aspect
-    if ( @available(iOS 11, *) ) {
-        if ( externalView == nil ) {
-            // in fullscreen mode, we dont want to correct for the bottom inset, because we hide the home indicator.
-            UIEdgeInsets safeArea = self.view.safeAreaInsets;
-            if (g_device_is_fullscreen)
-                safeArea.bottom = 0.0;
-            r = CGRectIntersection(r, UIEdgeInsetsInsetRect(self.view.bounds, safeArea));
-        }
+    if ( externalView == nil ) {
+        // in fullscreen mode, we dont want to correct for the bottom inset, because we hide the home indicator.
+        UIEdgeInsets safeArea = self.view.safeAreaInsets;
+        if (g_device_is_fullscreen)
+            safeArea.bottom = 0.0;
+        r = CGRectIntersection(r, UIEdgeInsetsInsetRect(self.view.bounds, safeArea));
     }
     
     if(g_pref_keep_aspect_ratio_port)
@@ -1948,14 +1945,12 @@ void myosd_handle_turbo() {
    }
 
     // Handle Safe Area (iPhone X) adjust the view down away from the notch, before adjusting for aspect
-    if ( @available(iOS 11, *) ) {
-        if ( externalView == nil ) {
-            // in fullscreen mode, we dont want to correct for the bottom inset, because we hide the home indicator.
-            UIEdgeInsets safeArea = self.view.safeAreaInsets;
-            if (g_device_is_fullscreen)
-                safeArea.bottom = 0.0;
-            r = CGRectIntersection(r, UIEdgeInsetsInsetRect(self.view.bounds, safeArea));
-        }
+    if ( externalView == nil ) {
+        // in fullscreen mode, we dont want to correct for the bottom inset, because we hide the home indicator.
+        UIEdgeInsets safeArea = self.view.safeAreaInsets;
+        if (g_device_is_fullscreen)
+            safeArea.bottom = 0.0;
+        r = CGRectIntersection(r, UIEdgeInsetsInsetRect(self.view.bounds, safeArea));
     }
 #elif TARGET_OS_TV
     r = [[UIScreen mainScreen] bounds];

@@ -96,27 +96,6 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 -(void)stopWait;
 @end
 
-#pragma mark Safe Area helper for UIViewController (for pre and post iOS11)
-
-@interface UIViewController (SafeArea)
-@property (nonatomic, readonly, assign) UIEdgeInsets safeAreaInsets;
-@end
-
-@implementation UIViewController (SafeArea)
--(UIEdgeInsets)safeAreaInsets
-{
-#if TARGET_OS_IOS && (__IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_11_0)
-    if (@available(iOS 11.0, *)) {
-        return self.view.safeAreaInsets;
-    } else {
-        return UIEdgeInsetsMake(self.topLayoutGuide.length, 0, self.bottomLayoutGuide.length, 0);
-    }
-#else
-    return self.view.safeAreaInsets;
-#endif
-}
-@end
-
 #pragma mark GameInfoController
 
 @interface GameInfoController : UICollectionViewController
@@ -323,10 +302,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 -(void)scrollToTop
 {
 #if TARGET_OS_IOS
-    if (@available(iOS 11.0, *))
-        [self.collectionView setContentOffset:CGPointMake(0, (self.collectionView.adjustedContentInset.top - _searchController.searchBar.bounds.size.height) * -1.0) animated:TRUE];
-    else
-        [self.collectionView setContentOffset:CGPointMake(0, self.collectionView.contentInset.top * -1.0) animated:TRUE];
+    [self.collectionView setContentOffset:CGPointMake(0, (self.collectionView.adjustedContentInset.top - _searchController.searchBar.bounds.size.height) * -1.0) animated:TRUE];
 #endif
 }
 -(void)viewDidAppear:(BOOL)animated
@@ -744,36 +720,24 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 -(void)updateLayout
 {
     UICollectionViewFlowLayout* layout = (UICollectionViewFlowLayout*)self.collectionView.collectionViewLayout;
-    CGFloat space = 8.0;
-#if TARGET_OS_TV
-    space *= 2.0;
-#endif
+    CGFloat space = TARGET_OS_IOS ? 8.0 : 16.0;
     layout.scrollDirection = UICollectionViewScrollDirectionVertical;
     layout.sectionInset = UIEdgeInsetsMake(space, space, space, space);
     layout.minimumLineSpacing = space;
     layout.minimumInteritemSpacing = space;
     layout.sectionHeadersPinToVisibleBounds = YES;
     
-    CGFloat height = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].pointSize * 2.0;
 #if TARGET_OS_IOS
-    if (@available(iOS 11.0, *)) {
-        height = [UIFont preferredFontForTextStyle:UIFontTextStyleLargeTitle].pointSize;
-    }
+    CGFloat height = [UIFont preferredFontForTextStyle:UIFontTextStyleLargeTitle].pointSize;
+#else
+    CGFloat height = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].pointSize * 2.0;
 #endif
     layout.headerReferenceSize = CGSizeMake(height, height);
-
-    if (@available(iOS 11.0, *)) {
-        layout.sectionInsetReference = UICollectionViewFlowLayoutSectionInsetFromSafeArea;
-    }
+    layout.sectionInsetReference = UICollectionViewFlowLayoutSectionInsetFromSafeArea;
     
     CGFloat width = self.collectionView.bounds.size.width - (layout.sectionInset.left + layout.sectionInset.right);
-    
-    width -= (self.safeAreaInsets.left + self.safeAreaInsets.right);
-
-    if (@available(iOS 11.0, *))
-        width -= (self.collectionView.adjustedContentInset.left + self.collectionView.adjustedContentInset.right);
-    else
-        width -= (self.collectionView.contentInset.left + self.collectionView.contentInset.right);
+    width -= (self.view.safeAreaInsets.left + self.view.safeAreaInsets.right);
+    width -= (self.collectionView.adjustedContentInset.left + self.collectionView.adjustedContentInset.right);
 
     if (_layoutMode == LayoutTiny)
         _layoutCollums = MAX(2,round(width / CELL_TINY_WIDTH));
@@ -1220,7 +1184,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         return layout.sectionInset;
             
     CGFloat itemWidth = (layout.estimatedItemSize.width != 0.0) ? layout.estimatedItemSize.width : layout.itemSize.width;
-    CGFloat width = collectionView.bounds.size.width - (layout.sectionInset.left + layout.sectionInset.right) - (self.safeAreaInsets.left + self.safeAreaInsets.right);
+    CGFloat width = collectionView.bounds.size.width - (layout.sectionInset.left + layout.sectionInset.right) - (self.view.safeAreaInsets.left + self.view.safeAreaInsets.right);
     return UIEdgeInsetsMake(layout.sectionInset.top, layout.sectionInset.left, layout.sectionInset.bottom, layout.sectionInset.right + (width - itemWidth));
 }
 
@@ -1239,7 +1203,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     cell.text.font = [UIFont systemFontOfSize:cell.bounds.size.height * 0.8 weight:UIFontWeightHeavy];
     cell.text.textColor = HEADER_TEXT_COLOR;
     cell.contentView.backgroundColor = [self.collectionView.backgroundColor colorWithAlphaComponent:0.5];
-    [cell setTextInsets:UIEdgeInsetsMake(2.0, self.safeAreaInsets.left + 2.0, 2.0, self.safeAreaInsets.right + 2.0)];
+    [cell setTextInsets:UIEdgeInsetsMake(2.0, self.view.safeAreaInsets.left + 2.0, 2.0, self.view.safeAreaInsets.right + 2.0)];
     [cell setCornerRadius:0.0];
     [cell setBorderWidth:0.0];
 
@@ -2153,7 +2117,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     layout.sectionInsetReference = UICollectionViewFlowLayoutSectionInsetFromLayoutMargins;
         
     CGFloat width = self.collectionView.bounds.size.width;
-    width -= (self.safeAreaInsets.left + self.safeAreaInsets.right);
+    width -= (self.view.safeAreaInsets.left + self.view.safeAreaInsets.right);
     width -= (self.view.layoutMargins.left + self.view.layoutMargins.right);
     width -= (self.collectionView.adjustedContentInset.left + self.collectionView.adjustedContentInset.right);
     width -= (layout.sectionInset.left + layout.sectionInset.right);
