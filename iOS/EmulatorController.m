@@ -254,17 +254,12 @@ void* app_Thread_Start(void* args)
     }
 }
 
-#ifdef DEBUG
+// make this public so DEBUG code in InfoDatabase cant use it to get list of all ROMs
 NSDictionary* g_category_dict = nil;
-#endif
 
 // find the category for a game/rom using Category.ini (a copy of a similar function from uimenu.c)
 NSString* find_category(NSString* name)
 {
-#ifndef DEBUG
-    static NSDictionary* g_category_dict = nil;
-#endif
-    
     if (g_category_dict == nil)
     {
         g_category_dict = [[NSMutableDictionary alloc] init];
