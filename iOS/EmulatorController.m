@@ -584,23 +584,19 @@ void mame_state(int load_save, int slot)
     if (self.presentedViewController != nil)
         return;
 
-    if (myosd_inGame && myosd_in_menu == 0 && ask_user)
+    if (myosd_in_menu == 0 && ask_user)
     {
+        NSString* yes = (controllers.count > 0 && TARGET_OS_IOS) ? @"Ⓐ Yes" : @"Yes";
+        NSString* no  = (controllers.count > 0 && TARGET_OS_IOS) ? @"Ⓑ No" : @"No";
+
+        UIAlertController *exitAlertController = [UIAlertController alertControllerWithTitle:@"" message:@"Are you sure you want to exit?" preferredStyle:UIAlertControllerStyleAlert];
+
         [self startMenu];
-        
-#if TARGET_OS_TV
-        NSString* yes = @"Yes";
-        NSString* no  = @"No";
-#else
-        NSString* yes = controllers.count > 0 ? @"Ⓐ Yes" : @"Yes";
-        NSString* no  = controllers.count > 0 ? @"Ⓑ No" : @"No";
-#endif
-        UIAlertController *exitAlertController = [UIAlertController alertControllerWithTitle:@"" message:@"Are you sure you want to exit the game?" preferredStyle:UIAlertControllerStyleAlert];
-        [exitAlertController addAction:[UIAlertAction actionWithTitle:yes style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [exitAlertController addAction:[UIAlertAction actionWithTitle:yes style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
             [self endMenu];
             [self runExit:NO];
         }]];
-        [exitAlertController addAction:[UIAlertAction actionWithTitle:no style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+        [exitAlertController addAction:[UIAlertAction actionWithTitle:no style:UIAlertActionStyleCancel handler:^(UIAlertAction* action) {
             [self endMenu];
         }]];
         exitAlertController.preferredAction = exitAlertController.actions.firstObject;
@@ -636,6 +632,10 @@ void mame_state(int load_save, int slot)
     [[NSUserDefaults standardUserDefaults] synchronize];
     
     if (self.presentedViewController != nil || g_emulation_paused)
+        return;
+    
+    // dont pause the MAME select game menu.
+    if (!myosd_inGame)
         return;
 
     [self startMenu];
@@ -3336,7 +3336,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         //      MENU+R1 = Pn START
         //      MENU+L2 = P2 COIN/SELECT
         //      MENU+R2 = P2 START
-        //      MENU+X  = EXIT GAME
+        //      MENU+X  = EXIT
         //      MENU+B  = MAME MENU
         //      MENU+A  = LOAD STATE
         //      MENU+Y  = SAVE STATE
@@ -3394,11 +3394,9 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
              }
              //Exit Game
              else if (MFIController.extendedGamepad.buttonX.pressed) {
-                 NSLog(@"%d: MENU+X => EXIT GAME", player);
-                 if (myosd_inGame && myosd_in_menu == 0) {
-                     myosd_joy_status[player] &= ~MYOSD_X;
-                     [self runExit];
-                 }
+                 NSLog(@"%d: MENU+X => EXIT", player);
+                 myosd_joy_status[player] &= ~MYOSD_X;
+                 [self runExit];
              }
              // Load State
              else if (MFIController.extendedGamepad.buttonA.pressed ) {

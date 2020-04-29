@@ -327,9 +327,7 @@ unsigned long read_mfi_controller(unsigned long res){
 #endif
 
 - (void)applicationDidEnterBackground:(UIApplication *)application {
-
-   if (myosd_inGame || g_joy_used) //force pause when in game
-      [hrViewController runPause];
+    [hrViewController runPause];
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {
