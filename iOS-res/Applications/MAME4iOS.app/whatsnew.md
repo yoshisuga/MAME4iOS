@@ -2,6 +2,7 @@
 
 # Version 2020.7
 
+* Added in 4K/UHD MAME render resolution support so that MAME artwork looks much better
 * Added in iCade support for tvOS 
 * Steam Controller support, controller must be in [bluetooth mode and paired](https://support.steampowered.com/kb_article.php?ref=7728-QESJ-4420)
 * Fixed issue where audio would stop when playing back content from another source or being interrupted by a phone call.
