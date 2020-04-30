@@ -199,7 +199,7 @@
             self->_index = index;
 #ifdef DEBUG    // write out a filtered HISTORY.DAT for only the 139u1 ROMS.
             extern NSDictionary* g_category_dict;
-            NSString* path = [self->_path stringByReplacingOccurrencesOfString:@".dat" withString:@"139.dat"];
+            NSString* path = [self->_path stringByReplacingOccurrencesOfString:@".dat" withString:@"0139.dat"];
             [self saveDatabaseToPath:path keys:g_category_dict.allKeys];
 #endif
         });
