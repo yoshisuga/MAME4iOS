@@ -119,10 +119,10 @@ unsigned long myosd_pad_status = 0;
 unsigned long myosd_joy_status[4];
 unsigned short myosd_ext_status = 0;
 
-static unsigned short myosd_screen [1024 * 768 * 4];
+static unsigned short myosd_screen [2880 * 2160];
 unsigned short 	*myosd_screen15 = NULL;
 
-extern unsigned short img_buffer[1024 * 768 * 4];
+extern unsigned short img_buffer[2880 * 2160];
 
 typedef struct AQCallbackStruct {
     AudioQueueRef queue;
