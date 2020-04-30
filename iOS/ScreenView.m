@@ -45,7 +45,7 @@
 #import "Globals.h"
 
 //static
-unsigned short img_buffer [1024 * 768 * 4];//max driver res?
+unsigned short img_buffer [2880 * 2160]; // match max driver res?
 
 
 @interface ScreenLayer : CALayer
