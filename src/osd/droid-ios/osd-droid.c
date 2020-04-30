@@ -94,8 +94,8 @@ unsigned short 	*myosd_screen15 = NULL;
 
 //////////////////////// android
 
-unsigned short prev_screenbuffer[1024 * 1024];
-unsigned short screenbuffer[1024 * 1024];
+unsigned short prev_screenbuffer[2880 * 2160];
+unsigned short screenbuffer[2880 * 2160];
 char globalpath[247]="/sdcard/ROMs/MAME4droid/";
 
 static pthread_mutex_t cond_mutex     = PTHREAD_MUTEX_INITIALIZER;
@@ -322,9 +322,9 @@ void myosd_set_video_mode(int width,int height,int vis_width, int vis_height)
     myosd_vis_video_width = vis_width;
     myosd_vis_video_height = vis_height;
     if(screenbuffer!=NULL)
-	   memset(screenbuffer, 0, 1024*1024*2);
+	   memset(screenbuffer, 0, 2880*2160*2);
     if(prev_screenbuffer!=NULL)
-	   memset(prev_screenbuffer, 0, 1024*1024*2);
+	   memset(prev_screenbuffer, 0, 2880*2160*2);
     if(changeVideo_callback!=NULL)
 	     changeVideo_callback(width, height,vis_width,vis_height);
 
