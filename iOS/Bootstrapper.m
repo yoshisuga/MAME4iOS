@@ -102,7 +102,7 @@ unsigned long read_mfi_controller(unsigned long res){
     chdir (get_documents_path(""));
     
     // create directories
-    for (NSString* dir in @[@"iOS", @"artwork", @"titles", @"cfg", @"nvram", @"ini", @"snap", @"sta", @"hi", @"inp", @"memcard", @"samples", @"roms", @"dats"])
+    for (NSString* dir in @[@"iOS", @"artwork", @"titles", @"cfg", @"nvram", @"ini", @"snap", @"sta", @"hi", @"inp", @"memcard", @"samples", @"roms", @"dats", @"cheat"])
     {
         NSString* dirPath = [NSString stringWithUTF8String:get_documents_path(dir.UTF8String)];
         
@@ -111,30 +111,18 @@ unsigned long read_mfi_controller(unsigned long res){
         
         mkdir(dirPath.UTF8String, 0755);
         
-        //
-        // look for a resource named <DIR>.zip and use it to create the contents of directory....
-        // we copy the zip file over and let moveROMs deal with it later.
-        //
-        // for example pre-loaded games can be in roms.zip, and pre-loaded DAT files in dats.zip
-        //
-        NSString* fromPath = [NSString stringWithFormat:@"%s.zip", get_resource_path(dir.UTF8String)];
-        NSString* toPath = [NSString stringWithFormat:@"%s.zip", get_documents_path(dir.UTF8String)];
- 
-        if ([[NSFileManager defaultManager] fileExistsAtPath:fromPath])
-            [[NSFileManager defaultManager] copyItemAtPath:fromPath toPath:toPath error:nil];
-    }
-
-    // copy pre-canned files.
-    for (NSString* file in @[@"cheat.zip", @"Category.ini", @"hiscore.dat"])
-    {
-        NSString* fromPath = [NSString stringWithUTF8String:get_resource_path(file.UTF8String)];
-        NSString* toPath = [NSString stringWithUTF8String:get_documents_path(file.UTF8String)];
-        
-        if ([[NSFileManager defaultManager] fileExistsAtPath:fromPath] && ![[NSFileManager defaultManager] fileExistsAtPath:toPath])
+        // copy pre-canned files.
+        for (NSString* file in @[@"cheat0139.zip", @"history0139.zip", @"Category.ini", @"hiscore.dat"])
         {
-            NSError* error = nil;
-            if (![[NSFileManager defaultManager] copyItemAtPath: fromPath toPath:toPath error:&error])
-                NSLog(@"Unable to copy file %@! %@", file, [error localizedDescription]);
+            NSString* fromPath = [NSString stringWithUTF8String:get_resource_path(file.UTF8String)];
+            NSString* toPath = [NSString stringWithUTF8String:get_documents_path(file.UTF8String)];
+            
+            if ([[NSFileManager defaultManager] fileExistsAtPath:fromPath] && ![[NSFileManager defaultManager] fileExistsAtPath:toPath])
+            {
+                NSError* error = nil;
+                if (![[NSFileManager defaultManager] copyItemAtPath: fromPath toPath:toPath error:&error])
+                    NSLog(@"Unable to copy file %@! %@", fromPath, [error localizedDescription]);
+            }
         }
     }
 
@@ -144,7 +132,7 @@ unsigned long read_mfi_controller(unsigned long res){
         NSURL* url = [NSURL fileURLWithPath:[NSString stringWithUTF8String:get_documents_path(path.UTF8String)]];
         [url setResourceValue:@(YES) forKey:NSURLIsExcludedFromBackupKey error:nil];
     }
-    
+
 #if TARGET_OS_IOS
 #if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_7_0
     [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation : UIStatusBarAnimationNone];

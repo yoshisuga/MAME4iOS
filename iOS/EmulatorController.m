@@ -2879,16 +2879,19 @@ void myosd_handle_turbo() {
                 return;
             
             NSString* toPath = nil;
-            NSString* ext = [info.name.pathExtension uppercaseString];
+            NSString* ext  = info.name.pathExtension.uppercaseString;
+            NSString* name = info.name.lastPathComponent;
             
             // only UNZIP files to specific directories, send a ZIP file with a unspecifed directory to roms/
             if ([info.name hasPrefix:@"roms/"] || [info.name hasPrefix:@"artwork/"] || [info.name hasPrefix:@"titles/"] || [info.name hasPrefix:@"samples/"] ||
                 [info.name hasPrefix:@"cfg/"] || [info.name hasPrefix:@"ini/"] || [info.name hasPrefix:@"sta/"] || [info.name hasPrefix:@"hi/"])
                 toPath = [rootPath stringByAppendingPathComponent:info.name];
+            else if ([name.uppercaseString isEqualToString:@"CHEAT.ZIP"])
+                toPath = [rootPath stringByAppendingPathComponent:name];
             else if ([ext isEqualToString:@"DAT"])
-                toPath = [datsPath stringByAppendingPathComponent:[info.name lastPathComponent]];
+                toPath = [datsPath stringByAppendingPathComponent:name];
             else if ([ext isEqualToString:@"ZIP"])
-                toPath = [romsPath stringByAppendingPathComponent:[info.name lastPathComponent]];
+                toPath = [romsPath stringByAppendingPathComponent:name];
             else if ([ext isEqualToString:@"CHD"] && [info.name containsString:@"/"]) {
                 // CHD will be of the form XXXXXXX/ROMNAME/file.chd, so move to roms/ROMNAME/file.chd
                 NSString* romname = info.name.stringByDeletingLastPathComponent.lastPathComponent;
