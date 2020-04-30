@@ -53,14 +53,17 @@
 #define TITLE_COLOR             [UIColor whiteColor]
 #define HEADER_TEXT_COLOR       [UIColor whiteColor]
 #define CELL_BACKGROUND_COLOR   [UIColor colorWithWhite:0.222 alpha:1.0]
-#define CELL_TITLE_COLOR        [UIColor whiteColor]
-#define CELL_DETAIL_COLOR       [UIColor lightGrayColor]
-#define CELL_INFO_COLOR         [UIColor lightGrayColor]
 #define CELL_SELECTED_COLOR     self.tintColor
 
 #define CELL_TITLE_FONT         [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
+#define CELL_TITLE_COLOR        [UIColor whiteColor]
 #define CELL_DETAIL_FONT        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote]
-#define CELL_BODY_FONT          [UIFont preferredFontForTextStyle:UIFontTextStyleBody]
+#define CELL_DETAIL_COLOR       [UIColor lightGrayColor]
+
+#define INFO_HEAD_FONT          [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
+#define INFO_HEAD_COLOR         [UIColor whiteColor]
+#define INFO_BODY_FONT          [UIFont preferredFontForTextStyle:UIFontTextStyleBody]
+#define INFO_BODY_COLOR         [UIColor lightGrayColor]
 
 #define HEADER_IDENTIFIER   @"GameInfoHeader"
 
@@ -1348,13 +1351,20 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     NSMutableDictionary* game = [_game mutableCopy];
     NSString* name = game[kGameInfoName];
 
-    // add in our history/mameinfo to game dict.
     NSDictionary* atributes = @{
-        NSFontAttributeName:CELL_BODY_FONT,
-        NSForegroundColorAttributeName:CELL_DETAIL_COLOR
+        UIFontTextStyleHeadline: @{
+            NSFontAttributeName:INFO_HEAD_FONT,
+            NSForegroundColorAttributeName:INFO_HEAD_COLOR
+        },
+        UIFontTextStyleBody: @{
+            NSFontAttributeName:INFO_BODY_FONT,
+            NSForegroundColorAttributeName:INFO_BODY_COLOR
+        },
     };
-    [game setValue:[_history attributedStringForKey:name attributes:atributes] forKey:kGameInfoHistory];
-    [game setValue:[_mameinfo attributedStringForKey:name attributes:atributes] forKey:kGameInfoMameInfo];
+
+    // add in our history/mameinfo to game dict.
+    game[kGameInfoHistory] = [_history attributedStringForKey:name attributes:atributes];
+    game[kGameInfoMameInfo] = [_mameinfo attributedStringForKey:name attributes:atributes];
 
     GameInfoController* gameInfoController = [[GameInfoController alloc] initWithGame:game];
     gameInfoController.title = @"Info";
