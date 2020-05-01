@@ -1138,10 +1138,7 @@ void mame_state(int load_save, int slot)
                                                object:nil];
     
     if ([[GCController controllers] count] != 0) {
-        [self setupMFIControllers];
-    }
-    else {
-        [self scanForDevices];
+        [self performSelectorOnMainThread:@selector(setupMFIControllers) withObject:nil waitUntilDone:NO];
     }
     
     toastStyle = [[CSToastStyle alloc] initWithDefaultStyle];
@@ -3285,11 +3282,12 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     }
     
     // now add any Steam Controllers, these should always have a extendedGamepad profile
+#if TARGET_OS_IOS
     for (GCController* controler in SteamControllerManager.sharedManager.controllers) {
         if (controler.extendedGamepad != nil)
             [controllers addObject:controler];
     }
-
+#endif
     // add all the controllers without a extendedGamepad profile last, ie the Siri Remote.
     for (GCController* controler in GCController.controllers) {
         if (controler.extendedGamepad == nil)
@@ -3694,7 +3692,9 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 
 -(void)scanForDevices{
     [GCController startWirelessControllerDiscoveryWithCompletionHandler:nil];
+#if TARGET_OS_IOS
     [[SteamControllerManager sharedManager] scanForControllers];
+#endif
 }
 
 -(void)MFIControllerConnected:(NSNotification*)notif{
