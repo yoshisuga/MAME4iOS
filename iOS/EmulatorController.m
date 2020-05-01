@@ -2995,6 +2995,9 @@ void myosd_handle_turbo() {
     }
     count = [romlist count];
     
+    // on the first-boot cheat.zip will not exist, we want to be silent in this case.
+    BOOL first_boot = ![filelist containsObject:@"cheat.zip"];
+    
     if(count != 0)
         NSLog(@"found (%d) ROMs to move....", (int)count);
     if(count != 0 && g_move_roms != 0)
@@ -3002,11 +3005,14 @@ void myosd_handle_turbo() {
     
     if(count != 0 && g_move_roms++ == 0)
     {
-        UIViewController* topViewController = self.topViewController;
+        UIAlertController *progressAlert = nil;
 
-        UIAlertController *progressAlert = [UIAlertController alertControllerWithTitle:@"Moving ROMs" message:@"Please wait..." preferredStyle:UIAlertControllerStyleAlert];
-        [progressAlert setProgress:0.0];
-        [topViewController presentViewController:progressAlert animated:YES completion:nil];
+        if (!first_boot) {
+            UIViewController* topViewController = self.topViewController;
+            UIAlertController *progressAlert = [UIAlertController alertControllerWithTitle:@"Moving ROMs" message:@"Please wait..." preferredStyle:UIAlertControllerStyleAlert];
+            [progressAlert setProgress:0.0];
+            [topViewController presentViewController:progressAlert animated:YES completion:nil];
+        }
         
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             BOOL result = TRUE;
@@ -3017,13 +3023,16 @@ void myosd_handle_turbo() {
                 }];
                 [progressAlert setProgress:(double)(i+1) / count];
             }
+
             dispatch_async(dispatch_get_main_queue(), ^{
-                [topViewController dismissViewControllerAnimated:YES completion:^{
+                if (progressAlert == nil)
+                    g_move_roms = 0;
+                [progressAlert.presentingViewController dismissViewControllerAnimated:YES completion:^{
                     
                     // reset MAME last game selected...
                     if (result)
                        myosd_last_game_selected = 0;
-
+                    
                     // reload the MAME menu....
                     if (result)
                         [self performSelectorOnMainThread:@selector(playGame:) withObject:nil waitUntilDone:NO];
