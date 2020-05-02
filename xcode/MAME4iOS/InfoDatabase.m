@@ -93,20 +93,32 @@
 // a) list item
 // 05 - list
 //
-- (NSAttributedString*)attributedStringForKey:(NSString*)key attributes:(nullable NSDictionary<NSAttributedStringKey, id> *)attrs
+- (NSAttributedString*)attributedStringForKey:(NSString*)key attributes:(nullable NSDictionary<UIFontTextStyle, NSDictionary<NSAttributedStringKey, id> *> *)attrs
 {
     NSString* raw_text = [self stringForKey:key];
     
     if (raw_text == nil)
         return nil;
     
-    NSDictionary* body = attrs;
+    //
+    // attrs can either be a [NSAttributedStringKey:Any] or a [UIFontTextStyle:[[NSAttributedStringKey:Any]]]
+    //
+    NSDictionary* body = attrs[UIFontTextStyleBody] ?: attrs;
     
-    UIFont *boldFont = [UIFont systemFontOfSize:[body[NSFontAttributeName] pointSize] weight:UIFontWeightHeavy];
-    NSDictionary* bold = @{NSFontAttributeName:boldFont, NSForegroundColorAttributeName:[UIColor colorWithWhite:0.777 alpha:1.0]};
-    NSDictionary* h1 = @{NSFontAttributeName:[UIFont preferredFontForTextStyle:UIFontTextStyleHeadline], NSForegroundColorAttributeName:UIColor.whiteColor};
-    NSDictionary* h2 = h1;
-    NSDictionary* h3 = h1;
+    if (body[NSFontAttributeName] == nil) {
+        body = @{NSFontAttributeName:[UIFont preferredFontForTextStyle:UIFontTextStyleBody],
+                 NSForegroundColorAttributeName:UIColor.blackColor
+        };
+    }
+    NSDictionary* bold = @{
+        NSFontAttributeName:[UIFont systemFontOfSize:[body[NSFontAttributeName] pointSize] weight:UIFontWeightHeavy],
+        NSForegroundColorAttributeName:body[NSForegroundColorAttributeName]
+    };
+    NSDictionary* h1 = attrs[UIFontTextStyleTitle1] ?: attrs[UIFontTextStyleHeadline] ?: @{
+        NSFontAttributeName:[UIFont preferredFontForTextStyle:UIFontTextStyleHeadline],
+    };
+    NSDictionary* h2 = attrs[UIFontTextStyleTitle2] ?: h1;
+    NSDictionary* h3 = attrs[UIFontTextStyleTitle3] ?: h2;
     
     CGSize size = [@"•••" sizeWithAttributes:bold];
     
@@ -119,7 +131,7 @@
     paragraphStyle.paragraphSpacing = size.height * 0.25;
     
     NSDictionary* list = @{
-        NSFontAttributeName:[UIFont preferredFontForTextStyle:UIFontTextStyleBody],
+        NSFontAttributeName: body[NSFontAttributeName],
         NSParagraphStyleAttributeName: paragraphStyle
     };
 

@@ -40,7 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable NSString*)stringForKey:(NSString*)key;
 
 // load and return the text data with basic formating applied.
-- (nullable NSAttributedString*)attributedStringForKey:(NSString*)key attributes:(nullable NSDictionary<NSAttributedStringKey, id> *)attrs;
+- (nullable NSAttributedString*)attributedStringForKey:(NSString*)key attributes:(nullable NSDictionary*)attrs;
 
 @end
 
