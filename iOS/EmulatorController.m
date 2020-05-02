@@ -476,7 +476,7 @@ void mame_state(int load_save, int slot)
     
     UIAlertController* menu = [UIAlertController alertControllerWithTitle:title message:nil preferredStyle:UIAlertControllerStyleActionSheet];
 
-    CGFloat size = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].pointSize * 1.5;
+    CGFloat size = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].pointSize;
 
     if(myosd_inGame && myosd_in_menu==0)
     {
