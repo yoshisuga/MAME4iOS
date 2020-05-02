@@ -46,6 +46,7 @@
 #import "EmulatorController.h"
 #import <GameController/GameController.h>
 #import <AVFoundation/AVFoundation.h>
+#import <CoreBluetooth/CoreBluetooth.h>
 
 #if TARGET_OS_IOS
 #import <Intents/Intents.h>
@@ -194,6 +195,8 @@ static BOOL g_no_roms_found = FALSE;
 
 static NSInteger g_settings_roms_count;
 static NSInteger g_settings_file_count;
+
+static BOOL g_bluetooth_enabled;
 
 static EmulatorController *sharedInstance = nil;
 
@@ -473,7 +476,7 @@ void mame_state(int load_save, int slot)
     
     UIAlertController* menu = [UIAlertController alertControllerWithTitle:title message:nil preferredStyle:UIAlertControllerStyleActionSheet];
 
-    CGFloat size = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].pointSize * 1.5;
+    CGFloat size = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].pointSize;
 
     if(myosd_inGame && myosd_in_menu==0)
     {
@@ -1122,6 +1125,17 @@ void mame_state(int load_save, int slot)
 
     // always enable iCadeView for hardware keyboard support
     icadeView.active = YES;
+    
+    // see if bluetooth is enabled...
+    
+    if (@available(iOS 13.1, tvOS 13.0, *))
+        g_bluetooth_enabled = CBCentralManager.authorization == CBManagerAuthorizationAllowedAlways;
+    else if (@available(iOS 13.0, *))
+        g_bluetooth_enabled = FALSE; // authorization is not in iOS 13.0, so no bluetooth for you.
+    else
+        g_bluetooth_enabled = TRUE;  // pre-iOS 13.0, bluetooth allways.
+    
+    NSLog(@"BLUETOOTH ENABLED: %@", g_bluetooth_enabled ? @"YES" : @"NO");
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(MFIControllerConnected:)
@@ -2896,7 +2910,7 @@ void myosd_handle_turbo() {
             }
 
             if (toPath != nil)
-                NSLog(@"...UNZIP: %@ => %@", info.name, toPath);
+                NSLog(@"...UNZIP: %@ => %@", info.name, [toPath stringByReplacingOccurrencesOfString:rootPath withString:@"~/"]);
             else
                 NSLog(@"...UNZIP: %@ (ignoring)", info.name);
 
@@ -2986,7 +3000,7 @@ void myosd_handle_turbo() {
     count = [romlist count];
     
     // on the first-boot cheat.zip will not exist, we want to be silent in this case.
-    BOOL first_boot = ![filelist containsObject:@"cheat.zip"];
+    BOOL first_boot = [filelist containsObject:@"cheat0139.zip"];
     
     if(count != 0)
         NSLog(@"found (%d) ROMs to move....", (int)count);
@@ -2998,17 +3012,16 @@ void myosd_handle_turbo() {
         UIAlertController *progressAlert = nil;
 
         if (!first_boot) {
-            UIViewController* topViewController = self.topViewController;
-            UIAlertController *progressAlert = [UIAlertController alertControllerWithTitle:@"Moving ROMs" message:@"Please wait..." preferredStyle:UIAlertControllerStyleAlert];
+            progressAlert = [UIAlertController alertControllerWithTitle:@"Moving ROMs" message:@"Please wait..." preferredStyle:UIAlertControllerStyleAlert];
             [progressAlert setProgress:0.0];
-            [topViewController presentViewController:progressAlert animated:YES completion:nil];
+            [self.topViewController presentViewController:progressAlert animated:YES completion:nil];
         }
         
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            BOOL result = TRUE;
+            BOOL result = FALSE;
             for (int i = 0; i < count; i++)
             {
-                result = result && [self moveROM:[romlist objectAtIndex: i] progressBlock:^(double progress) {
+                result = result | [self moveROM:[romlist objectAtIndex: i] progressBlock:^(double progress) {
                     [progressAlert setProgress:((double)i / count) + progress * (1.0 / count)];
                 }];
                 [progressAlert setProgress:(double)(i+1) / count];
@@ -3281,12 +3294,12 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     }
     
     // now add any Steam Controllers, these should always have a extendedGamepad profile
-#if TARGET_OS_IOS
-    for (GCController* controler in SteamControllerManager.sharedManager.controllers) {
-        if (controler.extendedGamepad != nil)
-            [controllers addObject:controler];
+    if (g_bluetooth_enabled) {
+        for (GCController* controler in SteamControllerManager.sharedManager.controllers) {
+            if (controler.extendedGamepad != nil)
+                [controllers addObject:controler];
+        }
     }
-#endif
     // add all the controllers without a extendedGamepad profile last, ie the Siri Remote.
     for (GCController* controler in GCController.controllers) {
         if (controler.extendedGamepad == nil)
@@ -3691,9 +3704,8 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 
 -(void)scanForDevices{
     [GCController startWirelessControllerDiscoveryWithCompletionHandler:nil];
-#if TARGET_OS_IOS
-    [[SteamControllerManager sharedManager] scanForControllers];
-#endif
+    if (g_bluetooth_enabled)
+        [[SteamControllerManager sharedManager] scanForControllers];
 }
 
 -(void)MFIControllerConnected:(NSNotification*)notif{
@@ -3860,7 +3872,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 -(void)chooseGame:(NSArray*)games {
     // a Alert or Setting is up, bail
     if (self.presentedViewController != nil) {
-        NSLog(@"CANT SHOW CHOOSE GAME UI....");
+        NSLog(@"CANT SHOW CHOOSE GAME UI: %@", self.presentedViewController);
         if (self.presentedViewController.beingDismissed) {
             NSLog(@"....TRY AGAIN");
             [self performSelector:_cmd withObject:games afterDelay:1.0];
@@ -3907,6 +3919,14 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     if (g_mame_game[0] == ' ') {
         NSLog(@"RUNNING MAME MENU, DONT BRING UP UI.");
         return;
+    }
+    
+    // now that we have passed the startup phase, check on and maybe re-enable bluetooth.
+    if (@available(iOS 13.1, tvOS 13.0, *)) {
+        if (!g_bluetooth_enabled && CBCentralManager.authorization == CBManagerAuthorizationNotDetermined) {
+            g_bluetooth_enabled = TRUE;
+            [self performSelectorOnMainThread:@selector(scanForDevices) withObject:nil waitUntilDone:NO];
+        }
     }
 
     NSLog(@"GAMES: %@", games);
