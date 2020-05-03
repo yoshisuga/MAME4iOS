@@ -21,7 +21,7 @@
 - (id)init {
     if (self = [super init]) {
         arrayEmuRes = [[NSArray alloc] initWithObjects:@"Auto",@"320x200",@"320x240",@"400x300",@"480x300",@"512x384",@"640x400",@"640x480",@"800x600",@"1024x768",@"1280x960",@"1440x1080",@"1600x1200",@"1920x1440",@"2048x1536",@"2880x2160", nil];
-        arrayFSValue = [[NSArray alloc] initWithObjects:@"Auto",@"None", @"1", @"2", @"3",@"4", @"5", @"6", @"7", @"8", @"9", @"10", @"11", @"12", @"13", @"14", @"15", @"16", nil];
+        arrayFSValue = [[NSArray alloc] initWithObjects:@"Auto",@"None", @"1", @"2", @"3",@"4", @"5", @"6", @"7", @"8", @"9", @"10", nil];
         arrayOverscanValue = [[NSArray alloc] initWithObjects:@"None",@"1", @"2", @"3",@"4", @"5", @"6", nil];
         arrayEmuSpeed = [[NSArray alloc] initWithObjects: @"Default",
                          @"50%", @"60%", @"70%", @"80%", @"85%",@"90%",@"95%",@"100%",
