@@ -1,7 +1,8 @@
 <img src="mame_logo.png" width="60%">
 
 # Version 2020.8
-* better INFO/HISTORY.DAT display in landscape (and tvOS)
+* Better INFO/HISTORY.DAT display in landscape (and tvOS)
+* Fixed tvOS MAME top shelf wide logo
 
 # Version 2020.7
 
