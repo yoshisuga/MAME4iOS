@@ -60,10 +60,9 @@
 #define CELL_DETAIL_FONT        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote]
 #define CELL_DETAIL_COLOR       [UIColor lightGrayColor]
 
-
-#define INFO_IMAGE_HEIGHT   (TARGET_OS_IOS ? 200.0 : 440.0)
-#define INFO_INSET_X        8.0
-#define INFO_INSET_Y        8.0
+#define INFO_IMAGE_WIDTH        (TARGET_OS_IOS ? 260.0 : 580.0)
+#define INFO_INSET_X            8.0
+#define INFO_INSET_Y            8.0
 
 #if TARGET_OS_IOS
 #define INFO_TITLE_FONT_SIZE    [UIFont preferredFontForTextStyle:UIFontTextStyleLargeTitle].pointSize
@@ -307,7 +306,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     [self.navigationController.view addGestureRecognizer:tap];
 #endif
     
-#ifdef DEBUG
+#ifdef XDEBUG
     // delete all the cached TITLE images.
     NSString* titles_path = [NSString stringWithUTF8String:get_documents_path("titles")];
     [[NSFileManager defaultManager] removeItemAtPath:titles_path error:nil];
@@ -2059,9 +2058,9 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if (self.attributedText.length == 0)
         return CGSizeZero;
     
-    CGSize size = CGSizeMake(self.preferredMaxLayoutWidth, 9999.0);
+    CGSize size = CGSizeMake(self.preferredMaxLayoutWidth, CGFLOAT_MAX);
     if (size.width == 0.0)
-        size.width = 9999.0;
+        size.width = CGFLOAT_MAX;
     size = [self.attributedText boundingRectWithSize:size options:NSStringDrawingUsesLineFragmentOrigin context:nil].size;
     size.height = ceil(size.height);
     return size;
@@ -2091,6 +2090,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 @implementation GameInfoController {
     NSDictionary* _game;
     CGFloat _layoutWidth;
+    CGFloat _titleSwitchOffset;
+    UIImage* _image;
 }
 -(instancetype)initWithGame:(NSDictionary*)game {
     self = [self initWithCollectionViewLayout:[[UICollectionViewFlowLayout alloc] init]];
@@ -2105,11 +2106,20 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     
     self.collectionView.backgroundColor = BACKGROUND_COLOR;
     self.collectionView.allowsSelection = TARGET_OS_IOS ? NO : YES;
-
+    
+#if TARGET_OS_IOS
     if (@available(iOS 13.0, tvOS 13.0, *))
         self.navigationController.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
-
-#if TARGET_OS_IOS
+    else
+        self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
+    
+    // set our title (scrollViewDidScroll will set the correct text)
+    UILabel* title = [[UILabel alloc] init];
+    title.textAlignment = NSTextAlignmentCenter;
+    title.numberOfLines = 0;
+    title.textColor = CELL_TITLE_COLOR;
+    self.navigationItem.titleView = title;
+    
     // we are a self dismissing controller
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(done)];
 #else
@@ -2135,7 +2145,6 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     
     UITextView* textView = (UITextView*)cell.text;
     CGPoint contentOffset = textView.contentOffset;
-    // TODO: bounce??
     contentOffset.y -= translation.y;
     if (pan.state == UIGestureRecognizerStateEnded) {
         contentOffset.y = MAX(0.0, MIN(textView.contentSize.height - textView.bounds.size.height, contentOffset.y));
@@ -2162,35 +2171,91 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
        
     CGRect rect = self.collectionView.bounds;
     rect = UIEdgeInsetsInsetRect(rect, layout.sectionInset);
-    //rect = UIEdgeInsetsInsetRect(rect, self.collectionView.safeAreaInsets);
     rect.size.height -= self.collectionView.safeAreaInsets.top;
     rect.size.width  -= self.collectionView.safeAreaInsets.left + self.collectionView.safeAreaInsets.right;
-
-    if (self.view.bounds.size.width > self.view.bounds.size.height * 1.33) {
-        layout.scrollDirection = UICollectionViewScrollDirectionHorizontal;
-        rect.size.width -= (INFO_IMAGE_HEIGHT * 4.0/3.0) + space;
-        layout.itemSize = rect.size;
-    }
-    else {
-        layout.scrollDirection = UICollectionViewScrollDirectionVertical;
-        layout.itemSize = rect.size;
-    }
     
-    self.collectionView.alwaysBounceVertical = layout.scrollDirection == UICollectionViewScrollDirectionVertical;
-    self.collectionView.alwaysBounceHorizontal = layout.scrollDirection == UICollectionViewScrollDirectionHorizontal;
+    NSURL* url = [ChooseGameController getGameImageURL:_game];
+    UIImage* image = [[ImageCache sharedInstance] getImage:url size:CGSizeZero];
+    CGFloat aspect = image.size.width > image.size.height ? 4.0/3.0 : 3.0/4.0;
+
+    CGSize image_size = CGSizeMake(INFO_IMAGE_WIDTH, INFO_IMAGE_WIDTH / aspect);
+    image_size.height = MIN(image_size.height, rect.size.height * 0.60);
+    image_size.width  = image_size.height * aspect;
+    
+    _image = [image scaledToSize:image_size];
+    
+    BOOL landscape = self.view.bounds.size.width > self.view.bounds.size.height * 1.33;
+    
+    layout.scrollDirection = landscape ? UICollectionViewScrollDirectionHorizontal : UICollectionViewScrollDirectionVertical;
+
+    self.collectionView.alwaysBounceVertical = !landscape;
+    self.collectionView.alwaysBounceHorizontal = landscape;
+
+    if (landscape)
+        rect.size.width -= image_size.width + space;
+
+    layout.itemSize = rect.size;
+
+    CGFloat firstItemHeight = [self collectionView:self.collectionView layout:layout sizeForItemAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]].height;
+    _titleSwitchOffset= firstItemHeight + space - self.collectionView.adjustedContentInset.top;
     
     [self.collectionView reloadData];
 }
+#if TARGET_OS_IOS
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+
+    UILabel* title = (UILabel*)self.navigationItem.titleView;
+    
+    if (scrollView.contentOffset.y <= _titleSwitchOffset && title.text == self.title)
+        return; // -- no change to title
+
+    if (scrollView.contentOffset.y > _titleSwitchOffset && title.text != self.title)
+        return; // -- no change to title
+    
+    // add a push animation
+    CATransition *animation = [CATransition new];
+    animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+    animation.type = kCATransitionPush;
+    animation.subtype = (scrollView.contentOffset.y > _titleSwitchOffset) ? kCATransitionFromTop : kCATransitionFromBottom;
+    animation.duration = 0.5;
+    [title.layer addAnimation:animation forKey:kCATransitionPush];
+    title.superview.clipsToBounds = YES;
+ 
+    title.attributedText = [ChooseGameController getGameText:_game layoutMode:LayoutSmall textAlignment:NSTextAlignmentCenter];
+    [title sizeToFit];
+    if (scrollView.contentOffset.y <= _titleSwitchOffset)
+        title.text = self.title;
+}
+#endif
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
     return 3;   // Image+Metadata, History, MAME Info
 }
 - (NSAttributedString*)getText:(NSIndexPath*)indexPath {
+    
     if (indexPath.item == 0)
         return [ChooseGameController getGameText:_game layoutMode:LayoutLarge textAlignment:NSTextAlignmentCenter];
-    else if (indexPath.item == 1)
-        return _game[kGameInfoHistory];
-    else
-        return _game[kGameInfoMameInfo] /*?: _game[kGameInfoHistory]*/;
+    
+    NSAttributedString* text = _game[indexPath.item == 1 ? kGameInfoHistory : kGameInfoMameInfo];
+    
+    // add a title to the top of the text
+    if (text != nil) {
+        NSString* title = indexPath.item == 1 ? @"History" : @"MAME Info";
+        
+        NSMutableParagraphStyle *paragraph = [[NSMutableParagraphStyle alloc] init];
+        paragraph.alignment = NSTextAlignmentCenter;
+        paragraph.paragraphSpacing = 4.0;
+
+        NSMutableAttributedString* new_text = [[NSMutableAttributedString alloc] initWithString:[title stringByAppendingString:@"\n"] attributes:@{
+            NSFontAttributeName:INFO_TITLE_FONT,
+            NSForegroundColorAttributeName:INFO_TITLE_COLOR,
+            NSParagraphStyleAttributeName: paragraph
+        }];
+        
+        [new_text appendAttributedString:text];
+        text = new_text;
+    }
+    
+    return text;
 }
 - (BOOL)collectionView:(UICollectionView *)collectionView canFocusItemAtIndexPath:(NSIndexPath *)indexPath {
     return indexPath.item != 0;
@@ -2202,26 +2267,28 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if ([text length] == 0)
         return CGSizeZero;
     
-    CGSize size = layout.itemSize;
+    CGSize size = CGSizeMake(layout.itemSize.width, CGFLOAT_MAX);
     
-    // item zero is the title image and metadata text, size to fit, with a minimum 4:3 width
+    if (indexPath.item == 0)
+        size.width = _image ? _image.size.width : INFO_IMAGE_WIDTH;
+
+    // compute the size of the text, dont forget to account for insets
+    size.width -= INFO_INSET_X * 2;
+    size.height = [text boundingRectWithSize:size options:NSStringDrawingUsesLineFragmentOrigin context:nil].size.height;
+    size.width += INFO_INSET_X * 2;
+    size.height = INFO_INSET_Y + ceil(size.height) + INFO_INSET_Y;
+
+    // item zero is the title image and metadata text
     if (indexPath.item == 0) {
-        size = [text boundingRectWithSize:size options:NSStringDrawingUsesLineFragmentOrigin context:nil].size;
-        size.height = INFO_IMAGE_HEIGHT + INFO_INSET_Y + ceil(size.height) + INFO_INSET_Y;
-        size.width  = INFO_INSET_X + ceil(size.width) + INFO_INSET_X;
-        size.width  = MAX(size.width, INFO_IMAGE_HEIGHT * 4.0/3.0);
+        size.height += _image.size.height;
         return size;
     }
     
     // item 1 and 2 are just large text (HISTORY, MAMEINFO) in landscape they are fixed size
     if (layout.scrollDirection == UICollectionViewScrollDirectionHorizontal)
-        return size;
+        return layout.itemSize;
 
     // in portrait that are as tall as they need to be....
-    size.height = 99999.0;
-    size.height = [text boundingRectWithSize:size options:NSStringDrawingUsesLineFragmentOrigin context:nil].size.height;
-    size.height = INFO_INSET_Y + ceil(size.height) + INFO_INSET_Y;
-    
     return size;
 }
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
@@ -2239,31 +2306,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
     NSAttributedString* text = [self getText:indexPath];
 
-    if (indexPath.item == 0) {
-        NSURL* url = [ChooseGameController getGameImageURL:_game];
-        UIImage* image = [[ImageCache sharedInstance] getImage:url size:CGSizeZero];
-        CGFloat aspect = image.size.width > image.size.height ? 4.0/3.0 : 3.0/4.0;
-        image = [image scaledToSize:CGSizeMake(cell.bounds.size.width, INFO_IMAGE_HEIGHT) aspect:aspect mode:UIViewContentModeScaleAspectFit];
-        cell.image.image = image;
-    }
-    
-    if (text != nil && indexPath.item > 0) {
-        NSString* title = indexPath.item == 1 ? @"History" : @"MAME Info";
-        
-        NSMutableParagraphStyle *paragraph = [[NSMutableParagraphStyle alloc] init];
-        paragraph.alignment = NSTextAlignmentCenter;
-        paragraph.paragraphSpacing = 4.0;
-
-        // add title to top of text
-        NSMutableAttributedString* new_text = [[NSMutableAttributedString alloc] initWithString:[title stringByAppendingString:@"\n"] attributes:@{
-            NSFontAttributeName:INFO_TITLE_FONT,
-            NSForegroundColorAttributeName:INFO_TITLE_COLOR,
-            NSParagraphStyleAttributeName: paragraph
-        }];
-        
-        [new_text appendAttributedString:text];
-        text = new_text;
-    }
+    if (indexPath.item == 0)
+        cell.image.image = _image;
     
     if ([text length] != 0)
         [cell setTextInsets:UIEdgeInsetsMake(INFO_INSET_Y, INFO_INSET_X, INFO_INSET_Y, INFO_INSET_X)];
@@ -2272,10 +2316,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
     cell.text.attributedText = text;
 
-    if (((UICollectionViewFlowLayout*)self.collectionView.collectionViewLayout).scrollDirection == UICollectionViewScrollDirectionHorizontal)
-        [(TextLabel*)cell.text setScrollEnabled:YES];
-    else
-        [(TextLabel*)cell.text setScrollEnabled:NO];
+    // always enable scrolling even if we dont need to, or UITextView may not draw on pre-iOS13
+    [(TextLabel*)cell.text setScrollEnabled:YES];
 
     return cell;
 }

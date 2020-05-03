@@ -139,6 +139,9 @@
 
     // we cant click on links so remove this all together
     [self modifyText:text pattern:@"^- CONTRIBUTE -\\s+?Edit this entry: https:.+?$" string:@""];
+    
+    // get rid of relative year
+    [self modifyText:text pattern:@"^Arcade Video game published [0-9]+ years ago:[ ]*\\n$" string:@""];
 
     // lines followed by blank line.
     [self modifyText:text pattern:@"^[A-Za-z].{1,30}(\\n\\n)(?=[A-Za-z].{1,30}$)" attributes:@[@{}, @"\n"]];
@@ -210,9 +213,11 @@
         dispatch_async(dispatch_get_main_queue(), ^{
             self->_index = index;
 #ifdef DEBUG    // write out a filtered HISTORY.DAT for only the 139u1 ROMS.
-            extern NSDictionary* g_category_dict;
-            NSString* path = [self->_path stringByReplacingOccurrencesOfString:@".dat" withString:@"0139.dat"];
-            [self saveDatabaseToPath:path keys:g_category_dict.allKeys];
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND,0), ^{
+                extern NSDictionary* g_category_dict;
+                NSString* path = [self->_path stringByReplacingOccurrencesOfString:@".dat" withString:@"0139.dat"];
+                [self saveDatabaseToPath:path keys:g_category_dict.allKeys];
+            });
 #endif
         });
     });
