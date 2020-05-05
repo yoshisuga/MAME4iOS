@@ -106,6 +106,8 @@ extern int g_pref_scanline_filter_land;
 extern int g_pref_scanline_filter_port;
 extern int g_pref_smooth_land;
 extern int g_pref_smooth_port;
+extern int g_pref_border_land;
+extern int g_pref_border_port;
 extern int g_pref_keep_aspect_ratio_land;
 extern int g_pref_keep_aspect_ratio_port;
 extern int g_pref_full_screen_land;

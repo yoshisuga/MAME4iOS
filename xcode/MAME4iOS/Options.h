@@ -12,128 +12,36 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface Options : NSObject
-{
-    NSMutableArray*      optionsArray;
-    
-@public  int keepAspectRatioPort;
-@public  int keepAspectRatioLand;
-@public  int smoothedPort;
-@public  int smoothedLand;
-    
-@public  int tvFilterPort;
-@public  int tvFilterLand;
-@public  int scanlineFilterPort;
-@public  int scanlineFilterLand;
-    
-@public  int showFPS;
-@public  int animatedButtons;
-@public  int fourButtonsLand;
-@public  int fullLand;
-@public  int fullPort;
-    
-@public  int skinValue;
-    
-@public  int btDeadZoneValue;
-@public  int touchDeadZone;
-    
-@public  int overscanValue;
-@public  int tvoutNative;
-    
-@public  int touchtype;
-@public  int analogDeadZoneValue;
-    
-@public  int controltype;
-@public  int showINFO;
-    
-@public int soundValue;
-    
-@public int throttle;
-@public int fsvalue;
-@public int sticktype;
-@public int numbuttons;
-@public int aplusb;
-@public int cheats;
-@public int sleep;
-    
-@public int forcepxa;
-@public int emures;
-@public int p1aspx;
-    
-@public int filterClones;
-@public int filterFavorites;
-@public int filterNotWorking;
-@public int manufacturerValue;
-@public int yearGTEValue;
-@public int yearLTEValue;
-@public int driverSourceValue;
-@public int categoryValue;
-    
-@public NSString *filterKeyword;
-    
-@public int lowlsound;
-@public int vsync;
-@public int threaded;
-@public int dblbuff;
-    
-@public int mainPriority;
-@public int videoPriority;
-    
-@public int autofire;
-@public int hiscore;
-    
-@public int buttonSize;
-@public int stickSize;
-@public int nintendoBAYX;
-    
-@public int wpantype;
-@public NSString *wfpeeraddr;
-@public int wfport;
-@public int wframesync;
-@public int btlatency;
-    
-@public int vbean2x;
-@public int vantialias;
-@public int vflicker;
-    
-@public int emuspeed;
-    
-@public int lightgunBottomScreenReload;
-@public int lightgunEnabled;
-    
-@public int touchAnalogEnabled;
-@public CGFloat touchAnalogSensitivity;
-@public int touchAnalogHideTouchDirectionalPad;
-@public int touchAnalogHideTouchButtons;
-    
-@public int touchDirectionalEnabled;
-    
-/* these will be autosynthesized
-@public int turboXEnabled;
-@public int turboYEnabled;
-@public int turboAEnabled;
-@public int turboBEnabled;
-@public int turboLEnabled;
-@public int turboREnabled;
-*/
-    
-@public CGFloat touchControlsOpacity;
-    
-}
 
 - (void)loadOptions;
 - (void)saveOptions;
 + (void)resetOptions;
 
+
+@property (class, readonly, strong) NSArray* arrayEmuRes;
+@property (class, readonly, strong) NSArray* arrayFSValue;
+@property (class, readonly, strong) NSArray* arrayOverscanValue;
+@property (class, readonly, strong) NSArray* arrayEmuSpeed;
+@property (class, readonly, strong) NSArray* arrayControlType;
+@property (class, readonly, strong) NSArray* arrayBorder;
+@property (class, readonly, strong) NSArray* arrayFilter;
+@property (class, readonly, strong) NSArray* arrayEffect;
+@property (class, readonly, strong) NSArray* arrayColorSpace;
+
 @property (readwrite,assign) int keepAspectRatioPort;
 @property (readwrite,assign) int keepAspectRatioLand;
-@property (readwrite,assign) int smoothedPort;
-@property (readwrite,assign) int smoothedLand;
 
-@property (readwrite,assign) int tvFilterPort;
-@property (readwrite,assign) int tvFilterLand;
+@property (readwrite,strong) NSString *filterPort;
+@property (readwrite,strong) NSString *filterLand;
 
-@property (readwrite,assign) int scanlineFilterPort;
-@property (readwrite,assign) int scanlineFilterLand;
+@property (readwrite,strong) NSString *borderPort;
+@property (readwrite,strong) NSString *borderLand;
+
+@property (readwrite,strong) NSString *effectPort;
+@property (readwrite,strong) NSString *effectLand;
+
+@property (readwrite,strong) NSString *sourceColorSpace;
+@property (readwrite,assign) int useMetal;
 
 @property (readwrite,assign) int showFPS;
 @property (readwrite,assign) int animatedButtons;
@@ -142,8 +50,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite,assign) int fullPort;
 @property (readwrite,assign) int fullLandJoy;
 @property (readwrite,assign) int fullPortJoy;
-
-@property (readwrite,assign) int skinValue;
 
 @property (readwrite,assign) int btDeadZoneValue;
 @property (readwrite,assign) int touchDeadZone;
@@ -232,6 +138,17 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite,assign) int mainThreadType;
 @property (readwrite,assign) int videoThreadType;
 
+
 @end
+
+@interface NSArray (optionAtIndex)
+// a "safe" version of objectAtIndex
+- (id)objectAtIndex:(NSUInteger)index withDefault:(id)defaultObject;
+// return the option/string at index, or default to the first/zero one
+- (NSString*)optionAtIndex:(NSUInteger)index;
+// return the string if array contains it, else the first item.
+- (NSString*)optionAtString:(NSString*)string;
+@end
+
 
 NS_ASSUME_NONNULL_END

@@ -43,6 +43,7 @@
  */
 
 #import "OptionsTableViewController.h"
+#import "Options.h"
 
 @implementation OptionsTableViewController
 
@@ -168,4 +169,60 @@
     [self.tableView reloadData];
 }
 
+#pragma mark - switchs on iOS and tvOS
+
+#if TARGET_OS_IOS
+- (UIView*)optionSwitchForKey:(NSString*)key {
+    Options* op = [[Options alloc] init];
+    NSAssert([op valueForKey:key] != nil, @"bad key");
+    
+    UISwitch* sw = [[UISwitch alloc] initWithFrame:CGRectZero];
+    [sw setTag:(NSInteger)(__bridge void*)key];
+    [sw addTarget:self action:@selector(updateOptionSwitch:) forControlEvents:UIControlEventValueChanged];
+
+    [sw setOn:[[op valueForKey:key] boolValue] animated:NO];
+    return sw;
+}
+- (void)updateOptionSwitch:(UISwitch*)sender
+{
+    Options* op = [[Options alloc] init];
+    NSString* key = (__bridge NSString*)(void*)sender.tag;
+    NSAssert([op valueForKey:key] != nil, @"bad key");
+    NSLog(@"updateOptionSwitch: %@ = %d", key, [sender isOn]);
+    [op setValue:@([sender isOn]) forKey:key];
+    [op saveOptions];
+}
+- (void)toggleOptionSwitch:(UISwitch*)sender {
+    if (![sender isKindOfClass:[UISwitch class]] || sender.tag == 0)
+        return;
+    
+    [sender setOn:![sender isOn]];
+    [self updateOptionSwitch:sender];
+}
+#else
+- (UIView*)optionSwitchForKey:(NSString*)key {
+    Options* op = [[Options alloc] init];
+    NSAssert([op valueForKey:key] != nil, @"bad key");
+    UILabel* label = [[UILabel alloc] initWithFrame:CGRectZero];
+    [label setTag:(NSInteger)(__bridge void*)key];
+    label.text = [[op valueForKey:key] boolValue] ? @"On" : @"Off";
+    [label sizeToFit];
+    return label;
+}
+- (void)toggleOptionSwitch:(UILabel*)sender {
+    if (![sender isKindOfClass:[UILabel class]] || sender.tag == 0)
+        return;
+    
+    NSString* key = (__bridge NSString*)(void*)sender.tag;
+    Options* op = [[Options alloc] init];
+    NSAssert([op valueForKey:key] != nil, @"bad key");
+    BOOL val = ![[op valueForKey:key] boolValue];
+    [op setValue:@(val) forKey:key];
+    [op saveOptions];
+
+    NSLog(@"toggleOptionSwitch: %@ = %d", key, val);
+    sender.text = val ? @"On" : @"Off";
+    [sender sizeToFit];
+}
+#endif
 @end

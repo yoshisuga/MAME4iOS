@@ -12,103 +12,41 @@
 
 @implementation Options
 
-@synthesize keepAspectRatioPort;
-@synthesize keepAspectRatioLand;
-@synthesize smoothedLand;
-@synthesize smoothedPort;
+#pragma mark - class properties
 
-@synthesize tvFilterLand;
-@synthesize tvFilterPort;
-@synthesize scanlineFilterLand;
-@synthesize scanlineFilterPort;
++ (NSArray*)arrayEmuRes {
+    return @[@"Auto",@"320x200",@"320x240",@"400x300",@"480x300",@"512x384",@"640x400",@"640x480 (SD)",@"800x600",@"1024x768",@"1280x960",
+             @"1440x1080 (HD)",@"1600x1200",@"1920x1440",@"2048x1536",@"2880x2160 (UHD)"];
+}
++ (NSArray*)arrayFSValue {
+    return [[NSArray alloc] initWithObjects:@"Auto",@"None", @"1", @"2", @"3",@"4", @"5", @"6", @"7", @"8", @"9", @"10", nil];
+}
++ (NSArray*)arrayOverscanValue {
+    return [[NSArray alloc] initWithObjects:@"None",@"1", @"2", @"3",@"4", @"5", @"6", nil];
+}
++ (NSArray*)arrayEmuSpeed {
+    return [[NSArray alloc] initWithObjects: @"Default",
+                     @"50%", @"60%", @"70%", @"80%", @"85%",@"90%",@"95%",@"100%",
+                     @"105%", @"110%", @"115%", @"120%", @"130%",@"140%",@"150%",
+                     nil];
+}
++ (NSArray*)arrayControlType {
+    return @[@"Keyboard or 8BitDo",@"iCade or compatible",@"iCP, Gametel",@"iMpulse"];
+}
++ (NSArray*)arrayBorder {
+    return @[@"None", @"Small", @"Large"];
+}
++ (NSArray*)arrayFilter {
+    return @[@"None", @"Bilinear"];
+}
++ (NSArray*)arrayEffect {
+  return @[@"None", @"CRT", @"Scanline"];
+}
++ (NSArray*)arrayColorSpace {
+    return @[@"DeviceRGB", @"sRGB", @"Wombat", @"Arcade CRT", @"Vector CRT"];
+}
 
-@synthesize showFPS;
-@synthesize showINFO;
-@synthesize animatedButtons;
-@synthesize fourButtonsLand;
-@synthesize fullLand;
-@synthesize fullPort;
-@synthesize fullLandJoy;
-@synthesize fullPortJoy;
-
-@synthesize lightgunEnabled;
-@synthesize lightgunBottomScreenReload;
-
-@synthesize touchAnalogEnabled;
-@synthesize touchAnalogSensitivity;
-@synthesize touchAnalogHideTouchButtons;
-@synthesize touchAnalogHideTouchDirectionalPad;
-@synthesize touchControlsOpacity;
-
-@synthesize touchDirectionalEnabled;
-
-@synthesize skinValue;
-
-@synthesize btDeadZoneValue;
-@synthesize touchDeadZone;
-
-@synthesize overscanValue;
-@synthesize tvoutNative;
-
-@synthesize touchtype;
-@synthesize analogDeadZoneValue;
-@synthesize controltype;
-
-@synthesize soundValue;
-
-@synthesize throttle;
-@synthesize fsvalue;
-@synthesize sticktype;
-@synthesize numbuttons;
-@synthesize aplusb;
-@synthesize cheats;
-@synthesize sleep;
-
-@synthesize forcepxa;
-@synthesize emures;
-@synthesize p1aspx;
-
-@synthesize filterClones;
-@synthesize filterFavorites;
-@synthesize filterNotWorking;
-@synthesize manufacturerValue;
-@synthesize yearGTEValue;
-@synthesize yearLTEValue;
-@synthesize driverSourceValue;
-@synthesize categoryValue;
-
-@synthesize filterKeyword;
-
-@synthesize lowlsound;
-@synthesize vsync;
-@synthesize threaded;
-@synthesize dblbuff;
-
-@synthesize mainPriority;
-@synthesize videoPriority;
-
-@synthesize autofire;
-
-@synthesize hiscore;
-
-@synthesize buttonSize;
-@synthesize stickSize;
-@synthesize nintendoBAYX;
-
-@synthesize wpantype;
-@synthesize wfpeeraddr;
-@synthesize wfport;
-@synthesize wfframesync;
-@synthesize btlatency;
-
-@synthesize vbean2x;
-@synthesize vantialias;
-@synthesize vflicker;
-
-@synthesize emuspeed;
-
-@synthesize mainThreadType;
-@synthesize videoThreadType;
+#pragma mark - instance code
 
 - (id)init {
     
@@ -136,7 +74,7 @@
     NSPropertyListFormat format;
     
     NSError *sqerr;
-    plistData = [NSData dataWithContentsOfFile:path options: NSMappedRead error:&sqerr];
+    plistData = [NSData dataWithContentsOfFile:path options:0 error:&sqerr];
     
     if (plistData != nil)
     {
@@ -146,106 +84,105 @@
                                                         error:&error];
     }
     
-    if(!plist)
-    {
-        
-        //NSLog(error);
-        
-        //[error release];
-        
-        optionsArray = [[NSMutableArray alloc] init];
-        
-        keepAspectRatioPort=1;
-        keepAspectRatioLand=1;
-        smoothedPort=g_isIpad?1:0;
-        smoothedLand=g_isIpad?1:0;
-        
-        tvFilterPort = 0;
-        tvFilterLand = 0;
-        scanlineFilterPort = 0;
-        scanlineFilterLand = 0;
-        
-        showFPS = 0;
-        showINFO = 0;
-        fourButtonsLand = 0;
-        animatedButtons = 1;
-        
-        fullLand = animatedButtons;
-        fullPort = 0;
-        
-        fullLandJoy = 1;
-        fullPortJoy = 1;
-        
-        skinValue = 0;
-        
-        btDeadZoneValue = 2;
-        touchDeadZone = 1;
-        
-        overscanValue = 0;
-        tvoutNative = 1;
-        
-        touchtype = 1;
-        analogDeadZoneValue = 2;
-        
-        controltype = 0;
-        
-        soundValue = 5;
-        
-        throttle = 1;
-        fsvalue = 0;
-        sticktype = 0;
-        numbuttons = 0;
-        aplusb = 0;
-        cheats = 1;
-        sleep = 1;
-        
-        forcepxa = 0;
-        emures = 0;
-        p1aspx = 0;
-        
-        filterClones=0;
-        filterFavorites=0;
-        filterNotWorking=1;
-        manufacturerValue=0;
-        yearGTEValue=0;
-        yearLTEValue=0;
-        driverSourceValue=0;
-        categoryValue=0;
-        
-        filterKeyword = nil;
-        
-        lowlsound = 1;
-        vsync = 1;
-        threaded = 1;
-        dblbuff = 1;
-        
-        mainPriority = 5;
-        videoPriority = 5;
-        
-        autofire = 0;
-        hiscore = 1;
-        
-        stickSize = 2;
-        buttonSize= 2;
-        nintendoBAYX=0;
+    if ([plist isKindOfClass:[NSArray class]])
+        plist = [plist objectAtIndex:0];
 
-        wpantype = 0;
-        wfpeeraddr = nil;
-        wfport = NETPLAY_PORT;
-        wfframesync = 0;
-        btlatency = 1;
+    if(![plist isKindOfClass:[NSDictionary class]])
+    {
+        _keepAspectRatioPort=1;
+        _keepAspectRatioLand=1;
         
-        vbean2x = 1;
-        vantialias = 1;
-        vflicker = 0;
+        _filterPort = @"";
+        _filterLand = @"";
+
+        _borderPort = @"";
+        _borderLand = @"";
+
+        _effectPort = @"";
+        _effectLand = @"";
         
-        emuspeed = 0;
+        _sourceColorSpace = @"";
+        _useMetal = 0;
+
+        _showFPS = 0;
+        _showINFO = 0;
+        _fourButtonsLand = 0;
+        _animatedButtons = 1;
         
-        mainThreadType = 0;
-        videoThreadType = 0;
+        _fullLand = 1;
+        _fullPort = 0;
         
-        lightgunEnabled = 1;
-        lightgunBottomScreenReload = 0;
+        _fullLandJoy = 1;
+        _fullPortJoy = 1;
+        
+        _btDeadZoneValue = 2;
+        _touchDeadZone = 1;
+        
+        _overscanValue = 0;
+        _tvoutNative = 1;
+        
+        _touchtype = 1;
+        _analogDeadZoneValue = 2;
+        
+        _controltype = 0;
+        
+        _soundValue = 5;
+        
+        _throttle = 1;
+        _fsvalue = 0;
+        _sticktype = 0;
+        _numbuttons = 0;
+        _aplusb = 0;
+        _cheats = 1;
+        _sleep = 1;
+        
+        _forcepxa = 0;
+        _emures = 0;
+        _p1aspx = 0;
+        
+        _filterClones=0;
+        _filterFavorites=0;
+        _filterNotWorking=1;
+        _manufacturerValue=0;
+        _yearGTEValue=0;
+        _yearLTEValue=0;
+        _driverSourceValue=0;
+        _categoryValue=0;
+        
+        _filterKeyword = nil;
+        
+        _lowlsound = 1;
+        _vsync = 1;
+        _threaded = 1;
+        _dblbuff = 1;
+        
+        _mainPriority = 5;
+        _videoPriority = 5;
+        
+        _autofire = 0;
+        _hiscore = 1;
+        
+        _stickSize = 2;
+        _buttonSize= 2;
+        _nintendoBAYX=0;
+
+        _wpantype = 0;
+        _wfpeeraddr = nil;
+        _wfport = NETPLAY_PORT;
+        _wfframesync = 0;
+        _btlatency = 1;
+        
+        _vbean2x = 1;
+        _vantialias = 1;
+        _vflicker = 0;
+        
+        _emuspeed = 0;
+        
+        _mainThreadType = 0;
+        _videoThreadType = 0;
+        
+        _lightgunEnabled = 1;
+        _lightgunBottomScreenReload = 0;
         
         _turboXEnabled = 0;
         _turboYEnabled = 0;
@@ -254,167 +191,169 @@
         _turboLEnabled = 0;
         _turboREnabled = 0;
         
-        touchAnalogEnabled = 1;
-        touchAnalogHideTouchDirectionalPad = 1;
-        touchAnalogHideTouchButtons = 0;
-        touchAnalogSensitivity = 500.0;
-        touchControlsOpacity = 50.0;
+        _touchAnalogEnabled = 1;
+        _touchAnalogHideTouchDirectionalPad = 1;
+        _touchAnalogHideTouchButtons = 0;
+        _touchAnalogSensitivity = 500.0;
+        _touchControlsOpacity = 50.0;
         
-        touchDirectionalEnabled = 0;
+        _touchDirectionalEnabled = 0;
     }
     else
     {
-        
-        optionsArray = [[NSMutableArray alloc] initWithArray:plist];
-        
-        keepAspectRatioPort = [[[optionsArray objectAtIndex:0] objectForKey:@"KeepAspectPort"] intValue];
-        keepAspectRatioLand = [[[optionsArray objectAtIndex:0] objectForKey:@"KeepAspectLand"] intValue];
-        smoothedLand = [[[optionsArray objectAtIndex:0] objectForKey:@"SmoothedLand"] intValue];
-        smoothedPort = [[[optionsArray objectAtIndex:0] objectForKey:@"SmoothedPort"] intValue];
-        
-        tvFilterPort = [[[optionsArray objectAtIndex:0] objectForKey:@"TvFilterPort"] intValue];
-        tvFilterLand =  [[[optionsArray objectAtIndex:0] objectForKey:@"TvFilterLand"] intValue];
-        
-        scanlineFilterPort =  [[[optionsArray objectAtIndex:0] objectForKey:@"ScanlineFilterPort"] intValue];
-        scanlineFilterLand =  [[[optionsArray objectAtIndex:0] objectForKey:@"ScanlineFilterLand"] intValue];
-        lightgunEnabled = [[[optionsArray objectAtIndex:0] objectForKey:@"lightgunEnabled"] intValue];
-        lightgunBottomScreenReload = [[[optionsArray objectAtIndex:0] objectForKey:@"lightgunBottomScreenReload"] intValue];
-        touchAnalogEnabled = [[[optionsArray objectAtIndex:0] objectForKey:@"touchAnalogEnabled"] intValue];
-        touchAnalogHideTouchDirectionalPad = [[[optionsArray objectAtIndex:0] objectForKey:@"touchAnalogHideTouchDirectionalPad"] intValue];
-        touchAnalogHideTouchButtons = [[[optionsArray objectAtIndex:0] objectForKey:@"touchAnalogHideTouchButtons"] intValue];
-        touchAnalogSensitivity = [[[optionsArray objectAtIndex:0] objectForKey:@"touchAnalogSensitivity"] floatValue];
-        id prefTouchControlOpacity = [[optionsArray objectAtIndex:0] objectForKey:@"touchControlsOpacity"];
-        if ( prefTouchControlOpacity == nil ) {
-            touchControlsOpacity = 50.0;
-        } else {
-            touchControlsOpacity = [prefTouchControlOpacity floatValue];
-        }
-        showFPS =  [[[optionsArray objectAtIndex:0] objectForKey:@"showFPS"] intValue];
-        showINFO =  [[[optionsArray objectAtIndex:0] objectForKey:@"showINFO"] intValue];
-        fourButtonsLand =  [[[optionsArray objectAtIndex:0] objectForKey:@"fourButtonsLand"] intValue];
-        animatedButtons =  [[[optionsArray objectAtIndex:0] objectForKey:@"animatedButtons"] intValue];
-        
-        fullLand =  [[[optionsArray objectAtIndex:0] objectForKey:@"fullLand"] intValue];
-        fullPort =  [[[optionsArray objectAtIndex:0] objectForKey:@"fullPort"] intValue];
-        fullLandJoy =  [([[optionsArray objectAtIndex:0] objectForKey:@"fullLandJoy"] ?: @(1)) intValue];
-        fullPortJoy =  [([[optionsArray objectAtIndex:0] objectForKey:@"fullPortJoy"] ?: @(1)) intValue];
+        NSDictionary* optionsDict = plist;
 
-        _turboXEnabled = [[[optionsArray objectAtIndex:0] objectForKey:@"turboXEnabled"] intValue];
-        _turboYEnabled = [[[optionsArray objectAtIndex:0] objectForKey:@"turboYEnabled"] intValue];
-        _turboAEnabled = [[[optionsArray objectAtIndex:0] objectForKey:@"turboAEnabled"] intValue];
-        _turboBEnabled = [[[optionsArray objectAtIndex:0] objectForKey:@"turboBEnabled"] intValue];
-        _turboLEnabled = [[[optionsArray objectAtIndex:0] objectForKey:@"turboLEnabled"] intValue];
-        _turboREnabled = [[[optionsArray objectAtIndex:0] objectForKey:@"turboREnabled"] intValue];
+        _keepAspectRatioPort = [[optionsDict objectForKey:@"KeepAspectPort"] intValue];
+        _keepAspectRatioLand = [[optionsDict objectForKey:@"KeepAspectLand"] intValue];
         
-        touchDirectionalEnabled = [[[optionsArray objectAtIndex:0] objectForKey:@"touchDirectionalEnabled"] intValue];
+        _filterPort = [optionsDict objectForKey:@"filterPort"] ?: @"";
+        _filterLand = [optionsDict objectForKey:@"filterLand"] ?: @"";
+
+        _borderPort = [optionsDict objectForKey:@"borderPort"] ?: @"";
+        _borderLand = [optionsDict objectForKey:@"borderLand"] ?: @"";
+
+        _effectPort = [optionsDict objectForKey:@"effectPort"] ?: @"";
+        _effectLand = [optionsDict objectForKey:@"effectLand"] ?: @"";
         
-        skinValue =  [[[optionsArray objectAtIndex:0] objectForKey:@"skinValue"] intValue];
+        _sourceColorSpace = [optionsDict objectForKey:@"sourceColorSpace"] ?: @"";
+        _useMetal = [[optionsDict objectForKey:@"useMetal"] boolValue];
+
+        _lightgunEnabled = [[optionsDict objectForKey:@"lightgunEnabled"] intValue];
+        _lightgunBottomScreenReload = [[optionsDict objectForKey:@"lightgunBottomScreenReload"] intValue];
+        _touchAnalogEnabled = [[optionsDict objectForKey:@"touchAnalogEnabled"] intValue];
+        _touchAnalogHideTouchDirectionalPad = [[optionsDict objectForKey:@"touchAnalogHideTouchDirectionalPad"] intValue];
+        _touchAnalogHideTouchButtons = [[optionsDict objectForKey:@"touchAnalogHideTouchButtons"] intValue];
+        _touchAnalogSensitivity = [[optionsDict objectForKey:@"touchAnalogSensitivity"] floatValue];
+        id prefTouchControlOpacity = [optionsDict objectForKey:@"touchControlsOpacity"];
+        if ( prefTouchControlOpacity == nil ) {
+            _touchControlsOpacity = 50.0;
+        } else {
+            _touchControlsOpacity = [prefTouchControlOpacity floatValue];
+        }
+        _showFPS =  [[optionsDict objectForKey:@"showFPS"] intValue];
+        _showINFO =  [[optionsDict objectForKey:@"showINFO"] intValue];
+        _fourButtonsLand =  [[optionsDict objectForKey:@"fourButtonsLand"] intValue];
+        _animatedButtons =  [[optionsDict objectForKey:@"animatedButtons"] intValue];
         
-        btDeadZoneValue =  [[[optionsArray objectAtIndex:0] objectForKey:@"btDeadZoneValue"] intValue];
-        touchDeadZone =  [[[optionsArray objectAtIndex:0] objectForKey:@"touchDeadZone"] intValue];
+        _fullLand =  [[optionsDict objectForKey:@"fullLand"] intValue];
+        _fullPort =  [[optionsDict objectForKey:@"fullPort"] intValue];
+        _fullLandJoy =  [([optionsDict objectForKey:@"fullLandJoy"] ?: @(1)) intValue];
+        _fullPortJoy =  [([optionsDict objectForKey:@"fullPortJoy"] ?: @(1)) intValue];
+
+        _turboXEnabled = [[optionsDict objectForKey:@"turboXEnabled"] intValue];
+        _turboYEnabled = [[optionsDict objectForKey:@"turboYEnabled"] intValue];
+        _turboAEnabled = [[optionsDict objectForKey:@"turboAEnabled"] intValue];
+        _turboBEnabled = [[optionsDict objectForKey:@"turboBEnabled"] intValue];
+        _turboLEnabled = [[optionsDict objectForKey:@"turboLEnabled"] intValue];
+        _turboREnabled = [[optionsDict objectForKey:@"turboREnabled"] intValue];
         
-        overscanValue =  [[[optionsArray objectAtIndex:0] objectForKey:@"overscanValue"] intValue];
-        tvoutNative =  [[[optionsArray objectAtIndex:0] objectForKey:@"tvoutNative"] intValue];
+        _touchDirectionalEnabled = [[optionsDict objectForKey:@"touchDirectionalEnabled"] intValue];
         
-        touchtype =  [[[optionsArray objectAtIndex:0] objectForKey:@"inputTouchType"] intValue];
-        analogDeadZoneValue =  [[[optionsArray objectAtIndex:0] objectForKey:@"analogDeadZoneValue"] intValue];
-        controltype =  [[[optionsArray objectAtIndex:0] objectForKey:@"controlType"] intValue];
+        _btDeadZoneValue =  [[optionsDict objectForKey:@"btDeadZoneValue"] intValue];
+        _touchDeadZone =  [[optionsDict objectForKey:@"touchDeadZone"] intValue];
         
-        soundValue =  [[[optionsArray objectAtIndex:0] objectForKey:@"soundValue"] intValue];
+        _overscanValue =  [[optionsDict objectForKey:@"overscanValue"] intValue];
+        _tvoutNative =  [[optionsDict objectForKey:@"tvoutNative"] intValue];
         
-        throttle  =  [[[optionsArray objectAtIndex:0] objectForKey:@"throttle"] intValue];
-        fsvalue  =  [[[optionsArray objectAtIndex:0] objectForKey:@"fsvalue"] intValue];
-        sticktype  =  [[[optionsArray objectAtIndex:0] objectForKey:@"sticktype"] intValue];
-        numbuttons  =  [[[optionsArray objectAtIndex:0] objectForKey:@"numbuttons"] intValue];
-        aplusb  =  [[[optionsArray objectAtIndex:0] objectForKey:@"aplusb"] intValue];
-        cheats  =  [[[optionsArray objectAtIndex:0] objectForKey:@"cheats"] intValue];
-        sleep  =  [[[optionsArray objectAtIndex:0] objectForKey:@"sleep"] intValue];
+        _touchtype =  [[optionsDict objectForKey:@"inputTouchType"] intValue];
+        _analogDeadZoneValue =  [[optionsDict objectForKey:@"analogDeadZoneValue"] intValue];
+        _controltype =  [[optionsDict objectForKey:@"controlType"] intValue];
         
-        forcepxa  =  [[[optionsArray objectAtIndex:0] objectForKey:@"forcepxa"] intValue];
-        emures  =  [[[optionsArray objectAtIndex:0] objectForKey:@"emures"] intValue];
+        _soundValue =  [[optionsDict objectForKey:@"soundValue"] intValue];
         
-        p1aspx  =  [[[optionsArray objectAtIndex:0] objectForKey:@"p1aspx"] intValue];
+        _throttle  =  [[optionsDict objectForKey:@"throttle"] intValue];
+        _fsvalue  =  [[optionsDict objectForKey:@"fsvalue"] intValue];
+        _sticktype  =  [[optionsDict objectForKey:@"sticktype"] intValue];
+        _numbuttons  =  [[optionsDict objectForKey:@"numbuttons"] intValue];
+        _aplusb  =  [[optionsDict objectForKey:@"aplusb"] intValue];
+        _cheats  =  [[optionsDict objectForKey:@"cheats"] intValue];
+        _sleep  =  [[optionsDict objectForKey:@"sleep"] intValue];
         
-        filterClones  =  [[[optionsArray objectAtIndex:0] objectForKey:@"filterClones"] intValue];
-        filterFavorites  =  [[[optionsArray objectAtIndex:0] objectForKey:@"filterFavorites"] intValue];
-        filterNotWorking  =  [[[optionsArray objectAtIndex:0] objectForKey:@"filterNotWorking"] intValue];
-        manufacturerValue  =  [[[optionsArray objectAtIndex:0] objectForKey:@"manufacturerValue"] intValue];
-        yearGTEValue  =  [[[optionsArray objectAtIndex:0] objectForKey:@"yearGTEValue"] intValue];
-        yearLTEValue  =  [[[optionsArray objectAtIndex:0] objectForKey:@"yearLTEValue"] intValue];
-        driverSourceValue  =  [[[optionsArray objectAtIndex:0] objectForKey:@"driverSourceValue"] intValue];
-        categoryValue  =  [[[optionsArray objectAtIndex:0] objectForKey:@"categoryValue"] intValue];
+        _forcepxa  =  [[optionsDict objectForKey:@"forcepxa"] intValue];
+        _emures  =  [[optionsDict objectForKey:@"emures"] intValue];
         
-        filterKeyword  =  [[optionsArray objectAtIndex:0] objectForKey:@"filterKeyword"];
+        _p1aspx  =  [[optionsDict objectForKey:@"p1aspx"] intValue];
         
-        lowlsound  =  [[[optionsArray objectAtIndex:0] objectForKey:@"lowlsound"] intValue];
-        vsync  =  [[[optionsArray objectAtIndex:0] objectForKey:@"vsync"] intValue];
-        threaded  =  [[[optionsArray objectAtIndex:0] objectForKey:@"threaded"] intValue];
-        dblbuff  =  [[[optionsArray objectAtIndex:0] objectForKey:@"dblbuff"] intValue];
+        _filterClones  =  [[optionsDict objectForKey:@"filterClones"] intValue];
+        _filterFavorites  =  [[optionsDict objectForKey:@"filterFavorites"] intValue];
+        _filterNotWorking  =  [[optionsDict objectForKey:@"filterNotWorking"] intValue];
+        _manufacturerValue  =  [[optionsDict objectForKey:@"manufacturerValue"] intValue];
+        _yearGTEValue  =  [[optionsDict objectForKey:@"yearGTEValue"] intValue];
+        _yearLTEValue  =  [[optionsDict objectForKey:@"yearLTEValue"] intValue];
+        _driverSourceValue  =  [[optionsDict objectForKey:@"driverSourceValue"] intValue];
+        _categoryValue  =  [[optionsDict objectForKey:@"categoryValue"] intValue];
         
-        mainPriority  =  [[[optionsArray objectAtIndex:0] objectForKey:@"mainPriority"] intValue];
-        videoPriority  =  [[[optionsArray objectAtIndex:0] objectForKey:@"videoPriority"] intValue];
+        _filterKeyword  =  [optionsDict objectForKey:@"filterKeyword"];
         
-        autofire =  [[[optionsArray objectAtIndex:0] objectForKey:@"autofire"] intValue];
+        _lowlsound  =  [[optionsDict objectForKey:@"lowlsound"] intValue];
+        _vsync  =  [[optionsDict objectForKey:@"vsync"] intValue];
+        _threaded  =  [[optionsDict objectForKey:@"threaded"] intValue];
+        _dblbuff  =  [[optionsDict objectForKey:@"dblbuff"] intValue];
         
-        hiscore  =  [[[optionsArray objectAtIndex:0] objectForKey:@"hiscore"] intValue];
+        _mainPriority  =  [[optionsDict objectForKey:@"mainPriority"] intValue];
+        _videoPriority  =  [[optionsDict objectForKey:@"videoPriority"] intValue];
         
-        buttonSize =  [[[optionsArray objectAtIndex:0] objectForKey:@"buttonSize"] intValue];
-        stickSize =  [[[optionsArray objectAtIndex:0] objectForKey:@"stickSize"] intValue];
-        nintendoBAYX = [[[optionsArray objectAtIndex:0] objectForKey:@"nintendoBAYX"] intValue];
+        _autofire =  [[optionsDict objectForKey:@"autofire"] intValue];
         
-        wpantype  =  [[[optionsArray objectAtIndex:0] objectForKey:@"wpantype"] intValue];
-        wfpeeraddr  =  [[optionsArray objectAtIndex:0] objectForKey:@"wfpeeraddr"];
-        wfport  =  [[[optionsArray objectAtIndex:0] objectForKey:@"wfport"] intValue];
-        wfframesync  =  [[[optionsArray objectAtIndex:0] objectForKey:@"wfframesync"] intValue];
-        btlatency  =  [[[optionsArray objectAtIndex:0] objectForKey:@"btlatency"] intValue];
+        _hiscore  =  [[optionsDict objectForKey:@"hiscore"] intValue];
         
-        if([wfpeeraddr isEqualToString:@""])
-            wfpeeraddr = nil;
-        if([filterKeyword isEqualToString:@""])
-            filterKeyword = nil;
+        _buttonSize =  [[optionsDict objectForKey:@"buttonSize"] intValue];
+        _stickSize =  [[optionsDict objectForKey:@"stickSize"] intValue];
+        _nintendoBAYX = [[optionsDict objectForKey:@"nintendoBAYX"] intValue];
         
-        vbean2x  =  [[[optionsArray objectAtIndex:0] objectForKey:@"vbean2x"] intValue];
-        vantialias  =  [[[optionsArray objectAtIndex:0] objectForKey:@"vantialias"] intValue];
-        vflicker  =  [[[optionsArray objectAtIndex:0] objectForKey:@"vflicker"] intValue];
+        _wpantype  =  [[optionsDict objectForKey:@"wpantype"] intValue];
+        _wfpeeraddr  =  [optionsDict objectForKey:@"wfpeeraddr"];
+        _wfport  =  [[optionsDict objectForKey:@"wfport"] intValue];
+        _wfframesync  =  [[optionsDict objectForKey:@"wfframesync"] intValue];
+        _btlatency  =  [[optionsDict objectForKey:@"btlatency"] intValue];
         
-        emuspeed  =  [[[optionsArray objectAtIndex:0] objectForKey:@"emuspeed"] intValue];
+        if([_wfpeeraddr isEqualToString:@""])
+            _wfpeeraddr = nil;
+        if([_filterKeyword isEqualToString:@""])
+            _filterKeyword = nil;
         
-        mainThreadType  =  [[[optionsArray objectAtIndex:0] objectForKey:@"mainThreadType"] intValue];
-        videoThreadType  =  [[[optionsArray objectAtIndex:0] objectForKey:@"videoThreadType"] intValue];
+        _vbean2x  =  [[optionsDict objectForKey:@"vbean2x"] intValue];
+        _vantialias  =  [[optionsDict objectForKey:@"vantialias"] intValue];
+        _vflicker  =  [[optionsDict objectForKey:@"vflicker"] intValue];
+        
+        _emuspeed  =  [[optionsDict objectForKey:@"emuspeed"] intValue];
+        
+        _mainThreadType  =  [[optionsDict objectForKey:@"mainThreadType"] intValue];
+        _videoThreadType  =  [[optionsDict objectForKey:@"videoThreadType"] intValue];
     }
     
 }
 
 - (void)saveOptions
 {
-    
-    NSString *wfpeeraddr_tmp = wfpeeraddr == nil ? @"" : wfpeeraddr;
-    NSString *filterKeyword_tmp = filterKeyword == nil ? @"" : filterKeyword;
-    
-    [optionsArray removeAllObjects];
-    [optionsArray addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-                             [NSString stringWithFormat:@"%d", keepAspectRatioPort], @"KeepAspectPort",
-                             [NSString stringWithFormat:@"%d", keepAspectRatioLand], @"KeepAspectLand",
-                             [NSString stringWithFormat:@"%d", smoothedLand], @"SmoothedLand",
-                             [NSString stringWithFormat:@"%d", smoothedPort], @"SmoothedPort",
+    NSDictionary* optionsDict = [NSDictionary dictionaryWithObjectsAndKeys:
+                             [NSString stringWithFormat:@"%d", _keepAspectRatioPort], @"KeepAspectPort",
+                             [NSString stringWithFormat:@"%d", _keepAspectRatioLand], @"KeepAspectLand",
                              
-                             [NSString stringWithFormat:@"%d", tvFilterPort], @"TvFilterPort",
-                             [NSString stringWithFormat:@"%d", tvFilterLand], @"TvFilterLand",
+                             _filterPort, @"filterPort",
+                             _filterLand, @"filterLand",
+
+                             _borderPort, @"borderPort",
+                             _borderLand, @"borderLand",
+
+                             _effectPort, @"effectPort",
+                             _effectLand, @"effectLand",
                              
-                             [NSString stringWithFormat:@"%d", scanlineFilterPort], @"ScanlineFilterPort",
-                             [NSString stringWithFormat:@"%d", scanlineFilterLand], @"ScanlineFilterLand",
-                             [NSString stringWithFormat:@"%d", lightgunEnabled],
-                             @"lightgunEnabled",
-                             [NSString stringWithFormat:@"%d", lightgunBottomScreenReload], @"lightgunBottomScreenReload",
-                             [NSString stringWithFormat:@"%d", touchAnalogEnabled], @"touchAnalogEnabled",
-                             [NSString stringWithFormat:@"%d", touchAnalogHideTouchDirectionalPad], @"touchAnalogHideTouchDirectionalPad",
-                             [NSString stringWithFormat:@"%d", touchAnalogHideTouchButtons], @"touchAnalogHideTouchButtons",
-                             [NSString stringWithFormat:@"%f", touchAnalogSensitivity], @"touchAnalogSensitivity",
-                             [NSString stringWithFormat:@"%f", touchControlsOpacity], @"touchControlsOpacity",
-                             [NSString stringWithFormat:@"%d", showFPS], @"showFPS",
-                             [NSString stringWithFormat:@"%d", showINFO], @"showINFO",
-                             [NSString stringWithFormat:@"%d", fourButtonsLand], @"fourButtonsLand",
-                             [NSString stringWithFormat:@"%d", animatedButtons], @"animatedButtons",
+                             _sourceColorSpace, @"sourceColorSpace",
+                             [NSString stringWithFormat:@"%d", _useMetal], @"useMetal",
+
+                             [NSString stringWithFormat:@"%d", _lightgunEnabled],@"lightgunEnabled",
+                             
+                             [NSString stringWithFormat:@"%d", _lightgunBottomScreenReload], @"lightgunBottomScreenReload",
+                             [NSString stringWithFormat:@"%d", _touchAnalogEnabled], @"touchAnalogEnabled",
+                             [NSString stringWithFormat:@"%d", _touchAnalogHideTouchDirectionalPad], @"touchAnalogHideTouchDirectionalPad",
+                             [NSString stringWithFormat:@"%d", _touchAnalogHideTouchButtons], @"touchAnalogHideTouchButtons",
+                             [NSString stringWithFormat:@"%f", _touchAnalogSensitivity], @"touchAnalogSensitivity",
+                             [NSString stringWithFormat:@"%f", _touchControlsOpacity], @"touchControlsOpacity",
+                             [NSString stringWithFormat:@"%d", _showFPS], @"showFPS",
+                             [NSString stringWithFormat:@"%d", _showINFO], @"showINFO",
+                             [NSString stringWithFormat:@"%d", _fourButtonsLand], @"fourButtonsLand",
+                             [NSString stringWithFormat:@"%d", _animatedButtons], @"animatedButtons",
                              
                              [NSString stringWithFormat:@"%d", _turboXEnabled], @"turboXEnabled",
                              [NSString stringWithFormat:@"%d", _turboYEnabled], @"turboYEnabled",
@@ -423,83 +362,81 @@
                              [NSString stringWithFormat:@"%d", _turboLEnabled], @"turboLEnabled",
                              [NSString stringWithFormat:@"%d", _turboREnabled], @"turboREnabled",
                              
-                             [NSString stringWithFormat:@"%d", touchDirectionalEnabled], @"touchDirectionalEnabled",
+                             [NSString stringWithFormat:@"%d", _touchDirectionalEnabled], @"touchDirectionalEnabled",
                              
-                             [NSString stringWithFormat:@"%d", fullLand], @"fullLand",
-                             [NSString stringWithFormat:@"%d", fullPort], @"fullPort",
+                             [NSString stringWithFormat:@"%d", _fullLand], @"fullLand",
+                             [NSString stringWithFormat:@"%d", _fullPort], @"fullPort",
                              
-                             [NSString stringWithFormat:@"%d", fullLandJoy], @"fullLandJoy",
-                             [NSString stringWithFormat:@"%d", fullPortJoy], @"fullPortJoy",
+                             [NSString stringWithFormat:@"%d", _fullLandJoy], @"fullLandJoy",
+                             [NSString stringWithFormat:@"%d", _fullPortJoy], @"fullPortJoy",
 
-                             [NSString stringWithFormat:@"%d", skinValue], @"skinValue",
+                             [NSString stringWithFormat:@"%d", _btDeadZoneValue], @"btDeadZoneValue",
+                             [NSString stringWithFormat:@"%d", _touchDeadZone], @"touchDeadZone",
                              
-                             [NSString stringWithFormat:@"%d", btDeadZoneValue], @"btDeadZoneValue",
-                             [NSString stringWithFormat:@"%d", touchDeadZone], @"touchDeadZone",
+                             [NSString stringWithFormat:@"%d", _overscanValue], @"overscanValue",
+                             [NSString stringWithFormat:@"%d", _tvoutNative], @"tvoutNative",
                              
-                             [NSString stringWithFormat:@"%d", overscanValue], @"overscanValue",
-                             [NSString stringWithFormat:@"%d", tvoutNative], @"tvoutNative",
+                             [NSString stringWithFormat:@"%d", _touchtype], @"inputTouchType",
+                             [NSString stringWithFormat:@"%d", _analogDeadZoneValue], @"analogDeadZoneValue",
                              
-                             [NSString stringWithFormat:@"%d", touchtype], @"inputTouchType",
-                             [NSString stringWithFormat:@"%d", analogDeadZoneValue], @"analogDeadZoneValue",
+                             [NSString stringWithFormat:@"%d", _controltype], @"controlType",
                              
-                             [NSString stringWithFormat:@"%d", controltype], @"controlType",
+                             [NSString stringWithFormat:@"%d", _soundValue], @"soundValue",
                              
-                             [NSString stringWithFormat:@"%d", soundValue], @"soundValue",
+                             [NSString stringWithFormat:@"%d", _throttle], @"throttle",
+                             [NSString stringWithFormat:@"%d", _fsvalue], @"fsvalue",
+                             [NSString stringWithFormat:@"%d", _sticktype], @"sticktype",
+                             [NSString stringWithFormat:@"%d", _numbuttons], @"numbuttons",
+                             [NSString stringWithFormat:@"%d", _aplusb], @"aplusb",
+                             [NSString stringWithFormat:@"%d", _cheats], @"cheats",
+                             [NSString stringWithFormat:@"%d", _sleep], @"sleep",
                              
-                             [NSString stringWithFormat:@"%d", throttle], @"throttle",
-                             [NSString stringWithFormat:@"%d", fsvalue], @"fsvalue",
-                             [NSString stringWithFormat:@"%d", sticktype], @"sticktype",
-                             [NSString stringWithFormat:@"%d", numbuttons], @"numbuttons",
-                             [NSString stringWithFormat:@"%d", aplusb], @"aplusb",
-                             [NSString stringWithFormat:@"%d", cheats], @"cheats",
-                             [NSString stringWithFormat:@"%d", sleep], @"sleep",
+                             [NSString stringWithFormat:@"%d", _forcepxa], @"forcepxa",
+                             [NSString stringWithFormat:@"%d", _emures], @"emures",
                              
-                             [NSString stringWithFormat:@"%d", forcepxa], @"forcepxa",
-                             [NSString stringWithFormat:@"%d", emures], @"emures",
+                             [NSString stringWithFormat:@"%d", _p1aspx], @"p1aspx",
                              
-                             [NSString stringWithFormat:@"%d", p1aspx], @"p1aspx",
+                             [NSString stringWithFormat:@"%d", _filterClones], @"filterClones",
+                             [NSString stringWithFormat:@"%d", _filterFavorites], @"filterFavorites",
+                             [NSString stringWithFormat:@"%d", _filterNotWorking], @"filterNotWorking",
+                             [NSString stringWithFormat:@"%d", _manufacturerValue], @"manufacturerValue",
+                             [NSString stringWithFormat:@"%d", _yearGTEValue], @"yearGTEValue",
+                             [NSString stringWithFormat:@"%d", _yearLTEValue], @"yearLTEValue",
+                             [NSString stringWithFormat:@"%d", _driverSourceValue], @"driverSourceValue",
+                             [NSString stringWithFormat:@"%d", _categoryValue], @"categoryValue",
+                             [NSString stringWithFormat:@"%d", _lowlsound], @"lowlsound",
+                             [NSString stringWithFormat:@"%d", _vsync], @"vsync",
+                             [NSString stringWithFormat:@"%d", _threaded], @"threaded",
+                             [NSString stringWithFormat:@"%d", _dblbuff], @"dblbuff",
                              
-                             [NSString stringWithFormat:@"%d", filterClones], @"filterClones",
-                             [NSString stringWithFormat:@"%d", filterFavorites], @"filterFavorites",
-                             [NSString stringWithFormat:@"%d", filterNotWorking], @"filterNotWorking",
-                             [NSString stringWithFormat:@"%d", manufacturerValue], @"manufacturerValue",
-                             [NSString stringWithFormat:@"%d", yearGTEValue], @"yearGTEValue",
-                             [NSString stringWithFormat:@"%d", yearLTEValue], @"yearLTEValue",
-                             [NSString stringWithFormat:@"%d", driverSourceValue], @"driverSourceValue",
-                             [NSString stringWithFormat:@"%d", categoryValue], @"categoryValue",
-                             [NSString stringWithFormat:@"%d", lowlsound], @"lowlsound",
-                             [NSString stringWithFormat:@"%d", vsync], @"vsync",
-                             [NSString stringWithFormat:@"%d", threaded], @"threaded",
-                             [NSString stringWithFormat:@"%d", dblbuff], @"dblbuff",
+                             [NSString stringWithFormat:@"%d", _mainPriority], @"mainPriority",
+                             [NSString stringWithFormat:@"%d", _videoPriority], @"videoPriority",
                              
-                             [NSString stringWithFormat:@"%d", mainPriority], @"mainPriority",
-                             [NSString stringWithFormat:@"%d", videoPriority], @"videoPriority",
+                             [NSString stringWithFormat:@"%d", _autofire], @"autofire",
+                             [NSString stringWithFormat:@"%d", _hiscore], @"hiscore",
                              
-                             [NSString stringWithFormat:@"%d", autofire], @"autofire",
-                             [NSString stringWithFormat:@"%d", hiscore], @"hiscore",
-                             
-                             [NSString stringWithFormat:@"%d", stickSize], @"stickSize",
-                             [NSString stringWithFormat:@"%d", buttonSize], @"buttonSize",
-                             [NSString stringWithFormat:@"%d", nintendoBAYX], @"nintendoBAYX",
+                             [NSString stringWithFormat:@"%d", _stickSize], @"stickSize",
+                             [NSString stringWithFormat:@"%d", _buttonSize], @"buttonSize",
+                             [NSString stringWithFormat:@"%d", _nintendoBAYX], @"nintendoBAYX",
 
-                             [NSString stringWithFormat:@"%d", wpantype], @"wpantype",
-                             [NSString stringWithFormat:@"%d", wfport], @"wfport",
-                             [NSString stringWithFormat:@"%d", wfframesync], @"wfframesync",
-                             [NSString stringWithFormat:@"%d", btlatency], @"btlatency",
-                             wfpeeraddr_tmp, @"wfpeeraddr",
+                             [NSString stringWithFormat:@"%d", _wpantype], @"wpantype",
+                             [NSString stringWithFormat:@"%d", _wfport], @"wfport",
+                             [NSString stringWithFormat:@"%d", _wfframesync], @"wfframesync",
+                             [NSString stringWithFormat:@"%d", _btlatency], @"btlatency",
+                             (_wfpeeraddr ?: @""), @"wfpeeraddr",
                              
-                             filterKeyword_tmp, @"filterKeyword", //CUIADO si es nill termina la lista
+                             (_filterKeyword ?: @""), @"filterKeyword",
                              
-                             [NSString stringWithFormat:@"%d", vbean2x], @"vbean2x",
-                             [NSString stringWithFormat:@"%d", vantialias], @"vantialias",
-                             [NSString stringWithFormat:@"%d", vflicker], @"vflicker",
+                             [NSString stringWithFormat:@"%d", _vbean2x], @"vbean2x",
+                             [NSString stringWithFormat:@"%d", _vantialias], @"vantialias",
+                             [NSString stringWithFormat:@"%d", _vflicker], @"vflicker",
                              
-                             [NSString stringWithFormat:@"%d", emuspeed], @"emuspeed",
+                             [NSString stringWithFormat:@"%d", _emuspeed], @"emuspeed",
                              
-                             [NSString stringWithFormat:@"%d", mainThreadType], @"mainThreadType",
-                             [NSString stringWithFormat:@"%d", videoThreadType], @"videoThreadType",
+                             [NSString stringWithFormat:@"%d", _mainThreadType], @"mainThreadType",
+                             [NSString stringWithFormat:@"%d", _videoThreadType], @"videoThreadType",
                              
-                             nil]];
+                             nil];
     
     
     NSString *path=[NSString stringWithUTF8String:get_documents_path("iOS/options_v23.bin")];
@@ -508,7 +445,7 @@
     
     NSError *error = nil;
     
-    plistData = [NSPropertyListSerialization dataWithPropertyList:optionsArray
+    plistData = [NSPropertyListSerialization dataWithPropertyList:optionsDict
                                                            format:NSPropertyListBinaryFormat_v1_0
                                                           options:0
                                                             error:&error];
@@ -535,4 +472,21 @@
     }
 }
 
+@end
+
+#pragma mark - safe access to options array list
+
+@implementation NSArray (optionAtIndex)
+- (id)objectAtIndex:(NSUInteger)index withDefault:(id)defaultObject {
+    if (index != NSNotFound && index >= 0 && index < [self count])
+        return [self objectAtIndex:index];
+    else
+        return defaultObject;
+}
+- (NSString*)optionAtIndex:(NSUInteger)index {
+    return [self objectAtIndex:index withDefault:self.firstObject];
+}
+- (NSString*)optionAtString:(NSString*)string {
+    return [self optionAtIndex:[self indexOfObject:string]];
+}
 @end

@@ -50,7 +50,15 @@
 #import "TVOptionsController.h"
 #endif
 
-@implementation ListOptionController;
+#define kTypeKeyValue    -1
+
+@implementation ListOptionController {
+    NSInteger type;
+    NSString* key;  // for kTypeKeyValue
+    NSArray<NSString*> *list;
+    NSInteger value;
+    NSArray<NSString*> *sections;
+}
 
 - (id)initWithStyle:(UITableViewStyle)style type:(NSInteger)typeValue list:(NSArray *)listValue{
     
@@ -58,25 +66,13 @@
     {
         type = typeValue;
         list = listValue;
+        
         switch (type) {
             case kTypeManufacturerValue:
             case kTypeDriverSourceValue:
             case kTypeCategoryValue:
-                indexed = true;
+                sections = @[@"#", @"a", @"b", @"c", @"d", @"e", @"f", @"g", @"h", @"i", @"j", @"k", @"l", @"m", @"n", @"o", @"p", @"q", @"r", @"s", @"t", @"u", @"v", @"w", @"x", @"y", @"z"];
                 break;
-                
-            default:
-                indexed = false;
-                break;
-        }
-        
-        if(indexed)
-        {
-            sections = @[@"#", @"a", @"b", @"c", @"d", @"e", @"f", @"g", @"h", @"i", @"j", @"k", @"l", @"m", @"n", @"o", @"p", @"q", @"r", @"s", @"t", @"u", @"v", @"w", @"x", @"y", @"z"];
-        }
-        else
-        {
-            sections = nil;
         }
     }
     return self;
@@ -84,11 +80,27 @@
 - (id)initWithType:(NSInteger)typeValue list:(NSArray *)listValue {
     return [self initWithStyle:UITableViewStyleGrouped type:typeValue list:listValue];
 }
+- (instancetype)initWithKey:(NSString*)keyValue list:(NSArray<NSString*>*)listValue {
+    if (self = [super initWithStyle:UITableViewStyleGrouped])
+    {
+        NSAssert([[[Options alloc] init] valueForKey:keyValue] != nil, @"bad key");
+        type = kTypeKeyValue;
+        key = keyValue;
+        list = listValue;
+    }
+    return self;
+}
+- (instancetype)initWithKey:(NSString*)keyValue list:(NSArray<NSString*>*)listValue title:(NSString *)titleValue {
+    self = [self initWithKey:keyValue list:listValue];
+    self.title = titleValue;
+    return self;
+}
 
 - (void)viewWillAppear:(BOOL)animated {
 
     Options *op = [[Options alloc] init];
     
+    // get the current value and set the title
     switch (type) {
         case kTypeNumButtons:
             self.title = @"Number Of Buttons";
@@ -129,10 +141,6 @@
         case kTypeOverscanValue:
             self.title = @"Overscan TV-OUT";
             value = op.overscanValue;
-            break;
-        case kTypeSkinValue:
-            self.title = @"Skin";
-            value = op.skinValue;
             break;
         case kTypeManufacturerValue:
             self.title = @"Manufacturer";
@@ -198,19 +206,37 @@
             self.title = @"Main Thread Type";
             value = op.mainThreadType;
             break;
-        default:
+        case kTypeKeyValue:
+        {
+            id val = [op valueForKey:key];
+            
+            if ([val isKindOfClass:[NSString class]])
+                value = [list indexOfObject:val];
+            else if ([val isKindOfClass:[NSNumber class]])
+                value = [val intValue];
+            else
+                value = 0;
+            
             break;
+        }
+        default:
+            NSAssert(FALSE, @"bad list type");
+            break;
+    }
+    
+    if (value == NSNotFound || value >= [list count]) {
+        NSLog(@"list value out of range, setting to 0");
+        value = 0;
     }
         
     [super viewWillAppear:animated];
-    
 }
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
     if (value > 10) {
         NSIndexPath *scrollIndexPath=nil;
-        if(indexed)
+        if(sections != nil)
         {
             NSString *s = [list objectAtIndex:value];
             NSString *l = [[s substringToIndex:1] lowercaseString];
@@ -234,6 +260,7 @@
     Options *op = [[Options alloc] init];
     int value = (int)self->value;
     
+    // set the current value, in the kTypeCustom case call the handler to do it.
     switch (type) {
         case kTypeNumButtons:
             op.numbuttons =value;
@@ -264,9 +291,6 @@
             break;
         case kTypeOverscanValue:
             op.overscanValue =value;
-            break;
-        case kTypeSkinValue:
-            op.skinValue =value;
             break;
         case kTypeManufacturerValue:
             op.manufacturerValue =value;
@@ -316,7 +340,20 @@
         case kTypeVideoThreadTypeValue:
             op.videoThreadType =value;
             break;
+        case kTypeKeyValue:
+        {
+            id val = [op valueForKey:key];
+
+            if ([val isKindOfClass:[NSString class]])
+                [op setValue:[list optionAtIndex:value] forKey:key];
+            else if ([val isKindOfClass:[NSNumber class]])
+                [op setValue:@(value) forKey:key];
+            
+            NSLog(@"LIST SELECT: %@ = %@", key, [op valueForKey:key]);
+            break;
+        }
         default:
+            NSAssert(FALSE, @"bad type");
             break;
     }
     
@@ -324,35 +361,26 @@
 }
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    if(indexed)
+    if (sections != nil)
         return [sections count];
     else
         return 1;
 }
 
 - (NSArray *)sectionIndexTitlesForTableView:(UITableView *)tableView {
-    if(indexed)
-       return sections;
-    else
-       return nil;
+    return sections;
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
-    /*if(indexed)
-      return [sections objectAtIndex:section];
-    else*/
-        return nil;
+    return nil;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     
-    if(indexed)
-    {
-        NSArray *sectionArray = [list filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF beginswith[c] %@", [sections objectAtIndex:section]]];
-        return[sectionArray count];
-    }
+    if (sections != nil)
+        return [[list filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF beginswith[c] %@", [sections objectAtIndex:section]]] count];
     else
-       return [list count];
+        return [list count];
 }
 
 
@@ -364,7 +392,7 @@
     }
     
     NSUInteger row = [indexPath row];
-    if(indexed)
+    if (sections != nil)
     {
         NSString *txt = [self retrieveIndexedCellText:indexPath];
         cell.textLabel.text = txt;
@@ -381,7 +409,7 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
         
-    if(indexed)
+    if (sections != nil)
     {
         NSInteger curr = [list indexOfObject:[self retrieveIndexedCellText:indexPath]];
         if(curr!=value) {
@@ -397,7 +425,6 @@
     }
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     [self.tableView reloadData];
-    
 }
 
 - (NSString *)retrieveIndexedCellText:(NSIndexPath *)indexPath{

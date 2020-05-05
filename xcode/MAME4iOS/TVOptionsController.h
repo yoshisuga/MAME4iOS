@@ -17,9 +17,9 @@ enum OptionSections
 {
     kInputSection = 0,
     kServerSection,
+    kDefaultsSection,
     kScreenSection,
     kMiscSection,
-    kDefaultsSection,
     kFilterSection,
     kResetSection,
     kNumSections
@@ -37,7 +37,6 @@ enum ListOptionType
     kTypeSoundValue,
     kTypeFSValue,
     kTypeOverscanValue,
-    kTypeSkinValue,
     kTypeManufacturerValue,
     kTypeYearGTEValue,
     kTypeYearLTEValue,
@@ -58,15 +57,7 @@ enum ListOptionType
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface TVOptionsController : OptionsTableViewController {
-    NSArray *arrayEmuRes;
-    NSArray *arrayFSValue;
-    NSArray *arrayOverscanValue;
-    NSArray *arrayEmuSpeed;
-}
-
-+(UILabel*)labelForOnOffValue:(int)optionValue;
-+(void)setOnOffValueForCell:(UITableViewCell*)cell optionValue:(int)optionValue;
+@interface TVOptionsController : OptionsTableViewController
 
 @end
 

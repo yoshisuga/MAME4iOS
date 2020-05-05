@@ -130,6 +130,9 @@ int g_pref_tv_filter_port = 0;
 int g_pref_scanline_filter_land = 0;
 int g_pref_scanline_filter_port = 0;
 
+int g_pref_border_land = 0;
+int g_pref_border_port = 0;
+
 int g_pref_animated_DPad = 0;
 int g_pref_4buttonsLand = 0;
 int g_pref_full_screen_land = 1;
@@ -713,15 +716,20 @@ void mame_state(int load_save, int slot)
     
     g_pref_keep_aspect_ratio_land = [op keepAspectRatioLand];
     g_pref_keep_aspect_ratio_port = [op keepAspectRatioPort];
-    g_pref_smooth_land = [op smoothedLand];
-    g_pref_smooth_port = [op smoothedPort];
     
-    g_pref_tv_filter_land = [op tvFilterLand];
-    g_pref_tv_filter_port = [op tvFilterPort];
+    //TODO: do this right, but for now just treat as binary.
+    g_pref_smooth_land = op.filterLand.length != 0 && ![op.filterLand isEqualToString:Options.arrayFilter.firstObject];
+    g_pref_smooth_port = op.filterPort.length != 0 && ![op.filterLand isEqualToString:Options.arrayFilter.firstObject];
     
-    g_pref_scanline_filter_land = [op scanlineFilterLand];
-    g_pref_scanline_filter_port = [op scanlineFilterPort];
+    g_pref_tv_filter_land = [op.effectLand isEqualToString:@"CRT"];
+    g_pref_tv_filter_port = [op.effectPort isEqualToString:@"CRT"];
     
+    g_pref_scanline_filter_land = [op.effectLand isEqualToString:@"Scanline"];
+    g_pref_scanline_filter_port = [op.effectPort isEqualToString:@"Scanline"];
+
+    g_pref_border_land = op.borderLand.length != 0 && ![op.borderLand isEqualToString:Options.arrayBorder.firstObject];
+    g_pref_border_port = op.borderPort.length != 0 && ![op.borderPort isEqualToString:Options.arrayBorder.firstObject];
+
     myosd_fps = [op showFPS];
     myosd_showinfo =  [op showINFO];
     g_pref_animated_DPad  = [op animatedButtons];
