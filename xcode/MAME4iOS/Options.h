@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (class, readonly, strong) NSArray* arrayBorder;
 @property (class, readonly, strong) NSArray* arrayFilter;
 @property (class, readonly, strong) NSArray* arrayEffect;
+@property (class, readonly, strong) NSArray* arrayColorSpaceData;
 @property (class, readonly, strong) NSArray* arrayColorSpace;
 
 @property (readwrite,assign) int keepAspectRatioPort;

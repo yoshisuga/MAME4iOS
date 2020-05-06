@@ -42,8 +42,50 @@
 + (NSArray*)arrayEffect {
   return @[@"None", @"CRT", @"Scanline"];
 }
+//
+// color space data, we define the colorSpaces here, in one place, so it stays in-sync with the UI.
+//
+// you can specify a colorSpace in two ways, with a system name or with parameters.
+// these strings are of the form <Friendly Name> : <colorSpace name OR colorSpace parameters>
+//
+// colorSpace name is one of the sytem contants passed to `CGColorSpaceCreateWithName`
+// see (Color Space Names)[https://developer.apple.com/documentation/coregraphics/cgcolorspace/color_space_names]
+//
+// colorSpace parameters are 6 - 18 floating point numbers separated with commas.
+// see [CGColorSpaceCreateCalibratedRGB](https://developer.apple.com/documentation/coregraphics/1408861-cgcolorspacecreatecalibratedrgb)
+//
+// if <colorSpace name OR colorSpace parameters> is blank or not valid, a device-dependent RGB color space is used.
+//
+// NOTE: not all iOS devices support color matching.
+//
++ (NSArray*)arrayColorSpaceData {
+    return @[@"DeviceRGB",
+             @"sRGB : kCGColorSpaceSRGB",
+             @"Linear sRGB : kCGColorSpaceLinearSRGB",
+             @"Adobe RGB : kCGColorSpaceAdobeRGB1998",
+             @"Generic Gray : kCGColorSpaceGenericGrayGamma2_2",
+             @"Linear Gray : kCGColorSpaceLinearGray",
+             @"NTSC : 0.9504,1.0000,1.0888",
+             @"NTSC Luminance : 0.9504,1.0000,1.0888, 0,0,0, 1,1,1, 0.299,0.587,0.114, 0.299,0.587,0.114, 0.299,0.587,0.114",
+             @"Arcade CRT : ",
+             @"Vector CRT : "
+    ];
+}
+// return only the friendly names to show in the UI.
 + (NSArray*)arrayColorSpace {
-    return @[@"DeviceRGB", @"sRGB", @"Wombat", @"Arcade CRT", @"Vector CRT"];
+    
+    NSMutableArray* colorSpaceNames = [[self arrayColorSpaceData] mutableCopy];
+
+    for (NSInteger i=0; i<colorSpaceNames.count; i++)
+        colorSpaceNames[i] = [[colorSpaceNames[i] componentsSeparatedByString:@":"].firstObject stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
+    
+    // TODO: find out what devices??
+    BOOL deviceSupportsColorMatching = TRUE;
+    
+    if (deviceSupportsColorMatching)
+        return [colorSpaceNames copy];
+    else
+        return @[colorSpaceNames.firstObject];
 }
 
 #pragma mark - instance code
