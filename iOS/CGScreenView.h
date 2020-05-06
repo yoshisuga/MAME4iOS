@@ -41,24 +41,12 @@
  * MAME4iOS is dual-licensed: Alternatively, you can license MAME4iOS
  * under a MAME license, as set out in http://mamedev.org/
  */
+#include "ScreenView.h"
 
-#import <UIKit/UIKit.h>
-#import <QuartzCore/CALayer.h>
+@interface CGScreenView : UIView <ScreenView>
 
-#define kScreenViewFilter           @"filter"
-#define kScreenViewEffect           @"effect"
-#define kScreenViewEffectRect       @"effect-rect"
-#define kScreenViewColorSpace       @"colorspace"
+- (id)initWithFrame:(CGRect)frame options:(NSDictionary*)options;
 
-#define kScreenViewFilterNearest    @"Nearest"
-#define kScreenViewFilterLinear     @"Linear"
-#define kScreenViewFilterTrilinear  @"Trilinear"
-
-#define kScreenViewEffectCRT        @"CRT"
-#define kScreenViewEffectScanline   @"Scanline"
-
-@protocol ScreenView <NSObject>
-
-- (instancetype)initWithFrame:(CGRect)frame options:(NSDictionary*)options;
++ (CGColorSpaceRef)createColorSpaceFromString:(NSString*)string;
 
 @end

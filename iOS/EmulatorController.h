@@ -46,6 +46,7 @@
 
 #import "Globals.h"
 #import "ScreenView.h"
+#import "CGScreenView.h"
 #import "GCDWebUploader.h"
 #import <GameController/GameController.h>
 
@@ -69,7 +70,7 @@
 @interface EmulatorController : GCEventViewController<GCDWebUploaderDelegate>
 #endif
 {
-  @public ScreenView			* screenView;
+  @public UIView<ScreenView>* screenView;
   UIImageView	    * imageBack;
   UIImageView	    * imageOverlay;
   UIImageView        * imageExternalDisplay;

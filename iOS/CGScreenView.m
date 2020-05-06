@@ -41,16 +41,16 @@
  * MAME4iOS is dual-licensed: Alternatively, you can license MAME4iOS
  * under a MAME license, as set out in http://mamedev.org/
  */
-#import "ScreenView.h"
+#import "CGScreenView.h"
 #import "Globals.h"
 
 //static
 unsigned short img_buffer [2880 * 2160]; // match max driver res?
 
-@interface ScreenLayer : CALayer
+@interface CGScreenLayer : CALayer
 @end
 
-@implementation ScreenLayer {
+@implementation CGScreenLayer {
     CGContextRef _bitmapContext;
     CGColorSpaceRef _colorSpace;
 }
@@ -97,8 +97,73 @@ unsigned short img_buffer [2880 * 2160]; // match max driver res?
 }
 @end
 
-@implementation ScreenView {
+@implementation CGScreenView {
     NSDictionary* _options;
+}
+
++ (Class) layerClass
+{
+    return [CGScreenLayer class];
+}
+
+- (id)initWithFrame:(CGRect)frame {
+	if ((self = [super initWithFrame:frame])!=nil) {
+        
+        self.opaque = YES;
+        self.clearsContextBeforeDrawing = NO;
+#if TARGET_OS_IOS
+        self.multipleTouchEnabled = NO;
+#endif
+        self.userInteractionEnabled = NO;
+	}
+    
+	return self;
+}
+- (id)initWithFrame:(CGRect)frame options:(NSDictionary*)options {
+    self = [self initWithFrame:frame];
+    _options = options;
+    return self;
+}
+- (void)didMoveToWindow {
+    
+    if (self.window == nil)
+        return;
+
+    // set a custom color space
+    if(_options[kScreenViewColorSpace] != nil)
+    {
+        CGColorSpaceRef colorSpace = [[self class] createColorSpaceFromString:_options[kScreenViewColorSpace]];
+        [(CGScreenLayer*)self.layer setColorSpace:colorSpace];
+        CGColorSpaceRelease(colorSpace);
+    }
+
+    // enable filtering
+    NSString* filter = _options[kScreenViewFilter];
+    
+    if ([filter isEqualToString:kScreenViewFilterTrilinear])
+    {
+        [self.layer setMagnificationFilter:kCAFilterTrilinear];
+        [self.layer setMinificationFilter:kCAFilterTrilinear];
+    }
+    else if ([filter isEqualToString:kScreenViewFilterLinear])
+    {
+        [self.layer setMagnificationFilter:kCAFilterLinear];
+        [self.layer setMinificationFilter:kCAFilterLinear];
+    }
+    else
+    {
+        [self.layer setMagnificationFilter:kCAFilterNearest];
+        [self.layer setMinificationFilter:kCAFilterNearest];
+    }
+}
+- (void)drawRect:(CGRect)rect
+{
+    //printf("Draw rect\n");
+    // UIView uses the existence of -drawRect: to determine if should allow its CALayer
+    // to be invalidated, which would then lead to the layer creating a backing store and
+    // -drawLayer:inContext: being called.
+    // By implementing an empty -drawRect: method, we allow UIKit to continue to implement
+    // this logic, while doing our real drawing work inside of -drawLayer:inContext:
 }
 
 // you can specify a colorSpace in two ways, with a system name or with parameters.
@@ -145,72 +210,6 @@ unsigned short img_buffer [2880 * 2160]; // match max driver res?
     }
 
     return CGColorSpaceCreateCalibratedRGB(whitePoint, blackPoint, gamma, matrix);
-}
-
-
-+ (Class) layerClass
-{
-    return [ScreenLayer class];
-}
-
-- (id)initWithFrame:(CGRect)frame {
-	if ((self = [super initWithFrame:frame])!=nil) {
-        
-        self.opaque = YES;
-        self.clearsContextBeforeDrawing = NO;
-#if TARGET_OS_IOS
-        self.multipleTouchEnabled = NO;
-#endif
-        self.userInteractionEnabled = NO;
-	}
-    
-	return self;
-}
-- (id)initWithFrame:(CGRect)frame options:(NSDictionary*)options {
-    self = [self initWithFrame:frame];
-    _options = options;
-    return self;
-}
-- (void)didMoveToWindow {
-    
-    if (self.window == nil)
-        return;
-
-    // set a custom color space
-    if(_options[kScreenViewColorSpace] != nil)
-    {
-        CGColorSpaceRef colorSpace = [[self class] createColorSpaceFromString:_options[kScreenViewColorSpace]];
-        [(ScreenLayer*)self.layer setColorSpace:colorSpace];
-        CGColorSpaceRelease(colorSpace);
-    }
-
-    // enable filtering
-    NSString* filter = _options[kScreenViewFilter];
-    
-    if ([filter isEqualToString:kScreenViewFilterTrilinear])
-    {
-        [self.layer setMagnificationFilter:kCAFilterTrilinear];
-        [self.layer setMinificationFilter:kCAFilterTrilinear];
-    }
-    else if ([filter isEqualToString:kScreenViewFilterLinear])
-    {
-        [self.layer setMagnificationFilter:kCAFilterLinear];
-        [self.layer setMinificationFilter:kCAFilterLinear];
-    }
-    else
-    {
-        [self.layer setMagnificationFilter:kCAFilterNearest];
-        [self.layer setMinificationFilter:kCAFilterNearest];
-    }
-}
-- (void)drawRect:(CGRect)rect
-{
-    //printf("Draw rect\n");
-    // UIView uses the existence of -drawRect: to determine if should allow its CALayer
-    // to be invalidated, which would then lead to the layer creating a backing store and
-    // -drawLayer:inContext: being called.
-    // By implementing an empty -drawRect: method, we allow UIKit to continue to implement
-    // this logic, while doing our real drawing work inside of -drawLayer:inContext:
 }
 
 @end

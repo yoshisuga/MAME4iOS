@@ -1188,7 +1188,7 @@ void mame_state(int load_save, int slot)
     
 #ifdef DEBUG
     for (NSString* string in Options.arrayColorSpaceData) {
-        CGColorSpaceRef colorSpace = [ScreenView createColorSpaceFromString:string];
+        CGColorSpaceRef colorSpace = [CGScreenView createColorSpaceFromString:string];
         NSLog(@"COLORSPACE DATA: %@", string);
         NSLog(@"     COLORSPACE: %@", colorSpace);
         CGColorSpaceRelease(colorSpace);
@@ -1814,7 +1814,7 @@ void myosd_handle_turbo() {
     
    rScreenView = r;
     
-   screenView = [ [ScreenView alloc] initWithFrame:rScreenView options:@{
+   screenView = [ [CGScreenView alloc] initWithFrame:rScreenView options:@{
         kScreenViewFilter: g_pref_filter_port,
         kScreenViewEffect: g_pref_effect_port,
         kScreenViewColorSpace: g_pref_colorspace
@@ -2014,7 +2014,7 @@ void myosd_handle_turbo() {
 
    rScreenView = r;
    
-   screenView = [ [ScreenView alloc] initWithFrame:rScreenView options:@{
+   screenView = [ [CGScreenView alloc] initWithFrame:rScreenView options:@{
        kScreenViewFilter: g_pref_filter_land,
        kScreenViewEffect: g_pref_effect_land,
        kScreenViewColorSpace: g_pref_colorspace
