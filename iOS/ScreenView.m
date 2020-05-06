@@ -47,12 +47,12 @@
 //static
 unsigned short img_buffer [2880 * 2160]; // match max driver res?
 
-
 @interface ScreenLayer : CALayer
 @end
 
 @implementation ScreenLayer {
-    CGContextRef bitmapContext;
+    CGContextRef _bitmapContext;
+    CGColorSpaceRef _colorSpace;
 }
 
 + (id) defaultActionForKey:(NSString *)key
@@ -60,66 +60,98 @@ unsigned short img_buffer [2880 * 2160]; // match max driver res?
     return nil;
 }
 
-- (id)init {
-    //printf("Crean layer %ld\n",self);
-	if (self = [super init])
-	{
-        bitmapContext = nil;
-        
-        
-        CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-        bitmapContext = CGBitmapContextCreate(
-                                              img_buffer,
-                                              myosd_video_width,//512,//320,
-                                              myosd_video_height,//480,//240,
-                                              /*8*/5, // bitsPerComponent
-                                              2*myosd_video_width,//2*512,///*4*320*/2*320, // bytesPerRow
-                                              colorSpace,
-                                              kCGImageAlphaNoneSkipFirst  | kCGBitmapByteOrder16Little/*kCGImageAlphaNoneSkipLast */);
-        
-        CFRelease(colorSpace);
-        
-		if((g_pref_smooth_land && g_device_is_landscape) || (g_pref_smooth_port && !g_device_is_landscape))
-		{
-            [self setMagnificationFilter:kCAFilterLinear];
-            [self setMinificationFilter:kCAFilterLinear];
-		}
-		else
-		{
-            [self setMagnificationFilter:kCAFilterNearest];
-            [self setMinificationFilter:kCAFilterNearest];
-  	    }
-        
-	}
-	return self;
+-(void)setColorSpace:(CGColorSpaceRef)colorSpace {
+    CGColorSpaceRetain(colorSpace);
+    CGColorSpaceRelease(_colorSpace);
+    _colorSpace = colorSpace;
 }
 
 - (void)display {
     
-    CGImageRef cgImage = CGBitmapContextCreateImage(bitmapContext);
+    if (_bitmapContext == nil)
+    {
+        if (_colorSpace == nil)
+            _colorSpace = CGColorSpaceCreateDeviceRGB();
+        
+        _bitmapContext = CGBitmapContextCreate(img_buffer,myosd_video_width,myosd_video_height,5,myosd_video_width*2,
+                                               _colorSpace,kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder16Little/*kCGImageAlphaNoneSkipLast*/);
+        if (_bitmapContext == nil) {
+            _colorSpace = CGColorSpaceCreateDeviceRGB();
+            _bitmapContext = CGBitmapContextCreate(img_buffer,myosd_video_width,myosd_video_height,5,myosd_video_width*2,
+                                                   _colorSpace,kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder16Little/*kCGImageAlphaNoneSkipLast*/);
+        }
+        NSAssert(_bitmapContext != nil, @"ack!");
+    }
     
+    CGImageRef cgImage = CGBitmapContextCreateImage(_bitmapContext);
     self.contents = (__bridge id)cgImage;
-    
-    CFRelease(cgImage);
+    CGImageRelease(cgImage);
 }
 
 - (void)dealloc {
-        
-    if(bitmapContext!=nil)
-    {
-        CFRelease(bitmapContext);
-        bitmapContext=nil;
-    }
+    CGContextRelease(_bitmapContext);
+    _bitmapContext = nil;
+
+    CGColorSpaceRelease(_colorSpace);
+    _colorSpace = nil;
 }
 @end
 
-@implementation ScreenView
+@implementation ScreenView {
+    NSDictionary* _options;
+}
+
+// you can specify a colorSpace in two ways, with a system name or with parameters.
+// these strings are of the form <Friendly Name> : <colorSpace name OR colorSpace parameters>
++ (CGColorSpaceRef)createColorSpaceFromString:(NSString*)string {
+    
+    if ([string containsString:@":"])
+        string = [string componentsSeparatedByString:@":"].lastObject;
+
+    string = [string stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
+    
+    if ([string length] == 0)
+        return CGColorSpaceCreateDeviceRGB();
+    
+    NSArray* values = [string componentsSeparatedByString:@","];
+    NSAssert(values.count == 1 || values.count == 3 || values.count == 6 || values.count == 9 || values.count == 18, @"bad colorspace string");
+    
+    // named colorSpace
+    if (values.count < 3) {
+        CFStringRef name = (__bridge CFStringRef)[values.firstObject stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
+        return CGColorSpaceCreateWithName(name) ?: CGColorSpaceCreateDeviceRGB();
+    }
+    
+    // calibrated color space <white point>, <black point>, <gamma>, <matrix>
+    CGFloat whitePoint[] = {0.0,0.0,0.0};
+    CGFloat blackPoint[] = {0.0,0.0,0.0};
+    CGFloat gamma[] = {1.0,1.0,1.0};
+    CGFloat matrix[] = {1.0,0.0,0.0, 0.0,1.0,0.0, 0.0,0.0,1.0};
+    
+    for (int i=0; i<3; i++)
+        whitePoint[i] = [values[0+i] doubleValue];
+    
+    if (values.count >= 6) {
+        for (int i=0; i<3; i++)
+            blackPoint[i] = [values[3+i] doubleValue];
+    }
+    if (values.count >= 9) {
+        for (int i=0; i<3; i++)
+            gamma[i] = [values[6+i] doubleValue];
+    }
+    if (values.count >= 18) {
+        for (int i=0; i<9; i++)
+            matrix[i] = [values[9+i] doubleValue];
+    }
+
+    return CGColorSpaceCreateCalibratedRGB(whitePoint, blackPoint, gamma, matrix);
+}
+
 
 + (Class) layerClass
 {
     return [ScreenLayer class];
 }
-
 
 - (id)initWithFrame:(CGRect)frame {
 	if ((self = [super initWithFrame:frame])!=nil) {
@@ -134,7 +166,43 @@ unsigned short img_buffer [2880 * 2160]; // match max driver res?
     
 	return self;
 }
+- (id)initWithFrame:(CGRect)frame options:(NSDictionary*)options {
+    self = [self initWithFrame:frame];
+    _options = options;
+    return self;
+}
+- (void)didMoveToWindow {
+    
+    if (self.window == nil)
+        return;
 
+    // set a custom color space
+    if(_options[kScreenViewColorSpace] != nil)
+    {
+        CGColorSpaceRef colorSpace = [[self class] createColorSpaceFromString:_options[kScreenViewColorSpace]];
+        [(ScreenLayer*)self.layer setColorSpace:colorSpace];
+        CGColorSpaceRelease(colorSpace);
+    }
+
+    // enable filtering
+    NSString* filter = _options[kScreenViewFilter];
+    
+    if ([filter isEqualToString:kScreenViewFilterTrilinear])
+    {
+        [self.layer setMagnificationFilter:kCAFilterTrilinear];
+        [self.layer setMinificationFilter:kCAFilterTrilinear];
+    }
+    else if ([filter isEqualToString:kScreenViewFilterLinear])
+    {
+        [self.layer setMagnificationFilter:kCAFilterLinear];
+        [self.layer setMinificationFilter:kCAFilterLinear];
+    }
+    else
+    {
+        [self.layer setMagnificationFilter:kCAFilterNearest];
+        [self.layer setMinificationFilter:kCAFilterNearest];
+    }
+}
 - (void)drawRect:(CGRect)rect
 {
     //printf("Draw rect\n");
@@ -143,7 +211,6 @@ unsigned short img_buffer [2880 * 2160]; // match max driver res?
     // -drawLayer:inContext: being called.
     // By implementing an empty -drawRect: method, we allow UIKit to continue to implement
     // this logic, while doing our real drawing work inside of -drawLayer:inContext:
-    
 }
 
 @end

@@ -45,10 +45,22 @@
 #import <UIKit/UIKit.h>
 #import <QuartzCore/CALayer.h>
 
+#define kScreenViewFilter           @"filter"
+#define kScreenViewEffect           @"effect"
+#define kScreenViewEffectRect       @"effect-rect"
+#define kScreenViewColorSpace       @"colorspace"
+
+#define kScreenViewFilterNearest    @"Nearest"
+#define kScreenViewFilterLinear     @"Linear"
+#define kScreenViewFilterTrilinear  @"Trilinear"
+
+#define kScreenViewEffectCRT        @"CRT"
+#define kScreenViewEffectScanline   @"Scanline"
 
 @interface ScreenView : UIView
 
-- (id)initWithFrame:(CGRect)frame;
-- (void)drawRect:(CGRect)rect;
+- (id)initWithFrame:(CGRect)frame options:(NSDictionary*)options;
+
++ (CGColorSpaceRef)createColorSpaceFromString:(NSString*)string;
 
 @end

@@ -81,7 +81,7 @@
 #import "SystemImage.h"
 #import "SteamController.h"
 
-#define DebugLog 0
+#define DebugLog 1
 #if DebugLog == 0
 #define NSLog(...) (void)0
 #endif
@@ -119,19 +119,25 @@ int g_controller_opacity = 50;
 int g_device_is_landscape = 0;
 int g_device_is_fullscreen = 0;
 
-int g_pref_smooth_land = 0;
-int g_pref_smooth_port = 0;
+NSString* g_pref_effect_land;
+NSString* g_pref_effect_port;
+NSString* g_pref_filter_land;
+NSString* g_pref_filter_port;
+NSString* g_pref_border_land;
+NSString* g_pref_border_port;
+NSString* g_pref_colorspace;
+
+int g_pref_integer_scale_only = 0;
+
 int g_pref_keep_aspect_ratio_land = 0;
 int g_pref_keep_aspect_ratio_port = 0;
 
+int g_pref_smooth_land = 0;
+int g_pref_smooth_port = 0;
 int g_pref_tv_filter_land = 0;
 int g_pref_tv_filter_port = 0;
-
 int g_pref_scanline_filter_land = 0;
 int g_pref_scanline_filter_port = 0;
-
-int g_pref_border_land = 0;
-int g_pref_border_port = 0;
 
 int g_pref_animated_DPad = 0;
 int g_pref_4buttonsLand = 0;
@@ -717,18 +723,33 @@ void mame_state(int load_save, int slot)
     g_pref_keep_aspect_ratio_land = [op keepAspectRatioLand];
     g_pref_keep_aspect_ratio_port = [op keepAspectRatioPort];
     
-    //TODO: do this right, but for now just treat as binary.
-    g_pref_smooth_land = op.filterLand.length != 0 && ![op.filterLand isEqualToString:Options.arrayFilter.firstObject];
-    g_pref_smooth_port = op.filterPort.length != 0 && ![op.filterLand isEqualToString:Options.arrayFilter.firstObject];
+    g_pref_filter_land = op.filterLand;
+    g_pref_filter_port = op.filterPort;
+
+    g_pref_effect_land = op.effectLand;
+    g_pref_effect_port = op.effectPort;
+
+    g_pref_border_land = op.borderLand;
+    g_pref_border_port = op.borderPort;
+    
+    g_pref_colorspace  = op.sourceColorSpace;
+    
+    // get the full colorSpaceData, not just the name.
+    NSUInteger idx = [Options.arrayColorSpace indexOfObject:g_pref_colorspace];
+    g_pref_colorspace = [Options.arrayColorSpaceData optionAtIndex:idx];
+    
+    g_pref_integer_scale_only = op.integerScalingOnly;
+
+    //TODO: remove these binary globals
+    g_pref_smooth_land = g_pref_filter_land.length != 0 && ![g_pref_filter_land isEqualToString:Options.arrayFilter.firstObject];
+    g_pref_smooth_port = g_pref_filter_port.length != 0 && ![g_pref_filter_port isEqualToString:Options.arrayFilter.firstObject];
     
     g_pref_tv_filter_land = [op.effectLand isEqualToString:@"CRT"];
     g_pref_tv_filter_port = [op.effectPort isEqualToString:@"CRT"];
     
-    g_pref_scanline_filter_land = [op.effectLand isEqualToString:@"Scanline"];
-    g_pref_scanline_filter_port = [op.effectPort isEqualToString:@"Scanline"];
-
-    g_pref_border_land = op.borderLand.length != 0 && ![op.borderLand isEqualToString:Options.arrayBorder.firstObject];
-    g_pref_border_port = op.borderPort.length != 0 && ![op.borderPort isEqualToString:Options.arrayBorder.firstObject];
+    g_pref_scanline_filter_land = [g_pref_filter_land isEqualToString:@"Scanline"];
+    g_pref_scanline_filter_port = [g_pref_filter_port isEqualToString:@"Scanline"];
+    // TODO: ----------------------------------------------
 
     myosd_fps = [op showFPS];
     myosd_showinfo =  [op showINFO];
@@ -743,8 +764,6 @@ void mame_state(int load_save, int slot)
     // always use skin 1
     g_pref_skin = 1;
     g_skin_data = g_pref_skin;
-    if(g_pref_skin == 2 && g_isIpad)
-        g_pref_skin = 3;
     
     g_pref_BT_DZ_value = [op btDeadZoneValue];
     g_pref_touch_DZ = [op touchDeadZone];
@@ -1166,6 +1185,15 @@ void mame_state(int load_save, int slot)
     mouseTouchStartLocation = mouseInitialLocation;
 
     [self updateUserActivity:nil];      // TODO: look at if we need to do this here??
+    
+#ifdef DEBUG
+    for (NSString* string in Options.arrayColorSpaceData) {
+        CGColorSpaceRef colorSpace = [ScreenView createColorSpaceFromString:string];
+        NSLog(@"COLORSPACE DATA: %@", string);
+        NSLog(@"     COLORSPACE: %@", colorSpace);
+        CGColorSpaceRelease(colorSpace);
+    }
+#endif
 }
 
 -(void)viewWillAppear:(BOOL)animated {
@@ -1785,8 +1813,12 @@ void myosd_handle_turbo() {
     }
     
    rScreenView = r;
-       
-   screenView = [ [ScreenView alloc] initWithFrame: rScreenView];
+    
+   screenView = [ [ScreenView alloc] initWithFrame:rScreenView options:@{
+        kScreenViewFilter: g_pref_filter_port,
+        kScreenViewEffect: g_pref_effect_port,
+        kScreenViewColorSpace: g_pref_colorspace
+   }];
                   
    if(externalView==nil)
    {
@@ -1982,7 +2014,11 @@ void myosd_handle_turbo() {
 
    rScreenView = r;
    
-   screenView = [ [ScreenView alloc] initWithFrame: rScreenView];
+   screenView = [ [ScreenView alloc] initWithFrame:rScreenView options:@{
+       kScreenViewFilter: g_pref_filter_land,
+       kScreenViewEffect: g_pref_effect_land,
+       kScreenViewColorSpace: g_pref_colorspace
+   }];
           
    if(externalView==nil)
    {             		    			      

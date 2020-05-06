@@ -51,7 +51,7 @@
 // colorSpace name is one of the sytem contants passed to `CGColorSpaceCreateWithName`
 // see (Color Space Names)[https://developer.apple.com/documentation/coregraphics/cgcolorspace/color_space_names]
 //
-// colorSpace parameters are 6 - 18 floating point numbers separated with commas.
+// colorSpace parameters are 3 - 18 floating point numbers separated with commas.
 // see [CGColorSpaceCreateCalibratedRGB](https://developer.apple.com/documentation/coregraphics/1408861-cgcolorspacecreatecalibratedrgb)
 //
 // if <colorSpace name OR colorSpace parameters> is blank or not valid, a device-dependent RGB color space is used.
@@ -63,10 +63,8 @@
              @"sRGB : kCGColorSpaceSRGB",
              @"Linear sRGB : kCGColorSpaceLinearSRGB",
              @"Adobe RGB : kCGColorSpaceAdobeRGB1998",
-             @"Generic Gray : kCGColorSpaceGenericGrayGamma2_2",
-             @"Linear Gray : kCGColorSpaceLinearGray",
              @"NTSC : 0.9504,1.0000,1.0888",
-             @"NTSC Luminance : 0.9504,1.0000,1.0888, 0,0,0, 1,1,1, 0.299,0.587,0.114, 0.299,0.587,0.114, 0.299,0.587,0.114",
+             @"NTSC Luminance : 0.9504,1.0000,1.0888, 0,0,0, 1,1,1, 0.299,0.299,0.299, 0.587,0.587,0.587, 0.114,0.114,0.114",
              @"Arcade CRT : ",
              @"Vector CRT : "
     ];
