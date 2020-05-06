@@ -37,7 +37,7 @@
     return @[@"None", @"Small", @"Large"];
 }
 + (NSArray*)arrayFilter {
-    return @[@"None", @"Bilinear"];
+    return @[@"Nearest", @"Linear", @"Trilinear"];
 }
 + (NSArray*)arrayEffect {
   return @[@"None", @"CRT", @"Scanline"];
@@ -103,6 +103,8 @@
         
         _sourceColorSpace = @"";
         _useMetal = 0;
+        
+        _integerScalingOnly = 0;
 
         _showFPS = 0;
         _showINFO = 0;
@@ -217,6 +219,8 @@
         
         _sourceColorSpace = [optionsDict objectForKey:@"sourceColorSpace"] ?: @"";
         _useMetal = [[optionsDict objectForKey:@"useMetal"] boolValue];
+
+        _integerScalingOnly = [[optionsDict objectForKey:@"integerScalingOnly"] boolValue];
 
         _lightgunEnabled = [[optionsDict objectForKey:@"lightgunEnabled"] intValue];
         _lightgunBottomScreenReload = [[optionsDict objectForKey:@"lightgunBottomScreenReload"] intValue];
@@ -341,6 +345,8 @@
                              
                              _sourceColorSpace, @"sourceColorSpace",
                              [NSString stringWithFormat:@"%d", _useMetal], @"useMetal",
+                                 
+                             [NSString stringWithFormat:@"%d", _integerScalingOnly], @"integerScalingOnly",
 
                              [NSString stringWithFormat:@"%d", _lightgunEnabled],@"lightgunEnabled",
                              

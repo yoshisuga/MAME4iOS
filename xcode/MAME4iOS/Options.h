@@ -43,6 +43,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite,strong) NSString *sourceColorSpace;
 @property (readwrite,assign) int useMetal;
 
+@property (readwrite,assign) int integerScalingOnly;
+
 @property (readwrite,assign) int showFPS;
 @property (readwrite,assign) int animatedButtons;
 @property (readwrite,assign) int fourButtonsLand;

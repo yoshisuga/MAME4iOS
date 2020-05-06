@@ -255,12 +255,18 @@
                }
                case 5:
                {
+                   cell.textLabel.text   = @"Integer Scaling Only";
+                   cell.accessoryView = [self optionSwitchForKey:@"integerScalingOnly"];
+                   break;
+               }
+               case 6:
+               {
                    cell.textLabel.text   = @"Frame Skip";
                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                    cell.detailTextLabel.text = [Options.arrayFSValue optionAtIndex:op.fsvalue];
                    break;
                }
-               case 6:
+               case 7:
                {
                    cell.textLabel.text   = @"Overscan TV-OUT";
                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
@@ -437,7 +443,7 @@
           case kPortraitSection: return 6;
           case kLandscapeSection: return 6;
           case kOtherSection: return 3;
-          case kVideoSection: return 7;
+          case kVideoSection: return 8;
           case kMiscSection: return 5;
           case kFilterSection: return 2;
           case kImportSection: return 3;
@@ -524,11 +530,11 @@
                 ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"sourceColorSpace" list:Options.arrayColorSpace title:cell.textLabel.text];
                 [[self navigationController] pushViewController:listController animated:YES];
             }
-            if (row==5){
+            if (row==6){
                 ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"fsvalue" list:Options.arrayFSValue title:cell.textLabel.text];
                 [[self navigationController] pushViewController:listController animated:YES];
             }
-            if (row==6){
+            if (row==7){
                 ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"overscanValue" list:Options.arrayOverscanValue title:cell.textLabel.text];
                 [[self navigationController] pushViewController:listController animated:YES];
             }

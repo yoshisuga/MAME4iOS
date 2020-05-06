@@ -42,7 +42,7 @@
     if ( section == kFilterSection ) {
         return 2;
     } else if ( section == kScreenSection ) {
-        return 5;
+        return 7;
     } else if ( section == kMiscSection ) {
         return 8;
     } else if ( section == kDefaultsSection ) {
@@ -118,6 +118,12 @@
         } else if ( indexPath.row == 4 ) {
             cell.textLabel.text = @"Keep Aspect Ratio";
             cell.accessoryView = [self optionSwitchForKey:@"keepAspectRatioLand"];
+        } else if ( indexPath.row == 5 ) {
+            cell.textLabel.text = @"Use Metal";
+            cell.accessoryView = [self optionSwitchForKey:@"useMetal"];
+        } else if ( indexPath.row == 6 ) {
+            cell.textLabel.text = @"Integer Scaling Only";
+            cell.accessoryView = [self optionSwitchForKey:@"integerScalingOnly"];
         }
     } else if ( indexPath.section == kMiscSection ) {
         if ( indexPath.row == 0 ) {
