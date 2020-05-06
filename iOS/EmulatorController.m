@@ -1690,20 +1690,21 @@ void myosd_handle_turbo() {
     
     if (g_device_is_landscape ? g_pref_keep_aspect_ratio_land : g_pref_keep_aspect_ratio_port) {
         r = AVMakeRectWithAspectRatioInsideRect(CGSizeMake(myosd_vis_video_width, myosd_vis_video_height), r);
+    }
+    
+    if (g_pref_integer_scale_only && myosd_vis_video_width < r.size.width && myosd_vis_video_height < r.size.height) {
+        CGFloat scale = MAX(1.0, (externalView ?: self.view).window.screen.scale);
+        
+        CGFloat n_w = floor(r.size.width * scale / myosd_vis_video_width);
+        CGFloat n_h = floor(r.size.height * scale / myosd_vis_video_height);
 
-        if (g_pref_integer_scale_only && myosd_vis_video_width < r.size.width && myosd_vis_video_height < r.size.height) {
-            CGFloat scale = MAX(1.0, (externalView ?: self.view).window.screen.scale);
-            
-            CGFloat n = MIN(floor(r.size.width * scale / myosd_vis_video_width), floor(r.size.height * scale / myosd_vis_video_height));
+        CGFloat new_width  = (n_w * myosd_vis_video_width) / scale;
+        CGFloat new_height = (n_h * myosd_vis_video_height) / scale;
 
-            CGFloat new_width  = (n * myosd_vis_video_width) / scale;
-            CGFloat new_height = (n * myosd_vis_video_height) / scale;
-
-            r.origin.x += floor((r.size.width - new_width)/2);
-            r.origin.y += floor((r.size.height - new_height)/2);
-            r.size.width = new_width;
-            r.size.height = new_height;
-        }
+        r.origin.x += floor((r.size.width - new_width)/2);
+        r.origin.y += floor((r.size.height - new_height)/2);
+        r.size.width = new_width;
+        r.size.height = new_height;
     }
 
     rScreenView = r;

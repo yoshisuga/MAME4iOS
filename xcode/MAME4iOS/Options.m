@@ -63,10 +63,12 @@
              @"sRGB : kCGColorSpaceSRGB",
              @"Linear sRGB : kCGColorSpaceLinearSRGB",
              @"Adobe RGB : kCGColorSpaceAdobeRGB1998",
+#ifdef DEBUG
              @"NTSC : 0.9504,1.0000,1.0888",
              @"NTSC Luminance : 0.9504,1.0000,1.0888, 0,0,0, 1,1,1, 0.299,0.299,0.299, 0.587,0.587,0.587, 0.114,0.114,0.114",
              @"Arcade CRT : ",
-             @"Vector CRT : "
+             @"Vector CRT : ",
+#endif
     ];
 }
 // return only the friendly names to show in the UI.
