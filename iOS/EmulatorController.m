@@ -1289,6 +1289,15 @@ void mame_state(int load_save, int slot)
     if (g_device_is_fullscreen || TARGET_OS_TV)
         return;
 
+    // put a AirPlay logo on the iPhone screen when playing on external display
+    if (externalView != nil)
+    {
+        imageExternalDisplay = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"airplayvideo"] ?: [UIImage imageNamed:@"mame_logo"]];
+        imageExternalDisplay.contentMode = UIViewContentModeScaleAspectFit;
+        imageExternalDisplay.frame = g_device_is_landscape ? rFrames[LANDSCAPE_VIEW_NOT_FULL] : rFrames[PORTRAIT_VIEW_NOT_FULL];
+        [self.view addSubview:imageExternalDisplay];
+    }
+
     // create a logo view to show when no-game is displayed. (place on external display, or in app.)
     imageLogo = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"mame_logo"]];
     imageLogo.contentMode = UIViewContentModeScaleAspectFit;
@@ -1303,93 +1312,35 @@ void mame_state(int load_save, int slot)
 
 - (void)changeUI { @autoreleasepool {
 
-  int prev_emulation_paused = g_emulation_paused;
+    int prev_emulation_paused = g_emulation_paused;
    
-  if (g_emulation_paused == 0) {
-    g_emulation_paused = 1;
-    change_pause(1);
-  }
-    
-  [self getConf];
-    
-  //printf("%d %d %d\n",ways_auto,myosd_num_ways,myosd_waysStick);
-    
-  if((ways_auto && myosd_num_ways!=myosd_waysStick) || (button_auto && old_myosd_num_buttons != myosd_num_buttons))
-  {
-     [self updateOptions];
-  }
-    
-  /* -- TODO figure out why we are doing this.  is it only needed at start up? if so only do it then.
-     -- we call changeUI when ever we need to update anything, and this delay causes a glitch.
-   
-     -- for example when we hit a key on the HW keyboard or iCade for the first time chageUI gets called to possibly hide the onscreen controls, this delay causes MAME to miss the key press
-   
-     -- another example, we call this when the device is rotated, a delay on the main thread is (almost) always a bad idea....
-  usleep(150000);//ensure some frames displayed
-  */
-    
-  if(screenView != nil)
-  {
-     [screenView removeFromSuperview];
-     screenView = nil;
-  }
-
-  if(imageBack!=nil)
-  {
-     [imageBack removeFromSuperview];
-     imageBack = nil;
-  }
-   
-  //si tiene overlay
-   if(imageOverlay!=nil)
-   {
-     [imageOverlay removeFromSuperview];
-     imageOverlay = nil;
-   }
-    
-  if(imageLogo != nil)
-  {
-      [imageLogo removeFromSuperview];
-      imageLogo = nil;
-  }
-
-  if(imageExternalDisplay != nil)
-  {
-      [imageExternalDisplay removeFromSuperview];
-      imageExternalDisplay = nil;
-  }
-
-#if TARGET_OS_IOS
-    
-// this does not make any sence, iCadeView needs to become the first responder and get keyboard input, it cant do this on the external display?????
-//    // Support iCade in external screens
-//    if ( externalView != nil && icadeView != nil && ![externalView.subviews containsObject:icadeView] ) {
-//        [externalView addSubview:icadeView];
-//    }
-    
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_7_0
-    [[UIApplication sharedApplication] setStatusBarOrientation:self.interfaceOrientation];
-#endif
-    
-    if (self.view.bounds.size.width > self.view.bounds.size.height)
-        [self buildLandscape];
-    else
-        [self buildPortrait];
-    
-    if (externalView != nil)
-    {
-        imageExternalDisplay = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"airplayvideo"] ?: [UIImage imageNamed:@"mame_logo"]];
-        imageExternalDisplay.contentMode = UIViewContentModeScaleAspectFit;
-        imageExternalDisplay.frame = g_device_is_landscape ? rFrames[LANDSCAPE_VIEW_NOT_FULL] : rFrames[PORTRAIT_VIEW_NOT_FULL];
-        [self.view addSubview:imageExternalDisplay];
+    if (g_emulation_paused == 0) {
+        g_emulation_paused = 1;
+        change_pause(1);
     }
-
-    [self setNeedsUpdateOfHomeIndicatorAutoHidden];
     
-#elif TARGET_OS_TV
-    // for tvOS, use "landscape" only
-    [self buildLandscape];
-#endif
+    [self getConf];
+    
+    if((ways_auto && myosd_num_ways!=myosd_waysStick) || (button_auto && old_myosd_num_buttons != myosd_num_buttons)) {
+        [self updateOptions];
+    }
+    
+    [screenView removeFromSuperview];
+    screenView = nil;
+
+    [imageBack removeFromSuperview];
+    imageBack = nil;
+
+    [imageOverlay removeFromSuperview];
+    imageOverlay = nil;
+
+    [imageLogo removeFromSuperview];
+    imageLogo = nil;
+
+    [imageExternalDisplay removeFromSuperview];
+    imageExternalDisplay = nil;
+
+    [self buildScreenView];
     [self buildLogoView];
     [self updateScreenView];
 
@@ -1399,13 +1350,12 @@ void mame_state(int load_save, int slot)
         [hideShowControlsForLightgun setImage:[UIImage imageNamed:@"dpad"] forState:UIControlStateNormal];
     }
     
-   if(prev_emulation_paused!=1)
-   {
-	   g_emulation_paused = 0;
-	   change_pause(0);
-   }
+    if (prev_emulation_paused != 1) {
+        g_emulation_paused = 0;
+        change_pause(0);
+    }
     
-   [UIApplication sharedApplication].idleTimerDisabled = (myosd_inGame || g_joy_used) ? YES : NO;//so atract mode dont sleep
+    [UIApplication sharedApplication].idleTimerDisabled = (myosd_inGame || g_joy_used) ? YES : NO;//so atract mode dont sleep
 
     if ( prev_myosd_light_gun == 0 && myosd_light_gun == 1 && g_pref_lightgun_enabled ) {
         [self.view makeToast:@"Touch Lightgun Mode Enabled!" duration:2.0 position:CSToastPositionCenter style:toastStyle];
@@ -1566,10 +1516,10 @@ void myosd_handle_turbo() {
             view.layer.borderColor = [UIColor.systemYellowColor colorWithAlphaComponent:0.50].CGColor;
         }
 
-        for (UIView* view in @[screenView, analogStickView])
+        for (UIView* view in @[screenView])
         {
             view.layer.borderWidth = 1.0;
-            view.layer.borderColor = [UIColor.systemYellowColor colorWithAlphaComponent:0.50].CGColor;
+            view.layer.borderColor = [UIColor.systemOrangeColor colorWithAlphaComponent:0.50].CGColor;
         }
         for (int i=0; i<INPUT_LAST_VALUE; i++)
         {
@@ -1659,343 +1609,74 @@ void myosd_handle_turbo() {
 #endif
 
 #if TARGET_OS_IOS
-- (void)buildPortraitImageBack {
+- (void)buildBackgroundImage {
 
-   if(!g_device_is_fullscreen)
-   {
-	   if(g_isIpad)
-	     imageBack = [ [ UIImageView alloc ] initWithImage:[self loadImage:@"back_portrait_iPad.png"]];
-	   else
-	     imageBack = [ [ UIImageView alloc ] initWithImage:[self loadImage:@"back_portrait_iPhone.png"]];
-	   
-	   imageBack.frame = rFrames[PORTRAIT_IMAGE_BACK]; // Set the frame in which the UIImage should be drawn in.
-	   
-	   imageBack.userInteractionEnabled = NO;
-	   imageBack.multipleTouchEnabled = NO;
-	   imageBack.clearsContextBeforeDrawing = NO;
-	   //[imageBack setOpaque:YES];
-	
-	   [self.view addSubview: imageBack]; // Draw the image in self.view.
-   }
-   
-}
+    if (g_device_is_fullscreen)
+        return;
 
-
-- (void)buildPortraitImageOverlay {
-   
-   if((g_pref_scanline_filter_port || g_pref_tv_filter_port) /*&& externalView==nil*/)
-   {
-       CGRect r = g_device_is_fullscreen ? rScreenView : rFrames[PORTRAIT_IMAGE_OVERLAY];
-       
-       if (CGRectEqualToRect(rFrames[PORTRAIT_IMAGE_OVERLAY], rFrames[PORTRAIT_VIEW_NOT_FULL]))
-           r = screenView.frame;
-       
-       UIGraphicsBeginImageContextWithOptions(r.size, NO, 0.0);  
-       
-       //[image1 drawInRect: rPortraitImageOverlayFrame];
-       
-       CGContextRef uiContext = UIGraphicsGetCurrentContext();
-             
-       CGContextTranslateCTM(uiContext, 0, r.size.height);
-	
-       CGContextScaleCTM(uiContext, 1.0, -1.0);
-
-       if(g_pref_scanline_filter_port)
-       {
-          UIImage *image2 = [self loadImage:[NSString stringWithFormat: @"scanline-1.png"]];
-                        
-          CGImageRef tile = CGImageRetain(image2.CGImage);
-                   
-          CGContextSetAlpha(uiContext,((float)22 / 100.0f));   
-              
-          CGContextDrawTiledImage(uiContext, CGRectMake(0, 0, image2.size.width, image2.size.height), tile);
-       
-          CGImageRelease(tile);       
-       }
-
-       if(g_pref_tv_filter_port)
-       {                        
-          UIImage *image3 = [self loadImage:[NSString stringWithFormat: @"crt-1.png"]];
-          
-          CGImageRef tile = CGImageRetain(image3.CGImage);
-              
-          CGContextSetAlpha(uiContext,((float)19 / 100.0f));     
-          
-          CGContextDrawTiledImage(uiContext, CGRectMake(0, 0, image3.size.width, image3.size.height), tile);
-       
-          CGImageRelease(tile);       
-       }
-     
-       if(g_isIpad && !g_device_is_fullscreen && externalView == nil)
-       {
-          UIImage *image1;
-          if(g_isIpad)          
-            image1 = [self loadImage:[NSString stringWithFormat:@"border-iPad.png"]];
-          else
-            image1 = [self loadImage:[NSString stringWithFormat:@"border-iPhone.png"]];
-         
-          CGImageRef img = CGImageRetain(image1.CGImage);
-       
-          CGContextSetAlpha(uiContext,((float)100 / 100.0f));  
-   
-          CGContextDrawImage(uiContext,CGRectMake(0, 0, r.size.width, r.size.height),img);
-   
-          CGImageRelease(img);  
-
-           //inset the screenView so the border does not overlap it.
-           if (TRUE && self.view.window.screen != nil) {
-               CGSize border = CGSizeMake(4.0,4.0);  // in pixels
-               CGFloat scale = self.view.window.screen.scale;
-               CGFloat dx = ceil((border.width * r.size.width / image1.size.width) / scale); // in points
-               CGFloat dy = ceil((border.height * r.size.height / image1.size.height) / scale);
-               screenView.frame = AVMakeRectWithAspectRatioInsideRect(r.size, CGRectInset(r, dx, dy));
-           }
-       }
-             
-       UIImage *finishedImage = UIGraphicsGetImageFromCurrentImageContext();
-                                                            
-       UIGraphicsEndImageContext();
-       
-       imageOverlay = [ [ UIImageView alloc ] initWithImage: finishedImage];
-         
-       imageOverlay.frame = r;
-            		    			
-       [screenView.superview addSubview: imageOverlay];
-  }
-}
-
-- (void)buildPortrait {
-
-   g_device_is_landscape = 0;
-   g_device_is_fullscreen = (g_pref_full_screen_port || (g_joy_used && g_pref_full_screen_port_joy)) && externalView == nil;
+    NSString* imageName;
     
-   [ self getControllerCoords:0 ];
-    
-   [ self adjustSizes];
-    
-   [LayoutData loadLayoutData:self];
-   
-   [self buildPortraitImageBack];
-   
-   CGRect r;
-   
-   if(externalView!=nil)   
-   {
-       r = externalView.window.screen.bounds;
-       
-       CGFloat overscan = (g_pref_overscanTVOUT *  0.025f);
-       CGFloat overscan_x = ceil(r.size.width * overscan / 2.0);
-       CGFloat overscan_y = ceil(r.size.height * overscan / 2.0);
-
-       r = CGRectInset(r, overscan_x, overscan_y);
-   }
-   else if (!g_device_is_fullscreen)
-   {
-	    r = rFrames[PORTRAIT_VIEW_NOT_FULL];
-   }		  
-   else
-   {
-        r = rFrames[PORTRAIT_VIEW_FULL];
-   }
-    
-    // Handle Safe Area (iPhone X) adjust the view down away from the notch, before adjusting for aspect
-    if ( externalView == nil ) {
-        // in fullscreen mode, we dont want to correct for the bottom inset, because we hide the home indicator.
-        UIEdgeInsets safeArea = self.view.safeAreaInsets;
-        if (g_device_is_fullscreen)
-            safeArea.bottom = 0.0;
-        r = CGRectIntersection(r, UIEdgeInsetsInsetRect(self.view.bounds, safeArea));
+    if (g_device_is_landscape) {
+        imageName = (UIScreen.mainScreen.nativeBounds.size.width <= 640.0) ? @"back_landscape_iPhone_5.png" : @"back_landscape_iPhone_6.png";
+        imageName = g_isIpad ? @"back_landscape_iPad.png" : imageName;
     }
+    else {
+        imageName = g_isIpad ? @"back_portrait_iPad.png" : @"back_portrait_iPhone.png";
+    }
+       
+    imageBack = [[UIImageView alloc] initWithImage:[self loadImage:imageName]];
+    imageBack.frame = rFrames[g_device_is_landscape ? LANDSCAPE_IMAGE_BACK : PORTRAIT_IMAGE_BACK];
+       
+    imageBack.userInteractionEnabled = NO;
+    imageBack.multipleTouchEnabled = NO;
+    imageBack.clearsContextBeforeDrawing = NO;
     
-    if(g_pref_keep_aspect_ratio_port)
+    [self.view addSubview: imageBack];
+}
+#endif
+
+- (void)buildScreenView {
+    
+    g_device_is_landscape = (self.view.bounds.size.width >= self.view.bounds.size.height * 1.333);
+
+    if (externalView != nil)
+        g_device_is_fullscreen = FALSE;
+    else if (g_device_is_landscape)
+        g_device_is_fullscreen = g_pref_full_screen_land || (g_joy_used && g_pref_full_screen_land_joy);
+    else
+        g_device_is_fullscreen = g_pref_full_screen_port || (g_joy_used && g_pref_full_screen_port_joy);
+
+    CGRect r;
+
+#if TARGET_OS_IOS
+    [self getControllerCoords:g_device_is_landscape];
+    [self adjustSizes];
+    [LayoutData loadLayoutData:self];
+   
+    [self buildBackgroundImage];
+    
+    [self setNeedsUpdateOfHomeIndicatorAutoHidden];
+
+    if (externalView != nil)
     {
-        r = AVMakeRectWithAspectRatioInsideRect(CGSizeMake(myosd_vis_video_width, myosd_vis_video_height), r);
-    }
-    
-   rScreenView = r;
-    
-   screenView = [ [CGScreenView alloc] initWithFrame:rScreenView options:@{
-        kScreenViewFilter: g_pref_filter_port,
-        kScreenViewEffect: g_pref_effect_port,
-        kScreenViewColorSpace: g_pref_colorspace
-   }];
-                  
-   if(externalView==nil)
-   {
-       // add at the bottom, so we dont cover any Toast
-       [self.view insertSubview:screenView atIndex:0];
-   }
-   else
-   {
-       [externalView addSubview: screenView];
-   }
-    
-   [self buildPortraitImageOverlay];
-   [self buildTouchControllerViews];
-
-
-    hideShowControlsForLightgun.hidden = YES;
-    if ( g_device_is_fullscreen &&
-        (
-         (myosd_light_gun && g_pref_lightgun_enabled) ||
-         (myosd_mouse && g_pref_touch_analog_enabled)
-        )) {
-        // make a button to hide/display the controls
-        hideShowControlsForLightgun.hidden = NO;
-        [self.view bringSubviewToFront:hideShowControlsForLightgun];
-    }
-
-}
-
-- (void)buildLandscapeImageBack {
-
-   if (!g_device_is_fullscreen)
-   {
-	   if(g_isIpad)
-	     imageBack = [ [ UIImageView alloc ] initWithImage:[self loadImage:@"back_landscape_iPad.png"]];
-       else if (UIScreen.mainScreen.nativeBounds.size.width <= 640.0)
-         imageBack = [ [ UIImageView alloc ] initWithImage:[self loadImage:@"back_landscape_iPhone_5.png"]];
-	   else
-	     imageBack = [ [ UIImageView alloc ] initWithImage:[self loadImage:@"back_landscape_iPhone_6.png"]];
-	   
-	   imageBack.frame = rFrames[LANDSCAPE_IMAGE_BACK]; // Set the frame in which the UIImage should be drawn in.
-	   
-	   imageBack.userInteractionEnabled = NO;
-	   imageBack.multipleTouchEnabled = NO;
-	   imageBack.clearsContextBeforeDrawing = NO;
-	   //[imageBack setOpaque:YES];
-	
-	   [self.view addSubview: imageBack]; // Draw the image in self.view.
-   }
-   
-}
-#endif
-
-- (void)buildLandscapeImageOverlay{
- 
-   if((g_pref_scanline_filter_land || g_pref_tv_filter_land) /*&& externalView==nil*/)
-   {                                                                                                                                              
-	   CGRect r;
-
-       if(g_device_is_fullscreen)
-          r = rScreenView;
-       else
-          r = rFrames[LANDSCAPE_IMAGE_OVERLAY];
+        r = externalView.window.screen.bounds;
        
-       if (CGRectEqualToRect(rFrames[LANDSCAPE_IMAGE_OVERLAY], rFrames[LANDSCAPE_VIEW_NOT_FULL]))
-           r = screenView.frame;
-	
-	   UIGraphicsBeginImageContextWithOptions(r.size, NO, 0.0);
-	
-	   CGContextRef uiContext = UIGraphicsGetCurrentContext();  
-	   
-	   CGContextTranslateCTM(uiContext, 0, r.size.height);
-		
-	   CGContextScaleCTM(uiContext, 1.0, -1.0);
-	   
-	   if(g_pref_scanline_filter_land)
-	   {       	       
-	      UIImage *image2;
+        CGFloat overscan = (g_pref_overscanTVOUT *  0.025f);
+        CGFloat overscan_x = ceil(r.size.width * overscan / 2.0);
+        CGFloat overscan_y = ceil(r.size.height * overscan / 2.0);
 
-#if TARGET_OS_IOS
-	      if(g_isIpad)
-	        image2 =  [self loadImage:[NSString stringWithFormat: @"scanline-2.png"]];
-	      else
-	        image2 =  [self loadImage:[NSString stringWithFormat: @"scanline-1.png"]];
-#elif TARGET_OS_TV
-           image2 =  [self loadImage:[NSString stringWithFormat: @"scanline_tvOS201901.png"]];
-#endif
-	                        
-	      CGImageRef tile = CGImageRetain(image2.CGImage);
-	      
-#if TARGET_OS_IOS
-	      if(g_isIpad)             
-	         CGContextSetAlpha(uiContext,((float)10 / 100.0f));
-	      else
-	         CGContextSetAlpha(uiContext,((float)22 / 100.0f));
-#elif TARGET_OS_TV
-           CGContextSetAlpha(uiContext,((float)66 / 100.0f));
-
-#endif
-	              
-	      CGContextDrawTiledImage(uiContext, CGRectMake(0, 0, image2.size.width, image2.size.height), tile);
-	       
-	      CGImageRelease(tile);       
-	    }
-	
-	    if(g_pref_tv_filter_land)
-	    {              
-	       UIImage *image3 = [self loadImage:[NSString stringWithFormat: @"crt-1.png"]];
-	          
-	       CGImageRef tile = CGImageRetain(image3.CGImage);
-	              
-	       CGContextSetAlpha(uiContext,((float)20 / 100.0f));     
-	          
-	       CGContextDrawTiledImage(uiContext, CGRectMake(0, 0, image3.size.width, image3.size.height), tile);
-	       
-	       CGImageRelease(tile);       
-	    }
-
-	       
-	    UIImage *finishedImage = UIGraphicsGetImageFromCurrentImageContext();
-	                  
-	    UIGraphicsEndImageContext();
-	    
-	    imageOverlay = [ [ UIImageView alloc ] initWithImage: finishedImage];
-	    
-	    imageOverlay.frame = r; // Set the frame in which the UIImage should be drawn in.
-      
-        imageOverlay.userInteractionEnabled = NO;
-#if TARGET_OS_IOS
-        imageOverlay.multipleTouchEnabled = NO;
-#endif
-        imageOverlay.clearsContextBeforeDrawing = NO;
-   
-        //[imageBack setOpaque:YES];
-                                         
-        [screenView.superview addSubview: imageOverlay];
-	  	   
+        r = CGRectInset(r, overscan_x, overscan_y);
     }
-}
+    else if (g_device_is_fullscreen)
+    {
+        r = rFrames[g_device_is_landscape ? LANDSCAPE_VIEW_FULL : PORTRAIT_VIEW_FULL];
+    }
+    else
+    {
+        r = rFrames[g_device_is_landscape ? LANDSCAPE_VIEW_NOT_FULL : PORTRAIT_VIEW_NOT_FULL];
+    }
 
-- (void)buildLandscape{
-	
-   g_device_is_landscape = 1;
-   g_device_is_fullscreen = (g_pref_full_screen_land || (g_joy_used && g_pref_full_screen_land_joy)) && externalView == nil;
-
-#if TARGET_OS_IOS
-   [self getControllerCoords:1 ];
-    
-   [self adjustSizes];
-    
-   [LayoutData loadLayoutData:self];
-   
-   [self buildLandscapeImageBack];
-#endif
-        
-   CGRect r;
-
-#if TARGET_OS_IOS
-   if(externalView!=nil)
-   {
-       r = externalView.window.screen.bounds;
-       
-       CGFloat overscan = (g_pref_overscanTVOUT *  0.025f);
-       CGFloat overscan_x = ceil(r.size.width * overscan / 2.0);
-       CGFloat overscan_y = ceil(r.size.height * overscan / 2.0);
-
-       r = CGRectInset(r, overscan_x, overscan_y);
-   }
-   else if (!g_device_is_fullscreen)
-   {
-        r = rFrames[LANDSCAPE_VIEW_NOT_FULL];
-   }     
-   else
-   {
-        r = rFrames[LANDSCAPE_VIEW_FULL];
-   }
-
-    // Handle Safe Area (iPhone X) adjust the view down away from the notch, before adjusting for aspect
+    // Handle Safe Area (iPhone X and above) adjust the view down away from the notch, before adjusting for aspect
     if ( externalView == nil ) {
         // in fullscreen mode, we dont want to correct for the bottom inset, because we hide the home indicator.
         UIEdgeInsets safeArea = self.view.safeAreaInsets;
@@ -2007,33 +1688,42 @@ void myosd_handle_turbo() {
     r = [[UIScreen mainScreen] bounds];
 #endif
     
-   if(g_pref_keep_aspect_ratio_land)
-   {
-       r = AVMakeRectWithAspectRatioInsideRect(CGSizeMake(myosd_vis_video_width, myosd_vis_video_height), r);
-   }
+    if (g_device_is_landscape ? g_pref_keep_aspect_ratio_land : g_pref_keep_aspect_ratio_port) {
+        r = AVMakeRectWithAspectRatioInsideRect(CGSizeMake(myosd_vis_video_width, myosd_vis_video_height), r);
 
-   rScreenView = r;
+        if (g_pref_integer_scale_only && myosd_vis_video_width < r.size.width && myosd_vis_video_height < r.size.height) {
+            CGFloat scale = MAX(1.0, (externalView ?: self.view).window.screen.scale);
+            
+            CGFloat n = MIN(floor(r.size.width * scale / myosd_vis_video_width), floor(r.size.height * scale / myosd_vis_video_height));
+
+            CGFloat new_width  = (n * myosd_vis_video_width) / scale;
+            CGFloat new_height = (n * myosd_vis_video_height) / scale;
+
+            r.origin.x += floor((r.size.width - new_width)/2);
+            r.origin.y += floor((r.size.height - new_height)/2);
+            r.size.width = new_width;
+            r.size.height = new_height;
+        }
+    }
+
+    rScreenView = r;
    
-   screenView = [ [CGScreenView alloc] initWithFrame:rScreenView options:@{
+    screenView = [ [CGScreenView alloc] initWithFrame:rScreenView options:@{
        kScreenViewFilter: g_pref_filter_land,
        kScreenViewEffect: g_pref_effect_land,
        kScreenViewColorSpace: g_pref_colorspace
-   }];
+    }];
           
-   if(externalView==nil)
-   {             		    			      
-      [self.view addSubview: screenView];
-   }  
-   else
-   {               
-      [externalView addSubview: screenView];
-   }   
+    [(externalView ?: self.view) addSubview: screenView];
            
-   [self buildLandscapeImageOverlay];
+    //[self buildOverlayImage];
+    //[self buildBorderImage];
+
 #if TARGET_OS_IOS
-   [self buildTouchControllerViews];
+    [self buildTouchControllerViews];
 #endif
-    
+   
+    hideShowControlsForLightgun.hidden = YES;
     if (g_device_is_fullscreen &&
         (
          (myosd_light_gun && g_pref_lightgun_enabled) ||
@@ -2043,10 +1733,9 @@ void myosd_handle_turbo() {
         hideShowControlsForLightgun.hidden = NO;
         [self.view bringSubviewToFront:hideShowControlsForLightgun];
     }
-	
 }
 
-////////////////
+#pragma mark - INPUT
 
 // handle_INPUT - called when input happens on a controller, keyboard, or screen
 - (void)handle_INPUT {

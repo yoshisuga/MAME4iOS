@@ -212,4 +212,179 @@ unsigned short img_buffer [2880 * 2160]; // match max driver res?
     return CGColorSpaceCreateCalibratedRGB(whitePoint, blackPoint, gamma, matrix);
 }
 
+#if 0
+- (void)buildLandscapeImageOverlay{
+ 
+   if((g_pref_scanline_filter_land || g_pref_tv_filter_land) /*&& externalView==nil*/)
+   {
+       CGRect r;
+
+       if(g_device_is_fullscreen)
+          r = rScreenView;
+       else
+          r = rFrames[LANDSCAPE_IMAGE_OVERLAY];
+       
+       if (CGRectEqualToRect(rFrames[LANDSCAPE_IMAGE_OVERLAY], rFrames[LANDSCAPE_VIEW_NOT_FULL]))
+           r = screenView.frame;
+    
+       UIGraphicsBeginImageContextWithOptions(r.size, NO, 0.0);
+    
+       CGContextRef uiContext = UIGraphicsGetCurrentContext();
+       
+       CGContextTranslateCTM(uiContext, 0, r.size.height);
+        
+       CGContextScaleCTM(uiContext, 1.0, -1.0);
+       
+       if(g_pref_scanline_filter_land)
+       {
+          UIImage *image2;
+
+#if TARGET_OS_IOS
+          if(g_isIpad)
+            image2 =  [self loadImage:[NSString stringWithFormat: @"scanline-2.png"]];
+          else
+            image2 =  [self loadImage:[NSString stringWithFormat: @"scanline-1.png"]];
+#elif TARGET_OS_TV
+           image2 =  [self loadImage:[NSString stringWithFormat: @"scanline_tvOS201901.png"]];
+#endif
+                            
+          CGImageRef tile = CGImageRetain(image2.CGImage);
+          
+#if TARGET_OS_IOS
+          if(g_isIpad)
+             CGContextSetAlpha(uiContext,((float)10 / 100.0f));
+          else
+             CGContextSetAlpha(uiContext,((float)22 / 100.0f));
+#elif TARGET_OS_TV
+           CGContextSetAlpha(uiContext,((float)66 / 100.0f));
+
+#endif
+                  
+          CGContextDrawTiledImage(uiContext, CGRectMake(0, 0, image2.size.width, image2.size.height), tile);
+           
+          CGImageRelease(tile);
+        }
+    
+        if(g_pref_tv_filter_land)
+        {
+           UIImage *image3 = [self loadImage:[NSString stringWithFormat: @"crt-1.png"]];
+              
+           CGImageRef tile = CGImageRetain(image3.CGImage);
+                  
+           CGContextSetAlpha(uiContext,((float)20 / 100.0f));
+              
+           CGContextDrawTiledImage(uiContext, CGRectMake(0, 0, image3.size.width, image3.size.height), tile);
+           
+           CGImageRelease(tile);
+        }
+
+           
+        UIImage *finishedImage = UIGraphicsGetImageFromCurrentImageContext();
+                      
+        UIGraphicsEndImageContext();
+        
+        imageOverlay = [ [ UIImageView alloc ] initWithImage: finishedImage];
+        
+        imageOverlay.frame = r; // Set the frame in which the UIImage should be drawn in.
+      
+        imageOverlay.userInteractionEnabled = NO;
+#if TARGET_OS_IOS
+        imageOverlay.multipleTouchEnabled = NO;
+#endif
+        imageOverlay.clearsContextBeforeDrawing = NO;
+   
+        //[imageBack setOpaque:YES];
+                                         
+        [screenView.superview addSubview: imageOverlay];
+             
+    }
+}
+
+- (void)buildPortraitImageOverlay {
+   
+   if((g_pref_scanline_filter_port || g_pref_tv_filter_port) /*&& externalView==nil*/)
+   {
+       CGRect r = g_device_is_fullscreen ? rScreenView : rFrames[PORTRAIT_IMAGE_OVERLAY];
+       
+       if (CGRectEqualToRect(rFrames[PORTRAIT_IMAGE_OVERLAY], rFrames[PORTRAIT_VIEW_NOT_FULL]))
+           r = screenView.frame;
+       
+       UIGraphicsBeginImageContextWithOptions(r.size, NO, 0.0);
+       
+       //[image1 drawInRect: rPortraitImageOverlayFrame];
+       
+       CGContextRef uiContext = UIGraphicsGetCurrentContext();
+             
+       CGContextTranslateCTM(uiContext, 0, r.size.height);
+    
+       CGContextScaleCTM(uiContext, 1.0, -1.0);
+
+       if(g_pref_scanline_filter_port)
+       {
+          UIImage *image2 = [self loadImage:[NSString stringWithFormat: @"scanline-1.png"]];
+                        
+          CGImageRef tile = CGImageRetain(image2.CGImage);
+                   
+          CGContextSetAlpha(uiContext,((float)22 / 100.0f));
+              
+          CGContextDrawTiledImage(uiContext, CGRectMake(0, 0, image2.size.width, image2.size.height), tile);
+       
+          CGImageRelease(tile);
+       }
+
+       if(g_pref_tv_filter_port)
+       {
+          UIImage *image3 = [self loadImage:[NSString stringWithFormat: @"crt-1.png"]];
+          
+          CGImageRef tile = CGImageRetain(image3.CGImage);
+              
+          CGContextSetAlpha(uiContext,((float)19 / 100.0f));
+          
+          CGContextDrawTiledImage(uiContext, CGRectMake(0, 0, image3.size.width, image3.size.height), tile);
+       
+          CGImageRelease(tile);
+       }
+     
+       if(g_isIpad && !g_device_is_fullscreen && externalView == nil)
+       {
+          UIImage *image1;
+          if(g_isIpad)
+            image1 = [self loadImage:[NSString stringWithFormat:@"border-iPad.png"]];
+          else
+            image1 = [self loadImage:[NSString stringWithFormat:@"border-iPhone.png"]];
+         
+          CGImageRef img = CGImageRetain(image1.CGImage);
+       
+          CGContextSetAlpha(uiContext,((float)100 / 100.0f));
+   
+          CGContextDrawImage(uiContext,CGRectMake(0, 0, r.size.width, r.size.height),img);
+   
+          CGImageRelease(img);
+
+           //inset the screenView so the border does not overlap it.
+           if (TRUE && self.view.window.screen != nil) {
+               CGSize border = CGSizeMake(4.0,4.0);  // in pixels
+               CGFloat scale = self.view.window.screen.scale;
+               CGFloat dx = ceil((border.width * r.size.width / image1.size.width) / scale); // in points
+               CGFloat dy = ceil((border.height * r.size.height / image1.size.height) / scale);
+               screenView.frame = AVMakeRectWithAspectRatioInsideRect(r.size, CGRectInset(r, dx, dy));
+           }
+       }
+             
+       UIImage *finishedImage = UIGraphicsGetImageFromCurrentImageContext();
+                                                            
+       UIGraphicsEndImageContext();
+       
+       imageOverlay = [ [ UIImageView alloc ] initWithImage: finishedImage];
+         
+       imageOverlay.frame = r;
+                                    
+       [screenView.superview addSubview: imageOverlay];
+  }
+}
+#endif
+
+
+
+
 @end

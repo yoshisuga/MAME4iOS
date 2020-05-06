@@ -128,18 +128,6 @@
 
 - (void)changeUI;
 
-#if TARGET_OS_IOS
-- (void)buildPortraitImageBack;
-- (void)buildPortraitImageOverlay;
-- (void)buildPortrait;
-- (void)buildLandscapeImageBack;
-- (void)removeTouchControllerViews;
-- (void)buildTouchControllerViews;
-#endif
-- (void)buildLandscapeImageOverlay;
-- (void)buildLandscape;
-
-
 - (void)runMenu;
 - (void)runExit;
 - (void)runPause;

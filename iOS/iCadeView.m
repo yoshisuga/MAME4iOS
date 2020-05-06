@@ -849,6 +849,10 @@
                     g_pref_scanline_filter_port = !g_pref_scanline_filter_port;
                 [emuController changeUI];
                 return nil;
+            case KEY_I+KEY_DOWN:
+                g_pref_integer_scale_only = !g_pref_integer_scale_only;
+                [emuController changeUI];
+                return nil;
         }
     }
     
