@@ -102,19 +102,19 @@
         if ( indexPath.row == 0 ) {
             cell.textLabel.text = @"Filter";
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-            cell.detailTextLabel.text = op.filterLand;
+            cell.detailTextLabel.text = [Options.arrayFilter optionName:op.filterLand];
         } else if ( indexPath.row == 1 ) {
             cell.textLabel.text   = @"Effect";
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-            cell.detailTextLabel.text = op.effectLand;
+            cell.detailTextLabel.text = [Options.arrayEffect optionName:op.effectLand];
         } else if ( indexPath.row == 2 ) {
             cell.textLabel.text   = @"Border";
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-            cell.detailTextLabel.text = op.borderLand;
+            cell.detailTextLabel.text = [Options.arrayBorder optionName:op.borderLand];
         } else if ( indexPath.row == 3 ) {
             cell.textLabel.text   = @"Source ColorSpace";
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-            cell.detailTextLabel.text = op.sourceColorSpace;
+            cell.detailTextLabel.text = [Options.arrayColorSpace optionName:op.sourceColorSpace];
         } else if ( indexPath.row == 4 ) {
             cell.textLabel.text = @"Keep Aspect Ratio";
             cell.accessoryView = [self optionSwitchForKey:@"keepAspectRatioLand"];

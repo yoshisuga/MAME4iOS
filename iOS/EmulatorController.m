@@ -723,16 +723,16 @@ void mame_state(int load_save, int slot)
     g_pref_keep_aspect_ratio_land = [op keepAspectRatioLand];
     g_pref_keep_aspect_ratio_port = [op keepAspectRatioPort];
     
-    g_pref_filter_land = [Options.arrayFilter optionNamed:op.filterLand];
-    g_pref_filter_port = [Options.arrayFilter optionNamed:op.filterPort];
+    g_pref_filter_land = [Options.arrayFilter optionData:op.filterLand];
+    g_pref_filter_port = [Options.arrayFilter optionData:op.filterPort];
 
-    g_pref_effect_land = [Options.arrayEffect optionNamed:op.effectLand];
-    g_pref_effect_port = [Options.arrayEffect optionNamed:op.effectPort];
+    g_pref_effect_land = [Options.arrayEffect optionData:op.effectLand];
+    g_pref_effect_port = [Options.arrayEffect optionData:op.effectPort];
 
-    g_pref_border_land = [Options.arrayBorder optionNamed:op.borderLand];
-    g_pref_border_port = [Options.arrayBorder optionNamed:op.borderPort];
+    g_pref_border_land = [Options.arrayBorder optionData:op.borderLand];
+    g_pref_border_port = [Options.arrayBorder optionData:op.borderPort];
     
-    g_pref_colorspace = [Options.arrayColorSpace optionNamed:op.sourceColorSpace];
+    g_pref_colorspace = [Options.arrayColorSpace optionData:op.sourceColorSpace];
 
     g_pref_integer_scale_only = op.integerScalingOnly;
 

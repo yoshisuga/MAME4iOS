@@ -34,13 +34,22 @@
     return @[@"Keyboard or 8BitDo",@"iCade or compatible",@"iCP, Gametel",@"iMpulse"];
 }
 + (NSArray*)arrayBorder {
-    return @[@"None", @"Small", @"Large"];
+    return @[@"None",
+             @"Small",
+             @"Large"
+    ];
 }
 + (NSArray*)arrayFilter {
-    return @[@"Nearest", @"Linear", @"Trilinear"];
+    return @[@"Nearest",
+             @"Linear",
+             @"Trilinear"
+    ];
 }
 + (NSArray*)arrayEffect {
-    return @[@"None", @"CRT", @"Scanline"];
+    return @[@"None",
+             @"CRT",
+             @"Scanline"
+    ];
 }
 //
 // color space data, we define the colorSpaces here, in one place, so it stays in-sync with the UI.
@@ -61,7 +70,7 @@
 + (NSArray*)arrayColorSpace {
 
     // TODO: find out what devices??
-    BOOL deviceSupportsColorMatching = FALSE;
+    BOOL deviceSupportsColorMatching = TRUE;
     
     if (!deviceSupportsColorMatching)
         return @[@"Default"];
@@ -533,10 +542,14 @@
         if ([string isEqualToString:[self[idx] componentsSeparatedByString:@" : "].firstObject])
             return idx;
     }
-    return NSNotFound;
+    return 0;
 }
-// find and return option string given a name, default to first if not found
-- (NSString*)optionNamed:(NSString*)name {
-    return [[self optionAtIndex:[self indexOfOption:name]] componentsSeparatedByString:@" : "].lastObject;
+// find and return option data given a string, default to first if not found
+- (NSString*)optionData:(NSString*)string {
+    return [[self optionAtIndex:[self indexOfOption:string]] componentsSeparatedByString:@" : "].lastObject;
+}
+// find and return option name given a string, default to first if not found
+- (NSString*)optionName:(NSString*)string {
+    return [[self optionAtIndex:[self indexOfOption:string]] componentsSeparatedByString:@" : "].firstObject;
 }
 @end
