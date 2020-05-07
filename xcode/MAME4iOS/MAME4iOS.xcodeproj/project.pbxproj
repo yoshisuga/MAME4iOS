@@ -38,7 +38,6 @@
 		925ABCC81E46DCC500997182 /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = CEE6809B1635BA7000051BC2 /* Default.png */; };
 		925ABCC91E46DCC500997182 /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CEE6809D1635BA7000051BC2 /* Default@2x.png */; };
 		925ABCCA1E46DCC500997182 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CEE6809F1635BA7000051BC2 /* Default-568h@2x.png */; };
-		925ABCCB1E46DCC500997182 /* border-iPad.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC10163C5DA100A05CD0 /* border-iPad.png */; };
 		925ABCCC1E46DCC500997182 /* config_iPad.txt in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC11163C5DA100A05CD0 /* config_iPad.txt */; };
 		925ABCCD1E46DCC500997182 /* config_iPhone.txt in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC12163C5DA100A05CD0 /* config_iPhone.txt */; };
 		925ABCCE1E46DCC500997182 /* crt-1.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC13163C5DA100A05CD0 /* crt-1.png */; };
@@ -310,7 +309,6 @@
 		CEB6982616AAB39F0005E140 /* MAME4iOS114.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MAME4iOS114.png; sourceTree = "<group>"; };
 		CEB6982716AAB39F0005E140 /* MAME4iOS144.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MAME4iOS144.png; sourceTree = "<group>"; };
 		CEB8E0DB16A3311500A6FEDC /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = folder; name = LICENSE; path = "../../iOS-res/Applications/MAME4iOS.app/LICENSE"; sourceTree = "<group>"; };
-		CEBFBC10163C5DA100A05CD0 /* border-iPad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "border-iPad.png"; path = "../../iOS-res/Applications/MAME4iOS.app/border-iPad.png"; sourceTree = "<group>"; };
 		CEBFBC11163C5DA100A05CD0 /* config_iPad.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = config_iPad.txt; path = "../../iOS-res/Applications/MAME4iOS.app/config_iPad.txt"; sourceTree = "<group>"; };
 		CEBFBC12163C5DA100A05CD0 /* config_iPhone.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = config_iPhone.txt; path = "../../iOS-res/Applications/MAME4iOS.app/config_iPhone.txt"; sourceTree = "<group>"; };
 		CEBFBC13163C5DA100A05CD0 /* crt-1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "crt-1.png"; path = "../../iOS-res/Applications/MAME4iOS.app/crt-1.png"; sourceTree = "<group>"; };
@@ -601,7 +599,6 @@
 				927BD1A52209E80F00ECF6C9 /* config_iPad_pro_11.txt */,
 				921CC324216A936800A39154 /* config_iPad_pro_12_9.txt */,
 				EF29C8832402E51100AFFA4E /* config_iPad_gen_7.txt */,
-				CEBFBC10163C5DA100A05CD0 /* border-iPad.png */,
 				CEBFBC13163C5DA100A05CD0 /* crt-1.png */,
 				CEBFBC14163C5DA100A05CD0 /* crt-2.png */,
 				CEBFBC1B163C5DA100A05CD0 /* scanline-1.png */,
@@ -862,7 +859,6 @@
 				9268D85321661F1700AB0470 /* config_iPhone_6_plus.txt in Resources */,
 				925ABCCA1E46DCC500997182 /* Default-568h@2x.png in Resources */,
 				9268D84A21661CA500AB0470 /* config_iPhone_xr_xs_max.txt in Resources */,
-				925ABCCB1E46DCC500997182 /* border-iPad.png in Resources */,
 				EF26AE08241848800078FD30 /* mame_logo.png in Resources */,
 				EF0088122459F4FC0058C2A1 /* history0139.zip in Resources */,
 				925ABCCC1E46DCC500997182 /* config_iPad.txt in Resources */,
