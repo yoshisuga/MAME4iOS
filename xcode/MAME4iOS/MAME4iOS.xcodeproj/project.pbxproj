@@ -176,6 +176,12 @@
 		EFE4B6AC2453D7F80009A6F1 /* InfoDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE4B6AA2453D7F80009A6F1 /* InfoDatabase.m */; };
 		EFF9F809246356B300DDA88C /* CGScreenView.m in Sources */ = {isa = PBXBuildFile; fileRef = EFF9F807246356B200DDA88C /* CGScreenView.m */; };
 		EFF9F80A246356B300DDA88C /* CGScreenView.m in Sources */ = {isa = PBXBuildFile; fileRef = EFF9F807246356B200DDA88C /* CGScreenView.m */; };
+		EFF9F80E2464864600DDA88C /* border-light.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F80B2464864600DDA88C /* border-light.png */; };
+		EFF9F80F2464864600DDA88C /* border-light.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F80B2464864600DDA88C /* border-light.png */; };
+		EFF9F8102464864600DDA88C /* border-dark.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F80C2464864600DDA88C /* border-dark.png */; };
+		EFF9F8112464864600DDA88C /* border-dark.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F80C2464864600DDA88C /* border-dark.png */; };
+		EFF9F8122464864600DDA88C /* border-test.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F80D2464864600DDA88C /* border-test.png */; };
+		EFF9F8132464864600DDA88C /* border-test.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F80D2464864600DDA88C /* border-test.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -385,6 +391,9 @@
 		EFE4B6AA2453D7F80009A6F1 /* InfoDatabase.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = InfoDatabase.m; sourceTree = "<group>"; };
 		EFF9F807246356B200DDA88C /* CGScreenView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CGScreenView.m; path = ../../iOS/CGScreenView.m; sourceTree = "<group>"; };
 		EFF9F808246356B300DDA88C /* CGScreenView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CGScreenView.h; path = ../../iOS/CGScreenView.h; sourceTree = "<group>"; };
+		EFF9F80B2464864600DDA88C /* border-light.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "border-light.png"; path = "../../iOS-res/Applications/MAME4iOS.app/border-light.png"; sourceTree = "<group>"; };
+		EFF9F80C2464864600DDA88C /* border-dark.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "border-dark.png"; path = "../../iOS-res/Applications/MAME4iOS.app/border-dark.png"; sourceTree = "<group>"; };
+		EFF9F80D2464864600DDA88C /* border-test.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "border-test.png"; path = "../../iOS-res/Applications/MAME4iOS.app/border-test.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -565,6 +574,9 @@
 		CEBFBC0E163C5BD300A05CD0 /* resources */ = {
 			isa = PBXGroup;
 			children = (
+				EFF9F80C2464864600DDA88C /* border-dark.png */,
+				EFF9F80B2464864600DDA88C /* border-light.png */,
+				EFF9F80D2464864600DDA88C /* border-test.png */,
 				EFA7570424057FD800A02AAB /* default_game_icon.png */,
 				EF26AE07241848800078FD30 /* mame_logo.png */,
 				EFA756FE2405585D00A02AAB /* mameui.png */,
@@ -857,6 +869,7 @@
 				EFA7570524057FD800A02AAB /* default_game_icon.png in Resources */,
 				925ABCCD1E46DCC500997182 /* config_iPhone.txt in Resources */,
 				925ABCCE1E46DCC500997182 /* crt-1.png in Resources */,
+				EFF9F80E2464864600DDA88C /* border-light.png in Resources */,
 				925ABCCF1E46DCC500997182 /* crt-2.png in Resources */,
 				EF0E08AE2401840700E98F01 /* help.md in Resources */,
 				925ABCD01E46DCC500997182 /* scanline-1.png in Resources */,
@@ -868,8 +881,10 @@
 				EF29C8822401C73A00AFFA4E /* Launch Screen.storyboard in Resources */,
 				925ABCD21E46DCC500997182 /* SKIN_1 in Resources */,
 				9268D85621661F8E00AB0470 /* config_iPhone_6.txt in Resources */,
+				EFF9F8102464864600DDA88C /* border-dark.png in Resources */,
 				925ABCD51E46DCC500997182 /* config_iPhone_5.txt in Resources */,
 				920BBDF220210C3800AE7D50 /* menu.png in Resources */,
+				EFF9F8122464864600DDA88C /* border-test.png in Resources */,
 				EF63E1C124424D2300CFE85D /* whatsnew.md in Resources */,
 				925ABCD71E46DCC500997182 /* LICENSE in Resources */,
 				92A533D021EBDDF20089FBB9 /* GCDWebUploader.bundle in Resources */,
@@ -889,15 +904,18 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EFF9F8112464864600DDA88C /* border-dark.png in Resources */,
 				EF0088102459F4EF0058C2A1 /* cheat0139.zip in Resources */,
 				EFD4D14A23C0F6AB00857A76 /* Category.ini in Resources */,
 				926C770721F26DFA00103EDE /* crt-2.png in Resources */,
 				EF26AE09241848800078FD30 /* mame_logo.png in Resources */,
 				926C770921F26E0000103EDE /* scanline-2.png in Resources */,
 				EFA757002405585D00A02AAB /* mameui.png in Resources */,
+				EFF9F80F2464864600DDA88C /* border-light.png in Resources */,
 				EF0088132459F4FC0058C2A1 /* history0139.zip in Resources */,
 				EFA7570624057FD800A02AAB /* default_game_icon.png in Resources */,
 				926C770621F26DEA00103EDE /* crt-1.png in Resources */,
+				EFF9F8132464864600DDA88C /* border-test.png in Resources */,
 				92ECB8F721EA985000D1E3D0 /* Assets.xcassets in Resources */,
 				B5FAE31721FCDE0C003F44D0 /* scanline_tvOS201901.png in Resources */,
 				926C770821F26DFD00103EDE /* scanline-1.png in Resources */,
@@ -1221,7 +1239,7 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 2020.8;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = R72X3BF4KE;
+				DEVELOPMENT_TEAM = 8RUN83V8CA;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -1242,7 +1260,7 @@
 				MARKETING_VERSION = 2020.8;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4tvos;
+				PRODUCT_BUNDLE_IDENTIFIER = com.toddla.mame4tvos;
 				PRODUCT_NAME = MAME4tvOS;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;

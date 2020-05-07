@@ -1637,6 +1637,52 @@ void myosd_handle_turbo() {
 }
 #endif
 
+// border is <resource name> , <fraction of border that is opaque>
+- (void)getOverlayImage:(UIImage**)pImage andSize:(CGSize*)pSize {
+    
+    CGSize size = CGSizeZero;
+    UIImage* image = nil;
+    
+    NSString* border_info = g_device_is_landscape ? g_pref_border_land : g_pref_border_port;
+    if ([border_info length] == 0 || [border_info isEqualToString:@"None"])
+        return;
+
+    NSString* border_name = [border_info componentsSeparatedByString:@","].firstObject;
+    CGFloat   border_size = [border_info componentsSeparatedByString:@","].lastObject.doubleValue ?: 0.25;
+
+    image = [self loadImage:border_name];
+    NSAssert(image != nil, @"unable to load border image");
+    
+    CGFloat scale = externalView ? externalView.window.screen.scale : UIScreen.mainScreen.scale;
+    
+    // set the image scale to be same as the display scale, we want to work in pixels.
+    image = [[UIImage alloc] initWithCGImage:image.CGImage scale:scale orientation:image.imageOrientation];
+    
+    CGFloat cap_x = floor((image.size.width * image.scale  - 1.0) / 2.0) / image.scale;
+    CGFloat cap_y = floor((image.size.height * image.scale - 1.0) / 2.0) / image.scale;
+    image = [image resizableImageWithCapInsets:UIEdgeInsetsMake(cap_y, cap_x, cap_y, cap_x) resizingMode:UIImageResizingModeStretch];
+    
+    size.width  = floor(cap_x * border_size * scale) / scale;
+    size.height = floor(cap_y * border_size * scale) / scale;
+
+    *pImage = image;
+    *pSize = size;
+}
+
+- (void)buildOverlayImage:(UIImage*)image rect:(CGRect)rect {
+    
+    if (image == nil)
+        return;
+
+    imageOverlay = [[UIImageView alloc] initWithImage:image];
+    imageOverlay.frame = rect;
+       
+    imageOverlay.userInteractionEnabled = NO;
+    imageOverlay.multipleTouchEnabled = NO;
+    
+    [screenView.superview addSubview:imageOverlay];
+}
+
 - (void)buildScreenView {
     
     g_device_is_landscape = (self.view.bounds.size.width >= self.view.bounds.size.height * 1.333);
@@ -1689,6 +1735,11 @@ void myosd_handle_turbo() {
 #elif TARGET_OS_TV
     r = [[UIScreen mainScreen] bounds];
 #endif
+    // make room for a border
+    UIImage* border_image = nil;
+    CGSize border_size = CGSizeZero;
+    [self getOverlayImage:&border_image andSize:&border_size];
+    r = CGRectInset(r, border_size.width, border_size.height);
 
     // preserve aspect ratio
     if (g_device_is_landscape ? g_pref_keep_aspect_ratio_land : g_pref_keep_aspect_ratio_port) {
@@ -1719,8 +1770,7 @@ void myosd_handle_turbo() {
           
     [(externalView ?: self.view) addSubview: screenView];
            
-    //[self buildOverlayImage];
-    //[self buildBorderImage];
+    [self buildOverlayImage:border_image rect:CGRectInset(r, -border_size.width, -border_size.height)];
 
 #if TARGET_OS_IOS
     [self buildTouchControllerViews];

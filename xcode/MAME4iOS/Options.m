@@ -33,10 +33,16 @@
 + (NSArray*)arrayControlType {
     return @[@"Keyboard or 8BitDo",@"iCade or compatible",@"iCP, Gametel",@"iMpulse"];
 }
+// border string is of the form <Friendly Name> : <resource image name>, <fraction of border that is opaque>
 + (NSArray*)arrayBorder {
     return @[@"None",
-             @"Small",
-             @"Large"
+             @"Dark : border-dark",
+             @"Light : border-light",
+#ifdef DEBUG
+             @"Test : border-test",
+             @"Test 1: border-test, 0.5",
+             @"Test 2: border-test, 1.0",
+#endif
     ];
 }
 + (NSArray*)arrayFilter {
@@ -536,20 +542,31 @@
 }
 // find and return option index given a name, default to first if not found
 - (NSUInteger)indexOfOption:(NSString*)string {
-    NSParameterAssert(![string containsString:@" : "]); // a name should never contain the data.
+    NSParameterAssert(![string containsString:@":"]); // a name should never contain the data.
     // option lists are of the form "Name : Data" or just "Name"
     for (NSUInteger idx=0; idx<self.count; idx++) {
-        if ([string isEqualToString:[self[idx] componentsSeparatedByString:@" : "].firstObject])
+        NSString* str = [self[idx] componentsSeparatedByString:@":"].firstObject;
+        if ([string isEqualToString:[str stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet]])
             return idx;
     }
     return 0;
 }
 // find and return option data given a string, default to first if not found
 - (NSString*)optionData:(NSString*)string {
-    return [[self optionAtIndex:[self indexOfOption:string]] componentsSeparatedByString:@" : "].lastObject;
+
+    NSString* str = [self optionAtIndex:[self indexOfOption:string]];
+    str = [str componentsSeparatedByString:@":"].lastObject;
+    str = [str stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
+
+    return str;
 }
 // find and return option name given a string, default to first if not found
 - (NSString*)optionName:(NSString*)string {
-    return [[self optionAtIndex:[self indexOfOption:string]] componentsSeparatedByString:@" : "].firstObject;
+
+    NSString* str = [self optionAtIndex:[self indexOfOption:string]];
+    str = [str componentsSeparatedByString:@":"].firstObject;
+    str = [str stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
+    
+    return str;
 }
 @end
