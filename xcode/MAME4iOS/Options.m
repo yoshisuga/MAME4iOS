@@ -40,7 +40,7 @@
     return @[@"Nearest", @"Linear", @"Trilinear"];
 }
 + (NSArray*)arrayEffect {
-  return @[@"None", @"CRT", @"Scanline"];
+    return @[@"None", @"CRT", @"Scanline"];
 }
 //
 // color space data, we define the colorSpaces here, in one place, so it stays in-sync with the UI.
@@ -58,7 +58,14 @@
 //
 // NOTE: not all iOS devices support color matching.
 //
-+ (NSArray*)arrayColorSpaceData {
++ (NSArray*)arrayColorSpace {
+
+    // TODO: find out what devices??
+    BOOL deviceSupportsColorMatching = FALSE;
+    
+    if (!deviceSupportsColorMatching)
+        return @[@"Default"];
+
     return @[@"DeviceRGB",
              @"sRGB : kCGColorSpaceSRGB",
              @"Linear sRGB : kCGColorSpaceLinearSRGB",
@@ -66,26 +73,10 @@
 #ifdef DEBUG
              @"NTSC : 0.9504,1.0000,1.0888",
              @"NTSC Luminance : 0.9504,1.0000,1.0888, 0,0,0, 1,1,1, 0.299,0.299,0.299, 0.587,0.587,0.587, 0.114,0.114,0.114",
-             @"Arcade CRT : ",
-             @"Vector CRT : ",
+             @"Arcade CRT",
+             @"Vector CRT",
 #endif
     ];
-}
-// return only the friendly names to show in the UI.
-+ (NSArray*)arrayColorSpace {
-    
-    NSMutableArray* colorSpaceNames = [[self arrayColorSpaceData] mutableCopy];
-
-    for (NSInteger i=0; i<colorSpaceNames.count; i++)
-        colorSpaceNames[i] = [[colorSpaceNames[i] componentsSeparatedByString:@":"].firstObject stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
-    
-    // TODO: find out what devices??
-    BOOL deviceSupportsColorMatching = TRUE;
-    
-    if (deviceSupportsColorMatching)
-        return [colorSpaceNames copy];
-    else
-        return @[colorSpaceNames.firstObject];
 }
 
 #pragma mark - instance code
@@ -534,7 +525,18 @@
 - (NSString*)optionAtIndex:(NSUInteger)index {
     return [self objectAtIndex:index withDefault:self.firstObject];
 }
-- (NSString*)optionAtString:(NSString*)string {
-    return [self optionAtIndex:[self indexOfObject:string]];
+// find and return option index given a name, default to first if not found
+- (NSUInteger)indexOfOption:(NSString*)string {
+    NSParameterAssert(![string containsString:@" : "]); // a name should never contain the data.
+    // option lists are of the form "Name : Data" or just "Name"
+    for (NSUInteger idx=0; idx<self.count; idx++) {
+        if ([string isEqualToString:[self[idx] componentsSeparatedByString:@" : "].firstObject])
+            return idx;
+    }
+    return NSNotFound;
+}
+// find and return option string given a name, default to first if not found
+- (NSString*)optionNamed:(NSString*)name {
+    return [[self optionAtIndex:[self indexOfOption:name]] componentsSeparatedByString:@" : "].lastObject;
 }
 @end

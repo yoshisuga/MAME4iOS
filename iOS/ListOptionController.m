@@ -84,9 +84,13 @@
     if (self = [super initWithStyle:UITableViewStyleGrouped])
     {
         NSAssert([[[Options alloc] init] valueForKey:keyValue] != nil, @"bad key");
+        
         type = kTypeKeyValue;
         key = keyValue;
-        list = listValue;
+        list = [listValue mutableCopy];
+        // if the list items are of the form "Name : Data", we only want to show "Name" to the user.
+        for (NSInteger i=0; i<list.count; i++)
+            ((NSMutableArray*)list)[i] = [list[i] componentsSeparatedByString:@" : "].firstObject;
     }
     return self;
 }
@@ -211,12 +215,11 @@
             id val = [op valueForKey:key];
             
             if ([val isKindOfClass:[NSString class]])
-                value = [list indexOfObject:val];
+                value = [list indexOfOption:val];
             else if ([val isKindOfClass:[NSNumber class]])
                 value = [val intValue];
             else
                 value = 0;
-            
             break;
         }
         default:
@@ -238,7 +241,7 @@
         NSIndexPath *scrollIndexPath=nil;
         if(sections != nil)
         {
-            NSString *s = [list objectAtIndex:value];
+            NSString *s = [list optionAtIndex:value];
             NSString *l = [[s substringToIndex:1] lowercaseString];
             int sec = (uint32_t)[sections indexOfObject:l];
             NSArray *sectionArray = [list filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF beginswith[c] %@", [sections objectAtIndex: sec]]];

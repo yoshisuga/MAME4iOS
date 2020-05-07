@@ -167,15 +167,10 @@ unsigned short img_buffer [2880 * 2160]; // match max driver res?
 }
 
 // you can specify a colorSpace in two ways, with a system name or with parameters.
-// these strings are of the form <Friendly Name> : <colorSpace name OR colorSpace parameters>
+// these strings are of the form <colorSpace name OR colorSpace parameters>
 + (CGColorSpaceRef)createColorSpaceFromString:(NSString*)string {
     
-    if ([string containsString:@":"])
-        string = [string componentsSeparatedByString:@":"].lastObject;
-
-    string = [string stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
-    
-    if ([string length] == 0)
+    if ([string length] == 0 || [string isEqualToString:@"Default"] || [string isEqualToString:@"DeviceRGB"])
         return CGColorSpaceCreateDeviceRGB();
     
     NSArray* values = [string componentsSeparatedByString:@","];

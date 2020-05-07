@@ -26,7 +26,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (class, readonly, strong) NSArray* arrayBorder;
 @property (class, readonly, strong) NSArray* arrayFilter;
 @property (class, readonly, strong) NSArray* arrayEffect;
-@property (class, readonly, strong) NSArray* arrayColorSpaceData;
 @property (class, readonly, strong) NSArray* arrayColorSpace;
 
 @property (readwrite,assign) int keepAspectRatioPort;
@@ -147,10 +146,12 @@ NS_ASSUME_NONNULL_BEGIN
 @interface NSArray (optionAtIndex)
 // a "safe" version of objectAtIndex
 - (id)objectAtIndex:(NSUInteger)index withDefault:(id)defaultObject;
-// return the option/string at index, or default to the first/zero one
+// return the option at index, or default to the first one
 - (NSString*)optionAtIndex:(NSUInteger)index;
-// return the string if array contains it, else the first item.
-- (NSString*)optionAtString:(NSString*)string;
+// find and return option index given a name, default to first if not found
+- (NSUInteger)indexOfOption:(NSString*)string;
+// find and return option string given a name, default to first if not found
+- (NSString*)optionNamed:(NSString*)name;
 @end
 
 

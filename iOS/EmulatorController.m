@@ -723,21 +723,17 @@ void mame_state(int load_save, int slot)
     g_pref_keep_aspect_ratio_land = [op keepAspectRatioLand];
     g_pref_keep_aspect_ratio_port = [op keepAspectRatioPort];
     
-    g_pref_filter_land = op.filterLand;
-    g_pref_filter_port = op.filterPort;
+    g_pref_filter_land = [Options.arrayFilter optionNamed:op.filterLand];
+    g_pref_filter_port = [Options.arrayFilter optionNamed:op.filterPort];
 
-    g_pref_effect_land = op.effectLand;
-    g_pref_effect_port = op.effectPort;
+    g_pref_effect_land = [Options.arrayEffect optionNamed:op.effectLand];
+    g_pref_effect_port = [Options.arrayEffect optionNamed:op.effectPort];
 
-    g_pref_border_land = op.borderLand;
-    g_pref_border_port = op.borderPort;
+    g_pref_border_land = [Options.arrayBorder optionNamed:op.borderLand];
+    g_pref_border_port = [Options.arrayBorder optionNamed:op.borderPort];
     
-    g_pref_colorspace  = op.sourceColorSpace;
-    
-    // get the full colorSpaceData, not just the name.
-    NSUInteger idx = [Options.arrayColorSpace indexOfObject:g_pref_colorspace];
-    g_pref_colorspace = [Options.arrayColorSpaceData optionAtIndex:idx];
-    
+    g_pref_colorspace = [Options.arrayColorSpace optionNamed:op.sourceColorSpace];
+
     g_pref_integer_scale_only = op.integerScalingOnly;
 
     //TODO: remove these binary globals
@@ -1187,7 +1183,8 @@ void mame_state(int load_save, int slot)
     [self updateUserActivity:nil];      // TODO: look at if we need to do this here??
     
 #ifdef DEBUG
-    for (NSString* string in Options.arrayColorSpaceData) {
+    // create all color spaces, to test for validness.
+    for (NSString* string in Options.arrayColorSpace) {
         CGColorSpaceRef colorSpace = [CGScreenView createColorSpaceFromString:string];
         NSLog(@"COLORSPACE DATA: %@", string);
         NSLog(@"     COLORSPACE: %@", colorSpace);
@@ -1505,22 +1502,35 @@ void myosd_handle_turbo() {
 
 #if TARGET_OS_IOS
 
+- (void)showDebugRect:(CGRect)rect color:(UIColor*)color title:(NSString*)title {
+
+    if (CGRectIsEmpty(rect))
+        return;
+
+    UILabel* label = [[UILabel alloc] initWithFrame:rect];
+    label.text = title;
+    [label sizeToFit];
+    label.userInteractionEnabled = NO;
+    label.textColor = [UIColor.whiteColor colorWithAlphaComponent:0.75];
+    label.backgroundColor = [color colorWithAlphaComponent:0.25];
+    [inputView addSubview:label];
+    
+    UIView* view = [[UIView alloc] initWithFrame:rect];
+    view.userInteractionEnabled = NO;
+    view.layer.borderColor = [color colorWithAlphaComponent:0.50].CGColor;
+    view.layer.borderWidth = 1.0;
+    [inputView addSubview:view];
+}
+
 // show debug rects
 - (void) showDebugRects {
 #ifdef DEBUG
     if (g_enable_debug_view)
     {
-        for (UIView* view in inputView.subviews)
-        {
-            view.layer.borderWidth = 1.0;
-            view.layer.borderColor = [UIColor.systemYellowColor colorWithAlphaComponent:0.50].CGColor;
-        }
-
-        for (UIView* view in @[screenView])
-        {
-            view.layer.borderWidth = 1.0;
-            view.layer.borderColor = [UIColor.systemOrangeColor colorWithAlphaComponent:0.50].CGColor;
-        }
+        UIView* null = [[UIView alloc] init];
+        for (UIView* view in @[screenView, analogStickView ?: null, imageOverlay ?: null])
+            [self showDebugRect:view.frame color:UIColor.systemYellowColor title:NSStringFromClass([view class])];
+        
         for (int i=0; i<INPUT_LAST_VALUE; i++)
         {
             CGRect rect = rInput[i];
@@ -1528,15 +1538,7 @@ void myosd_handle_turbo() {
                 continue;
             if (i>=DPAD_UP_RECT && i<=DPAD_DOWN_RIGHT_RECT)
                 continue;
-            UILabel* label = [[UILabel alloc] initWithFrame:rect];
-            label.text = [NSString stringWithFormat:@"%d", i];
-            label.userInteractionEnabled = NO;
-            label.textAlignment = NSTextAlignmentCenter;
-            label.textColor = [UIColor.systemBlueColor colorWithAlphaComponent:0.75];
-            label.backgroundColor = [UIColor.systemBlueColor colorWithAlphaComponent:0.25];
-            label.layer.borderColor = [UIColor.systemBlueColor colorWithAlphaComponent:0.50].CGColor;
-            label.layer.borderWidth = 1.0;
-            [inputView addSubview:label];
+            [self showDebugRect:rect color:UIColor.systemBlueColor title:[NSString stringWithFormat:@"%d", i]];
         }
     }
 #endif
@@ -1687,14 +1689,16 @@ void myosd_handle_turbo() {
 #elif TARGET_OS_TV
     r = [[UIScreen mainScreen] bounds];
 #endif
-    
+
+    // preserve aspect ratio
     if (g_device_is_landscape ? g_pref_keep_aspect_ratio_land : g_pref_keep_aspect_ratio_port) {
         r = AVMakeRectWithAspectRatioInsideRect(CGSizeMake(myosd_vis_video_width, myosd_vis_video_height), r);
     }
     
-    if (g_pref_integer_scale_only && myosd_vis_video_width < r.size.width && myosd_vis_video_height < r.size.height) {
-        CGFloat scale = MAX(1.0, (externalView ?: self.view).window.screen.scale);
-        
+    // integer only scaling
+    CGFloat scale = MAX(1.0, (externalView ?: self.view).window.screen.scale);
+    
+    if (g_pref_integer_scale_only && myosd_vis_video_width < r.size.width * scale && myosd_vis_video_height < r.size.height * scale) {
         CGFloat n_w = floor(r.size.width * scale / myosd_vis_video_width);
         CGFloat n_h = floor(r.size.height * scale / myosd_vis_video_height);
 
@@ -1707,12 +1711,10 @@ void myosd_handle_turbo() {
         r.size.height = new_height;
     }
 
-    rScreenView = r;
-   
-    screenView = [ [CGScreenView alloc] initWithFrame:rScreenView options:@{
-       kScreenViewFilter: g_pref_filter_land,
-       kScreenViewEffect: g_pref_effect_land,
-       kScreenViewColorSpace: g_pref_colorspace
+    screenView = [ [CGScreenView alloc] initWithFrame:r options:@{
+        kScreenViewFilter: g_device_is_landscape ? g_pref_filter_land : g_pref_filter_port,
+        kScreenViewEffect: g_device_is_landscape ? g_pref_effect_land : g_pref_effect_port,
+        kScreenViewColorSpace: g_pref_colorspace
     }];
           
     [(externalView ?: self.view) addSubview: screenView];

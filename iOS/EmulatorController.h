@@ -91,9 +91,6 @@
   //input rects
   CGRect rInput[INPUT_LAST_VALUE];
     
-  //current rect emulation window
-  CGRect rScreenView;
-    
   //views frames
   CGRect rFrames[FRAME_RECT_LAST_VALUE];
 

@@ -127,7 +127,7 @@
                {
                    cell.textLabel.text = @"Filter";
                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   cell.detailTextLabel.text = [Options.arrayFilter optionAtString:op.filterPort];
+                   cell.detailTextLabel.text = op.filterPort;
                    break;
                }
                
@@ -135,14 +135,14 @@
                {
                    cell.textLabel.text   = @"Effect";
                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   cell.detailTextLabel.text = [Options.arrayEffect optionAtString:op.effectPort];
+                   cell.detailTextLabel.text = op.effectPort;
                    break;
                }
                case 2:
                {
                    cell.textLabel.text   = @"Border";
                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   cell.detailTextLabel.text = [Options.arrayBorder optionAtString:op.borderPort];
+                   cell.detailTextLabel.text = op.borderPort;
                    break;
                }          
                case 3:
@@ -174,7 +174,7 @@
                {
                    cell.textLabel.text = @"Filter";
                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   cell.detailTextLabel.text = [Options.arrayFilter optionAtString:op.filterLand];
+                   cell.detailTextLabel.text = op.filterLand;
                    break;
                }
                
@@ -182,14 +182,14 @@
                {
                    cell.textLabel.text   = @"Effect";
                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   cell.detailTextLabel.text = [Options.arrayEffect optionAtString:op.effectLand];
+                   cell.detailTextLabel.text = op.effectLand;
                    break;
                }
                case 2:
                {
                    cell.textLabel.text   = @"Border";
                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   cell.detailTextLabel.text = [Options.arrayBorder optionAtString:op.borderLand];
+                   cell.detailTextLabel.text = op.borderLand;
                    break;
                }
                case 3:
@@ -231,7 +231,7 @@
                {
                    cell.textLabel.text   = @"Source Colorspace";
                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   cell.detailTextLabel.text = [Options.arrayColorSpace optionAtString:op.sourceColorSpace];
+                   cell.detailTextLabel.text = op.sourceColorSpace;
                    break;
                }
                case 2:
