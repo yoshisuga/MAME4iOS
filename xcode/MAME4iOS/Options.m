@@ -33,15 +33,26 @@
 + (NSArray*)arrayControlType {
     return @[@"Keyboard or 8BitDo",@"iCade or compatible",@"iCP, Gametel",@"iMpulse"];
 }
-// border string is of the form <Friendly Name> : <resource image name>, <fraction of border that is opaque>
+// border string is of the form:
+//        <Friendly Name> : <resource image name>
+//        <Friendly Name> : <resource image name>, <fraction of border that is opaque>
+//        <Friendly Name> : #RRGGBB
+//        <Friendly Name> : #RRGGBBAA, <border width>
+//        <Friendly Name> : #RRGGBBAA, <border width>, <corner radius>
 + (NSArray*)arrayBorder {
     return @[@"None",
              @"Dark : border-dark",
              @"Light : border-light",
+             @"Solid : #007AFFaa, 2.0, 8.0",
 #ifdef DEBUG
              @"Test : border-test",
              @"Test 1: border-test, 0.5",
              @"Test 2: border-test, 1.0",
+             @"Red : #ff0000, 2.0",
+             @"Blue : #0000FF",
+             @"Green : #00FF00ee, 4.0, 16.0",
+             @"Purple : #80008080, 4.0, 16.0",
+             @"Tint : #007Aff, 2.0, 8.0",
 #endif
     ];
 }
@@ -54,7 +65,11 @@
 + (NSArray*)arrayEffect {
     return @[@"None",
              @"CRT",
-             @"Scanline"
+             @"Scanline",
+             @"CRT + Scanline",
+#ifdef DEBUG
+             @"Test",
+#endif
     ];
 }
 //

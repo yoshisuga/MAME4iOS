@@ -1637,20 +1637,23 @@ void myosd_handle_turbo() {
 }
 #endif
 
-// border is <resource name> , <fraction of border that is opaque>
+// load any border image and return the size needed to inset the game rect
+// border can be <resource name> , <fraction of border that is opaque>
+//               #<hex color>, <border width>, <corner radius>
 - (void)getOverlayImage:(UIImage**)pImage andSize:(CGSize*)pSize {
     
-    CGSize size = CGSizeZero;
-    UIImage* image = nil;
-    
     NSString* border_info = g_device_is_landscape ? g_pref_border_land : g_pref_border_port;
-    if ([border_info length] == 0 || [border_info isEqualToString:@"None"])
+    
+    if ([border_info length] == 0 || [border_info isEqualToString:@"None"] || [border_info hasPrefix:@"#"]) {
+        *pImage = nil;
+        *pSize = CGSizeZero;
         return;
+    }
 
     NSString* border_name = [border_info componentsSeparatedByString:@","].firstObject;
     CGFloat   border_size = [border_info componentsSeparatedByString:@","].lastObject.doubleValue ?: 0.25;
 
-    image = [self loadImage:border_name];
+    UIImage* image = [self loadImage:border_name];
     NSAssert(image != nil, @"unable to load border image");
     
     CGFloat scale = externalView ? externalView.window.screen.scale : UIScreen.mainScreen.scale;
@@ -1661,7 +1664,8 @@ void myosd_handle_turbo() {
     CGFloat cap_x = floor((image.size.width * image.scale  - 1.0) / 2.0) / image.scale;
     CGFloat cap_y = floor((image.size.height * image.scale - 1.0) / 2.0) / image.scale;
     image = [image resizableImageWithCapInsets:UIEdgeInsetsMake(cap_y, cap_x, cap_y, cap_x) resizingMode:UIImageResizingModeStretch];
-    
+
+    CGSize size;
     size.width  = floor(cap_x * border_size * scale) / scale;
     size.height = floor(cap_y * border_size * scale) / scale;
 
@@ -1669,18 +1673,49 @@ void myosd_handle_turbo() {
     *pSize = size;
 }
 
+UIColor* colorWithHexString(NSString* string) {
+
+    unsigned int rgba = 0;
+    NSScanner* scanner = [[NSScanner alloc] initWithString:string];
+    [scanner scanString:@"#" intoString:nil];
+    [scanner scanHexInt:&rgba];
+
+    if ([string length] <= 7)   // #RRGGBB (not #RRGGBBAA)
+        rgba = (rgba << 8) | 0xFF;
+
+    return [UIColor colorWithRed:((rgba >> 24) & 0xFF) / 255.0
+                           green:((rgba >> 16) & 0xFF) / 255.0
+                            blue:((rgba >>  8) & 0xFF) / 255.0
+                           alpha:((rgba >>  0) & 0xFF) / 255.0];
+}
+
 - (void)buildOverlayImage:(UIImage*)image rect:(CGRect)rect {
     
-    if (image == nil)
-        return;
+    NSString* border_info = g_device_is_landscape ? g_pref_border_land : g_pref_border_port;
 
-    imageOverlay = [[UIImageView alloc] initWithImage:image];
-    imageOverlay.frame = rect;
-       
-    imageOverlay.userInteractionEnabled = NO;
-    imageOverlay.multipleTouchEnabled = NO;
-    
-    [screenView.superview addSubview:imageOverlay];
+    // handle a solid color: #RRGGBBAA, <border width>, <corner radius>
+    if (image == nil && [border_info hasPrefix:@"#"]) {
+        NSArray* info = [border_info componentsSeparatedByString:@","];
+        
+        UIColor* color = colorWithHexString(info.firstObject);
+        CGFloat width = [[info objectAtIndex:1 withDefault:@(1)] doubleValue];
+        CGFloat radius = [[info objectAtIndex:2 withDefault:@(0)] doubleValue];
+        
+        NSLog(@"BORDER: %@, %f, %f", info.firstObject, width, radius);
+        screenView.layer.borderColor = color.CGColor;
+        screenView.layer.borderWidth = width;
+        screenView.layer.cornerRadius = radius;
+        screenView.layer.masksToBounds = (radius != 0.0);
+    }
+    if (image != nil) {
+        imageOverlay = [[UIImageView alloc] initWithImage:image];
+        imageOverlay.frame = rect;
+           
+        imageOverlay.userInteractionEnabled = NO;
+        imageOverlay.multipleTouchEnabled = NO;
+        
+        [screenView.superview addSubview:imageOverlay];
+    }
 }
 
 - (void)buildScreenView {
