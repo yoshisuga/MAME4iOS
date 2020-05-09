@@ -66,6 +66,19 @@ unsigned short img_buffer [2880 * 2160]; // match max driver res?
     _colorSpace = colorSpace;
 }
 
+#ifdef XDEBUG
+#define TEST_WIDTH 64
+#define TEST_HEIGHT 64
+
+#define TEST_SRC_X 4
+#define TEST_SRC_Y 4
+#define TEST_SRC_W 56
+#define TEST_SRC_H 56
+
+#define TEST_SRC_PIXEL_W 28
+#define TEST_SRC_PIXEL_H 28
+#endif
+
 - (void)display {
     
     if (_bitmapContext == nil)
@@ -73,9 +86,16 @@ unsigned short img_buffer [2880 * 2160]; // match max driver res?
         if (_colorSpace == nil)
             _colorSpace = CGColorSpaceCreateDeviceRGB();
         
-        _bitmapContext = CGBitmapContextCreate(img_buffer,myosd_video_width,myosd_video_height,5,myosd_video_width*2,
+        _bitmapContext = CGBitmapContextCreate(img_buffer,
+#ifdef TEST_WIDTH
+                                               TEST_WIDTH, TEST_HEIGHT,
+#else
+                                               myosd_video_width,myosd_video_height,
+#endif
+                                               5,myosd_video_width*2,
                                                _colorSpace,kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder16Little/*kCGImageAlphaNoneSkipLast*/);
         if (_bitmapContext == nil) {
+            CGColorSpaceRelease(_colorSpace);
             _colorSpace = CGColorSpaceCreateDeviceRGB();
             _bitmapContext = CGBitmapContextCreate(img_buffer,myosd_video_width,myosd_video_height,5,myosd_video_width*2,
                                                    _colorSpace,kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder16Little/*kCGImageAlphaNoneSkipLast*/);
@@ -130,9 +150,11 @@ unsigned short img_buffer [2880 * 2160]; // match max driver res?
         return;
 
     // set a custom color space
-    if(_options[kScreenViewColorSpace] != nil)
+    NSString* color_space = _options[kScreenViewColorSpace];
+
+    if (color_space != nil)
     {
-        CGColorSpaceRef colorSpace = [[self class] createColorSpaceFromString:_options[kScreenViewColorSpace]];
+        CGColorSpaceRef colorSpace = [[self class] createColorSpaceFromString:color_space];
         [(CGScreenLayer*)self.layer setColorSpace:colorSpace];
         CGColorSpaceRelease(colorSpace);
     }
@@ -155,7 +177,37 @@ unsigned short img_buffer [2880 * 2160]; // match max driver res?
         [self.layer setMagnificationFilter:kCAFilterNearest];
         [self.layer setMinificationFilter:kCAFilterNearest];
     }
+    
+    while (self.subviews.count > 0)
+        [self.subviews.firstObject removeFromSuperview];
+
+    // create overlay(s) to handle effects
+    NSString* effect = _options[kScreenViewEffect];
+    
+    if ([effect length] != 0 && ![effect isEqualToString:kScreenViewEffectNone]) {
+#ifdef TEST_WIDTH
+        CGRect source_rect = CGRectMake(0, 0, TEST_WIDTH, TEST_HEIGHT);
+        CGRect screen_rect = CGRectMake(TEST_SRC_X, TEST_SRC_Y, TEST_SRC_W, TEST_SRC_H);
+#else
+        CGRect source_rect = CGRectMake(0, 0, myosd_video_width, myosd_video_height);
+        CGRect screen_rect = CGRectMake(0, 0, myosd_video_width, myosd_video_height);
+#endif
+        if (_options[kScreenViewEffectRect] != nil)
+            screen_rect = [_options[kScreenViewEffectRect] CGRectValue];
+
+        CGSize screen_size = screen_rect.size;
+
+        if (_options[kScreenViewEffectSize] != nil)
+            screen_size = [_options[kScreenViewEffectSize] CGSizeValue];
+
+        // TODO: when multiple effects are layerd, do we need to combine them or will CoreAnimation optimize?
+        for (NSString* aeffect in [effect componentsSeparatedByString:@","]) {
+            NSString* effect = [aeffect stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
+            [self buildEffectOverlay:effect dst_rect:self.bounds src_rect:source_rect screen_rect:screen_rect screen_pixel_size:screen_size];
+        }
+    }
 }
+
 - (void)drawRect:(CGRect)rect
 {
     //printf("Draw rect\n");
@@ -207,179 +259,50 @@ unsigned short img_buffer [2880 * 2160]; // match max driver res?
     return CGColorSpaceCreateCalibratedRGB(whitePoint, blackPoint, gamma, matrix);
 }
 
-#if 0
-- (void)buildLandscapeImageOverlay{
- 
-   if((g_pref_scanline_filter_land || g_pref_tv_filter_land) /*&& externalView==nil*/)
-   {
-       CGRect r;
 
-       if(g_device_is_fullscreen)
-          r = rScreenView;
-       else
-          r = rFrames[LANDSCAPE_IMAGE_OVERLAY];
-       
-       if (CGRectEqualToRect(rFrames[LANDSCAPE_IMAGE_OVERLAY], rFrames[LANDSCAPE_VIEW_NOT_FULL]))
-           r = screenView.frame;
+//
+//  buildEffectOverlay
+//
+//  effect      - overlayimage to tile
+//  dst_rect    - destination rect in our UIView, should be bounds
+//  src_rect    - source rect, size of the entire backing bitmap
+//  screen_rect - rect inside source to apply effect
+//  screen_pixel_size - size in original pixels of screen_rect.
+//
+- (void)buildEffectOverlay:(NSString*)effect dst_rect:(CGRect)dst_rect src_rect:(CGRect)src_rect screen_rect:(CGRect)screen_rect screen_pixel_size:(CGSize)screen_pixel_size {
+
+    UIImage* tile_image = [UIImage imageNamed:effect];
     
-       UIGraphicsBeginImageContextWithOptions(r.size, NO, 0.0);
+    if (tile_image == nil)
+        return;
     
-       CGContextRef uiContext = UIGraphicsGetCurrentContext();
-       
-       CGContextTranslateCTM(uiContext, 0, r.size.height);
-        
-       CGContextScaleCTM(uiContext, 1.0, -1.0);
-       
-       if(g_pref_scanline_filter_land)
-       {
-          UIImage *image2;
-
-#if TARGET_OS_IOS
-          if(g_isIpad)
-            image2 =  [self loadImage:[NSString stringWithFormat: @"scanline-2.png"]];
-          else
-            image2 =  [self loadImage:[NSString stringWithFormat: @"scanline-1.png"]];
-#elif TARGET_OS_TV
-           image2 =  [self loadImage:[NSString stringWithFormat: @"scanline_tvOS201901.png"]];
-#endif
-                            
-          CGImageRef tile = CGImageRetain(image2.CGImage);
-          
-#if TARGET_OS_IOS
-          if(g_isIpad)
-             CGContextSetAlpha(uiContext,((float)10 / 100.0f));
-          else
-             CGContextSetAlpha(uiContext,((float)22 / 100.0f));
-#elif TARGET_OS_TV
-           CGContextSetAlpha(uiContext,((float)66 / 100.0f));
-
-#endif
-                  
-          CGContextDrawTiledImage(uiContext, CGRectMake(0, 0, image2.size.width, image2.size.height), tile);
-           
-          CGImageRelease(tile);
-        }
+    // tile image must be @1x, and the height of a pixel, and a integer number of pixels wide: 1:1, 2:1, 3:1 etc...
+    NSParameterAssert(tile_image.scale == 1.0);
+    NSParameterAssert(tile_image.size.width / tile_image.size.height == floor(tile_image.size.width / tile_image.size.height));
     
-        if(g_pref_tv_filter_land)
-        {
-           UIImage *image3 = [self loadImage:[NSString stringWithFormat: @"crt-1.png"]];
-              
-           CGImageRef tile = CGImageRetain(image3.CGImage);
-                  
-           CGContextSetAlpha(uiContext,((float)20 / 100.0f));
-              
-           CGContextDrawTiledImage(uiContext, CGRectMake(0, 0, image3.size.width, image3.size.height), tile);
-           
-           CGImageRelease(tile);
-        }
+    // map the screen rect into the destination
+    dst_rect.origin.x += floor((screen_rect.origin.x - src_rect.origin.x) * dst_rect.size.width / src_rect.size.width);
+    dst_rect.origin.y += floor((screen_rect.origin.y - src_rect.origin.y) * dst_rect.size.height / src_rect.size.height);
+    dst_rect.size.width  = ceil(screen_rect.size.width  * dst_rect.size.width / src_rect.size.width);
+    dst_rect.size.height = ceil(screen_rect.size.height * dst_rect.size.height / src_rect.size.height);
 
-           
-        UIImage *finishedImage = UIGraphicsGetImageFromCurrentImageContext();
-                      
-        UIGraphicsEndImageContext();
-        
-        imageOverlay = [ [ UIImageView alloc ] initWithImage: finishedImage];
-        
-        imageOverlay.frame = r; // Set the frame in which the UIImage should be drawn in.
-      
-        imageOverlay.userInteractionEnabled = NO;
-#if TARGET_OS_IOS
-        imageOverlay.multipleTouchEnabled = NO;
-#endif
-        imageOverlay.clearsContextBeforeDrawing = NO;
-   
-        //[imageBack setOpaque:YES];
-                                         
-        [screenView.superview addSubview: imageOverlay];
-             
-    }
+    CGSize dst_pixel_size; // calculate the size of an output pixel in the destination, rounded up
+    dst_pixel_size.width  = ceil(dst_rect.size.width / screen_pixel_size.width);
+    dst_pixel_size.height = ceil(dst_rect.size.height / screen_pixel_size.height);
+    
+    CGSize image_size; // make a image large enough to hold all rounded up pixels
+    image_size.width  = dst_pixel_size.width  * screen_pixel_size.width;
+    image_size.height = dst_pixel_size.height * screen_pixel_size.height;
+    
+    UIImage* image = [[[UIGraphicsImageRenderer alloc] initWithSize:image_size] imageWithActions:^(UIGraphicsImageRendererContext* context) {
+        CGRect tile_rect = CGRectMake(0, 0, dst_pixel_size.width * tile_image.size.width / tile_image.size.height, dst_pixel_size.height);
+        CGContextDrawTiledImage(context.CGContext, tile_rect, tile_image.CGImage);
+    }];
+    
+    // make image view with image, image will be scaled down, but will keep perfect alignment with source pixels.
+    UIImageView* imageView = [[UIImageView alloc] initWithImage:image];
+    imageView.frame = dst_rect;
+    [self addSubview:imageView];
 }
-
-- (void)buildPortraitImageOverlay {
-   
-   if((g_pref_scanline_filter_port || g_pref_tv_filter_port) /*&& externalView==nil*/)
-   {
-       CGRect r = g_device_is_fullscreen ? rScreenView : rFrames[PORTRAIT_IMAGE_OVERLAY];
-       
-       if (CGRectEqualToRect(rFrames[PORTRAIT_IMAGE_OVERLAY], rFrames[PORTRAIT_VIEW_NOT_FULL]))
-           r = screenView.frame;
-       
-       UIGraphicsBeginImageContextWithOptions(r.size, NO, 0.0);
-       
-       //[image1 drawInRect: rPortraitImageOverlayFrame];
-       
-       CGContextRef uiContext = UIGraphicsGetCurrentContext();
-             
-       CGContextTranslateCTM(uiContext, 0, r.size.height);
-    
-       CGContextScaleCTM(uiContext, 1.0, -1.0);
-
-       if(g_pref_scanline_filter_port)
-       {
-          UIImage *image2 = [self loadImage:[NSString stringWithFormat: @"scanline-1.png"]];
-                        
-          CGImageRef tile = CGImageRetain(image2.CGImage);
-                   
-          CGContextSetAlpha(uiContext,((float)22 / 100.0f));
-              
-          CGContextDrawTiledImage(uiContext, CGRectMake(0, 0, image2.size.width, image2.size.height), tile);
-       
-          CGImageRelease(tile);
-       }
-
-       if(g_pref_tv_filter_port)
-       {
-          UIImage *image3 = [self loadImage:[NSString stringWithFormat: @"crt-1.png"]];
-          
-          CGImageRef tile = CGImageRetain(image3.CGImage);
-              
-          CGContextSetAlpha(uiContext,((float)19 / 100.0f));
-          
-          CGContextDrawTiledImage(uiContext, CGRectMake(0, 0, image3.size.width, image3.size.height), tile);
-       
-          CGImageRelease(tile);
-       }
-     
-       if(g_isIpad && !g_device_is_fullscreen && externalView == nil)
-       {
-          UIImage *image1;
-          if(g_isIpad)
-            image1 = [self loadImage:[NSString stringWithFormat:@"border-iPad.png"]];
-          else
-            image1 = [self loadImage:[NSString stringWithFormat:@"border-iPhone.png"]];
-         
-          CGImageRef img = CGImageRetain(image1.CGImage);
-       
-          CGContextSetAlpha(uiContext,((float)100 / 100.0f));
-   
-          CGContextDrawImage(uiContext,CGRectMake(0, 0, r.size.width, r.size.height),img);
-   
-          CGImageRelease(img);
-
-           //inset the screenView so the border does not overlap it.
-           if (TRUE && self.view.window.screen != nil) {
-               CGSize border = CGSizeMake(4.0,4.0);  // in pixels
-               CGFloat scale = self.view.window.screen.scale;
-               CGFloat dx = ceil((border.width * r.size.width / image1.size.width) / scale); // in points
-               CGFloat dy = ceil((border.height * r.size.height / image1.size.height) / scale);
-               screenView.frame = AVMakeRectWithAspectRatioInsideRect(r.size, CGRectInset(r, dx, dy));
-           }
-       }
-             
-       UIImage *finishedImage = UIGraphicsGetImageFromCurrentImageContext();
-                                                            
-       UIGraphicsEndImageContext();
-       
-       imageOverlay = [ [ UIImageView alloc ] initWithImage: finishedImage];
-         
-       imageOverlay.frame = r;
-                                    
-       [screenView.superview addSubview: imageOverlay];
-  }
-}
-#endif
-
-
-
 
 @end

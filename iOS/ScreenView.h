@@ -47,13 +47,15 @@
 
 #define kScreenViewFilter           @"filter"
 #define kScreenViewEffect           @"effect"
-#define kScreenViewEffectRect       @"effect-rect"
+#define kScreenViewEffectRect       @"effect-rect"  // source rect for effect (in source pixels...)
+#define kScreenViewEffectSize       @"effect-size"  // pixel size of the source rect (in game pixels)
 #define kScreenViewColorSpace       @"colorspace"
 
 #define kScreenViewFilterNearest    @"Nearest"
 #define kScreenViewFilterLinear     @"Linear"
 #define kScreenViewFilterTrilinear  @"Trilinear"
 
+#define kScreenViewEffectNone       @"None"
 #define kScreenViewEffectCRT        @"CRT"
 #define kScreenViewEffectScanline   @"Scanline"
 

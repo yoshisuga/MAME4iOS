@@ -181,6 +181,12 @@
 		EFF9F8112464864600DDA88C /* border-dark.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F80C2464864600DDA88C /* border-dark.png */; };
 		EFF9F8122464864600DDA88C /* border-test.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F80D2464864600DDA88C /* border-test.png */; };
 		EFF9F8132464864600DDA88C /* border-test.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F80D2464864600DDA88C /* border-test.png */; };
+		EFF9F8152465DFB200DDA88C /* effect-dot.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F8142465DFB100DDA88C /* effect-dot.png */; };
+		EFF9F8162465DFB200DDA88C /* effect-dot.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F8142465DFB100DDA88C /* effect-dot.png */; };
+		EFF9F81B2466BE8500DDA88C /* effect-scanline.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F81A2466BE8500DDA88C /* effect-scanline.png */; };
+		EFF9F81C2466BE8500DDA88C /* effect-scanline.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F81A2466BE8500DDA88C /* effect-scanline.png */; };
+		EFF9F81E2466BEE100DDA88C /* effect-crt.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F81D2466BEE100DDA88C /* effect-crt.png */; };
+		EFF9F81F2466BEE100DDA88C /* effect-crt.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F81D2466BEE100DDA88C /* effect-crt.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -392,6 +398,9 @@
 		EFF9F80B2464864600DDA88C /* border-light.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "border-light.png"; path = "../../iOS-res/Applications/MAME4iOS.app/border-light.png"; sourceTree = "<group>"; };
 		EFF9F80C2464864600DDA88C /* border-dark.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "border-dark.png"; path = "../../iOS-res/Applications/MAME4iOS.app/border-dark.png"; sourceTree = "<group>"; };
 		EFF9F80D2464864600DDA88C /* border-test.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "border-test.png"; path = "../../iOS-res/Applications/MAME4iOS.app/border-test.png"; sourceTree = "<group>"; };
+		EFF9F8142465DFB100DDA88C /* effect-dot.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "effect-dot.png"; path = "../../iOS-res/Applications/MAME4iOS.app/effect-dot.png"; sourceTree = "<group>"; };
+		EFF9F81A2466BE8500DDA88C /* effect-scanline.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "effect-scanline.png"; path = "../../iOS-res/Applications/MAME4iOS.app/effect-scanline.png"; sourceTree = "<group>"; };
+		EFF9F81D2466BEE100DDA88C /* effect-crt.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "effect-crt.png"; path = "../../iOS-res/Applications/MAME4iOS.app/effect-crt.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -575,6 +584,9 @@
 				EFF9F80C2464864600DDA88C /* border-dark.png */,
 				EFF9F80B2464864600DDA88C /* border-light.png */,
 				EFF9F80D2464864600DDA88C /* border-test.png */,
+				EFF9F8142465DFB100DDA88C /* effect-dot.png */,
+				EFF9F81A2466BE8500DDA88C /* effect-scanline.png */,
+				EFF9F81D2466BEE100DDA88C /* effect-crt.png */,
 				EFA7570424057FD800A02AAB /* default_game_icon.png */,
 				EF26AE07241848800078FD30 /* mame_logo.png */,
 				EFA756FE2405585D00A02AAB /* mameui.png */,
@@ -868,6 +880,7 @@
 				EFF9F80E2464864600DDA88C /* border-light.png in Resources */,
 				925ABCCF1E46DCC500997182 /* crt-2.png in Resources */,
 				EF0E08AE2401840700E98F01 /* help.md in Resources */,
+				EFF9F81E2466BEE100DDA88C /* effect-crt.png in Resources */,
 				925ABCD01E46DCC500997182 /* scanline-1.png in Resources */,
 				EF00880F2459F4EF0058C2A1 /* cheat0139.zip in Resources */,
 				EF29C8852402E51200AFFA4E /* config_iPad_gen_7.txt in Resources */,
@@ -882,6 +895,7 @@
 				920BBDF220210C3800AE7D50 /* menu.png in Resources */,
 				EFF9F8122464864600DDA88C /* border-test.png in Resources */,
 				EF63E1C124424D2300CFE85D /* whatsnew.md in Resources */,
+				EFF9F8152465DFB200DDA88C /* effect-dot.png in Resources */,
 				925ABCD71E46DCC500997182 /* LICENSE in Resources */,
 				92A533D021EBDDF20089FBB9 /* GCDWebUploader.bundle in Resources */,
 				925ABCD81E46DCC500997182 /* MAME4iOS72.png in Resources */,
@@ -890,6 +904,7 @@
 				925ABCD91E46DCC500997182 /* MAME4iOS114.png in Resources */,
 				925ABCDA1E46DCC500997182 /* MAME4iOS144.png in Resources */,
 				925ABCDB1E46DCC500997182 /* MAME4iOS57.png in Resources */,
+				EFF9F81B2466BE8500DDA88C /* effect-scanline.png in Resources */,
 				921CC323216A903600A39154 /* config_iPad_pro_10_5.txt in Resources */,
 				925ABCDD1E46DCC500997182 /* Category.ini in Resources */,
 				925ABCDE1E46DCC500997182 /* hiscore.dat in Resources */,
@@ -901,7 +916,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				EFF9F8112464864600DDA88C /* border-dark.png in Resources */,
+				EFF9F81C2466BE8500DDA88C /* effect-scanline.png in Resources */,
 				EF0088102459F4EF0058C2A1 /* cheat0139.zip in Resources */,
+				EFF9F81F2466BEE100DDA88C /* effect-crt.png in Resources */,
 				EFD4D14A23C0F6AB00857A76 /* Category.ini in Resources */,
 				926C770721F26DFA00103EDE /* crt-2.png in Resources */,
 				EF26AE09241848800078FD30 /* mame_logo.png in Resources */,
@@ -916,6 +933,7 @@
 				B5FAE31721FCDE0C003F44D0 /* scanline_tvOS201901.png in Resources */,
 				926C770821F26DFD00103EDE /* scanline-1.png in Resources */,
 				92A533D121EBDDF20089FBB9 /* GCDWebUploader.bundle in Resources */,
+				EFF9F8162465DFB200DDA88C /* effect-dot.png in Resources */,
 				926C771321F39D2F00103EDE /* hiscore.dat in Resources */,
 				B5FAE31921FCE64D003F44D0 /* MAME_tvOS.lsr in Resources */,
 			);

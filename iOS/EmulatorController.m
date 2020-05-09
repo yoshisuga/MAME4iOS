@@ -1673,6 +1673,7 @@ void myosd_handle_turbo() {
     *pSize = size;
 }
 
+// parse a hex color string, #RRGGBB or #RRGGBBAA, and return a UIColor
 UIColor* colorWithHexString(NSString* string) {
 
     unsigned int rgba = 0;
@@ -1680,7 +1681,7 @@ UIColor* colorWithHexString(NSString* string) {
     [scanner scanString:@"#" intoString:nil];
     [scanner scanHexInt:&rgba];
 
-    if ([string length] <= 7)   // #RRGGBB (not #RRGGBBAA)
+    if (scanner.scanLocation <= 7)   // #RRGGBB (not #RRGGBBAA)
         rgba = (rgba << 8) | 0xFF;
 
     return [UIColor colorWithRed:((rgba >> 24) & 0xFF) / 255.0
@@ -1699,7 +1700,7 @@ UIColor* colorWithHexString(NSString* string) {
         
         UIColor* color = colorWithHexString(info.firstObject);
         CGFloat width = [[info objectAtIndex:1 withDefault:@(1)] doubleValue];
-        CGFloat radius = [[info objectAtIndex:2 withDefault:@(0)] doubleValue];
+        CGFloat radius = [[info objectAtIndex:2 withDefault:nil] doubleValue];
         
         NSLog(@"BORDER: %@, %f, %f", info.firstObject, width, radius);
         screenView.layer.borderColor = color.CGColor;
@@ -1707,13 +1708,9 @@ UIColor* colorWithHexString(NSString* string) {
         screenView.layer.cornerRadius = radius;
         screenView.layer.masksToBounds = (radius != 0.0);
     }
-    if (image != nil) {
+    else if (image != nil) {
         imageOverlay = [[UIImageView alloc] initWithImage:image];
         imageOverlay.frame = rect;
-           
-        imageOverlay.userInteractionEnabled = NO;
-        imageOverlay.multipleTouchEnabled = NO;
-        
         [screenView.superview addSubview:imageOverlay];
     }
 }
@@ -1796,6 +1793,8 @@ UIColor* colorWithHexString(NSString* string) {
         r.size.width = new_width;
         r.size.height = new_height;
     }
+    
+    // TODO: get the location of the game screen from MAME, for now just use the whole image.
 
     screenView = [ [CGScreenView alloc] initWithFrame:r options:@{
         kScreenViewFilter: g_device_is_landscape ? g_pref_filter_land : g_pref_filter_port,

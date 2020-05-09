@@ -62,13 +62,14 @@
              @"Trilinear"
     ];
 }
+// TODO: make the effect list depend on useMetal
 + (NSArray*)arrayEffect {
     return @[@"None",
-             @"CRT",
-             @"Scanline",
-             @"CRT + Scanline",
+             @"CRT : effect-crt",
+             @"Scanline : effect-scanline",
+             @"CRT + Scanline : effect-crt, effect-scanline",
 #ifdef DEBUG
-             @"Test",
+             @"Test : effect-dot",
 #endif
     ];
 }

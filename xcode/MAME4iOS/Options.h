@@ -145,7 +145,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NSArray (optionAtIndex)
 // a "safe" version of objectAtIndex
-- (id)objectAtIndex:(NSUInteger)index withDefault:(id)defaultObject;
+- (id)objectAtIndex:(NSUInteger)index withDefault:(nullable id)defaultObject;
 // return the option at index, or default to the first one
 - (NSString*)optionAtIndex:(NSUInteger)index;
 // find and return option index given a name, default to first if not found
