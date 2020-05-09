@@ -100,13 +100,12 @@
 
     return @[@"DeviceRGB",
              @"sRGB : kCGColorSpaceSRGB",
-             @"Linear sRGB : kCGColorSpaceLinearSRGB",
-             @"Adobe RGB : kCGColorSpaceAdobeRGB1998",
+             @"CRT (sRGB, D65, 2.5) :    0.95047,1.0,1.08883, 0,0,0, 2.5,2.5,2.5, 0.412456,0.212673,0.019334,0.357576,0.715152,0.119192,0.180437,0.072175,0.950304",
+             @"Rec709 (sRGB, D65, 2.4) : 0.95047,1.0,1.08883, 0,0,0, 2.4,2.4,2.4, 0.412456,0.212673,0.019334,0.357576,0.715152,0.119192,0.180437,0.072175,0.950304",
 #ifdef DEBUG
-             @"NTSC : 0.9504,1.0000,1.0888",
+             @"Adobe RGB : kCGColorSpaceAdobeRGB1998",
+             @"Linear sRGB : kCGColorSpaceLinearSRGB",
              @"NTSC Luminance : 0.9504,1.0000,1.0888, 0,0,0, 1,1,1, 0.299,0.299,0.299, 0.587,0.587,0.587, 0.114,0.114,0.114",
-             @"Arcade CRT",
-             @"Vector CRT",
 #endif
     ];
 }

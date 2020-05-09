@@ -1167,7 +1167,8 @@ void mame_state(int load_save, int slot)
 #ifdef DEBUG
     // create all color spaces, to test for validness.
     for (NSString* string in Options.arrayColorSpace) {
-        CGColorSpaceRef colorSpace = [CGScreenView createColorSpaceFromString:string];
+        NSString* color_space_data = [[string componentsSeparatedByString:@":"].lastObject stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
+        CGColorSpaceRef colorSpace = [CGScreenView createColorSpaceFromString:color_space_data];
         NSLog(@"COLORSPACE DATA: %@", string);
         NSLog(@"     COLORSPACE: %@", colorSpace);
         CGColorSpaceRelease(colorSpace);
