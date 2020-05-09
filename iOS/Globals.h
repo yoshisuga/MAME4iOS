@@ -108,13 +108,6 @@ extern NSString* g_pref_border_land;
 extern NSString* g_pref_border_port;
 extern NSString* g_pref_colorspace;
 
-extern int g_pref_tv_filter_land;
-extern int g_pref_tv_filter_port;
-extern int g_pref_scanline_filter_land;
-extern int g_pref_scanline_filter_port;
-extern int g_pref_smooth_land;
-extern int g_pref_smooth_port;
-
 extern int g_pref_integer_scale_only;
 extern int g_pref_keep_aspect_ratio_land;
 extern int g_pref_keep_aspect_ratio_port;

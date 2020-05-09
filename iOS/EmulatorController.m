@@ -132,13 +132,6 @@ int g_pref_integer_scale_only = 0;
 int g_pref_keep_aspect_ratio_land = 0;
 int g_pref_keep_aspect_ratio_port = 0;
 
-int g_pref_smooth_land = 0;
-int g_pref_smooth_port = 0;
-int g_pref_tv_filter_land = 0;
-int g_pref_tv_filter_port = 0;
-int g_pref_scanline_filter_land = 0;
-int g_pref_scanline_filter_port = 0;
-
 int g_pref_animated_DPad = 0;
 int g_pref_4buttonsLand = 0;
 int g_pref_full_screen_land = 1;
@@ -735,17 +728,6 @@ void mame_state(int load_save, int slot)
     g_pref_colorspace = [Options.arrayColorSpace optionData:op.sourceColorSpace];
 
     g_pref_integer_scale_only = op.integerScalingOnly;
-
-    //TODO: remove these binary globals
-    g_pref_smooth_land = g_pref_filter_land.length != 0 && ![g_pref_filter_land isEqualToString:Options.arrayFilter.firstObject];
-    g_pref_smooth_port = g_pref_filter_port.length != 0 && ![g_pref_filter_port isEqualToString:Options.arrayFilter.firstObject];
-    
-    g_pref_tv_filter_land = [op.effectLand isEqualToString:@"CRT"];
-    g_pref_tv_filter_port = [op.effectPort isEqualToString:@"CRT"];
-    
-    g_pref_scanline_filter_land = [g_pref_filter_land isEqualToString:@"Scanline"];
-    g_pref_scanline_filter_port = [g_pref_filter_port isEqualToString:@"Scanline"];
-    // TODO: ----------------------------------------------
 
     myosd_fps = [op showFPS];
     myosd_showinfo =  [op showINFO];

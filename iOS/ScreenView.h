@@ -47,8 +47,8 @@
 
 #define kScreenViewFilter           @"filter"
 #define kScreenViewEffect           @"effect"
-#define kScreenViewEffectRect       @"effect-rect"  // source rect for effect (in source pixels...)
-#define kScreenViewEffectSize       @"effect-size"  // pixel size of the source rect (in game pixels)
+#define kScreenViewEffectScreenRect @"effect-screen-rect"  // screen rect for effect (in source pixels...)
+#define kScreenViewEffectScreenSize @"effect-screen-size"  // pixel size of the screen rect (in game pixels)
 #define kScreenViewColorSpace       @"colorspace"
 
 #define kScreenViewFilterNearest    @"Nearest"
@@ -56,8 +56,6 @@
 #define kScreenViewFilterTrilinear  @"Trilinear"
 
 #define kScreenViewEffectNone       @"None"
-#define kScreenViewEffectCRT        @"CRT"
-#define kScreenViewEffectScanline   @"Scanline"
 
 @protocol ScreenView <NSObject>
 

@@ -69,7 +69,8 @@
              @"Scanline : effect-scanline",
              @"CRT + Scanline : effect-crt, effect-scanline",
 #ifdef DEBUG
-             @"Test : effect-dot",
+             @"Test Dot : effect-dot",
+             @"Test All : effect-crt, effect-scanline, effect-dot",
 #endif
     ];
 }

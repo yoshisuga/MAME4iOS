@@ -44,7 +44,6 @@
 #import "CGScreenView.h"
 #import "Globals.h"
 
-//static
 unsigned short img_buffer [2880 * 2160]; // match max driver res?
 
 @interface CGScreenLayer : CALayer
@@ -178,33 +177,32 @@ unsigned short img_buffer [2880 * 2160]; // match max driver res?
         [self.layer setMinificationFilter:kCAFilterNearest];
     }
     
+    // remove any previous overlays
     while (self.subviews.count > 0)
         [self.subviews.firstObject removeFromSuperview];
 
-    // create overlay(s) to handle effects
+    // create overlay to handle effect
     NSString* effect = _options[kScreenViewEffect];
     
     if ([effect length] != 0 && ![effect isEqualToString:kScreenViewEffectNone]) {
-#ifdef TEST_WIDTH
-        CGRect source_rect = CGRectMake(0, 0, TEST_WIDTH, TEST_HEIGHT);
-        CGRect screen_rect = CGRectMake(TEST_SRC_X, TEST_SRC_Y, TEST_SRC_W, TEST_SRC_H);
-#else
         CGRect source_rect = CGRectMake(0, 0, myosd_video_width, myosd_video_height);
+
         CGRect screen_rect = CGRectMake(0, 0, myosd_video_width, myosd_video_height);
-#endif
-        if (_options[kScreenViewEffectRect] != nil)
-            screen_rect = [_options[kScreenViewEffectRect] CGRectValue];
+        if (_options[kScreenViewEffectScreenRect] != nil)
+            screen_rect = [_options[kScreenViewEffectScreenRect] CGRectValue];
 
         CGSize screen_size = screen_rect.size;
+        if (_options[kScreenViewEffectScreenSize] != nil)
+            screen_size = [_options[kScreenViewEffectScreenSize] CGSizeValue];
+        
+#ifdef TEST_WIDTH
+        source_rect = CGRectMake(0, 0, TEST_WIDTH, TEST_HEIGHT);
+        screen_rect = CGRectMake(TEST_SRC_X, TEST_SRC_Y, TEST_SRC_W, TEST_SRC_H);
+        screen_size = screen_rect.size;
+#endif
 
-        if (_options[kScreenViewEffectSize] != nil)
-            screen_size = [_options[kScreenViewEffectSize] CGSizeValue];
-
-        // TODO: when multiple effects are layerd, do we need to combine them or will CoreAnimation optimize?
-        for (NSString* aeffect in [effect componentsSeparatedByString:@","]) {
-            NSString* effect = [aeffect stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
-            [self buildEffectOverlay:effect dst_rect:self.bounds src_rect:source_rect screen_rect:screen_rect screen_pixel_size:screen_size];
-        }
+        [self buildEffectOverlay: [effect componentsSeparatedByString:@","]
+                        dst_rect:self.bounds src_rect:source_rect screen_rect:screen_rect screen_pixel_size:screen_size];
     }
 }
 
@@ -263,23 +261,14 @@ unsigned short img_buffer [2880 * 2160]; // match max driver res?
 //
 //  buildEffectOverlay
 //
-//  effect      - overlayimage to tile
+//  effects     - overlay image(s) to tile
 //  dst_rect    - destination rect in our UIView, should be bounds
 //  src_rect    - source rect, size of the entire backing bitmap
 //  screen_rect - rect inside source to apply effect
 //  screen_pixel_size - size in original pixels of screen_rect.
 //
-- (void)buildEffectOverlay:(NSString*)effect dst_rect:(CGRect)dst_rect src_rect:(CGRect)src_rect screen_rect:(CGRect)screen_rect screen_pixel_size:(CGSize)screen_pixel_size {
+- (void)buildEffectOverlay:(NSArray<NSString*>*)effects dst_rect:(CGRect)dst_rect src_rect:(CGRect)src_rect screen_rect:(CGRect)screen_rect screen_pixel_size:(CGSize)screen_pixel_size {
 
-    UIImage* tile_image = [UIImage imageNamed:effect];
-    
-    if (tile_image == nil)
-        return;
-    
-    // tile image must be @1x, and the height of a pixel, and a integer number of pixels wide: 1:1, 2:1, 3:1 etc...
-    NSParameterAssert(tile_image.scale == 1.0);
-    NSParameterAssert(tile_image.size.width / tile_image.size.height == floor(tile_image.size.width / tile_image.size.height));
-    
     // map the screen rect into the destination
     dst_rect.origin.x += floor((screen_rect.origin.x - src_rect.origin.x) * dst_rect.size.width / src_rect.size.width);
     dst_rect.origin.y += floor((screen_rect.origin.y - src_rect.origin.y) * dst_rect.size.height / src_rect.size.height);
@@ -295,8 +284,19 @@ unsigned short img_buffer [2880 * 2160]; // match max driver res?
     image_size.height = dst_pixel_size.height * screen_pixel_size.height;
     
     UIImage* image = [[[UIGraphicsImageRenderer alloc] initWithSize:image_size] imageWithActions:^(UIGraphicsImageRendererContext* context) {
-        CGRect tile_rect = CGRectMake(0, 0, dst_pixel_size.width * tile_image.size.width / tile_image.size.height, dst_pixel_size.height);
-        CGContextDrawTiledImage(context.CGContext, tile_rect, tile_image.CGImage);
+        for (NSString* effect in effects) {
+            UIImage* tile_image = [UIImage imageNamed:[effect stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet]];
+        
+            // tile image must be @1x, and the height of a single pixel, and a integer number of pixels wide: 1:1, 2:1, 3:1 etc...
+            NSParameterAssert(tile_image != nil);
+            NSParameterAssert(tile_image.scale == 1.0);
+            NSParameterAssert(tile_image.size.width / tile_image.size.height == floor(tile_image.size.width / tile_image.size.height));
+            
+            if (tile_image != nil) {
+                CGRect tile_rect = CGRectMake(0, 0, dst_pixel_size.width * tile_image.size.width / tile_image.size.height, dst_pixel_size.height);
+                CGContextDrawTiledImage(context.CGContext, tile_rect, tile_image.CGImage);
+            }
+        }
     }];
     
     // make image view with image, image will be scaled down, but will keep perfect alignment with source pixels.
