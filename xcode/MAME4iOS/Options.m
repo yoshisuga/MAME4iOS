@@ -516,7 +516,7 @@
     
     NSError *error = nil;
     
-    plistData = [NSPropertyListSerialization dataWithPropertyList:optionsDict
+    plistData = [NSPropertyListSerialization dataWithPropertyList:@[optionsDict]
                                                            format:NSPropertyListBinaryFormat_v1_0
                                                           options:0
                                                             error:&error];
