@@ -5,6 +5,9 @@
 * Video options (new)
     - Integer Scaling Only
     - Ability to select the ColorSpace used to display MAME screen.
+* Colorspace (new)
+    - DisplayRGB 
+    - sRGB
 * Border options (new)
     - Light
     - Dark
