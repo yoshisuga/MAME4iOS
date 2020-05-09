@@ -80,9 +80,12 @@ The emulator controls are the following ones:
 - **CRT** Apply a CRT like filter over the image.
 - **Scanline** Apply a scanline filter over the image.
 
-**Source Colorspace** the [color space](https://en.wikipedia.org/wiki/Color_space) to use.
-- **DeviceRGB** just use the colors space of the device. 
+**Colorspace** the [color space](https://en.wikipedia.org/wiki/Color_space) to use.
+- **DeviceRGB** just use the color space of the device. 
 - **sRGB** use the [sRGB](https://en.wikipedia.org/wiki/SRGB) color space. 
+- **CRT (sRGB, D65, 2.5)** Idealized CRT with a gamma of 2.5
+- **Rec709 (sRGB, D65, 2.4)** the [Rec709](https://en.wikipedia.org/wiki/Rec._709) color space.
+
 
 **Full Screen** Uses all available screen or shows the emulator windowed.
 

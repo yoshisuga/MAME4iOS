@@ -229,7 +229,7 @@
                }
                case 1:
                {
-                   cell.textLabel.text   = @"Source Colorspace";
+                   cell.textLabel.text   = @"Colorspace";
                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                    cell.detailTextLabel.text = [Options.arrayColorSpace optionName:op.sourceColorSpace];
                    break;
