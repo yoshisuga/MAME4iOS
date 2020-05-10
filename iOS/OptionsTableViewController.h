@@ -53,4 +53,9 @@
 
 - (NSString*)applicationVersionInfo;
 
+// create a switch that will toggle the option identified by `key`
+// on iOS this creates UISwitch, on tvOS it creates a UILabel you can embed in a UITableViewCell
+- (UIView*)optionSwitchForKey:(NSString*)key;
+- (void)toggleOptionSwitch:(UIView*)view;
+
 @end

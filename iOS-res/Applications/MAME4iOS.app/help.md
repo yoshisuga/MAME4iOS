@@ -12,7 +12,7 @@ MAME4iOS Reloaded emulates arcade games supported by original MAME 0.139u1.
 
 This MAME4iOS version is targeted at 64bit devies (A7 or higher, iPhone 5s or later) , because it is based on a high specs 2010 PC MAME build. Anyway don't expect arcade games of the 90 to work at full speed. Some games are really bad optimized (like outrun or mk series). This is related to MAME build used, since it is targeted to high specs PC's as i said before. This version doesn't have an UML backend ARM dynamic recompiler, which means drivers based on high specs arcade CPUs won't be playable (it has not sense since this games will be slow in any case).
 
-TIP: You can try to use speed hacks (this menu appears pressing START + COIN at the same time when you are gaming) to make playables some games like CPS3 ones.
+**TIP** You can try to use speed hacks (this menu appears pressing `START` + `COIN` at the same time when you are gaming) to make playables some games like CPS3 ones.
 
 Said that, with a low end device, use at your own risk. I suggest you use iMAME4all (0.37b5) instead. Remember that games that can be emulated on both versions will run much faster on iMAME4all (0.37b5) than on MAME4iOS Reloaded (0.139u1), and will drain less battery.
 
@@ -62,23 +62,38 @@ The emulator controls are the following ones:
 
 **Button MENU** Open MAME4iOS menu, global settings.
 
-NOTE: To type OK when MAME requires it, press LEFT and then RIGHT.
+**NOTE** To type OK when MAME requires it, press LEFT and then RIGHT.
 
 ## GLOBAL OPTIONS
 
-**Game Filter** Use to filter games by keyword, year, manufacturer, driver source, category. Also let you hide non Favorites, clones or not working games.
+**FIlter** the method used to expand the emulator screen.
+- **Nearest** Dont appy any filtering, aka `FatBits`
+- **Linear**  Apply a smoothing image filter over the emulator screen.
+- **Trilinear**  Better than **Linear** but some people cant tell the difference.
 
-**Smoothed image** Enable to apply a smoothing image filter over the emulator screen.
+**Border** a border that will surround the emulator screen. 
+- **Light** - a bright thick border
+- **Dark** - a think dark border
+- **Solid** - a blue solid border, with rounded corners.
 
-**CRT Effect** Enable to apply a CRT like filter over the image.
+**Effects**  a cool/retro effect to apply to the emulator screen. 
+- **CRT** Apply a CRT like filter over the image.
+- **Scanline** Apply a scanline filter over the image.
 
-**Sacanline Effect** Enable to apply a scanline filter over the image.
+**Colorspace** the [color space](https://en.wikipedia.org/wiki/Color_space) to use.
+- **DeviceRGB** just use the color space of the device. 
+- **sRGB** use the [sRGB](https://en.wikipedia.org/wiki/SRGB) color space. 
+- **CRT (sRGB, D65, 2.5)** Idealized CRT with a gamma of 2.5
+- **Rec709 (sRGB, D65, 2.4)** the [Rec709](https://en.wikipedia.org/wiki/Rec._709) color space.
+
 
 **Full Screen** Uses all available screen or shows the emulator windowed.
 
 **Full Screen with Controler** automaticly enters Full Screen when a controler, keyboard, iCade is detected.
 
 **Keep Aspect Ratio** 'Enabled' keeps the aspect ratio; 'Disabled' will use all available screen.
+
+**Integer Scaling Only** 'Enabled' will only scale image by integer amounts.
 
 **Change Current Layout** Changes the current touch controller current layout.
 
@@ -205,8 +220,7 @@ we suppoprt a small subset of the keys supported by the command line MAME.
      DELETE          | MAME UI BACK (aka B)
      BQUOTE          | MAME4iOS MENU
      CMD+ENTER       | TOGGLE FULLSCREEN
-     CMD+T           | TOGGLE CRT/TV FILTER
-     CMD+S           | TOGGLE SCANLINE FILTER
+     CMD+I                  | TOGGLE INTEGER SCALE
      
 ## Game Controlers
 

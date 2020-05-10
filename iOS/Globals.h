@@ -100,12 +100,15 @@ extern int g_enable_debug_view;
 extern int g_device_is_landscape;
 extern int g_device_is_fullscreen;
 
-extern int g_pref_tv_filter_land;
-extern int g_pref_tv_filter_port;
-extern int g_pref_scanline_filter_land;
-extern int g_pref_scanline_filter_port;
-extern int g_pref_smooth_land;
-extern int g_pref_smooth_port;
+extern NSString* g_pref_effect_land;
+extern NSString* g_pref_effect_port;
+extern NSString* g_pref_filter_land;
+extern NSString* g_pref_filter_port;
+extern NSString* g_pref_border_land;
+extern NSString* g_pref_border_port;
+extern NSString* g_pref_colorspace;
+
+extern int g_pref_integer_scale_only;
 extern int g_pref_keep_aspect_ratio_land;
 extern int g_pref_keep_aspect_ratio_port;
 extern int g_pref_full_screen_land;
@@ -118,6 +121,7 @@ extern int g_pref_hide_LR;
 extern int g_pref_BplusX;
 extern int g_pref_full_num_buttons;
 extern int g_pref_skin;
+extern int g_skin_data;
 extern int g_pref_BT_DZ_value;
 extern int g_pref_touch_DZ;
 extern int g_pref_analog_DZ_value;
@@ -127,7 +131,6 @@ extern int g_pref_aplusb;
 extern int g_pref_nintendoBAYX;
 extern int g_pref_nativeTVOUT;
 extern int g_pref_overscanTVOUT;
-extern int g_skin_data;
 
 extern float g_buttons_size;
 extern float g_stick_size;

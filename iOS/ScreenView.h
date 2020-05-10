@@ -45,10 +45,20 @@
 #import <UIKit/UIKit.h>
 #import <QuartzCore/CALayer.h>
 
+#define kScreenViewFilter           @"filter"
+#define kScreenViewEffect           @"effect"
+#define kScreenViewEffectScreenRect @"effect-screen-rect"  // screen rect for effect (in source pixels...)
+#define kScreenViewEffectScreenSize @"effect-screen-size"  // pixel size of the screen rect (in game pixels)
+#define kScreenViewColorSpace       @"colorspace"
 
-@interface ScreenView : UIView
+#define kScreenViewFilterNearest    @"Nearest"
+#define kScreenViewFilterLinear     @"Linear"
+#define kScreenViewFilterTrilinear  @"Trilinear"
 
-- (id)initWithFrame:(CGRect)frame;
-- (void)drawRect:(CGRect)rect;
+#define kScreenViewEffectNone       @"None"
+
+@protocol ScreenView <NSObject>
+
+- (instancetype)initWithFrame:(CGRect)frame options:(NSDictionary*)options;
 
 @end

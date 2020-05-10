@@ -47,27 +47,6 @@
 
 @class EmulatorController;
 
-@interface DefaultOptionController : OptionsTableViewController {
-    
-#if TARGET_OS_IOS
-    UISwitch*  switchVBean2x;
-    UISwitch*  switchVAntialias;
-    UISwitch*  switchVFlicker;
-    UISwitch *switchCheats;
-    UISwitch *switchVsync;
-    UISwitch *switchHiscore;
-    UISwitch *switchTvoutNative;
-    UISwitch *switchThreaded;
-    UISwitch *switchDblbuff;
-#endif
-    
-    NSArray  *arraySoundValue;
-    NSArray  *arrayVideoPriorityValue;
-    NSArray  *arrayMainPriorityValue;
-    
-    NSArray  *arrayMainThreadTypeValue;
-    NSArray  *arrayVideoThreadTypeValue;
-    
-}
+@interface DefaultOptionController : OptionsTableViewController
 
 @end

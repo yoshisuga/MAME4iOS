@@ -60,8 +60,6 @@
     NSArray  *arrayAutofireValue;
     NSArray  *arrayButtonSizeValue;
     
-    NSArray *arrayControlType;
-    
     UISwitch *switchP1aspx;
     
     UISwitch *switchTouchDeadZone;
