@@ -268,16 +268,18 @@ unsigned short img_buffer [2880 * 2160]; // match max driver res?
 //  screen_pixel_size - size in original pixels of screen_rect.
 //
 - (void)buildEffectOverlay:(NSArray<NSString*>*)effects dst_rect:(CGRect)dst_rect src_rect:(CGRect)src_rect screen_rect:(CGRect)screen_rect screen_pixel_size:(CGSize)screen_pixel_size {
-
+    
     // map the screen rect into the destination
     dst_rect.origin.x += floor((screen_rect.origin.x - src_rect.origin.x) * dst_rect.size.width / src_rect.size.width);
     dst_rect.origin.y += floor((screen_rect.origin.y - src_rect.origin.y) * dst_rect.size.height / src_rect.size.height);
     dst_rect.size.width  = ceil(screen_rect.size.width  * dst_rect.size.width / src_rect.size.width);
     dst_rect.size.height = ceil(screen_rect.size.height * dst_rect.size.height / src_rect.size.height);
+    
+    CGFloat scale = self.window.screen.scale;
 
     CGSize dst_pixel_size; // calculate the size of an output pixel in the destination, rounded up
-    dst_pixel_size.width  = ceil(dst_rect.size.width / screen_pixel_size.width);
-    dst_pixel_size.height = ceil(dst_rect.size.height / screen_pixel_size.height);
+    dst_pixel_size.width  = ceil(dst_rect.size.width  * scale / screen_pixel_size.width)  / scale;
+    dst_pixel_size.height = ceil(dst_rect.size.height * scale / screen_pixel_size.height) / scale;
     
     CGSize image_size; // make a image large enough to hold all rounded up pixels
     image_size.width  = dst_pixel_size.width  * screen_pixel_size.width;
@@ -291,6 +293,10 @@ unsigned short img_buffer [2880 * 2160]; // match max driver res?
             NSParameterAssert(tile_image != nil);
             NSParameterAssert(tile_image.scale == 1.0);
             NSParameterAssert(tile_image.size.width / tile_image.size.height == floor(tile_image.size.width / tile_image.size.height));
+            
+            // ignore a 1x1 filter, it will just be a solid color!
+            if ((dst_pixel_size.height * scale) == 1.0 && tile_image.size.width == tile_image.size.height)
+                return;
             
             if (tile_image != nil) {
                 CGRect tile_rect = CGRectMake(0, 0, dst_pixel_size.width * tile_image.size.width / tile_image.size.height, dst_pixel_size.height);
