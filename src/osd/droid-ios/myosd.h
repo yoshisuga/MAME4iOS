@@ -35,8 +35,13 @@ enum  { MYOSD_UP=0x1,       MYOSD_LEFT=0x4,       MYOSD_DOWN=0x10,   MYOSD_RIGHT
 #define MAX_FILTER_KEYWORD 30
 #define MAX_GAME_NAME 14
 #define NETPLAY_PORT 55435
-        
-extern unsigned short *myosd_screen15;
+
+#define MYOSD_SCREEN_WIDTH  2880
+#define MYOSD_SCREEN_HEIGHT 2160
+extern unsigned short *myosd_curr_screen;   // current screen being rendered.
+extern unsigned short *myosd_prev_screen;   // current screen being drawn (we hope).
+extern unsigned short myosd_screen[MYOSD_SCREEN_WIDTH * MYOSD_SCREEN_HEIGHT * 2];
+
 extern int  myosd_fps;
 extern int  myosd_showinfo;
 extern int  myosd_sleep;

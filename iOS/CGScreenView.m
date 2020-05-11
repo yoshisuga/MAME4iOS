@@ -43,14 +43,13 @@
  */
 #import "CGScreenView.h"
 #import "Globals.h"
-
-unsigned short img_buffer [2880 * 2160]; // match max driver res?
+#import "myosd.h"
 
 @interface CGScreenLayer : CALayer
 @end
 
 @implementation CGScreenLayer {
-    CGContextRef _bitmapContext;
+    CGContextRef _bitmapContext[2];
     CGColorSpaceRef _colorSpace;
 }
 
@@ -65,52 +64,48 @@ unsigned short img_buffer [2880 * 2160]; // match max driver res?
     _colorSpace = colorSpace;
 }
 
-#ifdef XDEBUG
-#define TEST_WIDTH 64
-#define TEST_HEIGHT 64
+- (void)setup {
 
-#define TEST_SRC_X 4
-#define TEST_SRC_Y 4
-#define TEST_SRC_W 56
-#define TEST_SRC_H 56
-
-#define TEST_SRC_PIXEL_W 28
-#define TEST_SRC_PIXEL_H 28
-#endif
-
-- (void)display {
+    if (_colorSpace == nil)
+        _colorSpace = CGColorSpaceCreateDeviceRGB();
     
-    if (_bitmapContext == nil)
-    {
-        if (_colorSpace == nil)
-            _colorSpace = CGColorSpaceCreateDeviceRGB();
+    for (int i=0; i<2; i++) {
         
-        _bitmapContext = CGBitmapContextCreate(img_buffer,
-#ifdef TEST_WIDTH
-                                               TEST_WIDTH, TEST_HEIGHT,
-#else
-                                               myosd_video_width,myosd_video_height,
-#endif
-                                               5,myosd_video_width*2,
-                                               _colorSpace,kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder16Little/*kCGImageAlphaNoneSkipLast*/);
-        if (_bitmapContext == nil) {
+        _bitmapContext[i] = CGBitmapContextCreate(myosd_screen + i * (MYOSD_SCREEN_WIDTH * MYOSD_SCREEN_HEIGHT),
+                                                  myosd_video_width,myosd_video_height,5,myosd_video_width*2,
+                                                  _colorSpace,kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder16Little/*kCGImageAlphaNoneSkipLast*/);
+        
+        // this might have failed because of a unsuported colorspace, try one more time with DeviceRGB
+        if (_bitmapContext[i] == nil) {
             CGColorSpaceRelease(_colorSpace);
             _colorSpace = CGColorSpaceCreateDeviceRGB();
-            _bitmapContext = CGBitmapContextCreate(img_buffer,myosd_video_width,myosd_video_height,5,myosd_video_width*2,
-                                                   _colorSpace,kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder16Little/*kCGImageAlphaNoneSkipLast*/);
+            _bitmapContext[i] = CGBitmapContextCreate(myosd_screen + i * (MYOSD_SCREEN_WIDTH * MYOSD_SCREEN_HEIGHT),
+                                                      myosd_video_width,myosd_video_height,5,myosd_video_width*2,
+                                                      _colorSpace,kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder16Little/*kCGImageAlphaNoneSkipLast*/);
         }
         NSAssert(_bitmapContext != nil, @"ack!");
     }
+}
+
+- (void)display {
+
+    if (_bitmapContext[0] == nil)
+        [self setup];
     
-    CGImageRef cgImage = CGBitmapContextCreateImage(_bitmapContext);
+    CGContextRef bitmapContext = (myosd_prev_screen == myosd_screen) ? _bitmapContext[0] :  _bitmapContext[1];
+
+    CGImageRef cgImage = CGBitmapContextCreateImage(bitmapContext);
     self.contents = (__bridge id)cgImage;
     CGImageRelease(cgImage);
 }
 
 - (void)dealloc {
-    CGContextRelease(_bitmapContext);
-    _bitmapContext = nil;
-
+    CGContextRelease(_bitmapContext[0]);
+    _bitmapContext[0] = nil;
+    
+    CGContextRelease(_bitmapContext[1]);
+    _bitmapContext[1] = nil;
+    
     CGColorSpaceRelease(_colorSpace);
     _colorSpace = nil;
 }
@@ -195,12 +190,6 @@ unsigned short img_buffer [2880 * 2160]; // match max driver res?
         if (_options[kScreenViewEffectScreenSize] != nil)
             screen_size = [_options[kScreenViewEffectScreenSize] CGSizeValue];
         
-#ifdef TEST_WIDTH
-        source_rect = CGRectMake(0, 0, TEST_WIDTH, TEST_HEIGHT);
-        screen_rect = CGRectMake(TEST_SRC_X, TEST_SRC_Y, TEST_SRC_W, TEST_SRC_H);
-        screen_size = screen_rect.size;
-#endif
-
         [self buildEffectOverlay: [effect componentsSeparatedByString:@","]
                         dst_rect:self.bounds src_rect:source_rect screen_rect:screen_rect screen_pixel_size:screen_size];
     }
@@ -268,21 +257,24 @@ unsigned short img_buffer [2880 * 2160]; // match max driver res?
 //  screen_pixel_size - size in original pixels of screen_rect.
 //
 - (void)buildEffectOverlay:(NSArray<NSString*>*)effects dst_rect:(CGRect)dst_rect src_rect:(CGRect)src_rect screen_rect:(CGRect)screen_rect screen_pixel_size:(CGSize)screen_pixel_size {
-
+    
     // map the screen rect into the destination
     dst_rect.origin.x += floor((screen_rect.origin.x - src_rect.origin.x) * dst_rect.size.width / src_rect.size.width);
     dst_rect.origin.y += floor((screen_rect.origin.y - src_rect.origin.y) * dst_rect.size.height / src_rect.size.height);
     dst_rect.size.width  = ceil(screen_rect.size.width  * dst_rect.size.width / src_rect.size.width);
     dst_rect.size.height = ceil(screen_rect.size.height * dst_rect.size.height / src_rect.size.height);
+    
+    CGFloat scale = self.window.screen.scale;
 
     CGSize dst_pixel_size; // calculate the size of an output pixel in the destination, rounded up
-    dst_pixel_size.width  = ceil(dst_rect.size.width / screen_pixel_size.width);
-    dst_pixel_size.height = ceil(dst_rect.size.height / screen_pixel_size.height);
+    dst_pixel_size.width  = ceil(dst_rect.size.width  * scale / screen_pixel_size.width)  / scale;
+    dst_pixel_size.height = ceil(dst_rect.size.height * scale / screen_pixel_size.height) / scale;
     
     CGSize image_size; // make a image large enough to hold all rounded up pixels
     image_size.width  = dst_pixel_size.width  * screen_pixel_size.width;
     image_size.height = dst_pixel_size.height * screen_pixel_size.height;
     
+    __block BOOL show = FALSE;
     UIImage* image = [[[UIGraphicsImageRenderer alloc] initWithSize:image_size] imageWithActions:^(UIGraphicsImageRendererContext* context) {
         for (NSString* effect in effects) {
             UIImage* tile_image = [UIImage imageNamed:[effect stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet]];
@@ -292,17 +284,24 @@ unsigned short img_buffer [2880 * 2160]; // match max driver res?
             NSParameterAssert(tile_image.scale == 1.0);
             NSParameterAssert(tile_image.size.width / tile_image.size.height == floor(tile_image.size.width / tile_image.size.height));
             
+            // ignore a 1x1 filter, it will just be a solid color!
+            if ((dst_pixel_size.height * scale) == 1.0 && tile_image.size.width == tile_image.size.height)
+                return;
+            
             if (tile_image != nil) {
                 CGRect tile_rect = CGRectMake(0, 0, dst_pixel_size.width * tile_image.size.width / tile_image.size.height, dst_pixel_size.height);
                 CGContextDrawTiledImage(context.CGContext, tile_rect, tile_image.CGImage);
+                show = TRUE;
             }
         }
     }];
     
     // make image view with image, image will be scaled down, but will keep perfect alignment with source pixels.
-    UIImageView* imageView = [[UIImageView alloc] initWithImage:image];
-    imageView.frame = dst_rect;
-    [self addSubview:imageView];
+    if (show) {
+        UIImageView* imageView = [[UIImageView alloc] initWithImage:image];
+        imageView.frame = dst_rect;
+        [self addSubview:imageView];
+    }
 }
 
 @end

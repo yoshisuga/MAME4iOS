@@ -1770,6 +1770,8 @@ UIColor* colorWithHexString(NSString* string) {
 
         CGFloat new_width  = (n_w * myosd_vis_video_width) / scale;
         CGFloat new_height = (n_h * myosd_vis_video_height) / scale;
+        
+        NSLog(@"INTEGER SCALE[%d,%d] %dx%d => %0.3fx%0.3f@%dx", (int)n_w, (int)n_h, myosd_vis_video_width, myosd_vis_video_height, new_width, new_height, (int)scale);
 
         r.origin.x += floor((r.size.width - new_width)/2);
         r.origin.y += floor((r.size.height - new_height)/2);
