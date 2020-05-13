@@ -205,21 +205,45 @@ static EmulatorController *sharedInstance = nil;
 static const int buttonPressReleaseCycles = 2;
 static const int buttonNextPressCycles = 32;
 
+// called by the OSD layer when redner target changes size
+// **NOTE** this is called on the MAME background thread, dont do anything stupid.
 void iphone_Reset_Views(void)
 {
-    if (sharedInstance == nil)
-       return;
+    NSLog(@"iphone_Reset_Views: %dx%d [%dx%d] %f",
+          myosd_vis_video_width, myosd_vis_video_height,
+          myosd_video_width, myosd_video_height,
+          (double)myosd_vis_video_width / myosd_vis_video_height);
     
-    if(!myosd_inGame)
-       [sharedInstance performSelectorOnMainThread:@selector(moveROMS) withObject:nil waitUntilDone:NO];
+    if (sharedInstance == nil)
+        return;
+    
+    if (!myosd_inGame)
+        [sharedInstance performSelectorOnMainThread:@selector(moveROMS) withObject:nil waitUntilDone:NO];
+    
     [sharedInstance performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:NO];
 }
+// called by the OSD layer to update the current software frame
+// **NOTE** this is called on the MAME background thread, dont do anything stupid.
 void iphone_UpdateScreen()
 {
     if (sharedInstance == nil || sharedInstance->screenView == nil)
         return;
     
     [sharedInstance->screenView performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone:NO];
+}
+// called by the OSD layer to render the current frame
+// return 1 if you did the render, 0 if you want a software render.
+// **NOTE** this is called on the MAME background thread, dont do anything stupid.
+int iphone_DrawScreen(myosd_render_primitive* prim_list) {
+    
+    if (sharedInstance == nil || sharedInstance->screenView == nil)
+        return 0;
+
+#ifdef DEBUG
+    [CGScreenView drawScreenDebug:prim_list];
+#endif
+
+    return [sharedInstance->screenView drawScreen:prim_list];
 }
 
 // run MAME (or pass NULL for main menu)
@@ -1051,11 +1075,10 @@ void mame_state(int load_save, int slot)
 #endif
 
 -(void)viewDidLoad{
-    printf("viewDidLoad\n");
-    
-    self.view.backgroundColor = [UIColor blackColor];
 
-    controllers = [[NSMutableArray alloc] initWithCapacity:4];
+   self.view.backgroundColor = [UIColor blackColor];
+
+   controllers = [[NSMutableArray alloc] initWithCapacity:4];
     
    nameImgButton_NotPress[BTN_B] = @"button_NotPress_B.png";
    nameImgButton_NotPress[BTN_X] = @"button_NotPress_X.png";
@@ -1750,20 +1773,36 @@ UIColor* colorWithHexString(NSString* string) {
 #elif TARGET_OS_TV
     r = [[UIScreen mainScreen] bounds];
 #endif
+    // get the output device scale (mainSreen or external display)
+    CGFloat scale = (externalView ?: self.view).window.screen.scale;
+    
+    // NOTE: view.window may be nil use mainScreen.scale in this case.
+    if (scale == 0.0)
+        scale = UIScreen.mainScreen.scale;
+
+    // tell the OSD how big the screen is, so it can optimize texture sizes.
+    if (myosd_display_width != (r.size.width * scale) || myosd_display_height != (r.size.height * scale)) {
+        NSLog(@"DISPLAY SIZE CHANGE: %dx%d", (int)(r.size.width * scale), (int)(r.size.height * scale));
+        myosd_display_width = (r.size.width * scale);
+        myosd_display_height = (r.size.height * scale);
+    }
+
     // make room for a border
     UIImage* border_image = nil;
     CGSize border_size = CGSizeZero;
     [self getOverlayImage:&border_image andSize:&border_size];
     r = CGRectInset(r, border_size.width, border_size.height);
-
-    // preserve aspect ratio
+    
+    // preserve aspect ratio, and snap to pixels.
     if (g_device_is_landscape ? g_pref_keep_aspect_ratio_land : g_pref_keep_aspect_ratio_port) {
         r = AVMakeRectWithAspectRatioInsideRect(CGSizeMake(myosd_vis_video_width, myosd_vis_video_height), r);
+        r.origin.x    = floor(r.origin.x * scale) / scale;
+        r.origin.y    = floor(r.origin.y * scale) / scale;
+        r.size.width  = ceil(r.size.width * scale) / scale;
+        r.size.height = ceil(r.size.height * scale) / scale;
     }
     
     // integer only scaling
-    CGFloat scale = MAX(1.0, (externalView ?: self.view).window.screen.scale);
-    
     if (g_pref_integer_scale_only && myosd_vis_video_width < r.size.width * scale && myosd_vis_video_height < r.size.height * scale) {
         CGFloat n_w = floor(r.size.width * scale / myosd_vis_video_width);
         CGFloat n_h = floor(r.size.height * scale / myosd_vis_video_height);
@@ -1779,14 +1818,20 @@ UIColor* colorWithHexString(NSString* string) {
         r.size.height = new_height;
     }
     
-    // TODO: get the location of the game screen from MAME, for now just use the whole image.
-
-    screenView = [ [CGScreenView alloc] initWithFrame:r options:@{
+    NSDictionary* options = @{
         kScreenViewFilter: g_device_is_landscape ? g_pref_filter_land : g_pref_filter_port,
         kScreenViewEffect: g_device_is_landscape ? g_pref_effect_land : g_pref_effect_port,
         kScreenViewColorSpace: g_pref_colorspace
-    }];
-          
+    };
+
+    // the reason we use a singleton is because we access screenView from background threads
+    // (see iPhone_UpdateScreen, iPhone_DrawScreen) and we dont want to risk race condition on release.
+    // (and the code can optimize and not crreate/destroy buffers)
+    //screenView = [[CGScreenView alloc] initWithFrame:r];
+    screenView = CGScreenView.sharedInstance;
+    screenView.frame = r;
+    [screenView setOptions:options];
+    
     [(externalView ?: self.view) addSubview: screenView];
            
     [self buildOverlayImage:border_image rect:CGRectInset(r, -border_size.width, -border_size.height)];
@@ -1882,7 +1927,31 @@ UIColor* colorWithHexString(NSString* string) {
         [analogStickView update];
 }
 #endif
-    
+
+#pragma mark - KEYBOARD INPUT
+
+// called from keyboard handler on any CMD+key (or OPTION+key) used for DEBUG stuff.
+-(void)commandKey:(char)key {
+    switch (key) {
+        case '\n':
+            if (g_device_is_landscape)
+                g_pref_full_screen_land = g_pref_full_screen_land_joy = !(g_pref_full_screen_land || g_pref_full_screen_land_joy);
+            else
+                g_pref_full_screen_port = g_pref_full_screen_port_joy = !(g_pref_full_screen_port || g_pref_full_screen_port_joy);
+            [self changeUI];
+            break;
+        case 'I':
+            g_pref_integer_scale_only = !g_pref_integer_scale_only;
+            [self changeUI];
+            break;
+    #ifdef DEBUG
+        case 'D':
+            [CGScreenView drawScreenDebugDump];
+            break;
+    #endif
+    }
+}
+
 
 #if TARGET_OS_IOS
 #pragma mark Touch Handling
@@ -3048,7 +3117,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     
     if (g_device_is_fullscreen)
     {
-       rStickWindow = scale_rect(rStickWindow, g_buttons_size);
+       rStickWindow = scale_rect(rStickWindow, g_stick_size);
     }
 }
 #endif

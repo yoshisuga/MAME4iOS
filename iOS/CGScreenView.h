@@ -45,8 +45,12 @@
 
 @interface CGScreenView : UIView <ScreenView>
 
-- (id)initWithFrame:(CGRect)frame options:(NSDictionary*)options;
-
 + (CGColorSpaceRef)createColorSpaceFromString:(NSString*)string;
 
+#ifdef DEBUG
++ (void)drawScreenDebugDump;
++ (void)drawScreenDebug:(void*)primatives;
+#endif
+
 @end
+

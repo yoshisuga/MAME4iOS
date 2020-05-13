@@ -13,13 +13,12 @@
 #include <unistd.h>
 #include <math.h>
 
-#include "myosd.h"
-
 // MAME headers
 #include "emu.h"
 #include "osdepend.h"
 
 #include "osdsound.h"
+#include "myosd.h"
 
 static int attenuation = 0;
 

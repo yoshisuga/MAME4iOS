@@ -152,9 +152,9 @@ void droid_ios_init_input(running_machine *machine)
 
         input_device *lightgun_device = input_device_add(machine, DEVICE_CLASS_LIGHTGUN, name, NULL);
         if (lightgun_device == NULL) {
-            fatalerror("Error creating lightgun device");
+            fatalerror("Error creating lightgun device\n");
         } else {
-            printf("created lightgun device!");
+            //printf("created lightgun device!\n");
         }
 
        input_device_item_add(lightgun_device, "X Axis", &lightgun_axis[i][0], ITEM_ID_XAXIS, my_axis_get_state);
@@ -164,9 +164,9 @@ void droid_ios_init_input(running_machine *machine)
 	   snprintf(mouse_name, 10, "Mouse %d", i + 1);
 	   input_device *mouse_device = input_device_add(machine, DEVICE_CLASS_MOUSE, mouse_name, NULL);
 	   if (mouse_device == NULL) {
-		   fatalerror("Error creating mouse device");
+		   fatalerror("Error creating mouse device\n");
 	   } else {
-		   printf("Created Mouse Device!");
+		   //printf("Created Mouse Device!\n");
 	   }
 	   input_device_item_add(mouse_device, "X Axis", &mouse_axis[i][0], ITEM_ID_XAXIS, my_axis_get_state);
 	   input_device_item_add(mouse_device, "Y Axis", &mouse_axis[i][1], ITEM_ID_YAXIS, my_axis_get_state);
