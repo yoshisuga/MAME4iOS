@@ -20,6 +20,8 @@
     - Nearest
     - Linear
     - Binlinear
+* Artwork
+    - Artwork is shown at hires by default.
       
 # Version 2020.8
 * Better INFO/HISTORY.DAT display in landscape (and tvOS)
