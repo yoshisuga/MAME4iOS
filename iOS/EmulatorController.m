@@ -234,13 +234,16 @@ void iphone_UpdateScreen()
 // called by the OSD layer to render the current frame
 // return 1 if you did the render, 0 if you want a software render.
 // **NOTE** this is called on the MAME background thread, dont do anything stupid.
+// ...not doing something stupid includes not leaking autoreleased objects! use a autorelease pool if you need to!
 int iphone_DrawScreen(myosd_render_primitive* prim_list) {
     
     if (sharedInstance == nil || sharedInstance->screenView == nil)
         return 0;
 
 #ifdef DEBUG
-    [CGScreenView drawScreenDebug:prim_list];
+    @autoreleasepool {
+        [CGScreenView drawScreenDebug:prim_list];
+    }
 #endif
 
     return [sharedInstance->screenView drawScreen:prim_list];
