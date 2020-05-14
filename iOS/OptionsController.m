@@ -236,22 +236,21 @@
                }
                case 2:
                {
-                   cell.textLabel.text   = @"Integer Scaling Only";
-                   cell.accessoryView = [self optionSwitchForKey:@"integerScalingOnly"];
-                   break;
-               }
-               case 3:
-               {
                    cell.textLabel.text   = @"Use Metal";
                    cell.accessoryView = [self optionSwitchForKey:@"useMetal"];
                    [(UISwitch*)cell.accessoryView setEnabled:NO];
                    break;
                }
+               case 3:
+               {
+                   cell.textLabel.text   = @"Integer Scaling Only";
+                   cell.accessoryView = [self optionSwitchForKey:@"integerScalingOnly"];
+                   break;
+               }
                case 4:
                {
-                   cell.textLabel.text   = @"Frame Skip";
-                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   cell.detailTextLabel.text = [Options.arrayFSValue optionAtIndex:op.fsvalue];
+                   cell.textLabel.text   = @"Force Pixel Aspect";
+                   cell.accessoryView = [self optionSwitchForKey:@"forcepxa"];
                    break;
                }
                case 5:
@@ -262,8 +261,9 @@
                }
                case 6:
                {
-                   cell.textLabel.text   = @"Force Pixel Aspect";
-                   cell.accessoryView = [self optionSwitchForKey:@"forcepxa"];
+                   cell.textLabel.text   = @"Frame Skip";
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   cell.detailTextLabel.text = [Options.arrayFSValue optionAtIndex:op.fsvalue];
                    break;
                }
                case 7:
@@ -530,7 +530,7 @@
                 ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"sourceColorSpace" list:Options.arrayColorSpace title:cell.textLabel.text];
                 [[self navigationController] pushViewController:listController animated:YES];
             }
-            if (row==4){
+            if (row==6){
                 ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"fsvalue" list:Options.arrayFSValue title:cell.textLabel.text];
                 [[self navigationController] pushViewController:listController animated:YES];
             }

@@ -42,9 +42,9 @@
     if ( section == kFilterSection ) {
         return 2;
     } else if ( section == kScreenSection ) {
-        return 7;
-    } else if ( section == kMiscSection ) {
         return 8;
+    } else if ( section == kMiscSection ) {
+        return 7;
     } else if ( section == kDefaultsSection ) {
         return 1;
     } else if ( section == kInputSection ) {
@@ -116,14 +116,17 @@
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
             cell.detailTextLabel.text = [Options.arrayColorSpace optionName:op.sourceColorSpace];
         } else if ( indexPath.row == 4 ) {
-            cell.textLabel.text = @"Keep Aspect Ratio";
-            cell.accessoryView = [self optionSwitchForKey:@"keepAspectRatioLand"];
-        } else if ( indexPath.row == 5 ) {
             cell.textLabel.text = @"Use Metal";
             cell.accessoryView = [self optionSwitchForKey:@"useMetal"];
+        } else if ( indexPath.row == 5 ) {
+            cell.textLabel.text = @"Keep Aspect Ratio";
+            cell.accessoryView = [self optionSwitchForKey:@"keepAspectRatioLand"];
         } else if ( indexPath.row == 6 ) {
             cell.textLabel.text = @"Integer Scaling Only";
             cell.accessoryView = [self optionSwitchForKey:@"integerScalingOnly"];
+        } else if ( indexPath.row == 7 ) {
+            cell.textLabel.text   = @"Force Pixel Aspect";
+            cell.accessoryView = [self optionSwitchForKey:@"forcepxa"];
         }
     } else if ( indexPath.section == kMiscSection ) {
         if ( indexPath.row == 0 ) {
@@ -148,9 +151,6 @@
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
             cell.detailTextLabel.text = [Options.arrayFSValue optionAtIndex:op.fsvalue];
         } else if ( indexPath.row == 6 ) {
-            cell.textLabel.text   = @"Force Pixel Aspect";
-            cell.accessoryView = [self optionSwitchForKey:@"forcepxa"];
-        } else if ( indexPath.row == 7 ) {
             cell.textLabel.text = @"Low Latency Audio";
             cell.accessoryView = [self optionSwitchForKey:@"lowlsound"];
         }
