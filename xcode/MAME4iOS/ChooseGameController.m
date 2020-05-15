@@ -17,6 +17,8 @@
 #import "myosd.h"
 
 #if TARGET_OS_IOS
+#import <Intents/Intents.h>
+#import <IntentsUI/IntentsUI.h>
 #import "FileItemProvider.h"
 #import "ZipFile.h"
 #endif
@@ -1390,6 +1392,101 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 #endif
 }
 
+#if TARGET_OS_IOS
++ (NSUserActivity*)userActivityForGame:(NSDictionary*)game
+{
+    NSString* name = game[kGameInfoName];
+
+    if (name == nil || [name length] <= 1 || [name isEqualToString:kGameInfoNameMameMenu])
+        return nil;
+    
+    // if we only have the ROM name, try to find full info for this game in Recents or Favorites
+    if (game[kGameInfoDescription] == nil) {
+        NSUserDefaults* defaults = [self getUserDefaults];
+        NSArray* list = [[defaults objectForKey:RECENT_GAMES_KEY] arrayByAddingObjectsFromArray:
+                         [defaults objectForKey:FAVORITE_GAMES_KEY]];
+        game = [list filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"%K = %@", kGameInfoName, game[kGameInfoName]]].firstObject;
+        
+        if (game == nil)
+            return nil;
+    }
+    
+    NSString* type = [NSString stringWithFormat:@"%@.%@", NSBundle.mainBundle.bundleIdentifier, @"play"];
+    NSString* description = game[kGameInfoDescription];
+    NSString* title = [NSString stringWithFormat:@"Play %@", [[description componentsSeparatedByString:@" ("] firstObject]];
+    
+    NSUserActivity* activity = [[NSUserActivity alloc] initWithActivityType:type];
+    
+    activity.title = title;
+    activity.userInfo = game;
+    activity.eligibleForSearch = TRUE;
+    
+    if (@available(iOS 12.0, *)) {
+        activity.eligibleForPrediction = TRUE;
+        activity.persistentIdentifier = game[kGameInfoName];
+        activity.suggestedInvocationPhrase = title;
+
+        if ([title containsString:@"Donkey Kong"])
+            activity.suggestedInvocationPhrase = @"It's on like Donkey Kong!";
+    }
+    return activity;
+}
+-(INVoiceShortcut*)getVoiceShortcut:(NSUserActivity*)activity API_AVAILABLE(ios(12.0)) {
+    __block INVoiceShortcut* found_shortcut = nil;
+    __block NSTimeInterval time = [NSDate timeIntervalSinceReferenceDate];
+    dispatch_group_t group = dispatch_group_create();
+    
+    dispatch_group_enter(group);
+    [INVoiceShortcutCenter.sharedCenter getAllVoiceShortcutsWithCompletion:^(NSArray<INVoiceShortcut*>* shortcuts, NSError* error) {
+        time = [NSDate timeIntervalSinceReferenceDate] - time;
+        NSLog(@"getAllVoiceShortcuts took %0.3fsec", time);
+        for (INVoiceShortcut* shortcut in shortcuts) {
+            NSLog(@"    SHORTCUT: %@", shortcut);
+            if ([shortcut.shortcut.userActivity.activityType isEqual:activity.activityType] &&
+                [shortcut.shortcut.userActivity.persistentIdentifier isEqual:activity.persistentIdentifier]) {
+                NSLog(@"    **** FOUND ACTIVITY: %@", activity);
+                found_shortcut = shortcut;
+            }
+        }
+        dispatch_group_leave(group);
+    }];
+    dispatch_group_wait(group, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.200 * NSEC_PER_SEC)));
+    return found_shortcut;
+}
+-(void)siri:(NSDictionary*)game activity:(NSUserActivity*)activity shortcut:(INVoiceShortcut*)shortcut API_AVAILABLE(ios(12.0)){
+    UIViewController* viewController;
+    
+    if (shortcut == nil) {
+        INShortcut* shortcut = [[INShortcut alloc] initWithUserActivity:activity];
+        viewController = [[INUIAddVoiceShortcutViewController alloc] initWithShortcut:shortcut];
+    }
+    else {
+        viewController = [[INUIEditVoiceShortcutViewController alloc] initWithVoiceShortcut:shortcut];
+    }
+    viewController.modalPresentationStyle = UIModalPresentationFormSheet;
+    [(id)viewController setDelegate:self];
+    [self presentViewController:viewController animated:YES completion:nil];
+}
+// INUIAddVoiceShortcutViewControllerDelegate
+- (void)addVoiceShortcutViewController:(INUIAddVoiceShortcutViewController *)controller didFinishWithVoiceShortcut:(INVoiceShortcut *)voiceShortcut error:(NSError *) error API_AVAILABLE(ios(12.0)) {
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
+- (void)addVoiceShortcutViewControllerDidCancel:(INUIAddVoiceShortcutViewController *)controller API_AVAILABLE(ios(12.0)) {
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
+// INUIEditVoiceShortcutViewControllerDelegate
+- (void)editVoiceShortcutViewController:(INUIEditVoiceShortcutViewController *)controller didUpdateVoiceShortcut:(INVoiceShortcut *)voiceShortcut error: (NSError *)error API_AVAILABLE(ios(12.0)) {
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
+- (void)editVoiceShortcutViewController:(INUIEditVoiceShortcutViewController *)controller didDeleteVoiceShortcutWithIdentifier:(NSUUID *)deletedVoiceShortcutIdentifier API_AVAILABLE(ios(12.0)) {
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
+- (void)editVoiceShortcutViewControllerDidCancel:(INUIEditVoiceShortcutViewController *)controller API_AVAILABLE(ios(12.0)) {
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
+#endif
+
+
 #pragma mark - Context Menu
 
 // on iOS 13 create a UIAction for use in a UIContextMenu, on pre-iOS 13 create a UIAlertAction for use in a UIAlertController
@@ -1419,8 +1516,11 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if (game == nil || [name length] == 0)
         return nil;
 
-    NSLog(@"menuActionsForItemAtIndexPath: [%d.%d] %@ %@", (int)indexPath.section, (int)indexPath.row, game[kGameInfoName], game);
+    // prime the image cache, in case any menu items ask for the image later.
+    [[ImageCache sharedInstance] getImage:[self getGameImageURL:game] size:CGSizeZero localURL:[self getGameImageLocalURL:game] completionHandler:^(UIImage *image) {}];
 
+    NSLog(@"menuActionsForItemAtIndexPath: [%d.%d] %@ %@", (int)indexPath.section, (int)indexPath.row, game[kGameInfoName], game);
+    
     BOOL is_fav = [self isFavorite:game];
     
     NSString* fav_text = is_fav ? @"Unfavorite" : @"Favorite";
@@ -1444,6 +1544,20 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
             }]
         ]];
     }
+    
+#if TARGET_OS_IOS
+    if (@available(iOS 12.0, *)) {
+        NSUserActivity* activity = [ChooseGameController userActivityForGame:game];
+        INVoiceShortcut* shortcut = [self getVoiceShortcut:activity];
+        if (activity != nil) {
+            actions = [actions arrayByAddingObjectsFromArray:@[
+                [self actionWithTitle:@"Add to Siri" image:[UIImage systemImageNamed:shortcut ? @"checkmark.circle" : @"plus.circle"] destructive:NO handler:^(id action) {
+                    [self siri:game activity:activity shortcut:shortcut];
+                }]
+            ]];
+        }
+    }
+#endif
 
     if (![self isSystem:game]) {
         actions = [actions arrayByAddingObjectsFromArray:@[
@@ -2223,8 +2337,14 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
  
     title.attributedText = [ChooseGameController getGameText:_game layoutMode:LayoutSmall textAlignment:NSTextAlignmentCenter];
     [title sizeToFit];
-    if (scrollView.contentOffset.y <= _titleSwitchOffset)
+    if (scrollView.contentOffset.y <= _titleSwitchOffset) {
         title.text = self.title;
+        title.transform = CGAffineTransformIdentity;
+    }
+    else {
+        CGFloat scale = MIN(44.0 / title.bounds.size.height, 1.0);
+        title.transform = CGAffineTransformMakeScale(scale, scale);
+    }
 }
 #endif
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
@@ -2269,18 +2389,20 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     
     CGSize size = CGSizeMake(layout.itemSize.width, CGFLOAT_MAX);
     
-    if (indexPath.item == 0)
+    if (indexPath.item == 0 && layout.scrollDirection == UICollectionViewScrollDirectionHorizontal)
         size.width = _image ? _image.size.width : INFO_IMAGE_WIDTH;
 
     // compute the size of the text, dont forget to account for insets
     size.width -= INFO_INSET_X * 2;
-    size.height = [text boundingRectWithSize:size options:NSStringDrawingUsesLineFragmentOrigin context:nil].size.height;
+    CGSize textSize = [text boundingRectWithSize:size options:NSStringDrawingUsesLineFragmentOrigin context:nil].size;
+    size.height = textSize.height;
     size.width += INFO_INSET_X * 2;
     size.height = INFO_INSET_Y + ceil(size.height) + INFO_INSET_Y;
 
     // item zero is the title image and metadata text
     if (indexPath.item == 0) {
         size.height += _image.size.height;
+        size.width = MAX(ceil(textSize.width) + INFO_INSET_X * 2, _image.size.width);
         return size;
     }
     

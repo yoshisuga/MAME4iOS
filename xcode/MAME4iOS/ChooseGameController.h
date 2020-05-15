@@ -33,6 +33,7 @@
 
 - (void)setGameList:(NSArray*)games;
 + (void)reset;
++ (NSUserActivity*)userActivityForGame:(NSDictionary*)game;
 
 @property(nonatomic, strong) void (^selectGameCallback)(NSDictionary* info);
 

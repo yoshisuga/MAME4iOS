@@ -235,8 +235,8 @@ void* app_Thread_Start(void* args)
         prev_myosd_mouse = myosd_mouse = 0;
         prev_myosd_light_gun = myosd_light_gun = 0;
         
-        // reset MAME by deleteing CFG files, cfg/default.cfg and cfg/ROMNAME.cfg
-        if (g_mame_reset) {
+        // reset MAME by deleteing CFG file cfg/default.cfg
+        if (g_mame_reset) @autoreleasepool {
             NSString *cfg_path = [NSString stringWithUTF8String:get_documents_path("cfg")];
             
             // NOTE we need to delete the default.cfg file here because MAME saves cfg files on exit.
@@ -257,7 +257,7 @@ void* app_Thread_Start(void* args)
     }
 }
 
-// make this public so DEBUG code in InfoDatabase cant use it to get list of all ROMs
+// make this public so DEBUG code in InfoDatabase can use it to get list of all ROMs
 NSDictionary* g_category_dict = nil;
 
 // find the category for a game/rom using Category.ini (a copy of a similar function from uimenu.c)
@@ -1157,7 +1157,8 @@ void mame_state(int load_save, int slot)
     mouseInitialLocation = CGPointMake(9111, 9111);
     mouseTouchStartLocation = mouseInitialLocation;
 
-    [self updateUserActivity:nil];      // TODO: look at if we need to do this here??
+    if (g_mame_game[0] && g_mame_game[0] != ' ')
+        [self updateUserActivity:@{kGameInfoName:[NSString stringWithUTF8String:g_mame_game]}];
 }
 
 -(void)viewWillAppear:(BOOL)animated {
@@ -3920,6 +3921,10 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         NSLog(@"RUNNING MAME MENU, DONT BRING UP UI.");
         return;
     }
+    if (g_mame_game[0] != 0) {
+        NSLog(@"RUNNING %s, DONT BRING UP UI.", g_mame_game);
+        return;
+    }
     
     // now that we have passed the startup phase, check on and maybe re-enable bluetooth.
     if (@available(iOS 13.1, tvOS 13.0, *)) {
@@ -3974,30 +3979,8 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 
 -(void)updateUserActivity:(NSDictionary*)game
 {
-    if (game == nil || game[kGameInfoName] == nil || [game[kGameInfoName] length] <= 1)
-        return;
-
-#if TARGET_OS_IOS && __IPHONE_OS_VERSION_MAX_ALLOWED >= 120100
-    if (@available(iOS 12.0, *)) {
-        NSString* type = [NSString stringWithFormat:@"%@.%@", NSBundle.mainBundle.bundleIdentifier, @"play"];
-        NSString* name = game[kGameInfoDescription] ?: game[kGameInfoName];
-        NSString* title = [NSString stringWithFormat:@"Play %@", [[name componentsSeparatedByString:@" ("] firstObject]];
-        
-        NSUserActivity* activity = [[NSUserActivity alloc] initWithActivityType:type];
-        
-        activity.title = title;
-        activity.userInfo = game;
-        activity.eligibleForSearch = TRUE;
-        activity.eligibleForPrediction = TRUE;
-        activity.persistentIdentifier = game[kGameInfoName];
-        activity.suggestedInvocationPhrase = title;
-
-        if ([title containsString:@"Donkey Kong"])
-            activity.suggestedInvocationPhrase = @"It's on like Donkey Kong!";
-        
-        self.userActivity = activity;
-        [activity becomeCurrent];
-    }
+#if TARGET_OS_IOS
+    self.userActivity = [ChooseGameController userActivityForGame:game];
 #endif
 }
 
