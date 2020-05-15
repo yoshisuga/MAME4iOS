@@ -3,11 +3,13 @@
 # Version 2020.9
 
 * Video options (new)
-    - Integer Scaling Only
+    - Use Integer Scaling Only
     - Ability to select the ColorSpace used to display MAME screen.
 * Colorspace (new)
     - DisplayRGB 
     - sRGB
+    - CRT (gamma 2.5)
+    - Rec709 (gamma 2.4)
 * Border options (new)
     - Light
     - Dark
