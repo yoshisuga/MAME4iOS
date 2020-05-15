@@ -33,6 +33,10 @@
         else
             alert.preferredAction = alert.actions.firstObject;
     }
+    if (alert.cancelAction == nil && buttons.count == 1)
+    {
+        alert.preferredAction = alert.actions.firstObject;
+    }
         
     [self.topViewController presentViewController:alert animated:YES completion:nil];
 }

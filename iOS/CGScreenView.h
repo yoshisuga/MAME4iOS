@@ -41,19 +41,12 @@
  * MAME4iOS is dual-licensed: Alternatively, you can license MAME4iOS
  * under a MAME license, as set out in http://mamedev.org/
  */
+#include "ScreenView.h"
 
-#import <UIKit/UIKit.h>
-#include "OptionsTableViewController.h"
+@interface CGScreenView : UIView <ScreenView>
 
-@class EmulatorController;
+- (id)initWithFrame:(CGRect)frame options:(NSDictionary*)options;
 
-@interface FilterOptionController: OptionsTableViewController <UITextFieldDelegate> {
-    
-    NSMutableArray  *arrayManufacturerValue;
-    NSMutableArray  *arrayYearGTEValue;
-    NSMutableArray  *arrayYearLTEValue;
-    NSMutableArray  *arrayDriverSourceValue;
-    NSMutableArray  *arrayCategoryValue;
-}
++ (CGColorSpaceRef)createColorSpaceFromString:(NSString*)string;
 
 @end

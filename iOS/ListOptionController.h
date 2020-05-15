@@ -45,16 +45,19 @@
 #import <UIKit/UIKit.h>
 #import "OptionsTableViewController.h"
 
-@interface ListOptionController : OptionsTableViewController {
-    BOOL indexed;
-    NSInteger type;
-    NSArray *list;
-    NSInteger value;
-    NSArray *sections;
-}
+NS_ASSUME_NONNULL_BEGIN
 
-- (id)initWithStyle:(UITableViewStyle)style type:(NSInteger)typeValue list:(NSArray *)listValue;
-- (id)initWithType:(NSInteger)typeValue list:(NSArray *)listValue;
-- (NSString *)retrieveIndexedCellText:(NSIndexPath *)indexPath;
+@interface ListOptionController : OptionsTableViewController 
+
+- (instancetype)initWithType:(NSInteger)typeValue list:(NSArray<NSString*> *)listValue;
+
+- (instancetype)initWithKey:(NSString*)keyValue list:(NSArray<NSString*>*)listValue;
+- (instancetype)initWithKey:(NSString*)keyValue list:(NSArray<NSString*>*)listValue title:(NSString*)titleValue;
+
+// old code is calling this, use just initWithType:list: or initWithKey:list: instead
+- (instancetype)initWithStyle:(UITableViewStyle)style type:(NSInteger)typeValue list:(NSArray<NSString*>*)listValue;
 
 @end
+
+NS_ASSUME_NONNULL_END
+

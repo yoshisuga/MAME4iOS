@@ -835,18 +835,8 @@
                     g_pref_full_screen_port = g_pref_full_screen_port_joy = !(g_pref_full_screen_port || g_pref_full_screen_port_joy);
                 [emuController changeUI];
                 return nil;
-            case KEY_T+KEY_DOWN:
-                if (g_device_is_landscape)
-                    g_pref_tv_filter_land = !g_pref_tv_filter_land;
-                else
-                    g_pref_tv_filter_port = !g_pref_tv_filter_port;
-                [emuController changeUI];
-                return nil;
-            case KEY_S+KEY_DOWN:
-                if (g_device_is_landscape)
-                    g_pref_scanline_filter_land = !g_pref_scanline_filter_land;
-                else
-                    g_pref_scanline_filter_port = !g_pref_scanline_filter_port;
+            case KEY_I+KEY_DOWN:
+                g_pref_integer_scale_only = !g_pref_integer_scale_only;
                 [emuController changeUI];
                 return nil;
         }

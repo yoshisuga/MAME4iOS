@@ -115,7 +115,7 @@ void droid_ios_video_draw()
 	if(myosd_video_threaded)
 	   osd_lock_acquire(currlist->lock);
 
-	surfptr = (UINT8 *) myosd_screen15;
+	surfptr = (UINT8 *) myosd_curr_screen;
 
 	pitch = screen_width * 2;
 

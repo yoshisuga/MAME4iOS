@@ -308,6 +308,8 @@ unsigned long read_mfi_controller(unsigned long res){
                     g_alert = nil;
                     [externalScreen setCurrentMode:mode];
                     [self setupScreen:externalScreen];
+                    if (!myosd_inGame)
+                        [self->hrViewController performSelectorOnMainThread:@selector(playGame:) withObject:nil waitUntilDone:NO];
                 }]];
                 if (mode == externalScreen.preferredMode)
                     [g_alert setPreferredAction:g_alert.actions.lastObject];
@@ -315,6 +317,8 @@ unsigned long read_mfi_controller(unsigned long res){
             [g_alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
                 g_alert = nil;
                 [self setupScreen:nil];
+                if (!myosd_inGame)
+                    [self->hrViewController performSelectorOnMainThread:@selector(playGame:) withObject:nil waitUntilDone:NO];
             }]];
              
             [hrViewController.topViewController presentViewController:g_alert animated:YES completion:nil];

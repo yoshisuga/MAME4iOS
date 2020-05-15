@@ -119,10 +119,9 @@ unsigned long myosd_pad_status = 0;
 unsigned long myosd_joy_status[4];
 unsigned short myosd_ext_status = 0;
 
-static unsigned short myosd_screen [2880 * 2160];
-unsigned short 	*myosd_screen15 = NULL;
-
-extern unsigned short img_buffer[2880 * 2160];
+unsigned short *myosd_curr_screen = NULL;
+unsigned short *myosd_prev_screen = NULL;
+unsigned short myosd_screen[MYOSD_SCREEN_WIDTH * MYOSD_SCREEN_HEIGHT * 2];
 
 typedef struct AQCallbackStruct {
     AudioQueueRef queue;
@@ -159,10 +158,14 @@ inline int emptyQueue(void);
 
 static void dump_video(void)
 {
-
-
-    if(myosd_dbl_buffer && myosd_screen15!=NULL && img_buffer!=NULL)
-	   memcpy(img_buffer,myosd_screen15, myosd_video_width * myosd_video_height * 2);
+    if (myosd_dbl_buffer) {
+        myosd_prev_screen = myosd_curr_screen;
+        
+        if (myosd_curr_screen != myosd_screen)
+            myosd_curr_screen = myosd_screen;
+        else
+            myosd_curr_screen = myosd_screen + (MYOSD_SCREEN_WIDTH * MYOSD_SCREEN_HEIGHT);
+    }
 
 	iphone_UpdateScreen();
 }
@@ -185,9 +188,6 @@ void myosd_set_video_mode(int width,int height,int vis_width,int vis_height)
      myosd_vis_video_height = vis_height;
 
      iphone_Reset_Views();
-
-     //if(myosd_screen15!=NULL)
-	    //memset(myosd_screen15, 0, width*height*2);
 
   	 myosd_video_flip();
 }
@@ -269,10 +269,8 @@ void myosd_init(void)
 	   //myosd_set_video_mode(320,240,320,240);
         
        printf("myosd_dbl_buffer %d\n",myosd_dbl_buffer);
-	   if(myosd_dbl_buffer)
-	      myosd_screen15 = myosd_screen;
-	   else
-	      myosd_screen15 = img_buffer;
+       myosd_curr_screen = myosd_screen;
+       myosd_prev_screen = myosd_screen;
 
 	   if(videot_running==0)
 	   {

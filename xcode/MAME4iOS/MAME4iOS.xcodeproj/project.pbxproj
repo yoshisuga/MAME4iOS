@@ -14,7 +14,6 @@
 		925ABCA61E46DCC500997182 /* iCadeView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8D87DC1653121200685BC4 /* iCadeView.m */; };
 		925ABCA81E46DCC500997182 /* ListOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE90575B166A89D000653872 /* ListOptionController.m */; };
 		925ABCA91E46DCC500997182 /* OptionsController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680C01635BB6100051BC2 /* OptionsController.m */; };
-		925ABCAB1E46DCC500997182 /* ScreenView.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680C21635BB6100051BC2 /* ScreenView.m */; };
 		925ABCAD1E46DCC500997182 /* EmulatorController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680B51635BB4900051BC2 /* EmulatorController.m */; };
 		925ABCAE1E46DCC500997182 /* HelpController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680B71635BB4900051BC2 /* HelpController.m */; };
 		925ABCAF1E46DCC500997182 /* AnalogStick.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680AB1635BB2700051BC2 /* AnalogStick.m */; };
@@ -39,7 +38,6 @@
 		925ABCC81E46DCC500997182 /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = CEE6809B1635BA7000051BC2 /* Default.png */; };
 		925ABCC91E46DCC500997182 /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CEE6809D1635BA7000051BC2 /* Default@2x.png */; };
 		925ABCCA1E46DCC500997182 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CEE6809F1635BA7000051BC2 /* Default-568h@2x.png */; };
-		925ABCCB1E46DCC500997182 /* border-iPad.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC10163C5DA100A05CD0 /* border-iPad.png */; };
 		925ABCCC1E46DCC500997182 /* config_iPad.txt in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC11163C5DA100A05CD0 /* config_iPad.txt */; };
 		925ABCCD1E46DCC500997182 /* config_iPhone.txt in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC12163C5DA100A05CD0 /* config_iPhone.txt */; };
 		925ABCCE1E46DCC500997182 /* crt-1.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC13163C5DA100A05CD0 /* crt-1.png */; };
@@ -125,7 +123,6 @@
 		92ECB90E21EA99A200D1E3D0 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92ECB90D21EA99A200D1E3D0 /* CoreGraphics.framework */; };
 		92ECB91021EA99B600D1E3D0 /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92ECB90F21EA99B600D1E3D0 /* GameKit.framework */; };
 		92ECB91221EAA1B700D1E3D0 /* EmulatorController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680B51635BB4900051BC2 /* EmulatorController.m */; };
-		92ECB91821EAD57400D1E3D0 /* ScreenView.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680C21635BB6100051BC2 /* ScreenView.m */; };
 		92ECB91921EAD57900D1E3D0 /* UIView+Toast.m in Sources */ = {isa = PBXBuildFile; fileRef = 92B99F0D2022706600CC44E3 /* UIView+Toast.m */; };
 		B5FAE31721FCDE0C003F44D0 /* scanline_tvOS201901.png in Resources */ = {isa = PBXBuildFile; fileRef = B5FAE31621FCDE0C003F44D0 /* scanline_tvOS201901.png */; };
 		B5FAE31921FCE64D003F44D0 /* MAME_tvOS.lsr in Resources */ = {isa = PBXBuildFile; fileRef = B5FAE31821FCE64D003F44D0 /* MAME_tvOS.lsr */; };
@@ -178,6 +175,20 @@
 		EFE4B6AC2453D7F80009A6F1 /* InfoDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE4B6AA2453D7F80009A6F1 /* InfoDatabase.m */; };
 		EFF9F825246EE2F800DDA88C /* Intents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFF9F824246EE2F800DDA88C /* Intents.framework */; };
 		EFF9F827246EE30200DDA88C /* IntentsUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFF9F826246EE30200DDA88C /* IntentsUI.framework */; };
+		EFF9F809246356B300DDA88C /* CGScreenView.m in Sources */ = {isa = PBXBuildFile; fileRef = EFF9F807246356B200DDA88C /* CGScreenView.m */; };
+		EFF9F80A246356B300DDA88C /* CGScreenView.m in Sources */ = {isa = PBXBuildFile; fileRef = EFF9F807246356B200DDA88C /* CGScreenView.m */; };
+		EFF9F80E2464864600DDA88C /* border-light.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F80B2464864600DDA88C /* border-light.png */; };
+		EFF9F80F2464864600DDA88C /* border-light.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F80B2464864600DDA88C /* border-light.png */; };
+		EFF9F8102464864600DDA88C /* border-dark.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F80C2464864600DDA88C /* border-dark.png */; };
+		EFF9F8112464864600DDA88C /* border-dark.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F80C2464864600DDA88C /* border-dark.png */; };
+		EFF9F8122464864600DDA88C /* border-test.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F80D2464864600DDA88C /* border-test.png */; };
+		EFF9F8132464864600DDA88C /* border-test.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F80D2464864600DDA88C /* border-test.png */; };
+		EFF9F8152465DFB200DDA88C /* effect-dot.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F8142465DFB100DDA88C /* effect-dot.png */; };
+		EFF9F8162465DFB200DDA88C /* effect-dot.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F8142465DFB100DDA88C /* effect-dot.png */; };
+		EFF9F81B2466BE8500DDA88C /* effect-scanline.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F81A2466BE8500DDA88C /* effect-scanline.png */; };
+		EFF9F81C2466BE8500DDA88C /* effect-scanline.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F81A2466BE8500DDA88C /* effect-scanline.png */; };
+		EFF9F81E2466BEE100DDA88C /* effect-crt.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F81D2466BEE100DDA88C /* effect-crt.png */; };
+		EFF9F81F2466BEE100DDA88C /* effect-crt.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F81D2466BEE100DDA88C /* effect-crt.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -306,7 +317,6 @@
 		CEB6982616AAB39F0005E140 /* MAME4iOS114.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MAME4iOS114.png; sourceTree = "<group>"; };
 		CEB6982716AAB39F0005E140 /* MAME4iOS144.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MAME4iOS144.png; sourceTree = "<group>"; };
 		CEB8E0DB16A3311500A6FEDC /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = folder; name = LICENSE; path = "../../iOS-res/Applications/MAME4iOS.app/LICENSE"; sourceTree = "<group>"; };
-		CEBFBC10163C5DA100A05CD0 /* border-iPad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "border-iPad.png"; path = "../../iOS-res/Applications/MAME4iOS.app/border-iPad.png"; sourceTree = "<group>"; };
 		CEBFBC11163C5DA100A05CD0 /* config_iPad.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = config_iPad.txt; path = "../../iOS-res/Applications/MAME4iOS.app/config_iPad.txt"; sourceTree = "<group>"; };
 		CEBFBC12163C5DA100A05CD0 /* config_iPhone.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = config_iPhone.txt; path = "../../iOS-res/Applications/MAME4iOS.app/config_iPhone.txt"; sourceTree = "<group>"; };
 		CEBFBC13163C5DA100A05CD0 /* crt-1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "crt-1.png"; path = "../../iOS-res/Applications/MAME4iOS.app/crt-1.png"; sourceTree = "<group>"; };
@@ -336,7 +346,6 @@
 		CEE680BF1635BB6100051BC2 /* OptionsController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OptionsController.h; path = ../../iOS/OptionsController.h; sourceTree = "<group>"; };
 		CEE680C01635BB6100051BC2 /* OptionsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OptionsController.m; path = ../../iOS/OptionsController.m; sourceTree = "<group>"; };
 		CEE680C11635BB6100051BC2 /* ScreenView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ScreenView.h; path = ../../iOS/ScreenView.h; sourceTree = "<group>"; };
-		CEE680C21635BB6100051BC2 /* ScreenView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ScreenView.m; path = ../../iOS/ScreenView.m; sourceTree = "<group>"; };
 		CEE680C9163B13AB00051BC2 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		CEE680CB163B13E400051BC2 /* libstdc++.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libstdc++.dylib"; path = "usr/lib/libstdc++.dylib"; sourceTree = SDKROOT; };
 		CEE680CD163B147100051BC2 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
@@ -388,6 +397,14 @@
 		EFE4B6AA2453D7F80009A6F1 /* InfoDatabase.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = InfoDatabase.m; sourceTree = "<group>"; };
 		EFF9F824246EE2F800DDA88C /* Intents.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Intents.framework; path = System/Library/Frameworks/Intents.framework; sourceTree = SDKROOT; };
 		EFF9F826246EE30200DDA88C /* IntentsUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IntentsUI.framework; path = System/Library/Frameworks/IntentsUI.framework; sourceTree = SDKROOT; };
+		EFF9F807246356B200DDA88C /* CGScreenView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CGScreenView.m; path = ../../iOS/CGScreenView.m; sourceTree = "<group>"; };
+		EFF9F808246356B300DDA88C /* CGScreenView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CGScreenView.h; path = ../../iOS/CGScreenView.h; sourceTree = "<group>"; };
+		EFF9F80B2464864600DDA88C /* border-light.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "border-light.png"; path = "../../iOS-res/Applications/MAME4iOS.app/border-light.png"; sourceTree = "<group>"; };
+		EFF9F80C2464864600DDA88C /* border-dark.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "border-dark.png"; path = "../../iOS-res/Applications/MAME4iOS.app/border-dark.png"; sourceTree = "<group>"; };
+		EFF9F80D2464864600DDA88C /* border-test.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "border-test.png"; path = "../../iOS-res/Applications/MAME4iOS.app/border-test.png"; sourceTree = "<group>"; };
+		EFF9F8142465DFB100DDA88C /* effect-dot.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "effect-dot.png"; path = "../../iOS-res/Applications/MAME4iOS.app/effect-dot.png"; sourceTree = "<group>"; };
+		EFF9F81A2466BE8500DDA88C /* effect-scanline.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "effect-scanline.png"; path = "../../iOS-res/Applications/MAME4iOS.app/effect-scanline.png"; sourceTree = "<group>"; };
+		EFF9F81D2466BEE100DDA88C /* effect-crt.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "effect-crt.png"; path = "../../iOS-res/Applications/MAME4iOS.app/effect-crt.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -544,7 +561,8 @@
 				CE9454D21731DE4D00B81C32 /* NetplayGameKit.h */,
 				CE9454D31731DE4D00B81C32 /* NetplayGameKit.m */,
 				CEE680C11635BB6100051BC2 /* ScreenView.h */,
-				CEE680C21635BB6100051BC2 /* ScreenView.m */,
+				EFF9F808246356B300DDA88C /* CGScreenView.h */,
+				EFF9F807246356B200DDA88C /* CGScreenView.m */,
 				92B99F0C2022706600CC44E3 /* UIView+Toast.h */,
 				92B99F0D2022706600CC44E3 /* UIView+Toast.m */,
 				EF301CEF240460C5000510FD /* Alert.h */,
@@ -569,6 +587,12 @@
 		CEBFBC0E163C5BD300A05CD0 /* resources */ = {
 			isa = PBXGroup;
 			children = (
+				EFF9F80C2464864600DDA88C /* border-dark.png */,
+				EFF9F80B2464864600DDA88C /* border-light.png */,
+				EFF9F80D2464864600DDA88C /* border-test.png */,
+				EFF9F8142465DFB100DDA88C /* effect-dot.png */,
+				EFF9F81A2466BE8500DDA88C /* effect-scanline.png */,
+				EFF9F81D2466BEE100DDA88C /* effect-crt.png */,
 				EFA7570424057FD800A02AAB /* default_game_icon.png */,
 				EF26AE07241848800078FD30 /* mame_logo.png */,
 				EFA756FE2405585D00A02AAB /* mameui.png */,
@@ -593,7 +617,6 @@
 				927BD1A52209E80F00ECF6C9 /* config_iPad_pro_11.txt */,
 				921CC324216A936800A39154 /* config_iPad_pro_12_9.txt */,
 				EF29C8832402E51100AFFA4E /* config_iPad_gen_7.txt */,
-				CEBFBC10163C5DA100A05CD0 /* border-iPad.png */,
 				CEBFBC13163C5DA100A05CD0 /* crt-1.png */,
 				CEBFBC14163C5DA100A05CD0 /* crt-2.png */,
 				CEBFBC1B163C5DA100A05CD0 /* scanline-1.png */,
@@ -856,15 +879,16 @@
 				9268D85321661F1700AB0470 /* config_iPhone_6_plus.txt in Resources */,
 				925ABCCA1E46DCC500997182 /* Default-568h@2x.png in Resources */,
 				9268D84A21661CA500AB0470 /* config_iPhone_xr_xs_max.txt in Resources */,
-				925ABCCB1E46DCC500997182 /* border-iPad.png in Resources */,
 				EF26AE08241848800078FD30 /* mame_logo.png in Resources */,
 				EF0088122459F4FC0058C2A1 /* history0139.zip in Resources */,
 				925ABCCC1E46DCC500997182 /* config_iPad.txt in Resources */,
 				EFA7570524057FD800A02AAB /* default_game_icon.png in Resources */,
 				925ABCCD1E46DCC500997182 /* config_iPhone.txt in Resources */,
 				925ABCCE1E46DCC500997182 /* crt-1.png in Resources */,
+				EFF9F80E2464864600DDA88C /* border-light.png in Resources */,
 				925ABCCF1E46DCC500997182 /* crt-2.png in Resources */,
 				EF0E08AE2401840700E98F01 /* help.md in Resources */,
+				EFF9F81E2466BEE100DDA88C /* effect-crt.png in Resources */,
 				925ABCD01E46DCC500997182 /* scanline-1.png in Resources */,
 				EF00880F2459F4EF0058C2A1 /* cheat0139.zip in Resources */,
 				EF29C8852402E51200AFFA4E /* config_iPad_gen_7.txt in Resources */,
@@ -874,9 +898,12 @@
 				EF29C8822401C73A00AFFA4E /* Launch Screen.storyboard in Resources */,
 				925ABCD21E46DCC500997182 /* SKIN_1 in Resources */,
 				9268D85621661F8E00AB0470 /* config_iPhone_6.txt in Resources */,
+				EFF9F8102464864600DDA88C /* border-dark.png in Resources */,
 				925ABCD51E46DCC500997182 /* config_iPhone_5.txt in Resources */,
 				920BBDF220210C3800AE7D50 /* menu.png in Resources */,
+				EFF9F8122464864600DDA88C /* border-test.png in Resources */,
 				EF63E1C124424D2300CFE85D /* whatsnew.md in Resources */,
+				EFF9F8152465DFB200DDA88C /* effect-dot.png in Resources */,
 				925ABCD71E46DCC500997182 /* LICENSE in Resources */,
 				92A533D021EBDDF20089FBB9 /* GCDWebUploader.bundle in Resources */,
 				925ABCD81E46DCC500997182 /* MAME4iOS72.png in Resources */,
@@ -885,6 +912,7 @@
 				925ABCD91E46DCC500997182 /* MAME4iOS114.png in Resources */,
 				925ABCDA1E46DCC500997182 /* MAME4iOS144.png in Resources */,
 				925ABCDB1E46DCC500997182 /* MAME4iOS57.png in Resources */,
+				EFF9F81B2466BE8500DDA88C /* effect-scanline.png in Resources */,
 				921CC323216A903600A39154 /* config_iPad_pro_10_5.txt in Resources */,
 				925ABCDD1E46DCC500997182 /* Category.ini in Resources */,
 				925ABCDE1E46DCC500997182 /* hiscore.dat in Resources */,
@@ -895,19 +923,25 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EFF9F8112464864600DDA88C /* border-dark.png in Resources */,
+				EFF9F81C2466BE8500DDA88C /* effect-scanline.png in Resources */,
 				EF0088102459F4EF0058C2A1 /* cheat0139.zip in Resources */,
+				EFF9F81F2466BEE100DDA88C /* effect-crt.png in Resources */,
 				EFD4D14A23C0F6AB00857A76 /* Category.ini in Resources */,
 				926C770721F26DFA00103EDE /* crt-2.png in Resources */,
 				EF26AE09241848800078FD30 /* mame_logo.png in Resources */,
 				926C770921F26E0000103EDE /* scanline-2.png in Resources */,
 				EFA757002405585D00A02AAB /* mameui.png in Resources */,
+				EFF9F80F2464864600DDA88C /* border-light.png in Resources */,
 				EF0088132459F4FC0058C2A1 /* history0139.zip in Resources */,
 				EFA7570624057FD800A02AAB /* default_game_icon.png in Resources */,
 				926C770621F26DEA00103EDE /* crt-1.png in Resources */,
+				EFF9F8132464864600DDA88C /* border-test.png in Resources */,
 				92ECB8F721EA985000D1E3D0 /* Assets.xcassets in Resources */,
 				B5FAE31721FCDE0C003F44D0 /* scanline_tvOS201901.png in Resources */,
 				926C770821F26DFD00103EDE /* scanline-1.png in Resources */,
 				92A533D121EBDDF20089FBB9 /* GCDWebUploader.bundle in Resources */,
+				EFF9F8162465DFB200DDA88C /* effect-dot.png in Resources */,
 				926C771321F39D2F00103EDE /* hiscore.dat in Resources */,
 				B5FAE31921FCE64D003F44D0 /* MAME_tvOS.lsr in Resources */,
 			);
@@ -973,9 +1007,9 @@
 				EF8EAA8C244F7F5D00DA02BB /* SteamControllerInput.m in Sources */,
 				92A533C021EBDBAD0089FBB9 /* GCDWebServerURLEncodedFormRequest.m in Sources */,
 				92A533D821EE601D0089FBB9 /* WebServer.m in Sources */,
+				EFF9F809246356B300DDA88C /* CGScreenView.m in Sources */,
 				EF301CF1240460C5000510FD /* Alert.m in Sources */,
 				92A533BA21EBDBAD0089FBB9 /* GCDWebServerDataResponse.m in Sources */,
-				925ABCAB1E46DCC500997182 /* ScreenView.m in Sources */,
 				EF24933A236264DA00DD0A6C /* ImageCache.m in Sources */,
 				92B99F0F2022706600CC44E3 /* UIView+Toast.m in Sources */,
 				925ABCAD1E46DCC500997182 /* EmulatorController.m in Sources */,
@@ -1019,6 +1053,7 @@
 				926C770A21F271A700103EDE /* ListOptionController.m in Sources */,
 				92A533C721EBDBAD0089FBB9 /* GCDWebServerDataRequest.m in Sources */,
 				926C76FF21F1C87700103EDE /* TVOptionsController.m in Sources */,
+				EFF9F80A246356B300DDA88C /* CGScreenView.m in Sources */,
 				92A5332621EBC8D00089FBB9 /* Bootstrapper.m in Sources */,
 				92A533A921EBDBAD0089FBB9 /* GCDWebServerRequest.m in Sources */,
 				EF8EAA8B244F7F5D00DA02BB /* SteamControllerExtendedGamepad.m in Sources */,
@@ -1026,7 +1061,6 @@
 				92A533B821EBDBAD0089FBB9 /* GCDWebServerFileResponse.m in Sources */,
 				92A533C121EBDBAD0089FBB9 /* GCDWebServerURLEncodedFormRequest.m in Sources */,
 				92ECB91921EAD57900D1E3D0 /* UIView+Toast.m in Sources */,
-				92ECB91821EAD57400D1E3D0 /* ScreenView.m in Sources */,
 				EF19F22D235D1BDF00C8EE7F /* ChooseGameController.m in Sources */,
 				EF8EAA89244F7F5D00DA02BB /* SteamController.m in Sources */,
 				92A533A621EBDBAD0089FBB9 /* GCDWebServerResponse.m in Sources */,

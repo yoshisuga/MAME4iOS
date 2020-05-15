@@ -46,6 +46,7 @@
 
 #import "Globals.h"
 #import "ScreenView.h"
+#import "CGScreenView.h"
 #import "GCDWebUploader.h"
 #import <GameController/GameController.h>
 
@@ -69,7 +70,7 @@
 @interface EmulatorController : GCEventViewController<GCDWebUploaderDelegate>
 #endif
 {
-  @public ScreenView			* screenView;
+  @public UIView<ScreenView>* screenView;
   UIImageView	    * imageBack;
   UIImageView	    * imageOverlay;
   UIImageView        * imageExternalDisplay;
@@ -89,9 +90,6 @@
 
   //input rects
   CGRect rInput[INPUT_LAST_VALUE];
-    
-  //current rect emulation window
-  CGRect rScreenView;
     
   //views frames
   CGRect rFrames[FRAME_RECT_LAST_VALUE];
@@ -126,18 +124,6 @@
 - (void)done:(id)sender;
 
 - (void)changeUI;
-
-#if TARGET_OS_IOS
-- (void)buildPortraitImageBack;
-- (void)buildPortraitImageOverlay;
-- (void)buildPortrait;
-- (void)buildLandscapeImageBack;
-- (void)removeTouchControllerViews;
-- (void)buildTouchControllerViews;
-#endif
-- (void)buildLandscapeImageOverlay;
-- (void)buildLandscape;
-
 
 - (void)runMenu;
 - (void)runExit;

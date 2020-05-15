@@ -1,5 +1,28 @@
 <img src="mame_logo.png" width="60%">
 
+# Version 2020.9
+
+* Video options (new)
+    - Use Integer Scaling Only
+    - Ability to select the ColorSpace used to display MAME screen.
+* Colorspace (new)
+    - DisplayRGB 
+    - sRGB
+    - CRT (gamma 2.5)
+    - Rec709 (gamma 2.4)
+* Border options (new)
+    - Light
+    - Dark
+    - Solid Color
+* Effect options (was checkboxes, now a list)
+    - CRT
+    - Scanline
+    - CRT + Scanline
+* Filter options (was a checkbox, now a list)
+    - Nearest
+    - Linear
+    - Binlinear
+      
 # Version 2020.8
 * Better INFO/HISTORY.DAT display in landscape (and tvOS)
 * Fixed tvOS MAME top shelf wide logo
