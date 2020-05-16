@@ -173,6 +173,8 @@
 		EFD4D14A23C0F6AB00857A76 /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = CE30090316FA47CB000EDCF1 /* Category.ini */; };
 		EFE4B6AB2453D7F80009A6F1 /* InfoDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE4B6AA2453D7F80009A6F1 /* InfoDatabase.m */; };
 		EFE4B6AC2453D7F80009A6F1 /* InfoDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE4B6AA2453D7F80009A6F1 /* InfoDatabase.m */; };
+		EFF9F825246EE2F800DDA88C /* Intents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFF9F824246EE2F800DDA88C /* Intents.framework */; };
+		EFF9F827246EE30200DDA88C /* IntentsUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFF9F826246EE30200DDA88C /* IntentsUI.framework */; };
 		EFF9F809246356B300DDA88C /* CGScreenView.m in Sources */ = {isa = PBXBuildFile; fileRef = EFF9F807246356B200DDA88C /* CGScreenView.m */; };
 		EFF9F80A246356B300DDA88C /* CGScreenView.m in Sources */ = {isa = PBXBuildFile; fileRef = EFF9F807246356B200DDA88C /* CGScreenView.m */; };
 		EFF9F80E2464864600DDA88C /* border-light.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F80B2464864600DDA88C /* border-light.png */; };
@@ -393,6 +395,8 @@
 		EFE1D709242C1D840081EEC6 /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS13.2.sdk/System/Library/Frameworks/CoreImage.framework; sourceTree = DEVELOPER_DIR; };
 		EFE4B6A92453D7F80009A6F1 /* InfoDatabase.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InfoDatabase.h; sourceTree = "<group>"; };
 		EFE4B6AA2453D7F80009A6F1 /* InfoDatabase.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = InfoDatabase.m; sourceTree = "<group>"; };
+		EFF9F824246EE2F800DDA88C /* Intents.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Intents.framework; path = System/Library/Frameworks/Intents.framework; sourceTree = SDKROOT; };
+		EFF9F826246EE30200DDA88C /* IntentsUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IntentsUI.framework; path = System/Library/Frameworks/IntentsUI.framework; sourceTree = SDKROOT; };
 		EFF9F807246356B200DDA88C /* CGScreenView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CGScreenView.m; path = ../../iOS/CGScreenView.m; sourceTree = "<group>"; };
 		EFF9F808246356B300DDA88C /* CGScreenView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CGScreenView.h; path = ../../iOS/CGScreenView.h; sourceTree = "<group>"; };
 		EFF9F80B2464864600DDA88C /* border-light.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "border-light.png"; path = "../../iOS-res/Applications/MAME4iOS.app/border-light.png"; sourceTree = "<group>"; };
@@ -410,10 +414,12 @@
 			files = (
 				E9856CF023C9A7C50071666D /* MultipeerConnectivity.framework in Frameworks */,
 				EF27F36A23F7475100B1E50A /* libcompression.tbd in Frameworks */,
+				EFF9F827246EE30200DDA88C /* IntentsUI.framework in Frameworks */,
 				92A533DD21EEFE290089FBB9 /* MobileCoreServices.framework in Frameworks */,
 				92A533DB21EEFDE20089FBB9 /* CFNetwork.framework in Frameworks */,
 				92D96574215B03E100EFE3AE /* libc++.tbd in Frameworks */,
 				925ABCE51E46DD6E00997182 /* libmamearm64.a in Frameworks */,
+				EFF9F825246EE2F800DDA88C /* Intents.framework in Frameworks */,
 				925ABCB91E46DCC500997182 /* GameController.framework in Frameworks */,
 				925ABCBA1E46DCC500997182 /* CoreBluetooth.framework in Frameworks */,
 				925ABCBB1E46DCC500997182 /* CoreFoundation.framework in Frameworks */,
@@ -651,6 +657,8 @@
 		CEE680881635BA7000051BC2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				EFF9F826246EE30200DDA88C /* IntentsUI.framework */,
+				EFF9F824246EE2F800DDA88C /* Intents.framework */,
 				EFE1D707242C05CE0081EEC6 /* CoreImage.framework */,
 				EFE1D709242C1D840081EEC6 /* CoreImage.framework */,
 				EFA757072405B9EA00A02AAB /* AVFoundation.framework */,
