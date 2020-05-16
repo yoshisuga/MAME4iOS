@@ -243,8 +243,8 @@
                }
                case 3:
                {
-                   cell.textLabel.text   = @"Throttle";
-                   cell.accessoryView = [self optionSwitchForKey:@"throttle"];
+                   cell.textLabel.text   = @"Integer Scaling Only";
+                   cell.accessoryView = [self optionSwitchForKey:@"integerScalingOnly"];
                    break;
                }
                case 4:
@@ -255,8 +255,8 @@
                }
                case 5:
                {
-                   cell.textLabel.text   = @"Integer Scaling Only";
-                   cell.accessoryView = [self optionSwitchForKey:@"integerScalingOnly"];
+                   cell.textLabel.text   = @"Throttle";
+                   cell.accessoryView = [self optionSwitchForKey:@"throttle"];
                    break;
                }
                case 6:

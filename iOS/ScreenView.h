@@ -47,8 +47,6 @@
 
 #define kScreenViewFilter           @"filter"
 #define kScreenViewEffect           @"effect"
-#define kScreenViewEffectScreenRect @"effect-screen-rect"  // screen rect for effect (in source pixels...)
-#define kScreenViewEffectScreenSize @"effect-screen-size"  // pixel size of the screen rect (in game pixels)
 #define kScreenViewColorSpace       @"colorspace"
 
 #define kScreenViewFilterNearest    @"Nearest"
@@ -59,6 +57,12 @@
 
 @protocol ScreenView <NSObject>
 
-- (instancetype)initWithFrame:(CGRect)frame options:(NSDictionary*)options;
++ (instancetype)sharedInstance;
+
+- (void)setOptions:(NSDictionary*)options;
+
+// return 1 if you handled the draw, 0 for a software render
+// NOTE this is called on MAME background thread, dont do anything stupid.
+- (int)drawScreen:(void*)primatives;
 
 @end

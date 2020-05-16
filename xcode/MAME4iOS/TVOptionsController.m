@@ -42,9 +42,9 @@
     if ( section == kFilterSection ) {
         return 2;
     } else if ( section == kScreenSection ) {
-        return 7;
-    } else if ( section == kMiscSection ) {
         return 8;
+    } else if ( section == kMiscSection ) {
+        return 7;
     } else if ( section == kDefaultsSection ) {
         return 1;
     } else if ( section == kInputSection ) {
@@ -112,45 +112,45 @@
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
             cell.detailTextLabel.text = [Options.arrayBorder optionName:op.borderLand];
         } else if ( indexPath.row == 3 ) {
-            cell.textLabel.text   = @"Source ColorSpace";
+            cell.textLabel.text   = @"ColorSpace";
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
             cell.detailTextLabel.text = [Options.arrayColorSpace optionName:op.sourceColorSpace];
         } else if ( indexPath.row == 4 ) {
-            cell.textLabel.text = @"Keep Aspect Ratio";
-            cell.accessoryView = [self optionSwitchForKey:@"keepAspectRatioLand"];
-        } else if ( indexPath.row == 5 ) {
             cell.textLabel.text = @"Use Metal";
             cell.accessoryView = [self optionSwitchForKey:@"useMetal"];
+        } else if ( indexPath.row == 5 ) {
+            cell.textLabel.text = @"Keep Aspect Ratio";
+            cell.accessoryView = [self optionSwitchForKey:@"keepAspectRatioLand"];
         } else if ( indexPath.row == 6 ) {
             cell.textLabel.text = @"Integer Scaling Only";
             cell.accessoryView = [self optionSwitchForKey:@"integerScalingOnly"];
+        } else if ( indexPath.row == 7 ) {
+            cell.textLabel.text   = @"Force Pixel Aspect";
+            cell.accessoryView = [self optionSwitchForKey:@"forcepxa"];
         }
     } else if ( indexPath.section == kMiscSection ) {
         if ( indexPath.row == 0 ) {
             cell.textLabel.text   = @"Show FPS";
             cell.accessoryView = [self optionSwitchForKey:@"showFPS"];
         } else if ( indexPath.row == 1 ) {
+            cell.textLabel.text   = @"Show Info/Warnings";
+            cell.accessoryView = [self optionSwitchForKey:@"showINFO"];
+        } else if ( indexPath.row == 2 ) {
             cell.textLabel.text   = @"Emulated Resolution";
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
             cell.detailTextLabel.text = [Options.arrayEmuRes optionAtIndex:op.emures];
-        } else if ( indexPath.row == 2 ) {
+        } else if ( indexPath.row == 3 ) {
             cell.textLabel.text   = @"Emulated Speed";
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
             cell.detailTextLabel.text = [Options.arrayEmuSpeed optionAtIndex:op.emuspeed];
-        } else if ( indexPath.row == 3 ) {
+        } else if ( indexPath.row == 4 ) {
             cell.textLabel.text = @"Throttle";
             cell.accessoryView = [self optionSwitchForKey:@"throttle"];
-        } else if ( indexPath.row == 4 ) {
+        } else if ( indexPath.row == 5 ) {
             cell.textLabel.text = @"Frame Skip";
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
             cell.detailTextLabel.text = [Options.arrayFSValue optionAtIndex:op.fsvalue];
-        } else if ( indexPath.row == 5 ) {
-            cell.textLabel.text   = @"Fill Screen";
-            cell.accessoryView = [self optionSwitchForKey:@"forcepxa"];
         } else if ( indexPath.row == 6 ) {
-            cell.textLabel.text   = @"Show Info/Warnings";
-            cell.accessoryView = [self optionSwitchForKey:@"showINFO"];
-        } else if ( indexPath.row == 7 ) {
             cell.textLabel.text = @"Low Latency Audio";
             cell.accessoryView = [self optionSwitchForKey:@"lowlsound"];
         }
@@ -196,13 +196,13 @@
             [[self navigationController] pushViewController:listController animated:YES];
         }
     } else if ( indexPath.section == kMiscSection ) {
-        if ( indexPath.row == 1 ) {
+        if ( indexPath.row == 2 ) {
             ListOptionController *listController = [[ListOptionController alloc] initWithType:kTypeEmuRes list:Options.arrayEmuRes];
             [[self navigationController] pushViewController:listController animated:YES];
-        } else if ( indexPath.row == 2 ) {
+        } else if ( indexPath.row == 3 ) {
             ListOptionController *listController = [[ListOptionController alloc] initWithType:kTypeEmuSpeed list:Options.arrayEmuSpeed];
             [[self navigationController] pushViewController:listController animated:YES];
-        } else if ( indexPath.row == 4 ) {
+        } else if ( indexPath.row == 5 ) {
             ListOptionController *listController = [[ListOptionController alloc] initWithType:kTypeFSValue list:Options.arrayFSValue];
             [[self navigationController] pushViewController:listController animated:YES];
         }

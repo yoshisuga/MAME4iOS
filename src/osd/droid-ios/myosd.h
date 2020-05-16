@@ -35,12 +35,13 @@ enum  { MYOSD_UP=0x1,       MYOSD_LEFT=0x4,       MYOSD_DOWN=0x10,   MYOSD_RIGHT
 #define MAX_FILTER_KEYWORD 30
 #define MAX_GAME_NAME 14
 #define NETPLAY_PORT 55435
+#define NUM_JOY 4
 
-#define MYOSD_SCREEN_WIDTH  2880
-#define MYOSD_SCREEN_HEIGHT 2160
+#define MYOSD_BUFFER_WIDTH  3840
+#define MYOSD_BUFFER_HEIGHT 2160
 extern unsigned short *myosd_curr_screen;   // current screen being rendered.
 extern unsigned short *myosd_prev_screen;   // current screen being drawn (we hope).
-extern unsigned short myosd_screen[MYOSD_SCREEN_WIDTH * MYOSD_SCREEN_HEIGHT * 2];
+extern unsigned short myosd_screen[MYOSD_BUFFER_WIDTH * MYOSD_BUFFER_HEIGHT * 2];
 
 extern int  myosd_fps;
 extern int  myosd_showinfo;
@@ -60,6 +61,8 @@ extern int  myosd_video_width;
 extern int  myosd_video_height;
 extern int  myosd_vis_video_width;
 extern int  myosd_vis_video_height;
+extern int  myosd_display_width;        // display width,height is the screen output resolution
+extern int  myosd_display_height;       // ...set in the iOS app, to pick a good default render target size.
 extern int  myosd_in_menu;
 extern int  myosd_res;
 extern int  myosd_force_pxaspect;
@@ -83,14 +86,14 @@ extern int  myosd_in_menu;
 
 extern unsigned long myosd_pad_status;
     
-extern float joy_analog_x[4][4];
-extern float joy_analog_y[4][2];
+extern float joy_analog_x[NUM_JOY][4];
+extern float joy_analog_y[NUM_JOY][2];
 
-extern float lightgun_x[4];
-extern float lightgun_y[4];
+extern float lightgun_x[NUM_JOY];
+extern float lightgun_y[NUM_JOY];
 
-extern float mouse_x[4];
-extern float mouse_y[4];
+extern float mouse_x[NUM_JOY];
+extern float mouse_y[NUM_JOY];
 
 extern int myosd_mouse;
 extern int myosd_light_gun;
@@ -131,10 +134,11 @@ extern char myosd_selected_game[MAX_GAME_NAME];
 
 extern void myosd_init(void);
 extern void myosd_deinit(void);
-extern void myosd_video_flip(void);
 extern unsigned long myosd_joystick_read(int n);
 extern float myosd_joystick_read_analog(int n, char axis);
 extern void myosd_set_video_mode(int width,int height,int vis_width, int vis_height);
+extern void myosd_video_flip(void);
+extern int  myosd_video_draw(void*);
 extern void myosd_closeSound(void);
 extern void myosd_openSound(int rate,int stereo);
 extern void myosd_sound_play(void *buff, int len);
@@ -156,6 +160,107 @@ typedef struct
     const char *        manufacturer;               /* manufacturer of the game */
 } myosd_game_info;
 extern void myosd_set_game_info(myosd_game_info *info[], int game_count);
+
+#ifdef __DRIVER_H__
+// fail to compile if these structures get out of sync.
+_Static_assert(offsetof(myosd_game_info, source_file)  == offsetof(game_driver, source_file), "");
+_Static_assert(offsetof(myosd_game_info, parent)       == offsetof(game_driver, parent), "");
+_Static_assert(offsetof(myosd_game_info, name)         == offsetof(game_driver, name), "");
+_Static_assert(offsetof(myosd_game_info, description)  == offsetof(game_driver, description), "");
+_Static_assert(offsetof(myosd_game_info, year)         == offsetof(game_driver, year), "");
+_Static_assert(offsetof(myosd_game_info, manufacturer) == offsetof(game_driver, manufacturer), "");
+#endif
+
+// this is copy/clone of the render_primitive in render.h passed up to UI/OSD layer in myosd_video_draw
+typedef struct _myosd_render_primitive myosd_render_primitive;
+struct _myosd_render_primitive
+{
+    myosd_render_primitive* next;              /* pointer to next element */
+    int                   type;                /* type of primitive */
+//  render_bounds         bounds;              /* bounds or positions */
+    float                 bounds_x0;
+    float                 bounds_y0;
+    float                 bounds_x1;
+    float                 bounds_y1;
+//  render_color          color;               /* RGBA values */
+    float                 color_a;
+    float                 color_r;
+    float                 color_g;
+    float                 color_b;
+//  UINT32                flags;               /* flags */
+    uint32_t              texorient:4;
+    uint32_t              texformat:4;
+    uint32_t              blendmode:4;
+    uint32_t              antialias:1;
+    uint32_t              screentex:1;
+    uint32_t              texwrap:1;
+    uint32_t              unused:17;
+    float                 width;               /* width (for line primitives) */
+//  render_texinfo        texture;             /* texture info (for quad primitives) */
+    void *                texture_base;        /* base of the data */
+    uint32_t              texture_rowpixels;   /* pixels per row */
+    uint32_t              texture_width;       /* width of the image */
+    uint32_t              texture_height;      /* height of the image */
+    const void*           texture_palette;     /* palette for PALETTE16 textures, LUTs for RGB15/RGB32 */
+    uint32_t              texture_seqid;       /* sequence ID */
+//  render_quad_texuv     texcoords;           /* texture coordinates (for quad primitives) */
+    struct {float u,v;}   texcoords[4];
+};
+#ifdef __RENDER_H__
+// myosd struct **must** match the internal render.h version.
+_Static_assert(sizeof(myosd_render_primitive) == sizeof(render_primitive), "");
+_Static_assert(offsetof(myosd_render_primitive, bounds_x0)    == offsetof(render_primitive, bounds), "");
+_Static_assert(offsetof(myosd_render_primitive, color_a)      == offsetof(render_primitive, color), "");
+_Static_assert(offsetof(myosd_render_primitive, texture_base) == offsetof(render_primitive, texture), "");
+_Static_assert(PRIMFLAG_TEXORIENT_MASK == 0x000F);
+_Static_assert(PRIMFLAG_TEXFORMAT_MASK == 0x00F0);
+_Static_assert(PRIMFLAG_BLENDMODE_MASK == 0x0F00);
+_Static_assert(PRIMFLAG_ANTIALIAS_MASK == 0x1000);
+_Static_assert(PRIMFLAG_SCREENTEX_MASK == 0x2000);
+_Static_assert(PRIMFLAG_TEXWRAP_MASK   == 0x4000);
+#endif
+
+// NOTE if you get a re-defined enum error, you need to include emu.h before myosd.h
+#ifndef __RENDER_H__
+/* render primitive types */
+enum
+{
+    RENDER_PRIMITIVE_LINE,          /* a single line */
+    RENDER_PRIMITIVE_QUAD           /* a rectilinear quad */
+};
+
+/* texture formats */
+enum
+{
+    TEXFORMAT_UNDEFINED = 0,        /* require a format to be specified */
+    TEXFORMAT_PALETTE16,            /* 16bpp palettized, alpha ignored */
+    TEXFORMAT_PALETTEA16,           /* 16bpp palettized, alpha respected */
+    TEXFORMAT_RGB15,                /* 16bpp 5-5-5 RGB */
+    TEXFORMAT_RGB32,                /* 32bpp 8-8-8 RGB */
+    TEXFORMAT_ARGB32,               /* 32bpp 8-8-8-8 ARGB */
+    TEXFORMAT_YUY16                 /* 16bpp 8-8 Y/Cb, Y/Cr in sequence */
+};
+
+/* blending modes */
+enum
+{
+    BLENDMODE_NONE = 0,             /* no blending */
+    BLENDMODE_ALPHA,                /* standard alpha blend */
+    BLENDMODE_RGB_MULTIPLY,         /* apply source alpha to source pix, then multiply RGB values */
+    BLENDMODE_ADD                   /* apply source alpha to source pix, then add to destination */
+};
+
+// orientation of bitmaps
+#define ORIENTATION_FLIP_X  0x0001  /* mirror everything in the X direction */
+#define ORIENTATION_FLIP_Y  0x0002  /* mirror everything in the Y direction */
+#define ORIENTATION_SWAP_XY 0x0004  /* mirror along the top-left/bottom-right diagonal */
+
+#define ORIENTATION_ROT0    0
+#define ORIENTATION_ROT90   (ORIENTATION_SWAP_XY | ORIENTATION_FLIP_X)   /* rotate clockwise 90 degrees */
+#define ORIENTATION_ROT180  (ORIENTATION_FLIP_X | ORIENTATION_FLIP_Y)    /* rotate 180 degrees */
+#define ORIENTATION_ROT270  (ORIENTATION_SWAP_XY | ORIENTATION_FLIP_Y)   /* rotate counter-clockwise 90 degrees */
+
+#endif
 
 #if defined(__cplusplus)
 }

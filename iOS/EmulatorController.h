@@ -137,6 +137,7 @@
 #endif
 
 - (void)handle_INPUT;
+- (void)commandKey:(char)key;
 
 - (void)updateOptions;
 
