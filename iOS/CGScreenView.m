@@ -130,31 +130,23 @@
         CGSize size;        // original size in pixels of screen.
     }   _mame_screen_info[MAX_MAME_SCREENS];
     int _mame_screen_count;
+    
+    NSTimeInterval _startRenderTime;
+    NSTimeInterval _lastDisplayTime;
 }
+
+// frame and render statistics
+@synthesize frameCount=_frameCount, frameTime=_frameTime, renderTime=_renderTime, frameRate=_frameRate, renderRate=_renderRate;
 
 + (Class) layerClass
 {
     return [CGScreenLayer class];
 }
 
-+ (instancetype)sharedInstance {
-    static id g_sharedInstance;
-    if (g_sharedInstance == nil) {
-        NSParameterAssert([NSThread isMainThread]);
-        g_sharedInstance = [[self alloc] init];
-    }
-    return g_sharedInstance;
-}
-
 - (id)initWithFrame:(CGRect)frame {
 	if ((self = [super initWithFrame:frame])!=nil) {
-        
         self.opaque = YES;
         self.clearsContextBeforeDrawing = NO;
-#if TARGET_OS_IOS
-        self.multipleTouchEnabled = NO;
-#endif
-        self.userInteractionEnabled = NO;
 	}
     
 	return self;
@@ -229,6 +221,36 @@
     // this logic, while doing our real drawing work inside of -drawLayer:inContext:
 }
 
+- (void)setNeedsDisplay {
+    [super setNeedsDisplay];
+    
+    NSTimeInterval now = CACurrentMediaTime();
+    
+    // set the frameRate and total frameTime
+    if (_frameCount == 0) {
+        _frameRate = 0;
+        _frameTime = 0;
+        _renderTime = 0;
+        _renderRate = 0;
+        _startRenderTime = 0;
+    }
+    else {
+        NSTimeInterval drawTime = (now - _lastDisplayTime);
+        _frameRate  = 1.0 / drawTime;
+        _frameTime += drawTime;
+    }
+    _lastDisplayTime = now;
+
+    // set the renderRate and total renderTime
+    if (_startRenderTime != 0) {
+        NSTimeInterval renderTime = (now - _startRenderTime);
+        _renderRate = 1.0 / renderTime;
+        _renderTime += renderTime;
+    }
+    
+    _frameCount += 1;
+}
+
 // return 1 if you handled the draw, 0 for a software render
 // NOTE this is called on MAME background thread, dont do anything stupid.
 //
@@ -236,6 +258,8 @@
 // so we can put effect overlays on top of only them.
 //
 - (int)drawScreen:(void*)prim_list {
+    
+    _startRenderTime = CACurrentMediaTime();
 
     int screen_count = 0;
     

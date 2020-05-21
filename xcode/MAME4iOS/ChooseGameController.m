@@ -207,13 +207,20 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     //navbar
 #if TARGET_OS_IOS
     self.navigationController.navigationBar.translucent = YES;
-    self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
-    self.navigationController.navigationBar.barTintColor = BACKGROUND_COLOR;
+    
+    if (@available(iOS 13.0, tvOS 13.0, *)) {
+        self.navigationController.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
+    }
+    else {
+        self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
+        self.navigationController.navigationBar.barTintColor = BACKGROUND_COLOR;
+    }
+    
     [title addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(scrollToTop)]];
 #else
     self.navigationController.navigationBar.translucent = NO;
 #endif
-
+    
     // layout
     height = TARGET_OS_IOS ? 16.0 : 32.0;
     UISegmentedControl* seg1 = [[PopupSegmentedControl alloc] initWithItems:@[
@@ -223,14 +230,12 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         [UIImage systemImageNamed:@"rectangle.grid.1x2.fill" withPointSize:height] ?: @"☰"
     ]];
     
-    seg1.momentary = TARGET_OS_IOS ? YES : NO;
     seg1.selectedSegmentIndex = _layoutMode;
     [seg1 addTarget:self action:@selector(viewChange:) forControlEvents:UIControlEventValueChanged];
     UIBarButtonItem* layout = [[UIBarButtonItem alloc] initWithCustomView:seg1];
 
     // group/scope
     UISegmentedControl* seg2 = [[PopupSegmentedControl alloc] initWithItems:ALL_SCOPES];
-    seg2.momentary = TARGET_OS_IOS ? YES : NO;
     seg2.selectedSegmentIndex = [ALL_SCOPES indexOfObject:_gameFilterScope];
     seg2.apportionsSegmentWidthsByContent = TARGET_OS_IOS ? NO : YES;
     [seg2 addTarget:self action:@selector(scopeChange:) forControlEvents:UIControlEventValueChanged];
@@ -242,7 +247,6 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     UIBarButtonItem* settings = [[UIBarButtonItem alloc] initWithImage:settingsImage style:UIBarButtonItemStylePlain target:self action:@selector(showSettings)];
 #else
     UISegmentedControl* seg3 = [[UISegmentedControl alloc] initWithItems:@[settingsImage]];
-    seg3.momentary = YES;
     [seg3 addTarget:self action:@selector(showSettings) forControlEvents:UIControlEventValueChanged];
     UIBarButtonItem* settings = [[UIBarButtonItem alloc] initWithCustomView:seg3];
 #endif
@@ -263,7 +267,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     _searchController.delegate = self;
     _searchController.searchBar.delegate = self;
     _searchController.obscuresBackgroundDuringPresentation = NO;
-    _searchController.searchBar.placeholder = @"Filter";
+    _searchController.searchBar.placeholder = @"Search";
     
     // make the cancel button say Done
     [[UIBarButtonItem appearanceWhenContainedInInstancesOfClasses:@[[UISearchBar class]]] setTitle:@"Done"];
@@ -342,7 +346,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     _searchController.obscuresBackgroundDuringPresentation = YES;
 
     _searchController.searchBar.scopeButtonTitles = ALL_SCOPES;
-    _searchController.searchBar.placeholder = @"Filter";
+    _searchController.searchBar.placeholder = @"Search";
     _searchController.searchBar.showsScopeBar = NO;
     _searchController.hidesNavigationBarDuringPresentation = YES;
     

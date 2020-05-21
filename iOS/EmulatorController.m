@@ -127,7 +127,9 @@ NSString* g_pref_border_land;
 NSString* g_pref_border_port;
 NSString* g_pref_colorspace;
 
+int g_pref_metal = 0;
 int g_pref_integer_scale_only = 0;
+int g_pref_showFPS = 0;
 
 int g_pref_keep_aspect_ratio_land = 0;
 int g_pref_keep_aspect_ratio_port = 0;
@@ -226,27 +228,32 @@ void iphone_Reset_Views(void)
 // **NOTE** this is called on the MAME background thread, dont do anything stupid.
 void iphone_UpdateScreen()
 {
-    if (sharedInstance == nil || sharedInstance->screenView == nil)
+    if (sharedInstance == nil || g_emulation_paused || sharedInstance->screenView == nil)
         return;
     
     [sharedInstance->screenView performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone:NO];
+
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wundeclared-selector"
+    if (g_pref_showFPS)
+        [sharedInstance performSelectorOnMainThread:@selector(updateFrameRate) withObject:nil waitUntilDone:NO];
+    #pragma clang diagnostic pop
 }
 // called by the OSD layer to render the current frame
 // return 1 if you did the render, 0 if you want a software render.
 // **NOTE** this is called on the MAME background thread, dont do anything stupid.
 // ...not doing something stupid includes not leaking autoreleased objects! use a autorelease pool if you need to!
 int iphone_DrawScreen(myosd_render_primitive* prim_list) {
-    
-    if (sharedInstance == nil || sharedInstance->screenView == nil)
+
+    if (sharedInstance == nil || g_emulation_paused || sharedInstance->screenView == nil)
         return 0;
 
-#ifdef DEBUG
     @autoreleasepool {
+#ifdef DEBUG
         [CGScreenView drawScreenDebug:prim_list];
-    }
 #endif
-
-    return [sharedInstance->screenView drawScreen:prim_list];
+        return [sharedInstance->screenView drawScreen:prim_list];
+    }
 }
 
 // run MAME (or pass NULL for main menu)
@@ -755,8 +762,11 @@ void mame_state(int load_save, int slot)
     g_pref_colorspace = [Options.arrayColorSpace optionData:op.sourceColorSpace];
 
     g_pref_integer_scale_only = op.integerScalingOnly;
+    g_pref_metal = op.useMetal;
+    g_pref_showFPS = [op showFPS];
 
-    myosd_fps = [op showFPS];
+    // TODO: do we want the MAME framerate display at all?
+    myosd_fps = 0; // [op showFPS];
     myosd_showinfo =  [op showINFO];
     g_pref_animated_DPad  = [op animatedButtons];
     g_pref_full_screen_land  = [op fullLand];
@@ -1288,6 +1298,7 @@ void mame_state(int load_save, int slot)
 
     screenView.alpha = alpha;
     imageOverlay.alpha = alpha;
+    fpsView.alpha = alpha;
     imageLogo.alpha = (1.0 - alpha);
 }
 
@@ -1317,6 +1328,75 @@ void mame_state(int load_save, int slot)
     [screenView.superview addSubview:imageLogo];
 }
 
+-(void)buildFrameRateView {
+    
+    if (!g_pref_showFPS)
+        return;
+    
+    // reset the frame count each time we resize/turn on off
+    screenView.frameCount = 0;
+    
+    // create a frame rate/info view and put it in the upper left corner of the screenView
+    // TODO: place this view smarter, for now overlay it exactly over screenView
+    
+    fpsView = [[UILabel alloc] init];
+    fpsView.userInteractionEnabled = NO;
+    fpsView.numberOfLines = 2;
+    fpsView.font = [UIFont monospacedDigitSystemFontOfSize:16.0 weight:UIFontWeightMedium];
+    fpsView.textColor = self.view.tintColor;
+    fpsView.backgroundColor = [self.view.tintColor colorWithAlphaComponent:0.25];
+    fpsView.shadowColor = UIColor.blackColor;
+    fpsView.shadowOffset = CGSizeMake(1.0,1.0);
+    fpsView.text = @"000:00:00\n00.0fps 00.0ms";
+
+    CGPoint pos = screenView.frame.origin;
+
+    // if we have room above, go single line.
+    if (pos.y - fpsView.font.pointSize > screenView.superview.safeAreaInsets.top) {
+        fpsView.numberOfLines = 1;
+        fpsView.text =[fpsView.text stringByReplacingOccurrencesOfString:@"\n" withString:@" "];
+    }
+    
+    // put label in upper-left of screenView, or just above if room...
+    CGSize size = [fpsView sizeThatFits:CGSizeZero];
+    
+    if (pos.y - size.height > screenView.superview.safeAreaInsets.top)
+        pos.y -= size.height + 4.0;
+    if (pos.x - size.width > screenView.superview.safeAreaInsets.left)
+        pos.x -= size.width + 4.0;
+    else {
+        pos.x += 4.0; pos.y += 4.0;
+    }
+    
+    fpsView.frame = (CGRect){pos, size};
+    [screenView.superview addSubview:fpsView];
+}
+
+-(void)updateFrameRate {
+    assert([NSThread isMainThread]);
+
+    NSUInteger frame_count = screenView.frameCount;
+
+    if (frame_count == 0)
+        return;
+
+    // get the timecode assuming 60fps
+    NSUInteger frame = frame_count % 60;
+    NSUInteger sec = (frame_count / 60) % 60;
+    NSUInteger min = (frame_count / 3600);
+    CGFloat frame_rate = screenView.frameRate;
+    CGFloat render_time = 1.0 / screenView.renderRate;
+
+    BOOL show_average = TRUE;
+    
+    if (show_average) {
+        frame_rate = frame_count / screenView.frameTime;
+        render_time = screenView.renderTime / frame_count;
+    }
+    
+    fpsView.text = [NSString stringWithFormat:@"%03d:%02d:%02d %.1ffps %.1fms", (int)min, (int)sec, (int)frame, frame_rate, render_time * 1000.0];
+}
+
 - (void)changeUI { @autoreleasepool {
 
     int prev_emulation_paused = g_emulation_paused;
@@ -1332,8 +1412,9 @@ void mame_state(int load_save, int slot)
         [self updateOptions];
     }
     
-    [screenView removeFromSuperview];
-    screenView = nil;
+    //dont free the screenView, see buildScreenView
+    //[screenView removeFromSuperview];
+    //screenView = nil;
 
     [imageBack removeFromSuperview];
     imageBack = nil;
@@ -1343,12 +1424,16 @@ void mame_state(int load_save, int slot)
 
     [imageLogo removeFromSuperview];
     imageLogo = nil;
+    
+    [fpsView removeFromSuperview];
+    fpsView = nil;
 
     [imageExternalDisplay removeFromSuperview];
     imageExternalDisplay = nil;
 
     [self buildScreenView];
     [self buildLogoView];
+    [self buildFrameRateView];
     [self updateScreenView];
 
     if ( g_joy_used ) {
@@ -1718,7 +1803,13 @@ UIColor* colorWithHexString(NSString* string) {
         screenView.layer.cornerRadius = radius;
         screenView.layer.masksToBounds = (radius != 0.0);
     }
-    else if (image != nil) {
+    else {
+        screenView.layer.borderWidth = 0.0;
+        screenView.layer.cornerRadius = 0.0;
+        screenView.layer.masksToBounds = NO;
+    }
+    
+    if (image != nil) {
         imageOverlay = [[UIImageView alloc] initWithImage:image];
         imageOverlay.frame = rect;
         [screenView.superview addSubview:imageOverlay];
@@ -1827,20 +1918,35 @@ UIColor* colorWithHexString(NSString* string) {
         kScreenViewEffect: g_device_is_landscape ? g_pref_effect_land : g_pref_effect_port,
         kScreenViewColorSpace: g_pref_colorspace
     };
+    
+    // select a CoreGraphics or Metal ScreenView
+    Class screen_view_class = [CGScreenView class];
+    
+    // TODO: Metal on external display?
+    if (externalView == nil && g_pref_metal && [MetalScreenView isSupported])
+        screen_view_class = [MetalScreenView class];
 
-    // the reason we use a singleton is because we access screenView from background threads
+    // the reason we dont re-create screenView each time is because we access screenView from background threads
     // (see iPhone_UpdateScreen, iPhone_DrawScreen) and we dont want to risk race condition on release.
-    // (and the code can optimize and not crreate/destroy buffers)
-    //screenView = [[CGScreenView alloc] initWithFrame:r];
-    screenView = CGScreenView.sharedInstance;
+    // and not creating/destroying the ScreenView on a simple size change or rotation, is good for performace.
+    if (screenView == nil || [screenView class] != screen_view_class) {
+        [screenView removeFromSuperview];
+        screenView = [[screen_view_class alloc] init];
+    }
     screenView.frame = r;
+    screenView.userInteractionEnabled = NO;
     [screenView setOptions:options];
     
-    [(externalView ?: self.view) addSubview: screenView];
+    UIView* superview = (externalView ?: self.view);
+    if (screenView.superview != superview) {
+        [screenView removeFromSuperview];
+        [superview addSubview:screenView];
+    }
            
     [self buildOverlayImage:border_image rect:CGRectInset(r, -border_size.width, -border_size.height)];
 
 #if TARGET_OS_IOS
+    screenView.multipleTouchEnabled = NO;
     [self buildTouchControllerViews];
 #endif
    
@@ -1946,6 +2052,10 @@ UIColor* colorWithHexString(NSString* string) {
             break;
         case 'I':
             g_pref_integer_scale_only = !g_pref_integer_scale_only;
+            [self changeUI];
+            break;
+        case 'F':
+            g_pref_showFPS = !g_pref_showFPS;
             [self changeUI];
             break;
     #ifdef DEBUG
@@ -2272,7 +2382,7 @@ UIColor* colorWithHexString(NSString* string) {
 
 - (void) handleLightgunTouchesBegan:(NSSet *)touches {
     NSUInteger touchcount = touches.count;
-    if ( screenView != nil ) {
+    if ( screenView.window != nil ) {
         UITouch *touch = [[touches allObjects] objectAtIndex:0];
         CGPoint touchLoc = [touch locationInView:screenView];
         CGFloat newX = (touchLoc.x - (screenView.bounds.size.width / 2.0f)) / (screenView.bounds.size.width / 2.0f);
@@ -2316,14 +2426,14 @@ UIColor* colorWithHexString(NSString* string) {
 #pragma mark - Mouse Touch Support
 
 -(void) handleMouseTouchesBegan:(NSSet *)touches {
-    if ( screenView != nil ) {
+    if ( screenView.window != nil ) {
         UITouch *touch = [[touches allObjects] objectAtIndex:0];
         mouseTouchStartLocation = [touch locationInView:screenView];
     }
 }
 
 - (void) handleMouseTouchesMoved:(NSSet *)touches {
-    if ( screenView != nil && !CGPointEqualToPoint(mouseTouchStartLocation, mouseInitialLocation) ) {
+    if ( screenView.window != nil && !CGPointEqualToPoint(mouseTouchStartLocation, mouseInitialLocation) ) {
         UITouch *touch = [[touches allObjects] objectAtIndex:0];
         CGPoint currentLocation = [touch locationInView:screenView];
         CGFloat dx = currentLocation.x - mouseTouchStartLocation.x;
@@ -2337,14 +2447,14 @@ UIColor* colorWithHexString(NSString* string) {
 
 #pragma mark - Touch Movement Support
 -(void) handleTouchMovementTouchesBegan:(NSSet *)touches {
-    if ( screenView != nil ) {
+    if ( screenView.window != nil ) {
         UITouch *touch = [[touches allObjects] objectAtIndex:0];
         touchDirectionalMoveStartLocation = [touch locationInView:screenView];
     }
 }
 
 -(void) handleTouchMovementTouchesMoved:(NSSet *)touches {
-    if ( screenView != nil && !CGPointEqualToPoint(touchDirectionalMoveStartLocation, mouseInitialLocation) ) {
+    if ( screenView.window != nil && !CGPointEqualToPoint(touchDirectionalMoveStartLocation, mouseInitialLocation) ) {
         myosd_pad_status &= ~MYOSD_DOWN;
         myosd_pad_status &= ~MYOSD_UP;
         myosd_pad_status &= ~MYOSD_LEFT;
@@ -3043,8 +3153,10 @@ UIColor* colorWithHexString(NSString* string) {
 
         [self changeUI]; //ensure GUI
         
-        [screenView removeFromSuperview];
-        screenView = nil;
+        //dont free the screenView, see buildScreenView
+        //[screenView removeFromSuperview];
+        //screenView = nil;
+        screenView.alpha = 0;
         
         layoutView = [[LayoutView alloc] initWithFrame:self.view.bounds withEmuController:self];
         
@@ -3064,6 +3176,7 @@ UIColor* colorWithHexString(NSString* string) {
     [layoutView removeFromSuperview];
     
     change_layout = 0;
+    screenView.alpha = 1;
 
     [self done:self];
 }

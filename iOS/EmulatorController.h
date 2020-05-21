@@ -47,6 +47,7 @@
 #import "Globals.h"
 #import "ScreenView.h"
 #import "CGScreenView.h"
+#import "MetalScreenView.h"
 #import "GCDWebUploader.h"
 #import <GameController/GameController.h>
 
@@ -75,6 +76,7 @@
   UIImageView	    * imageOverlay;
   UIImageView        * imageExternalDisplay;
   UIImageView        * imageLogo;
+  UILabel            * fpsView;
 #if TARGET_OS_IOS
   AnalogStickView   * analogStickView;
     LayoutView        *layoutView;    

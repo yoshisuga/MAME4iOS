@@ -116,7 +116,7 @@
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
             cell.detailTextLabel.text = [Options.arrayColorSpace optionName:op.sourceColorSpace];
         } else if ( indexPath.row == 4 ) {
-            cell.textLabel.text = @"Use Metal";
+            cell.textLabel.text =  @"Use Metal (⚠️ DANGER ⚠️)";
             cell.accessoryView = [self optionSwitchForKey:@"useMetal"];
         } else if ( indexPath.row == 5 ) {
             cell.textLabel.text = @"Keep Aspect Ratio";
