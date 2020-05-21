@@ -765,8 +765,7 @@ void mame_state(int load_save, int slot)
     g_pref_metal = op.useMetal;
     g_pref_showFPS = [op showFPS];
 
-    // TODO: do we want the MAME framerate display at all?
-    myosd_fps = 0; // [op showFPS];
+    myosd_fps = [op showFPS];
     myosd_showinfo =  [op showINFO];
     g_pref_animated_DPad  = [op animatedButtons];
     g_pref_full_screen_land  = [op fullLand];
@@ -1333,9 +1332,6 @@ void mame_state(int load_save, int slot)
     if (!g_pref_showFPS)
         return;
     
-    // reset the frame count each time we resize/turn on off
-    screenView.frameCount = 0;
-    
     // create a frame rate/info view and put it in the upper left corner of the screenView
     // TODO: place this view smarter, for now overlay it exactly over screenView
     
@@ -1384,17 +1380,11 @@ void mame_state(int load_save, int slot)
     NSUInteger frame = frame_count % 60;
     NSUInteger sec = (frame_count / 60) % 60;
     NSUInteger min = (frame_count / 3600);
-    CGFloat frame_rate = screenView.frameRate;
-    CGFloat render_time = 1.0 / screenView.renderRate;
-
-    BOOL show_average = TRUE;
-    
-    if (show_average) {
-        frame_rate = frame_count / screenView.frameTime;
-        render_time = screenView.renderTime / frame_count;
-    }
-    
-    fpsView.text = [NSString stringWithFormat:@"%03d:%02d:%02d %.1ffps %.1fms", (int)min, (int)sec, (int)frame, frame_rate, render_time * 1000.0];
+#ifdef DEBUG
+    fpsView.text = [NSString stringWithFormat:@"%03d:%02d:%02d %.1ffps %.1fms", (int)min, (int)sec, (int)frame, frame_count / screenView.frameTime, screenView.renderTime * 1000.0 / frame_count];
+#else
+    fpsView.text = [NSString stringWithFormat:@"%03d:%02d:%02d %.1ffps %.1fms", (int)min, (int)sec, (int)frame, frame_count / screenView.frameTime, screenView.renderTime * 1000.0 / frame_count];
+#endif
 }
 
 - (void)changeUI { @autoreleasepool {
@@ -1411,6 +1401,10 @@ void mame_state(int load_save, int slot)
     if((ways_auto && myosd_num_ways!=myosd_waysStick) || (button_auto && old_myosd_num_buttons != myosd_num_buttons)) {
         [self updateOptions];
     }
+    
+    // reset the frame count when you first turn on/off
+    if (g_pref_showFPS != (fpsView != nil))
+        screenView.frameCount = 0;
     
     //dont free the screenView, see buildScreenView
     //[screenView removeFromSuperview];
@@ -1880,6 +1874,8 @@ UIColor* colorWithHexString(NSString* string) {
         NSLog(@"DISPLAY SIZE CHANGE: %dx%d", (int)(r.size.width * scale), (int)(r.size.height * scale));
         myosd_display_width = (r.size.width * scale);
         myosd_display_height = (r.size.height * scale);
+        // reset the frame count each time we resize
+        screenView.frameCount = 0;
     }
 
     // make room for a border
