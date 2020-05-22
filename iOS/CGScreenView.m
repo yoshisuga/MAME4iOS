@@ -135,9 +135,6 @@
     NSTimeInterval _lastDisplayTime;
 }
 
-// frame and render statistics
-@synthesize frameCount=_frameCount, frameTime=_frameTime, renderTime=_renderTime, frameRate=_frameRate, renderRate=_renderRate;
-
 + (Class) layerClass
 {
     return [CGScreenLayer class];
@@ -191,6 +188,9 @@
 - (void)layoutSubviews {
     [super layoutSubviews];
     
+    // reset the frame count each time we resize
+    _frameCount = 0;
+    
     // remove any previous overlays
     while (self.subviews.count > 0)
         [self.subviews.firstObject removeFromSuperview];
@@ -221,32 +221,43 @@
     // this logic, while doing our real drawing work inside of -drawLayer:inContext:
 }
 
+// frame and render statistics
+@synthesize frameCount=_frameCount, frameRate=_frameRate, frameRateAverage=_frameRateAverage, renderTime=_renderTime, renderTimeAverage=_renderTimeAverage;
+
 - (void)setNeedsDisplay {
     [super setNeedsDisplay];
+    
+    if (_startRenderTime == 0)
+        return;
     
     NSTimeInterval now = CACurrentMediaTime();
     
     // set the frameRate and total frameTime
     if (_frameCount == 0) {
-        _frameRate = 0;
-        _frameTime = 0;
-        _renderTime = 0;
-        _renderRate = 0;
-        _startRenderTime = 0;
+        _frameRateAverage = 0;
+        _renderTimeAverage = 0;
     }
-    else {
-        NSTimeInterval drawTime = (now - _lastDisplayTime);
-        _frameRate  = 1.0 / drawTime;
-        _frameTime += drawTime;
+    
+    if (_lastDisplayTime != 0 && (now - _lastDisplayTime) < 0.250) {
+        NSTimeInterval frameRate = 1.0 / (now - _lastDisplayTime);
+        _frameRate = frameRate;
+        if (_frameRateAverage != 0)
+            _frameRateAverage = ((_frameRateAverage * _frameCount) + frameRate) / (_frameCount+1);
+        else
+            _frameRateAverage = frameRate;
     }
     _lastDisplayTime = now;
 
     // set the renderRate and total renderTime
     if (_startRenderTime != 0) {
         NSTimeInterval renderTime = (now - _startRenderTime);
-        _renderRate = 1.0 / renderTime;
-        _renderTime += renderTime;
+        _renderTime = renderTime;
+        if (_renderTimeAverage != 0)
+            _renderTimeAverage = ((_renderTimeAverage * _frameCount) + renderTime) / (_frameCount+1);
+        else
+            _renderTimeAverage = renderTime;
     }
+    _startRenderTime = 0;
     
     _frameCount += 1;
 }

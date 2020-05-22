@@ -52,7 +52,7 @@
 }
 
 // frame and render statistics
-@synthesize frameCount=_frameCount, frameTime=_frameTime, renderTime=_renderTime, frameRate=_frameRate, renderRate=_renderRate;
+@synthesize frameCount=_frameCount, frameRate=_frameRate, frameRateAverage=_frameRateAverage, renderTime=_renderTime, renderTimeAverage=_renderTimeAverage;
 
 // CAMetalLayer avalibility is wrong in the iOS 11.3.4 sdk???
 #pragma clang diagnostic push

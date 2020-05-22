@@ -1338,12 +1338,12 @@ void mame_state(int load_save, int slot)
     fpsView = [[UILabel alloc] init];
     fpsView.userInteractionEnabled = NO;
     fpsView.numberOfLines = 2;
-    fpsView.font = [UIFont monospacedDigitSystemFontOfSize:16.0 weight:UIFontWeightMedium];
+    fpsView.font = [UIFont monospacedDigitSystemFontOfSize:(TARGET_OS_IOS ? 16.0 : 32.0) weight:UIFontWeightMedium];
     fpsView.textColor = self.view.tintColor;
-    fpsView.backgroundColor = [self.view.tintColor colorWithAlphaComponent:0.25];
+    //fpsView.backgroundColor = [self.view.tintColor colorWithAlphaComponent:0.25];
     fpsView.shadowColor = UIColor.blackColor;
     fpsView.shadowOffset = CGSizeMake(1.0,1.0);
-    fpsView.text = @"000:00:00\n00.0fps 00.0ms";
+    fpsView.text = @"000:00:00\n0000.0fps 000.0ms";
 
     CGPoint pos = screenView.frame.origin;
 
@@ -1380,11 +1380,8 @@ void mame_state(int load_save, int slot)
     NSUInteger frame = frame_count % 60;
     NSUInteger sec = (frame_count / 60) % 60;
     NSUInteger min = (frame_count / 3600);
-#ifdef DEBUG
-    fpsView.text = [NSString stringWithFormat:@"%03d:%02d:%02d %.1ffps %.1fms", (int)min, (int)sec, (int)frame, frame_count / screenView.frameTime, screenView.renderTime * 1000.0 / frame_count];
-#else
-    fpsView.text = [NSString stringWithFormat:@"%03d:%02d:%02d %.1ffps %.1fms", (int)min, (int)sec, (int)frame, frame_count / screenView.frameTime, screenView.renderTime * 1000.0 / frame_count];
-#endif
+
+    fpsView.text = [NSString stringWithFormat:@"%03d:%02d:%02d %.1ffps %.1fms", (int)min, (int)sec, (int)frame, screenView.frameRateAverage, screenView.renderTimeAverage * 1000.0];
 }
 
 - (void)changeUI { @autoreleasepool {
@@ -1874,8 +1871,6 @@ UIColor* colorWithHexString(NSString* string) {
         NSLog(@"DISPLAY SIZE CHANGE: %dx%d", (int)(r.size.width * scale), (int)(r.size.height * scale));
         myosd_display_width = (r.size.width * scale);
         myosd_display_height = (r.size.height * scale);
-        // reset the frame count each time we resize
-        screenView.frameCount = 0;
     }
 
     // make room for a border
