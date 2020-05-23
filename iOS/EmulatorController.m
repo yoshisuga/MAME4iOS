@@ -1381,7 +1381,7 @@ void mame_state(int load_save, int slot)
     NSUInteger sec = (frame_count / 60) % 60;
     NSUInteger min = (frame_count / 3600);
 
-    fpsView.text = [NSString stringWithFormat:@"%03d:%02d:%02d %.1ffps %.1fms", (int)min, (int)sec, (int)frame, screenView.frameRateAverage, screenView.renderTimeAverage * 1000.0];
+    fpsView.text = [NSString stringWithFormat:@"%03d:%02d:%02d %.3ffps %.3fms", (int)min, (int)sec, (int)frame, screenView.frameRateAverage, screenView.renderTimeAverage * 1000.0];
 }
 
 - (void)changeUI { @autoreleasepool {
