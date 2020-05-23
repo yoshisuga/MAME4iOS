@@ -130,6 +130,9 @@
         CGSize size;        // original size in pixels of screen.
     }   _mame_screen_info[MAX_MAME_SCREENS];
     int _mame_screen_count;
+    
+    NSTimeInterval _startRenderTime;
+    NSTimeInterval _lastDisplayTime;
 }
 
 + (Class) layerClass
@@ -137,24 +140,10 @@
     return [CGScreenLayer class];
 }
 
-+ (instancetype)sharedInstance {
-    static id g_sharedInstance;
-    if (g_sharedInstance == nil) {
-        NSParameterAssert([NSThread isMainThread]);
-        g_sharedInstance = [[self alloc] init];
-    }
-    return g_sharedInstance;
-}
-
 - (id)initWithFrame:(CGRect)frame {
 	if ((self = [super initWithFrame:frame])!=nil) {
-        
         self.opaque = YES;
         self.clearsContextBeforeDrawing = NO;
-#if TARGET_OS_IOS
-        self.multipleTouchEnabled = NO;
-#endif
-        self.userInteractionEnabled = NO;
 	}
     
 	return self;
@@ -199,6 +188,9 @@
 - (void)layoutSubviews {
     [super layoutSubviews];
     
+    // reset the frame count each time we resize
+    _frameCount = 0;
+    
     // remove any previous overlays
     while (self.subviews.count > 0)
         [self.subviews.firstObject removeFromSuperview];
@@ -229,6 +221,47 @@
     // this logic, while doing our real drawing work inside of -drawLayer:inContext:
 }
 
+// frame and render statistics
+@synthesize frameCount=_frameCount, frameRate=_frameRate, frameRateAverage=_frameRateAverage, renderTime=_renderTime, renderTimeAverage=_renderTimeAverage;
+
+- (void)setNeedsDisplay {
+    [super setNeedsDisplay];
+    
+    if (_startRenderTime == 0)
+        return;
+    
+    NSTimeInterval now = CACurrentMediaTime();
+    
+    // set the frameRate and total frameTime
+    if (_frameCount == 0) {
+        _frameRateAverage = 0;
+        _renderTimeAverage = 0;
+    }
+    
+    if (_lastDisplayTime != 0 && (now - _lastDisplayTime) < 0.250) {
+        NSTimeInterval frameRate = 1.0 / (now - _lastDisplayTime);
+        _frameRate = frameRate;
+        if (_frameRateAverage != 0)
+            _frameRateAverage = ((_frameRateAverage * _frameCount) + frameRate) / (_frameCount+1);
+        else
+            _frameRateAverage = frameRate;
+    }
+    _lastDisplayTime = now;
+
+    // set the renderRate and total renderTime
+    if (_startRenderTime != 0) {
+        NSTimeInterval renderTime = (now - _startRenderTime);
+        _renderTime = renderTime;
+        if (_renderTimeAverage != 0)
+            _renderTimeAverage = ((_renderTimeAverage * _frameCount) + renderTime) / (_frameCount+1);
+        else
+            _renderTimeAverage = renderTime;
+    }
+    _startRenderTime = 0;
+    
+    _frameCount += 1;
+}
+
 // return 1 if you handled the draw, 0 for a software render
 // NOTE this is called on MAME background thread, dont do anything stupid.
 //
@@ -236,6 +269,8 @@
 // so we can put effect overlays on top of only them.
 //
 - (int)drawScreen:(void*)prim_list {
+    
+    _startRenderTime = CACurrentMediaTime();
 
     int screen_count = 0;
     

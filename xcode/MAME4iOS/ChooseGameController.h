@@ -33,7 +33,10 @@
 
 - (void)setGameList:(NSArray*)games;
 + (void)reset;
+
+#if TARGET_OS_IOS
 + (NSUserActivity*)userActivityForGame:(NSDictionary*)game;
+#endif
 
 @property(nonatomic, strong) void (^selectGameCallback)(NSDictionary* info);
 
