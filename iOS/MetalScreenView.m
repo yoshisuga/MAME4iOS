@@ -96,6 +96,73 @@
     // this logic, while doing our real drawing work inside of -drawLayer:inContext:
 }
 
+-(void)drawRect:(CGRect)rect color:(VertexColor)color orientation:(int)orientation {
+
+    Vertex2D vertices[] = {
+        Vertex2D(rect.origin.x,rect.origin.y,0.0,0.0,color),
+        Vertex2D(rect.origin.x + rect.size.width,rect.origin.y,1.0,0.0,color),
+        Vertex2D(rect.origin.x,rect.origin.y + rect.size.height,0.0,1.0,color),
+        Vertex2D(rect.origin.x + rect.size.width,rect.origin.y + rect.size.height,1.0,1.0,color),
+    };
+
+    if (orientation == ORIENTATION_ROT90) {
+        vertices[0].tex = simd_make_float2(0,1);
+        vertices[1].tex = simd_make_float2(0,0);
+        vertices[2].tex = simd_make_float2(1,1);
+        vertices[3].tex = simd_make_float2(1,0);
+    }
+    else if (orientation == ORIENTATION_ROT180) {
+        vertices[0].tex = simd_make_float2(1,1);
+        vertices[1].tex = simd_make_float2(0,1);
+        vertices[2].tex = simd_make_float2(1,0);
+        vertices[3].tex = simd_make_float2(0,0);
+    }
+    else if (orientation == ORIENTATION_ROT270) {
+        vertices[0].tex = simd_make_float2(1,0);
+        vertices[1].tex = simd_make_float2(1,1);
+        vertices[2].tex = simd_make_float2(0,0);
+        vertices[3].tex = simd_make_float2(0,1);
+    }
+    
+    [self drawPrim:MTLPrimitiveTypeTriangleStrip vertices:vertices count:sizeof(vertices)/sizeof(vertices[0])];
+}
+
+static void texture_load(void* data, id<MTLTexture> texture) {
+    myosd_render_primitive* prim = (myosd_render_primitive*)data;
+    NSUInteger width = texture.width;
+    NSUInteger height = texture.height;
+    
+    if (prim->texformat == TEXFORMAT_RGB15) {
+        [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:prim->texture_base bytesPerRow:prim->texture_rowpixels*2];
+    }
+    else if (prim->texformat == TEXFORMAT_RGB32 || prim->texformat == TEXFORMAT_ARGB32) {
+        [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:prim->texture_base bytesPerRow:prim->texture_rowpixels*4];
+    }
+    else if (prim->texformat == TEXFORMAT_PALETTE16 || prim->texformat == TEXFORMAT_PALETTEA16) {
+        uint16_t* src = prim->texture_base;
+        uint32_t* dst = (uint32_t*)myosd_screen;
+        const uint32_t* pal = prim->texture_palette;
+        for (NSUInteger y=0; y<height; y++) {
+            for (NSUInteger x=0; x<width; x++) {
+                *dst++ = pal[*src++];
+            }
+            src += prim->texture_rowpixels - width;
+        }
+        [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:myosd_screen bytesPerRow:width*4];
+    }
+    else if (prim->texformat == TEXFORMAT_YUY16) {
+        uint16_t* src = prim->texture_base;
+        uint32_t* dst = (uint32_t*)myosd_screen;
+        for (NSUInteger y=0; y<height; y++) {
+            for (NSUInteger x=0; x<width; x++) {
+            }
+            src += prim->texture_rowpixels - width;
+        }
+        [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:myosd_screen bytesPerRow:width*4];
+    }
+}
+
+
 // return 1 if you handled the draw, 0 for a software render
 // NOTE this is called on MAME background thread, dont do anything stupid.
 - (int)drawScreen:(void*)prim_list {
@@ -116,23 +183,64 @@
         
         VertexColor color = VertexColor(prim->color_r, prim->color_g, prim->color_b, prim->color_a);
         CGRect rect = CGRectMake(prim->bounds_x0, prim->bounds_y0, prim->bounds_x1 - prim->bounds_x0 + 1, prim->bounds_y1 - prim->bounds_y0 + 1);
+        
+        // set the shader
+        if (prim->texture_base != NULL) {
+            if (prim->blendmode == BLENDMODE_ALPHA)
+                [self setShader:ShaderTextureAlpha];
+            else if (prim->blendmode == BLENDMODE_ADD)
+                [self setShader:ShaderTextureAdd];
+            else if (prim->blendmode == BLENDMODE_RGB_MULTIPLY)
+                [self setShader:ShaderTextureMultiply];
+            else
+                [self setShader:ShaderTexture];
+            
+            MTLPixelFormat format = MTLPixelFormatBGRA8Unorm; /*MTLPixelFormatRGBA8Unorm*/;
+            
+            if (prim->texformat == TEXFORMAT_RGB15)
+                format = MTLPixelFormatBGR5A1Unorm; /*MTLPixelFormatA1BGR5Unorm;*/
+            
+            [self setTexture:0 texture:prim->texture_base hash:prim->texture_seqid
+                       width:prim->texture_width height:prim->texture_height format:format
+                texture_load:texture_load texture_load_data:prim];
+        }
+        else if (prim->type == RENDER_PRIMITIVE_QUAD) {
+            if (prim->blendmode == BLENDMODE_ALPHA && prim->color_a != 1.0)
+                [self setShader:ShaderAlpha];
+            else if (prim->blendmode == BLENDMODE_ADD)
+                [self setShader:ShaderAdd];
+            else if (prim->blendmode == BLENDMODE_RGB_MULTIPLY)
+                [self setShader:ShaderMultiply];
+            else
+                [self setShader:ShaderCopy];
+        }
+        else {
+            [self setShader:ShaderAdd];
+        }
 
         if (prim->type == RENDER_PRIMITIVE_QUAD && prim->screentex && prim->texture_base != NULL) {
             // render of the game screen.
-            [self drawRect:rect color:color];
+            [self drawRect:rect color:color orientation:prim->texorient];
         }
         else if (prim->type == RENDER_PRIMITIVE_QUAD && prim->texture_base != NULL) {
             // render of non-game artwork.
-            CGRect rect = CGRectMake(prim->bounds_x0, prim->bounds_y0, prim->bounds_x1 - prim->bounds_x0 + 1, prim->bounds_y1 - prim->bounds_y0 + 1);
-            [self drawRect:rect color:color];
+            [self drawRect:rect color:color orientation:prim->texorient];
         }
         else if (prim->type == RENDER_PRIMITIVE_QUAD) {
             // solid color quad.
             [self drawRect:rect color:color];
         }
+        else if (prim->type == RENDER_PRIMITIVE_LINE && prim->antialias && prim->width <= 1) {
+            // single pixel aa line.
+            [self drawLine:rect.origin to:CGPointMake(prim->bounds_x1, prim->bounds_y1) color:color];
+        }
         else if (prim->type == RENDER_PRIMITIVE_LINE && prim->width <= 1) {
             // single pixel line.
             [self drawLine:rect.origin to:CGPointMake(prim->bounds_x1, prim->bounds_y1) color:color];
+        }
+        else if (prim->type == RENDER_PRIMITIVE_LINE && prim->antialias) {
+            // wide aa line.
+            [self drawLine:rect.origin to:CGPointMake(prim->bounds_x1, prim->bounds_y1) width:prim->width color:color];
         }
         else if (prim->type == RENDER_PRIMITIVE_LINE) {
             // wide line.
@@ -160,11 +268,12 @@
 // LINES
 //      [ ] width <= 1.0
 //      [ ] width  > 1.0
+//      [ ] antialias <= 1.0
+//      [ ] antialias  > 1.0
 //      [ ] blend mode NONE
 //      [ ] blend mode ALPHA
 //      [ ] blend mode MULTIPLY
 //      [ ] blend mode ADD
-//      [ ] antialias
 //
 // QUADS
 //      [ ] blend mode NONE
@@ -216,9 +325,13 @@
         int wrap = prim->texwrap;
 
         if (prim->type == RENDER_PRIMITIVE_LINE) {
-            if (width <= 1.0)
+            if (width <= 1.0 && !aa)
                 assert(FALSE);
-            if (width  > 1.0)
+            if (width  > 1.0 && !aa)
+                assert(FALSE);
+            if (width <= 1.0 && aa)
+                assert(FALSE);
+            if (width  > 1.0 && aa)
                 assert(FALSE);
             if (blend == BLENDMODE_NONE)
                 assert(FALSE);
@@ -227,8 +340,6 @@
             if (blend == BLENDMODE_RGB_MULTIPLY)
                 assert(FALSE);
             if (blend == BLENDMODE_ADD)
-                assert(FALSE);
-            if (aa)
                 assert(FALSE);
         }
         else if (prim->type == RENDER_PRIMITIVE_QUAD && prim->texture_base == NULL) {

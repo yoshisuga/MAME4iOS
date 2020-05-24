@@ -154,7 +154,6 @@
     desc.tAddressMode = MTLSamplerAddressModeClampToEdge;
     desc.minFilter = MTLSamplerMinMagFilterLinear;
     desc.magFilter = MTLSamplerMinMagFilterLinear;
-    desc.mipFilter = MTLSamplerMipFilterLinear;
     _texture_sampler = [_device newSamplerStateWithDescriptor:desc];
 }
 
@@ -579,7 +578,8 @@
 ///    texture_load - callback used to load image data.
 ///    texture_load_data - opaque data passed to load callback (can be same as texture identifier)
 ///
--(void)setTexture:(NSUInteger)index texture:(void*)identifier hash:(NSUInteger)hash width:(NSUInteger)width height:(NSUInteger)height texture_load:(texture_load_function_t)texture_load texture_load_data:(void*)texture_load_data {
+-(void)setTexture:(NSUInteger)index texture:(void*)identifier hash:(NSUInteger)hash width:(NSUInteger)width height:(NSUInteger)height format:(MTLPixelFormat)format texture_load:(texture_load_function_t)texture_load texture_load_data:(void*)texture_load_data {
+    assert(_device != nil);
     assert(_encoder != nil);
     assert(texture_load != NULL);
     
@@ -599,8 +599,7 @@
     
     // create a new Metal texture (if needed), load the data, and put in cache
     if (texture == nil) {
-        // TODO: use correct texture format?
-        MTLTextureDescriptor* desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatRGBA8Unorm
+        MTLTextureDescriptor* desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:format
                 width:width height:height mipmapped:NO];
         texture = [_device newTextureWithDescriptor:desc];
         assert(texture != nil);
@@ -644,7 +643,8 @@ void texture_load_uiimage(void* data, id<MTLTexture> texture) {
 /// set a UIImage as a texture
 -(void)setTexture:(NSUInteger)index image:(UIImage *)image {
     [self setTexture:index texture:(void*)image hash:42
-               width:image.size.width * image.scale height:image.size.width * image.scale
+               width:(image.size.width * image.scale) height:(image.size.width * image.scale)
+              format:MTLPixelFormatRGBA8Unorm
         texture_load:texture_load_uiimage texture_load_data:(void*)image];
 }
 

@@ -29,6 +29,7 @@ static Shader const ShaderMultiply      = @"default, blend=mul";
 static Shader const ShaderTexture       = @"texture, blend=copy";
 static Shader const ShaderTextureAlpha  = @"texture, blend=alpha";
 static Shader const ShaderTextureAdd    = @"texture, blend=add";
+static Shader const ShaderTextureMultiply = @"texture, blend=mul";
 
 typedef void (*texture_load_function_t)(void*, id<MTLTexture>);
 
@@ -59,7 +60,7 @@ typedef void (*texture_load_function_t)(void*, id<MTLTexture>);
 -(void)setShader:(Shader)shader;
 -(void)setShaderVariables:(NSDictionary<NSString*, NSNumber*>*)variables;
 
--(void)setTexture:(NSUInteger)index texture:(void*)texture hash:(NSUInteger)hash width:(NSUInteger)width height:(NSUInteger)height texture_load:(texture_load_function_t)texture_load texture_load_data:(void*)texture_load_data;
+-(void)setTexture:(NSUInteger)index texture:(void*)texture hash:(NSUInteger)hash width:(NSUInteger)width height:(NSUInteger)height format:(MTLPixelFormat)format texture_load:(texture_load_function_t)texture_load texture_load_data:(void*)texture_load_data;
 -(void)setTexture:(NSUInteger)index image:(UIImage*)image;
 
 @end
