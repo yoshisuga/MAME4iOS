@@ -195,6 +195,7 @@ static void texture_load(void* data, id<MTLTexture> texture) {
             if (prim->screentex) {
                 // render of the game screen.
                 // [self setShader:ShaderTexture];
+                // TODO: when the orientation is 90 or 270 we should flip the texture_height for the shader!!
                 [self setShaderVariables:@{
                     @"target-width" :@(prim->bounds_x1 - prim->bounds_x0 + 1),
                     @"rarget-height":@(prim->bounds_y1 - prim->bounds_y0 + 1),
