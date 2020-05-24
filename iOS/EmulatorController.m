@@ -252,7 +252,15 @@ int iphone_DrawScreen(myosd_render_primitive* prim_list) {
 #ifdef DEBUG
         [CGScreenView drawScreenDebug:prim_list];
 #endif
-        return [sharedInstance->screenView drawScreen:prim_list];
+        BOOL result = [sharedInstance->screenView drawScreen:prim_list];
+        
+        #pragma clang diagnostic push
+        #pragma clang diagnostic ignored "-Wundeclared-selector"
+        if (g_pref_showFPS && result)
+            [sharedInstance performSelectorOnMainThread:@selector(updateFrameRate) withObject:nil waitUntilDone:NO];
+        #pragma clang diagnostic pop
+
+        return result;
     }
 }
 
@@ -1343,7 +1351,7 @@ void mame_state(int load_save, int slot)
     //fpsView.backgroundColor = [self.view.tintColor colorWithAlphaComponent:0.25];
     fpsView.shadowColor = UIColor.blackColor;
     fpsView.shadowOffset = CGSizeMake(1.0,1.0);
-    fpsView.text = @"000:00:00\n0000.0fps 000.0ms";
+    fpsView.text = @"000:00:00⚡️\n0000.0fps 000.0ms";
 
     CGPoint pos = screenView.frame.origin;
 
@@ -1381,7 +1389,9 @@ void mame_state(int load_save, int slot)
     NSUInteger sec = (frame_count / 60) % 60;
     NSUInteger min = (frame_count / 3600);
 
-    fpsView.text = [NSString stringWithFormat:@"%03d:%02d:%02d %.3ffps %.3fms", (int)min, (int)sec, (int)frame, screenView.frameRateAverage, screenView.renderTimeAverage * 1000.0];
+    fpsView.text = [NSString stringWithFormat:@"%03d:%02d:%02d%@ %.3ffps %.3fms", (int)min, (int)sec, (int)frame,
+                    [screenView isKindOfClass:[MetalScreenView class]] ? @"⚡️" : @"",
+                    screenView.frameRateAverage, screenView.renderTimeAverage * 1000.0];
 }
 
 - (void)changeUI { @autoreleasepool {

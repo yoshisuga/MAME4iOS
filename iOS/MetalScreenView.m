@@ -51,33 +51,6 @@
     CALayerContentsFilter _filter;
 }
 
-// frame and render statistics
-@synthesize frameCount=_frameCount, frameRate=_frameRate, frameRateAverage=_frameRateAverage, renderTime=_renderTime, renderTimeAverage=_renderTimeAverage;
-
-// CAMetalLayer avalibility is wrong in the iOS 11.3.4 sdk???
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wpartial-availability"
-+ (Class) layerClass
-{
-    return [CAMetalLayer class];
-}
-#pragma clang diagnostic pop
-+ (BOOL)isSupported {
-    static BOOL isMetalSupported;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        isMetalSupported = MTLCreateSystemDefaultDevice() != nil;
-    });
-    return isMetalSupported;
-}
-- (id)initWithFrame:(CGRect)frame {
-	if ((self = [super initWithFrame:frame])!=nil) {
-        self.opaque = YES;
-        self.clearsContextBeforeDrawing = NO;
-	}
-    
-	return self;
-}
 - (void)setOptions:(NSDictionary *)options {
     _options = options;
     
@@ -131,11 +104,47 @@
     [self drawScreenDebug:prim_list];
 #endif
 
+    if (![self drawBegin]) {
+        NSLog(@"drawBegin *FAIL* dropping frame on the floor.");
+        return 1;
+    }
+    
+    [self setViewRect:CGRectMake(0, 0, myosd_video_width, myosd_video_height)];
+    
     // walk the primitive list and render
     for (myosd_render_primitive* prim = prim_list; prim != NULL; prim = prim->next) {
+        
+        VertexColor color = VertexColor(prim->color_r, prim->color_g, prim->color_b, prim->color_a);
+        CGRect rect = CGRectMake(prim->bounds_x0, prim->bounds_y0, prim->bounds_x1 - prim->bounds_x0 + 1, prim->bounds_y1 - prim->bounds_y0 + 1);
+
         if (prim->type == RENDER_PRIMITIVE_QUAD && prim->screentex && prim->texture_base != NULL) {
+            // render of the game screen.
+            [self drawRect:rect color:color];
+        }
+        else if (prim->type == RENDER_PRIMITIVE_QUAD && prim->texture_base != NULL) {
+            // render of non-game artwork.
+            CGRect rect = CGRectMake(prim->bounds_x0, prim->bounds_y0, prim->bounds_x1 - prim->bounds_x0 + 1, prim->bounds_y1 - prim->bounds_y0 + 1);
+            [self drawRect:rect color:color];
+        }
+        else if (prim->type == RENDER_PRIMITIVE_QUAD) {
+            // solid color quad.
+            [self drawRect:rect color:color];
+        }
+        else if (prim->type == RENDER_PRIMITIVE_LINE && prim->width <= 1) {
+            // single pixel line.
+            [self drawLine:rect.origin to:CGPointMake(prim->bounds_x1, prim->bounds_y1) color:color];
+        }
+        else if (prim->type == RENDER_PRIMITIVE_LINE) {
+            // wide line.
+            [self drawLine:rect.origin to:CGPointMake(prim->bounds_x1, prim->bounds_y1) width:prim->width color:color];
+        }
+        else {
+            NSLog(@"Unknown RENDER_PRIMITIVE!");
+            assert(FALSE);  // bad primitive
         }
     }
+    
+    [self drawEnd];
     
     // always return 1 saying we handled the draw.
     return 1;
@@ -190,7 +199,7 @@
 - (void)drawScreenDebug:(void*)prim_list {
     
     return;
-
+    
     for (myosd_render_primitive* prim = prim_list; prim != NULL; prim = prim->next) {
         
         assert(prim->type == RENDER_PRIMITIVE_LINE || prim->type == RENDER_PRIMITIVE_QUAD);

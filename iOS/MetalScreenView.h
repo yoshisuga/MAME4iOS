@@ -42,10 +42,9 @@
  * under a MAME license, as set out in http://mamedev.org/
  */
 #include "ScreenView.h"
+#include "MetalView.h"
 
-@interface MetalScreenView : UIView <ScreenView>
-
-+(BOOL)isSupported;
+@interface MetalScreenView : MetalView <ScreenView>
 
 @end
 
