@@ -174,6 +174,8 @@
 		EFB7B2182479FBD900AD96A4 /* MetalView.m in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B2132479FBD800AD96A4 /* MetalView.m */; };
 		EFB7B2192479FBD900AD96A4 /* MetalViewShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B2152479FBD900AD96A4 /* MetalViewShaders.metal */; };
 		EFB7B21A2479FBD900AD96A4 /* MetalViewShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B2152479FBD900AD96A4 /* MetalViewShaders.metal */; };
+		EFB7B21C247ACFE300AD96A4 /* MameShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B21B247ACFE300AD96A4 /* MameShaders.metal */; };
+		EFB7B21D247ACFE300AD96A4 /* MameShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B21B247ACFE300AD96A4 /* MameShaders.metal */; };
 		EFD4D14A23C0F6AB00857A76 /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = CE30090316FA47CB000EDCF1 /* Category.ini */; };
 		EFE4B6AB2453D7F80009A6F1 /* InfoDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE4B6AA2453D7F80009A6F1 /* InfoDatabase.m */; };
 		EFE4B6AC2453D7F80009A6F1 /* InfoDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE4B6AA2453D7F80009A6F1 /* InfoDatabase.m */; };
@@ -403,6 +405,7 @@
 		EFB7B2142479FBD800AD96A4 /* MetalViewShaders.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MetalViewShaders.h; sourceTree = "<group>"; };
 		EFB7B2152479FBD900AD96A4 /* MetalViewShaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = MetalViewShaders.metal; sourceTree = "<group>"; };
 		EFB7B2162479FBD900AD96A4 /* MetalView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MetalView.h; sourceTree = "<group>"; };
+		EFB7B21B247ACFE300AD96A4 /* MameShaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = MameShaders.metal; sourceTree = "<group>"; };
 		EFE1D707242C05CE0081EEC6 /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = System/Library/Frameworks/CoreImage.framework; sourceTree = SDKROOT; };
 		EFE1D709242C1D840081EEC6 /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS13.2.sdk/System/Library/Frameworks/CoreImage.framework; sourceTree = DEVELOPER_DIR; };
 		EFE4B6A92453D7F80009A6F1 /* InfoDatabase.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InfoDatabase.h; sourceTree = "<group>"; };
@@ -818,6 +821,7 @@
 				EFB7B2132479FBD800AD96A4 /* MetalView.m */,
 				EFB7B2142479FBD800AD96A4 /* MetalViewShaders.h */,
 				EFB7B2152479FBD900AD96A4 /* MetalViewShaders.metal */,
+				EFB7B21B247ACFE300AD96A4 /* MameShaders.metal */,
 			);
 			name = ScreenView;
 			sourceTree = "<group>";
@@ -1037,6 +1041,7 @@
 				925ABCA81E46DCC500997182 /* ListOptionController.m in Sources */,
 				92A533C621EBDBAD0089FBB9 /* GCDWebServerDataRequest.m in Sources */,
 				92A533A821EBDBAD0089FBB9 /* GCDWebServerRequest.m in Sources */,
+				EFB7B21C247ACFE300AD96A4 /* MameShaders.metal in Sources */,
 				925ABCA91E46DCC500997182 /* OptionsController.m in Sources */,
 				EF8EAA8A244F7F5D00DA02BB /* SteamControllerExtendedGamepad.m in Sources */,
 				EF8EAA8C244F7F5D00DA02BB /* SteamControllerInput.m in Sources */,
@@ -1104,6 +1109,7 @@
 				EF8EAA89244F7F5D00DA02BB /* SteamController.m in Sources */,
 				92A533A621EBDBAD0089FBB9 /* GCDWebServerResponse.m in Sources */,
 				92A533D921EE601D0089FBB9 /* WebServer.m in Sources */,
+				EFB7B21D247ACFE300AD96A4 /* MameShaders.metal in Sources */,
 				92A533D421EBDDF20089FBB9 /* GCDWebUploader.m in Sources */,
 				92ECB91221EAA1B700D1E3D0 /* EmulatorController.m in Sources */,
 				EF8EAA87244F7F5D00DA02BB /* SteamControllerManager.m in Sources */,
@@ -1149,7 +1155,7 @@
 				);
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = "MAME4iOS/MAME4iOS-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../..",
@@ -1181,7 +1187,7 @@
 				GCC_PREFIX_HEADER = "MAME4iOS/MAME4iOS-Prefix.pch";
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = "MAME4iOS/MAME4iOS-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../..",
@@ -1261,7 +1267,7 @@
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 12.1;
+				TVOS_DEPLOYMENT_TARGET = 12.4;
 				VALID_ARCHS = arm64;
 			};
 			name = Debug;
@@ -1301,7 +1307,7 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 2020.8;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = R72X3BF4KE;
+				DEVELOPMENT_TEAM = 8RUN83V8CA;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -1322,12 +1328,12 @@
 				MARKETING_VERSION = 2020.8;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4tvos;
+				PRODUCT_BUNDLE_IDENTIFIER = com.toddla.mame4tvos;
 				PRODUCT_NAME = MAME4tvOS;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 12.1;
+				TVOS_DEPLOYMENT_TARGET = 12.4;
 				VALID_ARCHS = arm64;
 			};
 			name = Release;
@@ -1374,7 +1380,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1418,7 +1424,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
 				SDKROOT = iphoneos;

@@ -10,12 +10,6 @@
 
 using namespace metal;
 
-struct VertexOutput {
-  float4 position [[position]];
-  float2 tex;
-  float4 color;
-};
-
 // default vertex shader(2D)
 // map the input 2D point into NDC, copy texture u,v and color
 vertex VertexOutput

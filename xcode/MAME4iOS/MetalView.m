@@ -37,6 +37,7 @@
     // texture cache
     NSMutableDictionary<NSNumber*, id<MTLTexture>>* _texture_cache;
     NSMutableDictionary<NSNumber*, NSNumber*>* _texture_hash;
+    MTLSamplerDescriptor* _texture_sampler_desc;
     id<MTLSamplerState> _texture_sampler;
 
     // current vertex buffer for current frame.
@@ -148,13 +149,13 @@
     _texture_hash = [[NSMutableDictionary alloc] init];
     
     // create sampler state
-    // TODO: dont hard code this.
     MTLSamplerDescriptor *desc = [[MTLSamplerDescriptor alloc] init];
     desc.sAddressMode = MTLSamplerAddressModeClampToEdge;
     desc.tAddressMode = MTLSamplerAddressModeClampToEdge;
-    desc.minFilter = MTLSamplerMinMagFilterLinear;
-    desc.magFilter = MTLSamplerMinMagFilterLinear;
+    desc.minFilter = _layer.minificationFilter  == kCAFilterLinear ? MTLSamplerMinMagFilterLinear : MTLSamplerMinMagFilterNearest;
+    desc.magFilter = _layer.magnificationFilter == kCAFilterLinear ? MTLSamplerMinMagFilterLinear : MTLSamplerMinMagFilterNearest;
     _texture_sampler = [_device newSamplerStateWithDescriptor:desc];
+    _texture_sampler_desc = desc;
 }
 
 #pragma mark - vertex buffers
@@ -239,6 +240,7 @@
     // setup initial state.
     _shader_current = nil;
     [self setShader:ShaderCopy];
+    [_encoder setFragmentSamplerState:_texture_sampler atIndex:0];
 
     // set default (frame based) shader variables
     [self setShaderVariables:@{
@@ -246,7 +248,7 @@
         @"render-target-width": @(size.width),
         @"render-target-height": @(size.height),
     }];
-
+    
     return TRUE;
 }
 
@@ -360,8 +362,47 @@
     // *NOTE* we dont use MTLPrimitiveTypePoint, because that needs a special vertex shader
     [self drawLine:point to:point width:size color:color];
 }
--(void)drawRect:(CGRect)rect color:(VertexColor)color {
+-(void)drawRect:(CGRect)rect color:(VertexColor)color orientation:(UIImageOrientation)orientation {
+    
+    Vertex2D vertices[] = {
+        Vertex2D(rect.origin.x,rect.origin.y,0.0,0.0,color),
+        Vertex2D(rect.origin.x + rect.size.width,rect.origin.y,1.0,0.0,color),
+        Vertex2D(rect.origin.x,rect.origin.y + rect.size.height,0.0,1.0,color),
+        Vertex2D(rect.origin.x + rect.size.width,rect.origin.y + rect.size.height,1.0,1.0,color),
+    };
+    
+    switch (orientation) {
+        case UIImageOrientationUp:
+            break;
+        case UIImageOrientationDown:
+            vertices[0].tex = simd_make_float2(1,1);
+            vertices[1].tex = simd_make_float2(0,1);
+            vertices[2].tex = simd_make_float2(1,0);
+            vertices[3].tex = simd_make_float2(0,0);
+            break;
+        case UIImageOrientationLeft:
+            vertices[0].tex = simd_make_float2(1,0);
+            vertices[1].tex = simd_make_float2(1,1);
+            vertices[2].tex = simd_make_float2(0,0);
+            vertices[3].tex = simd_make_float2(0,1);
+            break;
+        case UIImageOrientationRight:
+            vertices[0].tex = simd_make_float2(0,1);
+            vertices[1].tex = simd_make_float2(0,0);
+            vertices[2].tex = simd_make_float2(1,1);
+            vertices[3].tex = simd_make_float2(1,0);
+            break;
+        case UIImageOrientationUpMirrored:
+        case UIImageOrientationDownMirrored:
+        case UIImageOrientationLeftMirrored:
+        case UIImageOrientationRightMirrored:
+            assert(FALSE);
+            break;
+    }
 
+    [self drawPrim:MTLPrimitiveTypeTriangleStrip vertices:vertices count:sizeof(vertices)/sizeof(vertices[0])];
+}
+-(void)drawRect:(CGRect)rect color:(VertexColor)color {
     Vertex2D vertices[] = {
         Vertex2D(rect.origin.x,rect.origin.y,0.0,0.0,color),
         Vertex2D(rect.origin.x + rect.size.width,rect.origin.y,1.0,0.0,color),
@@ -591,14 +632,13 @@
     NSUInteger texture_hash = [_texture_hash[texture_id] unsignedLongValue];
     
     // check for a cache hit, and texture data not changed (hash is the same)
-    if (texture != nil && texture_hash == hash) {
+    if (texture != nil && texture_hash == hash && texture.width == width && texture.height == height) {
         [_encoder setFragmentTexture:texture atIndex:index];
-        [_encoder setFragmentSamplerState:_texture_sampler atIndex:0];
         return;
     }
     
     // create a new Metal texture (if needed), load the data, and put in cache
-    if (texture == nil) {
+    if (texture == nil || texture.width != width || texture.height != height) {
         MTLTextureDescriptor* desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:format
                 width:width height:height mipmapped:NO];
         texture = [_device newTextureWithDescriptor:desc];
@@ -610,7 +650,23 @@
     _texture_hash[texture_id] = @(hash);
 
     [_encoder setFragmentTexture:texture atIndex:index];
-    [_encoder setFragmentSamplerState:_texture_sampler atIndex:0];
+}
+
+-(void)setTextureFilter:(MTLSamplerMinMagFilter)filter {
+    if (_texture_sampler_desc.magFilter != filter) {
+        _texture_sampler_desc.minFilter = filter;
+        _texture_sampler_desc.magFilter = filter;
+        _texture_sampler = [_device newSamplerStateWithDescriptor:_texture_sampler_desc];
+        [_encoder setFragmentSamplerState:_texture_sampler atIndex:0];
+    }
+}
+-(void)setTextureAddressMode:(MTLSamplerAddressMode)mode {
+    if (_texture_sampler_desc.sAddressMode != mode) {
+        _texture_sampler_desc.sAddressMode = mode;
+        _texture_sampler_desc.tAddressMode = mode;
+        _texture_sampler = [_device newSamplerStateWithDescriptor:_texture_sampler_desc];
+        [_encoder setFragmentSamplerState:_texture_sampler atIndex:0];
+    }
 }
 
 #pragma mark - UIImage textures

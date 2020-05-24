@@ -51,6 +51,7 @@ typedef void (*texture_load_function_t)(void*, id<MTLTexture>);
 -(void)drawLine:(CGPoint)start to:(CGPoint)end color:(VertexColor)color;
 -(void)drawLine:(CGPoint)start to:(CGPoint)end width:(CGFloat)width color:(VertexColor)color;
 -(void)drawRect:(CGRect)rect color:(VertexColor)color;
+-(void)drawRect:(CGRect)rect color:(VertexColor)color orientation:(UIImageOrientation)orientation;
 -(void)drawTriangle:(CGPoint*)points color:(VertexColor)color;
 -(void)drawEnd;
 
@@ -60,7 +61,10 @@ typedef void (*texture_load_function_t)(void*, id<MTLTexture>);
 -(void)setShader:(Shader)shader;
 -(void)setShaderVariables:(NSDictionary<NSString*, NSNumber*>*)variables;
 
+-(void)setTextureFilter:(MTLSamplerMinMagFilter)filter;
+-(void)setTextureAddressMode:(MTLSamplerAddressMode)mode;
 -(void)setTexture:(NSUInteger)index texture:(void*)texture hash:(NSUInteger)hash width:(NSUInteger)width height:(NSUInteger)height format:(MTLPixelFormat)format texture_load:(texture_load_function_t)texture_load texture_load_data:(void*)texture_load_data;
+
 -(void)setTexture:(NSUInteger)index image:(UIImage*)image;
 
 @end
