@@ -48,7 +48,8 @@
 
 @implementation MetalScreenView {
     NSDictionary* _options;
-    CALayerContentsFilter _filter;
+    MTLSamplerMinMagFilter _filter;
+    Shader _screen_shader;
 }
 
 - (void)setOptions:(NSDictionary *)options {
@@ -63,16 +64,21 @@
         [(id)self.layer setColorspace:colorSpace];
         CGColorSpaceRelease(colorSpace);
     }
-
-    // enable filtering
-    NSString* filter = _options[kScreenViewFilter];
     
-    if ([filter isEqualToString:kScreenViewFilterTrilinear])
-        _filter = kCAFilterTrilinear;
-    else if ([filter isEqualToString:kScreenViewFilterLinear])
-        _filter = kCAFilterLinear;
+    // enable filtering
+    NSString* filter_string = _options[kScreenViewFilter];
+    
+    if ([filter_string isEqualToString:kScreenViewFilterLinear])
+        _filter = MTLSamplerMinMagFilterLinear;
     else
-        _filter = kCAFilterNearest;
+        _filter = MTLSamplerMinMagFilterNearest;
+    
+    // get the shader to use when drawing the SCREEN
+    
+    _screen_shader = _options[kScreenViewEffect] ?: kScreenViewEffectNone;
+    
+    if ([_options[kScreenViewEffect] isEqualToString:kScreenViewEffectNone])
+        _screen_shader = ShaderTexture;
     
     [self setNeedsLayout];
 }
@@ -101,27 +107,31 @@ static void texture_load(void* data, id<MTLTexture> texture) {
     NSUInteger width = texture.width;
     NSUInteger height = texture.height;
     
+    static char* texture_format_name[] = {"UNDEFINED", "PAL16", "PALA16", "555", "RGB", "ARGB", "YUV16"};
+    texture.label = [NSString stringWithFormat:@"MAME TEXTURE %08lX:%d %dx%d %s", (NSUInteger)prim->texture_base, prim->texture_seqid, prim->texture_width, prim->texture_height, texture_format_name[prim->texformat]];
+    //NSLog(texture.label);
+
     switch (prim->texformat) {
         case TEXFORMAT_RGB15:
         {
             assert(FALSE);
-            if (prim->texture_palette != NULL) {
+            if (prim->texture_palette == NULL) {
                 assert(FALSE);
+                [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:prim->texture_base bytesPerRow:prim->texture_rowpixels*2];
             }
             else {
                 assert(FALSE);
-                [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:prim->texture_base bytesPerRow:prim->texture_rowpixels*2];
             }
             break;
         }
         case TEXFORMAT_RGB32:
         case TEXFORMAT_ARGB32:
         {
-            if (prim->texture_palette != NULL) {
-                assert(FALSE);
+            if (prim->texture_palette == NULL) {
+                [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:prim->texture_base bytesPerRow:prim->texture_rowpixels*4];
             }
             else {
-                [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:prim->texture_base bytesPerRow:prim->texture_rowpixels*4];
+                assert(FALSE);
             }
             break;
         }
@@ -142,16 +152,8 @@ static void texture_load(void* data, id<MTLTexture> texture) {
         }
         case TEXFORMAT_YUY16:
         {
+            // this texture format is only used for AVI files and LaserDisc player!
             assert(FALSE);
-            uint16_t* src = prim->texture_base;
-            uint32_t* dst = (uint32_t*)myosd_screen;
-            for (NSUInteger y=0; y<height; y++) {
-                for (NSUInteger x=0; x<width; x++) {
-                    *dst = 0xDEADBEEF;
-                }
-                src += prim->texture_rowpixels - width;
-            }
-            [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:myosd_screen bytesPerRow:width*4];
             break;
         }
         default:
@@ -176,6 +178,7 @@ static void texture_load(void* data, id<MTLTexture> texture) {
     }
     
     [self setViewRect:CGRectMake(0, 0, myosd_video_width, myosd_video_height)];
+    [self setTextureFilter:_filter];
     
     // walk the primitive list and render
     for (myosd_render_primitive* prim = prim_list; prim != NULL; prim = prim->next) {
@@ -198,12 +201,11 @@ static void texture_load(void* data, id<MTLTexture> texture) {
                 // TODO: when the orientation is 90 or 270 we should flip the texture_height for the shader!!
                 [self setShaderVariables:@{
                     @"target-width" :@(prim->bounds_x1 - prim->bounds_x0 + 1),
-                    @"rarget-height":@(prim->bounds_y1 - prim->bounds_y0 + 1),
-                    @"screen-width" :@(prim->texture_width),
-                    @"screen-height":@(prim->texture_height),
+                    @"target-height":@(prim->bounds_y1 - prim->bounds_y0 + 1),
+                    @"screen-width" :@((prim->texorient & ORIENTATION_SWAP_XY) ? prim->texture_height : prim->texture_width),
+                    @"screen-height":@((prim->texorient & ORIENTATION_SWAP_XY) ? prim->texture_width : prim->texture_height),
                 }];
-                [self setShader:@"mame_screen_crt, frame-count, screen-width, screen-height, target-width, target-height"];
-                //[self setShader:@"mame_screen_crt, frame-count, screen-width, screen-height, render-target-width, render-target-height"];
+                [self setShader:_screen_shader];
             }
             else {
                 // render of non-game artwork.

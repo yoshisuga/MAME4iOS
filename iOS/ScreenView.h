@@ -54,7 +54,6 @@
 
 #define kScreenViewFilterNearest    @"Nearest"
 #define kScreenViewFilterLinear     @"Linear"
-#define kScreenViewFilterTrilinear  @"Trilinear"
 
 #define kScreenViewEffectNone       @"None"
 

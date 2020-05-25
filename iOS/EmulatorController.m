@@ -101,6 +101,7 @@ int buttonMask[NUM_BUTTONS];    // map a button index to a button MYOSD_* mask
 int touchDirectionalCyclesAfterMoved = 0;
 
 int g_isIpad = 0;
+int g_isMetalSupported = 0;
 
 int g_emulation_paused = 0;
 int g_emulation_initiated=0;
@@ -753,6 +754,8 @@ void mame_state(int load_save, int slot)
     
     //printf("load options\n");
     
+    g_isMetalSupported = [MetalScreenView isSupported];
+    
     Options *op = [[Options alloc] init];
     
     g_pref_keep_aspect_ratio_land = [op keepAspectRatioLand];
@@ -1389,7 +1392,7 @@ void mame_state(int load_save, int slot)
     NSUInteger sec = (frame_count / 60) % 60;
     NSUInteger min = (frame_count / 3600);
 
-    fpsView.text = [NSString stringWithFormat:@"%03d:%02d:%02d%@ %.3ffps %.3fms", (int)min, (int)sec, (int)frame,
+    fpsView.text = [NSString stringWithFormat:@"%03d:%02d:%02d%@ %.2ffps %.2fms", (int)min, (int)sec, (int)frame,
                     [screenView isKindOfClass:[MetalScreenView class]] ? @"⚡️" : @"",
                     screenView.frameRateAverage, screenView.renderTimeAverage * 1000.0];
 }
@@ -2062,6 +2065,10 @@ UIColor* colorWithHexString(NSString* string) {
     #ifdef DEBUG
         case 'D':
             [CGScreenView drawScreenDebugDump];
+            break;
+        case 'M':
+            g_pref_metal = !g_pref_metal;
+            [self changeUI];
             break;
     #endif
     }

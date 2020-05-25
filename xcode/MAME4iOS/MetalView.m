@@ -31,7 +31,7 @@
     // shader cache
     NSMutableDictionary<Shader, id<MTLRenderPipelineState>>* _shader_state;
     NSMutableDictionary<Shader, NSArray*>* _shader_params;
-    NSMutableDictionary<Shader, NSNumber*>* _shader_variables;
+    NSMutableDictionary<NSString*, NSNumber*>* _shader_variables;
     Shader _shader_current;
     
     // texture cache
@@ -241,6 +241,7 @@
     _shader_current = nil;
     [self setShader:ShaderCopy];
     [_encoder setFragmentSamplerState:_texture_sampler atIndex:0];
+    [self setTextureFilter:_layer.minificationFilter == kCAFilterLinear ? MTLSamplerMinMagFilterLinear : MTLSamplerMinMagFilterNearest];
 
     // set default (frame based) shader variables
     [self setShaderVariables:@{
@@ -254,16 +255,21 @@
 
 -(void)drawEnd {
     assert(_drawable != nil);
-    [_encoder endEncoding];
-    [_buffer presentDrawable:_drawable];
     NSArray* buffers = _vertex_buffer_list;
     __weak typeof(self) weakSelf = self;
     [_buffer addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
         [weakSelf returnBuffers:buffers];
+#if TARGET_OS_SIMULATOR
+        [weakSelf updateFPS:CACurrentMediaTime()];
+#endif
     }];
+#if !TARGET_OS_SIMULATOR
     [_drawable addPresentedHandler:^(id<MTLDrawable> drawable) {
         [weakSelf updateFPS:drawable.presentedTime];
     }];
+#endif
+    [_encoder endEncoding];
+    [_buffer presentDrawable:_drawable];
     [_buffer commit];
     _drawable = nil;
     _buffer = nil;
@@ -511,6 +517,11 @@
             for (int i=0; i<count; i++) {
                 NSString* val = shader_params[i];
                 float_params[i] = [((id)_shader_variables[val] ?: val) floatValue];
+//#ifdef DEBUG
+                // if the param is set to zero, check for a missing variable and debug spew about it.
+                if (float_params[i] == 0.0 && [val characterAtIndex:0] != '0' && _shader_variables[val] == nil)
+                    NSLog(@"MISSING SHADER VARIABLE '%@' for shader \"%@\"", val, state.label);
+//#endif
             }
             [_encoder setFragmentBytes:float_params length:count * sizeof(float) atIndex:0];
         }
@@ -540,8 +551,10 @@
     if (frag == nil)
         frag = [_library newFunctionWithName:[NSString stringWithFormat:@"fragment_%@", shader_name]];
     
-    if (frag == nil)
+    if (frag == nil) {
+        NSLog(@"SHADER NOT FOUND: %@, using default", shader_name);
         frag = [_library newFunctionWithName:@"fragment_default"];
+    }
     
     desc.fragmentFunction = frag;
 
@@ -554,6 +567,9 @@
     
     // default blend=copy Rrgb = Srgb
     desc.colorAttachments[0].blendingEnabled = YES;
+    desc.colorAttachments[0].sourceRGBBlendFactor = MTLBlendFactorOne;
+    desc.colorAttachments[0].rgbBlendOperation = MTLBlendOperationAdd;
+    desc.colorAttachments[0].destinationRGBBlendFactor = MTLBlendFactorZero;
     desc.colorAttachments[0].writeMask = MTLColorWriteMaskRed | MTLColorWriteMaskGreen | MTLColorWriteMaskBlue;
     
     // blend=alpha Rrgb = Srgb * Sa + Drgb * (1-Sa)
@@ -568,9 +584,9 @@
         desc.colorAttachments[0].rgbBlendOperation = MTLBlendOperationAdd;
         desc.colorAttachments[0].destinationRGBBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
     }
-    // blend=add Rrgb = Srgb + Drgb
+    // blend=add Rrgb = Srgb * Sa + Drgb
     else if ([blend_name isEqualToString:@"blend=add"]) {
-        desc.colorAttachments[0].sourceRGBBlendFactor = MTLBlendFactorOne;
+        desc.colorAttachments[0].sourceRGBBlendFactor = MTLBlendFactorSourceAlpha;
         desc.colorAttachments[0].rgbBlendOperation = MTLBlendOperationAdd;
         desc.colorAttachments[0].destinationRGBBlendFactor = MTLBlendFactorOne;
     }
@@ -584,6 +600,9 @@
     else {
         desc.colorAttachments[0].blendingEnabled = NO;
     }
+    
+    // set a label for this shader, just use the full string.
+    desc.label = shader;
     
     // done parsing, create a state object and save it in the cache.
     state = [_device newRenderPipelineStateWithDescriptor:desc error:nil];
@@ -599,6 +618,11 @@
 }
 
 - (void)setShaderVariables:(NSDictionary *)variables {
+#ifdef DEBUG
+    // someday we might let you set points, vectors and matricies in a single value, but not today, just floats
+    for (NSString* key in variables.allKeys)
+        assert([key isKindOfClass:[NSString class]] && [variables[key] isKindOfClass:[NSNumber class]]);
+#endif
     [_shader_variables addEntriesFromDictionary:variables];
     
     // if the currently set shader has params, re-set the render state
@@ -642,6 +666,7 @@
         MTLTextureDescriptor* desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:format
                 width:width height:height mipmapped:NO];
         texture = [_device newTextureWithDescriptor:desc];
+        texture.label = [NSString stringWithFormat:@"%08lX:%ld %ldx%ld", (NSUInteger)identifier, hash, width, height];
         assert(texture != nil);
     }
     

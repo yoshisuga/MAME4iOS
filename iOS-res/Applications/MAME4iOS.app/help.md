@@ -69,7 +69,6 @@ The emulator controls are the following ones:
 **FIlter** the method used to expand the emulator screen.
 - **Nearest** Dont appy any filtering, aka `FatBits`
 - **Linear**  Apply a smoothing image filter over the emulator screen.
-- **Trilinear**  Better than **Linear** but some people cant tell the difference.
 
 **Border** a border that will surround the emulator screen. 
 - **Light** - a bright thick border

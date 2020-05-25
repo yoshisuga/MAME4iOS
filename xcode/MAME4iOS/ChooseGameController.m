@@ -1960,7 +1960,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     _image.image = nil;
     _image.highlightedImage = nil;
     _image.contentMode = UIViewContentModeScaleAspectFit;
-    _image.layer.minificationFilter = kCAFilterTrilinear;
+    _image.layer.minificationFilter = kCAFilterLinear;
     ((ImageView*)_image).aspect = 0.0;
     [_image setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
     [_image setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];

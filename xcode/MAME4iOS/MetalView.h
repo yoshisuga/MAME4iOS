@@ -22,6 +22,7 @@ typedef struct {
 
 // pre-defined shaders and blend modes.
 typedef NSString * Shader NS_STRING_ENUM;
+static Shader const ShaderNone          = @"default, blend=copy";
 static Shader const ShaderCopy          = @"default, blend=copy";
 static Shader const ShaderAlpha         = @"default, blend=alpha";
 static Shader const ShaderAdd           = @"default, blend=add";
@@ -58,7 +59,30 @@ typedef void (*texture_load_function_t)(void*, id<MTLTexture>);
 /// set the drawing corrdinates, by default it is set to the view bounds (in points)
 -(void)setViewRect:(CGRect)rect;
 
+/// a shader is a string that selects the fragment function and blend mode to use.
+/// it has the following format:
+///
+///     <function name>, <blend mode>, <parameters>
+///
+///     <function name> - name of the fragment function name in the shader library.
+///
+///     <blend mode>    -  blend mode used to write into render target.
+///                 blend=copy   - D.rgb = S.rgb
+///                 blend=alpha  - D.rgb = S.rgb * S.a + D.rgb * (1-S.a)
+///                 blend=add     - D.rgb = S.rgb * Sa + D.rgb
+///                 blend=mul     - D.rgb = S.rgb * D.rgb
+///
+///     <parameters> - list of floats to pass to shader as uniforms, any named variables in this list will be expanded, see setShaderVariables
+///
 -(void)setShader:(Shader)shader;
+
+/// sets the named custom variables that shaders can access.
+///
+/// by default the following variables are availible:
+///     frame-count                  - current frame number, this will reset to zero from time to time (like on resize)
+///     render-target-width       - size of the render target (in pixels)
+///     render-target-height
+//
 -(void)setShaderVariables:(NSDictionary<NSString*, NSNumber*>*)variables;
 
 -(void)setTextureFilter:(MTLSamplerMinMagFilter)filter;

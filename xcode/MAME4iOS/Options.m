@@ -59,11 +59,13 @@
 + (NSArray*)arrayFilter {
     return @[@"Nearest",
              @"Linear",
-             @"Trilinear"
     ];
 }
-// TODO: make the effect list depend on useMetal
-+ (NSArray*)arrayEffect {
+
+// CoreGraphics effect string is of the form:
+//        <Friendly Name> : <overlay image> [,<overlay image> ...]
+//
++ (NSArray*)arrayCoreGraphicsEffects {
     return @[@"None",
              @"CRT : effect-crt",
              @"Scanline : effect-scanline",
@@ -74,6 +76,36 @@
 #endif
     ];
 }
+
+// Metal effect string is of the form:
+//        <Friendly Name> : <shader description>
+//
+// NOTE: see MetalView.h for what a <shader description> is.
+//
+// NOTE arrayCoreGraphicsEffects and arrayMetalEffects should use the same friendly name
+// for similar effects, so if the user turns off/on metal the choosen effect wont get reset to default.
+//
++ (NSArray*)arrayMetalEffects {
+    return @[@"None",
+             
+             @"CRT : texture, blend=copy",
+             @"Scanline : texture, blend=copy",
+             @"CRT + Scanline : texture, blend=copy",
+             
+             @"Wombat 1: mame_screen_test, frame-count, 2.0, screen-height",
+             @"Wombat 2: mame_screen_test, frame-count, 4.0, screen-height",
+             @"Wombat 3: mame_screen_test, frame-count, 8.0, screen-height",
+    ];
+}
+
++ (NSArray*)arrayEffect {
+    Options* op = [[Options alloc] init];
+    if (g_isMetalSupported && op.useMetal)
+        return [self arrayMetalEffects];
+    else
+        return [self arrayCoreGraphicsEffects];
+}
+
 //
 // color space data, we define the colorSpaces here, in one place, so it stays in-sync with the UI.
 //
