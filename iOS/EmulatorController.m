@@ -1920,7 +1920,8 @@ UIColor* colorWithHexString(NSString* string) {
     NSDictionary* options = @{
         kScreenViewFilter: g_device_is_landscape ? g_pref_filter_land : g_pref_filter_port,
         kScreenViewEffect: g_device_is_landscape ? g_pref_effect_land : g_pref_effect_port,
-        kScreenViewColorSpace: g_pref_colorspace
+        kScreenViewColorSpace: g_pref_colorspace,
+        @"vsync" : @(myosd_vsync == 6000 && myosd_throttle == 1)
     };
     
     // select a CoreGraphics or Metal ScreenView
@@ -2062,7 +2063,7 @@ UIColor* colorWithHexString(NSString* string) {
             g_pref_showFPS = !g_pref_showFPS;
             [self changeUI];
             break;
-    #ifdef DEBUG
+#ifdef DEBUG
         case 'D':
             [CGScreenView drawScreenDebugDump];
             break;
@@ -2070,7 +2071,19 @@ UIColor* colorWithHexString(NSString* string) {
             g_pref_metal = !g_pref_metal;
             [self changeUI];
             break;
-    #endif
+        case 'T':
+            myosd_throttle = !myosd_throttle;
+            [self changeUI];
+            break;
+        case 'V':
+            myosd_vsync = myosd_vsync == -1 ? 6000 : -1;
+            [self changeUI];
+            break;
+        case 'A':
+            myosd_force_pxaspect = !myosd_force_pxaspect;
+            [self changeUI];
+            break;
+#endif
     }
 }
 

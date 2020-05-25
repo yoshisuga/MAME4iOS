@@ -437,7 +437,7 @@
         _frameRate = 0;
     }
 
-    if (_lastDrawTime != 0 &&  (drawTime - _lastDrawTime) >= (1.0 / 240.0)) {
+    if (_lastDrawTime != 0 &&  (drawTime - _lastDrawTime) >= (1.0 / 1000.0)) {
         _frameRate  = 1.0 / (drawTime - _lastDrawTime);
         if (_frameRateAverage != 0)
             _frameRateAverage = (_frameRateAverage * _frameCount + _frameRate) / (_frameCount+1);
