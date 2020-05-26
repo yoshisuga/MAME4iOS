@@ -322,53 +322,47 @@
 }
 -(void)drawLine:(CGPoint)start to:(CGPoint)end width:(CGFloat)width color:(VertexColor)color {
     
+    // make the width a little wider so we can blend down the alpha on the edges.
+    // width = width * 1.2;
+
     simd_float2 p0 = simd_make_float2(start.x, start.y);
     simd_float2 p1 = simd_make_float2(end.x, end.y);
+
+    simd_float4 color0 = color;
+    simd_float4 color1 = simd_make_float4(color.xyz, color.w * 0.25);
     
+    // vector from p0 -> p1
+    simd_float2 v;
+
     // if p0 == p1, draw a little diamond
     //   2 +
     //    /|\
     // 1 + p + 4
     //    \|/
     //     + 3
-    if (p0.x == p1.x && p0.y == p1.y) {
-        simd_float2 v = simd_make_float2(width * 0.5, 0);
+    //
+    //  else draw the line as a quad with pointy ends
+    //
+    //  ^    2 +----------------------------------+ 4
+    //  |     /|                                  |\
+    //  w  1 + p0------------------------------->p1 + 6
+    //  |     \|                                  |/
+    //  v    3 +----------------------------------+ 5
 
-        Vertex2D vertices[] = {
-            Vertex2D(p0.x - v.x,p0.y - v.y,0.0,0.0,color),
-            Vertex2D(p0.x + v.y,p0.y - v.x,0.0,0.0,color),
-            Vertex2D(p0.x - v.y,p0.y + v.x,0.0,0.0,color),
-            Vertex2D(p0.x + v.x,p0.y + v.y,0.0,0.0,color),
-        };
-        [self drawPrim:MTLPrimitiveTypeTriangleStrip vertices:vertices count:sizeof(vertices)/sizeof(vertices[0])];
-    }
-    else {
-        //  draw the line as a quad with pointy ends
-        //  and set the alpha on the edges
-        //
-        //  ^    2 +----------------------------------+ 4
-        //  |     /|                                  |\
-        //  w  1 + p0------------------------------->p1 + 6
-        //  |     \|                                  |/
-        //  v    3 +----------------------------------+ 5
-        width = width * 1.25;
-        
-        // unit vector from p0 -> p1
-        simd_float2 v = simd_normalize(p1 - p0) * width * 0.5;
-  
-        simd_float4 color0 = color;
-        simd_float4 color1 = simd_make_float4(color.xyz, color.w * 0.25);
-        
-        Vertex2D vertices[] = {
-            Vertex2D(p0.x - v.y,p0.y + v.x,0.0,0.0,color1),  // 2
-            Vertex2D(p1.x - v.y,p1.y + v.x,0.0,0.0,color1),  // 4
-            Vertex2D(p0.x - v.x,p0.y - v.y,0.0,0.0,color0),  // 1
-            Vertex2D(p1.x + v.x,p1.y + v.y,0.0,0.0,color0),  // 6
-            Vertex2D(p0.x + v.y,p0.y - v.x,0.0,0.0,color1),  // 3
-            Vertex2D(p1.x + v.y,p1.y - v.x,0.0,0.0,color1),  // 5
-        };
-        [self drawPrim:MTLPrimitiveTypeTriangleStrip vertices:vertices count:sizeof(vertices)/sizeof(vertices[0])];
-    }
+    if (p0.x == p1.x && p0.y == p1.y)
+        v = simd_make_float2(width * 0.5, 0);
+    else
+        v = simd_normalize(p1 - p0) * width * 0.5;
+
+    Vertex2D vertices[] = {
+        Vertex2D(p0.x - v.y,p0.y + v.x,0.0,0.0,color1),  // 2
+        Vertex2D(p1.x - v.y,p1.y + v.x,0.0,0.0,color1),  // 4
+        Vertex2D(p0.x - v.x,p0.y - v.y,0.0,0.0,color0),  // 1
+        Vertex2D(p1.x + v.x,p1.y + v.y,0.0,0.0,color0),  // 6
+        Vertex2D(p0.x + v.y,p0.y - v.x,0.0,0.0,color1),  // 3
+        Vertex2D(p1.x + v.y,p1.y - v.x,0.0,0.0,color1),  // 5
+    };
+    [self drawPrim:MTLPrimitiveTypeTriangleStrip vertices:vertices count:sizeof(vertices)/sizeof(vertices[0])];
 }
 -(void)drawPoint:(CGPoint)point size:(CGFloat)size color:(VertexColor)color {
     // *NOTE* we dont use MTLPrimitiveTypePoint, because that needs a special vertex shader
