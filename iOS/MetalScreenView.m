@@ -194,7 +194,9 @@ static void texture_load(void* data, id<MTLTexture> texture) {
     for (myosd_render_primitive* prim = prim_list; prim != NULL; prim = prim->next) {
         
         VertexColor color = VertexColor(prim->color_r, prim->color_g, prim->color_b, prim->color_a);
-        CGRect rect = CGRectMake(prim->bounds_x0, prim->bounds_y0, prim->bounds_x1 - prim->bounds_x0, prim->bounds_y1 - prim->bounds_y0);
+        CGRect rect = CGRectMake(floor(prim->bounds_x0 + 0.5), floor(prim->bounds_y0 + 0.5),
+                                 floor(prim->bounds_x1 + 0.5) - floor(prim->bounds_x0 + 0.5),
+                                 floor(prim->bounds_y1 + 0.5) - floor(prim->bounds_y0 + 0.5));
         
         if (prim->type == RENDER_PRIMITIVE_QUAD && prim->texture_base != NULL) {
             
@@ -251,20 +253,12 @@ static void texture_load(void* data, id<MTLTexture> texture) {
         else if (prim->type == RENDER_PRIMITIVE_LINE && prim->width <= 1) {
             // single pixel line.
             [self setShader:shader_map[prim->blendmode]];
-            // TODO: make antialias lines work!
-            if (prim->antialias)
-                [self drawLine:rect.origin to:CGPointMake(prim->bounds_x1, prim->bounds_y1) color:color];
-            else
-                [self drawLine:rect.origin to:CGPointMake(prim->bounds_x1, prim->bounds_y1) color:color];
+            [self drawLine:CGPointMake(prim->bounds_x0, prim->bounds_y0) to:CGPointMake(prim->bounds_x1, prim->bounds_y1) color:color];
         }
         else if (prim->type == RENDER_PRIMITIVE_LINE) {
             // wide line.
             [self setShader:shader_map[prim->blendmode]];
-            // TODO: make antialias lines work!
-            if (prim->antialias)
-                [self drawLine:rect.origin to:CGPointMake(prim->bounds_x1, prim->bounds_y1) width:prim->width color:color];
-            else
-                [self drawLine:rect.origin to:CGPointMake(prim->bounds_x1, prim->bounds_y1) width:prim->width color:color];
+            [self drawLine:CGPointMake(prim->bounds_x0, prim->bounds_y0) to:CGPointMake(prim->bounds_x1, prim->bounds_y1) width:prim->width color:color];
         }
         else {
             NSLog(@"Unknown RENDER_PRIMITIVE!");
@@ -313,7 +307,7 @@ static void texture_load(void* data, id<MTLTexture> texture) {
 // QUADS
 //      [X] blend mode NONE             MAME menu
 //      [X] blend mode ALPHA            MAME menu
-//      [ ] blend mode MULTIPLY
+//      [X] blend mode MULTIPLY         bzone
 //      [X] blend mode ADD              dkong artwork
 //
 // TEXTURED QUADS
@@ -391,7 +385,7 @@ static void texture_load(void* data, id<MTLTexture> texture) {
             if (blend == BLENDMODE_ALPHA)
                 assert(TRUE);
             if (blend == BLENDMODE_RGB_MULTIPLY)
-                assert(FALSE);
+                assert(TRUE);
             if (blend == BLENDMODE_ADD)
                 assert(TRUE);
             
