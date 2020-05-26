@@ -114,9 +114,7 @@ static void texture_load(void* data, id<MTLTexture> texture) {
     switch (prim->texformat) {
         case TEXFORMAT_RGB15:
         {
-            assert(FALSE);
-            if (prim->texture_palette == NULL) {
-                assert(FALSE);
+            if (prim->texture_palette == NULL && texture.pixelFormat == MTLPixelFormatBGR5A1Unorm) {
                 [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:prim->texture_base bytesPerRow:prim->texture_rowpixels*2];
             }
             else {
@@ -131,7 +129,20 @@ static void texture_load(void* data, id<MTLTexture> texture) {
                 [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:prim->texture_base bytesPerRow:prim->texture_rowpixels*4];
             }
             else {
-                assert(FALSE);
+                uint32_t* src = prim->texture_base;
+                uint32_t* dst = (uint32_t*)myosd_screen;
+                const uint32_t* pal = prim->texture_palette;
+                for (NSUInteger y=0; y<height; y++) {
+                    for (NSUInteger x=0; x<width; x++) {
+                        uint32_t rgba = *src++;
+                        *dst++ = (pal[(rgba >>  0) & 0xFF] <<  0) |
+                                 (pal[(rgba >>  8) & 0xFF] <<  8) |
+                                 (pal[(rgba >> 16) & 0xFF] << 16) |
+                                 (pal[(rgba >> 24) & 0xFF] << 24) ;
+                    }
+                    src += prim->texture_rowpixels - width;
+                }
+                [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:myosd_screen bytesPerRow:width*4];
             }
             break;
         }
@@ -165,7 +176,7 @@ static void texture_load(void* data, id<MTLTexture> texture) {
 // return 1 if you handled the draw, 0 for a software render
 // NOTE this is called on MAME background thread, dont do anything stupid.
 - (int)drawScreen:(void*)prim_list {
-    static Shader shader_map[] = {ShaderCopy, ShaderAlpha, ShaderMultiply, ShaderAdd};
+    static Shader shader_map[] = {ShaderNone, ShaderAlpha, ShaderMultiply, ShaderAdd};
     static Shader shader_tex_map[]  = {ShaderTexture, ShaderTextureAlpha, ShaderTextureMultiply, ShaderTextureAdd};
 
 #ifdef DEBUG
@@ -178,13 +189,12 @@ static void texture_load(void* data, id<MTLTexture> texture) {
     }
     
     [self setViewRect:CGRectMake(0, 0, myosd_video_width, myosd_video_height)];
-    [self setTextureFilter:_filter];
     
     // walk the primitive list and render
     for (myosd_render_primitive* prim = prim_list; prim != NULL; prim = prim->next) {
         
         VertexColor color = VertexColor(prim->color_r, prim->color_g, prim->color_b, prim->color_a);
-        CGRect rect = CGRectMake(prim->bounds_x0, prim->bounds_y0, prim->bounds_x1 - prim->bounds_x0 + 1, prim->bounds_y1 - prim->bounds_y0 + 1);
+        CGRect rect = CGRectMake(prim->bounds_x0, prim->bounds_y0, prim->bounds_x1 - prim->bounds_x0, prim->bounds_y1 - prim->bounds_y0);
         
         if (prim->type == RENDER_PRIMITIVE_QUAD && prim->texture_base != NULL) {
             
@@ -196,19 +206,19 @@ static void texture_load(void* data, id<MTLTexture> texture) {
             
             // set the shader
             if (prim->screentex) {
-                // render of the game screen.
-                // [self setShader:ShaderTexture];
-                // TODO: when the orientation is 90 or 270 we should flip the texture_height for the shader!!
+                // render of the game screen, use a custom effect shader
                 [self setShaderVariables:@{
-                    @"target-width" :@(prim->bounds_x1 - prim->bounds_x0 + 1),
-                    @"target-height":@(prim->bounds_y1 - prim->bounds_y0 + 1),
+                    @"target-width" :@(prim->bounds_x1 - prim->bounds_x0),
+                    @"target-height":@(prim->bounds_y1 - prim->bounds_y0),
                     @"screen-width" :@((prim->texorient & ORIENTATION_SWAP_XY) ? prim->texture_height : prim->texture_width),
                     @"screen-height":@((prim->texorient & ORIENTATION_SWAP_XY) ? prim->texture_width : prim->texture_height),
                 }];
+                [self setTextureFilter:_filter];
                 [self setShader:_screen_shader];
             }
             else {
-                // render of non-game artwork.
+                // render of artwork (or mame text). use normal shader with no filtering
+                [self setTextureFilter:MTLSamplerMinMagFilterNearest];
                 [self setShader:shader_tex_map[prim->blendmode]];
             }
             
@@ -229,8 +239,13 @@ static void texture_load(void* data, id<MTLTexture> texture) {
             [self drawRect:rect color:color orientation:orientation];
         }
         else if (prim->type == RENDER_PRIMITIVE_QUAD) {
-            // solid color quad.
-            [self setShader:shader_map[prim->blendmode]];
+            // solid color quad. only ALPHA or NONE blend mode.
+
+            if (prim->blendmode == BLENDMODE_ALPHA && prim->color_a != 1.0)
+                [self setShader:ShaderAlpha];
+            else
+                [self setShader:ShaderNone];
+
             [self drawRect:rect color:color];
         }
         else if (prim->type == RENDER_PRIMITIVE_LINE && prim->width <= 1) {
@@ -256,6 +271,21 @@ static void texture_load(void* data, id<MTLTexture> texture) {
             assert(FALSE);  // bad primitive
         }
     }
+    
+#if 0
+    // walk the primitive list and draw wire frame
+    for (myosd_render_primitive* prim = prim_list; prim != NULL; prim = prim->next) {
+        
+        VertexColor color = VertexColor(0, 1, 0, 1);
+        [self setShader:ShaderNone];
+
+        [self drawLine:CGPointMake(prim->bounds_x0, prim->bounds_y0) to:CGPointMake(prim->bounds_x1, prim->bounds_y0) color:color];
+        [self drawLine:CGPointMake(prim->bounds_x1, prim->bounds_y0) to:CGPointMake(prim->bounds_x1, prim->bounds_y1) color:color];
+        [self drawLine:CGPointMake(prim->bounds_x1, prim->bounds_y1) to:CGPointMake(prim->bounds_x0, prim->bounds_y1) color:color];
+        [self drawLine:CGPointMake(prim->bounds_x0, prim->bounds_y1) to:CGPointMake(prim->bounds_x0, prim->bounds_y0) color:color];
+        [self drawLine:CGPointMake(prim->bounds_x0, prim->bounds_y0) to:CGPointMake(prim->bounds_x1, prim->bounds_y1) color:color];
+    }
+#endif
     
     [self drawEnd];
     
@@ -293,16 +323,16 @@ static void texture_load(void* data, id<MTLTexture> texture) {
 //      [ ] blend mode ADD
 //      [X] rotate 0                    MAME menu (text)
 //      [X] rotate 90                   pacman
-//      [ ] rotate 180
-//      [ ] rotate 270
+//      [X] rotate 180                  mario, cocktail
+//      [X] rotate 270                  mario, cocktail.
 //      [X] texture WRAP                MAME menu
 //      [X] texture CLAMP               MAME menu
 //
 // TEXTURE FORMATS
 //      [X] PALETTE16                   pacman
 //      [ ] PALETTEA16
-//      [ ] RGB15
-//      [ ] RGB32
+//      [X] RGB15                       megaplay
+//      [X] RGB32                       neogeo
 //      [X] ARGB32                      MAME menu (text)
 //      [ ] YUY16
 //      [ ] RGB15 with PALETTE
@@ -370,9 +400,9 @@ static void texture_load(void* data, id<MTLTexture> texture) {
             if (orient == ORIENTATION_ROT90)
                 assert(TRUE);
             if (orient == ORIENTATION_ROT180)
-                assert(FALSE);
+                assert(TRUE);
             if (orient == ORIENTATION_ROT270)
-                assert(FALSE);
+                assert(TRUE);
             
             if (wrap == 0)
                 assert(TRUE);
@@ -380,9 +410,9 @@ static void texture_load(void* data, id<MTLTexture> texture) {
                 assert(TRUE);
 
             if (fmt == TEXFORMAT_RGB15 && prim->texture_palette == NULL)
-                assert(FALSE);
+                assert(TRUE);
             if (fmt == TEXFORMAT_RGB32 && prim->texture_palette == NULL)
-                assert(FALSE);
+                assert(TRUE);
             if (fmt == TEXFORMAT_ARGB32 && prim->texture_palette == NULL)
                 assert(TRUE);
             if (fmt == TEXFORMAT_YUY16 && prim->texture_palette == NULL)

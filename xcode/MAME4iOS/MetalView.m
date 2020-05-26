@@ -53,6 +53,8 @@
     
     NSTimeInterval _lastDrawTime;
     NSTimeInterval _startRenderTime;
+    
+    matrix_float4x4 _matrix_view;
 }
 
 // CAMetalLayer avalibility is wrong in the iOS 11.3.4 sdk???
@@ -234,7 +236,7 @@
     _vertex_buffer_base = 0;
     [_encoder setVertexBuffer:_vertex_buffer offset:0 atIndex:0];
 
-    // vertex uniforms
+    // set default view matrix to match the view bounds, in points.
     [self setViewRect:_layer.bounds];
 
     // setup initial state.
@@ -319,7 +321,7 @@
     [self drawPrim:MTLPrimitiveTypeLine vertices:vertices count:sizeof(vertices)/sizeof(vertices[0])];
 }
 -(void)drawLine:(CGPoint)start to:(CGPoint)end width:(CGFloat)width color:(VertexColor)color {
-
+    
     simd_float2 p0 = simd_make_float2(start.x, start.y);
     simd_float2 p1 = simd_make_float2(end.x, end.y);
     
@@ -354,8 +356,8 @@
         
         Vertex2D vertices[] = {
             Vertex2D(p0.x - v.x,p0.y - v.y,0.0,0.0,color),
-            Vertex2D(p0.x + v.y,p0.y - v.x,0.0,0.0,color),
             Vertex2D(p0.x - v.y,p0.y + v.x,0.0,0.0,color),
+            Vertex2D(p0.x + v.y,p0.y - v.x,0.0,0.0,color),
             
             Vertex2D(p1.x - v.y,p1.y + v.x,0.0,0.0,color),
             Vertex2D(p1.x + v.y,p1.y - v.x,0.0,0.0,color),
@@ -464,15 +466,16 @@
     CGFloat sx = +2/w;
     CGFloat sy = -2/h;
     
-    // set the Uniforms
-    VertexUniforms vertex_uni;
-    vertex_uni.matrix = (matrix_float4x4) {{
+    _matrix_view = (matrix_float4x4) {{
         { sx, 0,  0,  0 },
         { 0,  sy, 0,  0 },
         { 0,  0,  1,  0 },
         { tx, ty, 0,  1 }
     }};
 
+    // set the Uniforms
+    VertexUniforms vertex_uni;
+    vertex_uni.matrix = _matrix_view;
     [_encoder setVertexBytes:&vertex_uni length:sizeof(vertex_uni) atIndex:1];
 }
 

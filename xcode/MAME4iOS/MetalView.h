@@ -59,6 +59,8 @@ typedef void (*texture_load_function_t)(void*, id<MTLTexture>);
 /// set the drawing corrdinates, by default it is set to the view bounds (in points)
 -(void)setViewRect:(CGRect)rect;
 
+// TODO: add a setModelMatrix and setViewMatrix?
+
 /// a shader is a string that selects the fragment function and blend mode to use.
 /// it has the following format:
 ///
@@ -89,6 +91,7 @@ typedef void (*texture_load_function_t)(void*, id<MTLTexture>);
 -(void)setTextureAddressMode:(MTLSamplerAddressMode)mode;
 -(void)setTexture:(NSUInteger)index texture:(void*)texture hash:(NSUInteger)hash width:(NSUInteger)width height:(NSUInteger)height format:(MTLPixelFormat)format texture_load:(texture_load_function_t)texture_load texture_load_data:(void*)texture_load_data;
 
+/// set a UIImage as a texture
 -(void)setTexture:(NSUInteger)index image:(UIImage*)image;
 
 @end
