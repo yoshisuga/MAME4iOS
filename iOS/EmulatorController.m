@@ -1031,11 +1031,11 @@ void mame_state(int load_save, int slot)
 }
 
 
-#if TARGET_OS_IOS   // NOT needed on tvOS it handles it with the focus engine
 - (void)handle_MENU
 {
     unsigned long pad_status = myosd_pad_status | myosd_joy_status[0] | myosd_joy_status[1] | myosd_joy_status[2] | myosd_joy_status[3];
     
+#if TARGET_OS_IOS   // NOT needed on tvOS it handles it with the focus engine
     UIViewController* viewController = [self presentedViewController];
     
     if ([viewController isKindOfClass:[UINavigationController class]])
@@ -1082,6 +1082,7 @@ void mame_state(int load_save, int slot)
     {
         [self runMenu];
     }
+#endif
     
     // exit MAME MENU with B (but only if we are not mapping a input)
     if (myosd_in_menu == 1 && (pad_status & MYOSD_B))
@@ -1097,7 +1098,6 @@ void mame_state(int load_save, int slot)
         [self runMenu];
     }
 }
-#endif
 
 -(void)viewDidLoad{
 
@@ -2001,9 +2001,9 @@ UIColor* colorWithHexString(NSString* string) {
     }
 #endif
 
-#if TARGET_OS_IOS
     // call handle_MENU first so it can use buttonState to see key up.
     [self handle_MENU];
+#if TARGET_OS_IOS
     [self handle_DPAD];
 #endif
 }
