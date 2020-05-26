@@ -55,6 +55,7 @@
     NSTimeInterval _startRenderTime;
     
     matrix_float4x4 _matrix_view;
+    matrix_float4x4 _matrix_model;
 }
 
 // CAMetalLayer avalibility is wrong in the iOS 11.3.4 sdk???
@@ -150,6 +151,10 @@
     _texture_cache = [[NSMutableDictionary alloc] init];
     _texture_hash = [[NSMutableDictionary alloc] init];
     
+    //matrix init
+    _matrix_view = matrix_identity_float4x4;
+    _matrix_model = matrix_identity_float4x4;
+    
     // create sampler state
     MTLSamplerDescriptor *desc = [[MTLSamplerDescriptor alloc] init];
     desc.sAddressMode = MTLSamplerAddressModeClampToEdge;
@@ -237,6 +242,7 @@
     [_encoder setVertexBuffer:_vertex_buffer offset:0 atIndex:0];
 
     // set default view matrix to match the view bounds, in points.
+    _matrix_model = matrix_identity_float4x4;
     [self setViewRect:_layer.bounds];
 
     // setup initial state.
@@ -451,6 +457,22 @@
 
 #pragma mark - transforms
 
+-(void)setVertexUniforms {
+    VertexUniforms vertex_uni;
+    vertex_uni.matrix = matrix_multiply(_matrix_view, _matrix_model);
+    [_encoder setVertexBytes:&vertex_uni length:sizeof(vertex_uni) atIndex:1];
+}
+
+-(void)setViewMatrix:(matrix_float4x4)matrix {
+    _matrix_view = matrix;
+    [self setVertexUniforms];
+}
+
+-(void)setModelMatrix:(matrix_float4x4)matrix {
+    _matrix_model = matrix;
+    [self setVertexUniforms];
+}
+
 -(void)setViewRect:(CGRect)rect {
 
     CGFloat x = rect.origin.x;
@@ -464,17 +486,12 @@
     CGFloat sx = +2/w;
     CGFloat sy = -2/h;
     
-    _matrix_view = (matrix_float4x4) {{
+    [self setViewMatrix:(matrix_float4x4) {{
         { sx, 0,  0,  0 },
         { 0,  sy, 0,  0 },
         { 0,  0,  1,  0 },
         { tx, ty, 0,  1 }
-    }};
-
-    // set the Uniforms
-    VertexUniforms vertex_uni;
-    vertex_uni.matrix = _matrix_view;
-    [_encoder setVertexBytes:&vertex_uni length:sizeof(vertex_uni) atIndex:1];
+    }}];
 }
 
 #pragma mark - shaders

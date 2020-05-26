@@ -59,6 +59,10 @@ typedef void (*texture_load_function_t)(void*, id<MTLTexture>);
 /// set the drawing corrdinates, by default it is set to the view bounds (in points)
 -(void)setViewRect:(CGRect)rect;
 
+/// transforms
+-(void)setViewMatrix:(matrix_float4x4)matrix;
+-(void)setModelMatrix:(matrix_float4x4)matrix;
+
 // TODO: add a setModelMatrix and setViewMatrix?
 
 /// a shader is a string that selects the fragment function and blend mode to use.
