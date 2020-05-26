@@ -250,10 +250,12 @@ int iphone_DrawScreen(myosd_render_primitive* prim_list) {
         return 0;
 
     @autoreleasepool {
+        UIView<ScreenView>* screenView = sharedInstance->screenView;
+
 #ifdef DEBUG
         [CGScreenView drawScreenDebug:prim_list];
 #endif
-        BOOL result = [sharedInstance->screenView drawScreen:prim_list];
+        BOOL result = [screenView drawScreen:prim_list];
         
         #pragma clang diagnostic push
         #pragma clang diagnostic ignored "-Wundeclared-selector"
