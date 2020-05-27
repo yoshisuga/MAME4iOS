@@ -452,13 +452,13 @@ static BOOL g_render_dump = 0;
         }
         else if (prim->type == RENDER_PRIMITIVE_QUAD && prim->texture_base == NULL) {
             NSLog(@"    QUAD [%.0f,%.0f,%.0f,%.0f] (%0.2f,%0.2f,%0.2f,%0.2f) %s%s",
-                  prim->bounds_x0, prim->bounds_y0, prim->bounds_x1 - prim->bounds_x0 + 1, prim->bounds_y1 - prim->bounds_y0,
+                  prim->bounds_x0, prim->bounds_y0, prim->bounds_x1 - prim->bounds_x0, prim->bounds_y1 - prim->bounds_y0,
                   prim->color_r, prim->color_g, prim->color_b, prim->color_a,
                   blend_mode_name[blend], aa ? " AA" : "");
         }
         else if (prim->type == RENDER_PRIMITIVE_QUAD) {
             NSLog(@"    TEXQ [%.0f,%.0f,%.0f,%.0f] [(%.0f,%.0f),(%.0f,%.0f),(%.0f,%.0f),(%.0f,%.0f)] %s %dx%d (%lX:%d) %s%s%s%s%s%s%s%s",
-                  prim->bounds_x0, prim->bounds_y0, prim->bounds_x1 - prim->bounds_x0 + 1, prim->bounds_y1 - prim->bounds_y0,
+                  prim->bounds_x0, prim->bounds_y0, prim->bounds_x1 - prim->bounds_x0, prim->bounds_y1 - prim->bounds_y0,
                   prim->texcoords[0].u, prim->texcoords[0].v,
                   prim->texcoords[1].u, prim->texcoords[1].v,
                   prim->texcoords[2].u, prim->texcoords[2].v,

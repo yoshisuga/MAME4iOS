@@ -105,11 +105,24 @@ static void texture_load(void* data, id<MTLTexture> texture) {
     switch (prim->texformat) {
         case TEXFORMAT_RGB15:
         {
-            if (prim->texture_palette == NULL && texture.pixelFormat == MTLPixelFormatBGR5A1Unorm) {
+            if (prim->texture_palette == NULL) {
                 [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:prim->texture_base bytesPerRow:prim->texture_rowpixels*2];
             }
             else {
-                assert(FALSE);
+                uint16_t* src = prim->texture_base;
+                uint16_t* dst = (uint16_t*)myosd_screen;
+                const uint32_t* pal = prim->texture_palette;
+                for (NSUInteger y=0; y<height; y++) {
+                    for (NSUInteger x=0; x<width; x++) {
+                        uint16_t u16 = *src++;
+                        *dst++ = ((pal[(u16 >>  0) & 0x1F] >> 3) <<  0) |
+                                 ((pal[(u16 >>  5) & 0x1F] >> 3) <<  5) |
+                                 ((pal[(u16 >> 10) & 0x1F] >> 3) << 10) |
+                                 0x8000;
+                    }
+                    src += prim->texture_rowpixels - width;
+                }
+                [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:myosd_screen bytesPerRow:width*2];
             }
             break;
         }
@@ -185,10 +198,11 @@ static void texture_load(void* data, id<MTLTexture> texture) {
     for (myosd_render_primitive* prim = prim_list; prim != NULL; prim = prim->next) {
         
         VertexColor color = VertexColor(prim->color_r, prim->color_g, prim->color_b, prim->color_a);
+        
         CGRect rect = CGRectMake(floor(prim->bounds_x0 + 0.5), floor(prim->bounds_y0 + 0.5),
                                  floor(prim->bounds_x1 + 0.5) - floor(prim->bounds_x0 + 0.5),
                                  floor(prim->bounds_y1 + 0.5) - floor(prim->bounds_y0 + 0.5));
-        
+
         if (prim->type == RENDER_PRIMITIVE_QUAD && prim->texture_base != NULL) {
             
             // set the texture
@@ -331,8 +345,8 @@ static void texture_load(void* data, id<MTLTexture> texture) {
 //      [X] RGB32                       neogeo
 //      [X] ARGB32                      MAME menu (text)
 //      [ ] YUY16
-//      [ ] RGB15 with PALETTE
-//      [ ] RGB32 with PALETTE
+//      [X] RGB15 with PALETTE          megaplay
+//      [X] RGB32 with PALETTE          neogeo
 //      [ ] ARGB32 with PALETTE
 //      [ ] YUY16 with PALETTE
 //
@@ -419,9 +433,9 @@ static void texture_load(void* data, id<MTLTexture> texture) {
             if (fmt == TEXFORMAT_PALETTEA16 && prim->texture_palette != NULL)
                 assert(FALSE);
             if (fmt == TEXFORMAT_RGB15 && prim->texture_palette != NULL)
-                assert(FALSE);
+                assert(TRUE);
             if (fmt == TEXFORMAT_RGB32 && prim->texture_palette != NULL)
-                assert(FALSE);
+                assert(TRUE);
             if (fmt == TEXFORMAT_ARGB32 && prim->texture_palette != NULL)
                 assert(FALSE);
             if (fmt == TEXFORMAT_YUY16 && prim->texture_palette != NULL)
