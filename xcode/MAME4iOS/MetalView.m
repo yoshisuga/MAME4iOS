@@ -510,7 +510,7 @@
 ///     <blend mode>    -  blend mode used to write into render target.
 ///                 blend=copy   - D.rgb = S.rgb
 ///                 blend=alpha  - D.rgb = S.rgb * S.a + D.rgb * (1-S.a)
-///                 blend=add     - D.rgb = S.rgb + D.rgb
+///                 blend=add     - D.rgb = S.rgb * S.a + D.rgb
 ///                 blend=mul     - D.rgb = S.rgb * D.rgb
 ///
 - (void)setShader:(Shader)shader {

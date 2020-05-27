@@ -77,7 +77,7 @@ typedef void (*texture_load_function_t)(void*, id<MTLTexture>);
 ///     <blend mode>    -  blend mode used to write into render target.
 ///                 blend=copy   - D.rgb = S.rgb
 ///                 blend=alpha  - D.rgb = S.rgb * S.a + D.rgb * (1-S.a)
-///                 blend=add     - D.rgb = S.rgb * Sa + D.rgb
+///                 blend=add     - D.rgb = S.rgb * S.a + D.rgb
 ///                 blend=mul     - D.rgb = S.rgb * D.rgb
 ///
 ///     <parameters> - list of floats to pass to shader as uniforms, any named variables in this list will be expanded, see setShaderVariables

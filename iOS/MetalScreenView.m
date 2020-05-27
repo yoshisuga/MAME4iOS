@@ -108,7 +108,7 @@ static void texture_load(void* data, id<MTLTexture> texture) {
     NSUInteger height = texture.height;
     
     static char* texture_format_name[] = {"UNDEFINED", "PAL16", "PALA16", "555", "RGB", "ARGB", "YUV16"};
-    texture.label = [NSString stringWithFormat:@"MAME TEXTURE %08lX:%d %dx%d %s", (NSUInteger)prim->texture_base, prim->texture_seqid, prim->texture_width, prim->texture_height, texture_format_name[prim->texformat]];
+    texture.label = [NSString stringWithFormat:@"MAME %08lX:%d %dx%d %s", (NSUInteger)prim->texture_base, prim->texture_seqid, prim->texture_width, prim->texture_height, texture_format_name[prim->texformat]];
     //NSLog(texture.label);
 
     switch (prim->texformat) {
