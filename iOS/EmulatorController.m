@@ -1356,7 +1356,7 @@ void mame_state(int load_save, int slot)
     //fpsView.backgroundColor = [self.view.tintColor colorWithAlphaComponent:0.25];
     fpsView.shadowColor = UIColor.blackColor;
     fpsView.shadowOffset = CGSizeMake(1.0,1.0);
-    fpsView.text = @"000:00:00⚡️\n0000.0fps 000.0ms";
+    fpsView.text = @"000:00:00⚡️\n0000.00fps 000.0ms";
 
     CGPoint pos = screenView.frame.origin;
 
@@ -1394,7 +1394,7 @@ void mame_state(int load_save, int slot)
     NSUInteger sec = (frame_count / 60) % 60;
     NSUInteger min = (frame_count / 3600);
 
-    fpsView.text = [NSString stringWithFormat:@"%03d:%02d:%02d%@ %.2ffps %.2fms", (int)min, (int)sec, (int)frame,
+    fpsView.text = [NSString stringWithFormat:@"%03d:%02d:%02d%@ %.2ffps %.1fms", (int)min, (int)sec, (int)frame,
                     [screenView isKindOfClass:[MetalScreenView class]] ? @"⚡️" : @"",
                     screenView.frameRateAverage, screenView.renderTimeAverage * 1000.0];
 }
