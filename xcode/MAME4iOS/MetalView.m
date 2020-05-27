@@ -111,14 +111,6 @@
     [super didMoveToSuperview];
 }
 
-/// a background safe version to get bounds of UIView
-- (CGRect)bounds {
-    if (_layer)
-        return _layer.bounds;
-    else
-        return [super bounds];
-}
-
 - (CGSize) boundsSize {
     return _layer.bounds.size;
 }
@@ -239,8 +231,11 @@
 
     MTLRenderPassDescriptor* desc = [[MTLRenderPassDescriptor alloc] init];
     desc.colorAttachments[0].texture = _drawable.texture;
-    desc.colorAttachments[0].loadAction = MTLLoadActionClear;
-    desc.colorAttachments[0].clearColor = MTLClearColorMake(0.0, 0.0, 0.0, 1.0);
+    if (_layer.backgroundColor != nil) {
+        desc.colorAttachments[0].loadAction = MTLLoadActionClear;
+        const CGFloat* c = CGColorGetComponents(_layer.backgroundColor);
+        desc.colorAttachments[0].clearColor = MTLClearColorMake(c[0], c[1], c[2], c[3]);
+    }
     _encoder = [_buffer renderCommandEncoderWithDescriptor:desc];
     
     // get a fresh vertex buffer

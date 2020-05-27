@@ -1346,7 +1346,6 @@ void mame_state(int load_save, int slot)
         return;
     
     // create a frame rate/info view and put it in the upper left corner of the screenView
-    // TODO: place this view smarter, for now overlay it exactly over screenView
     
     fpsView = [[UILabel alloc] init];
     fpsView.userInteractionEnabled = NO;

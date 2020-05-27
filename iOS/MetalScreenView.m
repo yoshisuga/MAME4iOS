@@ -92,15 +92,6 @@
 - (void)didMoveToSuperview {
     [super didMoveToSuperview];
 }
-- (void)drawRect:(CGRect)rect
-{
-    //printf("Draw rect\n");
-    // UIView uses the existence of -drawRect: to determine if should allow its CALayer
-    // to be invalidated, which would then lead to the layer creating a backing store and
-    // -drawLayer:inContext: being called.
-    // By implementing an empty -drawRect: method, we allow UIKit to continue to implement
-    // this logic, while doing our real drawing work inside of -drawLayer:inContext:
-}
 
 static void texture_load(void* data, id<MTLTexture> texture) {
     myosd_render_primitive* prim = (myosd_render_primitive*)data;
