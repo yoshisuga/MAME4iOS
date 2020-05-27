@@ -218,8 +218,12 @@ we suppoprt a small subset of the keys supported by the command line MAME.
      RETURN          | MAME UI SELECT (aka A)
      DELETE          | MAME UI BACK (aka B)
      BQUOTE          | MAME4iOS MENU
-     CMD+ENTER       | TOGGLE FULLSCREEN
-     CMD+I                  | TOGGLE INTEGER SCALE
+     ⌘+ENTER       | TOGGLE FULLSCREEN
+     ⌘+I                  | TOGGLE INTEGER SCALE
+     ⌘+F                  | TOGGLE FPS DISPLAY
+     ⌘+T                  | TOGGLE THROTTLE
+     ⌘+V                  | TOGGLE VSYNC
+     ⌘+A                  | TOGGLE `Force Pixel Aspect`
      
 ## Game Controlers
 

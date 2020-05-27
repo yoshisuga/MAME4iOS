@@ -24,6 +24,9 @@
     - Binlinear
 * Artwork
     - Artwork is shown at hires by default.
+* support for rendering with Metal
+    - Enable `use Metal` in the Options Page.
+
       
 # Version 2020.8
 * Better INFO/HISTORY.DAT display in landscape (and tvOS)
