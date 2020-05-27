@@ -115,9 +115,9 @@ static void texture_load(void* data, id<MTLTexture> texture) {
                 for (NSUInteger y=0; y<height; y++) {
                     for (NSUInteger x=0; x<width; x++) {
                         uint16_t u16 = *src++;
-                        *dst++ = ((pal[(u16 >>  0) & 0x1F] >> 3) <<  0) |
-                                 ((pal[(u16 >>  5) & 0x1F] >> 3) <<  5) |
-                                 ((pal[(u16 >> 10) & 0x1F] >> 3) << 10) |
+                        *dst++ = ((pal[(u16 >>  0) & 0x1F]       ) >> 3) |
+                                 ((pal[(u16 >>  5) & 0x1F] & 0xF8) << 2) |
+                                 ((pal[(u16 >> 10) & 0x1F] & 0xF8) << 7) |
                                  0x8000;
                     }
                     src += prim->texture_rowpixels - width;
