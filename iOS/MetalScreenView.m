@@ -323,14 +323,14 @@ static void texture_load(void* data, id<MTLTexture> texture) {
 // QUADS
 //      [X] blend mode NONE             MAME menu
 //      [X] blend mode ALPHA            MAME menu
-//      [X] blend mode MULTIPLY         bzone
-//      [X] blend mode ADD              dkong artwork
+//      [X] blend mode MULTIPLY         N/A
+//      [X] blend mode ADD              N/A
 //
 // TEXTURED QUADS
 //      [X] blend mode NONE
 //      [X] blend mode ALPHA            MAME menu (text)
-//      [ ] blend mode MULTIPLY
-//      [ ] blend mode ADD
+//      [X] blend mode MULTIPLY         bzone
+//      [X] blend mode ADD              dkong artwork
 //      [X] rotate 0                    MAME menu (text)
 //      [X] rotate 90                   pacman
 //      [X] rotate 180                  mario, cocktail
@@ -391,9 +391,9 @@ static void texture_load(void* data, id<MTLTexture> texture) {
             if (blend == BLENDMODE_ALPHA)
                 assert(TRUE);
             if (blend == BLENDMODE_RGB_MULTIPLY)
-                assert(FALSE);
+                assert(TRUE);
             if (blend == BLENDMODE_ADD)
-                assert(FALSE);
+                assert(TRUE);
         }
         else if (prim->type == RENDER_PRIMITIVE_QUAD) {
             if (blend == BLENDMODE_NONE)
