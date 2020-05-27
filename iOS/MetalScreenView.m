@@ -221,10 +221,10 @@ static void texture_load(void* data, id<MTLTexture> texture) {
                 CGFloat dst_height = rect.size.height * self.drawableSize.height / myosd_video_height;
                 
                 [self setShaderVariables:@{
-                    @"screen-dst-width" :@(dst_width),
-                    @"screen-dst-height":@(dst_height),
-                    @"screen-src-width" :@(src_width),
-                    @"screen-src-height":@(src_height),
+                    @"mame-screen-dst-width" :@(dst_width),
+                    @"mame-screen-dst-height":@(dst_height),
+                    @"mame-screen-src-width" :@(src_width),
+                    @"mame-screen-src-height":@(src_height),
                 }];
                 [self setTextureFilter:_filter];
                 [self setShader:_screen_shader];

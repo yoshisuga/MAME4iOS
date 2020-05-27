@@ -2065,14 +2065,6 @@ UIColor* colorWithHexString(NSString* string) {
             g_pref_showFPS = !g_pref_showFPS;
             [self changeUI];
             break;
-#ifdef DEBUG
-        case 'D':
-            [CGScreenView drawScreenDebugDump];
-            break;
-        case 'M':
-            g_pref_metal = !g_pref_metal;
-            [self changeUI];
-            break;
         case 'T':
             myosd_throttle = !myosd_throttle;
             [self changeUI];
@@ -2083,6 +2075,20 @@ UIColor* colorWithHexString(NSString* string) {
             break;
         case 'A':
             myosd_force_pxaspect = !myosd_force_pxaspect;
+            [self changeUI];
+            break;
+#ifdef DEBUG
+        case 'D':
+            [CGScreenView drawScreenDebugDump];
+            break;
+        case 'P':
+            // **NOTE** this pauses the MAME render thread, it is not the same as the PAUSE key in MAME.
+            g_emulation_paused = !g_emulation_paused;
+            change_pause(g_emulation_paused);
+            break;
+        case 'M':
+            // **NOTE* this is dont not correctly switch if a custom shader/effect is set.
+            g_pref_metal = !g_pref_metal;
             [self changeUI];
             break;
 #endif
