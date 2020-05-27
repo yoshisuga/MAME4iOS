@@ -2076,19 +2076,24 @@ UIColor* colorWithHexString(NSString* string) {
             myosd_force_pxaspect = !myosd_force_pxaspect;
             [self changeUI];
             break;
-#ifdef DEBUG
-        case 'D':
-            [CGScreenView drawScreenDebugDump];
+        case 'M':
+        {
+            // toggle Metal, but in order to load the right shader we need to change the global Options.
+            Options* op = [[Options alloc] init];
+            op.useMetal = !op.useMetal;
+            [op saveOptions];
+            [self updateOptions];
+            [self changeUI];
             break;
+        }
+#ifdef DEBUG
         case 'P':
             // **NOTE** this pauses the MAME render thread, it is not the same as the PAUSE key in MAME.
             g_emulation_paused = !g_emulation_paused;
             change_pause(g_emulation_paused);
             break;
-        case 'M':
-            // **NOTE* this is dont not correctly switch if a custom shader/effect is set.
-            g_pref_metal = !g_pref_metal;
-            [self changeUI];
+        case 'D':
+            [CGScreenView drawScreenDebugDump];
             break;
 #endif
     }

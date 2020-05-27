@@ -216,8 +216,8 @@ static void texture_load(void* data, id<MTLTexture> texture) {
                 // render of the game screen, use a custom effect shader
                 // set the following shader variables so the shader knows the pixel size of a scanline etc....
                 //
-                //      screen-dst-width, screen-dst-height - the size (in pixels) of the output quad
-                //      screen-src-width, screen-src-height - the size (in pixels) of the input texture
+                //      mame-screen-dst-width, mame-screen-dst-height - the size (in pixels) of the output quad
+                //      mame-screen-src-width, mame-screen-src-height - the size (in pixels) of the input texture
                 //
                 CGFloat src_width  = (prim->texorient & ORIENTATION_SWAP_XY) ? prim->texture_height : prim->texture_width;
                 CGFloat src_height = (prim->texorient & ORIENTATION_SWAP_XY) ? prim->texture_width : prim->texture_height;
