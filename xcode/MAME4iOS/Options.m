@@ -92,9 +92,9 @@
              @"Scanline : texture, blend=copy",
              @"CRT + Scanline : texture, blend=copy",
              
-             @"Wombat 1: mame_screen_test, frame-count, 2.0, screen-height",
-             @"Wombat 2: mame_screen_test, frame-count, 4.0, screen-height",
-             @"Wombat 3: mame_screen_test, frame-count, 8.0, screen-height",
+             @"Wombat 1: mame_screen_test, frame-count, 2.0, mame-screen-dst-height",
+             @"Wombat 2: mame_screen_test, frame-count, 4.0, mame-screen-dst-height",
+             @"Wombat 3: mame_screen_test, frame-count, 8.0, mame-screen-dst-height",
     ];
 }
 
