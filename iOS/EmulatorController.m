@@ -3551,7 +3551,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         if (isSiriRemote) {
 
             MFIController.microGamepad.allowsRotation = YES;
-            MFIController.microGamepad.reportsAbsoluteDpadValues = YES;
+            MFIController.microGamepad.reportsAbsoluteDpadValues = NO;
 
             MFIController.microGamepad.valueChangedHandler = ^(GCMicroGamepad* gamepad, GCControllerElement* element) {
 #if TARGET_OS_TV

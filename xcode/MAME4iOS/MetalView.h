@@ -39,6 +39,10 @@ typedef void (*texture_load_function_t)(void*, id<MTLTexture>);
 @property(class, readonly) BOOL isSupported;
 @property(readwrite) CGColorSpaceRef colorSpace;
 
+// thread safe versions of bounds and drawable size.
+@property(readonly) CGSize drawableSize;
+@property(readonly) CGSize boundsSize;
+
 // frame and render statistics
 @property(readwrite) NSUInteger frameCount;         // total frames drawn.
 @property(readonly)  CGFloat    frameRate;          // time it took last frame to draw (1/sec)
@@ -62,8 +66,6 @@ typedef void (*texture_load_function_t)(void*, id<MTLTexture>);
 /// transforms
 -(void)setViewMatrix:(matrix_float4x4)matrix;
 -(void)setModelMatrix:(matrix_float4x4)matrix;
-
-// TODO: add a setModelMatrix and setViewMatrix?
 
 /// a shader is a string that selects the fragment function and blend mode to use.
 /// it has the following format:

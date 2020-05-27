@@ -209,11 +209,22 @@ static void texture_load(void* data, id<MTLTexture> texture) {
             // set the shader
             if (prim->screentex) {
                 // render of the game screen, use a custom effect shader
+                // set the following shader variables so the shader knows the pixel size of a scanline etc....
+                //
+                //      screen-dst-width, screen-dst-height - the size (in pixels) of the output quad
+                //      screen-src-width, screen-src-height - the size (in pixels) of the input texture
+                //
+                CGFloat src_width  = (prim->texorient & ORIENTATION_SWAP_XY) ? prim->texture_height : prim->texture_width;
+                CGFloat src_height = (prim->texorient & ORIENTATION_SWAP_XY) ? prim->texture_width : prim->texture_height;
+
+                CGFloat dst_width  = rect.size.width  * self.drawableSize.width  / myosd_video_width;
+                CGFloat dst_height = rect.size.height * self.drawableSize.height / myosd_video_height;
+                
                 [self setShaderVariables:@{
-                    @"target-width" :@(prim->bounds_x1 - prim->bounds_x0),
-                    @"target-height":@(prim->bounds_y1 - prim->bounds_y0),
-                    @"screen-width" :@((prim->texorient & ORIENTATION_SWAP_XY) ? prim->texture_height : prim->texture_width),
-                    @"screen-height":@((prim->texorient & ORIENTATION_SWAP_XY) ? prim->texture_width : prim->texture_height),
+                    @"screen-dst-width" :@(dst_width),
+                    @"screen-dst-height":@(dst_height),
+                    @"screen-src-width" :@(src_width),
+                    @"screen-src-height":@(src_height),
                 }];
                 [self setTextureFilter:_filter];
                 [self setShader:_screen_shader];

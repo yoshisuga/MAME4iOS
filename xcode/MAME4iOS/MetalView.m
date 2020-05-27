@@ -119,6 +119,14 @@
         return [super bounds];
 }
 
+- (CGSize) boundsSize {
+    return _layer.bounds.size;
+}
+
+- (CGSize) drawableSize {
+    return _layer.drawableSize;
+}
+
 #pragma mark - device init
 
 - (void)initDevice {
@@ -304,10 +312,6 @@
         _vertex_buffer_list = [_vertex_buffer_list arrayByAddingObject:_vertex_buffer];
         [_encoder setVertexBuffer:_vertex_buffer offset:0 atIndex:0];
     }
-    
-    // TODO: only update the state if it changes!!
-    //[_encoder setRenderPipelineState:_state];
-    //[_encoder setVertexBuffer:_vertex offset:0 atIndex:0];
     
     // we assume the public Vertex2D matches the private Shader VertexInput *exactly*
     _Static_assert(sizeof(Vertex2D) == sizeof(VertexInput), "Vertex2D != VertexInput");
