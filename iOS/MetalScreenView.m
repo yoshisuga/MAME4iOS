@@ -46,6 +46,11 @@
 #import "MetalScreenView.h"
 #import "myosd.h"
 
+#define DebugLog 1
+#if DebugLog == 0
+#define NSLog(...) (void)0
+#endif
+
 #pragma mark - TIMERS
 
 //#define WANT_TIMERS

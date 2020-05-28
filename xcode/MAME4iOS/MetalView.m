@@ -10,6 +10,11 @@
 #import "MetalView.h"
 #import "MetalViewShaders.h"
 
+#define DebugLog 1
+#if DebugLog == 0
+#define NSLog(...) (void)0
+#endif
+
 #define NUM_VERTEX 4096      // number of vertices in a vertex buffer.
 
 @implementation MetalView {
@@ -671,7 +676,24 @@
         assert([variables[key] isKindOfClass:[NSValue class]]);
     }
 #endif
+    
+#if DebugLog
+    BOOL change = FALSE;
+    for (NSString* key in variables.allKeys) {
+        if ([key isEqualToString:@"frame-count"])
+            continue;
+        if (_shader_variables[key] == nil || ![_shader_variables[key] isEqual:variables[key]])
+             change = TRUE;
+    }
+#endif
+
     [_shader_variables addEntriesFromDictionary:variables];
+    
+#if DebugLog
+    if (change) {
+        NSLog(@"SHADER VARIABLES CHANGE: %@", _shader_variables);
+    }
+#endif
     
     // if the currently set shader has params, re-set the render state
     if (_shader_params[_shader_current] != nil)
