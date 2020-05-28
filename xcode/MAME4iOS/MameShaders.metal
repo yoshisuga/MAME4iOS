@@ -14,7 +14,9 @@ using namespace metal;
 struct MameScreenTestUniforms {
     float frame_num;
     float factor;
-    float screen_height;  // height of the mame screen/texture
+    float2 render_target_size;    // sizeof the render target
+    float4 mame_screen_dst_rect;  // height of the mame screen
+    float4 mame_screen_src_rect;  // height of the mame screen texture
 };
 fragment half4
 mame_screen_test(VertexOutput v [[stage_in]],
@@ -26,7 +28,7 @@ mame_screen_test(VertexOutput v [[stage_in]],
     constexpr sampler linear_texture_sampler(mag_filter::linear, min_filter::linear);
     
     float  t = (uniforms.frame_num / 60.0) * 2.0 * M_PI_F;
-    float2 uv = float2(v.tex.x + sin(t/2) * uniforms.factor * (1.0 / uniforms.screen_height), v.tex.y);
+    float2 uv = float2(v.tex.x + sin(t/2) * uniforms.factor * (1.0 / uniforms.mame_screen_src_rect.w), v.tex.y);
     float4 color = texture.sample(linear_texture_sampler, uv) * v.color;
     return half4(color);
 }

@@ -88,10 +88,9 @@ typedef void (*texture_load_function_t)(void*, id<MTLTexture>);
 ///
 /// by default the following variables are availible:
 ///     frame-count                  - current frame number, this will reset to zero from time to time (like on resize)
-///     render-target-width       - size of the render target (in pixels)
-///     render-target-height
-//
--(void)setShaderVariables:(NSDictionary<NSString*, NSNumber*>*)variables;
+///     render-target-size         - size of the render target (in pixels)
+///
+-(void)setShaderVariables:(NSDictionary<NSString*, NSValue*>*)variables;
 
 -(void)setTextureFilter:(MTLSamplerMinMagFilter)filter;
 -(void)setTextureAddressMode:(MTLSamplerAddressMode)mode;

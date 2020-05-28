@@ -220,20 +220,17 @@ static void texture_load(void* data, id<MTLTexture> texture) {
                 // render of the game screen, use a custom effect shader
                 // set the following shader variables so the shader knows the pixel size of a scanline etc....
                 //
-                //      mame-screen-dst-width, mame-screen-dst-height - the size (in pixels) of the output quad
-                //      mame-screen-src-width, mame-screen-src-height - the size (in pixels) of the input texture
+                //      mame-screen-dst-rect - the size (in pixels) of the output quad
+                //      mame-screen-src-rect - the size (in pixels) of the input texture
                 //
-                CGFloat src_width  = (prim->texorient & ORIENTATION_SWAP_XY) ? prim->texture_height : prim->texture_width;
-                CGFloat src_height = (prim->texorient & ORIENTATION_SWAP_XY) ? prim->texture_width : prim->texture_height;
+                CGRect src_rect = CGRectMake(0, 0, (prim->texorient & ORIENTATION_SWAP_XY) ? prim->texture_height : prim->texture_width,
+                                                   (prim->texorient & ORIENTATION_SWAP_XY) ? prim->texture_width : prim->texture_height);
 
-                CGFloat dst_width  = rect.size.width  * scale_x;
-                CGFloat dst_height = rect.size.height * scale_y;
+                CGRect dst_rect = CGRectMake(rect.origin.x * scale_x, rect.origin.y * scale_y, rect.size.width * scale_x, rect.size.height * scale_y);
                 
                 [self setShaderVariables:@{
-                    @"mame-screen-dst-width" :@(dst_width),
-                    @"mame-screen-dst-height":@(dst_height),
-                    @"mame-screen-src-width" :@(src_width),
-                    @"mame-screen-src-height":@(src_height),
+                    @"mame-screen-dst-rect" :@(dst_rect),
+                    @"mame-screen-src-rect" :@(src_rect),
                 }];
                 [self setTextureFilter:_filter];
                 [self setShader:_screen_shader];
