@@ -194,6 +194,10 @@ static void texture_load(void* data, id<MTLTexture> texture) {
     
     [self setViewRect:CGRectMake(0, 0, myosd_video_width, myosd_video_height)];
     
+    CGFloat scale_x = self.drawableSize.width  / myosd_video_width;
+    CGFloat scale_y = self.drawableSize.height / myosd_video_height;
+    CGFloat scale   = MIN(scale_x, scale_y);
+
     // walk the primitive list and render
     for (myosd_render_primitive* prim = prim_list; prim != NULL; prim = prim->next) {
         
@@ -222,8 +226,8 @@ static void texture_load(void* data, id<MTLTexture> texture) {
                 CGFloat src_width  = (prim->texorient & ORIENTATION_SWAP_XY) ? prim->texture_height : prim->texture_width;
                 CGFloat src_height = (prim->texorient & ORIENTATION_SWAP_XY) ? prim->texture_width : prim->texture_height;
 
-                CGFloat dst_width  = rect.size.width  * self.drawableSize.width  / myosd_video_width;
-                CGFloat dst_height = rect.size.height * self.drawableSize.height / myosd_video_height;
+                CGFloat dst_width  = rect.size.width  * scale_x;
+                CGFloat dst_height = rect.size.height * scale_y;
                 
                 [self setShaderVariables:@{
                     @"mame-screen-dst-width" :@(dst_width),
@@ -266,7 +270,7 @@ static void texture_load(void* data, id<MTLTexture> texture) {
 
             [self drawRect:rect color:color];
         }
-        else if (prim->type == RENDER_PRIMITIVE_LINE && prim->width <= 1) {
+        else if (prim->type == RENDER_PRIMITIVE_LINE && (prim->width * scale) <= 1.0) {
             // single pixel line.
             [self setShader:shader_map[prim->blendmode]];
             [self drawLine:CGPointMake(prim->bounds_x0, prim->bounds_y0) to:CGPointMake(prim->bounds_x1, prim->bounds_y1) color:color];
