@@ -21,10 +21,10 @@
 * Filter options (was a checkbox, now a list)
     - Nearest
     - Linear
-    - Binlinear
 * Artwork
     - Artwork is shown at hires by default.
-* support for rendering with Metal
+* Add to Siri Support
+* Support for rendering with Metal
     - Enable `use Metal` in the Options Page.
 
       

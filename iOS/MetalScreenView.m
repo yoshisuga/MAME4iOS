@@ -46,6 +46,21 @@
 #import "MetalScreenView.h"
 #import "myosd.h"
 
+#pragma mark - TIMERS
+
+//#define WANT_TIMERS
+#import "Timer.h"
+
+TIMER_INIT_BEGIN
+TIMER_INIT(draw_screen)
+TIMER_INIT(texture_load)
+TIMER_INIT(texture_load_pal16)
+TIMER_INIT(texture_load_rgb32)
+TIMER_INIT(texture_load_rgb15)
+TIMER_INIT_END
+
+#pragma mark - MetalScreenView
+
 @implementation MetalScreenView {
     NSDictionary* _options;
     MTLSamplerMinMagFilter _filter;
@@ -94,6 +109,7 @@
 }
 
 static void texture_load(void* data, id<MTLTexture> texture) {
+    
     myosd_render_primitive* prim = (myosd_render_primitive*)data;
     NSUInteger width = texture.width;
     NSUInteger height = texture.height;
@@ -102,9 +118,12 @@ static void texture_load(void* data, id<MTLTexture> texture) {
     texture.label = [NSString stringWithFormat:@"MAME %08lX:%d %dx%d %s", (NSUInteger)prim->texture_base, prim->texture_seqid, prim->texture_width, prim->texture_height, texture_format_name[prim->texformat]];
     //NSLog(texture.label);
 
+    TIMER_START(texture_load)
+
     switch (prim->texformat) {
         case TEXFORMAT_RGB15:
         {
+            TIMER_START(texture_load_rgb15)
             if (prim->texture_palette == NULL) {
                 [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:prim->texture_base bytesPerRow:prim->texture_rowpixels*2];
             }
@@ -124,11 +143,13 @@ static void texture_load(void* data, id<MTLTexture> texture) {
                 }
                 [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:myosd_screen bytesPerRow:width*2];
             }
+            TIMER_STOP(texture_load_rgb15)
             break;
         }
         case TEXFORMAT_RGB32:
         case TEXFORMAT_ARGB32:
         {
+            TIMER_START(texture_load_rgb32)
             if (prim->texture_palette == NULL) {
                 [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:prim->texture_base bytesPerRow:prim->texture_rowpixels*4];
             }
@@ -148,20 +169,36 @@ static void texture_load(void* data, id<MTLTexture> texture) {
                 }
                 [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:myosd_screen bytesPerRow:width*4];
             }
+            TIMER_STOP(texture_load_rgb32)
             break;
         }
         case TEXFORMAT_PALETTE16:
         case TEXFORMAT_PALETTEA16:
         {
+            TIMER_START(texture_load_pal16)
             uint16_t* src = prim->texture_base;
             uint32_t* dst = (uint32_t*)myosd_screen;
             const uint32_t* pal = prim->texture_palette;
             for (NSUInteger y=0; y<height; y++) {
-                for (NSUInteger x=0; x<width; x++) {
-                    *dst++ = pal[*src++];
+                NSUInteger dx = width;
+                if ((intptr_t)dst % 8 == 0) {
+                    while (dx >= 4) {
+                        uint64_t u64 = *(uint64_t*)src;
+                        ((uint64_t*)dst)[0] = ((uint64_t)pal[(u64 >>  0) & 0xFFFF]) | (((uint64_t)pal[(u64 >> 16) & 0xFFFF]) << 32);
+                        ((uint64_t*)dst)[1] = ((uint64_t)pal[(u64 >> 32) & 0xFFFF]) | (((uint64_t)pal[(u64 >> 48) & 0xFFFF]) << 32);
+                        dst += 4; src += 4; dx -= 4;
+                    }
+                    if (dx >= 2) {
+                        uint32_t u32 = *(uint32_t*)src;
+                        ((uint64_t*)dst)[0] = ((uint64_t)pal[(u32 >>  0) & 0xFFFF]) | (((uint64_t)pal[(u32 >> 16) & 0xFFFF]) << 32);
+                        dst += 2; src += 2; dx -= 2;
+                    }
                 }
+                while (dx-- > 0)
+                    *dst++ = pal[*src++];
                 src += prim->texture_rowpixels - width;
             }
+            TIMER_STOP(texture_load_pal16)
             [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:myosd_screen bytesPerRow:width*4];
             break;
         }
@@ -175,6 +212,7 @@ static void texture_load(void* data, id<MTLTexture> texture) {
             assert(FALSE);
             break;
     }
+    TIMER_STOP(texture_load)
 }
 
 // return 1 if you handled the draw, 0 for a software render
@@ -191,7 +229,8 @@ static void texture_load(void* data, id<MTLTexture> texture) {
         NSLog(@"drawBegin *FAIL* dropping frame on the floor.");
         return 1;
     }
-    
+    TIMER_START(draw_screen)
+
     [self setViewRect:CGRectMake(0, 0, myosd_video_width, myosd_video_height)];
     
     CGFloat scale_x = self.drawableSize.width  / myosd_video_width;
@@ -299,7 +338,13 @@ static void texture_load(void* data, id<MTLTexture> texture) {
 #endif
     
     [self drawEnd];
+    TIMER_STOP(draw_screen)
     
+    if (TIMER_COUNT(draw_screen) % 100 == 0) {
+        TIMER_DUMP();
+        TIMER_RESET();
+    }
+
     // always return 1 saying we handled the draw.
     return 1;
 }
@@ -342,14 +387,14 @@ static void texture_load(void* data, id<MTLTexture> texture) {
 // TEXTURE FORMATS
 //      [X] PALETTE16                   pacman
 //      [ ] PALETTEA16
-//      [X] RGB15                       megaplay
+//      [X] RGB15                       megaplay, streets of rage II
 //      [X] RGB32                       neogeo
 //      [X] ARGB32                      MAME menu (text)
-//      [ ] YUY16
+//      [-] YUY16                       N/A
 //      [X] RGB15 with PALETTE          megaplay
 //      [X] RGB32 with PALETTE          neogeo
-//      [ ] ARGB32 with PALETTE
-//      [ ] YUY16 with PALETTE
+//      [-] ARGB32 with PALETTE         N/A
+//      [-] YUY16 with PALETTE          N/A
 //
 - (void)drawScreenDebug:(void*)prim_list {
     
@@ -438,7 +483,7 @@ static void texture_load(void* data, id<MTLTexture> texture) {
             if (fmt == TEXFORMAT_RGB32 && prim->texture_palette != NULL)
                 assert(TRUE);
             if (fmt == TEXFORMAT_ARGB32 && prim->texture_palette != NULL)
-                assert(FALSE);
+                assert(TRUE);
             if (fmt == TEXFORMAT_YUY16 && prim->texture_palette != NULL)
                 assert(FALSE);
         }

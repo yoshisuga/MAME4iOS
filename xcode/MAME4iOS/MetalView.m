@@ -526,45 +526,7 @@
         [_encoder setRenderPipelineState:state];
 
         // set any custom params to fragment shader
-        NSArray* shader_params = _shader_params[shader];
-        if (shader_params != nil) {
-            float float_params[128];
-            NSUInteger count = 0;
-            for (int i=0; i<[shader_params count]; i++) {
-                NSString* str = shader_params[i];
-                NSValue*  val = _shader_variables[str];
-                if (val != nil) {
-                    if ([val isKindOfClass:[NSNumber class]]) {
-                        float_params[count++] = [(id)val floatValue];
-                    }
-                    else if (strcmp([val objCType], @encode(CGRect)) == 0) {
-                        CGRect rect = [val CGRectValue];
-                        float_params[count++] = rect.origin.x;
-                        float_params[count++] = rect.origin.y;
-                        float_params[count++] = rect.size.width;
-                        float_params[count++] = rect.size.height;
-                    }
-                    else if (strcmp([val objCType], @encode(CGSize)) == 0) {
-                        CGSize size = [val CGSizeValue];
-                        float_params[count++] = size.width;
-                        float_params[count++] = size.height;
-                    }
-                    else {
-                        NSLog(@"INVALID SHADER VARIABLE '%@' for shader \"%@\"", str, state.label);
-                        assert(FALSE);
-                    }
-                }
-                else {
-                    float_params[count++] = [str floatValue];
-                    // if the param is set to zero, check for a missing variable and debug spew about it.
-                    if (float_params[count-1] == 0.0 && [str characterAtIndex:0] != '0') {
-                        NSLog(@"UNKNOWN SHADER VARIABLE '%@' for shader \"%@\"", str, state.label);
-                        assert(FALSE);
-                    }
-                }
-            }
-            [_encoder setFragmentBytes:float_params length:count * sizeof(float) atIndex:0];
-        }
+        [self setShaderParams:_shader_params[shader]];
 
         return;
     }
@@ -657,10 +619,57 @@
     [self setShader:shader];
 }
 
+// resolve and nammed shader variables and send float(s) to fragment function 
+- (void)setShaderParams:(NSArray<NSString*>*)params {
+    assert(_encoder != nil);
+    
+    if ([params count] == 0)
+        return;
+
+    float float_params[128];
+    NSUInteger count = 0;
+    for (NSString* str in params) {
+        NSValue*  val = _shader_variables[str];
+        if (val != nil) {
+            if ([val isKindOfClass:[NSNumber class]]) {
+                float_params[count++] = [(id)val floatValue];
+            }
+            else if (strcmp([val objCType], @encode(CGRect)) == 0) {
+                CGRect rect = [val CGRectValue];
+                float_params[count++] = rect.origin.x;
+                float_params[count++] = rect.origin.y;
+                float_params[count++] = rect.size.width;
+                float_params[count++] = rect.size.height;
+            }
+            else if (strcmp([val objCType], @encode(CGSize)) == 0) {
+                CGSize size = [val CGSizeValue];
+                float_params[count++] = size.width;
+                float_params[count++] = size.height;
+            }
+            else {
+                NSLog(@"INVALID SHADER VARIABLE '%@' type=%s", str, [val objCType]);
+                assert(FALSE);
+            }
+        }
+        else {
+            float_params[count++] = [str floatValue];
+            // if the param is set to zero, check for a missing variable and debug spew about it.
+            if (float_params[count-1] == 0.0 && [str characterAtIndex:0] != '0') {
+                NSLog(@"UNKNOWN SHADER VARIABLE '%@' for shader \"%@\"", str, _shader_current);
+                assert(FALSE);
+            }
+        }
+    }
+    [_encoder setFragmentBytes:float_params length:count * sizeof(float) atIndex:0];
+}
+
+/// add to the dictionary used to resolve named shader variables
 - (void)setShaderVariables:(NSDictionary *)variables {
 #ifdef DEBUG
-    for (NSString* key in variables.allKeys)
-        assert([key isKindOfClass:[NSString class]] && [variables[key] isKindOfClass:[NSValue class]]);
+    for (NSString* key in variables.allKeys) {
+        assert([key isKindOfClass:[NSString class]]);
+        assert([variables[key] isKindOfClass:[NSValue class]]);
+    }
 #endif
     [_shader_variables addEntriesFromDictionary:variables];
     
