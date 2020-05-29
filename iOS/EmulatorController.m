@@ -778,7 +778,10 @@ void mame_state(int load_save, int slot)
     g_pref_metal = op.useMetal;
     g_pref_showFPS = [op showFPS];
 
-    myosd_fps = [op showFPS];
+    // DONT use MAME FPS when rendering with Metal.
+    myosd_fps = g_pref_showFPS && !g_pref_metal;
+    // TODO: is this what we want?
+    
     myosd_showinfo =  [op showINFO];
     g_pref_animated_DPad  = [op animatedButtons];
     g_pref_full_screen_land  = [op fullLand];
