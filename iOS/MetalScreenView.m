@@ -247,7 +247,7 @@ static void texture_load(void* data, id<MTLTexture> texture) {
         
         VertexColor color = VertexColor(prim->color_r, prim->color_g, prim->color_b, prim->color_a);
         
-        CGRect rect = CGRectMake(floor(prim->bounds_x0 + 0.5), floor(prim->bounds_y0 + 0.5),
+        CGRect rect = CGRectMake(floor(prim->bounds_x0 + 0.5),  floor(prim->bounds_y0 + 0.5),
                                  floor(prim->bounds_x1 + 0.5) - floor(prim->bounds_x0 + 0.5),
                                  floor(prim->bounds_y1 + 0.5) - floor(prim->bounds_y0 + 0.5));
 
@@ -266,15 +266,24 @@ static void texture_load(void* data, id<MTLTexture> texture) {
                 //
                 //      mame-screen-dst-rect - the size (in pixels) of the output quad
                 //      mame-screen-src-rect - the size (in pixels) of the input texture
+                //      mame-screen-matrix   - matrix to convert texture coordinates (u,v) to crt (x,scanline)
                 //
                 CGRect src_rect = CGRectMake(0, 0, (prim->texorient & ORIENTATION_SWAP_XY) ? prim->texture_height : prim->texture_width,
                                                    (prim->texorient & ORIENTATION_SWAP_XY) ? prim->texture_width : prim->texture_height);
 
                 CGRect dst_rect = CGRectMake(rect.origin.x * scale_x, rect.origin.y * scale_y, rect.size.width * scale_x, rect.size.height * scale_y);
                 
+                // create a matrix to convert texture coordinates (u,v) to crt scanlines (x,y)
+                simd_float2x2 mame_screen_matrix;
+                if (prim->texorient & ORIENTATION_SWAP_XY)
+                    mame_screen_matrix = (matrix_float2x2){{ {0,prim->texture_height}, {prim->texture_width,0} }};
+                else
+                    mame_screen_matrix = (matrix_float2x2){{ {prim->texture_width,0}, {0,prim->texture_height} }};
+                
                 [self setShaderVariables:@{
                     @"mame-screen-dst-rect" :@(dst_rect),
                     @"mame-screen-src-rect" :@(src_rect),
+                    @"mame-screen-matrix"   :[NSValue value:&mame_screen_matrix withObjCType:@encode(float[2][2])],
                 }];
                 [self setTextureFilter:_filter];
                 [self setShader:_screen_shader];

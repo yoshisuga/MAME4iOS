@@ -651,6 +651,22 @@
                 float_params[count++] = size.width;
                 float_params[count++] = size.height;
             }
+            else if (strcmp([val objCType], @encode(float[2])) == 0) {
+                [val getValue:float_params+count size:2*sizeof(float)];
+                count += 2;
+            }
+            else if (strcmp([val objCType], @encode(float[4])) == 0) {
+                [val getValue:float_params+count size:4*sizeof(float)];
+                count += 4;
+            }
+            else if (strcmp([val objCType], @encode(float[2][2])) == 0) {
+                [val getValue:float_params+count size:4*sizeof(float)];
+                count += 4;
+            }
+            else if (strcmp([val objCType], @encode(float[4][4])) == 0) {
+                [val getValue:float_params+count size:16*sizeof(float)];
+                count += 16;
+            }
             else {
                 NSLog(@"INVALID SHADER VARIABLE '%@' type=%s", str, [val objCType]);
                 assert(FALSE);
@@ -665,6 +681,8 @@
             }
         }
     }
+    if (count & 1)
+        float_params[count++] = 0.0;
     [_encoder setFragmentBytes:float_params length:count * sizeof(float) atIndex:0];
 }
 

@@ -92,9 +92,9 @@
              @"Scanline : texture, blend=copy",
              @"CRT + Scanline : texture, blend=copy",
              
-             @"Wombat 1: mame_screen_test, frame-count, 2.0, render-target-size, mame-screen-dst-rect, mame-screen-src-rect",
-             @"Wombat 2: mame_screen_test, frame-count, 4.0, render-target-size, mame-screen-dst-rect, mame-screen-src-rect",
-             @"Wombat 3: mame_screen_test, frame-count, 8.0, render-target-size, mame-screen-dst-rect, mame-screen-src-rect",
+             @"Wombat: mame_screen_test, frame-count, 8.0, render-target-size, mame-screen-dst-rect, mame-screen-src-rect",
+             @"Test (dot): mame_screen_dot, mame-screen-matrix",
+             @"Test (line): mame_screen_line, mame-screen-matrix, frame-count",
     ];
 }
 
