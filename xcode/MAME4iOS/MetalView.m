@@ -286,7 +286,8 @@
     }];
 #endif
     [_encoder endEncoding];
-    [_buffer presentDrawable:_drawable];
+    //[_buffer presentDrawable:_drawable];
+    [_buffer presentDrawable:_drawable afterMinimumDuration:1.0/60.0];
     [_buffer commit];
     _drawable = nil;
     _buffer = nil;
