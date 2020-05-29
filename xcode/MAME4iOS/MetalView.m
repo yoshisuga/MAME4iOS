@@ -15,7 +15,9 @@
 #define NSLog(...) (void)0
 #endif
 
-#define NUM_VERTEX 4096      // number of vertices in a vertex buffer.
+#define NUM_VERTEX 4096     // number of vertices in a vertex buffer.
+
+#define RESET_AVERAGE_EVERY 120   // reset averages every this many frames
 
 @implementation MetalView {
 
@@ -439,7 +441,7 @@
 
 -(void)updateFPS:(NSTimeInterval)drawTime {
 
-    if (_frameCount == 0) {
+    if ((_frameCount % RESET_AVERAGE_EVERY) == 0) {
         _frameRateAverage = 0;
         _renderTimeAverage = 0;
         _lastDrawTime = 0;

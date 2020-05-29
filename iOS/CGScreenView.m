@@ -45,6 +45,8 @@
 #import "Globals.h"
 #import "myosd.h"
 
+#define RESET_AVERAGE_EVERY 120   // reset averages every this many frames
+
 @interface CGScreenLayer : CALayer
 @end
 
@@ -220,7 +222,7 @@
     NSTimeInterval now = CACurrentMediaTime();
     
     // set the frameRate and total frameTime
-    if (_frameCount == 0) {
+    if ((_frameCount % RESET_AVERAGE_EVERY) == 0) {
         _frameRateAverage = 0;
         _renderTimeAverage = 0;
     }
