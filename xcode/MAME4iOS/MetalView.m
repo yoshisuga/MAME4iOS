@@ -26,6 +26,8 @@
     #pragma clang diagnostic ignored "-Wpartial-availability"
     CAMetalLayer* _layer;
     #pragma clang diagnostic pop
+    
+    NSUInteger _maximumFramesPerSecond;
 
     id <MTLDevice> _device;
     id<MTLLibrary> _library;
@@ -111,8 +113,10 @@
 }
 - (void)didMoveToWindow {
     [super didMoveToWindow];
-    if (self.window != nil)
+    if (self.window != nil) {
         _layer.contentsScale = self.window.screen.scale;
+        _maximumFramesPerSecond = self.window.screen.maximumFramesPerSecond;
+    }
 }
 - (void)didMoveToSuperview {
     [super didMoveToSuperview];
@@ -286,8 +290,10 @@
     }];
 #endif
     [_encoder endEncoding];
-    //[_buffer presentDrawable:_drawable];
-    [_buffer presentDrawable:_drawable afterMinimumDuration:1.0/60.0];
+    if (_maximumFramesPerSecond > 60)
+        [_buffer presentDrawable:_drawable afterMinimumDuration:1.0/60.0];
+    else
+        [_buffer presentDrawable:_drawable];
     [_buffer commit];
     _drawable = nil;
     _buffer = nil;
