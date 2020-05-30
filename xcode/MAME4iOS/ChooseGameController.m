@@ -247,6 +247,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     UIBarButtonItem* settings = [[UIBarButtonItem alloc] initWithImage:settingsImage style:UIBarButtonItemStylePlain target:self action:@selector(showSettings)];
 #else
     UISegmentedControl* seg3 = [[UISegmentedControl alloc] initWithItems:@[settingsImage]];
+    seg3.momentary = YES;
     [seg3 addTarget:self action:@selector(showSettings) forControlEvents:UIControlEventValueChanged];
     UIBarButtonItem* settings = [[UIBarButtonItem alloc] initWithCustomView:seg3];
 #endif
