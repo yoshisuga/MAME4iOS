@@ -46,8 +46,11 @@
     // texture cache
     NSMutableDictionary<NSNumber*, id<MTLTexture>>* _texture_cache;
     NSMutableDictionary<NSNumber*, NSNumber*>* _texture_hash;
-    MTLSamplerDescriptor* _texture_sampler_desc;
-    id<MTLSamplerState> _texture_sampler;
+    
+    // sampler states
+    MTLSamplerMinMagFilter _texture_filter;
+    MTLSamplerAddressMode _texture_address_mode;
+    id<MTLSamplerState> _texture_sampler[4];
 
     // current vertex buffer for current frame.
     id <MTLBuffer> _vertex_buffer;
@@ -166,14 +169,9 @@
     _matrix_view = matrix_identity_float4x4;
     _matrix_model = matrix_identity_float4x4;
     
-    // create sampler state
-    MTLSamplerDescriptor *desc = [[MTLSamplerDescriptor alloc] init];
-    desc.sAddressMode = MTLSamplerAddressModeClampToEdge;
-    desc.tAddressMode = MTLSamplerAddressModeClampToEdge;
-    desc.minFilter = _layer.minificationFilter  == kCAFilterLinear ? MTLSamplerMinMagFilterLinear : MTLSamplerMinMagFilterNearest;
-    desc.magFilter = _layer.magnificationFilter == kCAFilterLinear ? MTLSamplerMinMagFilterLinear : MTLSamplerMinMagFilterNearest;
-    _texture_sampler = [_device newSamplerStateWithDescriptor:desc];
-    _texture_sampler_desc = desc;
+    // init sampler state(s)
+    _texture_address_mode = MTLSamplerAddressModeClampToEdge;
+    _texture_filter = MTLSamplerMinMagFilterNearest;
 }
 
 #pragma mark - vertex buffers
@@ -262,8 +260,10 @@
     // setup initial state.
     _shader_current = nil;
     [self setShader:ShaderCopy];
-    [_encoder setFragmentSamplerState:_texture_sampler atIndex:0];
-    [self setTextureFilter:_layer.minificationFilter == kCAFilterLinear ? MTLSamplerMinMagFilterLinear : MTLSamplerMinMagFilterNearest];
+    
+    _texture_filter = _layer.minificationFilter == kCAFilterLinear ? MTLSamplerMinMagFilterLinear : MTLSamplerMinMagFilterNearest;
+    _texture_address_mode = MTLSamplerAddressModeClampToEdge;
+    [self updateSamplerState];
 
     // set default (frame based) shader variables
     [self setShaderVariables:@{
@@ -774,20 +774,41 @@
     [_encoder setFragmentTexture:texture atIndex:index];
 }
 
+-(void)updateSamplerState {
+    assert(_texture_filter == MTLSamplerMinMagFilterNearest || _texture_filter == MTLSamplerMinMagFilterLinear);
+    assert(_texture_address_mode == MTLSamplerAddressModeClampToEdge || _texture_address_mode == MTLSamplerAddressModeRepeat);
+    _Static_assert(MTLSamplerAddressModeClampToEdge == 0 && MTLSamplerAddressModeRepeat  == 2, "MTLSamplerAddressMode bad!");
+    _Static_assert(MTLSamplerMinMagFilterNearest    == 0 && MTLSamplerMinMagFilterLinear == 1, "MTLSamplerMinMagFilter bad!");
+    NSUInteger index = _texture_filter + _texture_address_mode;
+    
+    id<MTLSamplerState> sampler = _texture_sampler[index];
+    
+    if (sampler == nil) {
+        MTLSamplerDescriptor *desc = [[MTLSamplerDescriptor alloc] init];
+        desc.minFilter = _texture_filter;
+        desc.magFilter = _texture_filter;
+        desc.sAddressMode = _texture_address_mode;
+        desc.tAddressMode = _texture_address_mode;
+        desc.label = [NSString stringWithFormat:@"filter=%s, mode=%s",
+                      (_texture_filter == MTLSamplerMinMagFilterNearest) ? "Nearest" : "Linear",
+                      (_texture_address_mode == MTLSamplerAddressModeClampToEdge) ? "Clamp" : "Wrap"];
+        sampler = [_device newSamplerStateWithDescriptor:desc];
+        _texture_sampler[index] = sampler;
+    }
+
+    [_encoder setFragmentSamplerState:sampler atIndex:0];
+}
+
 -(void)setTextureFilter:(MTLSamplerMinMagFilter)filter {
-    if (_texture_sampler_desc.magFilter != filter) {
-        _texture_sampler_desc.minFilter = filter;
-        _texture_sampler_desc.magFilter = filter;
-        _texture_sampler = [_device newSamplerStateWithDescriptor:_texture_sampler_desc];
-        [_encoder setFragmentSamplerState:_texture_sampler atIndex:0];
+    if (_texture_filter != filter) {
+        _texture_filter = filter;
+        [self updateSamplerState];
     }
 }
 -(void)setTextureAddressMode:(MTLSamplerAddressMode)mode {
-    if (_texture_sampler_desc.sAddressMode != mode) {
-        _texture_sampler_desc.sAddressMode = mode;
-        _texture_sampler_desc.tAddressMode = mode;
-        _texture_sampler = [_device newSamplerStateWithDescriptor:_texture_sampler_desc];
-        [_encoder setFragmentSamplerState:_texture_sampler atIndex:0];
+    if (_texture_address_mode != mode) {
+        _texture_address_mode = mode;
+        [self updateSamplerState];
     }
 }
 

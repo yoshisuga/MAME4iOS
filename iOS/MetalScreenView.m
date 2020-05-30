@@ -273,11 +273,15 @@ static void texture_load(void* data, id<MTLTexture> texture) {
                 //
                 //      mame-screen-dst-rect - the size (in pixels) of the output quad
                 //      mame-screen-src-rect - the size (in pixels) of the input texture
+                //      mame-screen-size     - the size (in pixels) of the input texture
                 //      mame-screen-matrix   - matrix to convert texture coordinates (u,v) to crt (x,scanline)
                 //
-                CGRect src_rect = CGRectMake(0, 0, (prim->texorient & ORIENTATION_SWAP_XY) ? prim->texture_height : prim->texture_width,
-                                                   (prim->texorient & ORIENTATION_SWAP_XY) ? prim->texture_width : prim->texture_height);
-
+                // TODO: we should *ONLY* need mame-screen-matrix, remove mame-screen-dst-rect and mame-screen-src-rect ??
+                
+                CGSize src_size = CGSizeMake((prim->texorient & ORIENTATION_SWAP_XY) ? prim->texture_height : prim->texture_width,
+                                             (prim->texorient & ORIENTATION_SWAP_XY) ? prim->texture_width : prim->texture_height);
+                
+                CGRect src_rect = CGRectMake(0, 0, src_size.width, src_size.height);
                 CGRect dst_rect = CGRectMake(rect.origin.x * scale_x, rect.origin.y * scale_y, rect.size.width * scale_x, rect.size.height * scale_y);
                 
                 // create a matrix to convert texture coordinates (u,v) to crt scanlines (x,y)
@@ -290,6 +294,7 @@ static void texture_load(void* data, id<MTLTexture> texture) {
                 [self setShaderVariables:@{
                     @"mame-screen-dst-rect" :@(dst_rect),
                     @"mame-screen-src-rect" :@(src_rect),
+                    @"mame-screen-size"     :@(src_size),
                     @"mame-screen-matrix"   :[NSValue value:&mame_screen_matrix withObjCType:@encode(float[2][2])],
                 }];
                 [self setTextureFilter:_filter];
