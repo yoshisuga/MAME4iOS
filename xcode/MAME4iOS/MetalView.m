@@ -353,11 +353,11 @@
     simd_float2 v;
 
     // if p0 == p1, draw a little diamond
-    //   2 +
+    //   2 + 4
     //    /|\
-    // 1 + p + 4
+    // 1 + p + 6
     //    \|/
-    //     + 3
+    //   3 + 5
     //
     //  else draw the line as a quad with pointy ends
     //
