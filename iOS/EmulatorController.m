@@ -86,6 +86,9 @@
 #define NSLog(...) (void)0
 #endif
 
+#define UPDATE_FPS_EVERY    60
+#define OPAQUE_FPS          TRUE
+
 // mfi Controllers
 NSMutableArray *controllers;
 
@@ -232,11 +235,12 @@ void iphone_UpdateScreen()
     if (sharedInstance == nil || g_emulation_paused || sharedInstance->screenView == nil)
         return;
     
-    [sharedInstance->screenView performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone:NO];
+    UIView<ScreenView>* screenView = sharedInstance->screenView;
+    [screenView performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone:NO];
 
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wundeclared-selector"
-    if (g_pref_showFPS)
+    if (g_pref_showFPS && (screenView.frameCount % UPDATE_FPS_EVERY) == 0)
         [sharedInstance performSelectorOnMainThread:@selector(updateFrameRate) withObject:nil waitUntilDone:NO];
     #pragma clang diagnostic pop
 }
@@ -259,7 +263,7 @@ int iphone_DrawScreen(myosd_render_primitive* prim_list) {
         
         #pragma clang diagnostic push
         #pragma clang diagnostic ignored "-Wundeclared-selector"
-        if (g_pref_showFPS && result)
+        if (g_pref_showFPS && result && (screenView.frameCount % UPDATE_FPS_EVERY) == 0)
             [sharedInstance performSelectorOnMainThread:@selector(updateFrameRate) withObject:nil waitUntilDone:NO];
         #pragma clang diagnostic pop
 
@@ -1355,7 +1359,9 @@ void mame_state(int load_save, int slot)
     fpsView.numberOfLines = 2;
     fpsView.font = [UIFont monospacedDigitSystemFontOfSize:(TARGET_OS_IOS ? 16.0 : 32.0) weight:UIFontWeightMedium];
     fpsView.textColor = self.view.tintColor;
-    //fpsView.backgroundColor = [self.view.tintColor colorWithAlphaComponent:0.25];
+#if OPAQUE_FPS
+    fpsView.backgroundColor = UIColor.blackColor;
+#endif
     fpsView.shadowColor = UIColor.blackColor;
     fpsView.shadowOffset = CGSizeMake(1.0,1.0);
     fpsView.text = @"000:00:00⚡️\n0000.00fps 000.0ms";
