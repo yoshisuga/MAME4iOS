@@ -39,6 +39,8 @@ typedef void (*texture_load_function_t)(void*, id<MTLTexture>);
 @property(class, readonly) BOOL isSupported;
 @property(readwrite) CGColorSpaceRef colorSpace;
 
+@property(nonatomic) NSInteger preferredFramesPerSecond;
+
 // thread safe versions of bounds and drawable size.
 @property(readonly) CGSize drawableSize;
 @property(readonly) CGSize boundsSize;

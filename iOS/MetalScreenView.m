@@ -75,6 +75,14 @@ TIMER_INIT_END
 - (void)setOptions:(NSDictionary *)options {
     _options = options;
     
+    // set our framerate
+    if (_options[@"vsync"] == nil || [_options[@"vsync"] boolValue]) {
+        self.preferredFramesPerSecond = 60;
+    }
+    else {
+        self.preferredFramesPerSecond = 0;
+    }
+    
     // set a custom color space
     NSString* color_space = _options[kScreenViewColorSpace];
 

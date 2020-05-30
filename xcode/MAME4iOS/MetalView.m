@@ -290,8 +290,8 @@
     }];
 #endif
     [_encoder endEncoding];
-    if (_maximumFramesPerSecond > 60)
-        [_buffer presentDrawable:_drawable afterMinimumDuration:1.0/60.0];
+    if (_preferredFramesPerSecond != 0 && _preferredFramesPerSecond * 2 <= _maximumFramesPerSecond)
+        [_buffer presentDrawable:_drawable afterMinimumDuration:1.0/_preferredFramesPerSecond];
     else
         [_buffer presentDrawable:_drawable];
     [_buffer commit];
