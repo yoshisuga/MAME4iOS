@@ -76,12 +76,7 @@ TIMER_INIT_END
     _options = options;
     
     // set our framerate
-    if (_options[@"vsync"] == nil || [_options[@"vsync"] boolValue]) {
-        self.preferredFramesPerSecond = 60;
-    }
-    else {
-        self.preferredFramesPerSecond = 0;
-    }
+    self.preferredFramesPerSecond = 60;
     
     // set a custom color space
     NSString* color_space = _options[kScreenViewColorSpace];
@@ -254,6 +249,7 @@ static void texture_load(void* data, id<MTLTexture> texture) {
         NSLog(@"drawBegin *FAIL* dropping frame on the floor.");
         return 1;
     }
+    NSTimeInterval time = CACurrentMediaTime();
     TIMER_START(draw_screen)
 
     [self setViewRect:CGRectMake(0, 0, myosd_video_width, myosd_video_height)];
@@ -384,8 +380,11 @@ static void texture_load(void* data, id<MTLTexture> texture) {
         TIMER_RESET();
     }
     
+    time = CACurrentMediaTime() - time;
+
     // dont starve other threads, MAME does not like to sleep, let Metal and Audio do some work.
-    usleep(1500);
+    if (time < 0.005)
+        usleep((0.005 - time) * 1000000.0);
 
     // always return 1 saying we handled the draw.
     return 1;

@@ -818,7 +818,7 @@ void mame_state(int load_save, int slot)
     
     myosd_throttle = [op throttle];
     myosd_cheat = [op cheats];
-    myosd_vsync = [op vsync] == 1 ? 6000 : -1;
+    myosd_vsync = [op vsync] == 1 ? 5997 : -1;
        
     myosd_sleep = [op sleep];
     
@@ -975,6 +975,7 @@ void mame_state(int load_save, int slot)
     if (g_pref_metal && [MetalScreenView isSupported]) {
         myosd_sleep = 1;            // sleep to let Metal get work done.
         myosd_video_threaded = 0;   // dont need an extra thread
+        myosd_vsync = -1;
         myosd_frameskip_value = -1; // AUTO frameskip
         //myosd_frameskip_value = 0; // *DONT* try to skip frames, we render so fast it is confusing MAME.
     }
@@ -1162,7 +1163,7 @@ void mame_state(int load_save, int slot)
 #endif
 	
 	//kito
-	//[NSThread setThreadPriority:1.0];
+	[NSThread setThreadPriority:1.0];
 	
     [self updateOptions];
 
@@ -1939,7 +1940,6 @@ UIColor* colorWithHexString(NSString* string) {
         kScreenViewFilter: g_device_is_landscape ? g_pref_filter_land : g_pref_filter_port,
         kScreenViewEffect: g_device_is_landscape ? g_pref_effect_land : g_pref_effect_port,
         kScreenViewColorSpace: g_pref_colorspace,
-        @"vsync" : @(myosd_vsync == 6000 && myosd_throttle == 1)
     };
     
     // select a CoreGraphics or Metal ScreenView
@@ -2086,7 +2086,7 @@ UIColor* colorWithHexString(NSString* string) {
             [self changeUI];
             break;
         case 'V':
-            myosd_vsync = myosd_vsync == -1 ? 6000 : -1;
+            myosd_vsync = myosd_vsync == -1 ? 5997 : -1;
             [self changeUI];
             break;
         case 'A':
