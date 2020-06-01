@@ -86,8 +86,8 @@
 #define NSLog(...) (void)0
 #endif
 
-#define UPDATE_FPS_EVERY    60
-#define OPAQUE_FPS          TRUE
+#define UPDATE_FPS_EVERY    1
+#define OPAQUE_FPS          FALSE
 
 // mfi Controllers
 NSMutableArray *controllers;
@@ -782,9 +782,7 @@ void mame_state(int load_save, int slot)
     g_pref_metal = op.useMetal;
     g_pref_showFPS = [op showFPS];
 
-    // DONT use MAME FPS when rendering with Metal.
-    myosd_fps = g_pref_showFPS && !g_pref_metal;
-    // TODO: is this what we want?
+    myosd_fps = g_pref_showFPS;
     
     myosd_showinfo =  [op showINFO];
     g_pref_animated_DPad  = [op animatedButtons];
@@ -972,6 +970,14 @@ void mame_state(int load_save, int slot)
     turboBtnEnabled[BTN_B] = [op turboBEnabled];
     turboBtnEnabled[BTN_L1] = [op turboLEnabled];
     turboBtnEnabled[BTN_R1] = [op turboREnabled];
+    
+    // ignore some settings in the Metal case
+    if (g_pref_metal && [MetalScreenView isSupported]) {
+        myosd_sleep = 1;            // sleep to let Metal get work done.
+        myosd_video_threaded = 0;   // dont need an extra thread
+        myosd_frameskip_value = -1; // AUTO frameskip
+        //myosd_frameskip_value = 0; // *DONT* try to skip frames, we render so fast it is confusing MAME.
+    }
     
 #if TARGET_OS_IOS
     g_pref_lightgun_enabled = [op lightgunEnabled];
@@ -1358,9 +1364,11 @@ void mame_state(int load_save, int slot)
     fpsView.userInteractionEnabled = NO;
     fpsView.numberOfLines = 2;
     fpsView.font = [UIFont monospacedDigitSystemFontOfSize:(TARGET_OS_IOS ? 16.0 : 32.0) weight:UIFontWeightMedium];
-    fpsView.textColor = self.view.tintColor;
+    fpsView.textColor = UIColor.whiteColor; // self.view.tintColor;
 #if OPAQUE_FPS
     fpsView.backgroundColor = UIColor.blackColor;
+#else
+    fpsView.backgroundColor = [UIColor.blackColor colorWithAlphaComponent:0.333];
 #endif
     fpsView.shadowColor = UIColor.blackColor;
     fpsView.shadowOffset = CGSizeMake(1.0,1.0);
@@ -2781,7 +2789,7 @@ UIColor* colorWithHexString(NSString* string) {
 #endif
 }
 
-- (UIImage *)loadImage:(NSString *)name{
+- (UIImage *)loadImage:(NSString *)name {
     
     NSString *path = nil;
     UIImage *img = nil;
@@ -2803,8 +2811,8 @@ UIColor* colorWithHexString(NSString* string) {
     
     if (img == nil)
     {
-        name = [NSString stringWithFormat:@"SKIN_%d/%@", g_pref_skin, name];
-        img = [UIImage imageWithContentsOfFile:[path stringByAppendingPathComponent:name]];
+        NSString* skin_name = [NSString stringWithFormat:@"SKIN_%d/%@", g_pref_skin, name];
+        img = [UIImage imageWithContentsOfFile:[path stringByAppendingPathComponent:skin_name]];
     }
 
     [g_image_cache setObject:(img ?: [NSNull null]) forKey:name];

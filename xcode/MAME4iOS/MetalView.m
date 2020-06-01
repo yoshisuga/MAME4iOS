@@ -147,6 +147,7 @@
     _layer.device = _device;
     _layer.pixelFormat = MTLPixelFormatBGRA8Unorm;
     _layer.framebufferOnly = TRUE;
+    _layer.maximumDrawableCount = 3;    // TODO: !
 
     _library = [_device newDefaultLibrary];
     _queue = [_device newCommandQueue];
@@ -206,8 +207,8 @@
 
 -(BOOL)drawBegin {
     // nested drawBegin, BAD!
-    assert(_drawable == nil);
-    if (_drawable != nil)
+    assert(_encoder == nil);
+    if (_encoder != nil)
         return FALSE;
     
     // need to (re)create device.
@@ -290,7 +291,7 @@
     }];
 #endif
     [_encoder endEncoding];
-    if (_preferredFramesPerSecond != 0 && _preferredFramesPerSecond * 2 <= _maximumFramesPerSecond)
+    if (_preferredFramesPerSecond != 0 && _preferredFramesPerSecond * 2 <= _maximumFramesPerSecond && _layer.maximumDrawableCount == 3)
         [_buffer presentDrawable:_drawable afterMinimumDuration:1.0/_preferredFramesPerSecond];
     else
         [_buffer presentDrawable:_drawable];
@@ -311,7 +312,7 @@
 #pragma mark - draw primitives
 
 -(void)drawPrim:(MTLPrimitiveType)type vertices:(Vertex2D*)vertices count:(NSUInteger)count {
-    assert(_drawable != nil);
+    assert(_encoder != nil);
 
     // if our buffer is full, get a new one.
     if (_vertex_buffer_base + count >= NUM_VERTEX) {
@@ -522,7 +523,6 @@
 ///                 blend=mul     - D.rgb = S.rgb * D.rgb
 ///
 - (void)setShader:(Shader)shader {
-    assert(_drawable != nil);
     assert(_encoder != nil);
     
     // fastest case, do nothing if we are setting the same shader again.
@@ -643,6 +643,11 @@
     float float_params[128];
     NSUInteger count = 0;
     for (NSString* str in params) {
+        
+        assert(count <= sizeof(float_params)/sizeof(float) - 16);
+        if (count > sizeof(float_params)/sizeof(float) - 16)
+            break;
+
         NSValue*  val = _shader_variables[str];
         if (val != nil) {
             if ([val isKindOfClass:[NSNumber class]]) {
@@ -742,7 +747,6 @@
 ///
 -(void)setTexture:(NSUInteger)index texture:(void*)identifier hash:(NSUInteger)hash width:(NSUInteger)width height:(NSUInteger)height format:(MTLPixelFormat)format texture_load:(texture_load_function_t)texture_load texture_load_data:(void*)texture_load_data {
     assert(_device != nil);
-    assert(_encoder != nil);
     assert(texture_load != NULL);
     
     if (identifier == NULL)

@@ -236,6 +236,19 @@ static void texture_load(void* data, id<MTLTexture> texture) {
 #ifdef DEBUG
     [self drawScreenDebug:prim_list];
 #endif
+    
+#if 0
+    // before calling draw-begin do a pass and load all textures.
+    for (myosd_render_primitive* prim = prim_list; prim != NULL; prim = prim->next) {
+        if (prim->type == RENDER_PRIMITIVE_QUAD && prim->texture_base != NULL) {
+            // set the texture
+            [self loadTexture:prim->texture_base hash:prim->texture_seqid
+                       width:prim->texture_width height:prim->texture_height
+                      format:(prim->texformat == TEXFORMAT_RGB15 ? MTLPixelFormatBGR5A1Unorm : MTLPixelFormatBGRA8Unorm)
+                texture_load:texture_load texture_load_data:prim];
+        }
+    }
+#endif
 
     if (![self drawBegin]) {
         NSLog(@"drawBegin *FAIL* dropping frame on the floor.");
@@ -370,6 +383,9 @@ static void texture_load(void* data, id<MTLTexture> texture) {
         TIMER_DUMP();
         TIMER_RESET();
     }
+    
+    // dont starve other threads, MAME does not like to sleep, let Metal and Audio do some work.
+    usleep(1500);
 
     // always return 1 saying we handled the draw.
     return 1;
