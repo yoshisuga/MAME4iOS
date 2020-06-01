@@ -818,7 +818,7 @@ void mame_state(int load_save, int slot)
     
     myosd_throttle = [op throttle];
     myosd_cheat = [op cheats];
-    myosd_vsync = [op vsync] == 1 ? 5997 : -1;
+    myosd_vsync = [op vsync] == 1 ? 6000 : -1;
        
     myosd_sleep = [op sleep];
     
@@ -2086,7 +2086,7 @@ UIColor* colorWithHexString(NSString* string) {
             [self changeUI];
             break;
         case 'V':
-            myosd_vsync = myosd_vsync == -1 ? 5997 : -1;
+            myosd_vsync = myosd_vsync == -1 ? 6000 : -1;
             [self changeUI];
             break;
         case 'A':
