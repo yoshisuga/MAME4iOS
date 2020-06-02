@@ -1913,11 +1913,25 @@ UIColor* colorWithHexString(NSString* string) {
     
     // preserve aspect ratio, and snap to pixels.
     if (g_device_is_landscape ? g_pref_keep_aspect_ratio_land : g_pref_keep_aspect_ratio_port) {
-        r = AVMakeRectWithAspectRatioInsideRect(CGSizeMake(myosd_vis_video_width, myosd_vis_video_height), r);
+        CGSize aspect;
+        
+        // use an exact aspect ratio of 4:3 or 3:4 iff possible
+        if (floor(4.0 * myosd_vis_video_height / 3.0 + 0.5) == myosd_vis_video_width)
+            aspect = CGSizeMake(4, 3);
+        else if (floor(3.0 * myosd_vis_video_width / 4.0 + 0.5) == myosd_vis_video_height)
+            aspect = CGSizeMake(4, 3);
+        else if (floor(3.0 * myosd_vis_video_height / 4.0 + 0.5) == myosd_vis_video_width)
+            aspect = CGSizeMake(3, 4);
+        else if (floor(4.0 * myosd_vis_video_width / 3.0 + 0.5) == myosd_vis_video_height)
+            aspect = CGSizeMake(3, 4);
+        else
+            aspect = CGSizeMake(myosd_vis_video_width, myosd_vis_video_height);
+
+        r = AVMakeRectWithAspectRatioInsideRect(aspect, r);
         r.origin.x    = floor(r.origin.x * scale) / scale;
         r.origin.y    = floor(r.origin.y * scale) / scale;
-        r.size.width  = ceil(r.size.width * scale) / scale;
-        r.size.height = ceil(r.size.height * scale) / scale;
+        r.size.width  = floor(r.size.width * scale + 0.5) / scale;
+        r.size.height = floor(r.size.height * scale + 0.5) / scale;
     }
     
     // integer only scaling
