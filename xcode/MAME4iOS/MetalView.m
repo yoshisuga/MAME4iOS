@@ -509,6 +509,14 @@
 
 #pragma mark - shaders
 
+// split and trim a string
+static NSMutableArray* split(NSString* str, NSString* sep) {
+    NSMutableArray* arr = [[str componentsSeparatedByString:sep] mutableCopy];
+    for (int i=0; i<arr.count; i++)
+        arr[i] = [arr[i] stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
+    return arr;
+}
+
 /// a shader is a string that selects the fragment function and blend mode to use.
 /// it has the following format:
 ///
@@ -521,6 +529,12 @@
 ///                 blend=alpha  - D.rgb = S.rgb * S.a + D.rgb * (1-S.a)
 ///                 blend=add     - D.rgb = S.rgb * S.a + D.rgb
 ///                 blend=mul     - D.rgb = S.rgb * D.rgb
+///
+///     <parameters>    - a list of parameters to be passed to fragment shader as uniforms.
+///                 each parameter is one of the following...
+///                 42.0 - a floating point contant value
+///                 named-variable - a value that will be queried from the the shader variable dictionary.
+///                 named-variable=42.0 - a named variable with a default value.
 ///
 - (void)setShader:(Shader)shader {
     assert(_encoder != nil);
@@ -546,9 +560,7 @@
     }
 
     // shader cache miss, parse the shader string
-    NSMutableArray* arr = [[shader componentsSeparatedByString:@","] mutableCopy];
-    for (int i=0; i<arr.count; i++)
-        arr[i] = [arr[i] stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
+    NSMutableArray* arr = split(shader, @",");
     
     MTLRenderPipelineDescriptor* desc = [[MTLRenderPipelineDescriptor alloc] init];
     desc.colorAttachments[0].pixelFormat = _layer.pixelFormat;
@@ -624,8 +636,19 @@
     state = [_device newRenderPipelineStateWithDescriptor:desc error:nil];
     _shader_state[shader] = state;
 
-    // ...also save the shader params
+    // ...also save the shader params, convert any numbers to NSNumber, leave variables as NSString
     if (arr.count > 0) {
+        NSNumberFormatter* formater = [[NSNumberFormatter alloc] init];
+        for (int i=0; i<arr.count; i++) {
+            NSString* str = arr[i];
+            // handle variable-name=value
+            if ([str containsString:@"="]) {
+                NSArray* arr = split(str, @"=");
+                str = arr.firstObject;
+                _shader_variables[str] = [formater numberFromString:arr.lastObject] ?: @(0);
+            }
+            arr[i] = [formater numberFromString:str] ?: str;
+        }
         _shader_params[shader] = [arr copy];
     }
 
@@ -633,8 +656,8 @@
     [self setShader:shader];
 }
 
-// resolve and nammed shader variables and send float(s) to fragment function 
-- (void)setShaderParams:(NSArray<NSString*>*)params {
+// resolve nammed shader variables and send float(s) to fragment function
+- (void)setShaderParams:(NSArray*)params {
     assert(_encoder != nil);
     
     if ([params count] == 0)
@@ -642,57 +665,59 @@
 
     float float_params[128];
     NSUInteger count = 0;
-    for (NSString* str in params) {
+    for (id param in params) {
         
+        // just ignore too many params.
         assert(count <= sizeof(float_params)/sizeof(float) - 16);
         if (count > sizeof(float_params)/sizeof(float) - 16)
             break;
-
-        NSValue*  val = _shader_variables[str];
-        if (val != nil) {
-            if ([val isKindOfClass:[NSNumber class]]) {
-                float_params[count++] = [(id)val floatValue];
-            }
-            else if (strcmp([val objCType], @encode(CGRect)) == 0) {
-                CGRect rect = [val CGRectValue];
-                float_params[count++] = rect.origin.x;
-                float_params[count++] = rect.origin.y;
-                float_params[count++] = rect.size.width;
-                float_params[count++] = rect.size.height;
-            }
-            else if (strcmp([val objCType], @encode(CGSize)) == 0) {
-                CGSize size = [val CGSizeValue];
-                float_params[count++] = size.width;
-                float_params[count++] = size.height;
-            }
-            else if (strcmp([val objCType], @encode(float[2])) == 0) {
-                [val getValue:float_params+count size:2*sizeof(float)];
-                count += 2;
-            }
-            else if (strcmp([val objCType], @encode(float[4])) == 0) {
-                [val getValue:float_params+count size:4*sizeof(float)];
-                count += 4;
-            }
-            else if (strcmp([val objCType], @encode(float[2][2])) == 0) {
-                [val getValue:float_params+count size:4*sizeof(float)];
-                count += 4;
-            }
-            else if (strcmp([val objCType], @encode(float[4][4])) == 0) {
-                [val getValue:float_params+count size:16*sizeof(float)];
-                count += 16;
-            }
-            else {
-                NSLog(@"INVALID SHADER VARIABLE '%@' type=%s", str, [val objCType]);
+        
+        // a param is either a constant (NSValue/NSNumber) or a variable name (NSString)
+        NSValue* val = param;
+        if ([param isKindOfClass:[NSString class]]) {
+            val = _shader_variables[param];
+            if (val == nil) {
+                NSLog(@"UNKNOWN SHADER VARIABLE '%@' for shader \"%@\"", param, _shader_current);
                 assert(FALSE);
+                continue;
             }
         }
+        assert([val isKindOfClass:[NSValue class]]);
+
+        if ([val isKindOfClass:[NSNumber class]]) {
+            float_params[count++] = [(id)val floatValue];
+        }
+        else if (strcmp([val objCType], @encode(CGRect)) == 0) {
+            CGRect rect = [val CGRectValue];
+            float_params[count++] = rect.origin.x;
+            float_params[count++] = rect.origin.y;
+            float_params[count++] = rect.size.width;
+            float_params[count++] = rect.size.height;
+        }
+        else if (strcmp([val objCType], @encode(CGSize)) == 0) {
+            CGSize size = [val CGSizeValue];
+            float_params[count++] = size.width;
+            float_params[count++] = size.height;
+        }
+        else if (strcmp([val objCType], @encode(float[2])) == 0) {
+            [val getValue:float_params+count size:2*sizeof(float)];
+            count += 2;
+        }
+        else if (strcmp([val objCType], @encode(float[4])) == 0) {
+            [val getValue:float_params+count size:4*sizeof(float)];
+            count += 4;
+        }
+        else if (strcmp([val objCType], @encode(float[2][2])) == 0) {
+            [val getValue:float_params+count size:4*sizeof(float)];
+            count += 4;
+        }
+        else if (strcmp([val objCType], @encode(float[4][4])) == 0) {
+            [val getValue:float_params+count size:16*sizeof(float)];
+            count += 16;
+        }
         else {
-            float_params[count++] = [str floatValue];
-            // if the param is set to zero, check for a missing variable and debug spew about it.
-            if (float_params[count-1] == 0.0 && [str characterAtIndex:0] != '0') {
-                NSLog(@"UNKNOWN SHADER VARIABLE '%@' for shader \"%@\"", str, _shader_current);
-                assert(FALSE);
-            }
+            NSLog(@"INVALID SHADER VARIABLE '%@' type=%s", param, [val objCType]);
+            assert(FALSE);
         }
     }
     if (count & 1)

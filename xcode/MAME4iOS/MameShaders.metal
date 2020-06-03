@@ -70,11 +70,15 @@ mame_screen_line(VertexOutput v [[stage_in]],
 {
     float2 uv = uniforms.mame_screen_matrix * v.tex;
     float  y = fract(uv.y)*2 - 1;
-    float  f = 1.0 - abs(y);
-    float4 shade = six_colors[(int)(uv.y/16 + uniforms.frame_count/60) % 6] * float4(1.0/255.0);
+    float  f = cos(y * M_PI_F * 0.5);
+//  float4 shade = six_colors[(int)(uv.y/16 + uniforms.frame_count/60) % 6] * float4(1.0/255.0);
     float4 color = texture.sample(tsamp, v.tex) * f;
-    return color * shade;
+    return color; //  * shade;
 }
+
+
+
+
 
 
 

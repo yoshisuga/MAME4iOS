@@ -92,7 +92,8 @@
              @"Scanline : texture, blend=copy",
              @"CRT + Scanline : texture, blend=copy",
              
-             @"Wombat: mame_screen_test, frame-count, 8.0, mame-screen-size",
+             @"Wombat1: mame_screen_test, frame-count, 8.0, mame-screen-size",
+             @"Wombat2: mame_screen_test, frame-count, wombat=16.0, mame-screen-size",
              @"Test (dot): mame_screen_dot, mame-screen-matrix",
              @"Test (line): mame_screen_line, mame-screen-matrix, frame-count",
     ];
@@ -198,7 +199,7 @@
         _effectLand = @"";
         
         _sourceColorSpace = @"";
-        _useMetal = 0;
+        _useMetal = 1;
         
         _integerScalingOnly = 0;
 
@@ -314,7 +315,7 @@
         _effectLand = [optionsDict objectForKey:@"effectLand"] ?: @"";
         
         _sourceColorSpace = [optionsDict objectForKey:@"sourceColorSpace"] ?: @"";
-        _useMetal = [[optionsDict objectForKey:@"useMetal"] boolValue];
+        _useMetal = [([optionsDict objectForKey:@"useMetal"] ?: @(TRUE)) boolValue];
 
         _integerScalingOnly = [[optionsDict objectForKey:@"integerScalingOnly"] boolValue];
 

@@ -285,8 +285,6 @@ static void texture_load(void* data, id<MTLTexture> texture) {
                 //      mame-screen-size     - the size (in pixels) of the input texture
                 //      mame-screen-matrix   - matrix to convert texture coordinates (u,v) to crt (x,scanline)
                 //
-                // TODO: we should *ONLY* need mame-screen-matrix, remove mame-screen-dst-rect and mame-screen-src-rect ??
-                
                 CGSize src_size = CGSizeMake((prim->texorient & ORIENTATION_SWAP_XY) ? prim->texture_height : prim->texture_width,
                                              (prim->texorient & ORIENTATION_SWAP_XY) ? prim->texture_width : prim->texture_height);
                 
@@ -296,7 +294,7 @@ static void texture_load(void* data, id<MTLTexture> texture) {
                 // create a matrix to convert texture coordinates (u,v) to crt scanlines (x,y)
                 simd_float2x2 mame_screen_matrix;
                 if (prim->texorient & ORIENTATION_SWAP_XY)
-                    mame_screen_matrix = (matrix_float2x2){{ {0,prim->texture_height}, {prim->texture_width,0} }};
+                    mame_screen_matrix = (matrix_float2x2){{ {0,prim->texture_width}, {prim->texture_height,0} }};
                 else
                     mame_screen_matrix = (matrix_float2x2){{ {prim->texture_width,0}, {0,prim->texture_height} }};
                 
