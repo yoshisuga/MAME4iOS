@@ -12,9 +12,11 @@ using namespace metal;
 
 // Shader to draw the MAME game SCREEN....
 struct MameScreenTestUniforms {
-    float frame_num;
-    float factor;
     float2 mame_screen_size;
+    float frame_num;
+    float rate;
+    float factor_u;
+    float factor_v;
 };
 fragment half4
 mame_screen_test(VertexOutput v [[stage_in]],
@@ -25,8 +27,9 @@ mame_screen_test(VertexOutput v [[stage_in]],
     // ignore the passed in sampler, and use our own
     constexpr sampler linear_texture_sampler(mag_filter::linear, min_filter::linear);
     
-    float  t = (uniforms.frame_num / 60.0) * 2.0 * M_PI_F;
-    float2 uv = float2(v.tex.x + sin(t/2) * uniforms.factor * (1.0 / uniforms.mame_screen_size.y), v.tex.y);
+    float  t = (uniforms.frame_num / 60.0) * uniforms.rate * 2.0 * M_PI_F;
+    float2 uv = float2(v.tex.x + cos(t) * uniforms.factor_u * (1.0 / uniforms.mame_screen_size.x),
+                       v.tex.y + sin(t) * uniforms.factor_v * (1.0 / uniforms.mame_screen_size.y));
     float4 color = texture.sample(linear_texture_sampler, uv) * v.color;
     return half4(color);
 }

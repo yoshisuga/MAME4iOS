@@ -67,9 +67,8 @@
 //
 + (NSArray*)arrayCoreGraphicsEffects {
     return @[@"None",
-             @"CRT : effect-crt",
+             @"CRT : effect-crt, effect-scanline",
              @"Scanline : effect-scanline",
-             @"CRT + Scanline : effect-crt, effect-scanline",
 #ifdef DEBUG
              @"Test Dot : effect-dot",
              @"Test All : effect-crt, effect-scanline, effect-dot",
@@ -87,16 +86,15 @@
 //
 + (NSArray*)arrayMetalEffects {
     return @[@"None",
-             
-             @"CRT : texture, blend=copy",
-             @"Scanline : texture, blend=copy",
-             @"CRT + Scanline : texture, blend=copy",
-             
-             @"Wombat1: mame_screen_test, frame-count, 8.0, mame-screen-size",
-             @"Wombat2: mame_screen_test, frame-count, wombat=16.0, mame-screen-size",
+             @"CRT : mame_screen_dot, mame-screen-matrix",
+             @"Scanline : mame_screen_line, mame-screen-matrix",
+#ifdef DEBUG
+             @"Wombat1: mame_screen_test, mame-screen-size, frame-count, 1.0, 8.0, 8.0",
+             @"Wombat2: mame_screen_test, mame-screen-size, frame-count, wombat_rate=2.0, wombat_u=16.0, wombat_v=16.0",
              @"Test (dot): mame_screen_dot, mame-screen-matrix",
              @"Test (line): mame_screen_line, mame-screen-matrix",
              @"Test (rainbow): mame_screen_rainbow, mame-screen-matrix, frame-count, rainbow_h = 16.0, rainbow_speed=1.0",
+#endif
     ];
 }
 
