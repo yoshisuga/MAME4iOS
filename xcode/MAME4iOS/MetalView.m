@@ -644,7 +644,8 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
             if ([str containsString:@"="]) {
                 NSArray* arr = split(str, @"=");
                 str = arr.firstObject;
-                _shader_variables[str] = [formater numberFromString:arr.lastObject] ?: @(0);
+                if (_shader_variables[str] == nil)
+                    _shader_variables[str] = [formater numberFromString:arr[1]] ?: @(0);
             }
             arr[i] = [formater numberFromString:str] ?: str;
         }
