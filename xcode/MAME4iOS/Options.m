@@ -95,7 +95,8 @@
              @"Wombat1: mame_screen_test, frame-count, 8.0, mame-screen-size",
              @"Wombat2: mame_screen_test, frame-count, wombat=16.0, mame-screen-size",
              @"Test (dot): mame_screen_dot, mame-screen-matrix",
-             @"Test (line): mame_screen_line, mame-screen-matrix, frame-count",
+             @"Test (line): mame_screen_line, mame-screen-matrix",
+             @"Test (rainbow): mame_screen_rainbow, mame-screen-matrix, frame-count, rainbow_h = 16.0, rainbow_speed=1.0",
     ];
 }
 

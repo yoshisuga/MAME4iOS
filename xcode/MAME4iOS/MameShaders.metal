@@ -22,7 +22,7 @@ mame_screen_test(VertexOutput v [[stage_in]],
                 sampler texture_sampler [[sampler(0)]],
                 constant MameScreenTestUniforms &uniforms [[buffer(0)]])
 {
-    // ignore teh passed in sampler, and use our own
+    // ignore the passed in sampler, and use our own
     constexpr sampler linear_texture_sampler(mag_filter::linear, min_filter::linear);
     
     float  t = (uniforms.frame_num / 60.0) * 2.0 * M_PI_F;
@@ -31,14 +31,6 @@ mame_screen_test(VertexOutput v [[stage_in]],
     return half4(color);
 }
 
-constant float4 six_colors[] = {
-    float4(94, 189, 62, 255),
-    float4(255, 185, 0, 255),
-    float4(247, 130, 0, 255),
-    float4(226, 56, 56, 255),
-    float4(151, 57, 153, 255),
-    float4(0, 156, 223, 255),
-};
 
 // Shader to draw the MAME game SCREEN....
 struct MameScreenDotUniforms {
@@ -60,7 +52,6 @@ mame_screen_dot(VertexOutput v [[stage_in]],
 // Shader to draw the MAME game SCREEN....
 struct MameScreenLineUniforms {
     float2x2 mame_screen_matrix;  // matrix to convert texture coordinates (u,v) to crt scanlines (x,y)
-    float    frame_count;
 };
 fragment float4
 mame_screen_line(VertexOutput v [[stage_in]],
@@ -71,9 +62,36 @@ mame_screen_line(VertexOutput v [[stage_in]],
     float2 uv = uniforms.mame_screen_matrix * v.tex;
     float  y = fract(uv.y)*2 - 1;
     float  f = cos(y * M_PI_F * 0.5);
-//  float4 shade = six_colors[(int)(uv.y/16 + uniforms.frame_count/60) % 6] * float4(1.0/255.0);
     float4 color = texture.sample(tsamp, v.tex) * f;
-    return color; //  * shade;
+    return color;
+}
+
+constant float4 six_colors[] = {
+    float4(94, 189, 62, 255),
+    float4(255, 185, 0, 255),
+    float4(247, 130, 0, 255),
+    float4(226, 56, 56, 255),
+    float4(151, 57, 153, 255),
+    float4(0, 156, 223, 255),
+};
+
+// Shader to draw the MAME game SCREEN....
+struct MameScreenRainbowUniforms {
+    float2x2 mame_screen_matrix;  // matrix to convert texture coordinates (u,v) to crt scanlines (x,y)
+    float    frame_count;
+    float    rainbow_height;
+    float    rainbow_speed;
+};
+fragment float4
+mame_screen_rainbow(VertexOutput v [[stage_in]],
+                texture2d<float> texture [[texture(0)]],
+                sampler tsamp [[sampler(0)]],
+                constant MameScreenRainbowUniforms &uniforms [[buffer(0)]])
+{
+    float2 uv = uniforms.mame_screen_matrix * v.tex;
+    float4 shade = six_colors[(int)(uv.y/uniforms.rainbow_height + uniforms.frame_count * uniforms.rainbow_speed/60) % 6] * float4(1.0/255.0);
+    float4 color = (texture.sample(tsamp, v.tex) + shade) * 0.5;
+    return color;
 }
 
 
