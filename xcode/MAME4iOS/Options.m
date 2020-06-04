@@ -67,8 +67,8 @@
 //
 + (NSArray*)arrayCoreGraphicsEffects {
     return @[@"None",
-             @"CRT : effect-crt, effect-scanline",
              @"Scanline : effect-scanline",
+             @"CRT : effect-crt, effect-scanline",
 #ifdef DEBUG
              @"Test Dot : effect-dot",
              @"Test All : effect-crt, effect-scanline, effect-dot",
@@ -86,8 +86,7 @@
 //
 + (NSArray*)arrayMetalEffects {
     return @[@"None",
-             @"CRT : mame_screen_dot, mame-screen-matrix",
-             @"Scanline : mame_screen_line, mame-screen-matrix",
+             @"Simple CRT: simpleCRT, mame-screen-dst-rect, mame-screen-src-rect",
 #ifdef DEBUG
              @"Wombat1: mame_screen_test, mame-screen-size, frame-count, 1.0, 8.0, 8.0",
              @"Wombat2: mame_screen_test, mame-screen-size, frame-count, wombat_rate=2.0, wombat_u=16.0, wombat_v=16.0",

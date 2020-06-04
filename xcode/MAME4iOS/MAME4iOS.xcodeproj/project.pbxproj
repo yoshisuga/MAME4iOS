@@ -170,6 +170,8 @@
 		EFA7570D2406D64600A02AAB /* SystemImage.m in Sources */ = {isa = PBXBuildFile; fileRef = EFA7570B2406D64600A02AAB /* SystemImage.m */; };
 		EFA7570E2406D64600A02AAB /* SystemImage.m in Sources */ = {isa = PBXBuildFile; fileRef = EFA7570B2406D64600A02AAB /* SystemImage.m */; };
 		EFA757222408488D00A02AAB /* iCadeControls.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA757212408488D00A02AAB /* iCadeControls.png */; };
+		EFB3C6D624890F6200F44780 /* simpleCRTv06032020a.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB3C6D524890F6200F44780 /* simpleCRTv06032020a.metal */; };
+		EFB3C6D724890F6200F44780 /* simpleCRTv06032020a.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB3C6D524890F6200F44780 /* simpleCRTv06032020a.metal */; };
 		EFB7B2172479FBD900AD96A4 /* MetalView.m in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B2132479FBD800AD96A4 /* MetalView.m */; };
 		EFB7B2182479FBD900AD96A4 /* MetalView.m in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B2132479FBD800AD96A4 /* MetalView.m */; };
 		EFB7B2192479FBD900AD96A4 /* MetalViewShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B2152479FBD900AD96A4 /* MetalViewShaders.metal */; };
@@ -402,6 +404,7 @@
 		EFA7570B2406D64600A02AAB /* SystemImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SystemImage.m; sourceTree = "<group>"; };
 		EFA7570C2406D64600A02AAB /* SystemImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SystemImage.h; sourceTree = "<group>"; };
 		EFA757212408488D00A02AAB /* iCadeControls.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = iCadeControls.png; sourceTree = "<group>"; };
+		EFB3C6D524890F6200F44780 /* simpleCRTv06032020a.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = simpleCRTv06032020a.metal; sourceTree = "<group>"; };
 		EFB7B2132479FBD800AD96A4 /* MetalView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MetalView.m; sourceTree = "<group>"; };
 		EFB7B2142479FBD800AD96A4 /* MetalViewShaders.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MetalViewShaders.h; sourceTree = "<group>"; };
 		EFB7B2152479FBD900AD96A4 /* MetalViewShaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = MetalViewShaders.metal; sourceTree = "<group>"; };
@@ -824,6 +827,7 @@
 				EFB7B2142479FBD800AD96A4 /* MetalViewShaders.h */,
 				EFB7B2152479FBD900AD96A4 /* MetalViewShaders.metal */,
 				EFB7B21B247ACFE300AD96A4 /* MameShaders.metal */,
+				EFB3C6D524890F6200F44780 /* simpleCRTv06032020a.metal */,
 			);
 			name = ScreenView;
 			sourceTree = "<group>";
@@ -1050,6 +1054,7 @@
 				92A533C021EBDBAD0089FBB9 /* GCDWebServerURLEncodedFormRequest.m in Sources */,
 				92A533D821EE601D0089FBB9 /* WebServer.m in Sources */,
 				EFF9F809246356B300DDA88C /* CGScreenView.m in Sources */,
+				EFB3C6D624890F6200F44780 /* simpleCRTv06032020a.metal in Sources */,
 				EF301CF1240460C5000510FD /* Alert.m in Sources */,
 				92A533BA21EBDBAD0089FBB9 /* GCDWebServerDataResponse.m in Sources */,
 				EF24933A236264DA00DD0A6C /* ImageCache.m in Sources */,
@@ -1132,6 +1137,7 @@
 				EF941F0124427D1200D58F7F /* OptionsTableViewController.m in Sources */,
 				926C771D21F5034100103EDE /* TVInputOptionsController.m in Sources */,
 				92A5332521EBC7F40089FBB9 /* iCadeView.m in Sources */,
+				EFB3C6D724890F6200F44780 /* simpleCRTv06032020a.metal in Sources */,
 				EFB7B2182479FBD900AD96A4 /* MetalView.m in Sources */,
 				EF23D332243CB9CF006B3EE2 /* PopupSegmentedControl.m in Sources */,
 			);
