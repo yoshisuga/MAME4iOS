@@ -1,7 +1,9 @@
 <img src="mame_logo.png" width="60%">
 
 # Version 2020.9
-
+* Support for rendering with [Metal](https://en.wikipedia.org/wiki/Metal_(API)) (new)
+   - Metal can be turned off in Options `use Metal`.
+   - `Simple CRT` Effect, emulate a old CRT monitor.
 * Video options (new)
     - Use Integer Scaling Only
     - Ability to select the ColorSpace used to display MAME screen.
@@ -17,15 +19,13 @@
 * Effect options (was checkboxes, now a list)
     - CRT
     - Scanline
-    - CRT + Scanline
+    - Simple CRT (Metal only)
 * Filter options (was a checkbox, now a list)
     - Nearest
     - Linear
 * Artwork
     - Artwork is shown at hires by default.
 * Add to Siri Support
-* Support for rendering with Metal
-    - Enable `use Metal` in the Options Page.
 
       
 # Version 2020.8
