@@ -69,7 +69,6 @@ The emulator controls are the following ones:
 **FIlter** the method used to expand the emulator screen.
 - **Nearest** Dont appy any filtering, aka `FatBits`
 - **Linear**  Apply a smoothing image filter over the emulator screen.
-- **Trilinear**  Better than **Linear** but some people cant tell the difference.
 
 **Border** a border that will surround the emulator screen. 
 - **Light** - a bright thick border
@@ -219,8 +218,12 @@ we suppoprt a small subset of the keys supported by the command line MAME.
      RETURN          | MAME UI SELECT (aka A)
      DELETE          | MAME UI BACK (aka B)
      BQUOTE          | MAME4iOS MENU
-     CMD+ENTER       | TOGGLE FULLSCREEN
-     CMD+I                  | TOGGLE INTEGER SCALE
+     ⌘+ENTER       | TOGGLE FULLSCREEN
+     ⌘+I                  | TOGGLE INTEGER SCALE
+     ⌘+F                  | TOGGLE FPS DISPLAY
+     ⌘+T                  | TOGGLE THROTTLE
+     ⌘+V                  | TOGGLE VSYNC
+     ⌘+A                  | TOGGLE `Force Pixel Aspect`
      
 ## Game Controlers
 

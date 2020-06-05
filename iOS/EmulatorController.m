@@ -86,6 +86,9 @@
 #define NSLog(...) (void)0
 #endif
 
+#define UPDATE_FPS_EVERY    1
+#define OPAQUE_FPS          FALSE
+
 // mfi Controllers
 NSMutableArray *controllers;
 
@@ -101,6 +104,7 @@ int buttonMask[NUM_BUTTONS];    // map a button index to a button MYOSD_* mask
 int touchDirectionalCyclesAfterMoved = 0;
 
 int g_isIpad = 0;
+int g_isMetalSupported = 0;
 
 int g_emulation_paused = 0;
 int g_emulation_initiated=0;
@@ -231,11 +235,12 @@ void iphone_UpdateScreen()
     if (sharedInstance == nil || g_emulation_paused || sharedInstance->screenView == nil)
         return;
     
-    [sharedInstance->screenView performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone:NO];
+    UIView<ScreenView>* screenView = sharedInstance->screenView;
+    [screenView performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone:NO];
 
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wundeclared-selector"
-    if (g_pref_showFPS)
+    if (g_pref_showFPS && (screenView.frameCount % UPDATE_FPS_EVERY) == 0)
         [sharedInstance performSelectorOnMainThread:@selector(updateFrameRate) withObject:nil waitUntilDone:NO];
     #pragma clang diagnostic pop
 }
@@ -249,10 +254,20 @@ int iphone_DrawScreen(myosd_render_primitive* prim_list) {
         return 0;
 
     @autoreleasepool {
+        UIView<ScreenView>* screenView = sharedInstance->screenView;
+
 #ifdef DEBUG
         [CGScreenView drawScreenDebug:prim_list];
 #endif
-        return [sharedInstance->screenView drawScreen:prim_list];
+        BOOL result = [screenView drawScreen:prim_list];
+        
+        #pragma clang diagnostic push
+        #pragma clang diagnostic ignored "-Wundeclared-selector"
+        if (g_pref_showFPS && result && (screenView.frameCount % UPDATE_FPS_EVERY) == 0)
+            [sharedInstance performSelectorOnMainThread:@selector(updateFrameRate) withObject:nil waitUntilDone:NO];
+        #pragma clang diagnostic pop
+
+        return result;
     }
 }
 
@@ -745,6 +760,8 @@ void mame_state(int load_save, int slot)
     
     //printf("load options\n");
     
+    g_isMetalSupported = [MetalScreenView isSupported];
+    
     Options *op = [[Options alloc] init];
     
     g_pref_keep_aspect_ratio_land = [op keepAspectRatioLand];
@@ -765,7 +782,8 @@ void mame_state(int load_save, int slot)
     g_pref_metal = op.useMetal;
     g_pref_showFPS = [op showFPS];
 
-    myosd_fps = [op showFPS];
+    myosd_fps = g_pref_showFPS;
+    
     myosd_showinfo =  [op showINFO];
     g_pref_animated_DPad  = [op animatedButtons];
     g_pref_full_screen_land  = [op fullLand];
@@ -953,6 +971,15 @@ void mame_state(int load_save, int slot)
     turboBtnEnabled[BTN_L1] = [op turboLEnabled];
     turboBtnEnabled[BTN_R1] = [op turboREnabled];
     
+    // ignore some settings in the Metal case
+    if (g_pref_metal && [MetalScreenView isSupported]) {
+        myosd_sleep = 1;            // sleep to let Metal get work done.
+        myosd_video_threaded = 0;   // dont need an extra thread
+        myosd_vsync = -1;           // dont force 60Hz, just use the machine value.
+        myosd_frameskip_value = 0;  // *DONT* try to skip frames, we render so fast it is confusing MAME.
+        //myosd_frameskip_value = -1; // AUTO frameskip
+    }
+    
 #if TARGET_OS_IOS
     g_pref_lightgun_enabled = [op lightgunEnabled];
     g_pref_lightgun_bottom_reload = [op lightgunBottomScreenReload];
@@ -1018,11 +1045,11 @@ void mame_state(int load_save, int slot)
 }
 
 
-#if TARGET_OS_IOS   // NOT needed on tvOS it handles it with the focus engine
 - (void)handle_MENU
 {
     unsigned long pad_status = myosd_pad_status | myosd_joy_status[0] | myosd_joy_status[1] | myosd_joy_status[2] | myosd_joy_status[3];
     
+#if TARGET_OS_IOS   // NOT needed on tvOS it handles it with the focus engine
     UIViewController* viewController = [self presentedViewController];
     
     if ([viewController isKindOfClass:[UINavigationController class]])
@@ -1069,6 +1096,7 @@ void mame_state(int load_save, int slot)
     {
         [self runMenu];
     }
+#endif
     
     // exit MAME MENU with B (but only if we are not mapping a input)
     if (myosd_in_menu == 1 && (pad_status & MYOSD_B))
@@ -1084,7 +1112,6 @@ void mame_state(int load_save, int slot)
         [self runMenu];
     }
 }
-#endif
 
 -(void)viewDidLoad{
 
@@ -1136,7 +1163,7 @@ void mame_state(int load_save, int slot)
 #endif
 	
 	//kito
-	//[NSThread setThreadPriority:1.0];
+	[NSThread setThreadPriority:1.0];
 	
     [self updateOptions];
 
@@ -1333,17 +1360,20 @@ void mame_state(int load_save, int slot)
         return;
     
     // create a frame rate/info view and put it in the upper left corner of the screenView
-    // TODO: place this view smarter, for now overlay it exactly over screenView
     
     fpsView = [[UILabel alloc] init];
     fpsView.userInteractionEnabled = NO;
     fpsView.numberOfLines = 2;
     fpsView.font = [UIFont monospacedDigitSystemFontOfSize:(TARGET_OS_IOS ? 16.0 : 32.0) weight:UIFontWeightMedium];
-    fpsView.textColor = self.view.tintColor;
-    //fpsView.backgroundColor = [self.view.tintColor colorWithAlphaComponent:0.25];
+    fpsView.textColor = UIColor.whiteColor; // self.view.tintColor;
+#if OPAQUE_FPS
+    fpsView.backgroundColor = UIColor.blackColor;
+#else
+    fpsView.backgroundColor = [UIColor.blackColor colorWithAlphaComponent:0.333];
+#endif
     fpsView.shadowColor = UIColor.blackColor;
     fpsView.shadowOffset = CGSizeMake(1.0,1.0);
-    fpsView.text = @"000:00:00\n0000.0fps 000.0ms";
+    fpsView.text = @"000:00:00⚡️\n0000.00fps 000.0ms";
 
     CGPoint pos = screenView.frame.origin;
 
@@ -1381,7 +1411,9 @@ void mame_state(int load_save, int slot)
     NSUInteger sec = (frame_count / 60) % 60;
     NSUInteger min = (frame_count / 3600);
 
-    fpsView.text = [NSString stringWithFormat:@"%03d:%02d:%02d %.3ffps %.3fms", (int)min, (int)sec, (int)frame, screenView.frameRateAverage, screenView.renderTimeAverage * 1000.0];
+    fpsView.text = [NSString stringWithFormat:@"%03d:%02d:%02d%@ %.2ffps %.1fms", (int)min, (int)sec, (int)frame,
+                    [screenView isKindOfClass:[MetalScreenView class]] ? @"⚡️" : @"",
+                    screenView.frameRateAverage, screenView.renderTimeAverage * 1000.0];
 }
 
 - (void)changeUI { @autoreleasepool {
@@ -1881,11 +1913,25 @@ UIColor* colorWithHexString(NSString* string) {
     
     // preserve aspect ratio, and snap to pixels.
     if (g_device_is_landscape ? g_pref_keep_aspect_ratio_land : g_pref_keep_aspect_ratio_port) {
-        r = AVMakeRectWithAspectRatioInsideRect(CGSizeMake(myosd_vis_video_width, myosd_vis_video_height), r);
+        CGSize aspect;
+        
+        // use an exact aspect ratio of 4:3 or 3:4 iff possible
+        if (floor(4.0 * myosd_vis_video_height / 3.0 + 0.5) == myosd_vis_video_width)
+            aspect = CGSizeMake(4, 3);
+        else if (floor(3.0 * myosd_vis_video_width / 4.0 + 0.5) == myosd_vis_video_height)
+            aspect = CGSizeMake(4, 3);
+        else if (floor(3.0 * myosd_vis_video_height / 4.0 + 0.5) == myosd_vis_video_width)
+            aspect = CGSizeMake(3, 4);
+        else if (floor(4.0 * myosd_vis_video_width / 3.0 + 0.5) == myosd_vis_video_height)
+            aspect = CGSizeMake(3, 4);
+        else
+            aspect = CGSizeMake(myosd_vis_video_width, myosd_vis_video_height);
+
+        r = AVMakeRectWithAspectRatioInsideRect(aspect, r);
         r.origin.x    = floor(r.origin.x * scale) / scale;
         r.origin.y    = floor(r.origin.y * scale) / scale;
-        r.size.width  = ceil(r.size.width * scale) / scale;
-        r.size.height = ceil(r.size.height * scale) / scale;
+        r.size.width  = floor(r.size.width * scale + 0.5) / scale;
+        r.size.height = floor(r.size.height * scale + 0.5) / scale;
     }
     
     // integer only scaling
@@ -1907,7 +1953,7 @@ UIColor* colorWithHexString(NSString* string) {
     NSDictionary* options = @{
         kScreenViewFilter: g_device_is_landscape ? g_pref_filter_land : g_pref_filter_port,
         kScreenViewEffect: g_device_is_landscape ? g_pref_effect_land : g_pref_effect_port,
-        kScreenViewColorSpace: g_pref_colorspace
+        kScreenViewColorSpace: g_pref_colorspace,
     };
     
     // select a CoreGraphics or Metal ScreenView
@@ -1985,9 +2031,9 @@ UIColor* colorWithHexString(NSString* string) {
     }
 #endif
 
-#if TARGET_OS_IOS
     // call handle_MENU first so it can use buttonState to see key up.
     [self handle_MENU];
+#if TARGET_OS_IOS
     [self handle_DPAD];
 #endif
 }
@@ -2049,11 +2095,38 @@ UIColor* colorWithHexString(NSString* string) {
             g_pref_showFPS = !g_pref_showFPS;
             [self changeUI];
             break;
-    #ifdef DEBUG
+        case 'T':
+            myosd_throttle = !myosd_throttle;
+            [self changeUI];
+            break;
+        case 'V':
+            myosd_vsync = myosd_vsync == -1 ? 6000 : -1;
+            [self changeUI];
+            break;
+        case 'A':
+            myosd_force_pxaspect = !myosd_force_pxaspect;
+            [self changeUI];
+            break;
+        case 'M':
+        {
+            // toggle Metal, but in order to load the right shader we need to change the global Options.
+            Options* op = [[Options alloc] init];
+            op.useMetal = !op.useMetal;
+            [op saveOptions];
+            [self updateOptions];
+            [self changeUI];
+            break;
+        }
+#ifdef DEBUG
+        case 'P':
+            // **NOTE** this pauses the MAME render thread, it is not the same as the PAUSE key in MAME.
+            g_emulation_paused = !g_emulation_paused;
+            change_pause(g_emulation_paused);
+            break;
         case 'D':
             [CGScreenView drawScreenDebugDump];
             break;
-    #endif
+#endif
     }
 }
 
@@ -2730,7 +2803,7 @@ UIColor* colorWithHexString(NSString* string) {
 #endif
 }
 
-- (UIImage *)loadImage:(NSString *)name{
+- (UIImage *)loadImage:(NSString *)name {
     
     NSString *path = nil;
     UIImage *img = nil;
@@ -2752,8 +2825,8 @@ UIColor* colorWithHexString(NSString* string) {
     
     if (img == nil)
     {
-        name = [NSString stringWithFormat:@"SKIN_%d/%@", g_pref_skin, name];
-        img = [UIImage imageWithContentsOfFile:[path stringByAppendingPathComponent:name]];
+        NSString* skin_name = [NSString stringWithFormat:@"SKIN_%d/%@", g_pref_skin, name];
+        img = [UIImage imageWithContentsOfFile:[path stringByAppendingPathComponent:skin_name]];
     }
 
     [g_image_cache setObject:(img ?: [NSNull null]) forKey:name];
@@ -3519,7 +3592,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         if (isSiriRemote) {
 
             MFIController.microGamepad.allowsRotation = YES;
-            MFIController.microGamepad.reportsAbsoluteDpadValues = YES;
+            MFIController.microGamepad.reportsAbsoluteDpadValues = NO;
 
             MFIController.microGamepad.valueChangedHandler = ^(GCMicroGamepad* gamepad, GCControllerElement* element) {
 #if TARGET_OS_TV

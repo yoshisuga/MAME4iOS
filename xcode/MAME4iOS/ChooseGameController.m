@@ -247,6 +247,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     UIBarButtonItem* settings = [[UIBarButtonItem alloc] initWithImage:settingsImage style:UIBarButtonItemStylePlain target:self action:@selector(showSettings)];
 #else
     UISegmentedControl* seg3 = [[UISegmentedControl alloc] initWithItems:@[settingsImage]];
+    seg3.momentary = YES;
     [seg3 addTarget:self action:@selector(showSettings) forControlEvents:UIControlEventValueChanged];
     UIBarButtonItem* settings = [[UIBarButtonItem alloc] initWithCustomView:seg3];
 #endif
@@ -1960,7 +1961,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     _image.image = nil;
     _image.highlightedImage = nil;
     _image.contentMode = UIViewContentModeScaleAspectFit;
-    _image.layer.minificationFilter = kCAFilterTrilinear;
+    _image.layer.minificationFilter = kCAFilterLinear;
     ((ImageView*)_image).aspect = 0.0;
     [_image setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
     [_image setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];

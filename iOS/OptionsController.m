@@ -236,8 +236,9 @@
                }
                case 2:
                {
-                   cell.textLabel.text   = @"Use Metal (⚠️ DANGER ⚠️)";
+                   cell.textLabel.text   = @"Use Metal";
                    cell.accessoryView = [self optionSwitchForKey:@"useMetal"];
+                   [(UIControl*)cell.accessoryView setEnabled:g_isMetalSupported];
                    break;
                }
                case 3:

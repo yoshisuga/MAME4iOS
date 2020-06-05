@@ -45,6 +45,8 @@
 #import "Globals.h"
 #import "myosd.h"
 
+#define RESET_AVERAGE_EVERY 120   // reset averages every this many frames
+
 @interface CGScreenLayer : CALayer
 @end
 
@@ -162,24 +164,11 @@
     }
 
     // enable filtering
-    NSString* filter = _options[kScreenViewFilter];
-    
-    if ([filter isEqualToString:kScreenViewFilterTrilinear])
-    {
-        [self.layer setMagnificationFilter:kCAFilterTrilinear];
-        [self.layer setMinificationFilter:kCAFilterTrilinear];
-    }
-    else if ([filter isEqualToString:kScreenViewFilterLinear])
-    {
-        [self.layer setMagnificationFilter:kCAFilterLinear];
-        [self.layer setMinificationFilter:kCAFilterLinear];
-    }
+    if ([_options[kScreenViewFilter] isEqualToString:kScreenViewFilterLinear])
+        self.layer.minificationFilter = self.layer.magnificationFilter = kCAFilterLinear;
     else
-    {
-        [self.layer setMagnificationFilter:kCAFilterNearest];
-        [self.layer setMinificationFilter:kCAFilterNearest];
-    }
-    
+        self.layer.minificationFilter = self.layer.magnificationFilter = kCAFilterNearest;
+
     // tell layoutSubviews to update the overlay effect.
     _mame_screen_count = 0;
     [self setNeedsLayout];
@@ -233,7 +222,7 @@
     NSTimeInterval now = CACurrentMediaTime();
     
     // set the frameRate and total frameTime
-    if (_frameCount == 0) {
+    if ((_frameCount % RESET_AVERAGE_EVERY) == 0) {
         _frameRateAverage = 0;
         _renderTimeAverage = 0;
     }

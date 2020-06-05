@@ -86,6 +86,7 @@ extern float joy_analog_x[NUM_JOY][4];
 extern float joy_analog_y[NUM_JOY][2];
 
 extern int g_isIpad;
+extern int g_isMetalSupported;
 
 extern int g_emulation_initiated;
 extern int g_emulation_paused;

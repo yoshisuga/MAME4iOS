@@ -170,6 +170,14 @@
 		EFA7570D2406D64600A02AAB /* SystemImage.m in Sources */ = {isa = PBXBuildFile; fileRef = EFA7570B2406D64600A02AAB /* SystemImage.m */; };
 		EFA7570E2406D64600A02AAB /* SystemImage.m in Sources */ = {isa = PBXBuildFile; fileRef = EFA7570B2406D64600A02AAB /* SystemImage.m */; };
 		EFA757222408488D00A02AAB /* iCadeControls.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA757212408488D00A02AAB /* iCadeControls.png */; };
+		EFB3C6D624890F6200F44780 /* simpleCRTv06032020a.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB3C6D524890F6200F44780 /* simpleCRTv06032020a.metal */; };
+		EFB3C6D724890F6200F44780 /* simpleCRTv06032020a.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB3C6D524890F6200F44780 /* simpleCRTv06032020a.metal */; };
+		EFB7B2172479FBD900AD96A4 /* MetalView.m in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B2132479FBD800AD96A4 /* MetalView.m */; };
+		EFB7B2182479FBD900AD96A4 /* MetalView.m in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B2132479FBD800AD96A4 /* MetalView.m */; };
+		EFB7B2192479FBD900AD96A4 /* MetalViewShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B2152479FBD900AD96A4 /* MetalViewShaders.metal */; };
+		EFB7B21A2479FBD900AD96A4 /* MetalViewShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B2152479FBD900AD96A4 /* MetalViewShaders.metal */; };
+		EFB7B21C247ACFE300AD96A4 /* MameShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B21B247ACFE300AD96A4 /* MameShaders.metal */; };
+		EFB7B21D247ACFE300AD96A4 /* MameShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B21B247ACFE300AD96A4 /* MameShaders.metal */; };
 		EFD4D14A23C0F6AB00857A76 /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = CE30090316FA47CB000EDCF1 /* Category.ini */; };
 		EFE4B6AB2453D7F80009A6F1 /* InfoDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE4B6AA2453D7F80009A6F1 /* InfoDatabase.m */; };
 		EFE4B6AC2453D7F80009A6F1 /* InfoDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE4B6AA2453D7F80009A6F1 /* InfoDatabase.m */; };
@@ -357,6 +365,7 @@
 		E9856CEF23C9A7C50071666D /* MultipeerConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MultipeerConnectivity.framework; path = System/Library/Frameworks/MultipeerConnectivity.framework; sourceTree = SDKROOT; };
 		EF00880E2459F4EF0058C2A1 /* cheat0139.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = cheat0139.zip; path = "../../iOS-res/Applications/MAME4iOS.app/cheat0139.zip"; sourceTree = "<group>"; };
 		EF0088112459F4FC0058C2A1 /* history0139.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = history0139.zip; path = "../../iOS-res/Applications/MAME4iOS.app/history0139.zip"; sourceTree = "<group>"; };
+		EF06A576248064AC00A974B8 /* Timer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Timer.h; sourceTree = "<group>"; };
 		EF0E08AC2401840700E98F01 /* help.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = help.md; path = "../../iOS-res/Applications/MAME4iOS.app/help.md"; sourceTree = "<group>"; };
 		EF19F229235D1BDF00C8EE7F /* ChooseGameController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ChooseGameController.m; sourceTree = "<group>"; };
 		EF19F22E235D1C0300C8EE7F /* ChooseGameController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ChooseGameController.h; sourceTree = "<group>"; };
@@ -395,6 +404,12 @@
 		EFA7570B2406D64600A02AAB /* SystemImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SystemImage.m; sourceTree = "<group>"; };
 		EFA7570C2406D64600A02AAB /* SystemImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SystemImage.h; sourceTree = "<group>"; };
 		EFA757212408488D00A02AAB /* iCadeControls.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = iCadeControls.png; sourceTree = "<group>"; };
+		EFB3C6D524890F6200F44780 /* simpleCRTv06032020a.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = simpleCRTv06032020a.metal; sourceTree = "<group>"; };
+		EFB7B2132479FBD800AD96A4 /* MetalView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MetalView.m; sourceTree = "<group>"; };
+		EFB7B2142479FBD800AD96A4 /* MetalViewShaders.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MetalViewShaders.h; sourceTree = "<group>"; };
+		EFB7B2152479FBD900AD96A4 /* MetalViewShaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = MetalViewShaders.metal; sourceTree = "<group>"; };
+		EFB7B2162479FBD900AD96A4 /* MetalView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MetalView.h; sourceTree = "<group>"; };
+		EFB7B21B247ACFE300AD96A4 /* MameShaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = MameShaders.metal; sourceTree = "<group>"; };
 		EFE1D707242C05CE0081EEC6 /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = System/Library/Frameworks/CoreImage.framework; sourceTree = SDKROOT; };
 		EFE1D709242C1D840081EEC6 /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS13.2.sdk/System/Library/Frameworks/CoreImage.framework; sourceTree = DEVELOPER_DIR; };
 		EFE4B6A92453D7F80009A6F1 /* InfoDatabase.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InfoDatabase.h; sourceTree = "<group>"; };
@@ -548,6 +563,7 @@
 		CEAC6C2716AAA73900AF3275 /* RELOADED */ = {
 			isa = PBXGroup;
 			children = (
+				EFB7B2122479FB8900AD96A4 /* ScreenView */,
 				EF1EC8A82441074400CC743D /* Options */,
 				CEE680AA1635BB2700051BC2 /* AnalogStick.h */,
 				CEE680AB1635BB2700051BC2 /* AnalogStick.m */,
@@ -570,11 +586,6 @@
 				CE6D6E1316D8CADF00F265B7 /* LayoutView.m */,
 				CE9454D21731DE4D00B81C32 /* NetplayGameKit.h */,
 				CE9454D31731DE4D00B81C32 /* NetplayGameKit.m */,
-				CEE680C11635BB6100051BC2 /* ScreenView.h */,
-				EFF9F808246356B300DDA88C /* CGScreenView.h */,
-				EFF9F807246356B200DDA88C /* CGScreenView.m */,
-				EFF9F8282470755800DDA88C /* MetalScreenView.h */,
-				EFF9F8292470755800DDA88C /* MetalScreenView.m */,
 				92B99F0C2022706600CC44E3 /* UIView+Toast.h */,
 				92B99F0D2022706600CC44E3 /* UIView+Toast.m */,
 				EF301CEF240460C5000510FD /* Alert.h */,
@@ -802,6 +813,25 @@
 			name = "help images";
 			sourceTree = "<group>";
 		};
+		EFB7B2122479FB8900AD96A4 /* ScreenView */ = {
+			isa = PBXGroup;
+			children = (
+				EF06A576248064AC00A974B8 /* Timer.h */,
+				CEE680C11635BB6100051BC2 /* ScreenView.h */,
+				EFF9F808246356B300DDA88C /* CGScreenView.h */,
+				EFF9F807246356B200DDA88C /* CGScreenView.m */,
+				EFF9F8282470755800DDA88C /* MetalScreenView.h */,
+				EFF9F8292470755800DDA88C /* MetalScreenView.m */,
+				EFB7B2162479FBD900AD96A4 /* MetalView.h */,
+				EFB7B2132479FBD800AD96A4 /* MetalView.m */,
+				EFB7B2142479FBD800AD96A4 /* MetalViewShaders.h */,
+				EFB7B2152479FBD900AD96A4 /* MetalViewShaders.metal */,
+				EFB7B21B247ACFE300AD96A4 /* MameShaders.metal */,
+				EFB3C6D524890F6200F44780 /* simpleCRTv06032020a.metal */,
+			);
+			name = ScreenView;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -1008,6 +1038,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				92A533B121EBDBAD0089FBB9 /* GCDWebServerConnection.m in Sources */,
+				EFB7B2192479FBD900AD96A4 /* MetalViewShaders.metal in Sources */,
 				925ABCA61E46DCC500997182 /* iCadeView.m in Sources */,
 				92A533B721EBDBAD0089FBB9 /* GCDWebServerFileResponse.m in Sources */,
 				EF941F0024427D1200D58F7F /* OptionsTableViewController.m in Sources */,
@@ -1016,12 +1047,14 @@
 				925ABCA81E46DCC500997182 /* ListOptionController.m in Sources */,
 				92A533C621EBDBAD0089FBB9 /* GCDWebServerDataRequest.m in Sources */,
 				92A533A821EBDBAD0089FBB9 /* GCDWebServerRequest.m in Sources */,
+				EFB7B21C247ACFE300AD96A4 /* MameShaders.metal in Sources */,
 				925ABCA91E46DCC500997182 /* OptionsController.m in Sources */,
 				EF8EAA8A244F7F5D00DA02BB /* SteamControllerExtendedGamepad.m in Sources */,
 				EF8EAA8C244F7F5D00DA02BB /* SteamControllerInput.m in Sources */,
 				92A533C021EBDBAD0089FBB9 /* GCDWebServerURLEncodedFormRequest.m in Sources */,
 				92A533D821EE601D0089FBB9 /* WebServer.m in Sources */,
 				EFF9F809246356B300DDA88C /* CGScreenView.m in Sources */,
+				EFB3C6D624890F6200F44780 /* simpleCRTv06032020a.metal in Sources */,
 				EF301CF1240460C5000510FD /* Alert.m in Sources */,
 				92A533BA21EBDBAD0089FBB9 /* GCDWebServerDataResponse.m in Sources */,
 				EF24933A236264DA00DD0A6C /* ImageCache.m in Sources */,
@@ -1034,6 +1067,7 @@
 				EFA7570D2406D64600A02AAB /* SystemImage.m in Sources */,
 				92A533AB21EBDBAD0089FBB9 /* GCDWebServerFunctions.m in Sources */,
 				92A533BD21EBDBAD0089FBB9 /* GCDWebServerStreamedResponse.m in Sources */,
+				EFB7B2172479FBD900AD96A4 /* MetalView.m in Sources */,
 				9268D85A2166841000AB0470 /* DeviceScreenResolver.m in Sources */,
 				925ABCB21E46DCC500997182 /* LayoutView.m in Sources */,
 				EF8EAA86244F7F5D00DA02BB /* SteamControllerManager.m in Sources */,
@@ -1065,6 +1099,7 @@
 				EF27F36823F73CD400B1E50A /* ZipFile.m in Sources */,
 				92A533BE21EBDBAD0089FBB9 /* GCDWebServerStreamedResponse.m in Sources */,
 				92A533C421EBDBAD0089FBB9 /* GCDWebServerMultiPartFormRequest.m in Sources */,
+				EFB7B21A2479FBD900AD96A4 /* MetalViewShaders.metal in Sources */,
 				926C770A21F271A700103EDE /* ListOptionController.m in Sources */,
 				92A533C721EBDBAD0089FBB9 /* GCDWebServerDataRequest.m in Sources */,
 				926C76FF21F1C87700103EDE /* TVOptionsController.m in Sources */,
@@ -1081,6 +1116,7 @@
 				EF8EAA89244F7F5D00DA02BB /* SteamController.m in Sources */,
 				92A533A621EBDBAD0089FBB9 /* GCDWebServerResponse.m in Sources */,
 				92A533D921EE601D0089FBB9 /* WebServer.m in Sources */,
+				EFB7B21D247ACFE300AD96A4 /* MameShaders.metal in Sources */,
 				92A533D421EBDDF20089FBB9 /* GCDWebUploader.m in Sources */,
 				92ECB91221EAA1B700D1E3D0 /* EmulatorController.m in Sources */,
 				EF8EAA87244F7F5D00DA02BB /* SteamControllerManager.m in Sources */,
@@ -1101,6 +1137,8 @@
 				EF941F0124427D1200D58F7F /* OptionsTableViewController.m in Sources */,
 				926C771D21F5034100103EDE /* TVInputOptionsController.m in Sources */,
 				92A5332521EBC7F40089FBB9 /* iCadeView.m in Sources */,
+				EFB3C6D724890F6200F44780 /* simpleCRTv06032020a.metal in Sources */,
+				EFB7B2182479FBD900AD96A4 /* MetalView.m in Sources */,
 				EF23D332243CB9CF006B3EE2 /* PopupSegmentedControl.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1125,7 +1163,7 @@
 				);
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = "MAME4iOS/MAME4iOS-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../..",
@@ -1157,7 +1195,7 @@
 				GCC_PREFIX_HEADER = "MAME4iOS/MAME4iOS-Prefix.pch";
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = "MAME4iOS/MAME4iOS-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../..",
@@ -1237,7 +1275,7 @@
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 12.1;
+				TVOS_DEPLOYMENT_TARGET = 12.4;
 				VALID_ARCHS = arm64;
 			};
 			name = Debug;
@@ -1303,7 +1341,7 @@
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 12.1;
+				TVOS_DEPLOYMENT_TARGET = 12.4;
 				VALID_ARCHS = arm64;
 			};
 			name = Release;
@@ -1350,7 +1388,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1394,7 +1432,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
 				SDKROOT = iphoneos;

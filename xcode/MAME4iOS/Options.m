@@ -59,21 +59,52 @@
 + (NSArray*)arrayFilter {
     return @[@"Nearest",
              @"Linear",
-             @"Trilinear"
     ];
 }
-// TODO: make the effect list depend on useMetal
-+ (NSArray*)arrayEffect {
+
+// CoreGraphics effect string is of the form:
+//        <Friendly Name> : <overlay image> [,<overlay image> ...]
+//
++ (NSArray*)arrayCoreGraphicsEffects {
     return @[@"None",
-             @"CRT : effect-crt",
              @"Scanline : effect-scanline",
-             @"CRT + Scanline : effect-crt, effect-scanline",
+             @"CRT : effect-crt, effect-scanline",
 #ifdef DEBUG
              @"Test Dot : effect-dot",
              @"Test All : effect-crt, effect-scanline, effect-dot",
 #endif
     ];
 }
+
+// Metal effect string is of the form:
+//        <Friendly Name> : <shader description>
+//
+// NOTE: see MetalView.h for what a <shader description> is.
+//
+// NOTE arrayCoreGraphicsEffects and arrayMetalEffects should use the same friendly name
+// for similar effects, so if the user turns off/on metal the choosen effect wont get reset to default.
+//
++ (NSArray*)arrayMetalEffects {
+    return @[@"None",
+             @"Simple CRT: simpleCRT, mame-screen-dst-rect, mame-screen-src-rect",
+#ifdef DEBUG
+             @"Wombat1: mame_screen_test, mame-screen-size, frame-count, 1.0, 8.0, 8.0",
+             @"Wombat2: mame_screen_test, mame-screen-size, frame-count, wombat_rate=2.0, wombat_u=16.0, wombat_v=16.0",
+             @"Test (dot): mame_screen_dot, mame-screen-matrix",
+             @"Test (line): mame_screen_line, mame-screen-matrix",
+             @"Test (rainbow): mame_screen_rainbow, mame-screen-matrix, frame-count, rainbow_h = 16.0, rainbow_speed=1.0",
+#endif
+    ];
+}
+
++ (NSArray*)arrayEffect {
+    Options* op = [[Options alloc] init];
+    if (g_isMetalSupported && op.useMetal)
+        return [self arrayMetalEffects];
+    else
+        return [self arrayCoreGraphicsEffects];
+}
+
 //
 // color space data, we define the colorSpaces here, in one place, so it stays in-sync with the UI.
 //
@@ -166,7 +197,7 @@
         _effectLand = @"";
         
         _sourceColorSpace = @"";
-        _useMetal = 0;
+        _useMetal = 1;
         
         _integerScalingOnly = 0;
 
@@ -282,7 +313,7 @@
         _effectLand = [optionsDict objectForKey:@"effectLand"] ?: @"";
         
         _sourceColorSpace = [optionsDict objectForKey:@"sourceColorSpace"] ?: @"";
-        _useMetal = [[optionsDict objectForKey:@"useMetal"] boolValue];
+        _useMetal = [([optionsDict objectForKey:@"useMetal"] ?: @(TRUE)) boolValue];
 
         _integerScalingOnly = [[optionsDict objectForKey:@"integerScalingOnly"] boolValue];
 
