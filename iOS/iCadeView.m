@@ -828,7 +828,7 @@
         g_keyboard_state[KEY_LALT] || g_keyboard_state[KEY_RALT])
     {
         if (isKeyDown && keyCode == KEY_RETURN)
-            [emuController commandKey:'\n'];
+            [emuController commandKey:'\r'];
         if (isKeyDown && keyCode >= KEY_A && keyCode <= KEY_Z)
             [emuController commandKey:'A' + (keyCode - KEY_A)];
         if (isKeyDown && keyCode >= KEY_0 && keyCode <= KEY_9)

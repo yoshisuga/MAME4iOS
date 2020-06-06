@@ -34,6 +34,12 @@ static Shader const ShaderTextureMultiply = @"texture, blend=mul";
 
 typedef void (*texture_load_function_t)(void*, id<MTLTexture>);
 
+//
+// MetalView - a UIView subclass for custom drawing with Metal (in 2D)
+//
+// THREADING ISSUES
+//
+//
 @interface MetalView : UIView
 
 @property(class, readonly) BOOL isSupported;
@@ -96,6 +102,7 @@ typedef void (*texture_load_function_t)(void*, id<MTLTexture>);
 ///     render-target-size         - size of the render target (in pixels)
 ///
 -(void)setShaderVariables:(NSDictionary<NSString*, NSValue*>*)variables;
+-(NSDictionary<NSString*, NSValue*>*)getShaderVariables;
 
 -(void)setTextureFilter:(MTLSamplerMinMagFilter)filter;
 -(void)setTextureAddressMode:(MTLSamplerAddressMode)mode;
