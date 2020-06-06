@@ -14,8 +14,9 @@
 #include "osdcore.h"
 //#include <malloc.h>
 #include <unistd.h>
-#include "render.h"
 #include "emu.h"
+#include "render.h"
+#include "rendlay.h"
 #include "osdvideo.h"
 
 #include <pthread.h>
@@ -30,9 +31,6 @@ static int curr_screen_width;
 static int curr_screen_height;
 static int curr_vis_area_screen_width;
 static int curr_vis_area_screen_height;
-
-static int hofs;
-static int vofs;
 
 static const render_primitive_list *currlist = NULL;
 static int thread_stopping = 0;
@@ -80,13 +78,6 @@ void droid_ios_init_video(running_machine *machine)
 
 void droid_ios_video_draw()
 {
-	UINT8 *surfptr;
-	INT32 pitch;
-	int bpp;
-
-	bpp = 2;
-	vofs = hofs = 0;
-
 	if(myosd_video_threaded)
 	{
 		pthread_mutex_lock( &cond_mutex );
@@ -114,23 +105,23 @@ void droid_ios_video_draw()
 
 	if(myosd_video_threaded)
 	   osd_lock_acquire(currlist->lock);
+    
+    int should_draw_sw = myosd_video_draw(currlist->head) == 0;
 
-	surfptr = (UINT8 *) myosd_screen15;
-
-	pitch = screen_width * 2;
-
-	surfptr += ((vofs * pitch) + (hofs * bpp));
-
+    if (should_draw_sw)
+    {
 #ifdef ANDROID
-	draw_rgb565_draw_primitives(currlist->head, surfptr, screen_width, screen_height, pitch / 2);
+        draw_rgb565_draw_primitives(currlist->head, myosd_curr_screen, screen_width, screen_height, screen_width);
 #else
-	draw_rgb555_draw_primitives(currlist->head, surfptr, screen_width, screen_height, pitch / 2);
+        draw_rgb555_draw_primitives(currlist->head, myosd_curr_screen, screen_width, screen_height, screen_width);
 #endif
+    }
 
 	if(myosd_video_threaded)
 	  osd_lock_release(currlist->lock);
 
-	myosd_video_flip();
+    if (should_draw_sw)
+        myosd_video_flip();
 
 	if(myosd_video_threaded)
 	   pthread_mutex_lock( &cond_mutex );
@@ -148,6 +139,15 @@ void droid_ios_video_thread()
 	{
 		droid_ios_video_draw();
 	}
+}
+
+// HACK function to get current view from render target
+// TODO: move it into render.c??
+// TODO: make a function called render_target_has_art()??
+layout_view * render_target_get_current_view(render_target *target)
+{
+    //return target->curview;
+    return (layout_view *)((void**)target)[2];
 }
 
 void droid_ios_video_render(render_target *our_target)
@@ -172,25 +172,28 @@ void droid_ios_video_render(render_target *our_target)
 
 		   int w,h;
 		   render_target_compute_visible_area(our_target,minwidth,minheight,4/3,render_target_get_orientation(our_target),&w, &h);
-
 		   viswidth = w;
 		   visheight = h;
-
-		   /*
-		   float ratio = (float)w / (float)h;
-
-		   int new_w = minheight *  ratio;
-		   int new_h = minwidth * (1/ratio);
-
-		   if(new_w > minwidth && new_w<=1024)
-		   {
-			   minwidth = new_w;
-		   }
-		   else
-		   {
-			   minheight = new_h;
-		   }
-		   */
+            
+           // if the current view has artwork we want to use the largest target we can, to fit the display.
+           // in the no art case, use the minimal buffer size needed, so it gets scaled up by hardware.
+           layout_view * view = render_target_get_current_view(our_target);
+            
+           if (layout_view_has_art(view) && myosd_display_width > viswidth && myosd_display_height > visheight)
+           {
+                if (myosd_display_width < myosd_display_height * viswidth / visheight)
+                {
+                    visheight = visheight * myosd_display_width / viswidth;
+                    viswidth  = myosd_display_width;
+                }
+                else
+                {
+                    viswidth  = viswidth * myosd_display_height / visheight;
+                    visheight = myosd_display_height;
+                }
+                minwidth = viswidth;
+                minheight = visheight;
+           }
 		}
 		else
 		{
@@ -204,6 +207,12 @@ void droid_ios_video_render(render_target *our_target)
 			   case 8:{minwidth = 640;minheight = 480;break;}
 			   case 9:{minwidth = 800;minheight = 600;break;}
 			   case 10:{minwidth = 1024;minheight = 768;break;}
+			   case 11:{minwidth = 1280;minheight = 960;break;}
+			   case 12:{minwidth = 1440;minheight = 1080;break;} // Optimal HD: added for 1080P displays
+         		   case 13:{minwidth = 1600;minheight = 1200;break;}
+         		   case 14:{minwidth = 1920;minheight = 1440;break;}
+         		   case 15:{minwidth = 2048;minheight = 1536;break;}
+         		   case 16:{minwidth = 2880;minheight = 2160;break;} // Optimal UHD: added for Consumer 4K/UHD displays		
 			}
 			render_target_compute_visible_area(our_target,minwidth,minheight,4/3,render_target_get_orientation(our_target),&minwidth,&minheight);
 			viswidth = minwidth;
@@ -211,6 +220,9 @@ void droid_ios_video_render(render_target *our_target)
 		}
 
 		if(minwidth%2!=0)minwidth++;
+        
+        minwidth  = MIN(MYOSD_BUFFER_WIDTH, minwidth);
+        minheight = MIN(MYOSD_BUFFER_HEIGHT, minheight);
 
 		// make that the size of our target
 		render_target_set_bounds(our_target, minwidth, minheight, 0);
@@ -233,6 +245,8 @@ void droid_ios_video_render(render_target *our_target)
 	   pthread_mutex_unlock( &cond_mutex );
 }
 
+#ifdef ANDROID
+
 #define FUNC_PREFIX(x)		draw_rgb565_##x
 #define PIXEL_TYPE			UINT16
 #define SRCSHIFT_R			3
@@ -244,6 +258,8 @@ void droid_ios_video_render(render_target *our_target)
 
 #include "rendersw.c"
 
+#else
+
 #define FUNC_PREFIX(x)		draw_rgb555_##x
 #define PIXEL_TYPE			UINT16
 #define SRCSHIFT_R			3
@@ -254,3 +270,5 @@ void droid_ios_video_render(render_target *our_target)
 #define DSTSHIFT_B			0
 
 #include "rendersw.c"
+
+#endif

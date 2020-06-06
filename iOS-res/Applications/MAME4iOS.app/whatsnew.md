@@ -1,7 +1,40 @@
 <img src="mame_logo.png" width="60%">
 
+# Version 2020.9
+* Support for rendering with [Metal](https://en.wikipedia.org/wiki/Metal_(API)) (new)
+   - Metal can be turned off in Options `use Metal`.
+   - `Simple CRT` Effect, emulate a old CRT monitor.
+* Video options (new)
+    - Use Integer Scaling Only
+    - Ability to select the ColorSpace used to display MAME screen.
+* Colorspace (new)
+    - DisplayRGB 
+    - sRGB
+    - CRT (gamma 2.5)
+    - Rec709 (gamma 2.4)
+* Border options (new)
+    - Light
+    - Dark
+    - Solid Color
+* Effect options (was checkboxes, now a list)
+    - CRT
+    - Scanline
+    - Simple CRT (Metal only)
+* Filter options (was a checkbox, now a list)
+    - Nearest
+    - Linear
+* Artwork
+    - Artwork is shown at hires by default.
+* Add to Siri Support
+
+      
+# Version 2020.8
+* Better INFO/HISTORY.DAT display in landscape (and tvOS)
+* Fixed tvOS MAME top shelf wide logo
+
 # Version 2020.7
 
+* Added in 4K/UHD MAME render resolution support so that MAME artwork looks much better
 * Added in iCade support for tvOS 
 * Steam Controller support, controller must be in [bluetooth mode and paired](https://support.steampowered.com/kb_article.php?ref=7728-QESJ-4420)
 * Fixed issue where audio would stop when playing back content from another source or being interrupted by a phone call.
@@ -14,6 +47,7 @@
 * Supports Controler trigger buttons `L2`, `R2`.  `MENU+L2` will Insert a `P2 COIN`, and `MENU+R2` will do a `P2 START`.
 * Removed separate `Load State` and `Save State` from the in-game menu, to make room, the menu is cramped in landscape and tvOS
 * 🅑 will exit a `MAME` menu
+* Added support for HISTORY.DAT and MAMEINFO.DAT. you can import a .ZIP file containing the files or manualy copy files into `dats` directory.
 
 # Version 2020.6
 

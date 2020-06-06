@@ -59,54 +59,6 @@
 
 @implementation OptionsController
 
-- (id)init {
-    
-    if (self = [super init]) {
-        switchKeepAspectPort=nil;
-        switchKeepAspectLand=nil;
-        switchSmoothedPort=nil;
-        switchSmoothedLand=nil;
-        
-        switchTvFilterPort=nil;
-        switchTvFilterLand=nil;
-        switchScanlineFilterPort=nil;
-        switchScanlineFilterLand=nil;
-        
-        switchShowFPS=nil;
-        switchShowINFO=nil;
-
-        switchfullLand=nil;
-        switchfullPort=nil;
-        switchfullLandJoy=nil;
-        switchfullPortJoy=nil;
-
-        switchThrottle = nil;
-        
-        switchSleep = nil;
-        
-        switchForcepxa = nil;
-        
-        arrayEmuRes = [[NSArray alloc] initWithObjects:@"Auto",@"320x200",@"320x240",@"400x300",@"480x300",@"512x384",@"640x400",@"640x480",@"800x600",@"1024x768", nil];
-                        
-        arrayFSValue = [[NSArray alloc] initWithObjects:@"Auto",@"None", @"1", @"2", @"3",@"4", @"5", @"6", @"7", @"8", @"9", @"10",nil];
-        
-        arrayOverscanValue = [[NSArray alloc] initWithObjects:@"None",@"1", @"2", @"3",@"4", @"5", @"6", nil];
-        
-        arraySkinValue = 
-        [[NSArray alloc] initWithObjects: @"A", @"B (Layout 1)", @"B (Layout 2)", nil];
-                
-        switchLowlsound = nil;
-
-        
-        arrayEmuSpeed = [[NSArray alloc] initWithObjects: @"Default",
-                         @"50%", @"60%", @"70%", @"80%", @"85%",@"90%",@"95%",@"100%",
-                         @"105%", @"110%", @"115%", @"120%", @"130%",@"140%",@"150%",
-                         nil];
-    }
-
-    return self;
-}
-
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.title = NSLocalizedString(@"Settings", @"");
@@ -136,20 +88,12 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
    
-   NSString *cellIdentifier = [NSString stringWithFormat: @"%d:%d", (int)[indexPath indexAtPosition:0], (int)[indexPath indexAtPosition:1]];
-   UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
-   
-   if (cell == nil)
-   {
-      cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault
-                                      reuseIdentifier:@"CellIdentifier"];
-       
-      cell.accessoryType = UITableViewCellAccessoryNone;
-      cell.selectionStyle = UITableViewCellSelectionStyleNone;
-   }
+   UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:nil];
+   cell.accessoryType = UITableViewCellAccessoryNone;
+   cell.selectionStyle = UITableViewCellSelectionStyleNone;
    
    Options *op = [[Options alloc] init];
-   
+    
    switch (indexPath.section)
    {
            
@@ -181,127 +125,158 @@
            {
                case 0: 
                {
-                   cell.textLabel.text   = @"Smoothed Image";
-                   switchSmoothedPort = [[UISwitch alloc] initWithFrame:CGRectZero];
-                   cell.accessoryView = switchSmoothedPort;
-                   [switchSmoothedPort setOn:[op smoothedPort] animated:NO];
-                   [switchSmoothedPort addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];                   
+                   cell.textLabel.text = @"Filter";
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   cell.detailTextLabel.text = [Options.arrayFilter optionName:op.filterPort];
                    break;
                }
                
                case 1:
                {
-                   cell.textLabel.text   = @"CRT Effect";
-                   switchTvFilterPort  = [[UISwitch alloc] initWithFrame:CGRectZero];
-                   cell.accessoryView = switchTvFilterPort ;
-                   [switchTvFilterPort setOn:[op tvFilterPort] animated:NO];
-                   [switchTvFilterPort addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                   cell.textLabel.text   = @"Effect";
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   cell.detailTextLabel.text = [Options.arrayEffect optionName:op.effectPort];
                    break;
                }
                case 2:
                {
-                   cell.textLabel.text   = @"Scanline Effect";
-                   switchScanlineFilterPort  = [[UISwitch alloc] initWithFrame:CGRectZero];
-                   cell.accessoryView = switchScanlineFilterPort ;
-                   [switchScanlineFilterPort setOn:[op scanlineFilterPort] animated:NO];
-                   [switchScanlineFilterPort addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
+                   cell.textLabel.text   = @"Border";
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   cell.detailTextLabel.text = [Options.arrayBorder optionName:op.borderPort];
                    break;
                }          
                case 3:
                {
                    cell.textLabel.text   = @"Full Screen";
-                   switchfullPort  = [[UISwitch alloc] initWithFrame:CGRectZero];
-                   cell.accessoryView = switchfullPort;
-                   [switchfullPort setOn:[op fullPort] animated:NO];
-                   [switchfullPort addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                   cell.accessoryView = [self optionSwitchForKey:@"fullPort"];
                    break;
                }
                case 4:
                {
                    cell.textLabel.text   = @"Full Screen with Controller";
-                   switchfullPortJoy  = [[UISwitch alloc] initWithFrame:CGRectZero];
-                   cell.accessoryView = switchfullPortJoy;
-                   [switchfullPortJoy setOn:[op fullPortJoy] animated:NO];
-                   [switchfullPortJoy addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                   cell.accessoryView = [self optionSwitchForKey:@"fullPortJoy"];
                    break;
                }
                case 5:
                {
-	                cell.textLabel.text   = @"Keep Aspect Ratio";
-	                switchKeepAspectPort  = [[UISwitch alloc] initWithFrame:CGRectZero];
-	                cell.accessoryView = switchKeepAspectPort;
-	                [switchKeepAspectPort setOn:[op keepAspectRatioPort] animated:NO];
-	                [switchKeepAspectPort addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
+                   cell.textLabel.text   = @"Keep Aspect Ratio";
+                   cell.accessoryView = [self optionSwitchForKey:@"keepAspectRatioPort"];
                    break;
                }             
-                           
-           }    
+           }
            break;
        }
        case kLandscapeSection:  //Landscape
        {
            switch (indexPath.row) 
            {
-               case 0: 
+               case 0:
                {
-                   cell.textLabel.text  = @"Smoothed Image";
-                   switchSmoothedLand = [[UISwitch alloc] initWithFrame:CGRectZero];
-                   cell.accessoryView = switchSmoothedLand;
-                   [switchSmoothedLand setOn:[op smoothedLand] animated:NO];
-                   [switchSmoothedLand addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];  
+                   cell.textLabel.text = @"Filter";
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   cell.detailTextLabel.text = [Options.arrayFilter optionName:op.filterLand];
                    break;
                }
+               
                case 1:
                {
-                   cell.textLabel.text   = @"CRT Effect";
-                   switchTvFilterLand  = [[UISwitch alloc] initWithFrame:CGRectZero];
-                   cell.accessoryView = switchTvFilterLand ;
-                   [switchTvFilterLand setOn:[op tvFilterLand] animated:NO];
-                   [switchTvFilterLand addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];  
+                   cell.textLabel.text   = @"Effect";
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   cell.detailTextLabel.text = [Options.arrayEffect optionName:op.effectLand];
                    break;
                }
                case 2:
                {
-                   cell.textLabel.text   = @"Scanline Effect";
-                   switchScanlineFilterLand  = [[UISwitch alloc] initWithFrame:CGRectZero];
-                   cell.accessoryView = switchScanlineFilterLand ;
-                   [switchScanlineFilterLand setOn:[op scanlineFilterLand] animated:NO];
-                   [switchScanlineFilterLand addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
+                   cell.textLabel.text   = @"Border";
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   cell.detailTextLabel.text = [Options.arrayBorder optionName:op.borderLand];
                    break;
                }
                case 3:
                {
                    cell.textLabel.text   = @"Full Screen";
-                   switchfullLand  = [[UISwitch alloc] initWithFrame:CGRectZero];
-                   cell.accessoryView = switchfullLand ;
-                   [switchfullLand setOn:[op fullLand] animated:NO];
-                   [switchfullLand addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                   cell.accessoryView = [self optionSwitchForKey:@"fullLand"];
                    break;
                }
 
                case 4:
                {
                    cell.textLabel.text   = @"Full Screen with Controller";
-                   switchfullLandJoy  = [[UISwitch alloc] initWithFrame:CGRectZero];
-                   cell.accessoryView = switchfullLandJoy;
-                   [switchfullLandJoy setOn:[op fullLandJoy] animated:NO];
-                   [switchfullLandJoy addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                   cell.accessoryView = [self optionSwitchForKey:@"fullLandJoy"];
                    break;
                }
 
                case 5:
                {
                     cell.textLabel.text   = @"Keep Aspect Ratio";
-                    switchKeepAspectLand  = [[UISwitch alloc] initWithFrame:CGRectZero];
-                    cell.accessoryView = switchKeepAspectLand;
-                    [switchKeepAspectLand setOn:[op keepAspectRatioLand] animated:NO];
-                    [switchKeepAspectLand addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
-   
+                    cell.accessoryView = [self optionSwitchForKey:@"keepAspectRatioLand"];
                    break;
                }
            }
            break;
-        }    
+        }
+           
+        case kVideoSection:
+        {
+            switch (indexPath.row)
+            {
+               case 0:
+               {
+                   cell.textLabel.text   = @"Emulated Resolution";
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   cell.detailTextLabel.text = [Options.arrayEmuRes optionAtIndex:op.emures];
+                   break;
+               }
+               case 1:
+               {
+                   cell.textLabel.text   = @"Colorspace";
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   cell.detailTextLabel.text = [Options.arrayColorSpace optionName:op.sourceColorSpace];
+                   break;
+               }
+               case 2:
+               {
+                   cell.textLabel.text   = @"Use Metal";
+                   cell.accessoryView = [self optionSwitchForKey:@"useMetal"];
+                   [(UIControl*)cell.accessoryView setEnabled:g_isMetalSupported];
+                   break;
+               }
+               case 3:
+               {
+                   cell.textLabel.text   = @"Integer Scaling Only";
+                   cell.accessoryView = [self optionSwitchForKey:@"integerScalingOnly"];
+                   break;
+               }
+               case 4:
+               {
+                   cell.textLabel.text   = @"Force Pixel Aspect";
+                   cell.accessoryView = [self optionSwitchForKey:@"forcepxa"];
+                   break;
+               }
+               case 5:
+               {
+                   cell.textLabel.text   = @"Throttle";
+                   cell.accessoryView = [self optionSwitchForKey:@"throttle"];
+                   break;
+               }
+               case 6:
+               {
+                   cell.textLabel.text   = @"Frame Skip";
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   cell.detailTextLabel.text = [Options.arrayFSValue optionAtIndex:op.fsvalue];
+                   break;
+               }
+               case 7:
+               {
+                   cell.textLabel.text   = @"Overscan TV-OUT";
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   cell.detailTextLabel.text = [Options.arrayOverscanValue optionAtIndex:op.overscanValue];
+                   break;
+               }
+            }
+            break;
+        }
+           
         case kMiscSection:  //Miscellaneous
         {
             switch (indexPath.row) 
@@ -309,90 +284,33 @@
               case 0:
                {
                    cell.textLabel.text   = @"Show FPS";
-                   switchShowFPS  = [[UISwitch alloc] initWithFrame:CGRectZero];
-                   cell.accessoryView = switchShowFPS ;
-                   [switchShowFPS setOn:[op showFPS] animated:NO];
-                   [switchShowFPS addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
+                   cell.accessoryView = [self optionSwitchForKey:@"showFPS"];
                    break;
                }
                case 1:
-               {                                                         
-                   cell.textLabel.text   = @"Emulated Resolution";
-                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   cell.detailTextLabel.text = [arrayEmuRes objectAtIndex:op.emures];
-
+               {
+                   cell.textLabel.text   = @"Show Info/Warnings";
+                   cell.accessoryView = [self optionSwitchForKey:@"showINFO"];
                    break;
                }
                case 2:
                {
                     cell.textLabel.text   = @"Emulated Speed";
-                    
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                    cell.detailTextLabel.text = [arrayEmuSpeed objectAtIndex:op.emuspeed];
-                    
+                    cell.detailTextLabel.text = [Options.arrayEmuSpeed optionAtIndex:op.emuspeed];
                     break;
                }
                case 3:
                {
-                   cell.textLabel.text   = @"Throttle";
-                   switchThrottle  = [[UISwitch alloc] initWithFrame:CGRectZero];
-                   cell.accessoryView = switchThrottle ;
-                   [switchThrottle setOn:[op throttle] animated:NO];
-                   [switchThrottle addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
-                   break;
-               }
-               case 4:
-               {
-                   cell.textLabel.text   = @"Frame Skip";
-                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   cell.detailTextLabel.text = [arrayFSValue objectAtIndex:op.fsvalue];
-    
-                   break;
-               }
-               case 5:
-               {
-                   cell.textLabel.text   = @"Force Pixel Aspect";
-                   switchForcepxa  = [[UISwitch alloc] initWithFrame:CGRectZero];
-                   cell.accessoryView = switchForcepxa ;
-                   [switchForcepxa setOn:[op forcepxa] animated:NO];
-                   [switchForcepxa addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
-                   break;
-               }  
-              case 6:
-               {
                    cell.textLabel.text   = @"Sleep on Idle";
-                   switchSleep  = [[UISwitch alloc] initWithFrame:CGRectZero];
-                   cell.accessoryView = switchSleep ;
-                   [switchSleep setOn:[op sleep] animated:NO];
-                   [switchSleep addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
+                   cell.accessoryView = [self optionSwitchForKey:@"sleep"];
                    break;
                }                                                                             
-              case 7:
-               {
-                   cell.textLabel.text   = @"Show Info/Warnings";
-                   switchShowINFO  = [[UISwitch alloc] initWithFrame:CGRectZero];
-                   cell.accessoryView = switchShowINFO ;
-                   [switchShowINFO setOn:[op showINFO] animated:NO];
-                   [switchShowINFO addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];   
-                   break;
-               }
-               case 8:
+               case 4:
                {
                     cell.textLabel.text   = @"Low Latency Audio";
-                    switchLowlsound  = [[UISwitch alloc] initWithFrame:CGRectZero];
-                    cell.accessoryView = switchLowlsound ;
-                    [switchLowlsound setOn:[op lowlsound] animated:NO];
-                    [switchLowlsound addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                    cell.accessoryView = [self optionSwitchForKey:@"lowlsound"];
                     break;
-               }
-               case 9:
-               {
-                   cell.textLabel.text   = @"Overscan TV-OUT";
-                   
-                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   cell.detailTextLabel.text = [arrayOverscanValue objectAtIndex:op.overscanValue];
-                   
-                   break;
                }
             }
             break;   
@@ -404,19 +322,13 @@
                case 0:
                {
                    cell.textLabel.text   = @"Hide Clones";
-                   switchHideClones  = [[UISwitch alloc] initWithFrame:CGRectZero];
-                   cell.accessoryView = switchHideClones;
-                   [switchHideClones setOn:[op filterClones] animated:NO];
-                   [switchHideClones addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                   cell.accessoryView = [self optionSwitchForKey:@"filterClones"];
                    break;
                }
                case 1:
                {
                    cell.textLabel.text   = @"Hide Not Working";
-                   switchHideNotWorking  = [[UISwitch alloc] initWithFrame:CGRectZero];
-                   cell.accessoryView = switchHideNotWorking;
-                   [switchHideNotWorking setOn:[op filterNotWorking] animated:NO];
-                   [switchHideNotWorking addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
+                   cell.accessoryView = [self optionSwitchForKey:@"filterNotWorking"];
                    break;
                }
            }
@@ -481,6 +393,8 @@
             {
                 case 0:
                 {
+                    cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
+
                     cell.textLabel.text = @"Reset to Defaults";
                     cell.textLabel.textColor = [UIColor whiteColor];
                     cell.textLabel.shadowColor = [UIColor blackColor];
@@ -510,6 +424,7 @@
         case kSupportSection: return @"";
         case kPortraitSection: return @"Portrait";
         case kLandscapeSection: return @"Landscape";
+        case kVideoSection: return @"Video Options";
         case kMiscSection: return @"Options";
         case kFilterSection: return @"Game Filter";
         case kOtherSection: return @""; // @"Other";
@@ -528,7 +443,8 @@
           case kPortraitSection: return 6;
           case kLandscapeSection: return 6;
           case kOtherSection: return 3;
-          case kMiscSection: return 10;
+          case kVideoSection: return 8;
+          case kMiscSection: return 5;
           case kFilterSection: return 2;
           case kImportSection: return 3;
           case kResetSection: return 1;
@@ -536,78 +452,11 @@
     return -1;
 }
 
-- (void)optionChanged:(id)sender
-{
-    Options *op = [[Options alloc] init];
-	
-	if(sender==switchKeepAspectPort)
-	   op.keepAspectRatioPort = [switchKeepAspectPort isOn];
-	
-	if(sender==switchKeepAspectLand)    		
-	   op.keepAspectRatioLand = [switchKeepAspectLand isOn];
-	   	   
-	if(sender==switchSmoothedPort)   
-	   op.smoothedPort =  [switchSmoothedPort isOn];
-	
-	if(sender==switchSmoothedLand)
-	   op.smoothedLand =  [switchSmoothedLand isOn];
-		   
-	if(sender == switchTvFilterPort)  
-	   op.tvFilterPort =  [switchTvFilterPort isOn];
-	   
-	if(sender == switchTvFilterLand)   
-	   op.tvFilterLand =  [switchTvFilterLand isOn];
-	   
-	if(sender == switchScanlineFilterPort)   
-	   op.scanlineFilterPort =  [switchScanlineFilterPort isOn];
-	   
-	if(sender == switchScanlineFilterLand)
-	   op.scanlineFilterLand =  [switchScanlineFilterLand isOn];    
-
-    if(sender == switchShowFPS)
-	   op.showFPS =  [switchShowFPS isOn];
-
-    if(sender == switchShowINFO)
-	   op.showINFO =  [switchShowINFO isOn];
-				
-	if(sender == switchfullLand) 
-	   op.fullLand =  [switchfullLand isOn];
-
-	if(sender == switchfullPort)
-       op.fullPort =  [switchfullPort isOn];
-  	 
-    if(sender == switchfullLandJoy)
-       op.fullLandJoy = [sender isOn];
-                                      
-    if(sender == switchfullPortJoy)
-       op.fullPortJoy = [sender isOn];
-    
-    if(sender == switchThrottle)
-        op.throttle = [switchThrottle isOn];    
-       
-    if(sender == switchSleep)
-        op.sleep = [switchSleep isOn];
-
-    if(sender == switchForcepxa)
-        op.forcepxa = [switchForcepxa isOn];
-            
-    if(sender == switchLowlsound)
-        op.lowlsound = [switchLowlsound isOn];
-    
-    if(sender == switchHideClones)
-        op.filterClones = [sender isOn];
-
-    if(sender == switchHideNotWorking)
-        op.filterNotWorking = [sender isOn];
-
-	[op saveOptions];
-}
-
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     
     NSUInteger row = [indexPath row];
     NSUInteger section = [indexPath section];
-    //printf("%d %d\n",section,row);
+    UITableViewCell* cell = [tableView cellForRowAtIndexPath:indexPath];
     
     switch (section)
     {
@@ -643,29 +492,60 @@
             }
             break;
         }
+        case kPortraitSection:
+        {
+            if ( row == 0 ) {
+                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"filterPort" list:Options.arrayFilter title:cell.textLabel.text];
+                [[self navigationController] pushViewController:listController animated:YES];
+            } else if ( row == 1 ) {
+                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"effectPort" list:Options.arrayEffect title:cell.textLabel.text];
+                [[self navigationController] pushViewController:listController animated:YES];
+            } else if ( row == 2 ) {
+                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"borderPort" list:Options.arrayBorder title:cell.textLabel.text];
+                [[self navigationController] pushViewController:listController animated:YES];
+            }
+            break;
+        }
+        case kLandscapeSection:
+        {
+            if ( row == 0 ) {
+                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"filterLand" list:Options.arrayFilter title:cell.textLabel.text];
+                [[self navigationController] pushViewController:listController animated:YES];
+            } else if ( row == 1 ) {
+                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"effectLand" list:Options.arrayEffect title:cell.textLabel.text];
+                [[self navigationController] pushViewController:listController animated:YES];
+            } else if ( row == 2 ) {
+                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"borderLand" list:Options.arrayBorder title:cell.textLabel.text];
+                [[self navigationController] pushViewController:listController animated:YES];
+            }
+            break;
+        }
+        case kVideoSection:
+        {
+            if (row==0){
+                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"emures" list:Options.arrayEmuRes title:cell.textLabel.text];
+                [[self navigationController] pushViewController:listController animated:YES];
+            }
+            if (row==1){
+                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"sourceColorSpace" list:Options.arrayColorSpace title:cell.textLabel.text];
+                [[self navigationController] pushViewController:listController animated:YES];
+            }
+            if (row==6){
+                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"fsvalue" list:Options.arrayFSValue title:cell.textLabel.text];
+                [[self navigationController] pushViewController:listController animated:YES];
+            }
+            if (row==7){
+                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"overscanValue" list:Options.arrayOverscanValue title:cell.textLabel.text];
+                [[self navigationController] pushViewController:listController animated:YES];
+            }
+            break;
+        }
         case kMiscSection:
         {
-            if (row==1){
-                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
-                               type:kTypeEmuRes list:arrayEmuRes];                         
+            if (row==2) {
+                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"emuspeed" list:Options.arrayEmuSpeed title:cell.textLabel.text];
                 [[self navigationController] pushViewController:listController animated:YES];
             }
-            if (row==2){
-                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
-                                                                                              type:kTypeEmuSpeed list:arrayEmuSpeed];
-                [[self navigationController] pushViewController:listController animated:YES];
-            }
-            if (row==4){
-                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
-                                type:kTypeFSValue list:arrayFSValue];                         
-                [[self navigationController] pushViewController:listController animated:YES];
-            }
-            if (row==9){
-                ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
-                                                        type:kTypeOverscanValue list:arrayOverscanValue];
-                [[self navigationController] pushViewController:listController animated:YES];
-            }
-
             break;
         }
         case kImportSection:

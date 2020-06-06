@@ -2556,6 +2556,7 @@ void render_texture_set_bitmap(render_texture *texture, bitmap_t *bitmap, const 
 	texture->sbounds.max_y = (sbounds != NULL) ? sbounds->max_y : (bitmap != NULL) ? bitmap->height : 1000;
 	texture->palette = palette;
 	texture->format = format;
+    texture->curseq++;
 
 	/* invalidate all scaled versions */
 	for (scalenum = 0; scalenum < ARRAY_LENGTH(texture->scaled); scalenum++)
@@ -2602,7 +2603,7 @@ static int texture_get_scaled(render_texture *texture, UINT32 dwidth, UINT32 dhe
 		texinfo->width = swidth;
 		texinfo->height = sheight;
 		texinfo->palette = palbase;
-		texinfo->seqid = ++texture->curseq;
+		texinfo->seqid = texture->curseq;
 		return TRUE;
 	}
 
@@ -2637,7 +2638,7 @@ static int texture_get_scaled(render_texture *texture, UINT32 dwidth, UINT32 dhe
 
 		/* allocate a new bitmap */
 		scaled->bitmap = global_alloc(bitmap_t(dwidth, dheight, BITMAP_FORMAT_ARGB32));
-		scaled->seqid = ++texture->curseq;
+		scaled->seqid = texture->curseq;
 
 		/* let the scaler do the work */
 		(*texture->scaler)(scaled->bitmap, texture->bitmap, &texture->sbounds, texture->param);

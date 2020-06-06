@@ -99,95 +99,38 @@ unsigned long read_mfi_controller(unsigned long res){
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary<UIApplicationLaunchOptionsKey,id> *)launchOptions {
 
-	struct CGRect rect = [[UIScreen mainScreen] bounds];
-	rect.origin.x = rect.origin.y = 0.0f;
-	
-	//printf("Machine: '%s'\n",[[Helper machine] UTF8String]) ;
-    NSError *error;
-    NSString *fromPath,*toPath;
-    NSFileManager* manager = nil;
-
-#ifdef JAILBREAK
-    manager = [[NSFileManager alloc] init];
-    if(![manager fileExistsAtPath:[NSString stringWithUTF8String:get_documents_path("")]] )
+    chdir (get_documents_path(""));
+    
+    // create directories
+    for (NSString* dir in @[@"iOS", @"artwork", @"titles", @"cfg", @"nvram", @"ini", @"snap", @"sta", @"hi", @"inp", @"memcard", @"samples", @"roms", @"dats", @"cheat"])
     {
+        NSString* dirPath = [NSString stringWithUTF8String:get_documents_path(dir.UTF8String)];
         
-        mkdir("/var/mobile/Media/ROMs/", 0755);
-        if(mkdir(get_documents_path(""), 0755) != 0)
+        if ([[NSFileManager defaultManager] fileExistsAtPath:dirPath])
+            continue;
+        
+        mkdir(dirPath.UTF8String, 0755);
+        
+        // copy pre-canned files.
+        for (NSString* file in @[@"cheat0139.zip", @"history0139.zip", @"Category.ini", @"hiscore.dat"])
         {
+            NSString* fromPath = [NSString stringWithUTF8String:get_resource_path(file.UTF8String)];
+            NSString* toPath = [NSString stringWithUTF8String:get_documents_path(file.UTF8String)];
             
-           UIAlertView *errAlert = [[UIAlertView alloc] initWithTitle:@"Error"
-                                                           message:
-                                 @"Directory cannot be created!\nCheck for write permissions.\n'chmod -R 777 /var/mobile/Media/ROMs' if needed.\nLook at the help for details."
-                                                          delegate:nil
-                                                 cancelButtonTitle:@"Dismiss"
-                                                 otherButtonTitles: nil];
-          [errAlert show];
-          [errAlert release];
+            if ([[NSFileManager defaultManager] fileExistsAtPath:fromPath] && ![[NSFileManager defaultManager] fileExistsAtPath:toPath])
+            {
+                NSError* error = nil;
+                if (![[NSFileManager defaultManager] copyItemAtPath: fromPath toPath:toPath error:&error])
+                    NSLog(@"Unable to copy file %@! %@", fromPath, [error localizedDescription]);
+            }
         }
     }
-    
-    [manager release];
-#endif
 
-    int r = chdir (get_documents_path(""));
-	printf("running... %d\n",r);
-    
-    mkdir(get_documents_path("iOS"), 0755);
-	mkdir(get_documents_path("artwork"), 0755);
-    mkdir(get_documents_path("titles"), 0755);
-	mkdir(get_documents_path("cfg"), 0755);
-	mkdir(get_documents_path("nvram"), 0755);
-	mkdir(get_documents_path("ini"), 0755);
-	mkdir(get_documents_path("snap"), 0755);
-	mkdir(get_documents_path("sta"), 0755);
-	mkdir(get_documents_path("hi"), 0755);
-	mkdir(get_documents_path("inp"), 0755);
-	mkdir(get_documents_path("memcard"), 0755);
-	mkdir(get_documents_path("samples"), 0755);
-	mkdir(get_documents_path("roms"), 0755);
-    
-
-#ifndef JAILBREAK
-    [[NSURL fileURLWithPath: [NSString stringWithUTF8String:get_documents_path("roms")]]
-     setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:nil];
-    [[NSURL fileURLWithPath: [NSString stringWithUTF8String:get_documents_path("artwork")]]
-     setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:nil];
-    [[NSURL fileURLWithPath: [NSString stringWithUTF8String:get_documents_path("titles")]]
-     setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:nil];
-    [[NSURL fileURLWithPath: [NSString stringWithUTF8String:get_documents_path("samples")]]
-     setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:nil];
-    [[NSURL fileURLWithPath: [NSString stringWithUTF8String:get_documents_path("nvram")]]
-     setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:nil];
-    [[NSURL fileURLWithPath: [NSString stringWithUTF8String:get_documents_path("cheat.zip")]]
-     setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:nil];
-#endif  
-    
-    manager = [[NSFileManager alloc] init];
-    
-    toPath = [NSString stringWithUTF8String:get_documents_path("cheat.zip")];
-    if (![manager fileExistsAtPath:toPath])
+    // set non-backup items.
+    for (NSString* path in @[@"roms", @"artwork", @"titles", @"samples", @"nvram", @"cheat.zip"])
     {
-        error = nil;
-        fromPath = [NSString stringWithUTF8String:get_resource_path("cheat.zip")];
-        [manager copyItemAtPath: fromPath toPath:toPath error:&error];
-        NSLog(@"Unable to move file cheat? %@", [error localizedDescription]);
-    }
-    toPath = [NSString stringWithUTF8String:get_documents_path("Category.ini")];
-    if (![manager fileExistsAtPath:toPath])
-    {
-        error = nil;
-        fromPath = [NSString stringWithUTF8String:get_resource_path("Category.ini")];
-        [manager copyItemAtPath: fromPath toPath:toPath error:&error];
-        NSLog(@"Unable to move file category? %@", [error localizedDescription]);
-    }
-    toPath = [NSString stringWithUTF8String:get_documents_path("hiscore.dat")];
-    if (![manager fileExistsAtPath:toPath])
-    {
-        error = nil;
-        fromPath = [NSString stringWithUTF8String:get_resource_path("hiscore.dat")];
-        [manager copyItemAtPath: fromPath toPath:toPath error:&error];
-        NSLog(@"Unable to move file hiscore? %@", [error localizedDescription]);
+        NSURL* url = [NSURL fileURLWithPath:[NSString stringWithUTF8String:get_documents_path(path.UTF8String)]];
+        [url setResourceValue:@(YES) forKey:NSURLIsExcludedFromBackupKey error:nil];
     }
 
 #if TARGET_OS_IOS
@@ -200,7 +143,7 @@ unsigned long read_mfi_controller(unsigned long res){
     
 	hrViewController = [[EmulatorController alloc] init];
 	
-	deviceWindow = [[UIWindow alloc] initWithFrame:rect];
+	deviceWindow = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 #if TARGET_OS_TV
     deviceWindow.backgroundColor = [UIColor colorWithWhite:0.111 alpha:1.0];
     deviceWindow.tintColor = [UIColor colorWithRed:0.0 green:122.0/255.0 blue:1.0 alpha:1.0];
@@ -226,9 +169,9 @@ unsigned long read_mfi_controller(unsigned long res){
     [self prepareScreen];
 #endif
     
-    NSError *audioSessionError;
+    NSError *audioSessionError = nil;
     [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryAmbient error:&audioSessionError];
-    if (error) {
+    if (audioSessionError != nil) {
         NSLog(@"Could not set audio session category: %@",audioSessionError.localizedDescription);
     }
 
@@ -327,13 +270,10 @@ unsigned long read_mfi_controller(unsigned long res){
 #endif
 
 - (void)applicationDidEnterBackground:(UIApplication *)application {
-
-   if (myosd_inGame || g_joy_used) //force pause when in game
-      [hrViewController runPause];
+    [hrViewController runPause];
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {
-    
 #ifdef BTJOY
     [BTJoyHelper endBTJoy];
 #endif
@@ -368,6 +308,8 @@ unsigned long read_mfi_controller(unsigned long res){
                     g_alert = nil;
                     [externalScreen setCurrentMode:mode];
                     [self setupScreen:externalScreen];
+                    if (!myosd_inGame)
+                        [self->hrViewController performSelectorOnMainThread:@selector(playGame:) withObject:nil waitUntilDone:NO];
                 }]];
                 if (mode == externalScreen.preferredMode)
                     [g_alert setPreferredAction:g_alert.actions.lastObject];
@@ -375,6 +317,8 @@ unsigned long read_mfi_controller(unsigned long res){
             [g_alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
                 g_alert = nil;
                 [self setupScreen:nil];
+                if (!myosd_inGame)
+                    [self->hrViewController performSelectorOnMainThread:@selector(playGame:) withObject:nil waitUntilDone:NO];
             }]];
              
             [hrViewController.topViewController presentViewController:g_alert animated:YES completion:nil];

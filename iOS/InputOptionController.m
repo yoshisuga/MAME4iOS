@@ -68,8 +68,6 @@
                               @"Speed 4", @"Speed 5",@"Speed 6",@"Speed 7",@"Speed 8",@"Speed 9",nil];
         arrayButtonSizeValue = [[NSArray alloc] initWithObjects:@"Smaller", @"Small", @"Normal", @"Big", @"Bigger",nil];
         
-        arrayControlType = [[NSArray alloc] initWithObjects:@"Keyboard or 8BitDo",@"iCade or compatible",@"iCP, Gametel",@"iMpulse", nil];
-        
         switchP1aspx = nil;
         
         switchTouchDeadZone = nil;
@@ -284,7 +282,7 @@
         {
             cell.textLabel.text   = @"External Controller";
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-            cell.detailTextLabel.text = [arrayControlType objectAtIndex:op.controltype];
+            cell.detailTextLabel.text = [Options.arrayControlType optionAtIndex:op.controltype];
             break;
         }
             break;
@@ -596,7 +594,7 @@
     if(section==3 && row==0)
     {
         ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
-                                                                                      type:kTypeControlType list:arrayControlType];
+                                                                                      type:kTypeControlType list:Options.arrayControlType];
         [[self navigationController] pushViewController:listController animated:YES];
     }
     

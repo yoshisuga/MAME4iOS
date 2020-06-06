@@ -4,7 +4,7 @@ Original Author: David Valdeita (Seleuco)<br/>
 
 This is a port of MAME 0.139u1 for iOS, iPadOS, and tvOS.
 
-[Download iOS IPA (v2020.6)](https://mega.nz/file/uNpnUTaa#VVXlSbumg70I2-WEZ0zULWTY3F8KItEvkMs9w361g3A) | [Download tvOS IPA (v2020.6)](https://mega.nz/file/bZolUDYa#ZcBdAXTl3tfrrxO6TRSJD2S0wI1XRylwW0EVgfhm0Ng)
+[Download iOS IPA (v2020.8)](https://mega.nz/file/GJBU0QzJ#JQcRo6yNM0yMPLzQhhegUZ7luZ4lSFVIYMK_of_2Pyk) | [Download tvOS IPA (v2020.8)](https://mega.nz/file/vYZCDK5A#sVzwTt5XotLZlpHgAtpsZccmpIq301nTby5KgsoKrfM)
 
 [Chat on Discord!](https://discord.gg/ZC6wkmU)
 

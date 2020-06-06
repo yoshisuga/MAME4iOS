@@ -57,11 +57,6 @@
 - (id)init {
     if (self = [super init]) {
 
-#if TARGET_OS_IOS
-        switchFilterClones = nil;
-        switchFilterFavorites = nil;
-        switchFilterNotWorking = nil;
-#endif
         arrayManufacturerValue = [[NSMutableArray  alloc] initWithObjects:@"# All",nil];
         arrayYearGTEValue = [[NSMutableArray  alloc] initWithObjects:@"Any",nil];
         arrayYearLTEValue = [[NSMutableArray  alloc] initWithObjects:@"Any",nil];
@@ -148,40 +143,19 @@
                 case 0:
                 {
                     cell.textLabel.text = @"Hide Non-Favorites";
-#if TARGET_OS_IOS
-                    switchFilterFavorites  = [[UISwitch alloc] initWithFrame:CGRectZero];
-                    cell.accessoryView = switchFilterFavorites ;
-                    [switchFilterFavorites setOn:[op filterFavorites] animated:NO];
-                    [switchFilterFavorites addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
-#elif TARGET_OS_TV
-                    cell.accessoryView = [TVOptionsController labelForOnOffValue:[op filterFavorites]];
-#endif
+                    cell.accessoryView = [self optionSwitchForKey:@"filterFavorites"];
                     break;
                 }
                 case 1:
                 {
                     cell.textLabel.text = @"Hide Clones";
-#if TARGET_OS_IOS
-                    switchFilterClones  = [[UISwitch alloc] initWithFrame:CGRectZero];
-                    cell.accessoryView = switchFilterClones ;
-                    [switchFilterClones setOn:[op filterClones] animated:NO];
-                    [switchFilterClones addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
-#elif TARGET_OS_TV
-                    cell.accessoryView = [TVOptionsController labelForOnOffValue:[op filterClones]];
-#endif
+                    cell.accessoryView = [self optionSwitchForKey:@"filterClones"];
                     break;
                 }
                 case 2:
                 {
                     cell.textLabel.text = @"Hide Not Working";
-#if TARGET_OS_IOS
-                    switchFilterNotWorking  = [[UISwitch alloc] initWithFrame:CGRectZero];
-                    cell.accessoryView = switchFilterNotWorking ;
-                    [switchFilterNotWorking setOn:[op filterNotWorking] animated:NO];
-                    [switchFilterNotWorking addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
-#elif TARGET_OS_TV
-                    cell.accessoryView = [TVOptionsController labelForOnOffValue:[op filterNotWorking]];
-#endif
+                    cell.accessoryView = [self optionSwitchForKey:@"filterNotWorking"];
                     break;
                 }
             }
@@ -271,22 +245,6 @@
     return cell;
 }
 
-#if TARGET_OS_IOS
-- (void)optionChanged:(id)sender
-{
-    Options *op = [[Options alloc] init];
-    
-    if(sender == switchFilterClones)
-        op.filterClones = [switchFilterClones isOn];
-    if(sender == switchFilterFavorites)
-        op.filterFavorites = [switchFilterFavorites isOn];
-    if(sender == switchFilterNotWorking)
-        op.filterNotWorking = [switchFilterNotWorking isOn];
-    
-    [op saveOptions];
-}
-#endif
-
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     
     NSUInteger row = [indexPath row];
@@ -294,22 +252,7 @@
     
     UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
     
-#if TARGET_OS_TV
-    Options *op = [[Options alloc] init];
-    if ( section == 0 ) {
-        if ( row == 0 ) {
-            op.filterFavorites = op.filterFavorites ? 0 : 1;
-            [TVOptionsController setOnOffValueForCell:cell optionValue:op.filterFavorites];
-        } else if ( row == 1 ) {
-            op.filterClones = op.filterClones ? 0 : 1;
-            [TVOptionsController setOnOffValueForCell:cell optionValue:op.filterClones];
-        } else if ( row == 2 ) {
-            op.filterNotWorking = op.filterNotWorking ? 0 : 1;
-            [TVOptionsController setOnOffValueForCell:cell optionValue:op.filterNotWorking];
-        }
-    }
-    [op saveOptions];
-#endif
+    [self toggleOptionSwitch:cell.accessoryView];
     
     if(section==1 && row==0)
     {

@@ -46,6 +46,7 @@
 #import "EmulatorController.h"
 #import <GameController/GameController.h>
 #import <AVFoundation/AVFoundation.h>
+#import <CoreBluetooth/CoreBluetooth.h>
 
 #if TARGET_OS_IOS
 #import <Intents/Intents.h>
@@ -85,6 +86,9 @@
 #define NSLog(...) (void)0
 #endif
 
+#define UPDATE_FPS_EVERY    1
+#define OPAQUE_FPS          FALSE
+
 // mfi Controllers
 NSMutableArray *controllers;
 
@@ -100,6 +104,7 @@ int buttonMask[NUM_BUTTONS];    // map a button index to a button MYOSD_* mask
 int touchDirectionalCyclesAfterMoved = 0;
 
 int g_isIpad = 0;
+int g_isMetalSupported = 0;
 
 int g_emulation_paused = 0;
 int g_emulation_initiated=0;
@@ -118,16 +123,20 @@ int g_controller_opacity = 50;
 int g_device_is_landscape = 0;
 int g_device_is_fullscreen = 0;
 
-int g_pref_smooth_land = 0;
-int g_pref_smooth_port = 0;
+NSString* g_pref_effect_land;
+NSString* g_pref_effect_port;
+NSString* g_pref_filter_land;
+NSString* g_pref_filter_port;
+NSString* g_pref_border_land;
+NSString* g_pref_border_port;
+NSString* g_pref_colorspace;
+
+int g_pref_metal = 0;
+int g_pref_integer_scale_only = 0;
+int g_pref_showFPS = 0;
+
 int g_pref_keep_aspect_ratio_land = 0;
 int g_pref_keep_aspect_ratio_port = 0;
-
-int g_pref_tv_filter_land = 0;
-int g_pref_tv_filter_port = 0;
-
-int g_pref_scanline_filter_land = 0;
-int g_pref_scanline_filter_port = 0;
 
 int g_pref_animated_DPad = 0;
 int g_pref_4buttonsLand = 0;
@@ -195,26 +204,71 @@ static BOOL g_no_roms_found = FALSE;
 static NSInteger g_settings_roms_count;
 static NSInteger g_settings_file_count;
 
+static BOOL g_bluetooth_enabled;
+
 static EmulatorController *sharedInstance = nil;
 
 static const int buttonPressReleaseCycles = 2;
 static const int buttonNextPressCycles = 32;
 
+// called by the OSD layer when redner target changes size
+// **NOTE** this is called on the MAME background thread, dont do anything stupid.
 void iphone_Reset_Views(void)
 {
-    if (sharedInstance == nil)
-       return;
+    NSLog(@"iphone_Reset_Views: %dx%d [%dx%d] %f",
+          myosd_vis_video_width, myosd_vis_video_height,
+          myosd_video_width, myosd_video_height,
+          (double)myosd_vis_video_width / myosd_vis_video_height);
     
-    if(!myosd_inGame)
-       [sharedInstance performSelectorOnMainThread:@selector(moveROMS) withObject:nil waitUntilDone:NO];
-    [sharedInstance performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:NO];
-}
-void iphone_UpdateScreen()
-{
-    if (sharedInstance == nil || sharedInstance->screenView == nil)
+    if (sharedInstance == nil)
         return;
     
-    [sharedInstance->screenView performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone:NO];
+    if (!myosd_inGame)
+        [sharedInstance performSelectorOnMainThread:@selector(moveROMS) withObject:nil waitUntilDone:NO];
+    
+    [sharedInstance performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:NO];
+}
+// called by the OSD layer to update the current software frame
+// **NOTE** this is called on the MAME background thread, dont do anything stupid.
+void iphone_UpdateScreen()
+{
+    if (sharedInstance == nil || g_emulation_paused || sharedInstance->screenView == nil)
+        return;
+    
+    UIView<ScreenView>* screenView = sharedInstance->screenView;
+    [screenView performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone:NO];
+
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wundeclared-selector"
+    if (g_pref_showFPS && (screenView.frameCount % UPDATE_FPS_EVERY) == 0)
+        [sharedInstance performSelectorOnMainThread:@selector(updateFrameRate) withObject:nil waitUntilDone:NO];
+    #pragma clang diagnostic pop
+}
+// called by the OSD layer to render the current frame
+// return 1 if you did the render, 0 if you want a software render.
+// **NOTE** this is called on the MAME background thread, dont do anything stupid.
+// ...not doing something stupid includes not leaking autoreleased objects! use a autorelease pool if you need to!
+int iphone_DrawScreen(myosd_render_primitive* prim_list) {
+
+    if (sharedInstance == nil || g_emulation_paused || sharedInstance->screenView == nil)
+        return 0;
+
+    @autoreleasepool {
+        UIView<ScreenView>* screenView = sharedInstance->screenView;
+
+#ifdef DEBUG
+        [CGScreenView drawScreenDebug:prim_list];
+#endif
+        BOOL result = [screenView drawScreen:prim_list];
+        
+        #pragma clang diagnostic push
+        #pragma clang diagnostic ignored "-Wundeclared-selector"
+        if (g_pref_showFPS && result && (screenView.frameCount % UPDATE_FPS_EVERY) == 0)
+            [sharedInstance performSelectorOnMainThread:@selector(updateFrameRate) withObject:nil waitUntilDone:NO];
+        #pragma clang diagnostic pop
+
+        return result;
+    }
 }
 
 // run MAME (or pass NULL for main menu)
@@ -232,8 +286,8 @@ void* app_Thread_Start(void* args)
         prev_myosd_mouse = myosd_mouse = 0;
         prev_myosd_light_gun = myosd_light_gun = 0;
         
-        // reset MAME by deleteing CFG files, cfg/default.cfg and cfg/ROMNAME.cfg
-        if (g_mame_reset) {
+        // reset MAME by deleteing CFG file cfg/default.cfg
+        if (g_mame_reset) @autoreleasepool {
             NSString *cfg_path = [NSString stringWithUTF8String:get_documents_path("cfg")];
             
             // NOTE we need to delete the default.cfg file here because MAME saves cfg files on exit.
@@ -254,11 +308,12 @@ void* app_Thread_Start(void* args)
     }
 }
 
+// make this public so DEBUG code in InfoDatabase can use it to get list of all ROMs
+NSDictionary* g_category_dict = nil;
+
 // find the category for a game/rom using Category.ini (a copy of a similar function from uimenu.c)
 NSString* find_category(NSString* name)
 {
-    static NSDictionary* g_category_dict = nil;
-    
     if (g_category_dict == nil)
     {
         g_category_dict = [[NSMutableDictionary alloc] init];
@@ -472,7 +527,7 @@ void mame_state(int load_save, int slot)
     
     UIAlertController* menu = [UIAlertController alertControllerWithTitle:title message:nil preferredStyle:UIAlertControllerStyleActionSheet];
 
-    CGFloat size = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].pointSize * 1.5;
+    CGFloat size = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].pointSize;
 
     if(myosd_inGame && myosd_in_menu==0)
     {
@@ -584,23 +639,19 @@ void mame_state(int load_save, int slot)
     if (self.presentedViewController != nil)
         return;
 
-    if (myosd_inGame && myosd_in_menu == 0 && ask_user)
+    if (myosd_in_menu == 0 && ask_user)
     {
+        NSString* yes = (controllers.count > 0 && TARGET_OS_IOS) ? @"Ⓐ Yes" : @"Yes";
+        NSString* no  = (controllers.count > 0 && TARGET_OS_IOS) ? @"Ⓑ No" : @"No";
+
+        UIAlertController *exitAlertController = [UIAlertController alertControllerWithTitle:@"" message:@"Are you sure you want to exit?" preferredStyle:UIAlertControllerStyleAlert];
+
         [self startMenu];
-        
-#if TARGET_OS_TV
-        NSString* yes = @"Yes";
-        NSString* no  = @"No";
-#else
-        NSString* yes = controllers.count > 0 ? @"Ⓐ Yes" : @"Yes";
-        NSString* no  = controllers.count > 0 ? @"Ⓑ No" : @"No";
-#endif
-        UIAlertController *exitAlertController = [UIAlertController alertControllerWithTitle:@"" message:@"Are you sure you want to exit the game?" preferredStyle:UIAlertControllerStyleAlert];
-        [exitAlertController addAction:[UIAlertAction actionWithTitle:yes style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [exitAlertController addAction:[UIAlertAction actionWithTitle:yes style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
             [self endMenu];
             [self runExit:NO];
         }]];
-        [exitAlertController addAction:[UIAlertAction actionWithTitle:no style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+        [exitAlertController addAction:[UIAlertAction actionWithTitle:no style:UIAlertActionStyleCancel handler:^(UIAlertAction* action) {
             [self endMenu];
         }]];
         exitAlertController.preferredAction = exitAlertController.actions.firstObject;
@@ -636,6 +687,10 @@ void mame_state(int load_save, int slot)
     [[NSUserDefaults standardUserDefaults] synchronize];
     
     if (self.presentedViewController != nil || g_emulation_paused)
+        return;
+    
+    // dont pause the MAME select game menu.
+    if (!myosd_inGame)
         return;
 
     [self startMenu];
@@ -705,20 +760,30 @@ void mame_state(int load_save, int slot)
     
     //printf("load options\n");
     
+    g_isMetalSupported = [MetalScreenView isSupported];
+    
     Options *op = [[Options alloc] init];
     
     g_pref_keep_aspect_ratio_land = [op keepAspectRatioLand];
     g_pref_keep_aspect_ratio_port = [op keepAspectRatioPort];
-    g_pref_smooth_land = [op smoothedLand];
-    g_pref_smooth_port = [op smoothedPort];
     
-    g_pref_tv_filter_land = [op tvFilterLand];
-    g_pref_tv_filter_port = [op tvFilterPort];
+    g_pref_filter_land = [Options.arrayFilter optionData:op.filterLand];
+    g_pref_filter_port = [Options.arrayFilter optionData:op.filterPort];
+
+    g_pref_effect_land = [Options.arrayEffect optionData:op.effectLand];
+    g_pref_effect_port = [Options.arrayEffect optionData:op.effectPort];
+
+    g_pref_border_land = [Options.arrayBorder optionData:op.borderLand];
+    g_pref_border_port = [Options.arrayBorder optionData:op.borderPort];
     
-    g_pref_scanline_filter_land = [op scanlineFilterLand];
-    g_pref_scanline_filter_port = [op scanlineFilterPort];
+    g_pref_colorspace = [Options.arrayColorSpace optionData:op.sourceColorSpace];
+
+    g_pref_integer_scale_only = op.integerScalingOnly;
+    g_pref_metal = op.useMetal;
+    g_pref_showFPS = [op showFPS];
+
+    myosd_fps = g_pref_showFPS;
     
-    myosd_fps = [op showFPS];
     myosd_showinfo =  [op showINFO];
     g_pref_animated_DPad  = [op animatedButtons];
     g_pref_full_screen_land  = [op fullLand];
@@ -731,8 +796,6 @@ void mame_state(int load_save, int slot)
     // always use skin 1
     g_pref_skin = 1;
     g_skin_data = g_pref_skin;
-    if(g_pref_skin == 2 && g_isIpad)
-        g_pref_skin = 3;
     
     g_pref_BT_DZ_value = [op btDeadZoneValue];
     g_pref_touch_DZ = [op touchDeadZone];
@@ -908,6 +971,15 @@ void mame_state(int load_save, int slot)
     turboBtnEnabled[BTN_L1] = [op turboLEnabled];
     turboBtnEnabled[BTN_R1] = [op turboREnabled];
     
+    // ignore some settings in the Metal case
+    if (g_pref_metal && [MetalScreenView isSupported]) {
+        myosd_sleep = 1;            // sleep to let Metal get work done.
+        myosd_video_threaded = 0;   // dont need an extra thread
+        myosd_vsync = -1;           // dont force 60Hz, just use the machine value.
+        myosd_frameskip_value = 0;  // *DONT* try to skip frames, we render so fast it is confusing MAME.
+        //myosd_frameskip_value = -1; // AUTO frameskip
+    }
+    
 #if TARGET_OS_IOS
     g_pref_lightgun_enabled = [op lightgunEnabled];
     g_pref_lightgun_bottom_reload = [op lightgunBottomScreenReload];
@@ -973,11 +1045,11 @@ void mame_state(int load_save, int slot)
 }
 
 
-#if TARGET_OS_IOS   // NOT needed on tvOS it handles it with the focus engine
 - (void)handle_MENU
 {
     unsigned long pad_status = myosd_pad_status | myosd_joy_status[0] | myosd_joy_status[1] | myosd_joy_status[2] | myosd_joy_status[3];
     
+#if TARGET_OS_IOS   // NOT needed on tvOS it handles it with the focus engine
     UIViewController* viewController = [self presentedViewController];
     
     if ([viewController isKindOfClass:[UINavigationController class]])
@@ -1024,6 +1096,7 @@ void mame_state(int load_save, int slot)
     {
         [self runMenu];
     }
+#endif
     
     // exit MAME MENU with B (but only if we are not mapping a input)
     if (myosd_in_menu == 1 && (pad_status & MYOSD_B))
@@ -1039,14 +1112,12 @@ void mame_state(int load_save, int slot)
         [self runMenu];
     }
 }
-#endif
 
 -(void)viewDidLoad{
-    printf("viewDidLoad\n");
-    
-    self.view.backgroundColor = [UIColor blackColor];
 
-    controllers = [[NSMutableArray alloc] initWithCapacity:4];
+   self.view.backgroundColor = [UIColor blackColor];
+
+   controllers = [[NSMutableArray alloc] initWithCapacity:4];
     
    nameImgButton_NotPress[BTN_B] = @"button_NotPress_B.png";
    nameImgButton_NotPress[BTN_X] = @"button_NotPress_X.png";
@@ -1092,7 +1163,7 @@ void mame_state(int load_save, int slot)
 #endif
 	
 	//kito
-	//[NSThread setThreadPriority:1.0];
+	[NSThread setThreadPriority:1.0];
 	
     [self updateOptions];
 
@@ -1122,6 +1193,17 @@ void mame_state(int load_save, int slot)
     // always enable iCadeView for hardware keyboard support
     icadeView.active = YES;
     
+    // see if bluetooth is enabled...
+    
+    if (@available(iOS 13.1, tvOS 13.0, *))
+        g_bluetooth_enabled = CBCentralManager.authorization == CBManagerAuthorizationAllowedAlways;
+    else if (@available(iOS 13.0, *))
+        g_bluetooth_enabled = FALSE; // authorization is not in iOS 13.0, so no bluetooth for you.
+    else
+        g_bluetooth_enabled = TRUE;  // pre-iOS 13.0, bluetooth allways.
+    
+    NSLog(@"BLUETOOTH ENABLED: %@", g_bluetooth_enabled ? @"YES" : @"NO");
+    
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(MFIControllerConnected:)
                                                  name:GCControllerDidConnectNotification
@@ -1132,10 +1214,7 @@ void mame_state(int load_save, int slot)
                                                object:nil];
     
     if ([[GCController controllers] count] != 0) {
-        [self setupMFIControllers];
-    }
-    else {
-        [self scanForDevices];
+        [self performSelectorOnMainThread:@selector(setupMFIControllers) withObject:nil waitUntilDone:NO];
     }
     
     toastStyle = [[CSToastStyle alloc] initWithDefaultStyle];
@@ -1145,7 +1224,19 @@ void mame_state(int load_save, int slot)
     mouseInitialLocation = CGPointMake(9111, 9111);
     mouseTouchStartLocation = mouseInitialLocation;
 
-    [self updateUserActivity:nil];      // TODO: look at if we need to do this here??
+    if (g_mame_game[0] && g_mame_game[0] != ' ')
+        [self updateUserActivity:@{kGameInfoName:[NSString stringWithUTF8String:g_mame_game]}];
+    
+#ifdef DEBUG
+    // create all color spaces, to test for validness.
+    for (NSString* string in Options.arrayColorSpace) {
+        NSString* color_space_data = [[string componentsSeparatedByString:@":"].lastObject stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
+        CGColorSpaceRef colorSpace = [CGScreenView createColorSpaceFromString:color_space_data];
+        NSLog(@"COLORSPACE DATA: %@", string);
+        NSLog(@"     COLORSPACE: %@", colorSpace);
+        CGColorSpaceRelease(colorSpace);
+    }
+#endif
 }
 
 -(void)viewWillAppear:(BOOL)animated {
@@ -1233,6 +1324,7 @@ void mame_state(int load_save, int slot)
 
     screenView.alpha = alpha;
     imageOverlay.alpha = alpha;
+    fpsView.alpha = alpha;
     imageLogo.alpha = (1.0 - alpha);
 }
 
@@ -1240,6 +1332,15 @@ void mame_state(int load_save, int slot)
     // no need to show logo in fullscreen.
     if (g_device_is_fullscreen || TARGET_OS_TV)
         return;
+
+    // put a AirPlay logo on the iPhone screen when playing on external display
+    if (externalView != nil)
+    {
+        imageExternalDisplay = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"airplayvideo"] ?: [UIImage imageNamed:@"mame_logo"]];
+        imageExternalDisplay.contentMode = UIViewContentModeScaleAspectFit;
+        imageExternalDisplay.frame = g_device_is_landscape ? rFrames[LANDSCAPE_VIEW_NOT_FULL] : rFrames[PORTRAIT_VIEW_NOT_FULL];
+        [self.view addSubview:imageExternalDisplay];
+    }
 
     // create a logo view to show when no-game is displayed. (place on external display, or in app.)
     imageLogo = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"mame_logo"]];
@@ -1253,97 +1354,109 @@ void mame_state(int load_save, int slot)
     [screenView.superview addSubview:imageLogo];
 }
 
+-(void)buildFrameRateView {
+    
+    if (!g_pref_showFPS)
+        return;
+    
+    // create a frame rate/info view and put it in the upper left corner of the screenView
+    
+    fpsView = [[UILabel alloc] init];
+    fpsView.userInteractionEnabled = NO;
+    fpsView.numberOfLines = 2;
+    fpsView.font = [UIFont monospacedDigitSystemFontOfSize:(TARGET_OS_IOS ? 16.0 : 32.0) weight:UIFontWeightMedium];
+    fpsView.textColor = UIColor.whiteColor; // self.view.tintColor;
+#if OPAQUE_FPS
+    fpsView.backgroundColor = UIColor.blackColor;
+#else
+    fpsView.backgroundColor = [UIColor.blackColor colorWithAlphaComponent:0.333];
+#endif
+    fpsView.shadowColor = UIColor.blackColor;
+    fpsView.shadowOffset = CGSizeMake(1.0,1.0);
+    fpsView.text = @"000:00:00⚡️\n0000.00fps 000.0ms";
+
+    CGPoint pos = screenView.frame.origin;
+
+    // if we have room above, go single line.
+    if (pos.y - fpsView.font.pointSize > screenView.superview.safeAreaInsets.top) {
+        fpsView.numberOfLines = 1;
+        fpsView.text =[fpsView.text stringByReplacingOccurrencesOfString:@"\n" withString:@" "];
+    }
+    
+    // put label in upper-left of screenView, or just above if room...
+    CGSize size = [fpsView sizeThatFits:CGSizeZero];
+    
+    if (pos.y - size.height > screenView.superview.safeAreaInsets.top)
+        pos.y -= size.height + 4.0;
+    if (pos.x - size.width > screenView.superview.safeAreaInsets.left)
+        pos.x -= size.width + 4.0;
+    else {
+        pos.x += 4.0; pos.y += 4.0;
+    }
+    
+    fpsView.frame = (CGRect){pos, size};
+    [screenView.superview addSubview:fpsView];
+}
+
+-(void)updateFrameRate {
+    assert([NSThread isMainThread]);
+
+    NSUInteger frame_count = screenView.frameCount;
+
+    if (frame_count == 0)
+        return;
+
+    // get the timecode assuming 60fps
+    NSUInteger frame = frame_count % 60;
+    NSUInteger sec = (frame_count / 60) % 60;
+    NSUInteger min = (frame_count / 3600);
+
+    fpsView.text = [NSString stringWithFormat:@"%03d:%02d:%02d%@ %.2ffps %.1fms", (int)min, (int)sec, (int)frame,
+                    [screenView isKindOfClass:[MetalScreenView class]] ? @"⚡️" : @"",
+                    screenView.frameRateAverage, screenView.renderTimeAverage * 1000.0];
+}
+
 - (void)changeUI { @autoreleasepool {
 
-  int prev_emulation_paused = g_emulation_paused;
+    int prev_emulation_paused = g_emulation_paused;
    
-  if (g_emulation_paused == 0) {
-    g_emulation_paused = 1;
-    change_pause(1);
-  }
-    
-  [self getConf];
-    
-  //printf("%d %d %d\n",ways_auto,myosd_num_ways,myosd_waysStick);
-    
-  if((ways_auto && myosd_num_ways!=myosd_waysStick) || (button_auto && old_myosd_num_buttons != myosd_num_buttons))
-  {
-     [self updateOptions];
-  }
-    
-  /* -- TODO figure out why we are doing this.  is it only needed at start up? if so only do it then.
-     -- we call changeUI when ever we need to update anything, and this delay causes a glitch.
-   
-     -- for example when we hit a key on the HW keyboard or iCade for the first time chageUI gets called to possibly hide the onscreen controls, this delay causes MAME to miss the key press
-   
-     -- another example, we call this when the device is rotated, a delay on the main thread is (almost) always a bad idea....
-  usleep(150000);//ensure some frames displayed
-  */
-    
-  if(screenView != nil)
-  {
-     [screenView removeFromSuperview];
-     screenView = nil;
-  }
-
-  if(imageBack!=nil)
-  {
-     [imageBack removeFromSuperview];
-     imageBack = nil;
-  }
-   
-  //si tiene overlay
-   if(imageOverlay!=nil)
-   {
-     [imageOverlay removeFromSuperview];
-     imageOverlay = nil;
-   }
-    
-  if(imageLogo != nil)
-  {
-      [imageLogo removeFromSuperview];
-      imageLogo = nil;
-  }
-
-  if(imageExternalDisplay != nil)
-  {
-      [imageExternalDisplay removeFromSuperview];
-      imageExternalDisplay = nil;
-  }
-
-#if TARGET_OS_IOS
-    
-// this does not make any sence, iCadeView needs to become the first responder and get keyboard input, it cant do this on the external display?????
-//    // Support iCade in external screens
-//    if ( externalView != nil && icadeView != nil && ![externalView.subviews containsObject:icadeView] ) {
-//        [externalView addSubview:icadeView];
-//    }
-    
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_7_0
-    [[UIApplication sharedApplication] setStatusBarOrientation:self.interfaceOrientation];
-#endif
-    
-    if (self.view.bounds.size.width > self.view.bounds.size.height)
-        [self buildLandscape];
-    else
-        [self buildPortrait];
-    
-    if (externalView != nil)
-    {
-        imageExternalDisplay = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"airplayvideo"] ?: [UIImage imageNamed:@"mame_logo"]];
-        imageExternalDisplay.contentMode = UIViewContentModeScaleAspectFit;
-        imageExternalDisplay.frame = g_device_is_landscape ? rFrames[LANDSCAPE_VIEW_NOT_FULL] : rFrames[PORTRAIT_VIEW_NOT_FULL];
-        [self.view addSubview:imageExternalDisplay];
+    if (g_emulation_paused == 0) {
+        g_emulation_paused = 1;
+        change_pause(1);
     }
-
-   if (@available(iOS 11.0, *))
-       [self setNeedsUpdateOfHomeIndicatorAutoHidden];
     
-#elif TARGET_OS_TV
-    // for tvOS, use "landscape" only
-    [self buildLandscape];
-#endif
+    [self getConf];
+    
+    if((ways_auto && myosd_num_ways!=myosd_waysStick) || (button_auto && old_myosd_num_buttons != myosd_num_buttons)) {
+        [self updateOptions];
+    }
+    
+    // reset the frame count when you first turn on/off
+    if (g_pref_showFPS != (fpsView != nil))
+        screenView.frameCount = 0;
+    
+    //dont free the screenView, see buildScreenView
+    //[screenView removeFromSuperview];
+    //screenView = nil;
+
+    [imageBack removeFromSuperview];
+    imageBack = nil;
+
+    [imageOverlay removeFromSuperview];
+    imageOverlay = nil;
+
+    [imageLogo removeFromSuperview];
+    imageLogo = nil;
+    
+    [fpsView removeFromSuperview];
+    fpsView = nil;
+
+    [imageExternalDisplay removeFromSuperview];
+    imageExternalDisplay = nil;
+
+    [self buildScreenView];
     [self buildLogoView];
+    [self buildFrameRateView];
     [self updateScreenView];
 
     if ( g_joy_used ) {
@@ -1352,13 +1465,12 @@ void mame_state(int load_save, int slot)
         [hideShowControlsForLightgun setImage:[UIImage imageNamed:@"dpad"] forState:UIControlStateNormal];
     }
     
-   if(prev_emulation_paused!=1)
-   {
-	   g_emulation_paused = 0;
-	   change_pause(0);
-   }
+    if (prev_emulation_paused != 1) {
+        g_emulation_paused = 0;
+        change_pause(0);
+    }
     
-   [UIApplication sharedApplication].idleTimerDisabled = (myosd_inGame || g_joy_used) ? YES : NO;//so atract mode dont sleep
+    [UIApplication sharedApplication].idleTimerDisabled = (myosd_inGame || g_joy_used) ? YES : NO;//so atract mode dont sleep
 
     if ( prev_myosd_light_gun == 0 && myosd_light_gun == 1 && g_pref_lightgun_enabled ) {
         [self.view makeToast:@"Touch Lightgun Mode Enabled!" duration:2.0 position:CSToastPositionCenter style:toastStyle];
@@ -1508,22 +1620,35 @@ void myosd_handle_turbo() {
 
 #if TARGET_OS_IOS
 
+- (void)showDebugRect:(CGRect)rect color:(UIColor*)color title:(NSString*)title {
+
+    if (CGRectIsEmpty(rect))
+        return;
+
+    UILabel* label = [[UILabel alloc] initWithFrame:rect];
+    label.text = title;
+    [label sizeToFit];
+    label.userInteractionEnabled = NO;
+    label.textColor = [UIColor.whiteColor colorWithAlphaComponent:0.75];
+    label.backgroundColor = [color colorWithAlphaComponent:0.25];
+    [inputView addSubview:label];
+    
+    UIView* view = [[UIView alloc] initWithFrame:rect];
+    view.userInteractionEnabled = NO;
+    view.layer.borderColor = [color colorWithAlphaComponent:0.50].CGColor;
+    view.layer.borderWidth = 1.0;
+    [inputView addSubview:view];
+}
+
 // show debug rects
 - (void) showDebugRects {
 #ifdef DEBUG
     if (g_enable_debug_view)
     {
-        for (UIView* view in inputView.subviews)
-        {
-            view.layer.borderWidth = 1.0;
-            view.layer.borderColor = [UIColor.systemYellowColor colorWithAlphaComponent:0.50].CGColor;
-        }
-
-        for (UIView* view in @[screenView, analogStickView])
-        {
-            view.layer.borderWidth = 1.0;
-            view.layer.borderColor = [UIColor.systemYellowColor colorWithAlphaComponent:0.50].CGColor;
-        }
+        UIView* null = [[UIView alloc] init];
+        for (UIView* view in @[screenView, analogStickView ?: null, imageOverlay ?: null])
+            [self showDebugRect:view.frame color:UIColor.systemYellowColor title:NSStringFromClass([view class])];
+        
         for (int i=0; i<INPUT_LAST_VALUE; i++)
         {
             CGRect rect = rInput[i];
@@ -1531,15 +1656,7 @@ void myosd_handle_turbo() {
                 continue;
             if (i>=DPAD_UP_RECT && i<=DPAD_DOWN_RIGHT_RECT)
                 continue;
-            UILabel* label = [[UILabel alloc] initWithFrame:rect];
-            label.text = [NSString stringWithFormat:@"%d", i];
-            label.userInteractionEnabled = NO;
-            label.textAlignment = NSTextAlignmentCenter;
-            label.textColor = [UIColor.systemBlueColor colorWithAlphaComponent:0.75];
-            label.backgroundColor = [UIColor.systemBlueColor colorWithAlphaComponent:0.25];
-            label.layer.borderColor = [UIColor.systemBlueColor colorWithAlphaComponent:0.50].CGColor;
-            label.layer.borderWidth = 1.0;
-            [inputView addSubview:label];
+            [self showDebugRect:rect color:UIColor.systemBlueColor title:[NSString stringWithFormat:@"%d", i]];
         }
     }
 #endif
@@ -1612,377 +1729,265 @@ void myosd_handle_turbo() {
 #endif
 
 #if TARGET_OS_IOS
-- (void)buildPortraitImageBack {
+- (void)buildBackgroundImage {
 
-   if(!g_device_is_fullscreen)
-   {
-	   if(g_isIpad)
-	     imageBack = [ [ UIImageView alloc ] initWithImage:[self loadImage:@"back_portrait_iPad.png"]];
-	   else
-	     imageBack = [ [ UIImageView alloc ] initWithImage:[self loadImage:@"back_portrait_iPhone.png"]];
-	   
-	   imageBack.frame = rFrames[PORTRAIT_IMAGE_BACK]; // Set the frame in which the UIImage should be drawn in.
-	   
-	   imageBack.userInteractionEnabled = NO;
-	   imageBack.multipleTouchEnabled = NO;
-	   imageBack.clearsContextBeforeDrawing = NO;
-	   //[imageBack setOpaque:YES];
-	
-	   [self.view addSubview: imageBack]; // Draw the image in self.view.
-   }
-   
-}
+    if (g_device_is_fullscreen)
+        return;
 
-
-- (void)buildPortraitImageOverlay {
-   
-   if((g_pref_scanline_filter_port || g_pref_tv_filter_port) /*&& externalView==nil*/)
-   {
-       CGRect r = g_device_is_fullscreen ? rScreenView : rFrames[PORTRAIT_IMAGE_OVERLAY];
-       
-       if (CGRectEqualToRect(rFrames[PORTRAIT_IMAGE_OVERLAY], rFrames[PORTRAIT_VIEW_NOT_FULL]))
-           r = screenView.frame;
-       
-       UIGraphicsBeginImageContextWithOptions(r.size, NO, 0.0);  
-       
-       //[image1 drawInRect: rPortraitImageOverlayFrame];
-       
-       CGContextRef uiContext = UIGraphicsGetCurrentContext();
-             
-       CGContextTranslateCTM(uiContext, 0, r.size.height);
-	
-       CGContextScaleCTM(uiContext, 1.0, -1.0);
-
-       if(g_pref_scanline_filter_port)
-       {
-          UIImage *image2 = [self loadImage:[NSString stringWithFormat: @"scanline-1.png"]];
-                        
-          CGImageRef tile = CGImageRetain(image2.CGImage);
-                   
-          CGContextSetAlpha(uiContext,((float)22 / 100.0f));   
-              
-          CGContextDrawTiledImage(uiContext, CGRectMake(0, 0, image2.size.width, image2.size.height), tile);
-       
-          CGImageRelease(tile);       
-       }
-
-       if(g_pref_tv_filter_port)
-       {                        
-          UIImage *image3 = [self loadImage:[NSString stringWithFormat: @"crt-1.png"]];
-          
-          CGImageRef tile = CGImageRetain(image3.CGImage);
-              
-          CGContextSetAlpha(uiContext,((float)19 / 100.0f));     
-          
-          CGContextDrawTiledImage(uiContext, CGRectMake(0, 0, image3.size.width, image3.size.height), tile);
-       
-          CGImageRelease(tile);       
-       }
-     
-       if(g_isIpad && !g_device_is_fullscreen && externalView == nil)
-       {
-          UIImage *image1;
-          if(g_isIpad)          
-            image1 = [self loadImage:[NSString stringWithFormat:@"border-iPad.png"]];
-          else
-            image1 = [self loadImage:[NSString stringWithFormat:@"border-iPhone.png"]];
-         
-          CGImageRef img = CGImageRetain(image1.CGImage);
-       
-          CGContextSetAlpha(uiContext,((float)100 / 100.0f));  
-   
-          CGContextDrawImage(uiContext,CGRectMake(0, 0, r.size.width, r.size.height),img);
-   
-          CGImageRelease(img);  
-
-           //inset the screenView so the border does not overlap it.
-           if (TRUE && self.view.window.screen != nil) {
-               CGSize border = CGSizeMake(4.0,4.0);  // in pixels
-               CGFloat scale = self.view.window.screen.scale;
-               CGFloat dx = ceil((border.width * r.size.width / image1.size.width) / scale); // in points
-               CGFloat dy = ceil((border.height * r.size.height / image1.size.height) / scale);
-               screenView.frame = AVMakeRectWithAspectRatioInsideRect(r.size, CGRectInset(r, dx, dy));
-           }
-       }
-             
-       UIImage *finishedImage = UIGraphicsGetImageFromCurrentImageContext();
-                                                            
-       UIGraphicsEndImageContext();
-       
-       imageOverlay = [ [ UIImageView alloc ] initWithImage: finishedImage];
-         
-       imageOverlay.frame = r;
-            		    			
-       [screenView.superview addSubview: imageOverlay];
-  }
-}
-
-- (void)buildPortrait {
-
-   g_device_is_landscape = 0;
-   g_device_is_fullscreen = (g_pref_full_screen_port || (g_joy_used && g_pref_full_screen_port_joy)) && externalView == nil;
+    NSString* imageName;
     
-   [ self getControllerCoords:0 ];
-    
-   [ self adjustSizes];
-    
-   [LayoutData loadLayoutData:self];
-   
-   [self buildPortraitImageBack];
-   
-   CGRect r;
-   
-   if(externalView!=nil)   
-   {
-       r = externalView.window.screen.bounds;
-       
-       CGFloat overscan = (g_pref_overscanTVOUT *  0.025f);
-       CGFloat overscan_x = ceil(r.size.width * overscan / 2.0);
-       CGFloat overscan_y = ceil(r.size.height * overscan / 2.0);
-
-       r = CGRectInset(r, overscan_x, overscan_y);
-   }
-   else if (!g_device_is_fullscreen)
-   {
-	    r = rFrames[PORTRAIT_VIEW_NOT_FULL];
-   }		  
-   else
-   {
-        r = rFrames[PORTRAIT_VIEW_FULL];
-   }
-    
-    // Handle Safe Area (iPhone X) adjust the view down away from the notch, before adjusting for aspect
-    if ( @available(iOS 11, *) ) {
-        if ( externalView == nil ) {
-            // in fullscreen mode, we dont want to correct for the bottom inset, because we hide the home indicator.
-            UIEdgeInsets safeArea = self.view.safeAreaInsets;
-            if (g_device_is_fullscreen)
-                safeArea.bottom = 0.0;
-            r = CGRectIntersection(r, UIEdgeInsetsInsetRect(self.view.bounds, safeArea));
-        }
+    if (g_device_is_landscape) {
+        imageName = (UIScreen.mainScreen.nativeBounds.size.width <= 640.0) ? @"back_landscape_iPhone_5.png" : @"back_landscape_iPhone_6.png";
+        imageName = g_isIpad ? @"back_landscape_iPad.png" : imageName;
     }
-    
-    if(g_pref_keep_aspect_ratio_port)
-    {
-        r = AVMakeRectWithAspectRatioInsideRect(CGSizeMake(myosd_vis_video_width, myosd_vis_video_height), r);
+    else {
+        imageName = g_isIpad ? @"back_portrait_iPad.png" : @"back_portrait_iPhone.png";
     }
-    
-   rScreenView = r;
        
-   screenView = [ [ScreenView alloc] initWithFrame: rScreenView];
-                  
-   if(externalView==nil)
-   {
-       // add at the bottom, so we dont cover any Toast
-       [self.view insertSubview:screenView atIndex:0];
-   }
-   else
-   {
-       [externalView addSubview: screenView];
-   }
+    imageBack = [[UIImageView alloc] initWithImage:[self loadImage:imageName]];
+    imageBack.frame = rFrames[g_device_is_landscape ? LANDSCAPE_IMAGE_BACK : PORTRAIT_IMAGE_BACK];
+       
+    imageBack.userInteractionEnabled = NO;
+    imageBack.multipleTouchEnabled = NO;
+    imageBack.clearsContextBeforeDrawing = NO;
     
-   [self buildPortraitImageOverlay];
-   [self buildTouchControllerViews];
+    [self.view addSubview: imageBack];
+}
+#endif
 
-
-    hideShowControlsForLightgun.hidden = YES;
-    if ( g_device_is_fullscreen &&
-        (
-         (myosd_light_gun && g_pref_lightgun_enabled) ||
-         (myosd_mouse && g_pref_touch_analog_enabled)
-        )) {
-        // make a button to hide/display the controls
-        hideShowControlsForLightgun.hidden = NO;
-        [self.view bringSubviewToFront:hideShowControlsForLightgun];
+// load any border image and return the size needed to inset the game rect
+// border can be <resource name> , <fraction of border that is opaque>
+//               #<hex color>, <border width>, <corner radius>
+- (void)getOverlayImage:(UIImage**)pImage andSize:(CGSize*)pSize {
+    
+    NSString* border_info = g_device_is_landscape ? g_pref_border_land : g_pref_border_port;
+    
+    if ([border_info length] == 0 || [border_info isEqualToString:@"None"] || [border_info hasPrefix:@"#"]) {
+        *pImage = nil;
+        *pSize = CGSizeZero;
+        return;
     }
 
-}
+    NSString* border_name = [border_info componentsSeparatedByString:@","].firstObject;
+    CGFloat   border_size = [border_info componentsSeparatedByString:@","].lastObject.doubleValue ?: 0.25;
 
-- (void)buildLandscapeImageBack {
-
-   if (!g_device_is_fullscreen)
-   {
-	   if(g_isIpad)
-	     imageBack = [ [ UIImageView alloc ] initWithImage:[self loadImage:@"back_landscape_iPad.png"]];
-       else if (UIScreen.mainScreen.nativeBounds.size.width <= 640.0)
-         imageBack = [ [ UIImageView alloc ] initWithImage:[self loadImage:@"back_landscape_iPhone_5.png"]];
-	   else
-	     imageBack = [ [ UIImageView alloc ] initWithImage:[self loadImage:@"back_landscape_iPhone_6.png"]];
-	   
-	   imageBack.frame = rFrames[LANDSCAPE_IMAGE_BACK]; // Set the frame in which the UIImage should be drawn in.
-	   
-	   imageBack.userInteractionEnabled = NO;
-	   imageBack.multipleTouchEnabled = NO;
-	   imageBack.clearsContextBeforeDrawing = NO;
-	   //[imageBack setOpaque:YES];
-	
-	   [self.view addSubview: imageBack]; // Draw the image in self.view.
-   }
-   
-}
-#endif
-
-- (void)buildLandscapeImageOverlay{
- 
-   if((g_pref_scanline_filter_land || g_pref_tv_filter_land) /*&& externalView==nil*/)
-   {                                                                                                                                              
-	   CGRect r;
-
-       if(g_device_is_fullscreen)
-          r = rScreenView;
-       else
-          r = rFrames[LANDSCAPE_IMAGE_OVERLAY];
-       
-       if (CGRectEqualToRect(rFrames[LANDSCAPE_IMAGE_OVERLAY], rFrames[LANDSCAPE_VIEW_NOT_FULL]))
-           r = screenView.frame;
-	
-	   UIGraphicsBeginImageContextWithOptions(r.size, NO, 0.0);
-	
-	   CGContextRef uiContext = UIGraphicsGetCurrentContext();  
-	   
-	   CGContextTranslateCTM(uiContext, 0, r.size.height);
-		
-	   CGContextScaleCTM(uiContext, 1.0, -1.0);
-	   
-	   if(g_pref_scanline_filter_land)
-	   {       	       
-	      UIImage *image2;
-
-#if TARGET_OS_IOS
-	      if(g_isIpad)
-	        image2 =  [self loadImage:[NSString stringWithFormat: @"scanline-2.png"]];
-	      else
-	        image2 =  [self loadImage:[NSString stringWithFormat: @"scanline-1.png"]];
-#elif TARGET_OS_TV
-           image2 =  [self loadImage:[NSString stringWithFormat: @"scanline_tvOS201901.png"]];
-#endif
-	                        
-	      CGImageRef tile = CGImageRetain(image2.CGImage);
-	      
-#if TARGET_OS_IOS
-	      if(g_isIpad)             
-	         CGContextSetAlpha(uiContext,((float)10 / 100.0f));
-	      else
-	         CGContextSetAlpha(uiContext,((float)22 / 100.0f));
-#elif TARGET_OS_TV
-           CGContextSetAlpha(uiContext,((float)66 / 100.0f));
-
-#endif
-	              
-	      CGContextDrawTiledImage(uiContext, CGRectMake(0, 0, image2.size.width, image2.size.height), tile);
-	       
-	      CGImageRelease(tile);       
-	    }
-	
-	    if(g_pref_tv_filter_land)
-	    {              
-	       UIImage *image3 = [self loadImage:[NSString stringWithFormat: @"crt-1.png"]];
-	          
-	       CGImageRef tile = CGImageRetain(image3.CGImage);
-	              
-	       CGContextSetAlpha(uiContext,((float)20 / 100.0f));     
-	          
-	       CGContextDrawTiledImage(uiContext, CGRectMake(0, 0, image3.size.width, image3.size.height), tile);
-	       
-	       CGImageRelease(tile);       
-	    }
-
-	       
-	    UIImage *finishedImage = UIGraphicsGetImageFromCurrentImageContext();
-	                  
-	    UIGraphicsEndImageContext();
-	    
-	    imageOverlay = [ [ UIImageView alloc ] initWithImage: finishedImage];
-	    
-	    imageOverlay.frame = r; // Set the frame in which the UIImage should be drawn in.
-      
-        imageOverlay.userInteractionEnabled = NO;
-#if TARGET_OS_IOS
-        imageOverlay.multipleTouchEnabled = NO;
-#endif
-        imageOverlay.clearsContextBeforeDrawing = NO;
-   
-        //[imageBack setOpaque:YES];
-                                         
-        [screenView.superview addSubview: imageOverlay];
-	  	   
-    }
-}
-
-- (void)buildLandscape{
-	
-   g_device_is_landscape = 1;
-   g_device_is_fullscreen = (g_pref_full_screen_land || (g_joy_used && g_pref_full_screen_land_joy)) && externalView == nil;
-
-#if TARGET_OS_IOS
-   [self getControllerCoords:1 ];
+    UIImage* image = [self loadImage:border_name];
+    NSAssert(image != nil, @"unable to load border image");
     
-   [self adjustSizes];
+    CGFloat scale = externalView ? externalView.window.screen.scale : UIScreen.mainScreen.scale;
     
-   [LayoutData loadLayoutData:self];
-   
-   [self buildLandscapeImageBack];
-#endif
+    // set the image scale to be same as the display scale, we want to work in pixels.
+    image = [[UIImage alloc] initWithCGImage:image.CGImage scale:scale orientation:image.imageOrientation];
+    
+    CGFloat cap_x = floor((image.size.width * image.scale  - 1.0) / 2.0) / image.scale;
+    CGFloat cap_y = floor((image.size.height * image.scale - 1.0) / 2.0) / image.scale;
+    image = [image resizableImageWithCapInsets:UIEdgeInsetsMake(cap_y, cap_x, cap_y, cap_x) resizingMode:UIImageResizingModeStretch];
+
+    CGSize size;
+    size.width  = floor(cap_x * border_size * scale) / scale;
+    size.height = floor(cap_y * border_size * scale) / scale;
+
+    *pImage = image;
+    *pSize = size;
+}
+
+// parse a hex color string, #RRGGBB or #RRGGBBAA, and return a UIColor
+UIColor* colorWithHexString(NSString* string) {
+
+    unsigned int rgba = 0;
+    NSScanner* scanner = [[NSScanner alloc] initWithString:string];
+    [scanner scanString:@"#" intoString:nil];
+    [scanner scanHexInt:&rgba];
+
+    if (scanner.scanLocation <= 7)   // #RRGGBB (not #RRGGBBAA)
+        rgba = (rgba << 8) | 0xFF;
+
+    return [UIColor colorWithRed:((rgba >> 24) & 0xFF) / 255.0
+                           green:((rgba >> 16) & 0xFF) / 255.0
+                            blue:((rgba >>  8) & 0xFF) / 255.0
+                           alpha:((rgba >>  0) & 0xFF) / 255.0];
+}
+
+- (void)buildOverlayImage:(UIImage*)image rect:(CGRect)rect {
+    
+    NSString* border_info = g_device_is_landscape ? g_pref_border_land : g_pref_border_port;
+
+    // handle a solid color: #RRGGBBAA, <border width>, <corner radius>
+    if (image == nil && [border_info hasPrefix:@"#"]) {
+        NSArray* info = [border_info componentsSeparatedByString:@","];
         
-   CGRect r;
+        UIColor* color = colorWithHexString(info.firstObject);
+        CGFloat width = [[info objectAtIndex:1 withDefault:@(1)] doubleValue];
+        CGFloat radius = [[info objectAtIndex:2 withDefault:nil] doubleValue];
+        
+        NSLog(@"BORDER: %@, %f, %f", info.firstObject, width, radius);
+        screenView.layer.borderColor = color.CGColor;
+        screenView.layer.borderWidth = width;
+        screenView.layer.cornerRadius = radius;
+        screenView.layer.masksToBounds = (radius != 0.0);
+    }
+    else {
+        screenView.layer.borderWidth = 0.0;
+        screenView.layer.cornerRadius = 0.0;
+        screenView.layer.masksToBounds = NO;
+    }
+    
+    if (image != nil) {
+        imageOverlay = [[UIImageView alloc] initWithImage:image];
+        imageOverlay.frame = rect;
+        [screenView.superview addSubview:imageOverlay];
+    }
+}
+
+- (void)buildScreenView {
+    
+    g_device_is_landscape = (self.view.bounds.size.width >= self.view.bounds.size.height * 1.333);
+
+    if (externalView != nil)
+        g_device_is_fullscreen = FALSE;
+    else if (g_device_is_landscape)
+        g_device_is_fullscreen = g_pref_full_screen_land || (g_joy_used && g_pref_full_screen_land_joy);
+    else
+        g_device_is_fullscreen = g_pref_full_screen_port || (g_joy_used && g_pref_full_screen_port_joy);
+
+    CGRect r;
 
 #if TARGET_OS_IOS
-   if(externalView!=nil)
-   {
-       r = externalView.window.screen.bounds;
+    [self getControllerCoords:g_device_is_landscape];
+    [self adjustSizes];
+    [LayoutData loadLayoutData:self];
+   
+    [self buildBackgroundImage];
+    
+    [self setNeedsUpdateOfHomeIndicatorAutoHidden];
+
+    if (externalView != nil)
+    {
+        r = externalView.window.screen.bounds;
        
-       CGFloat overscan = (g_pref_overscanTVOUT *  0.025f);
-       CGFloat overscan_x = ceil(r.size.width * overscan / 2.0);
-       CGFloat overscan_y = ceil(r.size.height * overscan / 2.0);
+        CGFloat overscan = (g_pref_overscanTVOUT *  0.025f);
+        CGFloat overscan_x = ceil(r.size.width * overscan / 2.0);
+        CGFloat overscan_y = ceil(r.size.height * overscan / 2.0);
 
-       r = CGRectInset(r, overscan_x, overscan_y);
-   }
-   else if (!g_device_is_fullscreen)
-   {
-        r = rFrames[LANDSCAPE_VIEW_NOT_FULL];
-   }     
-   else
-   {
-        r = rFrames[LANDSCAPE_VIEW_FULL];
-   }
+        r = CGRectInset(r, overscan_x, overscan_y);
+    }
+    else if (g_device_is_fullscreen)
+    {
+        r = rFrames[g_device_is_landscape ? LANDSCAPE_VIEW_FULL : PORTRAIT_VIEW_FULL];
+    }
+    else
+    {
+        r = rFrames[g_device_is_landscape ? LANDSCAPE_VIEW_NOT_FULL : PORTRAIT_VIEW_NOT_FULL];
+    }
 
-    // Handle Safe Area (iPhone X) adjust the view down away from the notch, before adjusting for aspect
-    if ( @available(iOS 11, *) ) {
-        if ( externalView == nil ) {
-            // in fullscreen mode, we dont want to correct for the bottom inset, because we hide the home indicator.
-            UIEdgeInsets safeArea = self.view.safeAreaInsets;
-            if (g_device_is_fullscreen)
-                safeArea.bottom = 0.0;
-            r = CGRectIntersection(r, UIEdgeInsetsInsetRect(self.view.bounds, safeArea));
-        }
+    // Handle Safe Area (iPhone X and above) adjust the view down away from the notch, before adjusting for aspect
+    if ( externalView == nil ) {
+        // in fullscreen mode, we dont want to correct for the bottom inset, because we hide the home indicator.
+        UIEdgeInsets safeArea = self.view.safeAreaInsets;
+        if (g_device_is_fullscreen)
+            safeArea.bottom = 0.0;
+        r = CGRectIntersection(r, UIEdgeInsetsInsetRect(self.view.bounds, safeArea));
     }
 #elif TARGET_OS_TV
     r = [[UIScreen mainScreen] bounds];
 #endif
+    // get the output device scale (mainSreen or external display)
+    CGFloat scale = (externalView ?: self.view).window.screen.scale;
     
-   if(g_pref_keep_aspect_ratio_land)
-   {
-       r = AVMakeRectWithAspectRatioInsideRect(CGSizeMake(myosd_vis_video_width, myosd_vis_video_height), r);
-   }
+    // NOTE: view.window may be nil use mainScreen.scale in this case.
+    if (scale == 0.0)
+        scale = UIScreen.mainScreen.scale;
 
-   rScreenView = r;
-   
-   screenView = [ [ScreenView alloc] initWithFrame: rScreenView];
-          
-   if(externalView==nil)
-   {             		    			      
-      [self.view addSubview: screenView];
-   }  
-   else
-   {               
-      [externalView addSubview: screenView];
-   }   
-           
-   [self buildLandscapeImageOverlay];
-#if TARGET_OS_IOS
-   [self buildTouchControllerViews];
-#endif
+    // tell the OSD how big the screen is, so it can optimize texture sizes.
+    if (myosd_display_width != (r.size.width * scale) || myosd_display_height != (r.size.height * scale)) {
+        NSLog(@"DISPLAY SIZE CHANGE: %dx%d", (int)(r.size.width * scale), (int)(r.size.height * scale));
+        myosd_display_width = (r.size.width * scale);
+        myosd_display_height = (r.size.height * scale);
+    }
+
+    // make room for a border
+    UIImage* border_image = nil;
+    CGSize border_size = CGSizeZero;
+    [self getOverlayImage:&border_image andSize:&border_size];
+    r = CGRectInset(r, border_size.width, border_size.height);
     
+    // preserve aspect ratio, and snap to pixels.
+    if (g_device_is_landscape ? g_pref_keep_aspect_ratio_land : g_pref_keep_aspect_ratio_port) {
+        CGSize aspect;
+        
+        // use an exact aspect ratio of 4:3 or 3:4 iff possible
+        if (floor(4.0 * myosd_vis_video_height / 3.0 + 0.5) == myosd_vis_video_width)
+            aspect = CGSizeMake(4, 3);
+        else if (floor(3.0 * myosd_vis_video_width / 4.0 + 0.5) == myosd_vis_video_height)
+            aspect = CGSizeMake(4, 3);
+        else if (floor(3.0 * myosd_vis_video_height / 4.0 + 0.5) == myosd_vis_video_width)
+            aspect = CGSizeMake(3, 4);
+        else if (floor(4.0 * myosd_vis_video_width / 3.0 + 0.5) == myosd_vis_video_height)
+            aspect = CGSizeMake(3, 4);
+        else
+            aspect = CGSizeMake(myosd_vis_video_width, myosd_vis_video_height);
+
+        r = AVMakeRectWithAspectRatioInsideRect(aspect, r);
+        r.origin.x    = floor(r.origin.x * scale) / scale;
+        r.origin.y    = floor(r.origin.y * scale) / scale;
+        r.size.width  = floor(r.size.width * scale + 0.5) / scale;
+        r.size.height = floor(r.size.height * scale + 0.5) / scale;
+    }
+    
+    // integer only scaling
+    if (g_pref_integer_scale_only && myosd_vis_video_width < r.size.width * scale && myosd_vis_video_height < r.size.height * scale) {
+        CGFloat n_w = floor(r.size.width * scale / myosd_vis_video_width);
+        CGFloat n_h = floor(r.size.height * scale / myosd_vis_video_height);
+
+        CGFloat new_width  = (n_w * myosd_vis_video_width) / scale;
+        CGFloat new_height = (n_h * myosd_vis_video_height) / scale;
+        
+        NSLog(@"INTEGER SCALE[%d,%d] %dx%d => %0.3fx%0.3f@%dx", (int)n_w, (int)n_h, myosd_vis_video_width, myosd_vis_video_height, new_width, new_height, (int)scale);
+
+        r.origin.x += floor((r.size.width - new_width)/2);
+        r.origin.y += floor((r.size.height - new_height)/2);
+        r.size.width = new_width;
+        r.size.height = new_height;
+    }
+    
+    NSDictionary* options = @{
+        kScreenViewFilter: g_device_is_landscape ? g_pref_filter_land : g_pref_filter_port,
+        kScreenViewEffect: g_device_is_landscape ? g_pref_effect_land : g_pref_effect_port,
+        kScreenViewColorSpace: g_pref_colorspace,
+    };
+    
+    // select a CoreGraphics or Metal ScreenView
+    Class screen_view_class = [CGScreenView class];
+    
+    // TODO: Metal on external display?
+    if (externalView == nil && g_pref_metal && [MetalScreenView isSupported])
+        screen_view_class = [MetalScreenView class];
+
+    // the reason we dont re-create screenView each time is because we access screenView from background threads
+    // (see iPhone_UpdateScreen, iPhone_DrawScreen) and we dont want to risk race condition on release.
+    // and not creating/destroying the ScreenView on a simple size change or rotation, is good for performace.
+    if (screenView == nil || [screenView class] != screen_view_class) {
+        [screenView removeFromSuperview];
+        screenView = [[screen_view_class alloc] init];
+    }
+    screenView.frame = r;
+    screenView.userInteractionEnabled = NO;
+    [screenView setOptions:options];
+    
+    UIView* superview = (externalView ?: self.view);
+    if (screenView.superview != superview) {
+        [screenView removeFromSuperview];
+        [superview addSubview:screenView];
+    }
+           
+    [self buildOverlayImage:border_image rect:CGRectInset(r, -border_size.width, -border_size.height)];
+
+#if TARGET_OS_IOS
+    screenView.multipleTouchEnabled = NO;
+    [self buildTouchControllerViews];
+#endif
+   
+    hideShowControlsForLightgun.hidden = YES;
     if (g_device_is_fullscreen &&
         (
          (myosd_light_gun && g_pref_lightgun_enabled) ||
@@ -1992,10 +1997,9 @@ void myosd_handle_turbo() {
         hideShowControlsForLightgun.hidden = NO;
         [self.view bringSubviewToFront:hideShowControlsForLightgun];
     }
-	
 }
 
-////////////////
+#pragma mark - INPUT
 
 // handle_INPUT - called when input happens on a controller, keyboard, or screen
 - (void)handle_INPUT {
@@ -2027,9 +2031,9 @@ void myosd_handle_turbo() {
     }
 #endif
 
-#if TARGET_OS_IOS
     // call handle_MENU first so it can use buttonState to see key up.
     [self handle_MENU];
+#if TARGET_OS_IOS
     [self handle_DPAD];
 #endif
 }
@@ -2070,7 +2074,62 @@ void myosd_handle_turbo() {
         [analogStickView update];
 }
 #endif
-    
+
+#pragma mark - KEYBOARD INPUT
+
+// called from keyboard handler on any CMD+key (or OPTION+key) used for DEBUG stuff.
+-(void)commandKey:(char)key {
+    switch (key) {
+        case '\n':
+            if (g_device_is_landscape)
+                g_pref_full_screen_land = g_pref_full_screen_land_joy = !(g_pref_full_screen_land || g_pref_full_screen_land_joy);
+            else
+                g_pref_full_screen_port = g_pref_full_screen_port_joy = !(g_pref_full_screen_port || g_pref_full_screen_port_joy);
+            [self changeUI];
+            break;
+        case 'I':
+            g_pref_integer_scale_only = !g_pref_integer_scale_only;
+            [self changeUI];
+            break;
+        case 'F':
+            g_pref_showFPS = !g_pref_showFPS;
+            [self changeUI];
+            break;
+        case 'T':
+            myosd_throttle = !myosd_throttle;
+            [self changeUI];
+            break;
+        case 'V':
+            myosd_vsync = myosd_vsync == -1 ? 6000 : -1;
+            [self changeUI];
+            break;
+        case 'A':
+            myosd_force_pxaspect = !myosd_force_pxaspect;
+            [self changeUI];
+            break;
+        case 'M':
+        {
+            // toggle Metal, but in order to load the right shader we need to change the global Options.
+            Options* op = [[Options alloc] init];
+            op.useMetal = !op.useMetal;
+            [op saveOptions];
+            [self updateOptions];
+            [self changeUI];
+            break;
+        }
+#ifdef DEBUG
+        case 'P':
+            // **NOTE** this pauses the MAME render thread, it is not the same as the PAUSE key in MAME.
+            g_emulation_paused = !g_emulation_paused;
+            change_pause(g_emulation_paused);
+            break;
+        case 'D':
+            [CGScreenView drawScreenDebugDump];
+            break;
+#endif
+    }
+}
+
 
 #if TARGET_OS_IOS
 #pragma mark Touch Handling
@@ -2387,7 +2446,7 @@ void myosd_handle_turbo() {
 
 - (void) handleLightgunTouchesBegan:(NSSet *)touches {
     NSUInteger touchcount = touches.count;
-    if ( screenView != nil ) {
+    if ( screenView.window != nil ) {
         UITouch *touch = [[touches allObjects] objectAtIndex:0];
         CGPoint touchLoc = [touch locationInView:screenView];
         CGFloat newX = (touchLoc.x - (screenView.bounds.size.width / 2.0f)) / (screenView.bounds.size.width / 2.0f);
@@ -2431,14 +2490,14 @@ void myosd_handle_turbo() {
 #pragma mark - Mouse Touch Support
 
 -(void) handleMouseTouchesBegan:(NSSet *)touches {
-    if ( screenView != nil ) {
+    if ( screenView.window != nil ) {
         UITouch *touch = [[touches allObjects] objectAtIndex:0];
         mouseTouchStartLocation = [touch locationInView:screenView];
     }
 }
 
 - (void) handleMouseTouchesMoved:(NSSet *)touches {
-    if ( screenView != nil && !CGPointEqualToPoint(mouseTouchStartLocation, mouseInitialLocation) ) {
+    if ( screenView.window != nil && !CGPointEqualToPoint(mouseTouchStartLocation, mouseInitialLocation) ) {
         UITouch *touch = [[touches allObjects] objectAtIndex:0];
         CGPoint currentLocation = [touch locationInView:screenView];
         CGFloat dx = currentLocation.x - mouseTouchStartLocation.x;
@@ -2452,14 +2511,14 @@ void myosd_handle_turbo() {
 
 #pragma mark - Touch Movement Support
 -(void) handleTouchMovementTouchesBegan:(NSSet *)touches {
-    if ( screenView != nil ) {
+    if ( screenView.window != nil ) {
         UITouch *touch = [[touches allObjects] objectAtIndex:0];
         touchDirectionalMoveStartLocation = [touch locationInView:screenView];
     }
 }
 
 -(void) handleTouchMovementTouchesMoved:(NSSet *)touches {
-    if ( screenView != nil && !CGPointEqualToPoint(touchDirectionalMoveStartLocation, mouseInitialLocation) ) {
+    if ( screenView.window != nil && !CGPointEqualToPoint(touchDirectionalMoveStartLocation, mouseInitialLocation) ) {
         myosd_pad_status &= ~MYOSD_DOWN;
         myosd_pad_status &= ~MYOSD_UP;
         myosd_pad_status &= ~MYOSD_LEFT;
@@ -2744,7 +2803,7 @@ void myosd_handle_turbo() {
 #endif
 }
 
-- (UIImage *)loadImage:(NSString *)name{
+- (UIImage *)loadImage:(NSString *)name {
     
     NSString *path = nil;
     UIImage *img = nil;
@@ -2766,8 +2825,8 @@ void myosd_handle_turbo() {
     
     if (img == nil)
     {
-        name = [NSString stringWithFormat:@"SKIN_%d/%@", g_pref_skin, name];
-        img = [UIImage imageWithContentsOfFile:[path stringByAppendingPathComponent:name]];
+        NSString* skin_name = [NSString stringWithFormat:@"SKIN_%d/%@", g_pref_skin, name];
+        img = [UIImage imageWithContentsOfFile:[path stringByAppendingPathComponent:skin_name]];
     }
 
     [g_image_cache setObject:(img ?: [NSNull null]) forKey:name];
@@ -2819,6 +2878,7 @@ void myosd_handle_turbo() {
     NSString *romsPath = [NSString stringWithUTF8String:get_documents_path("roms")];
     NSString *artwPath = [NSString stringWithUTF8String:get_documents_path("artwork")];
     NSString *sampPath = [NSString stringWithUTF8String:get_documents_path("samples")];
+    NSString *datsPath = [NSString stringWithUTF8String:get_documents_path("dats")];
 
     NSString *romPath = [rootPath stringByAppendingPathComponent:romName];
     
@@ -2835,14 +2895,20 @@ void myosd_handle_turbo() {
     //
     //  * zipset, if the ZIP contains other ZIP files, then it is a zip of romsets, aka zipset?.
     //  * chdset, if the ZIP has CHDs in it.
+    //  * datset, if the ZIP has DATs in it. *NOTE* many ROMSETs have .DAT files, so we only check a whitelist of files.
     //  * artwork, if the ZIP contains a .LAY file, then it is artwork
     //  * samples, if the ZIP contains a .WAV file, then it is samples
     //  * romset, if the ZIP has "normal" files in it assume it is a romset.
     //
+
+    // whitelist of valid .DAT files we will copy to the dats folder
+    NSArray* dat_files = @[@"HISTORY.DAT", @"MAMEINFO.DAT"];
+    
     int __block numLAY = 0;
     int __block numZIP = 0;
     int __block numCHD = 0;
     int __block numWAV = 0;
+    int __block numDAT = 0;
     int __block numFiles = 0;
     BOOL result = [ZipFile enumerate:romPath withOptions:ZipFileEnumFiles usingBlock:^(ZipFileInfo* info) {
         NSString* ext = [info.name.pathExtension uppercaseString];
@@ -2855,6 +2921,8 @@ void myosd_handle_turbo() {
             numWAV++;
         if ([ext isEqualToString:@"CHD"])
             numCHD++;
+        if ([dat_files containsObject:info.name.lastPathComponent.uppercaseString])
+            numDAT++;
     }];
 
     NSString* toPath = nil;
@@ -2863,7 +2931,7 @@ void myosd_handle_turbo() {
     {
         NSLog(@"%@ is a CORRUPT ZIP (deleting)", romPath);
     }
-    else if (numZIP != 0 || numCHD != 0)
+    else if (numZIP != 0 || numCHD != 0 || numDAT != 0)
     {
         NSLog(@"%@ is a ZIPSET", [romPath lastPathComponent]);
         int maxFiles = numFiles;
@@ -2874,14 +2942,19 @@ void myosd_handle_turbo() {
                 return;
             
             NSString* toPath = nil;
-            NSString* ext = [info.name.pathExtension uppercaseString];
+            NSString* ext  = info.name.pathExtension.uppercaseString;
+            NSString* name = info.name.lastPathComponent;
             
             // only UNZIP files to specific directories, send a ZIP file with a unspecifed directory to roms/
             if ([info.name hasPrefix:@"roms/"] || [info.name hasPrefix:@"artwork/"] || [info.name hasPrefix:@"titles/"] || [info.name hasPrefix:@"samples/"] ||
                 [info.name hasPrefix:@"cfg/"] || [info.name hasPrefix:@"ini/"] || [info.name hasPrefix:@"sta/"] || [info.name hasPrefix:@"hi/"])
                 toPath = [rootPath stringByAppendingPathComponent:info.name];
+            else if ([name.uppercaseString isEqualToString:@"CHEAT.ZIP"])
+                toPath = [rootPath stringByAppendingPathComponent:name];
+            else if ([ext isEqualToString:@"DAT"])
+                toPath = [datsPath stringByAppendingPathComponent:name];
             else if ([ext isEqualToString:@"ZIP"])
-                toPath = [romsPath stringByAppendingPathComponent:[info.name lastPathComponent]];
+                toPath = [romsPath stringByAppendingPathComponent:name];
             else if ([ext isEqualToString:@"CHD"] && [info.name containsString:@"/"]) {
                 // CHD will be of the form XXXXXXX/ROMNAME/file.chd, so move to roms/ROMNAME/file.chd
                 NSString* romname = info.name.stringByDeletingLastPathComponent.lastPathComponent;
@@ -2889,7 +2962,7 @@ void myosd_handle_turbo() {
             }
 
             if (toPath != nil)
-                NSLog(@"...UNZIP: %@ => %@", info.name, toPath);
+                NSLog(@"...UNZIP: %@ => %@", info.name, [toPath stringByReplacingOccurrencesOfString:rootPath withString:@"~/"]);
             else
                 NSLog(@"...UNZIP: %@ (ignoring)", info.name);
 
@@ -2978,6 +3051,9 @@ void myosd_handle_turbo() {
     }
     count = [romlist count];
     
+    // on the first-boot cheat.zip will not exist, we want to be silent in this case.
+    BOOL first_boot = [filelist containsObject:@"cheat0139.zip"];
+    
     if(count != 0)
         NSLog(@"found (%d) ROMs to move....", (int)count);
     if(count != 0 && g_move_roms != 0)
@@ -2985,28 +3061,33 @@ void myosd_handle_turbo() {
     
     if(count != 0 && g_move_roms++ == 0)
     {
-        UIViewController* topViewController = self.topViewController;
+        UIAlertController *progressAlert = nil;
 
-        UIAlertController *progressAlert = [UIAlertController alertControllerWithTitle:@"Moving ROMs" message:@"Please wait..." preferredStyle:UIAlertControllerStyleAlert];
-        [progressAlert setProgress:0.0];
-        [topViewController presentViewController:progressAlert animated:YES completion:nil];
+        if (!first_boot) {
+            progressAlert = [UIAlertController alertControllerWithTitle:@"Moving ROMs" message:@"Please wait..." preferredStyle:UIAlertControllerStyleAlert];
+            [progressAlert setProgress:0.0];
+            [self.topViewController presentViewController:progressAlert animated:YES completion:nil];
+        }
         
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            BOOL result = TRUE;
+            BOOL result = FALSE;
             for (int i = 0; i < count; i++)
             {
-                result = result && [self moveROM:[romlist objectAtIndex: i] progressBlock:^(double progress) {
+                result = result | [self moveROM:[romlist objectAtIndex: i] progressBlock:^(double progress) {
                     [progressAlert setProgress:((double)i / count) + progress * (1.0 / count)];
                 }];
                 [progressAlert setProgress:(double)(i+1) / count];
             }
+
             dispatch_async(dispatch_get_main_queue(), ^{
-                [topViewController dismissViewControllerAnimated:YES completion:^{
+                if (progressAlert == nil)
+                    g_move_roms = 0;
+                [progressAlert.presentingViewController dismissViewControllerAnimated:YES completion:^{
                     
                     // reset MAME last game selected...
                     if (result)
                        myosd_last_game_selected = 0;
-
+                    
                     // reload the MAME menu....
                     if (result)
                         [self performSelectorOnMainThread:@selector(playGame:) withObject:nil waitUntilDone:NO];
@@ -3136,8 +3217,10 @@ void myosd_handle_turbo() {
 
         [self changeUI]; //ensure GUI
         
-        [screenView removeFromSuperview];
-        screenView = nil;
+        //dont free the screenView, see buildScreenView
+        //[screenView removeFromSuperview];
+        //screenView = nil;
+        screenView.alpha = 0;
         
         layoutView = [[LayoutView alloc] initWithFrame:self.view.bounds withEmuController:self];
         
@@ -3157,6 +3240,7 @@ void myosd_handle_turbo() {
     [layoutView removeFromSuperview];
     
     change_layout = 0;
+    screenView.alpha = 1;
 
     [self done:self];
 }
@@ -3214,7 +3298,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     
     if (g_device_is_fullscreen)
     {
-       rStickWindow = scale_rect(rStickWindow, g_buttons_size);
+       rStickWindow = scale_rect(rStickWindow, g_stick_size);
     }
 }
 #endif
@@ -3265,11 +3349,12 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     }
     
     // now add any Steam Controllers, these should always have a extendedGamepad profile
-    for (GCController* controler in SteamControllerManager.sharedManager.controllers) {
-        if (controler.extendedGamepad != nil)
-            [controllers addObject:controler];
+    if (g_bluetooth_enabled) {
+        for (GCController* controler in SteamControllerManager.sharedManager.controllers) {
+            if (controler.extendedGamepad != nil)
+                [controllers addObject:controler];
+        }
     }
-
     // add all the controllers without a extendedGamepad profile last, ie the Siri Remote.
     for (GCController* controler in GCController.controllers) {
         if (controler.extendedGamepad == nil)
@@ -3336,7 +3421,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         //      MENU+R1 = Pn START
         //      MENU+L2 = P2 COIN/SELECT
         //      MENU+R2 = P2 START
-        //      MENU+X  = EXIT GAME
+        //      MENU+X  = EXIT
         //      MENU+B  = MAME MENU
         //      MENU+A  = LOAD STATE
         //      MENU+Y  = SAVE STATE
@@ -3394,11 +3479,9 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
              }
              //Exit Game
              else if (MFIController.extendedGamepad.buttonX.pressed) {
-                 NSLog(@"%d: MENU+X => EXIT GAME", player);
-                 if (myosd_inGame && myosd_in_menu == 0) {
-                     myosd_joy_status[player] &= ~MYOSD_X;
-                     [self runExit];
-                 }
+                 NSLog(@"%d: MENU+X => EXIT", player);
+                 myosd_joy_status[player] &= ~MYOSD_X;
+                 [self runExit];
              }
              // Load State
              else if (MFIController.extendedGamepad.buttonA.pressed ) {
@@ -3509,7 +3592,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         if (isSiriRemote) {
 
             MFIController.microGamepad.allowsRotation = YES;
-            MFIController.microGamepad.reportsAbsoluteDpadValues = YES;
+            MFIController.microGamepad.reportsAbsoluteDpadValues = NO;
 
             MFIController.microGamepad.valueChangedHandler = ^(GCMicroGamepad* gamepad, GCControllerElement* element) {
 #if TARGET_OS_TV
@@ -3676,7 +3759,8 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 
 -(void)scanForDevices{
     [GCController startWirelessControllerDiscoveryWithCompletionHandler:nil];
-    [[SteamControllerManager sharedManager] scanForControllers];
+    if (g_bluetooth_enabled)
+        [[SteamControllerManager sharedManager] scanForControllers];
 }
 
 -(void)MFIControllerConnected:(NSNotification*)notif{
@@ -3843,7 +3927,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 -(void)chooseGame:(NSArray*)games {
     // a Alert or Setting is up, bail
     if (self.presentedViewController != nil) {
-        NSLog(@"CANT SHOW CHOOSE GAME UI....");
+        NSLog(@"CANT SHOW CHOOSE GAME UI: %@", self.presentedViewController);
         if (self.presentedViewController.beingDismissed) {
             NSLog(@"....TRY AGAIN");
             [self performSelector:_cmd withObject:games afterDelay:1.0];
@@ -3891,6 +3975,18 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         NSLog(@"RUNNING MAME MENU, DONT BRING UP UI.");
         return;
     }
+    if (g_mame_game[0] != 0) {
+        NSLog(@"RUNNING %s, DONT BRING UP UI.", g_mame_game);
+        return;
+    }
+    
+    // now that we have passed the startup phase, check on and maybe re-enable bluetooth.
+    if (@available(iOS 13.1, tvOS 13.0, *)) {
+        if (!g_bluetooth_enabled && CBCentralManager.authorization == CBManagerAuthorizationNotDetermined) {
+            g_bluetooth_enabled = TRUE;
+            [self performSelectorOnMainThread:@selector(scanForDevices) withObject:nil waitUntilDone:NO];
+        }
+    }
 
     NSLog(@"GAMES: %@", games);
 
@@ -3937,30 +4033,8 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 
 -(void)updateUserActivity:(NSDictionary*)game
 {
-    if (game == nil || game[kGameInfoName] == nil || [game[kGameInfoName] length] <= 1)
-        return;
-
-#if TARGET_OS_IOS && __IPHONE_OS_VERSION_MAX_ALLOWED >= 120100
-    if (@available(iOS 12.0, *)) {
-        NSString* type = [NSString stringWithFormat:@"%@.%@", NSBundle.mainBundle.bundleIdentifier, @"play"];
-        NSString* name = game[kGameInfoDescription] ?: game[kGameInfoName];
-        NSString* title = [NSString stringWithFormat:@"Play %@", [[name componentsSeparatedByString:@" ("] firstObject]];
-        
-        NSUserActivity* activity = [[NSUserActivity alloc] initWithActivityType:type];
-        
-        activity.title = title;
-        activity.userInfo = game;
-        activity.eligibleForSearch = TRUE;
-        activity.eligibleForPrediction = TRUE;
-        activity.persistentIdentifier = game[kGameInfoName];
-        activity.suggestedInvocationPhrase = title;
-
-        if ([title containsString:@"Donkey Kong"])
-            activity.suggestedInvocationPhrase = @"It's on like Donkey Kong!";
-        
-        self.userActivity = activity;
-        [activity becomeCurrent];
-    }
+#if TARGET_OS_IOS
+    self.userActivity = [ChooseGameController userActivityForGame:game];
 #endif
 }
 

@@ -52,6 +52,7 @@ enum OptionSections
     kImportSection,
     kPortraitSection,
     kLandscapeSection,
+    kVideoSection,
     kMiscSection,
     kFilterSection,
     kResetSection,
@@ -70,7 +71,6 @@ enum ListOptionType
     kTypeSoundValue,
     kTypeFSValue,
     kTypeOverscanValue,
-    kTypeSkinValue,
     kTypeManufacturerValue,
     kTypeYearGTEValue,
     kTypeYearLTEValue,
@@ -89,38 +89,6 @@ enum ListOptionType
     kTypeMainThreadTypeValue
 };
 
-@class EmulatorController;
-
 @interface OptionsController : OptionsTableViewController
-{
-    UISwitch*		  switchKeepAspectPort;
-    UISwitch*		  switchKeepAspectLand;
-    UISwitch*		  switchSmoothedPort;
-    UISwitch*		  switchSmoothedLand;
-    UISwitch*		  switchTvFilterPort;
-    UISwitch*		  switchScanlineFilterPort;
-    UISwitch*		  switchTvFilterLand;
-    UISwitch*		  switchScanlineFilterLand;
-    UISwitch*		  switchShowFPS;
-    UISwitch*		  switchShowINFO;
-    UISwitch*		  switchfullLand;
-    UISwitch*		  switchfullPort;
-    UISwitch*         switchfullLandJoy;
-    UISwitch*         switchfullPortJoy;
-    UISwitch*         switchHideClones;
-    UISwitch*         switchHideNotWorking;
-    UISwitch *switchThrottle;
-    UISwitch *switchSleep;
-    UISwitch *switchForcepxa;
-    UISwitch *switchLowlsound;
-
-    NSArray *arrayEmuRes;
-    NSArray *arrayFSValue;
-    NSArray *arrayOverscanValue;
-    NSArray *arraySkinValue;
-    NSArray  *arrayEmuSpeed;
-}
-
-- (void)optionChanged:(id)sender;
 
 @end

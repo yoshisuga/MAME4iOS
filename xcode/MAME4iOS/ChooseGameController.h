@@ -22,6 +22,8 @@
 #define kGameInfoDescription    @"description"
 #define kGameInfoManufacturer   @"manufacturer"
 #define kGameInfoCategory       @"category"
+#define kGameInfoHistory        @"history"
+#define kGameInfoMameInfo       @"mameinfo"
 
 // special "system" games
 #define kGameInfoNameSettings   @"settings"
@@ -31,6 +33,10 @@
 
 - (void)setGameList:(NSArray*)games;
 + (void)reset;
+
+#if TARGET_OS_IOS
++ (NSUserActivity*)userActivityForGame:(NSDictionary*)game;
+#endif
 
 @property(nonatomic, strong) void (^selectGameCallback)(NSDictionary* info);
 

@@ -1,30 +1,16 @@
 //
 //  PopupSegmentedControl.m
-//  TestGame
+//  Wombat
 //
 //  Created by Todd Laney on 4/6/20.
 //  Copyright © 2020 Todd Laney. All rights reserved.
 //
-
 #import "PopupSegmentedControl.h"
 
-//
-// PopupSegmentedControl
-//
-// a subclass of UISegmentedControl that only shows the currently selected item, and lets the user change
-// the currently selected item in a popup window on iPhone or iPad, and in a UIAlertController on tvOS.
-//
-// if you pass UISegmentedControlNoSegment as the index to setImage/Title:forSegmentAtIndex: you can
-// change the item that is displayed instead of the currently selected item.
-//
-// changing the list of items after init is currently not supported.
-//
 @implementation PopupSegmentedControl {
     NSArray* _items;
     NSInteger _selectedSegmentIndex;
     BOOL _momentary;
-    BOOL _dismissPopupAfterChange;
-    BOOL _allText;
     UIEdgeInsets _popupMargin;
     CGSize _fullSize;
     UIViewController* _popup;
@@ -36,19 +22,14 @@
 - (instancetype)initWithItems:(NSArray *)items {
     _items = items;
     _selectedSegmentIndex = UISegmentedControlNoSegment;
-    _dismissPopupAfterChange = TRUE;
     _popupMargin = UIEdgeInsetsMake(4.0, 4.0, 4.0, 4.0);
-    _allText = TRUE;
-    for (id item in items)
-        _allText = _allText && [item isKindOfClass:[NSString class]];
     self = [super initWithItems:items];
     self.apportionsSegmentWidthsByContent = YES;
     _fullSize = [self sizeThatFits:CGSizeZero];
-    _fullSize.width += _popupMargin.left + _popupMargin.right;
-    _fullSize.height += _popupMargin.top + _popupMargin.bottom;
     [super removeAllSegments];
     [super insertSegmentWithTitle:items.firstObject atIndex:0 animated:NO];
     [self addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap:)]];
+    [self update];
     return self;
 }
 
@@ -134,12 +115,10 @@
     else
         [super setTitle:item forSegmentAtIndex:0];
     
-    if (_popup != nil)
+    if (_popup != nil && !_momentary)
         super.selectedSegmentIndex = 0;
-    else if (_selectedSegmentIndex < 0 || _momentary)
-        super.selectedSegmentIndex = UISegmentedControlNoSegment;
     else
-        super.selectedSegmentIndex = 0;
+        super.selectedSegmentIndex = UISegmentedControlNoSegment;
     
     [self sizeToFit];
 }
@@ -175,16 +154,42 @@
 #endif
 
 #if TARGET_OS_IOS
-
--(void)showPopup:(UIViewController*)popup {
+UIColor* getBackgroundColor(UIView* view) {
+    if (view == nil)
+        return nil;
+    else if (view.backgroundColor != nil)
+        return view.backgroundColor;
+    else if ([view respondsToSelector:@selector(barTintColor)] && [(id)view barTintColor] != nil)
+        return [(id)view barTintColor];
+    else
+        return getBackgroundColor(view.superview);
+}
+-(void)showPopup:(UIView*)view {
     
+    if (_popup != nil)
+        return;
+    
+    UIViewController* popup = [[UIViewController alloc] init];
+
+    CGSize size = [view sizeThatFits:CGSizeZero];
+    size.width += _popupMargin.left + _popupMargin.right;
+    size.height += _popupMargin.top + _popupMargin.bottom;
+    popup.preferredContentSize = size;
+    
+    [popup.view addSubview:view];
+    view.translatesAutoresizingMaskIntoConstraints = NO;
+    [view.centerXAnchor constraintEqualToAnchor:popup.view.safeAreaLayoutGuide.centerXAnchor].active = TRUE;
+    [view.centerYAnchor constraintEqualToAnchor:popup.view.safeAreaLayoutGuide.centerYAnchor].active = TRUE;
+
+    popup.view.backgroundColor = getBackgroundColor(self);
     popup.modalPresentationStyle = UIModalPresentationPopover;
+
     UIPopoverPresentationController* ppc = popup.popoverPresentationController;
     if (ppc != nil) {
         ppc.delegate = (id<UIPopoverPresentationControllerDelegate>)self;
         ppc.sourceView = self;
         ppc.sourceRect = self.bounds;
-        ppc.permittedArrowDirections = UIPopoverArrowDirectionUp;
+        ppc.permittedArrowDirections = UIPopoverArrowDirectionUp | UIPopoverArrowDirectionDown;
     }
 
     _popup = popup;
@@ -193,7 +198,9 @@
     UIViewController* vc = UIApplication.sharedApplication.keyWindow.rootViewController;
     while (vc.presentedViewController != nil)
         vc = vc.presentedViewController;
-    [vc presentViewController:popup animated:YES completion:nil];
+    if (@available(iOS 13.0, *))
+        _popup.overrideUserInterfaceStyle = vc.overrideUserInterfaceStyle;
+    [vc presentViewController:_popup animated:YES completion:nil];
 }
 // Returning UIModalPresentationNone will indicate that an adaptation should not happen.
 - (UIModalPresentationStyle)adaptivePresentationStyleForPresentationController:(UIPresentationController *)controller traitCollection:(UITraitCollection *)traitCollection {
@@ -203,77 +210,71 @@
 - (void)popoverPresentationControllerDidDismissPopover:(UIPopoverPresentationController *)popoverPresentationController {
      _popup = nil;
      [self update];
+
 }
-
--(void)showAlert {
-    if (_popup != nil)
-        return;
-
-    UIAlertController* alert = [UIAlertController alertControllerWithTitle:nil message:nil preferredStyle:UIAlertControllerStyleActionSheet];
-    for (NSInteger index=0; index < self.numberOfSegments; index++) {
-        NSString* title = [self titleForSegmentAtIndex:index] ?: @"";
-        UIImage* image = [self imageForSegmentAtIndex:index];
-        [alert addAction:[UIAlertAction actionWithTitle:title style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
-            self->_popup = nil;
-            self.selectedSegmentIndex = index;
-            [self sendActionsForControlEvents:UIControlEventValueChanged];
-        }]];
-        if (image != nil)
-            [alert.actions.lastObject setValue:image forKey:@"image"];
-        if (index == self.selectedSegmentIndex)
-            alert.preferredAction = alert.actions.lastObject;
-    }
-    [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction* action) {
-        self->_popup = nil;
-        [self update];
-    }]];
+-(UISegmentedControl*)cloneWithItems:(NSArray*)items {
     
-    [self showPopup:alert];
-}
-
-// create a clone of the segmented controll and present it in a popup
--(void)showMenu {
-    if (_popup != nil)
-        return;
-
-    UISegmentedControl* seg = [[UISegmentedControl alloc] initWithItems:_items];
+    UISegmentedControl* seg = [[UISegmentedControl alloc] initWithItems:items];
     seg.apportionsSegmentWidthsByContent = YES;
-    [seg addTarget:self action:@selector(popupChange:) forControlEvents:UIControlEventValueChanged];
     
-    UIViewController* menu = [[UIViewController alloc] init];
-    [seg sizeToFit];
-    seg.selectedSegmentIndex = _selectedSegmentIndex;
-    menu.preferredContentSize = _fullSize;
-    [menu.view addSubview:seg];
-    seg.translatesAutoresizingMaskIntoConstraints = NO;
-    [seg.centerXAnchor constraintEqualToAnchor:menu.view.safeAreaLayoutGuide.centerXAnchor].active = TRUE;
-    [seg.centerYAnchor constraintEqualToAnchor:menu.view.safeAreaLayoutGuide.centerYAnchor].active = TRUE;
+    [seg addTarget:self action:@selector(popupChange:) forControlEvents:UIControlEventValueChanged];
+    UITapGestureRecognizer* tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(popupTap:)];
+    tap.cancelsTouchesInView = NO;
+    [seg addGestureRecognizer:tap];
 
-    if (@available(iOS 13.0, *)) {
+    [seg setTitleTextAttributes:[self titleTextAttributesForState:UIControlStateNormal] forState:UIControlStateNormal];
+    [seg setTitleTextAttributes:[self titleTextAttributesForState:UIControlStateSelected] forState:UIControlStateSelected];
+    if (@available(iOS 13.0, *))
         seg.selectedSegmentTintColor = self.selectedSegmentTintColor;
-        // TODO: dont hardcode these colors! figure out how to query the UIBarButtonItem or UINavBar, etc.
-        [seg setTitleTextAttributes:@{NSForegroundColorAttributeName:[UIColor whiteColor]} forState:UIControlStateNormal];
-        menu.view.backgroundColor = [UIColor colorWithWhite:0.165 alpha:1.0];
+
+    [seg sizeToFit];
+    
+    return seg;
+}
+// create a clone of the segmented controll and present it in a popup
+-(void)showMenuHorz {
+    UISegmentedControl* seg = [self cloneWithItems:_items];
+    if (!_momentary)
+        seg.selectedSegmentIndex = _selectedSegmentIndex;
+    [self showPopup:seg];
+}
+// create a vertical stack view with all items in it, and present it in a popup
+-(void)showMenuVert {
+    UIStackView* stack = [[UIStackView alloc] init];
+    stack.axis = UILayoutConstraintAxisVertical;
+    stack.distribution = UIStackViewDistributionEqualSpacing;
+    stack.spacing = 2.0;
+    CGSize size = CGSizeZero;
+    for (NSInteger i=0; i<_items.count; i++) {
+        UISegmentedControl* seg = [self cloneWithItems:@[_items[i]]];
+        seg.tag = i;
+        if (_selectedSegmentIndex == i && !_momentary)
+            seg.selectedSegmentIndex = 0;
+        [stack addArrangedSubview:seg];
+        size.height += seg.bounds.size.height + stack.spacing;
+        size.width = MAX(size.width, seg.bounds.size.width);
     }
 
-    [self showPopup:menu];
+    stack.frame = CGRectMake(0, 0, size.width, size.height);
+    [self showPopup:stack];
 }
 -(void)popupChange:(UISegmentedControl*)sender {
-    self.selectedSegmentIndex = sender.selectedSegmentIndex;
+    self.selectedSegmentIndex = sender.tag ?: sender.selectedSegmentIndex;
     [self sendActionsForControlEvents:UIControlEventValueChanged];
-    if (_dismissPopupAfterChange) {
-        [_popup.presentingViewController dismissViewControllerAnimated:YES completion:nil];
-        [self popoverPresentationControllerDidDismissPopover:_popup.popoverPresentationController];
-    }
+}
+-(void)popupTap:(UITapGestureRecognizer*)tap {
+    [_popup.presentingViewController dismissViewControllerAnimated:YES completion:^{
+        [self popoverPresentationControllerDidDismissPopover:self->_popup.popoverPresentationController];
+    }];
 }
 #endif
 
 -(void)tap:(UITapGestureRecognizer*)tap {
 #if TARGET_OS_IOS
-    if (_allText && _fullSize.width >= (self.window.bounds.size.width * 0.9))
-        [self showAlert];
+    if ((self.autoresizingMask & UIViewAutoresizingFlexibleHeight) || _fullSize.width >= (self.window.bounds.size.width * 0.5))
+        [self showMenuVert];
     else
-        [self showMenu];
+        [self showMenuHorz];
 #else
     if (super.numberOfSegments <= 1)
         [self grow];

@@ -827,29 +827,12 @@
     if (g_keyboard_state[KEY_LCMD] || g_keyboard_state[KEY_RCMD] ||
         g_keyboard_state[KEY_LALT] || g_keyboard_state[KEY_RALT])
     {
-        switch (keyCode + (isKeyDown ? KEY_DOWN : 0)) {
-            case KEY_RETURN+KEY_DOWN:
-                if (g_device_is_landscape)
-                    g_pref_full_screen_land = g_pref_full_screen_land_joy = !(g_pref_full_screen_land || g_pref_full_screen_land_joy);
-                else
-                    g_pref_full_screen_port = g_pref_full_screen_port_joy = !(g_pref_full_screen_port || g_pref_full_screen_port_joy);
-                [emuController changeUI];
-                return nil;
-            case KEY_T+KEY_DOWN:
-                if (g_device_is_landscape)
-                    g_pref_tv_filter_land = !g_pref_tv_filter_land;
-                else
-                    g_pref_tv_filter_port = !g_pref_tv_filter_port;
-                [emuController changeUI];
-                return nil;
-            case KEY_S+KEY_DOWN:
-                if (g_device_is_landscape)
-                    g_pref_scanline_filter_land = !g_pref_scanline_filter_land;
-                else
-                    g_pref_scanline_filter_port = !g_pref_scanline_filter_port;
-                [emuController changeUI];
-                return nil;
-        }
+        if (isKeyDown && keyCode == KEY_RETURN)
+            [emuController commandKey:'\n'];
+        if (isKeyDown && keyCode >= KEY_A && keyCode <= KEY_Z)
+            [emuController commandKey:'A' + (keyCode - KEY_A)];
+        if (isKeyDown && keyCode >= KEY_0 && keyCode <= KEY_9)
+            [emuController commandKey:'0' + (keyCode - KEY_0)];
     }
     
     // 8BitDo

@@ -49,11 +49,6 @@
 
 @interface FilterOptionController: OptionsTableViewController <UITextFieldDelegate> {
     
-#if TARGET_OS_IOS
-    UISwitch *switchFilterClones;
-    UISwitch *switchFilterFavorites;
-    UISwitch *switchFilterNotWorking;
-#endif
     NSMutableArray  *arrayManufacturerValue;
     NSMutableArray  *arrayYearGTEValue;
     NSMutableArray  *arrayYearLTEValue;

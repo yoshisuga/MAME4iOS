@@ -42,13 +42,36 @@
  * under a MAME license, as set out in http://mamedev.org/
  */
 
+#ifndef __SCREENVIEW_H__
+#define __SCREENVIEW_H__
+
 #import <UIKit/UIKit.h>
 #import <QuartzCore/CALayer.h>
 
+#define kScreenViewFilter           @"filter"
+#define kScreenViewEffect           @"effect"
+#define kScreenViewColorSpace       @"colorspace"
 
-@interface ScreenView : UIView
+#define kScreenViewFilterNearest    @"Nearest"
+#define kScreenViewFilterLinear     @"Linear"
 
-- (id)initWithFrame:(CGRect)frame;
-- (void)drawRect:(CGRect)rect;
+#define kScreenViewEffectNone       @"None"
+
+@protocol ScreenView <NSObject>
+
+- (void)setOptions:(NSDictionary*)options;
+
+// frame and render statistics
+@property(readwrite) NSUInteger frameCount;         // total frames drawn.
+@property(readonly)  CGFloat    frameRate;          // time it took last frame to draw (1/sec)
+@property(readonly)  CGFloat    frameRateAverage;   // average frameRate
+@property(readonly)  CGFloat    renderTime;         // time it took last frame to render (sec)
+@property(readonly)  CGFloat    renderTimeAverage;  // average renderTime
+
+// return 1 if you handled the draw, 0 for a software render
+// NOTE this is called on MAME background thread, dont do anything stupid.
+- (int)drawScreen:(void*)primitives;
 
 @end
+
+#endif
