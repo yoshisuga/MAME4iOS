@@ -82,7 +82,7 @@
 #import "SystemImage.h"
 #import "SteamController.h"
 
-#define DebugLog 1
+#define DebugLog 0
 #if DebugLog == 0
 #define NSLog(...) (void)0
 #endif
@@ -578,7 +578,7 @@ void mame_state(int load_save, int slot)
         [self runSettings];
     }]];
 
-#ifdef DEBUG
+#ifdef XXDEBUG
     [menu addAction:[UIAlertAction actionWithTitle:(g_enable_debug_view ? @"DEBUG OFF" : @"DEBUG ON") style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"bolt" withPointSize:size] handler:^(UIAlertAction* action) {
         [self endMenu];
         g_enable_debug_view = !g_enable_debug_view;
@@ -2127,6 +2127,9 @@ UIColor* colorWithHexString(NSString* string) {
         [screenView removeFromSuperview];
         [superview addSubview:screenView];
     }
+    else {
+        [superview bringSubviewToFront:screenView];
+    }
            
     [self buildOverlayImage:border_image rect:CGRectInset(r, -border_size.width, -border_size.height)];
 
@@ -2281,6 +2284,10 @@ UIColor* colorWithHexString(NSString* string) {
             // **NOTE** this pauses the MAME render thread, it is not the same as the PAUSE key in MAME.
             g_emulation_paused = !g_emulation_paused;
             change_pause(g_emulation_paused);
+            break;
+        case 'R':
+            g_enable_debug_view = !g_enable_debug_view;
+            [self changeUI];
             break;
         case 'D':
             [CGScreenView drawScreenDebugDump];
