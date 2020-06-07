@@ -15,25 +15,33 @@
 
 using namespace metal;
 
+#pragma pack(push,4)
 struct simpleCrtUniforms {
     float4 mame_screen_dst_rect;
     float4 mame_screen_src_rect;
+    float curv_vert;    // 5.0 default  1.0, 10.0
+    float curv_horiz;   // 4.0 default 1.0, 10.0
+    float curv_strength;// 0.25 default 0.0, 1.0
+    float light_boost;  // 1.3 default 0.1, 3.0
+    float vign_strength;// 0.05 default 0.0, 1.0
+    float zoom_out;     // 1.1 default 0.01, 5.0
 };
+#pragma pack(pop)
 
 fragment float4
 simpleCRT(VertexOutput v [[stage_in]],
                 texture2d<float> texture [[texture(0)]],
                 constant simpleCrtUniforms &uniforms [[buffer(0)]])
 {
-    // HUD parameters for simpleCRT
-    float curv_vert = 5.0; // 5.0 default  1.0, 10.0
-    float curv_horiz = 4.0; // 4.0 default 1.0, 10.0
-    float curv_strength = 0.25; // 0.25 default 0.0, 1.0
-    float light_boost = 1.3; // 1.3 default 0.1, 3.0
-    float vign_strength = 0.05; // 0.05 default 0.0, 1.0
-    float zoom_out = 1.05; // 1.1 default 0.01, 5.0
     float4 dst_rect = uniforms.mame_screen_dst_rect;
     float4 src_rect = uniforms.mame_screen_src_rect;
+    // HUD parameters for simpleCRT
+    float curv_vert     = uniforms.curv_vert;
+    float curv_horiz    = uniforms.curv_horiz;
+    float curv_strength = uniforms.curv_strength;
+    float light_boost   = uniforms.light_boost;
+    float vign_strength = uniforms.vign_strength;
+    float zoom_out      = uniforms.zoom_out;
     
     float2 uv = ((v.tex - float2(0.5))*2.0)*zoom_out;  // add in simple curvature to uv's
     uv.x *= (1.0 + pow(abs(uv.y) / curv_vert, 2.0)); // tweak vertical curvature

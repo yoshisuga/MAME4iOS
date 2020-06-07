@@ -687,6 +687,10 @@ void mame_state(int load_save, int slot)
     // this is called from bootstrapper when app is going into the background, save the current game we are playing so we can restore next time.
     NSString* name = [NSString stringWithUTF8String:g_mame_game];
     [[NSUserDefaults standardUserDefaults] setObject:name forKey:kSelectedGameKey];
+    
+    if (hudView)
+        [NSUserDefaults.standardUserDefaults setValue:NSStringFromCGRect(hudView.frame) forKey:kInfoHUDFrameKey];
+
     [[NSUserDefaults standardUserDefaults] synchronize];
     
     if (self.presentedViewController != nil || g_emulation_paused)
@@ -1420,11 +1424,11 @@ void mame_state(int load_save, int slot)
 
     fpsView.text = fps;
     [hudView setValue:fps forKey:@"FPS"];
-//#ifdef DEBUG
+#ifdef DEBUG
     CGSize size = screenView.bounds.size;
     CGFloat scale = screenView.window.screen.scale;
     [hudView setValue:[NSString stringWithFormat:@"%dx%d@%dx [%0.3f]", (int)size.width, (int)size.height, (int)scale, (float)(size.width / size.height)] forKey:@"SIZE"];
-//#endif
+#endif
 }
 
 -(void)hudButton:(UISegmentedControl*)seg {
@@ -1443,23 +1447,33 @@ void mame_state(int load_save, int slot)
             [self commandKey:'\r'];
             break;
         case 4:
-            [self runExit];
+            [self commandKey:'H'];
             break;
     }
 }
 -(void)hudChange:(InfoHUD*)hud {
     NSLog(@"HUD CHANGE: %@=%@", hud.changedKey, [hud valueForKey:hud.changedKey]);
-//    [_metalView setShaderVariables:@{
-//        hud.changedKey: [hud valueForKey:sender.changedKey]
-//    }];
+    
+    if ([screenView isKindOfClass:[MetalScreenView class]]) {
+        [(MetalScreenView*)screenView setShaderVariables:@{
+            hud.changedKey: [hud valueForKey:hud.changedKey]
+        }];
+    }
+}
+
+
+// split and trim a string
+static NSMutableArray* split(NSString* str, NSString* sep) {
+    NSMutableArray* arr = [[str componentsSeparatedByString:sep] mutableCopy];
+    for (int i=0; i<arr.count; i++)
+        arr[i] = [arr[i] stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
+    return arr;
 }
 
 -(void)buildHUD {
 
-    // TODO: save/restore positon of HUD
     if (hudView)
         [NSUserDefaults.standardUserDefaults setValue:NSStringFromCGRect(hudView.frame) forKey:kInfoHUDFrameKey];
-    // TODO: save/restore positon of HUD
 
     if (!g_pref_showHUD) {
         [hudView removeFromSuperview];
@@ -1493,16 +1507,45 @@ void mame_state(int load_save, int slot)
     [hudView addView:seg];
 
     [hudView addValue:@"000:00:00🅼 0000.00fps 000.0ms" forKey:@"FPS"];
-//#ifdef DEBUG
+#ifdef DEBUG
     [hudView addValue:@"WWWWxHHHH@2x" forKey:@"SIZE"];
-//#endif
-    //[hudView addSeparator];
+#endif
+    
+    NSString* shader = g_device_is_landscape ? g_pref_effect_land : g_pref_effect_port;
+    NSArray* shader_arr = split(shader, @",");
+    
+    int count = 0;
+    for (NSString* str in shader_arr) {
+        NSArray* arr = split(str, @"=");
+        if (arr.count < 2 || [arr[0] isEqualToString:@"blend"])
+            continue;
 
+        if (count++ == 0) {
+            [hudView addSeparator];
+            [hudView addText:[NSString stringWithFormat:@"Shader: %@", shader_arr.firstObject]];
+        }
+
+        NSString* name = arr[0];
+        arr = split(arr[1], @" ");
+        NSNumber* value = @([arr[0] floatValue]);
+        NSNumber* min = (arr.count > 1) ? @([arr[1] floatValue]) : @(0);
+        NSNumber* max = (arr.count > 2) ? @([arr[2] floatValue]) : @([value floatValue]);
+        
+        [hudView addValue:value forKey:name format:nil min:min max:max];
+    }
+    
     [hudView sizeToFit];
     CGFloat w = hudView.bounds.size.width;
     CGFloat h = hudView.bounds.size.height;
 
-    hudView.frame = CGRectMake(self.view.bounds.size.width/2-w/2, self.view.safeAreaInsets.top + 16, w, h);
+    // TODO: handle landscape vs portrait!
+    // TODO: validate rect is onscreen!
+    CGRect rect = CGRectFromString([NSUserDefaults.standardUserDefaults stringForKey:kInfoHUDFrameKey] ?: @"");
+    
+    if (CGRectIsEmpty(rect))
+        rect = CGRectMake(self.view.bounds.size.width/2, self.view.safeAreaInsets.top + 16, 0, 0);
+
+    hudView.frame = CGRectMake(rect.origin.x + rect.size.width/2 - w/2, rect.origin.y, w, h);
 }
 
 - (void)changeUI { @autoreleasepool {
@@ -2257,7 +2300,7 @@ UIColor* colorWithHexString(NSString* string) {
             return nil;
         }
         
-        if(touch.phase == UITouchPhaseBegan)
+        if(touch.phase == UITouchPhaseBegan && allTouches.count == 1)
         {
             [self runMenu];
         }
@@ -2280,6 +2323,17 @@ UIColor* colorWithHexString(NSString* string) {
         if ( ![handledTouches containsObject:touch] ) {
             [unhandledTouches addObject:touch];
         }
+    }
+    // show the HUD on a two finger tap
+    // TODO: do this better.
+    if (hudView == nil && unhandledTouches.count == 2) {
+        int count = 0;
+        for (UITouch* touch in [allTouches allObjects]) {
+            if (MyCGRectContainsPoint(screenView.frame, [touch locationInView:self.view]))
+                count++;
+        }
+        if (count == 2)
+            [self commandKey:'H'];
     }
     if ( g_pref_touch_analog_enabled && myosd_mouse == 1 && unhandledTouches.count > 0 ) {
         [self handleMouseTouchesBegan:unhandledTouches];

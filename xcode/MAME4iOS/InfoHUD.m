@@ -42,7 +42,7 @@
         [self addBlur:UIBlurEffectStyleSystemUltraThinMaterialDark withVibrancy:YES];
     }
     else {
-        [self addBlur:UIBlurEffectStyleDark withVibrancy:YES];
+        [self addBlur:UIBlurEffectStyleDark withVibrancy:NO];
     }
 
     return self;
@@ -153,7 +153,7 @@
 
     UILabel* label = [[UILabel alloc] init];
     label.font = _font;
-    label.textColor = nil;
+    label.textColor = UIColor.whiteColor;
     _views[key] = label;
     _format[key] = format;
     [_stack addArrangedSubview:label];
