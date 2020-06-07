@@ -1446,10 +1446,11 @@ void mame_state(int load_save, int slot)
             push_mame_button(0, MYOSD_START);
             break;
         case 2:
-            [self commandKey:'A'];
+            [self commandKey:'\r'];
             break;
         case 3:
-            [self commandKey:'\r'];
+            g_pref_showHUD = (g_pref_showHUD==1) ? 2 : 1;
+            [self changeUI];
             break;
         case 4:
             [self commandKey:'H'];
@@ -1480,7 +1481,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     if (hudView)
         [NSUserDefaults.standardUserDefaults setValue:NSStringFromCGRect(hudView.frame) forKey:kInfoHUDFrameKey];
 
-    if (!g_pref_showHUD) {
+    if (g_pref_showHUD <= 0) {
         [hudView removeFromSuperview];
         hudView = nil;
         return;
@@ -1499,8 +1500,9 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     [hudView removeAll];
     UISegmentedControl* seg = [[UISegmentedControl alloc] initWithItems:@[
         @"Coin", @"Start",
-        [UIImage systemImageNamed:@"rectangle.expand.vertical"] ?: @"⇵",
         [UIImage systemImageNamed:@"rectangle.and.arrow.up.right.and.arrow.down.left"] ?: @"⤢",
+//      [UIImage systemImageNamed:@"rectangle.expand.vertical"] ?: @"⇵",
+        [UIImage systemImageNamed:@"slider.horizontal.3"] ?: @"⇵",
         [UIImage systemImageNamed:@"xmark.circle"] ?: @"Ⓧ",
     ]];
     seg.momentary = YES;
@@ -1516,27 +1518,29 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     [hudView addValue:@"WWWWxHHHH@2x" forKey:@"SIZE"];
 #endif
     
-    NSString* shader = g_device_is_landscape ? g_pref_effect_land : g_pref_effect_port;
-    NSArray* shader_arr = split(shader, @",");
-    
-    int count = 0;
-    for (NSString* str in shader_arr) {
-        NSArray* arr = split(str, @"=");
-        if (arr.count < 2 || [arr[0] isEqualToString:@"blend"])
-            continue;
-
-        if (count++ == 0) {
-            [hudView addSeparator];
-            [hudView addText:[NSString stringWithFormat:@"Shader: %@", shader_arr.firstObject]];
-        }
-
-        NSString* name = arr[0];
-        arr = split(arr[1], @" ");
-        NSNumber* value = @([arr[0] floatValue]);
-        NSNumber* min = (arr.count > 1) ? @([arr[1] floatValue]) : @(0);
-        NSNumber* max = (arr.count > 2) ? @([arr[2] floatValue]) : @([value floatValue]);
+    if (g_pref_showHUD == 2) {
+        NSString* shader = g_device_is_landscape ? g_pref_effect_land : g_pref_effect_port;
+        NSArray* shader_arr = split(shader, @",");
         
-        [hudView addValue:value forKey:name format:nil min:min max:max];
+        int count = 0;
+        for (NSString* str in shader_arr) {
+            NSArray* arr = split(str, @"=");
+            if (arr.count < 2 || [arr[0] isEqualToString:@"blend"])
+                continue;
+
+            if (count++ == 0) {
+                [hudView addSeparator];
+                [hudView addText:[NSString stringWithFormat:@"Shader: %@", shader_arr.firstObject]];
+            }
+
+            NSString* name = arr[0];
+            arr = split(arr[1], @" ");
+            NSNumber* value = @([arr[0] floatValue]);
+            NSNumber* min = (arr.count > 1) ? @([arr[1] floatValue]) : @(0);
+            NSNumber* max = (arr.count > 2) ? @([arr[2] floatValue]) : @([value floatValue]);
+            
+            [hudView addValue:value forKey:name format:nil min:min max:max];
+        }
     }
     
     [hudView sizeToFit];
