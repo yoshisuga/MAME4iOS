@@ -2347,10 +2347,10 @@ UIColor* colorWithHexString(NSString* string) {
         }
     }
     // show the HUD on a two finger tap
-    // TODO: do this better.
-    if (hudView == nil && unhandledTouches.count == 2) {
+    // TODO: do this better! and co-exist with a lightgun
+    if (hudView == nil && unhandledTouches.count == 2 && !(myosd_light_gun == 1 && g_pref_lightgun_enabled)) {
         int count = 0;
-        for (UITouch* touch in [allTouches allObjects]) {
+        for (UITouch* touch in [unhandledTouches allObjects]) {
             if (MyCGRectContainsPoint(screenView.frame, [touch locationInView:self.view]))
                 count++;
         }
