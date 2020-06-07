@@ -1519,6 +1519,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 #endif
     
     if (g_pref_showHUD == 2) {
+        NSDictionary* shader_variables = ([screenView isKindOfClass:[MetalScreenView class]]) ?  [(MetalScreenView*)screenView getShaderVariables] : nil;
         NSString* shader = g_device_is_landscape ? g_pref_effect_land : g_pref_effect_port;
         NSArray* shader_arr = split(shader, @",");
         
@@ -1535,7 +1536,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
             NSString* name = arr[0];
             arr = split(arr[1], @" ");
-            NSNumber* value = @([arr[0] floatValue]);
+            NSNumber* value = shader_variables[name] ?: @([arr[0] floatValue]);
             NSNumber* min = (arr.count > 1) ? @([arr[1] floatValue]) : @(0);
             NSNumber* max = (arr.count > 2) ? @([arr[2] floatValue]) : @([value floatValue]);
             
