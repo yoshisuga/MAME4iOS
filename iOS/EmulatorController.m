@@ -688,9 +688,11 @@ void mame_state(int load_save, int slot)
     NSString* name = [NSString stringWithUTF8String:g_mame_game];
     [[NSUserDefaults standardUserDefaults] setObject:name forKey:kSelectedGameKey];
     
+#if TARGET_OS_IOS
     if (hudView)
         [NSUserDefaults.standardUserDefaults setValue:NSStringFromCGRect(hudView.frame) forKey:kInfoHUDFrameKey];
-
+#endif
+    
     [[NSUserDefaults standardUserDefaults] synchronize];
     
     if (self.presentedViewController != nil || g_emulation_paused)
@@ -1423,14 +1425,17 @@ void mame_state(int load_save, int slot)
                     screenView.frameRateAverage, screenView.renderTimeAverage * 1000.0];
 
     fpsView.text = fps;
+#if TARGET_OS_IOS
     [hudView setValue:fps forKey:@"FPS"];
 #ifdef DEBUG
     CGSize size = screenView.bounds.size;
     CGFloat scale = screenView.window.screen.scale;
     [hudView setValue:[NSString stringWithFormat:@"%dx%d@%dx [%0.3f]", (int)size.width, (int)size.height, (int)scale, (float)(size.width / size.height)] forKey:@"SIZE"];
 #endif
+#endif
 }
 
+#if TARGET_OS_IOS
 -(void)hudButton:(UISegmentedControl*)seg {
     NSLog(@"HUD BUTTON: %ld: %@", seg.selectedSegmentIndex, [seg titleForSegmentAtIndex:seg.selectedSegmentIndex]);
     switch (seg.selectedSegmentIndex) {
@@ -1547,6 +1552,11 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
     hudView.frame = CGRectMake(rect.origin.x + rect.size.width/2 - w/2, rect.origin.y, w, h);
 }
+#else
+-(void)buildHUD {
+    // TODO: HUD on tvOS
+}
+#endif
 
 - (void)changeUI { @autoreleasepool {
 
