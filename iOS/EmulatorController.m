@@ -58,6 +58,7 @@
 #import "LayoutData.h"
 #import "NetplayGameKit.h"
 #import "FileItemProvider.h"
+#import "InfoHUD.h"
 #endif
 
 #import "ChooseGameController.h"
@@ -134,6 +135,7 @@ NSString* g_pref_colorspace;
 int g_pref_metal = 0;
 int g_pref_integer_scale_only = 0;
 int g_pref_showFPS = 0;
+int g_pref_showHUD = 0;
 
 int g_pref_keep_aspect_ratio_land = 0;
 int g_pref_keep_aspect_ratio_port = 0;
@@ -195,6 +197,7 @@ static int ways_auto = 0;
 static int change_layout=0;
 #endif
 
+#define kInfoHUDFrameKey @"info_hud_frame"
 #define kSelectedGameKey @"selected_game"
 static BOOL g_mame_reset = FALSE;           // do a full reset (delete cfg files) before running MAME
 static char g_mame_game[MAX_GAME_NAME];     // game MAME should run (or empty is menu)
@@ -240,7 +243,7 @@ void iphone_UpdateScreen()
 
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wundeclared-selector"
-    if (g_pref_showFPS && (screenView.frameCount % UPDATE_FPS_EVERY) == 0)
+    if ((g_pref_showFPS || g_pref_showHUD) && (screenView.frameCount % UPDATE_FPS_EVERY) == 0)
         [sharedInstance performSelectorOnMainThread:@selector(updateFrameRate) withObject:nil waitUntilDone:NO];
     #pragma clang diagnostic pop
 }
@@ -263,7 +266,7 @@ int iphone_DrawScreen(myosd_render_primitive* prim_list) {
         
         #pragma clang diagnostic push
         #pragma clang diagnostic ignored "-Wundeclared-selector"
-        if (g_pref_showFPS && result && (screenView.frameCount % UPDATE_FPS_EVERY) == 0)
+        if ((g_pref_showFPS || g_pref_showHUD) && result && (screenView.frameCount % UPDATE_FPS_EVERY) == 0)
             [sharedInstance performSelectorOnMainThread:@selector(updateFrameRate) withObject:nil waitUntilDone:NO];
         #pragma clang diagnostic pop
 
@@ -575,7 +578,7 @@ void mame_state(int load_save, int slot)
         [self runSettings];
     }]];
 
-#ifdef DEBUG
+#ifdef XXDEBUG
     [menu addAction:[UIAlertAction actionWithTitle:(g_enable_debug_view ? @"DEBUG OFF" : @"DEBUG ON") style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"bolt" withPointSize:size] handler:^(UIAlertAction* action) {
         [self endMenu];
         g_enable_debug_view = !g_enable_debug_view;
@@ -684,6 +687,12 @@ void mame_state(int load_save, int slot)
     // this is called from bootstrapper when app is going into the background, save the current game we are playing so we can restore next time.
     NSString* name = [NSString stringWithUTF8String:g_mame_game];
     [[NSUserDefaults standardUserDefaults] setObject:name forKey:kSelectedGameKey];
+    
+#if TARGET_OS_IOS
+    if (hudView)
+        [NSUserDefaults.standardUserDefaults setValue:NSStringFromCGRect(hudView.frame) forKey:kInfoHUDFrameKey];
+#endif
+    
     [[NSUserDefaults standardUserDefaults] synchronize];
     
     if (self.presentedViewController != nil || g_emulation_paused)
@@ -1373,7 +1382,7 @@ void mame_state(int load_save, int slot)
 #endif
     fpsView.shadowColor = UIColor.blackColor;
     fpsView.shadowOffset = CGSizeMake(1.0,1.0);
-    fpsView.text = @"000:00:00⚡️\n0000.00fps 000.0ms";
+    fpsView.text = @"000:00:00🅼\n0000.00fps 000.0ms";
 
     CGPoint pos = screenView.frame.origin;
 
@@ -1410,11 +1419,149 @@ void mame_state(int load_save, int slot)
     NSUInteger frame = frame_count % 60;
     NSUInteger sec = (frame_count / 60) % 60;
     NSUInteger min = (frame_count / 3600);
-
-    fpsView.text = [NSString stringWithFormat:@"%03d:%02d:%02d%@ %.2ffps %.1fms", (int)min, (int)sec, (int)frame,
-                    [screenView isKindOfClass:[MetalScreenView class]] ? @"⚡️" : @"",
+    
+    NSString* fps = [NSString stringWithFormat:@"%03d:%02d:%02d%@ %.2ffps %.1fms", (int)min, (int)sec, (int)frame,
+                    [screenView isKindOfClass:[MetalScreenView class]] ? @"🅼" : @"",
                     screenView.frameRateAverage, screenView.renderTimeAverage * 1000.0];
+
+    fpsView.text = fps;
+#if TARGET_OS_IOS
+    [hudView setValue:fps forKey:@"FPS"];
+#ifdef DEBUG
+    CGSize size = screenView.bounds.size;
+    CGFloat scale = screenView.window.screen.scale;
+    [hudView setValue:[NSString stringWithFormat:@"%dx%d@%dx [%0.3f]", (int)size.width, (int)size.height, (int)scale, (float)(size.width / size.height)] forKey:@"SIZE"];
+#endif
+#endif
 }
+
+#if TARGET_OS_IOS
+-(void)hudButton:(UISegmentedControl*)seg {
+    NSLog(@"HUD BUTTON: %ld: %@", seg.selectedSegmentIndex, [seg titleForSegmentAtIndex:seg.selectedSegmentIndex]);
+    switch (seg.selectedSegmentIndex) {
+        case 0:
+            push_mame_button(0, MYOSD_SELECT);
+            break;
+        case 1:
+            push_mame_button(0, MYOSD_START);
+            break;
+        case 2:
+            [self commandKey:'\r'];
+            break;
+        case 3:
+            g_pref_showHUD = (g_pref_showHUD==1) ? 2 : 1;
+            [self changeUI];
+            break;
+        case 4:
+            [self commandKey:'H'];
+            break;
+    }
+}
+-(void)hudChange:(InfoHUD*)hud {
+    NSLog(@"HUD CHANGE: %@=%@", hud.changedKey, [hud valueForKey:hud.changedKey]);
+    
+    if ([screenView isKindOfClass:[MetalScreenView class]]) {
+        [(MetalScreenView*)screenView setShaderVariables:@{
+            hud.changedKey: [hud valueForKey:hud.changedKey]
+        }];
+    }
+}
+
+
+// split and trim a string
+static NSMutableArray* split(NSString* str, NSString* sep) {
+    NSMutableArray* arr = [[str componentsSeparatedByString:sep] mutableCopy];
+    for (int i=0; i<arr.count; i++)
+        arr[i] = [arr[i] stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
+    return arr;
+}
+
+-(void)buildHUD {
+
+    if (hudView)
+        [NSUserDefaults.standardUserDefaults setValue:NSStringFromCGRect(hudView.frame) forKey:kInfoHUDFrameKey];
+
+    if (g_pref_showHUD <= 0) {
+        [hudView removeFromSuperview];
+        hudView = nil;
+        return;
+    }
+    
+    if (hudView == nil) {
+        hudView = [[InfoHUD alloc] init];
+        hudView.font = [UIFont monospacedDigitSystemFontOfSize:(TARGET_OS_IOS ? 16.0 : 32.0) weight:UIFontWeightRegular];
+        hudView.layoutMargins = UIEdgeInsetsMake(8, 8, 8, 8);
+        [hudView addTarget:self action:@selector(hudChange:) forControlEvents:UIControlEventValueChanged];
+        [self.view addSubview:hudView];
+    }
+
+    [self.view bringSubviewToFront:hudView];
+    
+    [hudView removeAll];
+    UISegmentedControl* seg = [[UISegmentedControl alloc] initWithItems:@[
+        @"Coin", @"Start",
+        [UIImage systemImageNamed:@"rectangle.and.arrow.up.right.and.arrow.down.left"] ?: @"⤢",
+//      [UIImage systemImageNamed:@"rectangle.expand.vertical"] ?: @"⇵",
+        [UIImage systemImageNamed:@"slider.horizontal.3"] ?: @"⇵",
+        [UIImage systemImageNamed:@"xmark.circle"] ?: @"Ⓧ",
+    ]];
+    seg.momentary = YES;
+    seg.apportionsSegmentWidthsByContent = YES;
+    [seg addTarget:self action:@selector(hudButton:) forControlEvents:UIControlEventValueChanged];
+    if (@available(iOS 13.0, *)) {
+        seg.selectedSegmentTintColor = self.view.tintColor;
+    }
+    [hudView addView:seg];
+
+    [hudView addValue:@"000:00:00🅼 0000.00fps 000.0ms" forKey:@"FPS"];
+#ifdef DEBUG
+    [hudView addValue:@"WWWWxHHHH@2x" forKey:@"SIZE"];
+#endif
+    
+    if (g_pref_showHUD == 2) {
+        NSDictionary* shader_variables = ([screenView isKindOfClass:[MetalScreenView class]]) ?  [(MetalScreenView*)screenView getShaderVariables] : nil;
+        NSString* shader = g_device_is_landscape ? g_pref_effect_land : g_pref_effect_port;
+        NSArray* shader_arr = split(shader, @",");
+        
+        int count = 0;
+        for (NSString* str in shader_arr) {
+            NSArray* arr = split(str, @"=");
+            if (arr.count < 2 || [arr[0] isEqualToString:@"blend"])
+                continue;
+
+            if (count++ == 0) {
+                [hudView addSeparator];
+                [hudView addText:[NSString stringWithFormat:@"Shader: %@", shader_arr.firstObject]];
+            }
+
+            NSString* name = arr[0];
+            arr = split(arr[1], @" ");
+            NSNumber* value = shader_variables[name] ?: @([arr[0] floatValue]);
+            NSNumber* min = (arr.count > 1) ? @([arr[1] floatValue]) : @(0);
+            NSNumber* max = (arr.count > 2) ? @([arr[2] floatValue]) : @([value floatValue]);
+            
+            [hudView addValue:value forKey:name format:nil min:min max:max];
+        }
+    }
+    
+    [hudView sizeToFit];
+    CGFloat w = hudView.bounds.size.width;
+    CGFloat h = hudView.bounds.size.height;
+
+    // TODO: handle landscape vs portrait!
+    // TODO: validate rect is onscreen!
+    CGRect rect = CGRectFromString([NSUserDefaults.standardUserDefaults stringForKey:kInfoHUDFrameKey] ?: @"");
+    
+    if (CGRectIsEmpty(rect))
+        rect = CGRectMake(self.view.bounds.size.width/2, self.view.safeAreaInsets.top + 16, 0, 0);
+
+    hudView.frame = CGRectMake(rect.origin.x + rect.size.width/2 - w/2, rect.origin.y, w, h);
+}
+#else
+-(void)buildHUD {
+    // TODO: HUD on tvOS
+}
+#endif
 
 - (void)changeUI { @autoreleasepool {
 
@@ -1457,6 +1604,7 @@ void mame_state(int load_save, int slot)
     [self buildScreenView];
     [self buildLogoView];
     [self buildFrameRateView];
+    [self buildHUD];
     [self updateScreenView];
 
     if ( g_joy_used ) {
@@ -1979,6 +2127,9 @@ UIColor* colorWithHexString(NSString* string) {
         [screenView removeFromSuperview];
         [superview addSubview:screenView];
     }
+    else {
+        [superview bringSubviewToFront:screenView];
+    }
            
     [self buildOverlayImage:border_image rect:CGRectInset(r, -border_size.width, -border_size.height)];
 
@@ -2080,7 +2231,7 @@ UIColor* colorWithHexString(NSString* string) {
 // called from keyboard handler on any CMD+key (or OPTION+key) used for DEBUG stuff.
 -(void)commandKey:(char)key {
     switch (key) {
-        case '\n':
+        case '\r':
             if (g_device_is_landscape)
                 g_pref_full_screen_land = g_pref_full_screen_land_joy = !(g_pref_full_screen_land || g_pref_full_screen_land_joy);
             else
@@ -2095,6 +2246,10 @@ UIColor* colorWithHexString(NSString* string) {
             g_pref_showFPS = !g_pref_showFPS;
             [self changeUI];
             break;
+        case 'H':
+            g_pref_showHUD = !g_pref_showHUD;
+            [self changeUI];
+            break;
         case 'T':
             myosd_throttle = !myosd_throttle;
             [self changeUI];
@@ -2103,8 +2258,15 @@ UIColor* colorWithHexString(NSString* string) {
             myosd_vsync = myosd_vsync == -1 ? 6000 : -1;
             [self changeUI];
             break;
-        case 'A':
+        case 'X':
             myosd_force_pxaspect = !myosd_force_pxaspect;
+            [self changeUI];
+            break;
+        case 'A':
+            if (g_device_is_landscape)
+                g_pref_keep_aspect_ratio_land = !g_pref_keep_aspect_ratio_land;
+            else
+                g_pref_keep_aspect_ratio_port = !g_pref_keep_aspect_ratio_port;
             [self changeUI];
             break;
         case 'M':
@@ -2122,6 +2284,10 @@ UIColor* colorWithHexString(NSString* string) {
             // **NOTE** this pauses the MAME render thread, it is not the same as the PAUSE key in MAME.
             g_emulation_paused = !g_emulation_paused;
             change_pause(g_emulation_paused);
+            break;
+        case 'R':
+            g_enable_debug_view = !g_enable_debug_view;
+            [self changeUI];
             break;
         case 'D':
             [CGScreenView drawScreenDebugDump];
@@ -2156,7 +2322,7 @@ UIColor* colorWithHexString(NSString* string) {
             return nil;
         }
         
-        if(touch.phase == UITouchPhaseBegan)
+        if(touch.phase == UITouchPhaseBegan && allTouches.count == 1)
         {
             [self runMenu];
         }
@@ -2179,6 +2345,17 @@ UIColor* colorWithHexString(NSString* string) {
         if ( ![handledTouches containsObject:touch] ) {
             [unhandledTouches addObject:touch];
         }
+    }
+    // show the HUD on a two finger tap
+    // TODO: do this better! and co-exist with a lightgun
+    if (hudView == nil && unhandledTouches.count == 2 && !(myosd_light_gun == 1 && g_pref_lightgun_enabled)) {
+        int count = 0;
+        for (UITouch* touch in [unhandledTouches allObjects]) {
+            if (MyCGRectContainsPoint(screenView.frame, [touch locationInView:self.view]))
+                count++;
+        }
+        if (count == 2)
+            [self commandKey:'H'];
     }
     if ( g_pref_touch_analog_enabled && myosd_mouse == 1 && unhandledTouches.count > 0 ) {
         [self handleMouseTouchesBegan:unhandledTouches];

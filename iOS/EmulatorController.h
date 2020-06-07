@@ -61,6 +61,7 @@
 @class AnalogStickView;
 @class LayoutView;
 @class NetplayGameKit;
+@class InfoHUD;
 #endif
 
 @class iCadeView;
@@ -81,6 +82,7 @@
   AnalogStickView   * analogStickView;
     LayoutView        *layoutView;    
     NetplayGameKit     *netplayHelper;
+    InfoHUD         * hudView;
 #endif
   @public UIView	* externalView;
   UIView            * inputView;    // parent view of all the input views

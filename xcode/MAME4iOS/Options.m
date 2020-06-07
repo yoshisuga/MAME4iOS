@@ -86,13 +86,19 @@
 //
 + (NSArray*)arrayMetalEffects {
     return @[@"None",
-             @"Simple CRT: simpleCRT, mame-screen-dst-rect, mame-screen-src-rect",
+             @"Simple CRT: simpleCRT, mame-screen-dst-rect, mame-screen-src-rect,\
+                 curv_vert     = 5.0 1.0 10.0,\
+                 curv_horiz    = 4.0 1.0 10.0,\
+                 curv_strength = 0.25 0.0 1.0,\
+                 light_boost   = 1.3 0.1 3.0, \
+                 vign_strength = 0.05 0.0 1.0,\
+                 zoom_out      = 1.1 0.01 5.0",
 #ifdef DEBUG
              @"Wombat1: mame_screen_test, mame-screen-size, frame-count, 1.0, 8.0, 8.0",
              @"Wombat2: mame_screen_test, mame-screen-size, frame-count, wombat_rate=2.0, wombat_u=16.0, wombat_v=16.0",
              @"Test (dot): mame_screen_dot, mame-screen-matrix",
              @"Test (line): mame_screen_line, mame-screen-matrix",
-             @"Test (rainbow): mame_screen_rainbow, mame-screen-matrix, frame-count, rainbow_h = 16.0, rainbow_speed=1.0",
+             @"Test (rainbow): mame_screen_rainbow, mame-screen-matrix, frame-count, rainbow_h = 16.0 4.0 32.0, rainbow_speed=1.0 1.0 4.0",
 #endif
     ];
 }

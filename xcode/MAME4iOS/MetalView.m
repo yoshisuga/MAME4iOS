@@ -32,6 +32,8 @@
     id <MTLDevice> _device;
     id<MTLLibrary> _library;
     id<MTLCommandQueue> _queue;
+    NSLock* _draw_lock;
+    NSThread* _draw_thread;     // you can draw from either the main or background
 
     // vertex buffer cache
     NSMutableArray<id<MTLBuffer>>* _vertex_buffer_cache;
@@ -80,27 +82,26 @@
 #pragma clang diagnostic pop
 
 + (BOOL)isSupported {
-    static BOOL isMetalSupported;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        isMetalSupported = MTLCreateSystemDefaultDevice() != nil;
-    });
-    return isMetalSupported;
+    static int g_isMetalSupported;
+    if (g_isMetalSupported == 0)
+        g_isMetalSupported = (MTLCreateSystemDefaultDevice() != nil) ? 1 : 2;
+    return g_isMetalSupported == 1;
 }
 
 - (id)initWithFrame:(CGRect)frame {
-	if ((self = [super initWithFrame:frame])!=nil) {
+    if ((self = [super initWithFrame:frame])!=nil) {
         self.opaque = YES;
         self.clearsContextBeforeDrawing = NO;
+        _draw_lock = [[NSLock alloc] init];
         
         // CAMetalLayer avalibility is wrong in the iOS 11.3.4 sdk???
         #pragma clang diagnostic push
         #pragma clang diagnostic ignored "-Wpartial-availability"
         _layer = (CAMetalLayer*)self.layer;
         #pragma clang diagnostic pop
-	}
+    }
     
-	return self;
+    return self;
 }
 
 -(CGColorSpaceRef)colorSpace {
@@ -234,6 +235,9 @@
     
     if (_drawable == nil)
         return FALSE;
+    
+    [_draw_lock lock];
+    _draw_thread = [NSThread currentThread];
 
     _startRenderTime = CACurrentMediaTime();
     
@@ -307,6 +311,8 @@
         _renderTimeAverage = (_renderTimeAverage * _frameCount + _renderTime) / (_frameCount+1);
     else
         _renderTimeAverage = _renderTime;
+    
+    [_draw_lock unlock];
 }
 
 #pragma mark - draw primitives
@@ -452,20 +458,18 @@
     if ((_frameCount % RESET_AVERAGE_EVERY) == 0) {
         _frameRateAverage = 0;
         _renderTimeAverage = 0;
-        _lastDrawTime = 0;
-        _frameRate = 0;
     }
 
-    if (_lastDrawTime != 0 &&  (drawTime - _lastDrawTime) >= (1.0 / 1000.0)) {
+    self->_frameCount += 1;
+    
+    if (_lastDrawTime != 0 && (drawTime - _lastDrawTime) >= (1.0 / 1000.0)) {
         _frameRate  = 1.0 / (drawTime - _lastDrawTime);
         if (_frameRateAverage != 0)
-            _frameRateAverage = (_frameRateAverage * _frameCount + _frameRate) / (_frameCount+1);
+            _frameRateAverage = (_frameRateAverage * (_frameCount-1) + _frameRate) / (_frameCount);
         else
             _frameRateAverage = _frameRate;
     }
     _lastDrawTime = drawTime;
-    
-    self->_frameCount += 1;
 }
 
 #pragma mark - transforms
@@ -645,7 +649,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
                 NSArray* arr = split(str, @"=");
                 str = arr.firstObject;
                 if (_shader_variables[str] == nil)
-                    _shader_variables[str] = [formater numberFromString:arr[1]] ?: @(0);
+                    _shader_variables[str] = @([arr[1] floatValue]);
             }
             arr[i] = [formater numberFromString:str] ?: str;
         }
@@ -679,7 +683,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
             if (val == nil) {
                 NSLog(@"UNKNOWN SHADER VARIABLE '%@' for shader \"%@\"", param, _shader_current);
                 assert(FALSE);
-                continue;
+                val = @(0);
             }
         }
         assert([val isKindOfClass:[NSValue class]]);
@@ -726,7 +730,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 }
 
 /// add to the dictionary used to resolve named shader variables
-- (void)setShaderVariables:(NSDictionary *)variables {
+- (void)setShaderVariablesInternal:(NSDictionary *)variables {
 #ifdef DEBUG
     for (NSString* key in variables.allKeys) {
         assert([key isKindOfClass:[NSString class]]);
@@ -753,8 +757,34 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 #endif
     
     // if the currently set shader has params, re-set the render state
-    if (_shader_params[_shader_current] != nil)
+    if (_encoder != nil && _shader_params[_shader_current] != nil)
         [self setShader:nil];
+}
+
+/// add to the dictionary used to resolve named shader variables
+- (void)setShaderVariables:(NSDictionary *)variables {
+    if ([NSThread currentThread] == _draw_thread) {
+        [self setShaderVariablesInternal:variables];
+    }
+    else {
+        [_draw_lock lock];
+        [self setShaderVariablesInternal:variables];
+        [_draw_lock unlock];
+    }
+}
+
+/// get a snapshot of the current shader variables.
+-(NSDictionary<NSString*, NSValue*>*)getShaderVariables {
+    if ([NSThread currentThread] == _draw_thread) {
+        return _shader_variables;
+    }
+    else {
+        NSDictionary* variables;
+        [_draw_lock lock];
+        variables = [_shader_variables copy];
+        [_draw_lock unlock];
+        return variables;
+    }
 }
 
 #pragma mark - textures
@@ -767,6 +797,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 ///    texture identifier  - a unique identifier for this texture.
 ///    hash - a value that changes when texture is modified, use 0 if texture is static.
 ///    width, height - size of the texture (used to create on cache miss)
+///    format -MTLPixelFormat
 ///    texture_load - callback used to load image data.
 ///    texture_load_data - opaque data passed to load callback (can be same as texture identifier)
 ///
@@ -829,12 +860,14 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 }
 
 -(void)setTextureFilter:(MTLSamplerMinMagFilter)filter {
+    assert(_texture_filter == MTLSamplerMinMagFilterNearest || _texture_filter == MTLSamplerMinMagFilterLinear);
     if (_texture_filter != filter) {
         _texture_filter = filter;
         [self updateSamplerState];
     }
 }
 -(void)setTextureAddressMode:(MTLSamplerAddressMode)mode {
+    assert(_texture_address_mode == MTLSamplerAddressModeClampToEdge || _texture_address_mode == MTLSamplerAddressModeRepeat);
     if (_texture_address_mode != mode) {
         _texture_address_mode = mode;
         [self updateSamplerState];
