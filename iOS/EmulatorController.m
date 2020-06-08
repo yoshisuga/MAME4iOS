@@ -2049,11 +2049,31 @@ UIColor* colorWithHexString(NSString* string) {
         else
             aspect = CGSizeMake(myosd_vis_video_width, myosd_vis_video_height);
 
-        r = AVMakeRectWithAspectRatioInsideRect(aspect, r);
-        r.origin.x    = floor(r.origin.x * scale) / scale;
-        r.origin.y    = floor(r.origin.y * scale) / scale;
-        r.size.width  = floor(r.size.width * scale + 0.5) / scale;
-        r.size.height = floor(r.size.height * scale + 0.5) / scale;
+        //        r = AVMakeRectWithAspectRatioInsideRect(aspect, r);
+        //        r.origin.x    = floor(r.origin.x * scale) / scale;
+        //        r.origin.y    = floor(r.origin.y * scale) / scale;
+        //        r.size.width  = floor(r.size.width * scale + 0.5) / scale;
+        //        r.size.height = floor(r.size.height * scale + 0.5) / scale;
+
+        CGFloat width = r.size.width * scale;
+        CGFloat height = r.size.height * scale;
+        
+        if ((height * aspect.width / aspect.height) <= width) {
+            for (int i=0; i<4; i++) {
+                width = floor(height * aspect.width / aspect.height);
+                height = floor(width * aspect.height / aspect.width);
+            }
+        }
+        else {
+            for (int i=0; i<4; i++) {
+                height = floor(width * aspect.height / aspect.width);
+                width = floor(height * aspect.width / aspect.height);
+            }
+        }
+        r.origin.x    = r.origin.x + floor((r.size.width * scale - width) / 2.0) / scale;
+        r.origin.y    = r.origin.y + floor((r.size.height * scale - height) / 2.0) / scale;
+        r.size.width  = width / scale;
+        r.size.height = height / scale;
     }
     
     // integer only scaling
