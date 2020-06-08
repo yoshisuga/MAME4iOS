@@ -182,7 +182,7 @@
 
     if ([value isKindOfClass:[NSNumber class]] && min != nil && max != nil) {
         UISlider* slider = [[UISlider alloc] init];
-        [slider setThumbImage:[self dotWithColor:UIColor.whiteColor size:CGSizeMake(8,8)] forState:UIControlStateNormal];
+        [slider setThumbImage:[self dotWithColor:UIColor.whiteColor size:CGSizeMake(16,16)] forState:UIControlStateNormal];
         [slider addConstraint:[NSLayoutConstraint constraintWithItem:slider attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:24.0]];
         [slider addTarget:self action:@selector(slide:) forControlEvents:UIControlEventValueChanged];
         slider.minimumValue = [min floatValue];

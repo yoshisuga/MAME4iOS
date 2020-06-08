@@ -28,6 +28,7 @@
     #pragma clang diagnostic pop
     
     NSUInteger _maximumFramesPerSecond;
+    BOOL _externalDisplay;
 
     id <MTLDevice> _device;
     id<MTLLibrary> _library;
@@ -113,13 +114,13 @@
 
 - (void)layoutSubviews {
     [super layoutSubviews];
-    _frameCount = 0;
 }
 - (void)didMoveToWindow {
     [super didMoveToWindow];
     if (self.window != nil) {
         _layer.contentsScale = self.window.screen.scale;
         _maximumFramesPerSecond = self.window.screen.maximumFramesPerSecond;
+        _externalDisplay = (self.window.screen != UIScreen.mainScreen) || TARGET_OS_SIMULATOR;
     }
 }
 - (void)didMoveToSuperview {
@@ -283,17 +284,17 @@
     assert(_drawable != nil);
     NSArray* buffers = _vertex_buffer_list;
     __weak typeof(self) weakSelf = self;
+    BOOL externalDisplay = _externalDisplay;
     [_buffer addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
         [weakSelf returnBuffers:buffers];
-#if TARGET_OS_SIMULATOR
-        [weakSelf updateFPS:CACurrentMediaTime()];
-#endif
+        if (externalDisplay)
+            [weakSelf updateFPS:CACurrentMediaTime()];
     }];
-#if !TARGET_OS_SIMULATOR
-    [_drawable addPresentedHandler:^(id<MTLDrawable> drawable) {
-        [weakSelf updateFPS:drawable.presentedTime];
-    }];
-#endif
+    if (!externalDisplay) {
+        [_drawable addPresentedHandler:^(id<MTLDrawable> drawable) {
+            [weakSelf updateFPS:drawable.presentedTime];
+        }];
+    }
     [_encoder endEncoding];
     if (_preferredFramesPerSecond != 0 && _preferredFramesPerSecond * 2 <= _maximumFramesPerSecond && _layer.maximumDrawableCount == 3)
         [_buffer presentDrawable:_drawable afterMinimumDuration:1.0/_preferredFramesPerSecond];

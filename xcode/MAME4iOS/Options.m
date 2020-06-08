@@ -80,6 +80,12 @@
 //        <Friendly Name> : <shader description>
 //
 // NOTE: see MetalView.h for what a <shader description> is.
+// in addition to the <shader description> in MetalView.h you can specify a named variable like so....
+//
+//       variable_name = <default value> <min value> <max value> <step value>
+//
+//  you dont use commas to separate values, use spaces.
+//  min, max, and step are all optional, and only effect the InfoHUD, MetalView ignores them.
 //
 // NOTE arrayCoreGraphicsEffects and arrayMetalEffects should use the same friendly name
 // for similar effects, so if the user turns off/on metal the choosen effect wont get reset to default.

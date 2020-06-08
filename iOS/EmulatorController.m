@@ -147,7 +147,6 @@ int g_pref_full_screen_port = 1;
 int g_pref_full_screen_land_joy = 1;
 int g_pref_full_screen_port_joy = 1;
 
-int g_pref_hide_LR=0;
 int g_pref_BplusX=0;
 int g_pref_full_num_buttons=4;
 int g_pref_skin = 1;
@@ -158,7 +157,6 @@ int g_pref_input_touch_type = TOUCH_INPUT_DSTICK;
 int g_pref_analog_DZ_value = 2;
 int g_pref_ext_control_type = 1;
 
-int g_pref_aplusb = 0;
 int g_pref_nintendoBAYX = 0;
 
 int g_pref_nativeTVOUT = 1;
@@ -190,8 +188,6 @@ int prev_myosd_mouse = 0;
         
 static pthread_t main_tid;
 
-static int old_myosd_num_buttons = 0;
-static int button_auto = 0;
 static int ways_auto = 0;
 #if TARGET_OS_IOS
 static int change_layout=0;
@@ -790,7 +786,7 @@ void mame_state(int load_save, int slot)
     g_pref_integer_scale_only = op.integerScalingOnly;
     g_pref_metal = op.useMetal;
     g_pref_showFPS = [op showFPS];
-    g_pref_showHUD = [op showHUD] + (g_pref_showHUD == 2); // HACK! 
+    g_pref_showHUD = [op showHUD];
 
     myosd_fps = g_pref_showFPS;
     
@@ -832,52 +828,14 @@ void mame_state(int load_save, int slot)
        
     myosd_sleep = [op sleep];
     
-    g_pref_aplusb = [op aplusb];
-
     g_pref_nintendoBAYX = [op nintendoBAYX];
 
-    int nbuttons = [op numbuttons];
+    g_pref_full_num_buttons = [op numbuttons] - 1;  // -1 == Auto
     
-    if(nbuttons != 0)
-    {
-       nbuttons = nbuttons - 1;
-       if(nbuttons>4)
-       {
-          g_pref_hide_LR=0;
-          g_pref_full_num_buttons=4;
-       }
-       else
-       {
-          g_pref_hide_LR=1;
-          g_pref_full_num_buttons=nbuttons;
-       }
-        button_auto = 0;
-    }
-    else
-    {
-       if(myosd_num_buttons==0)
-          myosd_num_buttons = 2;
-    
-       if(myosd_num_buttons >4)
-       {
-          g_pref_hide_LR=0;
-          g_pref_full_num_buttons=4;
-       }
-       else
-       {
-          g_pref_hide_LR=1;
-          g_pref_full_num_buttons=myosd_num_buttons;
-       }
-        nbuttons = myosd_num_buttons;
-        old_myosd_num_buttons = myosd_num_buttons;
-        button_auto = 1;
-    }
-    
-    if([op aplusb] == 1 && nbuttons==2)
+    if([op aplusb] == 1 && (g_pref_full_num_buttons == 2 || (g_pref_full_num_buttons == -1 && myosd_num_buttons == 2)))
     {
         g_pref_BplusX = 1;
         g_pref_full_num_buttons = 3;
-        g_pref_hide_LR=1;
     }
     else
     {
@@ -1408,6 +1366,14 @@ void mame_state(int load_save, int slot)
     [screenView.superview addSubview:fpsView];
 }
 
+static int gcd(int a, int b) {
+    int c;
+    while (a != 0) {
+       c = a; a = b%a; b = c;
+    }
+    return b;
+}
+
 -(void)updateFrameRate {
     assert([NSThread isMainThread]);
 
@@ -1431,7 +1397,9 @@ void mame_state(int load_save, int slot)
 #ifdef DEBUG
     CGSize size = screenView.bounds.size;
     CGFloat scale = screenView.window.screen.scale;
-    [hudView setValue:[NSString stringWithFormat:@"%dx%d@%dx [%0.3f]", (int)size.width, (int)size.height, (int)scale, (float)(size.width / size.height)] forKey:@"SIZE"];
+    int n = gcd((int)(size.width * scale), (int)(size.height * scale));
+    [hudView setValue:[NSString stringWithFormat:@"%dx%d@%dx [%d:%d]", (int)size.width, (int)size.height, (int)scale,
+                       (int)(size.width * scale) / n,  (int)(size.height * scale) / n] forKey:@"SIZE"];
 #endif
 #endif
 }
@@ -1541,8 +1509,9 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
             NSNumber* value = shader_variables[name] ?: @([arr[0] floatValue]);
             NSNumber* min = (arr.count > 1) ? @([arr[1] floatValue]) : @(0);
             NSNumber* max = (arr.count > 2) ? @([arr[2] floatValue]) : @([value floatValue]);
-            
-            [hudView addValue:value forKey:name format:nil min:min max:max];
+            NSNumber* step= (arr.count > 3) ? @([arr[3] floatValue]) : nil;
+
+            [hudView addValue:value forKey:name format:nil min:min max:max step:step];
         }
     }
     
@@ -1578,18 +1547,10 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     
     [self getConf];
     
-    if((ways_auto && myosd_num_ways!=myosd_waysStick) || (button_auto && old_myosd_num_buttons != myosd_num_buttons)) {
-        [self updateOptions];
-    }
-    
     // reset the frame count when you first turn on/off
-    if (g_pref_showFPS != (fpsView != nil))
+    if (g_pref_showFPS != (fpsView != nil) || (g_pref_showHUD != 0) != (hudView != nil))
         screenView.frameCount = 0;
     
-    //dont free the screenView, see buildScreenView
-    //[screenView removeFromSuperview];
-    //screenView = nil;
-
     [imageBack removeFromSuperview];
     imageBack = nil;
 
@@ -1665,6 +1626,10 @@ static void push_mame_buttons(int player, int button1, int button2)
 
 // called from inside MAME droid_ios_poll_input
 void myosd_handle_turbo() {
+    
+    // keep myosd_waysStick uptodate
+    if (ways_auto)
+        myosd_waysStick = myosd_num_ways;
 
     // this is called on the MAME thread, need to be carefull and clean up!
     @autoreleasepool {
@@ -1846,6 +1811,11 @@ void myosd_handle_turbo() {
         analogStickView = [[AnalogStickView alloc] initWithFrame:rStickWindow withEmuController:self];
         [inputView addSubview:analogStickView];
     }
+    
+    // get the number of fullscreen buttons to display, handle the auto case.
+    int num_buttons = g_pref_full_num_buttons;
+    if (num_buttons == -1)  // -1 == Auto
+        num_buttons = (myosd_num_buttons == 0) ? 2 : myosd_num_buttons;
    
     BOOL touch_buttons_disabled = myosd_mouse == 1 && g_pref_touch_analog_enabled && g_pref_touch_analog_hide_buttons;
     buttonState = 0;
@@ -1854,13 +1824,13 @@ void myosd_handle_turbo() {
         // hide buttons that are not used in fullscreen mode (and not laying out)
         if (g_device_is_fullscreen && !change_layout && !g_enable_debug_view)
         {
-            if(i==BTN_X && (g_pref_full_num_buttons < 4 && myosd_inGame))continue;
-            if(i==BTN_Y && (g_pref_full_num_buttons < 3 || !myosd_inGame))continue;
-            if(i==BTN_B && (g_pref_full_num_buttons < 2 || !myosd_inGame))continue;
-            if(i==BTN_A && (g_pref_full_num_buttons < 1 && myosd_inGame))continue;
+            if(i==BTN_X && (num_buttons < 4 && myosd_inGame))continue;
+            if(i==BTN_Y && (num_buttons < 3 || !myosd_inGame))continue;
+            if(i==BTN_B && (num_buttons < 2 || !myosd_inGame))continue;
+            if(i==BTN_A && (num_buttons < 1 && myosd_inGame))continue;
             
-            if(i==BTN_L1 && (g_pref_hide_LR || !myosd_inGame))continue;
-            if(i==BTN_R1 && (g_pref_hide_LR || !myosd_inGame))continue;
+            if(i==BTN_L1 && (num_buttons < 5 || !myosd_inGame))continue;
+            if(i==BTN_R1 && (num_buttons < 6 || !myosd_inGame))continue;
             
             if (touch_buttons_disabled && (i != BTN_SELECT && i != BTN_START && i != BTN_L2 && i != BTN_R2 )) continue;
         }
@@ -2111,8 +2081,7 @@ UIColor* colorWithHexString(NSString* string) {
     // select a CoreGraphics or Metal ScreenView
     Class screen_view_class = [CGScreenView class];
     
-    // TODO: Metal on external display?
-    if (externalView == nil && g_pref_metal && [MetalScreenView isSupported])
+    if (g_pref_metal && [MetalScreenView isSupported])
         screen_view_class = [MetalScreenView class];
 
     // the reason we dont re-create screenView each time is because we access screenView from background threads
@@ -2238,9 +2207,9 @@ UIColor* colorWithHexString(NSString* string) {
     switch (key) {
         case '\r':
             if (g_device_is_landscape)
-                g_pref_full_screen_land = g_pref_full_screen_land_joy = !(g_pref_full_screen_land || g_pref_full_screen_land_joy);
+                g_pref_full_screen_land = g_pref_full_screen_land_joy = !g_device_is_fullscreen;
             else
-                g_pref_full_screen_port = g_pref_full_screen_port_joy = !(g_pref_full_screen_port || g_pref_full_screen_port_joy);
+                g_pref_full_screen_port = g_pref_full_screen_port_joy = !g_device_is_fullscreen;
             [self changeUI];
             break;
         case 'I':
