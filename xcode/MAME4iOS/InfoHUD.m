@@ -12,6 +12,7 @@
     UIStackView* _stack;
     NSMutableDictionary* _views;
     NSMutableDictionary* _format;
+    NSMutableDictionary* _step;
     CGFloat _width;
 }
 
@@ -24,7 +25,8 @@
     
     _views = [[NSMutableDictionary alloc] init];
     _format = [[NSMutableDictionary alloc] init];
-    
+    _step = [[NSMutableDictionary alloc] init];
+
     _stack = [[UIStackView alloc] init];
     _stack.axis = UILayoutConstraintAxisVertical;
     _stack.spacing = 4.0;
@@ -39,7 +41,7 @@
 
     if (@available(iOS 13.0, *)) {
         self.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
-        [self addBlur:UIBlurEffectStyleSystemUltraThinMaterialDark withVibrancy:YES];
+        [self addBlur:UIBlurEffectStyleSystemUltraThinMaterialDark withVibrancy:NO];
     }
     else {
         [self addBlur:UIBlurEffectStyleDark withVibrancy:NO];
@@ -82,6 +84,7 @@
     [effectView.contentView addSubview:self.subviews.firstObject];
     [self addSubview:effectView];
     self.backgroundColor = UIColor.clearColor;
+    effectView.backgroundColor = [self.tintColor colorWithAlphaComponent:0.2];
 }
 
 - (void)pan:(UIPanGestureRecognizer*)pan {
@@ -133,11 +136,20 @@
     return view;
 }
 
-- (void)addValue:(id)value forKey:(NSString *)key format:(NSString*)format min:(id)min max:(id)max {
+- (void)addValue:(id)value forKey:(NSString *)key format:(NSString*)format min:(id)min max:(id)max step:(id)step {
 
     key = key ?: @"";
     
-    format = format ?: @"%0.3f";
+    if (format.length == 0) {
+        if ([step floatValue] >= 1)
+            format = @"%0.0f";
+        else if ([step floatValue] >= 0.1)
+            format = @"%0.1f";
+        else if ([step floatValue] >= 0.01)
+            format = @"%0.2f";
+        else
+            format = @"%0.3f";
+    }
     if ([format componentsSeparatedByString:@"%"].count == 2)
         format = [@"%2$@: " stringByAppendingString:format];
 
@@ -153,9 +165,10 @@
 
     UILabel* label = [[UILabel alloc] init];
     label.font = _font;
-    label.textColor = UIColor.whiteColor;
+    label.textColor = [UIColor.whiteColor colorWithAlphaComponent:0.75];
     _views[key] = label;
     _format[key] = format;
+    _step[key] = step;
     [_stack addArrangedSubview:label];
 
     if ([value isKindOfClass:[NSString class]] && [value hasPrefix:@"**"] && [value hasSuffix:@"**"]) {
@@ -194,6 +207,9 @@
     [self setValue:value forKey:key];
     [self sizeToFit];
 }
+- (void)addValue:(id)value forKey:(NSString *)key format:(NSString*)format min:(id)min max:(id)max {
+    [self addValue:value forKey:key format:format min:min max:max step:nil];
+}
 - (void)addValue:(id)value forKey:(NSString *)key format:(NSString*)format {
     [self addValue:value forKey:key format:format min:nil max:nil];
 }
@@ -224,11 +240,15 @@
         return;
 
     if ([value isKindOfClass:[NSNumber class]]) {
+        float val = [value floatValue];
         NSString* format = _format[key];
-        label.text = [NSString stringWithFormat:format, [value floatValue], key];
+        float step = [_step[key] floatValue];
+        if (step != 0.0)
+            val = round(val / step) * step;
+        label.text = [NSString stringWithFormat:format, val, key];
         UISlider* slider = (__bridge UISlider*)(void*)label.tag;
-        if ([slider isKindOfClass:[UISlider class]])
-            slider.value = [value floatValue];
+        if ([slider isKindOfClass:[UISlider class]] && !slider.isTracking)
+            slider.value = val;
     }
     else if ([value isKindOfClass:[NSString class]]) {
         label.text = value;
@@ -248,8 +268,9 @@
     if (![label isKindOfClass:[UILabel class]])
         return label;
     UISlider* slider = (__bridge UISlider*)(void*)label.tag;
+    float step = [_step[key] floatValue];
     if (([slider isKindOfClass:[UISlider class]]))
-        return @(slider.value);
+        return @((step != 0.0) ? round(slider.value / step) * step : slider.value);
     else if ([label.text containsString:@": "])
         return @([label.text componentsSeparatedByString:@": "].lastObject.floatValue);
     else
