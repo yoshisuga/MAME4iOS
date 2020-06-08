@@ -208,6 +208,7 @@
         _integerScalingOnly = 0;
 
         _showFPS = 0;
+        _showHUD = 0;
         _showINFO = 0;
         _fourButtonsLand = 0;
         _animatedButtons = 1;
@@ -336,6 +337,7 @@
             _touchControlsOpacity = [prefTouchControlOpacity floatValue];
         }
         _showFPS =  [[optionsDict objectForKey:@"showFPS"] intValue];
+        _showHUD =  [[optionsDict objectForKey:@"showHUD"] intValue];
         _showINFO =  [[optionsDict objectForKey:@"showINFO"] intValue];
         _fourButtonsLand =  [[optionsDict objectForKey:@"fourButtonsLand"] intValue];
         _animatedButtons =  [[optionsDict objectForKey:@"animatedButtons"] intValue];
@@ -458,6 +460,7 @@
                              [NSString stringWithFormat:@"%f", _touchAnalogSensitivity], @"touchAnalogSensitivity",
                              [NSString stringWithFormat:@"%f", _touchControlsOpacity], @"touchControlsOpacity",
                              [NSString stringWithFormat:@"%d", _showFPS], @"showFPS",
+                             [NSString stringWithFormat:@"%d", _showHUD], @"showHUD",
                              [NSString stringWithFormat:@"%d", _showINFO], @"showINFO",
                              [NSString stringWithFormat:@"%d", _fourButtonsLand], @"fourButtonsLand",
                              [NSString stringWithFormat:@"%d", _animatedButtons], @"animatedButtons",

@@ -281,7 +281,7 @@
         {
             switch (indexPath.row) 
             {
-              case 0:
+               case 0:
                {
                    cell.textLabel.text   = @"Show FPS";
                    cell.accessoryView = [self optionSwitchForKey:@"showFPS"];
@@ -289,24 +289,30 @@
                }
                case 1:
                {
+                   cell.textLabel.text   = @"Show HUD";
+                   cell.accessoryView = [self optionSwitchForKey:@"showHUD"];
+                   break;
+               }
+               case 2:
+               {
                    cell.textLabel.text   = @"Show Info/Warnings";
                    cell.accessoryView = [self optionSwitchForKey:@"showINFO"];
                    break;
                }
-               case 2:
+               case 3:
                {
                     cell.textLabel.text   = @"Emulated Speed";
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                     cell.detailTextLabel.text = [Options.arrayEmuSpeed optionAtIndex:op.emuspeed];
                     break;
                }
-               case 3:
+               case 4:
                {
                    cell.textLabel.text   = @"Sleep on Idle";
                    cell.accessoryView = [self optionSwitchForKey:@"sleep"];
                    break;
                }                                                                             
-               case 4:
+               case 5:
                {
                     cell.textLabel.text   = @"Low Latency Audio";
                     cell.accessoryView = [self optionSwitchForKey:@"lowlsound"];
@@ -444,7 +450,7 @@
           case kLandscapeSection: return 6;
           case kOtherSection: return 3;
           case kVideoSection: return 8;
-          case kMiscSection: return 5;
+          case kMiscSection: return 6;
           case kFilterSection: return 2;
           case kImportSection: return 3;
           case kResetSection: return 1;
@@ -542,7 +548,7 @@
         }
         case kMiscSection:
         {
-            if (row==2) {
+            if (row==3) {
                 ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"emuspeed" list:Options.arrayEmuSpeed title:cell.textLabel.text];
                 [[self navigationController] pushViewController:listController animated:YES];
             }

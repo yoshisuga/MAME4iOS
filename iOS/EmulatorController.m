@@ -790,6 +790,7 @@ void mame_state(int load_save, int slot)
     g_pref_integer_scale_only = op.integerScalingOnly;
     g_pref_metal = op.useMetal;
     g_pref_showFPS = [op showFPS];
+    g_pref_showHUD = [op showHUD] + (g_pref_showHUD == 2); // HACK! 
 
     myosd_fps = g_pref_showFPS;
     
@@ -1494,8 +1495,9 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         [hudView addTarget:self action:@selector(hudChange:) forControlEvents:UIControlEventValueChanged];
         [self.view addSubview:hudView];
     }
-
-    [self.view bringSubviewToFront:hudView];
+    else {
+        [self.view bringSubviewToFront:hudView];
+    }
     
     [hudView removeAll];
     UISegmentedControl* seg = [[UISegmentedControl alloc] initWithItems:@[
@@ -1548,14 +1550,16 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     CGFloat w = hudView.bounds.size.width;
     CGFloat h = hudView.bounds.size.height;
 
-    // TODO: handle landscape vs portrait!
-    // TODO: validate rect is onscreen!
     CGRect rect = CGRectFromString([NSUserDefaults.standardUserDefaults stringForKey:kInfoHUDFrameKey] ?: @"");
     
     if (CGRectIsEmpty(rect))
         rect = CGRectMake(self.view.bounds.size.width/2, self.view.safeAreaInsets.top + 16, 0, 0);
 
-    hudView.frame = CGRectMake(rect.origin.x + rect.size.width/2 - w/2, rect.origin.y, w, h);
+    rect = CGRectMake(rect.origin.x + rect.size.width/2 - w/2, rect.origin.y, w, h);
+    rect.origin.x = MAX(self.view.safeAreaInsets.left + 8, MIN(self.view.bounds.size.width  - self.view.safeAreaInsets.right  - w - 8, rect.origin.x));
+    rect.origin.y = MAX(self.view.safeAreaInsets.top + 8,  MIN(self.view.bounds.size.height - self.view.safeAreaInsets.bottom - h - 8, rect.origin.y));
+
+    hudView.frame = rect;
 }
 #else
 -(void)buildHUD {
@@ -2230,6 +2234,7 @@ UIColor* colorWithHexString(NSString* string) {
 
 // called from keyboard handler on any CMD+key (or OPTION+key) used for DEBUG stuff.
 -(void)commandKey:(char)key {
+// TODO: these temp toggles dont work the first time, because changUI will call updateSettings when waysAuto changes.
     switch (key) {
         case '\r':
             if (g_device_is_landscape)
@@ -2247,9 +2252,14 @@ UIColor* colorWithHexString(NSString* string) {
             [self changeUI];
             break;
         case 'H':
+        {
+            Options* op = [[Options alloc] init];
             g_pref_showHUD = !g_pref_showHUD;
+            op.showHUD = g_pref_showHUD;
+            [op saveOptions];
             [self changeUI];
             break;
+        }
         case 'T':
             myosd_throttle = !myosd_throttle;
             [self changeUI];

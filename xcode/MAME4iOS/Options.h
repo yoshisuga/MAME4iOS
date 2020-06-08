@@ -46,6 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite,assign) int integerScalingOnly;
 
 @property (readwrite,assign) int showFPS;
+@property (readwrite,assign) int showHUD;
 @property (readwrite,assign) int animatedButtons;
 @property (readwrite,assign) int fourButtonsLand;
 @property (readwrite,assign) int fullLand;
