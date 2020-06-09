@@ -59,6 +59,7 @@
 #import "NetplayGameKit.h"
 #import "FileItemProvider.h"
 #import "InfoHUD.h"
+#import "PopupSegmentedControl.h"
 #endif
 
 #import "ChooseGameController.h"
@@ -1405,6 +1406,9 @@ static int gcd(int a, int b) {
             [self changeUI];
             break;
         case 4:
+            [self runSettings];
+            break;
+        case 5:
             [self commandKey:'H'];
             break;
     }
@@ -1423,7 +1427,25 @@ static int gcd(int a, int b) {
         }];
     }
 }
-
+-(void)hudOptionChange:(PopupSegmentedControl*)seg {
+    NSLog(@"HUD OPTION CHANGE %ld: %@", seg.selectedSegmentIndex, [seg titleForSegmentAtIndex:seg.selectedSegmentIndex]);
+    NSString* str = [seg titleForSegmentAtIndex:seg.selectedSegmentIndex];
+    Options* op = [[Options alloc] init];
+    switch ([seg.superview.subviews indexOfObject:seg]) {
+        case 0:
+            op.filter = str;
+            break;
+        case 1:
+            op.border = str;
+            break;
+        case 2:
+            op.effect = str;
+            break;
+    }
+    [op saveOptions];
+    [self updateOptions];
+    [self changeUI];
+}
 
 // split and trim a string
 static NSMutableArray* split(NSString* str, NSString* sep) {
@@ -1431,6 +1453,14 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     for (int i=0; i<arr.count; i++)
         arr[i] = [arr[i] stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
     return arr;
+}
+
+// if the list items are of the form "Name : Data", we only want to show "Name" to the user.
+static NSArray* list_trim(NSArray* _list) {
+    NSMutableArray* list = [_list mutableCopy];
+    for (NSInteger i=0; i<list.count; i++)
+        list[i] = [[list[i] componentsSeparatedByString:@":"].firstObject stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
+    return [list copy];
 }
 
 -(void)buildHUD {
@@ -1456,11 +1486,17 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     }
     
     [hudView removeAll];
+    
+    // add FPS display
+    [hudView addValue:@"000:00:00🅼 0000.00fps 000.0ms" forKey:@"FPS"];
+
+    // add a toolbar of quick actions.
     UISegmentedControl* seg = [[UISegmentedControl alloc] initWithItems:@[
         @"Coin", @"Start",
         [UIImage systemImageNamed:@"rectangle.and.arrow.up.right.and.arrow.down.left"] ?: @"⤢",
 //      [UIImage systemImageNamed:@"rectangle.expand.vertical"] ?: @"⇵",
         [UIImage systemImageNamed:@"slider.horizontal.3"] ?: @"⇵",
+        [UIImage systemImageNamed:@"gear"] ?: @"#",
         [UIImage systemImageNamed:@"xmark.circle"] ?: @"Ⓧ",
     ]];
     seg.momentary = YES;
@@ -1470,10 +1506,32 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         seg.selectedSegmentTintColor = self.view.tintColor;
     }
     [hudView addView:seg];
-
+    
+    // add set of buttons to select the Filter, Border, and Effect/Shader
+    UIStackView* stack = [[UIStackView alloc] initWithArrangedSubviews:@[
+        [[PopupSegmentedControl alloc] initWithItems:list_trim(Options.arrayFilter)],
+        [[PopupSegmentedControl alloc] initWithItems:list_trim(Options.arrayBorder)],
+        [[PopupSegmentedControl alloc] initWithItems:list_trim(Options.arrayEffect)],
+    ]];
+    Options *op = [[Options alloc] init];
+    [(PopupSegmentedControl*)stack.subviews[0] setSelectedSegmentIndex:[Options.arrayFilter indexOfOption:op.filter]];
+    [(PopupSegmentedControl*)stack.subviews[1] setSelectedSegmentIndex:[Options.arrayBorder indexOfOption:op.border]];
+    [(PopupSegmentedControl*)stack.subviews[2] setSelectedSegmentIndex:[Options.arrayEffect indexOfOption:op.effect]];
+    for (PopupSegmentedControl* seg in stack.subviews) {
+        [seg addTarget:self action:@selector(hudOptionChange:) forControlEvents:UIControlEventValueChanged];
+        if (@available(iOS 13.0, *)) {
+            seg.selectedSegmentTintColor = self.view.tintColor;
+            seg.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
+        }
+    }
+    stack.distribution = UIStackViewDistributionFillProportionally;
+    stack.spacing = 4.0;
+    [hudView addView:stack];
+    
+    // add some debug buttons and info
 #ifdef DEBUG
     seg = [[UISegmentedControl alloc] initWithItems:@[
-        @"🅵", @"🅰", @"🆇", @"🅸", @"🅳", 
+        @"🅵", @"🅰", @"🆇", @"🅸", @"🅳",
     ]];
     seg.momentary = YES;
     seg.apportionsSegmentWidthsByContent = YES;
@@ -1485,11 +1543,12 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     [hudView addView:seg];
 #endif
 
-    [hudView addValue:@"000:00:00🅼 0000.00fps 000.0ms" forKey:@"FPS"];
+//    [hudView addValue:@"000:00:00🅼 0000.00fps 000.0ms" forKey:@"FPS"];
 #ifdef DEBUG
     [hudView addValue:@"WWWWxHHHH@2x" forKey:@"SIZE"];
 #endif
     
+    // add a bunch of slider controls to tweak with the current Shader
     if (g_pref_showHUD == 2) {
         NSDictionary* shader_variables = ([screenView isKindOfClass:[MetalScreenView class]]) ?  [(MetalScreenView*)screenView getShaderVariables] : nil;
         NSString* shader = g_pref_effect;
