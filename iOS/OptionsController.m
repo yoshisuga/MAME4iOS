@@ -118,163 +118,98 @@
            }
            break;
        }
-           
-       case kPortraitSection: //Portrait
-       {
-           switch (indexPath.row) 
-           {
-               case 0: 
-               {
-                   cell.textLabel.text = @"Filter";
-                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   cell.detailTextLabel.text = [Options.arrayFilter optionName:op.filterPort];
-                   break;
-               }
-               
-               case 1:
-               {
-                   cell.textLabel.text   = @"Effect";
-                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   cell.detailTextLabel.text = [Options.arrayEffect optionName:op.effectPort];
-                   break;
-               }
-               case 2:
-               {
-                   cell.textLabel.text   = @"Border";
-                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   cell.detailTextLabel.text = [Options.arrayBorder optionName:op.borderPort];
-                   break;
-               }          
-               case 3:
-               {
-                   cell.textLabel.text   = @"Full Screen";
-                   cell.accessoryView = [self optionSwitchForKey:@"fullPort"];
-                   break;
-               }
-               case 4:
-               {
-                   cell.textLabel.text   = @"Full Screen with Controller";
-                   cell.accessoryView = [self optionSwitchForKey:@"fullPortJoy"];
-                   break;
-               }
-               case 5:
-               {
-                   cell.textLabel.text   = @"Keep Aspect Ratio";
-                   cell.accessoryView = [self optionSwitchForKey:@"keepAspectRatioPort"];
-                   break;
-               }             
-           }
-           break;
-       }
-       case kLandscapeSection:  //Landscape
-       {
-           switch (indexPath.row) 
-           {
-               case 0:
-               {
-                   cell.textLabel.text = @"Filter";
-                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   cell.detailTextLabel.text = [Options.arrayFilter optionName:op.filterLand];
-                   break;
-               }
-               
-               case 1:
-               {
-                   cell.textLabel.text   = @"Effect";
-                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   cell.detailTextLabel.text = [Options.arrayEffect optionName:op.effectLand];
-                   break;
-               }
-               case 2:
-               {
-                   cell.textLabel.text   = @"Border";
-                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   cell.detailTextLabel.text = [Options.arrayBorder optionName:op.borderLand];
-                   break;
-               }
-               case 3:
-               {
-                   cell.textLabel.text   = @"Full Screen";
-                   cell.accessoryView = [self optionSwitchForKey:@"fullLand"];
-                   break;
-               }
-
-               case 4:
-               {
-                   cell.textLabel.text   = @"Full Screen with Controller";
-                   cell.accessoryView = [self optionSwitchForKey:@"fullLandJoy"];
-                   break;
-               }
-
-               case 5:
-               {
-                    cell.textLabel.text   = @"Keep Aspect Ratio";
-                    cell.accessoryView = [self optionSwitchForKey:@"keepAspectRatioLand"];
-                   break;
-               }
-           }
-           break;
-        }
-           
         case kVideoSection:
         {
             switch (indexPath.row)
             {
-               case 0:
+                case 0:
+                {
+                    cell.textLabel.text = @"Filter";
+                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                    cell.detailTextLabel.text = [Options.arrayFilter optionName:op.filter];
+                    break;
+                }
+                case 1:
+                {
+                    cell.textLabel.text   = @"Effect";
+                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                    cell.detailTextLabel.text = [Options.arrayEffect optionName:op.effect];
+                    break;
+                }
+                case 2:
+                {
+                    cell.textLabel.text   = @"Border";
+                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                    cell.detailTextLabel.text = [Options.arrayBorder optionName:op.border];
+                    break;
+                }
+               case 3:
+               {
+                   cell.textLabel.text   = @"Colorspace";
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   cell.detailTextLabel.text = [Options.arrayColorSpace optionName:op.colorSpace];
+                   break;
+               }
+               case 4:
                {
                    cell.textLabel.text   = @"Emulated Resolution";
                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                    cell.detailTextLabel.text = [Options.arrayEmuRes optionAtIndex:op.emures];
                    break;
                }
-               case 1:
-               {
-                   cell.textLabel.text   = @"Colorspace";
-                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   cell.detailTextLabel.text = [Options.arrayColorSpace optionName:op.sourceColorSpace];
-                   break;
-               }
-               case 2:
+               case 5:
                {
                    cell.textLabel.text   = @"Use Metal";
                    cell.accessoryView = [self optionSwitchForKey:@"useMetal"];
                    [(UIControl*)cell.accessoryView setEnabled:g_isMetalSupported];
                    break;
                }
-               case 3:
+               case 6:
+               {
+                    cell.textLabel.text   = @"Keep Aspect Ratio";
+                    cell.accessoryView = [self optionSwitchForKey:@"keepAspectRatio"];
+                   break;
+               }
+               case 7:
                {
                    cell.textLabel.text   = @"Integer Scaling Only";
                    cell.accessoryView = [self optionSwitchForKey:@"integerScalingOnly"];
                    break;
                }
-               case 4:
+               case 8:
                {
                    cell.textLabel.text   = @"Force Pixel Aspect";
                    cell.accessoryView = [self optionSwitchForKey:@"forcepxa"];
                    break;
                }
-               case 5:
-               {
-                   cell.textLabel.text   = @"Throttle";
-                   cell.accessoryView = [self optionSwitchForKey:@"throttle"];
-                   break;
-               }
-               case 6:
-               {
-                   cell.textLabel.text   = @"Frame Skip";
-                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   cell.detailTextLabel.text = [Options.arrayFSValue optionAtIndex:op.fsvalue];
-                   break;
-               }
-               case 7:
-               {
-                   cell.textLabel.text   = @"Overscan TV-OUT";
-                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   cell.detailTextLabel.text = [Options.arrayOverscanValue optionAtIndex:op.overscanValue];
-                   break;
-               }
             }
             break;
+        }
+           
+       case kFullscreenSection:
+        {
+           switch (indexPath.row)
+           {
+               case 0:
+               {
+                   cell.textLabel.text   = @"Fullscreen (Portrait)";
+                   cell.accessoryView = [self optionSwitchForKey:@"fullscreenPortrait"];
+                   break;
+               }
+               case 1:
+               {
+                   cell.textLabel.text   = @"Fullscreen (Landscape)";
+                   cell.accessoryView = [self optionSwitchForKey:@"fullscreenLandscape"];
+                   break;
+               }
+               case 2:
+               {
+                   cell.textLabel.text   = @"Fullscreen (Controller)";
+                   cell.accessoryView = [self optionSwitchForKey:@"fullscreenJoystick"];
+                   break;
+               }
+           }
+           break;
         }
            
         case kMiscSection:  //Miscellaneous
@@ -299,20 +234,41 @@
                    cell.accessoryView = [self optionSwitchForKey:@"showINFO"];
                    break;
                }
-               case 3:
+                case 3:
+                {
+                    cell.textLabel.text   = @"Throttle";
+                    cell.accessoryView = [self optionSwitchForKey:@"throttle"];
+                    break;
+                }
+                case 4:
+                {
+                    cell.textLabel.text   = @"Frame Skip";
+                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                    cell.detailTextLabel.text = [Options.arrayFSValue optionAtIndex:op.fsvalue];
+                    break;
+                }
+                case 5:
+                {
+                    cell.textLabel.text   = @"Overscan TV-OUT";
+                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                    cell.detailTextLabel.text = [Options.arrayOverscanValue optionAtIndex:op.overscanValue];
+                    break;
+                }
+
+               case 6:
                {
                     cell.textLabel.text   = @"Emulated Speed";
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                     cell.detailTextLabel.text = [Options.arrayEmuSpeed optionAtIndex:op.emuspeed];
                     break;
                }
-               case 4:
+               case 7:
                {
                    cell.textLabel.text   = @"Sleep on Idle";
                    cell.accessoryView = [self optionSwitchForKey:@"sleep"];
                    break;
                }                                                                             
-               case 5:
+               case 8:
                {
                     cell.textLabel.text   = @"Low Latency Audio";
                     cell.accessoryView = [self optionSwitchForKey:@"lowlsound"];
@@ -428,8 +384,7 @@
     switch (section)
     {
         case kSupportSection: return @"";
-        case kPortraitSection: return @"Portrait";
-        case kLandscapeSection: return @"Landscape";
+        case kFullscreenSection: return @"Fullscreen";
         case kVideoSection: return @"Video Options";
         case kMiscSection: return @"Options";
         case kFilterSection: return @"Game Filter";
@@ -446,11 +401,10 @@
       switch (section)
       {
           case kSupportSection: return 2;
-          case kPortraitSection: return 6;
-          case kLandscapeSection: return 6;
+          case kFullscreenSection: return 3;
           case kOtherSection: return 3;
-          case kVideoSection: return 8;
-          case kMiscSection: return 6;
+          case kVideoSection: return 9;
+          case kMiscSection: return 9;
           case kFilterSection: return 2;
           case kImportSection: return 3;
           case kResetSection: return 1;
@@ -498,57 +452,41 @@
             }
             break;
         }
-        case kPortraitSection:
-        {
-            if ( row == 0 ) {
-                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"filterPort" list:Options.arrayFilter title:cell.textLabel.text];
-                [[self navigationController] pushViewController:listController animated:YES];
-            } else if ( row == 1 ) {
-                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"effectPort" list:Options.arrayEffect title:cell.textLabel.text];
-                [[self navigationController] pushViewController:listController animated:YES];
-            } else if ( row == 2 ) {
-                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"borderPort" list:Options.arrayBorder title:cell.textLabel.text];
-                [[self navigationController] pushViewController:listController animated:YES];
-            }
-            break;
-        }
-        case kLandscapeSection:
-        {
-            if ( row == 0 ) {
-                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"filterLand" list:Options.arrayFilter title:cell.textLabel.text];
-                [[self navigationController] pushViewController:listController animated:YES];
-            } else if ( row == 1 ) {
-                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"effectLand" list:Options.arrayEffect title:cell.textLabel.text];
-                [[self navigationController] pushViewController:listController animated:YES];
-            } else if ( row == 2 ) {
-                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"borderLand" list:Options.arrayBorder title:cell.textLabel.text];
-                [[self navigationController] pushViewController:listController animated:YES];
-            }
-            break;
-        }
         case kVideoSection:
         {
             if (row==0){
-                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"emures" list:Options.arrayEmuRes title:cell.textLabel.text];
+                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"filter" list:Options.arrayFilter title:cell.textLabel.text];
                 [[self navigationController] pushViewController:listController animated:YES];
             }
             if (row==1){
-                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"sourceColorSpace" list:Options.arrayColorSpace title:cell.textLabel.text];
+                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"effect" list:Options.arrayEffect title:cell.textLabel.text];
                 [[self navigationController] pushViewController:listController animated:YES];
             }
-            if (row==6){
-                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"fsvalue" list:Options.arrayFSValue title:cell.textLabel.text];
+            if (row==2){
+                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"border" list:Options.arrayBorder title:cell.textLabel.text];
                 [[self navigationController] pushViewController:listController animated:YES];
             }
-            if (row==7){
-                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"overscanValue" list:Options.arrayOverscanValue title:cell.textLabel.text];
+            if (row==3){
+                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"colorSpace" list:Options.arrayColorSpace title:cell.textLabel.text];
+                [[self navigationController] pushViewController:listController animated:YES];
+            }
+            if (row==4){
+                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"emures" list:Options.arrayEmuRes title:cell.textLabel.text];
                 [[self navigationController] pushViewController:listController animated:YES];
             }
             break;
         }
         case kMiscSection:
         {
-            if (row==3) {
+            if (row==4){
+                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"fsvalue" list:Options.arrayFSValue title:cell.textLabel.text];
+                [[self navigationController] pushViewController:listController animated:YES];
+            }
+            if (row==5){
+                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"overscanValue" list:Options.arrayOverscanValue title:cell.textLabel.text];
+                [[self navigationController] pushViewController:listController animated:YES];
+            }
+            if (row==6) {
                 ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"emuspeed" list:Options.arrayEmuSpeed title:cell.textLabel.text];
                 [[self navigationController] pushViewController:listController animated:YES];
             }

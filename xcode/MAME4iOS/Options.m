@@ -196,19 +196,13 @@
 
     if(![plist isKindOfClass:[NSDictionary class]])
     {
-        _keepAspectRatioPort=1;
-        _keepAspectRatioLand=1;
+        _keepAspectRatio=1;
         
-        _filterPort = @"";
-        _filterLand = @"";
-
-        _borderPort = @"";
-        _borderLand = @"";
-
-        _effectPort = @"";
-        _effectLand = @"";
+        _filter = @"";
+        _border = @"";
+        _effect = @"";
         
-        _sourceColorSpace = @"";
+        _colorSpace = @"";
         _useMetal = 1;
         
         _integerScalingOnly = 0;
@@ -216,14 +210,11 @@
         _showFPS = 0;
         _showHUD = 0;
         _showINFO = 0;
-        _fourButtonsLand = 0;
         _animatedButtons = 1;
         
-        _fullLand = 1;
-        _fullPort = 0;
-        
-        _fullLandJoy = 1;
-        _fullPortJoy = 1;
+        _fullscreenLandscape= 1;
+        _fullscreenPortrait = 0;
+        _fullscreenJoystick = 1;
         
         _btDeadZoneValue = 2;
         _touchDeadZone = 1;
@@ -313,19 +304,13 @@
     {
         NSDictionary* optionsDict = plist;
 
-        _keepAspectRatioPort = [[optionsDict objectForKey:@"KeepAspectPort"] intValue];
-        _keepAspectRatioLand = [[optionsDict objectForKey:@"KeepAspectLand"] intValue];
+        _keepAspectRatio = [([optionsDict objectForKey:@"KeepAspect"] ?: @(1)) intValue];
         
-        _filterPort = [optionsDict objectForKey:@"filterPort"] ?: @"";
-        _filterLand = [optionsDict objectForKey:@"filterLand"] ?: @"";
-
-        _borderPort = [optionsDict objectForKey:@"borderPort"] ?: @"";
-        _borderLand = [optionsDict objectForKey:@"borderLand"] ?: @"";
-
-        _effectPort = [optionsDict objectForKey:@"effectPort"] ?: @"";
-        _effectLand = [optionsDict objectForKey:@"effectLand"] ?: @"";
+        _filter = [optionsDict objectForKey:@"filter"] ?: @"";
+        _border = [optionsDict objectForKey:@"border"] ?: @"";
+        _effect = [optionsDict objectForKey:@"effect"] ?: @"";
         
-        _sourceColorSpace = [optionsDict objectForKey:@"sourceColorSpace"] ?: @"";
+        _colorSpace = [optionsDict objectForKey:@"sourceColorSpace"] ?: @"";
         _useMetal = [([optionsDict objectForKey:@"useMetal"] ?: @(TRUE)) boolValue];
 
         _integerScalingOnly = [[optionsDict objectForKey:@"integerScalingOnly"] boolValue];
@@ -345,13 +330,11 @@
         _showFPS =  [[optionsDict objectForKey:@"showFPS"] intValue];
         _showHUD =  [[optionsDict objectForKey:@"showHUD"] intValue];
         _showINFO =  [[optionsDict objectForKey:@"showINFO"] intValue];
-        _fourButtonsLand =  [[optionsDict objectForKey:@"fourButtonsLand"] intValue];
         _animatedButtons =  [[optionsDict objectForKey:@"animatedButtons"] intValue];
         
-        _fullLand =  [[optionsDict objectForKey:@"fullLand"] intValue];
-        _fullPort =  [[optionsDict objectForKey:@"fullPort"] intValue];
-        _fullLandJoy =  [([optionsDict objectForKey:@"fullLandJoy"] ?: @(1)) intValue];
-        _fullPortJoy =  [([optionsDict objectForKey:@"fullPortJoy"] ?: @(1)) intValue];
+        _fullscreenLandscape =  [([optionsDict objectForKey:@"fullLand"] ?: @(1)) intValue];
+        _fullscreenPortrait  =  [([optionsDict objectForKey:@"fullPort"] ?: @(0)) intValue];
+        _fullscreenJoystick  =  [([optionsDict objectForKey:@"fullJoy"]  ?: @(1)) intValue];
 
         _turboXEnabled = [[optionsDict objectForKey:@"turboXEnabled"] intValue];
         _turboYEnabled = [[optionsDict objectForKey:@"turboYEnabled"] intValue];
@@ -440,19 +423,13 @@
 - (void)saveOptions
 {
     NSDictionary* optionsDict = [NSDictionary dictionaryWithObjectsAndKeys:
-                             [NSString stringWithFormat:@"%d", _keepAspectRatioPort], @"KeepAspectPort",
-                             [NSString stringWithFormat:@"%d", _keepAspectRatioLand], @"KeepAspectLand",
+                             [NSString stringWithFormat:@"%d", _keepAspectRatio], @"KeepAspect",
+                              
+                             _filter, @"filter",
+                             _border, @"border",
+                             _effect, @"effect",
                              
-                             _filterPort, @"filterPort",
-                             _filterLand, @"filterLand",
-
-                             _borderPort, @"borderPort",
-                             _borderLand, @"borderLand",
-
-                             _effectPort, @"effectPort",
-                             _effectLand, @"effectLand",
-                             
-                             _sourceColorSpace, @"sourceColorSpace",
+                             _colorSpace, @"sourceColorSpace",
                              [NSString stringWithFormat:@"%d", _useMetal], @"useMetal",
                                  
                              [NSString stringWithFormat:@"%d", _integerScalingOnly], @"integerScalingOnly",
@@ -468,7 +445,6 @@
                              [NSString stringWithFormat:@"%d", _showFPS], @"showFPS",
                              [NSString stringWithFormat:@"%d", _showHUD], @"showHUD",
                              [NSString stringWithFormat:@"%d", _showINFO], @"showINFO",
-                             [NSString stringWithFormat:@"%d", _fourButtonsLand], @"fourButtonsLand",
                              [NSString stringWithFormat:@"%d", _animatedButtons], @"animatedButtons",
                              
                              [NSString stringWithFormat:@"%d", _turboXEnabled], @"turboXEnabled",
@@ -480,11 +456,9 @@
                              
                              [NSString stringWithFormat:@"%d", _touchDirectionalEnabled], @"touchDirectionalEnabled",
                              
-                             [NSString stringWithFormat:@"%d", _fullLand], @"fullLand",
-                             [NSString stringWithFormat:@"%d", _fullPort], @"fullPort",
-                             
-                             [NSString stringWithFormat:@"%d", _fullLandJoy], @"fullLandJoy",
-                             [NSString stringWithFormat:@"%d", _fullPortJoy], @"fullPortJoy",
+                             [NSString stringWithFormat:@"%d", _fullscreenLandscape], @"fullLand",
+                             [NSString stringWithFormat:@"%d", _fullscreenPortrait], @"fullPort",
+                             [NSString stringWithFormat:@"%d", _fullscreenJoystick], @"fullJoy",
 
                              [NSString stringWithFormat:@"%d", _btDeadZoneValue], @"btDeadZoneValue",
                              [NSString stringWithFormat:@"%d", _touchDeadZone], @"touchDeadZone",

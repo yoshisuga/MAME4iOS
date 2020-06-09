@@ -124,12 +124,9 @@ int g_controller_opacity = 50;
 int g_device_is_landscape = 0;
 int g_device_is_fullscreen = 0;
 
-NSString* g_pref_effect_land;
-NSString* g_pref_effect_port;
-NSString* g_pref_filter_land;
-NSString* g_pref_filter_port;
-NSString* g_pref_border_land;
-NSString* g_pref_border_port;
+NSString* g_pref_effect;
+NSString* g_pref_filter;
+NSString* g_pref_border;
 NSString* g_pref_colorspace;
 
 int g_pref_metal = 0;
@@ -137,15 +134,12 @@ int g_pref_integer_scale_only = 0;
 int g_pref_showFPS = 0;
 int g_pref_showHUD = 0;
 
-int g_pref_keep_aspect_ratio_land = 0;
-int g_pref_keep_aspect_ratio_port = 0;
+int g_pref_keep_aspect_ratio = 0;
 
 int g_pref_animated_DPad = 0;
-int g_pref_4buttonsLand = 0;
 int g_pref_full_screen_land = 1;
 int g_pref_full_screen_port = 1;
-int g_pref_full_screen_land_joy = 1;
-int g_pref_full_screen_port_joy = 1;
+int g_pref_full_screen_joy = 1;
 
 int g_pref_BplusX=0;
 int g_pref_full_num_buttons=4;
@@ -582,11 +576,7 @@ void mame_state(int load_save, int slot)
     }]];
     [menu addAction:[UIAlertAction actionWithTitle:(g_device_is_fullscreen ? @"FULLSCREEN OFF" : @"FULLSCREEN ON") style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"arrow.up.left.and.arrow.down.right" withPointSize:size] handler:^(UIAlertAction* action) {
         [self endMenu];
-        if (g_device_is_landscape)
-            g_pref_full_screen_land = g_pref_full_screen_land_joy = !g_device_is_fullscreen;
-        else
-            g_pref_full_screen_port = g_pref_full_screen_port_joy = !g_device_is_fullscreen;
-        [self changeUI];
+        [self commandKey:'\r'];
     }]];
 #endif
     
@@ -769,19 +759,13 @@ void mame_state(int load_save, int slot)
     
     Options *op = [[Options alloc] init];
     
-    g_pref_keep_aspect_ratio_land = [op keepAspectRatioLand];
-    g_pref_keep_aspect_ratio_port = [op keepAspectRatioPort];
+    g_pref_keep_aspect_ratio = [op keepAspectRatio];
     
-    g_pref_filter_land = [Options.arrayFilter optionData:op.filterLand];
-    g_pref_filter_port = [Options.arrayFilter optionData:op.filterPort];
-
-    g_pref_effect_land = [Options.arrayEffect optionData:op.effectLand];
-    g_pref_effect_port = [Options.arrayEffect optionData:op.effectPort];
-
-    g_pref_border_land = [Options.arrayBorder optionData:op.borderLand];
-    g_pref_border_port = [Options.arrayBorder optionData:op.borderPort];
+    g_pref_filter = [Options.arrayFilter optionData:op.filter];
+    g_pref_effect = [Options.arrayEffect optionData:op.effect];
+    g_pref_border = [Options.arrayBorder optionData:op.border];
     
-    g_pref_colorspace = [Options.arrayColorSpace optionData:op.sourceColorSpace];
+    g_pref_colorspace = [Options.arrayColorSpace optionData:op.colorSpace];
 
     g_pref_integer_scale_only = op.integerScalingOnly;
     g_pref_metal = op.useMetal;
@@ -792,10 +776,9 @@ void mame_state(int load_save, int slot)
     
     myosd_showinfo =  [op showINFO];
     g_pref_animated_DPad  = [op animatedButtons];
-    g_pref_full_screen_land  = [op fullLand];
-    g_pref_full_screen_port  = [op fullPort];
-    g_pref_full_screen_land_joy = [op fullLandJoy];
-    g_pref_full_screen_port_joy = [op fullPortJoy];
+    g_pref_full_screen_land  = [op fullscreenLandscape];
+    g_pref_full_screen_port  = [op fullscreenPortrait];
+    g_pref_full_screen_joy   = [op fullscreenJoystick];
 
     myosd_pxasp1 = [op p1aspx];
     
@@ -1490,7 +1473,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     
     if (g_pref_showHUD == 2) {
         NSDictionary* shader_variables = ([screenView isKindOfClass:[MetalScreenView class]]) ?  [(MetalScreenView*)screenView getShaderVariables] : nil;
-        NSString* shader = g_device_is_landscape ? g_pref_effect_land : g_pref_effect_port;
+        NSString* shader = g_pref_effect;
         NSArray* shader_arr = split(shader, @",");
         
         int count = 0;
@@ -1548,8 +1531,12 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     [self getConf];
     
     // reset the frame count when you first turn on/off
-    if (g_pref_showFPS != (fpsView != nil) || (g_pref_showHUD != 0) != (hudView != nil))
+    if (g_pref_showFPS != (fpsView != nil))
         screenView.frameCount = 0;
+#if TARGET_OS_IOS
+    if ((g_pref_showHUD != 0) != (hudView != nil))
+        screenView.frameCount = 0;
+#endif
     
     [imageBack removeFromSuperview];
     imageBack = nil;
@@ -1882,7 +1869,7 @@ void myosd_handle_turbo() {
 //               #<hex color>, <border width>, <corner radius>
 - (void)getOverlayImage:(UIImage**)pImage andSize:(CGSize*)pSize {
     
-    NSString* border_info = g_device_is_landscape ? g_pref_border_land : g_pref_border_port;
+    NSString* border_info = g_pref_border;
     
     if ([border_info length] == 0 || [border_info isEqualToString:@"None"] || [border_info hasPrefix:@"#"]) {
         *pImage = nil;
@@ -1932,7 +1919,7 @@ UIColor* colorWithHexString(NSString* string) {
 
 - (void)buildOverlayImage:(UIImage*)image rect:(CGRect)rect {
     
-    NSString* border_info = g_device_is_landscape ? g_pref_border_land : g_pref_border_port;
+    NSString* border_info = g_pref_border;
 
     // handle a solid color: #RRGGBBAA, <border width>, <corner radius>
     if (image == nil && [border_info hasPrefix:@"#"]) {
@@ -1968,9 +1955,9 @@ UIColor* colorWithHexString(NSString* string) {
     if (externalView != nil)
         g_device_is_fullscreen = FALSE;
     else if (g_device_is_landscape)
-        g_device_is_fullscreen = g_pref_full_screen_land || (g_joy_used && g_pref_full_screen_land_joy);
+        g_device_is_fullscreen = g_pref_full_screen_land || (g_joy_used && g_pref_full_screen_joy);
     else
-        g_device_is_fullscreen = g_pref_full_screen_port || (g_joy_used && g_pref_full_screen_port_joy);
+        g_device_is_fullscreen = g_pref_full_screen_port || (g_joy_used && g_pref_full_screen_joy);
 
     CGRect r;
 
@@ -2034,7 +2021,7 @@ UIColor* colorWithHexString(NSString* string) {
     r = CGRectInset(r, border_size.width, border_size.height);
     
     // preserve aspect ratio, and snap to pixels.
-    if (g_device_is_landscape ? g_pref_keep_aspect_ratio_land : g_pref_keep_aspect_ratio_port) {
+    if (g_pref_keep_aspect_ratio) {
         CGSize aspect;
         
         // use an exact aspect ratio of 4:3 or 3:4 iff possible
@@ -2093,8 +2080,8 @@ UIColor* colorWithHexString(NSString* string) {
     }
     
     NSDictionary* options = @{
-        kScreenViewFilter: g_device_is_landscape ? g_pref_filter_land : g_pref_filter_port,
-        kScreenViewEffect: g_device_is_landscape ? g_pref_effect_land : g_pref_effect_port,
+        kScreenViewFilter: g_pref_filter,
+        kScreenViewEffect: g_pref_effect,
         kScreenViewColorSpace: g_pref_colorspace,
     };
     
@@ -2226,10 +2213,12 @@ UIColor* colorWithHexString(NSString* string) {
 // TODO: these temp toggles dont work the first time, because changUI will call updateSettings when waysAuto changes.
     switch (key) {
         case '\r':
-            if (g_device_is_landscape)
-                g_pref_full_screen_land = g_pref_full_screen_land_joy = !g_device_is_fullscreen;
+            if (g_joy_used)
+                g_pref_full_screen_joy = !g_device_is_fullscreen;
+            else if (g_device_is_landscape)
+                g_pref_full_screen_land = !g_device_is_fullscreen;
             else
-                g_pref_full_screen_port = g_pref_full_screen_port_joy = !g_device_is_fullscreen;
+                g_pref_full_screen_port = !g_device_is_fullscreen;
             [self changeUI];
             break;
         case 'I':
@@ -2262,10 +2251,7 @@ UIColor* colorWithHexString(NSString* string) {
             [self changeUI];
             break;
         case 'A':
-            if (g_device_is_landscape)
-                g_pref_keep_aspect_ratio_land = !g_pref_keep_aspect_ratio_land;
-            else
-                g_pref_keep_aspect_ratio_port = !g_pref_keep_aspect_ratio_port;
+            g_pref_keep_aspect_ratio = !g_pref_keep_aspect_ratio;
             [self changeUI];
             break;
         case 'M':
@@ -3366,6 +3352,7 @@ UIColor* colorWithHexString(NSString* string) {
 
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:nil message:msg preferredStyle:UIAlertControllerStyleAlert];
     [alert addAction:[UIAlertAction actionWithTitle:@"Reset" style:UIAlertActionStyleDestructive handler:^(UIAlertAction* action) {
+        [NSUserDefaults.standardUserDefaults setValue:@"" forKey:kInfoHUDFrameKey];
         [Options resetOptions];
         [ChooseGameController reset];
         g_mame_reset = TRUE;
