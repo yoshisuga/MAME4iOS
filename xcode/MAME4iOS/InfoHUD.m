@@ -8,6 +8,12 @@
 
 #import "InfoHUD.h"
 
+#define HUD_COLOR   [self.tintColor colorWithAlphaComponent:0.2]
+#define HUD_BLUR    TRUE
+
+//#define HUD_COLOR   [UIColor.blackColor colorWithAlphaComponent:0.8]
+//#define HUD_BLUR    FALSE
+
 @implementation InfoHUD {
     UIStackView* _stack;
     NSMutableDictionary* _views;
@@ -35,17 +41,19 @@
     
     self.font = nil;
     
-    [self addSubview:_stack];
-    self.backgroundColor = [UIColor.grayColor colorWithAlphaComponent:0.75];
-    [self addGestureRecognizer:[[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(pan:)]];
-
-    if (@available(iOS 13.0, *)) {
+    if (@available(iOS 13.0, *))
         self.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
+    
+    [self addSubview:_stack];
+    self.backgroundColor = HUD_COLOR;
+    [self addGestureRecognizer:[[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(pan:)]];
+    
+#if HUD_BLUR
+    if (@available(iOS 13.0, *))
         [self addBlur:UIBlurEffectStyleSystemUltraThinMaterialDark withVibrancy:NO];
-    }
-    else {
+    else
         [self addBlur:UIBlurEffectStyleDark withVibrancy:NO];
-    }
+#endif
 
     return self;
 }
@@ -83,8 +91,8 @@
 
     [effectView.contentView addSubview:self.subviews.firstObject];
     [self addSubview:effectView];
+    effectView.backgroundColor = self.backgroundColor;
     self.backgroundColor = UIColor.clearColor;
-    effectView.backgroundColor = [self.tintColor colorWithAlphaComponent:0.2];
 }
 
 - (void)pan:(UIPanGestureRecognizer*)pan {

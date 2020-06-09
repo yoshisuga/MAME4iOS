@@ -92,7 +92,7 @@ mame_screen_rainbow(VertexOutput v [[stage_in]],
                 constant MameScreenRainbowUniforms &uniforms [[buffer(0)]])
 {
     float2 uv = uniforms.mame_screen_matrix * v.tex;
-    float4 shade = six_colors[(int)(uv.y/uniforms.rainbow_height + uniforms.frame_count * uniforms.rainbow_speed/60) % 6] * float4(1.0/255.0);
+    float4 shade = six_colors[(int)(uv.y/uniforms.rainbow_height + uniforms.frame_count/60 * uniforms.rainbow_speed) % 6] * float4(1.0/255.0);
     float4 color = (texture.sample(tsamp, v.tex) + shade) * 0.5;
     return color;
 }
