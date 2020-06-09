@@ -1409,6 +1409,11 @@ static int gcd(int a, int b) {
             break;
     }
 }
+-(void)hudDebugButton:(UISegmentedControl*)seg {
+    NSLog(@"HUD DEBUG BUTTON: %ld: %@", seg.selectedSegmentIndex, [seg titleForSegmentAtIndex:seg.selectedSegmentIndex]);
+    char key = 'A' + *(uint32_t*)[[seg titleForSegmentAtIndex:seg.selectedSegmentIndex] dataUsingEncoding:NSUTF32LittleEndianStringEncoding].bytes - 0x1F170;
+    [self commandKey:key];
+}
 -(void)hudChange:(InfoHUD*)hud {
     NSLog(@"HUD CHANGE: %@=%@", hud.changedKey, [hud valueForKey:hud.changedKey]);
     
@@ -1465,6 +1470,20 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         seg.selectedSegmentTintColor = self.view.tintColor;
     }
     [hudView addView:seg];
+
+#ifdef DEBUG
+    seg = [[UISegmentedControl alloc] initWithItems:@[
+        @"🅵", @"🅰", @"🆇", @"🅸", @"🅳", 
+    ]];
+    seg.momentary = YES;
+    seg.apportionsSegmentWidthsByContent = YES;
+    [seg addTarget:self action:@selector(hudDebugButton:) forControlEvents:UIControlEventValueChanged];
+    [seg setTitleTextAttributes:@{NSFontAttributeName:[UIFont preferredFontForTextStyle:UIFontTextStyleTitle1]} forState:UIControlStateNormal];
+    if (@available(iOS 13.0, *)) {
+        seg.selectedSegmentTintColor = self.view.tintColor;
+    }
+    [hudView addView:seg];
+#endif
 
     [hudView addValue:@"000:00:00🅼 0000.00fps 000.0ms" forKey:@"FPS"];
 #ifdef DEBUG
@@ -2225,8 +2244,12 @@ UIColor* colorWithHexString(NSString* string) {
             g_pref_integer_scale_only = !g_pref_integer_scale_only;
             [self changeUI];
             break;
-        case 'F':
+        case 'Z':
             g_pref_showFPS = !g_pref_showFPS;
+            [self changeUI];
+            break;
+        case 'F':
+            g_pref_filter = [g_pref_filter isEqualToString:kScreenViewFilterNearest] ? kScreenViewFilterLinear : kScreenViewFilterNearest;
             [self changeUI];
             break;
         case 'H':

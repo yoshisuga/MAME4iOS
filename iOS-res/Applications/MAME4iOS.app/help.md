@@ -220,10 +220,14 @@ we suppoprt a small subset of the keys supported by the command line MAME.
      BQUOTE          | MAME4iOS MENU
      ⌘+ENTER       | TOGGLE FULLSCREEN
      ⌘+I                  | TOGGLE INTEGER SCALE
-     ⌘+F                  | TOGGLE FPS DISPLAY
+     ⌘+Z                  | TOGGLE FPS DISPLAY
+     ⌘+H                  | TOGGLE HUD DISPLAY
+     ⌘+F                  | TOGGLE FILTER (Nearest and Linear)
      ⌘+T                  | TOGGLE THROTTLE
      ⌘+V                  | TOGGLE VSYNC
-     ⌘+A                  | TOGGLE `Force Pixel Aspect`
+     ⌘+M                  | TOGGLE `useMetal`
+     ⌘+A                  | TOGGLE `Keep Aspect Ratio`
+     ⌘+X                  | TOGGLE `Force Pixel Aspect`
      
 ## Game Controlers
 
