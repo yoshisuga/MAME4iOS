@@ -574,8 +574,6 @@
 				CEE680AD1635BB2700051BC2 /* Bootstrapper.m */,
 				EF19F22E235D1C0300C8EE7F /* ChooseGameController.h */,
 				EF19F229235D1BDF00C8EE7F /* ChooseGameController.m */,
-				EF249337236264DA00DD0A6C /* ImageCache.h */,
-				EF249336236264D900DD0A6C /* ImageCache.m */,
 				9268D8572166840F00AB0470 /* DeviceScreenResolver.h */,
 				9268D8582166840F00AB0470 /* DeviceScreenResolver.m */,
 				CEE680B41635BB4900051BC2 /* EmulatorController.h */,
@@ -589,22 +587,8 @@
 				CE6D6E1316D8CADF00F265B7 /* LayoutView.m */,
 				CE9454D21731DE4D00B81C32 /* NetplayGameKit.h */,
 				CE9454D31731DE4D00B81C32 /* NetplayGameKit.m */,
-				92B99F0C2022706600CC44E3 /* UIView+Toast.h */,
-				92B99F0D2022706600CC44E3 /* UIView+Toast.m */,
-				EF301CEF240460C5000510FD /* Alert.h */,
-				EF301CF0240460C5000510FD /* Alert.m */,
 				EFE4B6A92453D7F80009A6F1 /* InfoDatabase.h */,
 				EFE4B6AA2453D7F80009A6F1 /* InfoDatabase.m */,
-				EFA7570C2406D64600A02AAB /* SystemImage.h */,
-				EFA7570B2406D64600A02AAB /* SystemImage.m */,
-				EF27F36423F73CD400B1E50A /* ZipFile.h */,
-				EF27F36323F73CD400B1E50A /* ZipFile.m */,
-				EF26AE0A241AA6900078FD30 /* FileItemProvider.h */,
-				EF26AE0B241AA6900078FD30 /* FileItemProvider.m */,
-				EF23D32F243CB9CE006B3EE2 /* PopupSegmentedControl.h */,
-				EF23D330243CB9CE006B3EE2 /* PopupSegmentedControl.m */,
-				EFB3C6DC248C33DF00F44780 /* InfoHUD.h */,
-				EFB3C6DB248C33DF00F44780 /* InfoHUD.m */,
 				92A533D521EE601D0089FBB9 /* WebServer.h */,
 				92A533D621EE601D0089FBB9 /* WebServer.m */,
 				CEBFBC0E163C5BD300A05CD0 /* resources */,
@@ -662,6 +646,7 @@
 			children = (
 				EF9F9C9E240070E700352554 /* README.md */,
 				CEAC6C2716AAA73900AF3275 /* RELOADED */,
+				EF8E427B24900FE40049C84C /* UIKit Classes */,
 				92A5338421EBDBAD0089FBB9 /* GCDWebServer */,
 				92A533CB21EBDDF20089FBB9 /* GCDWebUploader */,
 				EF8EAA7D244F7F5D00DA02BB /* SteamController */,
@@ -793,6 +778,34 @@
 			name = Options;
 			sourceTree = "<group>";
 		};
+		EF8E427B24900FE40049C84C /* UIKit Classes */ = {
+			isa = PBXGroup;
+			children = (
+				EF06A576248064AC00A974B8 /* Timer.h */,
+				EFB7B2162479FBD900AD96A4 /* MetalView.h */,
+				EFB7B2132479FBD800AD96A4 /* MetalView.m */,
+				EFB7B2142479FBD800AD96A4 /* MetalViewShaders.h */,
+				EFB7B2152479FBD900AD96A4 /* MetalViewShaders.metal */,
+				EF249337236264DA00DD0A6C /* ImageCache.h */,
+				EF249336236264D900DD0A6C /* ImageCache.m */,
+				EF301CEF240460C5000510FD /* Alert.h */,
+				EF301CF0240460C5000510FD /* Alert.m */,
+				EFA7570C2406D64600A02AAB /* SystemImage.h */,
+				EFA7570B2406D64600A02AAB /* SystemImage.m */,
+				EF27F36423F73CD400B1E50A /* ZipFile.h */,
+				EF27F36323F73CD400B1E50A /* ZipFile.m */,
+				EF26AE0A241AA6900078FD30 /* FileItemProvider.h */,
+				EF26AE0B241AA6900078FD30 /* FileItemProvider.m */,
+				EF23D32F243CB9CE006B3EE2 /* PopupSegmentedControl.h */,
+				EF23D330243CB9CE006B3EE2 /* PopupSegmentedControl.m */,
+				EFB3C6DC248C33DF00F44780 /* InfoHUD.h */,
+				EFB3C6DB248C33DF00F44780 /* InfoHUD.m */,
+				92B99F0C2022706600CC44E3 /* UIView+Toast.h */,
+				92B99F0D2022706600CC44E3 /* UIView+Toast.m */,
+			);
+			name = "UIKit Classes";
+			sourceTree = "<group>";
+		};
 		EF8EAA7D244F7F5D00DA02BB /* SteamController */ = {
 			isa = PBXGroup;
 			children = (
@@ -821,16 +834,11 @@
 		EFB7B2122479FB8900AD96A4 /* ScreenView */ = {
 			isa = PBXGroup;
 			children = (
-				EF06A576248064AC00A974B8 /* Timer.h */,
 				CEE680C11635BB6100051BC2 /* ScreenView.h */,
 				EFF9F808246356B300DDA88C /* CGScreenView.h */,
 				EFF9F807246356B200DDA88C /* CGScreenView.m */,
 				EFF9F8282470755800DDA88C /* MetalScreenView.h */,
 				EFF9F8292470755800DDA88C /* MetalScreenView.m */,
-				EFB7B2162479FBD900AD96A4 /* MetalView.h */,
-				EFB7B2132479FBD800AD96A4 /* MetalView.m */,
-				EFB7B2142479FBD800AD96A4 /* MetalViewShaders.h */,
-				EFB7B2152479FBD900AD96A4 /* MetalViewShaders.metal */,
 				EFB7B21B247ACFE300AD96A4 /* MameShaders.metal */,
 				EFB3C6D524890F6200F44780 /* simpleCRT.metal */,
 			);
