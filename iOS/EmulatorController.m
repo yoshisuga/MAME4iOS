@@ -2313,13 +2313,18 @@ UIColor* colorWithHexString(NSString* string) {
 // TODO: these temp toggles dont work the first time, because changUI will call updateSettings when waysAuto changes.
     switch (key) {
         case '\r':
-            if (g_joy_used)
-                g_pref_full_screen_joy = !g_device_is_fullscreen;
-            else if (g_device_is_landscape)
-                g_pref_full_screen_land = !g_device_is_fullscreen;
-            else
-                g_pref_full_screen_port = !g_device_is_fullscreen;
-            [self changeUI];
+            {
+                Options* op = [[Options alloc] init];
+                if (g_joy_used)
+                    op.fullscreenJoystick = g_pref_full_screen_joy = !g_device_is_fullscreen;
+                else if (g_device_is_landscape)
+                    op.fullscreenLandscape = g_pref_full_screen_land = !g_device_is_fullscreen;
+                else
+                    op.fullscreenPortrait = g_pref_full_screen_port = !g_device_is_fullscreen;
+                [op saveOptions];
+                [self changeUI];
+                break;
+            }
             break;
         case 'I':
             g_pref_integer_scale_only = !g_pref_integer_scale_only;
