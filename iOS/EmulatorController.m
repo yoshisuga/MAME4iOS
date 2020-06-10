@@ -83,7 +83,7 @@
 #import "SystemImage.h"
 #import "SteamController.h"
 
-#define DebugLog 0
+#define DebugLog 1
 #if DebugLog == 0
 #define NSLog(...) (void)0
 #endif
@@ -1426,6 +1426,9 @@ static int gcd(int a, int b) {
             hud.changedKey: [hud valueForKey:hud.changedKey]
         }];
     }
+    
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(logShader) object:nil];
+    [self performSelector:@selector(logShader) withObject:nil afterDelay:0.500];
 }
 -(void)hudOptionChange:(PopupSegmentedControl*)seg {
     NSLog(@"HUD OPTION CHANGE %ld: %@", seg.selectedSegmentIndex, [seg titleForSegmentAtIndex:seg.selectedSegmentIndex]);
@@ -1461,6 +1464,24 @@ static NSArray* list_trim(NSArray* _list) {
     for (NSInteger i=0; i<list.count; i++)
         list[i] = [[list[i] componentsSeparatedByString:@":"].firstObject stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
     return [list copy];
+}
+
+-(void)logShader {
+    NSDictionary* shader_variables = ([screenView isKindOfClass:[MetalScreenView class]]) ?  [(MetalScreenView*)screenView getShaderVariables] : nil;
+    NSString* shader = g_pref_effect;
+    NSMutableArray* arr = [split(shader, @",") mutableCopy];
+    
+    for (int i=0; i<arr.count; i++) {
+        if ([arr[i] hasPrefix:@"blend="] || ![arr[i] containsString:@"="])
+            continue;
+        NSString* key = split(arr[i], @"=").firstObject;
+        NSArray* vals = split(split(arr[i], @"=").lastObject, @" ");
+        arr[i] = shader_variables[key] ?: vals.firstObject;
+
+        float step = (vals.count > 3) ? [vals[3] floatValue] : 0.001;
+        arr[i] = @(round([arr[i] floatValue] / step) * step);
+    }
+    NSLog(@"SHADER: \"%@\"", [arr componentsJoinedByString:@", "]);
 }
 
 -(void)buildHUD {
@@ -1574,6 +1595,7 @@ static NSArray* list_trim(NSArray* _list) {
 
             [hudView addValue:value forKey:name format:nil min:min max:max step:step];
         }
+        [self logShader];
     }
     
     [hudView sizeToFit];

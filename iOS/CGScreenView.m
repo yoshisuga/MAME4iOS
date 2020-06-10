@@ -447,10 +447,10 @@ static BOOL g_render_dump = 0;
         int wrap = prim->texwrap;
 
         if (prim->type == RENDER_PRIMITIVE_LINE) {
-            NSLog(@"    LINE (%.0f,%.0f) -> (%.0f,%.0f) (%0.2f,%0.2f,%0.2f,%0.2f) %f %s%s",
+            NSLog(@"    LINE (%.0f,%.0f) -> (%.0f,%.0f) (%0.2f,%0.2f,%0.2f,%0.2f) %f %s%s%s",
                   prim->bounds_x0, prim->bounds_y0, prim->bounds_x1, prim->bounds_y1,
                   prim->color_r, prim->color_g, prim->color_b, prim->color_a,
-                  prim->width, blend_mode_name[blend], aa ? " AA" : "");
+                  prim->width, blend_mode_name[blend], aa ? " AA" : "", screen ? " SCREEN" : "");
         }
         else if (prim->type == RENDER_PRIMITIVE_QUAD && prim->texture_base == NULL) {
             NSLog(@"    QUAD [%.0f,%.0f,%.0f,%.0f] (%0.2f,%0.2f,%0.2f,%0.2f) %s%s",
