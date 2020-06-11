@@ -657,7 +657,7 @@ void mame_state(int load_save, int slot)
         NSString* no  = (controllers.count > 0 && TARGET_OS_IOS) ? @"Ⓑ No" : @"No";
 
         UIAlertController *exitAlertController = [UIAlertController alertControllerWithTitle:@"Are you sure you want to exit?" message:nil
-                                                                              preferredStyle:view != nil ? UIAlertControllerStyleActionSheet : UIAlertControllerStyleAlert];
+                                                                              preferredStyle:(view != nil && g_isIpad) ? UIAlertControllerStyleActionSheet : UIAlertControllerStyleAlert];
 
         [self startMenu];
         [exitAlertController addAction:[UIAlertAction actionWithTitle:yes style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
