@@ -767,7 +767,7 @@ void mame_state(int load_save, int slot)
     NSLog(@"PRESENT VIEWCONTROLLER: %@", viewControllerToPresent);
     
     if ([viewControllerToPresent isKindOfClass:[UIAlertController class]]) {
-        if (@available(iOS 13.0, *))
+        if (@available(iOS 13.0, tvOS 13.0, *))
             viewControllerToPresent.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
     }
 
