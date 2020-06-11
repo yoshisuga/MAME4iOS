@@ -31,6 +31,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)addView:(UIView*)view;
 - (void)addSeparator;
 
+- (void)addToolbar:(NSArray*)items handler:(void (^)(NSUInteger button))handler;
+- (void)addButtons:(NSArray*)items handler:(void (^)(NSUInteger button))handler;
+- (void)addButton:(id)item color:(nullable UIColor*)color handler:(void (^)(void))handler;
+- (void)addButton:(id)item handler:(void (^)(void))handler;
+
 - (void)setValue:(nullable id)value forKey:(NSString *)key;
 - (void)setValues:(NSDictionary*)values;
 

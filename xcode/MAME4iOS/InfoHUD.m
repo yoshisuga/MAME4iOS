@@ -7,6 +7,7 @@
 //
 
 #import "InfoHUD.h"
+#import <objc/runtime.h> // just for Associated Objects, I promise!
 
 #define HUD_COLOR   [self.tintColor colorWithAlphaComponent:0.2]
 #define HUD_BLUR    TRUE
@@ -239,6 +240,55 @@
 }
 - (void)addSeparator {
     [self addValue:@"---"];
+}
+
+- (void)buttonPress:(UISegmentedControl*)seg {
+    void (^handler)(NSUInteger) = objc_getAssociatedObject(seg, @selector(buttonPress:));
+    handler(seg.selectedSegmentIndex);
+}
+- (UISegmentedControl*)makeSegmentedControl:(NSArray*)items handler:(void (^)(NSUInteger button))handler {
+    UISegmentedControl* seg = [[UISegmentedControl alloc] initWithItems:items];
+    seg.momentary = YES;
+    [seg addTarget:self action:@selector(buttonPress:) forControlEvents:UIControlEventValueChanged];
+    objc_setAssociatedObject(seg, @selector(buttonPress:), handler, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    if (@available(iOS 13.0, *))
+         seg.selectedSegmentTintColor = self.tintColor;
+    return seg;
+}
+
+- (void)addToolbar:(NSArray*)items handler:(void (^)(NSUInteger button))handler {
+    UISegmentedControl* seg = [self makeSegmentedControl:items handler:handler];
+    [self addView:seg];
+}
+- (void)addButtons:(NSArray*)items handler:(void (^)(NSUInteger button))handler {
+    UIStackView* stack = [[UIStackView alloc] init];
+    stack.spacing = 4.0;
+    stack.distribution = UIStackViewDistributionFillEqually;
+
+    for (NSUInteger i = 0; i<items.count; i++) {
+        id item = items[i];
+        if (![item isKindOfClass:[UIView class]]) {
+            item = [self makeSegmentedControl:@[item] handler:^(NSUInteger button) {
+                handler(i);
+            }];
+        }
+        [stack addArrangedSubview:item];
+    }
+    [self addView:stack];
+}
+
+- (void)addButton:(id)item color:(UIColor*)color handler:(void (^)(void))handler {
+    assert([item isKindOfClass:[NSString class]] || [item isKindOfClass:[UIImage class]]);
+    UISegmentedControl* seg = [self makeSegmentedControl:@[item] handler:^(NSUInteger button) {
+        handler();
+    }];
+    seg.backgroundColor = color;
+    if (@available(iOS 13.0, *))
+         seg.selectedSegmentTintColor = color;
+    [self addView:seg];
+}
+- (void)addButton:(id)item handler:(void (^)(void))handler {
+    [self addButton:item color:nil handler:handler];
 }
 
 - (void)setValue:(id)value forKey:(NSString *)key {
