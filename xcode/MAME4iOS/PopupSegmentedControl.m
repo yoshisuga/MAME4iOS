@@ -198,8 +198,12 @@ UIColor* getBackgroundColor(UIView* view) {
     UIViewController* vc = UIApplication.sharedApplication.keyWindow.rootViewController;
     while (vc.presentedViewController != nil)
         vc = vc.presentedViewController;
-    if (@available(iOS 13.0, *))
-        _popup.overrideUserInterfaceStyle = vc.overrideUserInterfaceStyle;
+    if (@available(iOS 13.0, *)) {
+        if (self.overrideUserInterfaceStyle != UIUserInterfaceStyleUnspecified)
+            _popup.overrideUserInterfaceStyle = self.overrideUserInterfaceStyle;
+        else
+            _popup.overrideUserInterfaceStyle = vc.overrideUserInterfaceStyle;
+    }
     [vc presentViewController:_popup animated:YES completion:nil];
 }
 // Returning UIModalPresentationNone will indicate that an adaptation should not happen.
