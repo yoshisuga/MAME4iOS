@@ -1385,6 +1385,7 @@ void mame_state(int load_save, int slot)
     [screenView.superview addSubview:fpsView];
 }
 
+#if TARGET_OS_IOS && defined(DEBUG)
 static int gcd(int a, int b) {
     int c;
     while (a != 0) {
@@ -1392,6 +1393,7 @@ static int gcd(int a, int b) {
     }
     return b;
 }
+#endif
 
 -(void)updateFrameRate {
     assert([NSThread isMainThread]);
