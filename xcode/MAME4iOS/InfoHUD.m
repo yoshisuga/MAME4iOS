@@ -258,6 +258,7 @@
 
 - (void)addToolbar:(NSArray*)items handler:(void (^)(NSUInteger button))handler {
     UISegmentedControl* seg = [self makeSegmentedControl:items handler:handler];
+    seg.apportionsSegmentWidthsByContent = YES;
     [self addView:seg];
 }
 - (void)addButtons:(NSArray*)items handler:(void (^)(NSUInteger button))handler {
