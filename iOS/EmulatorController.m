@@ -83,7 +83,7 @@
 #import "SystemImage.h"
 #import "SteamController.h"
 
-#define DebugLog 1
+#define DebugLog 0
 #if DebugLog == 0
 #define NSLog(...) (void)0
 #endif
@@ -621,7 +621,7 @@ void mame_state(int load_save, int slot)
 }
 - (void)runMenu:(int)player
 {
-    [self runMenu:0 from:nil];
+    [self runMenu:player from:nil];
 }
 - (void)runMenu
 {
@@ -1627,12 +1627,11 @@ static NSArray* list_trim(NSArray* _list) {
                 seg.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
             }
         }
-        // add set of buttons to select the Filter, Border, and Effect/Shader
         [hudView addButtons:items handler:^(NSUInteger button) {}];
     }
 
     if (g_pref_showHUD == HudSizeLarge) {
-        [hudView addButtons:(myosd_num_players >= 2) ? @[@"P1 Start", @"P2 Start"] : @[@"Start+Coin"] handler:^(NSUInteger button) {
+        [hudView addButtons:(myosd_num_players >= 2) ? @[@"P1 Start", @"P2 Start"] : @[@"Coin+Start"] handler:^(NSUInteger button) {
             [_self startPlayer:(int)button];
         }];
         [hudView addButtons:@[@"Load", @"Save"] handler:^(NSUInteger button) {
