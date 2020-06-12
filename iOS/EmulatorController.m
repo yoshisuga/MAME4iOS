@@ -1523,6 +1523,13 @@ static NSArray* list_trim(NSArray* _list) {
     if (g_pref_showHUD == HudSizeEditor && !can_edit_shader)
         g_pref_showHUD = HudSizeLarge;
     
+    // leave a little space on the left/right so you can grab the HUD without hitting a button.
+    // TODO: Hmmmm maybe there is a better way....
+    if (g_pref_showHUD == HudSizeTiny || (g_pref_showHUD == HudSizeNormal && !g_pref_showFPS))
+        hudView.layoutMargins = UIEdgeInsetsMake(8, 16, 8, 16);
+    else
+        hudView.layoutMargins = UIEdgeInsetsMake(8, 8, 8, 8);
+    
     if (g_pref_showHUD == HudSizeTiny) {
         [hudView addButton:[UIImage systemImageNamed:@"command"] ?: @"⌘" handler:^{
             Options* op = [[Options alloc] init];
@@ -1600,26 +1607,8 @@ static NSArray* list_trim(NSArray* _list) {
 #endif
         }
     }
-    
-    if (g_pref_showHUD == HudSizeLarge) {
-        [hudView addButtons:(myosd_num_players >= 2) ? @[@"P1 Start", @"P2 Start"] : @[@"Start+Coin"] handler:^(NSUInteger button) {
-            [_self startPlayer:(int)button];
-        }];
-        [hudView addButtons:@[@"Load", @"Save"] handler:^(NSUInteger button) {
-             [_self runState:button == 0 ? LOAD_STATE : SAVE_STATE];
-        }];
-        [hudView addButtons:@[@"MAME Menu", @"Settings"] handler:^(NSUInteger button) {
-            if (button == 0)
-                myosd_configure = 1;
-            else
-                [_self runSettings];
-        }];
-        [hudView addButton:@"Exit Game" color:UIColor.systemRedColor handler:^{
-            [_self runExit:NO];
-        }];
-    }
 
-    if (g_pref_showHUD == HudSizeEditor) {
+    if (g_pref_showHUD == HudSizeLarge || g_pref_showHUD == HudSizeEditor) {
         // add set of buttons to select the Filter, Border, and Effect/Shader
         NSArray* items = @[
             [[PopupSegmentedControl alloc] initWithItems:list_trim(Options.arrayFilter)],
@@ -1641,7 +1630,25 @@ static NSArray* list_trim(NSArray* _list) {
         // add set of buttons to select the Filter, Border, and Effect/Shader
         [hudView addButtons:items handler:^(NSUInteger button) {}];
     }
-    
+
+    if (g_pref_showHUD == HudSizeLarge) {
+        [hudView addButtons:(myosd_num_players >= 2) ? @[@"P1 Start", @"P2 Start"] : @[@"Start+Coin"] handler:^(NSUInteger button) {
+            [_self startPlayer:(int)button];
+        }];
+        [hudView addButtons:@[@"Load", @"Save"] handler:^(NSUInteger button) {
+             [_self runState:button == 0 ? LOAD_STATE : SAVE_STATE];
+        }];
+        [hudView addButtons:@[@"MAME Menu", @"Settings"] handler:^(NSUInteger button) {
+            if (button == 0)
+                myosd_configure = 1;
+            else
+                [_self runSettings];
+        }];
+        [hudView addButton:@"Exit Game" color:UIColor.systemRedColor handler:^{
+            [_self runExit:NO];
+        }];
+    }
+
     // add a bunch of slider controls to tweak with the current Shader
     if (g_pref_showHUD == HudSizeEditor) {
         NSDictionary* shader_variables = ([screenView isKindOfClass:[MetalScreenView class]]) ?  [(MetalScreenView*)screenView getShaderVariables] : nil;
