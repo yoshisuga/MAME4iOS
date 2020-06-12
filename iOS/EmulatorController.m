@@ -1592,10 +1592,11 @@ static NSArray* list_trim(NSArray* _list) {
             [UIImage systemImageNamed:@"a.square.fill"] ?: @"A",
             [UIImage systemImageNamed:@"x.square.fill"] ?: @"X",
             [UIImage systemImageNamed:@"i.square.fill"] ?: @"I",
+            [UIImage systemImageNamed:@"p.square.fill"] ?: @"P",
             [UIImage systemImageNamed:@"d.square.fill"] ?: @"D",
         ];
         [hudView addToolbar:items handler:^(NSUInteger button) {
-            [_self commandKey:"ZAXID"[button]];
+            [_self commandKey:"ZAXIPD"[button]];
         }];
 #endif
 
