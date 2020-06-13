@@ -102,25 +102,25 @@
         if ( indexPath.row == 0 ) {
             cell.textLabel.text = @"Filter";
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-            cell.detailTextLabel.text = [Options.arrayFilter optionName:op.filterLand];
+            cell.detailTextLabel.text = [Options.arrayFilter optionName:op.filter];
         } else if ( indexPath.row == 1 ) {
             cell.textLabel.text   = @"Effect";
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-            cell.detailTextLabel.text = [Options.arrayEffect optionName:op.effectLand];
+            cell.detailTextLabel.text = [Options.arrayEffect optionName:op.effect];
         } else if ( indexPath.row == 2 ) {
             cell.textLabel.text   = @"Border";
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-            cell.detailTextLabel.text = [Options.arrayBorder optionName:op.borderLand];
+            cell.detailTextLabel.text = [Options.arrayBorder optionName:op.border];
         } else if ( indexPath.row == 3 ) {
             cell.textLabel.text   = @"ColorSpace";
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-            cell.detailTextLabel.text = [Options.arrayColorSpace optionName:op.sourceColorSpace];
+            cell.detailTextLabel.text = [Options.arrayColorSpace optionName:op.colorSpace];
         } else if ( indexPath.row == 4 ) {
             cell.textLabel.text =  @"Use Metal";
             cell.accessoryView = [self optionSwitchForKey:@"useMetal"];
         } else if ( indexPath.row == 5 ) {
             cell.textLabel.text = @"Keep Aspect Ratio";
-            cell.accessoryView = [self optionSwitchForKey:@"keepAspectRatioLand"];
+            cell.accessoryView = [self optionSwitchForKey:@"keepAspectRatio"];
         } else if ( indexPath.row == 6 ) {
             cell.textLabel.text = @"Integer Scaling Only";
             cell.accessoryView = [self optionSwitchForKey:@"integerScalingOnly"];
@@ -183,16 +183,16 @@
         }
     } else if ( indexPath.section == kScreenSection ) {
         if ( indexPath.row == 0 ) {
-            ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"filterLand" list:Options.arrayFilter title:cell.textLabel.text];
+            ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"filter" list:Options.arrayFilter title:cell.textLabel.text];
             [[self navigationController] pushViewController:listController animated:YES];
         } else if ( indexPath.row == 1 ) {
-            ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"effectLand" list:Options.arrayEffect title:cell.textLabel.text];
+            ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"effect" list:Options.arrayEffect title:cell.textLabel.text];
             [[self navigationController] pushViewController:listController animated:YES];
         } else if ( indexPath.row == 2 ) {
-            ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"borderLand" list:Options.arrayBorder title:cell.textLabel.text];
+            ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"border" list:Options.arrayBorder title:cell.textLabel.text];
             [[self navigationController] pushViewController:listController animated:YES];
         } else if ( indexPath.row == 3 ) {
-            ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"sourceColorSpace" list:Options.arrayColorSpace title:cell.textLabel.text];
+            ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"colorSpace" list:Options.arrayColorSpace title:cell.textLabel.text];
             [[self navigationController] pushViewController:listController animated:YES];
         }
     } else if ( indexPath.section == kMiscSection ) {

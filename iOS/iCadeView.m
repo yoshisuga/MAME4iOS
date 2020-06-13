@@ -157,14 +157,6 @@
     
     NSLog(@"%s: %@ (%d)", __FUNCTION__, text.debugDescription, [text characterAtIndex:0]);
 
-    if(g_iCade_used == 0)
-    {
-        g_iCade_used = 1;
-        g_joy_used = 1;
-        myosd_num_of_joys = 1;
-        [emuController changeUI];
-    }
-    
     int joy1 = 0;
     int joy2 = 0;
     
@@ -603,6 +595,15 @@
         ///////////
             
     }
+    
+    // only treat iCade (or keyboard) as a controler when the dpad is used for first time.
+    if(g_iCade_used == 0 && (myosd_joy_status[0] & (MYOSD_DOWN|MYOSD_UP|MYOSD_RIGHT|MYOSD_LEFT)))
+    {
+        g_iCade_used = 1;
+        g_joy_used = 1;
+        myosd_num_of_joys = 1;
+        [emuController changeUI];
+    }
         
     if(joy2 && myosd_num_of_joys<2)
     {
@@ -834,9 +835,8 @@
         if (isKeyDown && keyCode >= KEY_0 && keyCode <= KEY_9)
             [emuController commandKey:'0' + (keyCode - KEY_0)];
     }
-    
     // 8BitDo
-    switch (keyCode + (isKeyDown ? KEY_DOWN : 0)) {
+    else switch (keyCode + (isKeyDown ? KEY_DOWN : 0)) {
             
         // DPAD
         case KEY_F:            iCadeKey = @"c"; break;

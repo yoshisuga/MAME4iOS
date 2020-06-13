@@ -1,5 +1,12 @@
 <img src="mame_logo.png" width="60%">
 
+# Version 2020.10
+* New `megaTron` Shader.
+* Render with Metal on external displays.
+* Video Options are no longer specific to Portrait or Landscape.
+    - except option to default to fullscreen.
+* New HUD UI, turn on `showHUD` to play with it.
+
 # Version 2020.9
 * Support for rendering with [Metal](https://en.wikipedia.org/wiki/Metal_(API)) (new)
    - Metal can be turned off in Options `use Metal`.

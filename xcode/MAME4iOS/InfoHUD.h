@@ -24,11 +24,17 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)addValue:(id)value forKey:(NSString *)key;
 - (void)addValue:(id)value forKey:(NSString *)key format:(NSString*)format;
 - (void)addValue:(id)value forKey:(nullable NSString *)key format:(nullable NSString*)format min:(nullable id)min max:(nullable id)max;
+- (void)addValue:(id)value forKey:(nullable NSString *)key format:(nullable NSString*)format min:(nullable id)min max:(nullable id)max step:(nullable id)step;
 - (void)addValues:(NSDictionary*)values;
 
 - (void)addText:(NSString*)str;
 - (void)addView:(UIView*)view;
 - (void)addSeparator;
+
+- (void)addToolbar:(NSArray*)items handler:(void (^)(NSUInteger button))handler;
+- (void)addButtons:(NSArray*)items handler:(void (^)(NSUInteger button))handler;
+- (void)addButton:(id)item color:(nullable UIColor*)color handler:(void (^)(void))handler;
+- (void)addButton:(id)item handler:(void (^)(void))handler;
 
 - (void)setValue:(nullable id)value forKey:(NSString *)key;
 - (void)setValues:(NSDictionary*)values;

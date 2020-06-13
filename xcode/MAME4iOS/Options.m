@@ -80,6 +80,12 @@
 //        <Friendly Name> : <shader description>
 //
 // NOTE: see MetalView.h for what a <shader description> is.
+// in addition to the <shader description> in MetalView.h you can specify a named variable like so....
+//
+//       variable_name = <default value> <min value> <max value> <step value>
+//
+//  you dont use commas to separate values, use spaces.
+//  min, max, and step are all optional, and only effect the InfoHUD, MetalView ignores them.
 //
 // NOTE arrayCoreGraphicsEffects and arrayMetalEffects should use the same friendly name
 // for similar effects, so if the user turns off/on metal the choosen effect wont get reset to default.
@@ -87,18 +93,27 @@
 + (NSArray*)arrayMetalEffects {
     return @[@"None",
              @"Simple CRT: simpleCRT, mame-screen-dst-rect, mame-screen-src-rect,\
-                 curv_vert     = 5.0 1.0 10.0,\
-                 curv_horiz    = 4.0 1.0 10.0,\
-                 curv_strength = 0.25 0.0 1.0,\
-                 light_boost   = 1.3 0.1 3.0, \
-                 vign_strength = 0.05 0.0 1.0,\
-                 zoom_out      = 1.1 0.01 5.0",
+                 Vertical Curvature     = 5.0 1.0 10.0 0.1,\
+                 Horizontal Curvature   = 4.0 1.0 10.0 0.1,\
+                 Curvature Strength = 0.25 0.0 1.0 0.05,\
+                 Light Boost = 1.3 0.1 3.0 0.1, \
+                 Vignette Strength = 0.05 0.0 1.0 0.05,\
+                 Zoom Factor      = 1.0 0.01 5.0 0.1",
+             @"megaTron: megaTron, mame-screen-src-rect, mame-screen-dst-rect,\
+                            Shadow Mask Type = 3.0 0.0 3.0 1.0,\
+                            Shadow Mask Intensity = 0.5 0.0 1.0 0.05,\
+                            Scanline Thinness = 0.7 0.0 1.0 0.1,\
+                            Horizontal Scanline Blur = 2.5 1.0 3.0 0.1,\
+                            CRT Curvature = 0.02 0.0 0.25 0.01,\
+                            Use Trinitron-style Curvature = 0.0 0.0 1.0 1.0,\
+                            CRT Corner Roundness = 3.0 2.0 11.0 1.0,\
+                            CRT Gamma = 2.4 0.0 5.0 0.1",
 #ifdef DEBUG
              @"Wombat1: mame_screen_test, mame-screen-size, frame-count, 1.0, 8.0, 8.0",
              @"Wombat2: mame_screen_test, mame-screen-size, frame-count, wombat_rate=2.0, wombat_u=16.0, wombat_v=16.0",
              @"Test (dot): mame_screen_dot, mame-screen-matrix",
              @"Test (line): mame_screen_line, mame-screen-matrix",
-             @"Test (rainbow): mame_screen_rainbow, mame-screen-matrix, frame-count, rainbow_h = 16.0 4.0 32.0, rainbow_speed=1.0 1.0 4.0",
+             @"Test (rainbow): mame_screen_rainbow, mame-screen-matrix, frame-count, rainbow_h = 16.0 4.0 32.0 1.0, rainbow_speed = 1.0 1.0 16.0",
 #endif
     ];
 }
@@ -190,33 +205,25 @@
 
     if(![plist isKindOfClass:[NSDictionary class]])
     {
-        _keepAspectRatioPort=1;
-        _keepAspectRatioLand=1;
+        _keepAspectRatio=1;
         
-        _filterPort = @"";
-        _filterLand = @"";
-
-        _borderPort = @"";
-        _borderLand = @"";
-
-        _effectPort = @"";
-        _effectLand = @"";
+        _filter = @"";
+        _border = @"";
+        _effect = @"";
         
-        _sourceColorSpace = @"";
+        _colorSpace = @"";
         _useMetal = 1;
         
         _integerScalingOnly = 0;
 
         _showFPS = 0;
+        _showHUD = 0;
         _showINFO = 0;
-        _fourButtonsLand = 0;
         _animatedButtons = 1;
         
-        _fullLand = 1;
-        _fullPort = 0;
-        
-        _fullLandJoy = 1;
-        _fullPortJoy = 1;
+        _fullscreenLandscape= 1;
+        _fullscreenPortrait = 0;
+        _fullscreenJoystick = 1;
         
         _btDeadZoneValue = 2;
         _touchDeadZone = 1;
@@ -306,19 +313,13 @@
     {
         NSDictionary* optionsDict = plist;
 
-        _keepAspectRatioPort = [[optionsDict objectForKey:@"KeepAspectPort"] intValue];
-        _keepAspectRatioLand = [[optionsDict objectForKey:@"KeepAspectLand"] intValue];
+        _keepAspectRatio = [([optionsDict objectForKey:@"KeepAspect"] ?: @(1)) intValue];
         
-        _filterPort = [optionsDict objectForKey:@"filterPort"] ?: @"";
-        _filterLand = [optionsDict objectForKey:@"filterLand"] ?: @"";
-
-        _borderPort = [optionsDict objectForKey:@"borderPort"] ?: @"";
-        _borderLand = [optionsDict objectForKey:@"borderLand"] ?: @"";
-
-        _effectPort = [optionsDict objectForKey:@"effectPort"] ?: @"";
-        _effectLand = [optionsDict objectForKey:@"effectLand"] ?: @"";
+        _filter = [optionsDict objectForKey:@"filter"] ?: @"";
+        _border = [optionsDict objectForKey:@"border"] ?: @"";
+        _effect = [optionsDict objectForKey:@"effect"] ?: @"";
         
-        _sourceColorSpace = [optionsDict objectForKey:@"sourceColorSpace"] ?: @"";
+        _colorSpace = [optionsDict objectForKey:@"sourceColorSpace"] ?: @"";
         _useMetal = [([optionsDict objectForKey:@"useMetal"] ?: @(TRUE)) boolValue];
 
         _integerScalingOnly = [[optionsDict objectForKey:@"integerScalingOnly"] boolValue];
@@ -336,14 +337,13 @@
             _touchControlsOpacity = [prefTouchControlOpacity floatValue];
         }
         _showFPS =  [[optionsDict objectForKey:@"showFPS"] intValue];
+        _showHUD =  [[optionsDict objectForKey:@"showHUD"] intValue];
         _showINFO =  [[optionsDict objectForKey:@"showINFO"] intValue];
-        _fourButtonsLand =  [[optionsDict objectForKey:@"fourButtonsLand"] intValue];
         _animatedButtons =  [[optionsDict objectForKey:@"animatedButtons"] intValue];
         
-        _fullLand =  [[optionsDict objectForKey:@"fullLand"] intValue];
-        _fullPort =  [[optionsDict objectForKey:@"fullPort"] intValue];
-        _fullLandJoy =  [([optionsDict objectForKey:@"fullLandJoy"] ?: @(1)) intValue];
-        _fullPortJoy =  [([optionsDict objectForKey:@"fullPortJoy"] ?: @(1)) intValue];
+        _fullscreenLandscape =  [([optionsDict objectForKey:@"fullLand"] ?: @(1)) intValue];
+        _fullscreenPortrait  =  [([optionsDict objectForKey:@"fullPort"] ?: @(0)) intValue];
+        _fullscreenJoystick  =  [([optionsDict objectForKey:@"fullJoy"]  ?: @(1)) intValue];
 
         _turboXEnabled = [[optionsDict objectForKey:@"turboXEnabled"] intValue];
         _turboYEnabled = [[optionsDict objectForKey:@"turboYEnabled"] intValue];
@@ -432,19 +432,13 @@
 - (void)saveOptions
 {
     NSDictionary* optionsDict = [NSDictionary dictionaryWithObjectsAndKeys:
-                             [NSString stringWithFormat:@"%d", _keepAspectRatioPort], @"KeepAspectPort",
-                             [NSString stringWithFormat:@"%d", _keepAspectRatioLand], @"KeepAspectLand",
+                             [NSString stringWithFormat:@"%d", _keepAspectRatio], @"KeepAspect",
+                              
+                             _filter, @"filter",
+                             _border, @"border",
+                             _effect, @"effect",
                              
-                             _filterPort, @"filterPort",
-                             _filterLand, @"filterLand",
-
-                             _borderPort, @"borderPort",
-                             _borderLand, @"borderLand",
-
-                             _effectPort, @"effectPort",
-                             _effectLand, @"effectLand",
-                             
-                             _sourceColorSpace, @"sourceColorSpace",
+                             _colorSpace, @"sourceColorSpace",
                              [NSString stringWithFormat:@"%d", _useMetal], @"useMetal",
                                  
                              [NSString stringWithFormat:@"%d", _integerScalingOnly], @"integerScalingOnly",
@@ -458,8 +452,8 @@
                              [NSString stringWithFormat:@"%f", _touchAnalogSensitivity], @"touchAnalogSensitivity",
                              [NSString stringWithFormat:@"%f", _touchControlsOpacity], @"touchControlsOpacity",
                              [NSString stringWithFormat:@"%d", _showFPS], @"showFPS",
+                             [NSString stringWithFormat:@"%d", _showHUD], @"showHUD",
                              [NSString stringWithFormat:@"%d", _showINFO], @"showINFO",
-                             [NSString stringWithFormat:@"%d", _fourButtonsLand], @"fourButtonsLand",
                              [NSString stringWithFormat:@"%d", _animatedButtons], @"animatedButtons",
                              
                              [NSString stringWithFormat:@"%d", _turboXEnabled], @"turboXEnabled",
@@ -471,11 +465,9 @@
                              
                              [NSString stringWithFormat:@"%d", _touchDirectionalEnabled], @"touchDirectionalEnabled",
                              
-                             [NSString stringWithFormat:@"%d", _fullLand], @"fullLand",
-                             [NSString stringWithFormat:@"%d", _fullPort], @"fullPort",
-                             
-                             [NSString stringWithFormat:@"%d", _fullLandJoy], @"fullLandJoy",
-                             [NSString stringWithFormat:@"%d", _fullPortJoy], @"fullPortJoy",
+                             [NSString stringWithFormat:@"%d", _fullscreenLandscape], @"fullLand",
+                             [NSString stringWithFormat:@"%d", _fullscreenPortrait], @"fullPort",
+                             [NSString stringWithFormat:@"%d", _fullscreenJoystick], @"fullJoy",
 
                              [NSString stringWithFormat:@"%d", _btDeadZoneValue], @"btDeadZoneValue",
                              [NSString stringWithFormat:@"%d", _touchDeadZone], @"touchDeadZone",
