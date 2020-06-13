@@ -27,7 +27,7 @@ struct Push
     float TRINITRON_CURVE;
     float CORNER;
     float CRT_GAMMA;
-    float ZOOM;
+//  float ZOOM;
 };
 
 static inline __attribute__((always_inline))
