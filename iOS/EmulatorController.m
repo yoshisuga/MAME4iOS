@@ -1621,6 +1621,11 @@ static NSArray* list_trim(NSArray* _list) {
         [items[0] setSelectedSegmentIndex:[Options.arrayFilter indexOfOption:op.filter]];
         [items[1] setSelectedSegmentIndex:[Options.arrayBorder indexOfOption:op.border]];
         [items[2] setSelectedSegmentIndex:[Options.arrayEffect indexOfOption:op.effect]];
+        
+        [items[0] setTitle:@"Filter" forSegmentAtIndex:UISegmentedControlNoSegment];
+        [items[1] setTitle:@"Border" forSegmentAtIndex:UISegmentedControlNoSegment];
+        [items[2] setTitle:@"Shader" forSegmentAtIndex:UISegmentedControlNoSegment];
+
         for (PopupSegmentedControl* seg in items) {
             [seg addTarget:self action:@selector(hudOptionChange:) forControlEvents:UIControlEventValueChanged];
             if (@available(iOS 13.0, *)) {
@@ -2526,17 +2531,6 @@ UIColor* colorWithHexString(NSString* string) {
         if ( ![handledTouches containsObject:touch] ) {
             [unhandledTouches addObject:touch];
         }
-    }
-    // show the HUD on a two finger tap
-    // TODO: do this better! and co-exist with a lightgun
-    if (hudView == nil && unhandledTouches.count == 2 && !(myosd_light_gun == 1 && g_pref_lightgun_enabled)) {
-        int count = 0;
-        for (UITouch* touch in [unhandledTouches allObjects]) {
-            if (MyCGRectContainsPoint(screenView.frame, [touch locationInView:self.view]))
-                count++;
-        }
-        if (count == 2)
-            [self commandKey:'H'];
     }
     if ( g_pref_touch_analog_enabled && myosd_mouse == 1 && unhandledTouches.count > 0 ) {
         [self handleMouseTouchesBegan:unhandledTouches];
