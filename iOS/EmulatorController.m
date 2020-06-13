@@ -1621,6 +1621,11 @@ static NSArray* list_trim(NSArray* _list) {
         [items[0] setSelectedSegmentIndex:[Options.arrayFilter indexOfOption:op.filter]];
         [items[1] setSelectedSegmentIndex:[Options.arrayBorder indexOfOption:op.border]];
         [items[2] setSelectedSegmentIndex:[Options.arrayEffect indexOfOption:op.effect]];
+        
+        [items[0] setTitle:@"Filter" forSegmentAtIndex:UISegmentedControlNoSegment];
+        [items[1] setTitle:@"Border" forSegmentAtIndex:UISegmentedControlNoSegment];
+        [items[2] setTitle:@"Shader" forSegmentAtIndex:UISegmentedControlNoSegment];
+
         for (PopupSegmentedControl* seg in items) {
             [seg addTarget:self action:@selector(hudOptionChange:) forControlEvents:UIControlEventValueChanged];
             if (@available(iOS 13.0, *)) {
