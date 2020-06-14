@@ -25,12 +25,12 @@ mame_screen_test(VertexOutput v [[stage_in]],
                 constant MameScreenTestUniforms &uniforms [[buffer(0)]])
 {
     // ignore the passed in sampler, and use our own
-    constexpr sampler linear_texture_sampler(mag_filter::linear, min_filter::linear);
+    //constexpr sampler linear_texture_sampler(mag_filter::linear, min_filter::linear);
     
     float  t = (uniforms.frame_num / 60.0) * uniforms.rate * 2.0 * M_PI_F;
     float2 uv = float2(v.tex.x + cos(t) * uniforms.factor_u * (1.0 / uniforms.mame_screen_size.x),
                        v.tex.y + sin(t) * uniforms.factor_v * (1.0 / uniforms.mame_screen_size.y));
-    float4 color = texture.sample(linear_texture_sampler, uv) * v.color;
+    float4 color = texture.sample(texture_sampler, uv) * v.color;
     return half4(color);
 }
 

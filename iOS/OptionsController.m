@@ -131,52 +131,59 @@
                 }
                 case 1:
                 {
-                    cell.textLabel.text   = @"Effect";
-                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                    cell.detailTextLabel.text = [Options.arrayEffect optionName:op.effect];
-                    break;
-                }
-                case 2:
-                {
                     cell.textLabel.text   = @"Border";
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                     cell.detailTextLabel.text = [Options.arrayBorder optionName:op.border];
                     break;
                 }
-               case 3:
+                case 2:
+                {
+                    cell.textLabel.text   = @"Screen Shader";
+                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                    cell.detailTextLabel.text = [Options.arrayScreenShader optionName:op.screenShader];
+                    break;
+                }
+                case 3:
+                {
+                    cell.textLabel.text   = @"Vector Shader";
+                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                    cell.detailTextLabel.text = [Options.arrayLineShader optionName:op.lineShader];
+                    break;
+                }
+               case 4:
                {
                    cell.textLabel.text   = @"Colorspace";
                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                    cell.detailTextLabel.text = [Options.arrayColorSpace optionName:op.colorSpace];
                    break;
                }
-               case 4:
+               case 5:
                {
                    cell.textLabel.text   = @"Emulated Resolution";
                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                    cell.detailTextLabel.text = [Options.arrayEmuRes optionAtIndex:op.emures];
                    break;
                }
-               case 5:
+               case 6:
                {
                    cell.textLabel.text   = @"Use Metal";
                    cell.accessoryView = [self optionSwitchForKey:@"useMetal"];
                    [(UIControl*)cell.accessoryView setEnabled:g_isMetalSupported];
                    break;
                }
-               case 6:
+               case 7:
                {
                     cell.textLabel.text   = @"Keep Aspect Ratio";
                     cell.accessoryView = [self optionSwitchForKey:@"keepAspectRatio"];
                    break;
                }
-               case 7:
+               case 8:
                {
                    cell.textLabel.text   = @"Integer Scaling Only";
                    cell.accessoryView = [self optionSwitchForKey:@"integerScalingOnly"];
                    break;
                }
-               case 8:
+               case 9:
                {
                    cell.textLabel.text   = @"Force Pixel Aspect";
                    cell.accessoryView = [self optionSwitchForKey:@"forcepxa"];
@@ -403,7 +410,7 @@
           case kSupportSection: return 2;
           case kFullscreenSection: return 3;
           case kOtherSection: return 3;
-          case kVideoSection: return 9;
+          case kVideoSection: return 10;
           case kMiscSection: return 9;
           case kFilterSection: return 2;
           case kImportSection: return 3;
@@ -459,18 +466,22 @@
                 [[self navigationController] pushViewController:listController animated:YES];
             }
             if (row==1){
-                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"effect" list:Options.arrayEffect title:cell.textLabel.text];
-                [[self navigationController] pushViewController:listController animated:YES];
-            }
-            if (row==2){
                 ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"border" list:Options.arrayBorder title:cell.textLabel.text];
                 [[self navigationController] pushViewController:listController animated:YES];
             }
+            if (row==2){
+                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"screenShader" list:Options.arrayScreenShader title:cell.textLabel.text];
+                [[self navigationController] pushViewController:listController animated:YES];
+            }
             if (row==3){
-                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"colorSpace" list:Options.arrayColorSpace title:cell.textLabel.text];
+                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"lineShader" list:Options.arrayLineShader title:cell.textLabel.text];
                 [[self navigationController] pushViewController:listController animated:YES];
             }
             if (row==4){
+                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"colorSpace" list:Options.arrayColorSpace title:cell.textLabel.text];
+                [[self navigationController] pushViewController:listController animated:YES];
+            }
+            if (row==5){
                 ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"emures" list:Options.arrayEmuRes title:cell.textLabel.text];
                 [[self navigationController] pushViewController:listController animated:YES];
             }

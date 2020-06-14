@@ -189,7 +189,16 @@ UIColor* getBackgroundColor(UIView* view) {
         ppc.delegate = (id<UIPopoverPresentationControllerDelegate>)self;
         ppc.sourceView = self;
         ppc.sourceRect = self.bounds;
-        ppc.permittedArrowDirections = UIPopoverArrowDirectionUp | UIPopoverArrowDirectionDown;
+        
+        CGRect rect = [self convertRect:self.bounds toCoordinateSpace:self.window];
+        CGRect safe = UIEdgeInsetsInsetRect(self.window.bounds, self.window.safeAreaInsets);
+
+        if (CGRectGetMaxY(safe) - CGRectGetMaxY(rect) > size.height + 16)
+            ppc.permittedArrowDirections = UIPopoverArrowDirectionUp;
+        else if (CGRectGetMinY(rect) - CGRectGetMinY(safe) > size.height + 16)
+            ppc.permittedArrowDirections = UIPopoverArrowDirectionDown;
+        else
+            ppc.permittedArrowDirections = UIPopoverArrowDirectionAny;
     }
 
     _popup = popup;

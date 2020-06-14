@@ -74,6 +74,9 @@
     UIVisualEffectView* effectView = [[UIVisualEffectView alloc] initWithEffect:blur];
     effectView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     effectView.frame = self.bounds;
+    [self addSubview:effectView];
+    [self sendSubviewToBack:effectView];
+    //self.backgroundColor = UIColor.clearColor;
 
     // add vibrancy
     if (vibrancy) {
@@ -83,17 +86,16 @@
         else
             vibrancy = [UIVibrancyEffect effectForBlurEffect:blur];
 
-        UIVisualEffectView* effectView = [[UIVisualEffectView alloc] initWithEffect:vibrancy];
-        effectView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        effectView.frame = self.bounds;
-        [effectView.contentView addSubview:self.subviews.firstObject];
-        [self addSubview:effectView];
-    }
+        UIVisualEffectView* vibrancyView = [[UIVisualEffectView alloc] initWithEffect:vibrancy];
+        vibrancyView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        vibrancyView.frame = self.bounds;
+        assert(self.subviews.count == 2);
+        [vibrancyView.contentView addSubview:self.subviews.lastObject];
 
-    [effectView.contentView addSubview:self.subviews.firstObject];
-    [self addSubview:effectView];
-    effectView.backgroundColor = self.backgroundColor;
-    self.backgroundColor = UIColor.clearColor;
+        [effectView.contentView addSubview:vibrancyView];
+        effectView.backgroundColor = self.backgroundColor;
+        self.backgroundColor = UIColor.clearColor;
+    }
 }
 
 - (void)pan:(UIPanGestureRecognizer*)pan {
@@ -127,7 +129,7 @@
     for (UIView* view in _stack.subviews)
         [view removeFromSuperview];
     _width = 0.0;
-    [self sizeToFit];
+    //[self sizeToFit];
 }
 
 - (UIImage*)dotWithColor:(UIColor*)color size:(CGSize)size
@@ -141,7 +143,9 @@
 - (UIView*)separatorViewWithHeight:(CGFloat)height color:(UIColor*)color {
     UIView* view = [[UIView alloc] init];
     view.backgroundColor = color;
-    [view addConstraint:[NSLayoutConstraint constraintWithItem:view attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:height]];
+    [view addConstraint:[NSLayoutConstraint constraintWithItem:view attribute:NSLayoutAttributeHeight
+                                                     relatedBy:NSLayoutRelationEqual toItem:nil
+                                                     attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:height]];
     return view;
 }
 
@@ -163,7 +167,9 @@
         format = [@"%2$@: " stringByAppendingString:format];
 
     if ([value isKindOfClass:[NSString class]] && [value isEqualToString:@"---"]) {
-        value = [self separatorViewWithHeight:1.0 color:UIColor.grayColor];
+        value = [self separatorViewWithHeight:1.0 color:UIColor.clearColor];
+        [_stack addArrangedSubview:value];
+        value = [self separatorViewWithHeight:1.0 color:UIColor.darkGrayColor];
     }
 
     if ([value isKindOfClass:[UIView class]]) {
@@ -191,7 +197,6 @@
 
     if ([value isKindOfClass:[NSNumber class]] && min != nil && max != nil) {
         UISlider* slider = [[UISlider alloc] init];
-        [slider setThumbImage:[self dotWithColor:UIColor.whiteColor size:CGSizeMake(16,16)] forState:UIControlStateNormal];
         [slider addConstraint:[NSLayoutConstraint constraintWithItem:slider attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:24.0]];
         [slider addTarget:self action:@selector(slide:) forControlEvents:UIControlEventValueChanged];
         slider.minimumValue = [min floatValue];
@@ -211,10 +216,12 @@
             slider.tintColor = UIColor.systemBlueColor;
         if ([key hasSuffix:@"_a"] || [key hasSuffix:@"_alpha"]  || [key hasSuffix:@"-a"] || [key hasSuffix:@"-alpha"])
             slider.minimumTrackTintColor = UIColor.darkGrayColor;
+
+        [slider setThumbImage:[self dotWithColor:(slider.minimumTrackTintColor ?: slider.tintColor) size:CGSizeMake(12,12)] forState:UIControlStateNormal];
     }
     
     [self setValue:value forKey:key];
-    [self sizeToFit];
+    //[self sizeToFit];
 }
 - (void)addValue:(id)value forKey:(NSString *)key format:(NSString*)format min:(id)min max:(id)max {
     [self addValue:value forKey:key format:format min:min max:max step:nil];

@@ -125,7 +125,8 @@ int g_controller_opacity = 50;
 int g_device_is_landscape = 0;
 int g_device_is_fullscreen = 0;
 
-NSString* g_pref_effect;
+NSString* g_pref_screen_shader;
+NSString* g_pref_line_shader;
 NSString* g_pref_filter;
 NSString* g_pref_border;
 NSString* g_pref_colorspace;
@@ -796,7 +797,8 @@ void mame_state(int load_save, int slot)
     g_pref_keep_aspect_ratio = [op keepAspectRatio];
     
     g_pref_filter = [Options.arrayFilter optionData:op.filter];
-    g_pref_effect = [Options.arrayEffect optionData:op.effect];
+    g_pref_screen_shader = [Options.arrayScreenShader optionData:op.screenShader];
+    g_pref_line_shader = [Options.arrayLineShader optionData:op.lineShader];
     g_pref_border = [Options.arrayBorder optionData:op.border];
     
     g_pref_colorspace = [Options.arrayColorSpace optionData:op.colorSpace];
@@ -1451,7 +1453,7 @@ static int gcd(int a, int b) {
             op.border = str;
             break;
         case 2:
-            op.effect = str;
+            op.screenShader = str;
             break;
     }
     [op saveOptions];
@@ -1477,7 +1479,7 @@ static NSArray* list_trim(NSArray* _list) {
 
 -(void)logShader {
     NSDictionary* shader_variables = ([screenView isKindOfClass:[MetalScreenView class]]) ?  [(MetalScreenView*)screenView getShaderVariables] : nil;
-    NSString* shader = g_pref_effect;
+    NSString* shader = g_pref_screen_shader;
     NSMutableArray* arr = [split(shader, @",") mutableCopy];
     
     for (int i=0; i<arr.count; i++) {
@@ -1495,20 +1497,23 @@ static NSArray* list_trim(NSArray* _list) {
 
 -(void)buildHUD {
 
-    if (hudView)
-        [NSUserDefaults.standardUserDefaults setValue:NSStringFromCGRect(hudView.frame) forKey:kInfoHUDFrameKey];
-
     if (g_pref_showHUD <= 0) {
         [hudView removeFromSuperview];
         hudView = nil;
         return;
     }
     
+    CGRect rect = CGRectFromString([NSUserDefaults.standardUserDefaults stringForKey:kInfoHUDFrameKey] ?: @"");
+    
+    if (CGRectIsEmpty(rect))
+        rect = CGRectMake(self.view.bounds.size.width/2, self.view.safeAreaInsets.top + 16, 0, 0);
+    
     if (hudView == nil) {
         hudView = [[InfoHUD alloc] init];
         hudView.font = [UIFont monospacedDigitSystemFontOfSize:(TARGET_OS_IOS ? 16.0 : 32.0) weight:UIFontWeightRegular];
         hudView.layoutMargins = UIEdgeInsetsMake(8, 8, 8, 8);
         [hudView addTarget:self action:@selector(hudChange:) forControlEvents:UIControlEventValueChanged];
+        hudView.frame = rect;
         [self.view addSubview:hudView];
     }
     else {
@@ -1518,17 +1523,10 @@ static NSArray* list_trim(NSArray* _list) {
     [hudView removeAll];
     EmulatorController* _self = self;
     
-    BOOL can_edit_shader = [[g_pref_effect stringByReplacingOccurrencesOfString:@"blend=" withString:@""] componentsSeparatedByString:@"="].count > 1;
+    BOOL can_edit_shader = [[g_pref_screen_shader stringByReplacingOccurrencesOfString:@"blend=" withString:@""] componentsSeparatedByString:@"="].count > 1;
     
     if (g_pref_showHUD == HudSizeEditor && !can_edit_shader)
         g_pref_showHUD = HudSizeLarge;
-    
-    // leave a little space on the left/right so you can grab the HUD without hitting a button.
-    // TODO: Hmmmm maybe there is a better way....
-    if (g_pref_showHUD == HudSizeTiny || (g_pref_showHUD == HudSizeNormal && !g_pref_showFPS))
-        hudView.layoutMargins = UIEdgeInsetsMake(8, 16, 8, 16);
-    else
-        hudView.layoutMargins = UIEdgeInsetsMake(8, 8, 8, 8);
     
     if (g_pref_showHUD == HudSizeTiny) {
         [hudView addButton:[UIImage systemImageNamed:@"command"] ?: @"⌘" handler:^{
@@ -1614,14 +1612,14 @@ static NSArray* list_trim(NSArray* _list) {
         NSArray* items = @[
             [[PopupSegmentedControl alloc] initWithItems:list_trim(Options.arrayFilter)],
             [[PopupSegmentedControl alloc] initWithItems:list_trim(Options.arrayBorder)],
-            [[PopupSegmentedControl alloc] initWithItems:list_trim(Options.arrayEffect)],
+            [[PopupSegmentedControl alloc] initWithItems:list_trim(Options.arrayScreenShader)],
         ];
 
         Options *op = [[Options alloc] init];
         [items[0] setSelectedSegmentIndex:[Options.arrayFilter indexOfOption:op.filter]];
         [items[1] setSelectedSegmentIndex:[Options.arrayBorder indexOfOption:op.border]];
-        [items[2] setSelectedSegmentIndex:[Options.arrayEffect indexOfOption:op.effect]];
-        
+        [items[2] setSelectedSegmentIndex:[Options.arrayScreenShader indexOfOption:op.screenShader]];
+
         [items[0] setTitle:@"Filter" forSegmentAtIndex:UISegmentedControlNoSegment];
         [items[1] setTitle:@"Border" forSegmentAtIndex:UISegmentedControlNoSegment];
         [items[2] setTitle:@"Shader" forSegmentAtIndex:UISegmentedControlNoSegment];
@@ -1657,19 +1655,16 @@ static NSArray* list_trim(NSArray* _list) {
     // add a bunch of slider controls to tweak with the current Shader
     if (g_pref_showHUD == HudSizeEditor) {
         NSDictionary* shader_variables = ([screenView isKindOfClass:[MetalScreenView class]]) ?  [(MetalScreenView*)screenView getShaderVariables] : nil;
-        NSString* shader = g_pref_effect;
+        NSString* shader = g_pref_screen_shader;
         NSArray* shader_arr = split(shader, @",");
-        
-        int count = 0;
+
+        [hudView addSeparator];
+        [hudView addText:[NSString stringWithFormat:@"Shader: %@", shader_arr.firstObject]];
+
         for (NSString* str in shader_arr) {
             NSArray* arr = split(str, @"=");
             if (arr.count < 2 || [arr[0] isEqualToString:@"blend"])
                 continue;
-
-            if (count++ == 0) {
-                [hudView addSeparator];
-                [hudView addText:[NSString stringWithFormat:@"Shader: %@", shader_arr.firstObject]];
-            }
 
             NSString* name = arr[0];
             arr = split(arr[1], @" ");
@@ -1683,20 +1678,44 @@ static NSArray* list_trim(NSArray* _list) {
         [self logShader];
     }
     
-    [hudView sizeToFit];
-    CGFloat w = hudView.bounds.size.width;
-    CGFloat h = hudView.bounds.size.height;
+    // set the default margins and remove grab handle
+    hudView.layoutMargins = UIEdgeInsetsMake(8, 8, 8, 8);
+    [[hudView viewWithTag:42] removeFromSuperview];
 
-    CGRect rect = CGRectFromString([NSUserDefaults.standardUserDefaults stringForKey:kInfoHUDFrameKey] ?: @"");
+    // leave a little space on the left/right so you can grab the HUD without hitting a button.
+    if (g_pref_showHUD == HudSizeTiny || g_pref_showHUD == HudSizeNormal) {
+        hudView.layoutMargins = UIEdgeInsetsMake(8, 16, 8, 8);
+        CGFloat height = [hudView sizeThatFits:CGSizeZero].height;
+        CGFloat h = height * 0.5;
+        CGFloat w = hudView.layoutMargins.left / 4;
+        UIView* grab = [[UIView alloc] initWithFrame:CGRectMake((hudView.layoutMargins.left - w)/2, (height - h)/2, w, h)];
+        grab.tag = 42;
+        grab.backgroundColor = [UIColor.darkGrayColor colorWithAlphaComponent:0.25];
+        grab.layer.cornerRadius = w/2;
+        [hudView addSubview:grab];
+    }
     
-    if (CGRectIsEmpty(rect))
-        rect = CGRectMake(self.view.bounds.size.width/2, self.view.safeAreaInsets.top + 16, 0, 0);
+    CGSize size = [hudView sizeThatFits:CGSizeZero];
+    CGFloat w = size.width;
+    CGFloat h = size.height;
+    
+    if (g_pref_showHUD == HudSizeTiny)
+        rect = CGRectMake(rect.origin.x, rect.origin.y, w, h);
+    else
+        rect = CGRectMake(rect.origin.x + rect.size.width/2 - w/2, rect.origin.y, w, h);
 
-    rect = CGRectMake(rect.origin.x + rect.size.width/2 - w/2, rect.origin.y, w, h);
     rect.origin.x = MAX(self.view.safeAreaInsets.left + 8, MIN(self.view.bounds.size.width  - self.view.safeAreaInsets.right  - w - 8, rect.origin.x));
     rect.origin.y = MAX(self.view.safeAreaInsets.top + 8,  MIN(self.view.bounds.size.height - self.view.safeAreaInsets.bottom - h - 8, rect.origin.y));
+    
+    [NSUserDefaults.standardUserDefaults setValue:NSStringFromCGRect(rect) forKey:kInfoHUDFrameKey];
 
-    hudView.frame = rect;
+    [UIView animateWithDuration:0.250 animations:^{
+        self->hudView.frame = rect;
+        if (g_pref_showHUD == HudSizeTiny)
+            self->hudView.alpha = ((float)g_controller_opacity / 100.0f);
+        else
+            self->hudView.alpha = 1.0;
+    }];
 }
 #else
 -(void)buildHUD {
@@ -2049,6 +2068,30 @@ void myosd_handle_turbo() {
 }
 #endif
 
+// border string is of the form:
+//        <Friendly Name> : <resource image name>
+//        <Friendly Name> : <resource image name>, <fraction of border that is opaque>
+//        <Friendly Name> : #RRGGBB
+//        <Friendly Name> : #RRGGBBAA, <border width>
+//        <Friendly Name> : #RRGGBBAA, <border width>, <corner radius>
++ (NSArray*)borderList {
+    return @[@"None",
+             @"Dark : border-dark",
+             @"Light : border-light",
+             @"Solid : #007AFFaa, 2.0, 8.0",
+#ifdef DEBUG
+             @"Test : border-test",
+             @"Test 1: border-test, 0.5",
+             @"Test 2: border-test, 1.0",
+             @"Red : #ff0000, 2.0",
+             @"Blue : #0000FF",
+             @"Green : #00FF00ee, 4.0, 16.0",
+             @"Purple : #80008080, 4.0, 16.0",
+             @"Tint : #007Aff, 2.0, 8.0",
+#endif
+    ];
+}
+
 // load any border image and return the size needed to inset the game rect
 // border can be <resource name> , <fraction of border that is opaque>
 //               #<hex color>, <border width>, <corner radius>
@@ -2268,7 +2311,8 @@ UIColor* colorWithHexString(NSString* string) {
     
     NSDictionary* options = @{
         kScreenViewFilter: g_pref_filter,
-        kScreenViewEffect: g_pref_effect,
+        kScreenViewScreenShader: g_pref_screen_shader,
+        kScreenViewLineShader: g_pref_line_shader,
         kScreenViewColorSpace: g_pref_colorspace,
     };
     

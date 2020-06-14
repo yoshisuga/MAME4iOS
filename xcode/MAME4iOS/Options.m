@@ -9,6 +9,9 @@
 #include "myosd.h"
 #import "Options.h"
 #import "Globals.h"
+#import "EmulatorController.h"  // for borderList
+#import "MetalScreenView.h"     // for shader and filter list
+#import "CGScreenView.h"        // for shader and filter list
 
 @implementation Options
 
@@ -33,141 +36,37 @@
 + (NSArray*)arrayControlType {
     return @[@"Keyboard or 8BitDo",@"iCade or compatible",@"iCP, Gametel",@"iMpulse"];
 }
-// border string is of the form:
-//        <Friendly Name> : <resource image name>
-//        <Friendly Name> : <resource image name>, <fraction of border that is opaque>
-//        <Friendly Name> : #RRGGBB
-//        <Friendly Name> : #RRGGBBAA, <border width>
-//        <Friendly Name> : #RRGGBBAA, <border width>, <corner radius>
+
 + (NSArray*)arrayBorder {
-    return @[@"None",
-             @"Dark : border-dark",
-             @"Light : border-light",
-             @"Solid : #007AFFaa, 2.0, 8.0",
-#ifdef DEBUG
-             @"Test : border-test",
-             @"Test 1: border-test, 0.5",
-             @"Test 2: border-test, 1.0",
-             @"Red : #ff0000, 2.0",
-             @"Blue : #0000FF",
-             @"Green : #00FF00ee, 4.0, 16.0",
-             @"Purple : #80008080, 4.0, 16.0",
-             @"Tint : #007Aff, 2.0, 8.0",
-#endif
-    ];
+    return [EmulatorController borderList];
 }
 + (NSArray*)arrayFilter {
-    return @[@"Nearest",
-             @"Linear",
-    ];
-}
-
-// CoreGraphics effect string is of the form:
-//        <Friendly Name> : <overlay image> [,<overlay image> ...]
-//
-+ (NSArray*)arrayCoreGraphicsEffects {
-    return @[@"None",
-             @"Scanline : effect-scanline",
-             @"CRT : effect-crt, effect-scanline",
-#ifdef DEBUG
-             @"Test Dot : effect-dot",
-             @"Test All : effect-crt, effect-scanline, effect-dot",
-#endif
-    ];
-}
-
-// Metal effect string is of the form:
-//        <Friendly Name> : <shader description>
-//
-// NOTE: see MetalView.h for what a <shader description> is.
-// in addition to the <shader description> in MetalView.h you can specify a named variable like so....
-//
-//       variable_name = <default value> <min value> <max value> <step value>
-//
-//  you dont use commas to separate values, use spaces.
-//  min, max, and step are all optional, and only effect the InfoHUD, MetalView ignores them.
-//
-//  Presets are simply the @string without the key names, only numbers!
-//
-// NOTE arrayCoreGraphicsEffects and arrayMetalEffects should use the same friendly name
-// for similar effects, so if the user turns off/on metal the choosen effect wont get reset to default.
-//
-#pragma mark - Shader Presets
-+ (NSArray*)arrayMetalEffects {
-    return @[@"None",
-             @"Simple CRT: simpleCRT, mame-screen-dst-rect, mame-screen-src-rect,\
-                            Vertical Curvature = 5.0 1.0 10.0 0.1,\
-                            Horizontal Curvature = 4.0 1.0 10.0 0.1,\
-                            Curvature Strength = 0.25 0.0 1.0 0.05,\
-                            Light Boost = 1.3 0.1 3.0 0.1, \
-                            Vignette Strength = 0.05 0.0 1.0 0.05,\
-                            Zoom Factor = 1.0 0.01 5.0 0.1",
-             @"megaTron - Shadow Mask: megaTron, mame-screen-src-rect, mame-screen-dst-rect,\
-                            Shadow Mask Type = 3.0 0.0 3.0 1.0,\
-                            Shadow Mask Intensity = 0.5 0.0 1.0 0.05,\
-                            Scanline Thinness = 0.7 0.0 1.0 0.05,\
-                            Horizontal Scanline Blur = 1.8 1.0 3.0 0.05,\
-                            CRT Curvature = 0.02 0.0 0.25 0.01,\
-                            Use Trinitron-style Curvature = 0.0 0.0 1.0 1.0,\
-                            CRT Corner Roundness = 3.0 2.0 11.0 1.0,\
-                            CRT Gamma = 2.9 0.0 5.0 0.1",
-             @"megaTron - Shadow Mask Strong: megaTron, mame-screen-src-rect, mame-screen-dst-rect,3.0,0.75,0.6,1.4,0.02,1.0,2.0,3.0",
-             @"megaTron - Grille Mask: megaTron, mame-screen-src-rect, mame-screen-dst-rect,2.0,0.85,0.6,2.0,0.02,1.0,2.0,3.0",
-             @"megaTron - Grille Mask Lite: megaTron, mame-screen-src-rect, mame-screen-dst-rect,1.0,0.6,0.6,1.6,0.02,1.0,2.0,2.8",
-             @"megaTron - No Shadow Mask but with Blur: megaTron, mame-screen-src-rect, mame-screen-dst-rect,0.0,0.6,0.6,1.0,0.02,0.0,2.0,2.6",
-             
-#ifdef DEBUG
-             @"Wombat1: mame_screen_test, mame-screen-size, frame-count, 1.0, 8.0, 8.0",
-             @"Wombat2: mame_screen_test, mame-screen-size, frame-count, wombat_rate=2.0, wombat_u=16.0, wombat_v=16.0",
-             @"Test (dot): mame_screen_dot, mame-screen-matrix",
-             @"Test (line): mame_screen_line, mame-screen-matrix",
-             @"Test (rainbow): mame_screen_rainbow, mame-screen-matrix, frame-count, rainbow_h = 16.0 4.0 32.0 1.0, rainbow_speed = 1.0 1.0 16.0",
-#endif
-    ];
-}
-
-+ (NSArray*)arrayEffect {
     Options* op = [[Options alloc] init];
     if (g_isMetalSupported && op.useMetal)
-        return [self arrayMetalEffects];
+        return [MetalScreenView filterList];
     else
-        return [self arrayCoreGraphicsEffects];
+        return [CGScreenView filterList];
 }
-
-//
-// color space data, we define the colorSpaces here, in one place, so it stays in-sync with the UI.
-//
-// you can specify a colorSpace in two ways, with a system name or with parameters.
-// these strings are of the form <Friendly Name> : <colorSpace name OR colorSpace parameters>
-//
-// colorSpace name is one of the sytem contants passed to `CGColorSpaceCreateWithName`
-// see (Color Space Names)[https://developer.apple.com/documentation/coregraphics/cgcolorspace/color_space_names]
-//
-// colorSpace parameters are 3 - 18 floating point numbers separated with commas.
-// see [CGColorSpaceCreateCalibratedRGB](https://developer.apple.com/documentation/coregraphics/1408861-cgcolorspacecreatecalibratedrgb)
-//
-// if <colorSpace name OR colorSpace parameters> is blank or not valid, a device-dependent RGB color space is used.
-//
-// NOTE: not all iOS devices support color matching.
-//
++ (NSArray*)arrayScreenShader {
+    Options* op = [[Options alloc] init];
+    if (g_isMetalSupported && op.useMetal)
+        return [MetalScreenView screenShaderList];
+    else
+        return [CGScreenView screenShaderList];
+}
++ (NSArray*)arrayLineShader {
+    Options* op = [[Options alloc] init];
+    if (g_isMetalSupported && op.useMetal)
+        return [MetalScreenView lineShaderList];
+    else
+        return [CGScreenView lineShaderList];
+}
 + (NSArray*)arrayColorSpace {
-
-    // TODO: find out what devices??
-    BOOL deviceSupportsColorMatching = TRUE;
-    
-    if (!deviceSupportsColorMatching)
-        return @[@"Default"];
-
-    return @[@"DeviceRGB",
-             @"sRGB : kCGColorSpaceSRGB",
-             @"CRT (sRGB, D65, 2.5) :    0.95047,1.0,1.08883, 0,0,0, 2.5,2.5,2.5, 0.412456,0.212673,0.019334,0.357576,0.715152,0.119192,0.180437,0.072175,0.950304",
-             @"Rec709 (sRGB, D65, 2.4) : 0.95047,1.0,1.08883, 0,0,0, 2.4,2.4,2.4, 0.412456,0.212673,0.019334,0.357576,0.715152,0.119192,0.180437,0.072175,0.950304",
-#ifdef DEBUG
-             @"Adobe RGB : kCGColorSpaceAdobeRGB1998",
-             @"Linear sRGB : kCGColorSpaceLinearSRGB",
-             @"NTSC Luminance : 0.9504,1.0000,1.0888, 0,0,0, 1,1,1, 0.299,0.299,0.299, 0.587,0.587,0.587, 0.114,0.114,0.114",
-#endif
-    ];
+    Options* op = [[Options alloc] init];
+    if (g_isMetalSupported && op.useMetal)
+        return [MetalScreenView colorSpaceList];
+    else
+        return [CGScreenView colorSpaceList];
 }
 
 #pragma mark - instance code
@@ -217,8 +116,9 @@
         
         _filter = @"";
         _border = @"";
-        _effect = @"";
-        
+        _screenShader = @"";
+        _lineShader = @"";
+
         _colorSpace = @"";
         _useMetal = 1;
         
@@ -325,8 +225,9 @@
         
         _filter = [optionsDict objectForKey:@"filter"] ?: @"";
         _border = [optionsDict objectForKey:@"border"] ?: @"";
-        _effect = [optionsDict objectForKey:@"effect"] ?: @"";
-        
+        _screenShader = [optionsDict objectForKey:@"screen-shader"] ?: [optionsDict objectForKey:@"effect"] ?: @"";
+        _lineShader = [optionsDict objectForKey:@"line-shader"] ?: @"";
+
         _colorSpace = [optionsDict objectForKey:@"sourceColorSpace"] ?: @"";
         _useMetal = [([optionsDict objectForKey:@"useMetal"] ?: @(TRUE)) boolValue];
 
@@ -444,8 +345,9 @@
                               
                              _filter, @"filter",
                              _border, @"border",
-                             _effect, @"effect",
-                             
+                             _screenShader, @"screen-shader",
+                             _lineShader, @"line-shader",
+
                              _colorSpace, @"sourceColorSpace",
                              [NSString stringWithFormat:@"%d", _useMetal], @"useMetal",
                                  

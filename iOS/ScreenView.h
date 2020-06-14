@@ -49,15 +49,29 @@
 #import <QuartzCore/CALayer.h>
 
 #define kScreenViewFilter           @"filter"
-#define kScreenViewEffect           @"effect"
+#define kScreenViewScreenShader     @"screen-shader"
+#define kScreenViewLineShader       @"line-shader"
 #define kScreenViewColorSpace       @"colorspace"
 
 #define kScreenViewFilterNearest    @"Nearest"
 #define kScreenViewFilterLinear     @"Linear"
 
-#define kScreenViewEffectNone       @"None"
+#define kScreenViewShaderNone       @"None"
+#define kScreenViewShaderDefault    @"Default"
 
 @protocol ScreenView <NSObject>
+
+// the Settings UI will let the user choose from these, format of a entry is is:
+//
+//      <Friendly Name> : <Data>
+//
+// only the <Friendly Name> will be shown to the user, the <Data> will be passed
+// in the setOptions: NSDictionary
+//
++ (NSArray<NSString*>*)filterList;
++ (NSArray<NSString*>*)screenShaderList;
++ (NSArray<NSString*>*)lineShaderList;
++ (NSArray<NSString*>*)colorSpaceList;
 
 - (void)setOptions:(NSDictionary*)options;
 

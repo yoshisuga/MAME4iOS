@@ -70,7 +70,69 @@ TIMER_INIT_END
     NSDictionary* _options;
     MTLSamplerMinMagFilter _filter;
     Shader _screen_shader;
+    Shader _line_shader;
+    CGFloat _line_width_scale;
 }
+
+// Metal effect string is of the form:
+//        <Friendly Name> : <shader description>
+//
+// NOTE: see MetalView.h for what a <shader description> is.
+// in addition to the <shader description> in MetalView.h you can specify a named variable like so....
+//
+//       variable_name = <default value> <min value> <max value> <step value>
+//
+//  you dont use commas to separate values, use spaces.
+//  min, max, and step are all optional, and only effect the InfoHUD, MetalView ignores them.
+//
+//  Presets are simply the @string without the key names, only numbers!
+//
+// NOTE arrayCoreGraphicsEffects and arrayMetalEffects should use the same friendly name
+// for similar effects, so if the user turns off/on metal the choosen effect wont get reset to default.
+//
++ (NSArray*)screenShaderList {
+    return @[kScreenViewShaderDefault,
+             @"Simple CRT: simpleCRT, mame-screen-dst-rect, mame-screen-src-rect,\
+                            Vertical Curvature = 5.0 1.0 10.0 0.1,\
+                            Horizontal Curvature = 4.0 1.0 10.0 0.1,\
+                            Curvature Strength = 0.25 0.0 1.0 0.05,\
+                            Light Boost = 1.3 0.1 3.0 0.1, \
+                            Vignette Strength = 0.05 0.0 1.0 0.05,\
+                            Zoom Factor = 1.0 0.01 5.0 0.1",
+             @"megaTron - Shadow Mask: megaTron, mame-screen-src-rect, mame-screen-dst-rect,\
+                            Shadow Mask Type = 3.0 0.0 3.0 1.0,\
+                            Shadow Mask Intensity = 0.5 0.0 1.0 0.05,\
+                            Scanline Thinness = 0.7 0.0 1.0 0.05,\
+                            Horizontal Scanline Blur = 1.8 1.0 3.0 0.05,\
+                            CRT Curvature = 0.02 0.0 0.25 0.01,\
+                            Use Trinitron-style Curvature = 0.0 0.0 1.0 1.0,\
+                            CRT Corner Roundness = 3.0 2.0 11.0 1.0,\
+                            CRT Gamma = 2.9 0.0 5.0 0.1",
+             @"megaTron - Shadow Mask Strong: megaTron, mame-screen-src-rect, mame-screen-dst-rect,3.0,0.75,0.6,1.4,0.02,1.0,2.0,3.0",
+             @"megaTron - Grille Mask: megaTron, mame-screen-src-rect, mame-screen-dst-rect,2.0,0.85,0.6,2.0,0.02,1.0,2.0,3.0",
+             @"megaTron - Grille Mask Lite: megaTron, mame-screen-src-rect, mame-screen-dst-rect,1.0,0.6,0.6,1.6,0.02,1.0,2.0,2.8",
+             @"megaTron - No Shadow Mask but with Blur: megaTron, mame-screen-src-rect, mame-screen-dst-rect,0.0,0.6,0.6,1.0,0.02,0.0,2.0,2.6",
+             
+#ifdef DEBUG
+             @"Wombat1: mame_screen_test, mame-screen-size, frame-count, 1.0, 8.0, 8.0",
+             @"Wombat2: mame_screen_test, mame-screen-size, frame-count, wombat_rate=2.0, wombat_u=16.0, wombat_v=16.0",
+             @"Test (dot): mame_screen_dot, mame-screen-matrix",
+             @"Test (line): mame_screen_line, mame-screen-matrix",
+             @"Test (rainbow): mame_screen_rainbow, mame-screen-matrix, frame-count, rainbow_h = 16.0 4.0 32.0 1.0, rainbow_speed = 1.0 1.0 16.0",
+#endif
+    ];
+}
++ (NSArray*)lineShaderList {
+    return @[kScreenViewShaderDefault,
+    ];
+}
++ (NSArray*)filterList {
+    return @[kScreenViewFilterNearest,kScreenViewFilterLinear];
+}
++ (NSArray*)colorSpaceList {
+    return [CGScreenView colorSpaceList];
+}
+
 
 - (void)setOptions:(NSDictionary *)options {
     _options = options;
@@ -97,11 +159,19 @@ TIMER_INIT_END
         _filter = MTLSamplerMinMagFilterNearest;
     
     // get the shader to use when drawing the SCREEN
+    _screen_shader = _options[kScreenViewScreenShader] ?: kScreenViewShaderDefault;
     
-    _screen_shader = _options[kScreenViewEffect] ?: kScreenViewEffectNone;
-    
-    if ([_options[kScreenViewEffect] isEqualToString:kScreenViewEffectNone])
+    if ([_screen_shader length] == 0 || [_screen_shader isEqualToString:kScreenViewShaderDefault] || [_screen_shader isEqualToString:kScreenViewShaderNone])
         _screen_shader = ShaderTexture;
+    
+    // get the shader to use when drawing VECTOR lines
+    _line_shader = _options[kScreenViewLineShader] ?: kScreenViewShaderDefault;
+    _line_width_scale = 2.0;    // TODO: make this settable??
+    
+    if ([_line_shader length] == 0 || [_line_shader isEqualToString:kScreenViewShaderDefault] || [_line_shader isEqualToString:kScreenViewShaderNone]) {
+        _line_shader = ShaderAdd;
+        _line_width_scale = 1.0;
+    }
     
     [self setNeedsLayout];
 }
@@ -277,7 +347,7 @@ static void texture_load(void* data, id<MTLTexture> texture) {
             
             // set the shader
             if (prim->screentex) {
-                // render of the game screen, use a custom effect shader
+                // render of the game screen, use a custom shader
                 // set the following shader variables so the shader knows the pixel size of a scanline etc....
                 //
                 //      mame-screen-dst-rect - the size (in pixels) of the output quad
@@ -316,7 +386,7 @@ static void texture_load(void* data, id<MTLTexture> texture) {
             if (prim->texwrap)
                 [self setTextureAddressMode:MTLSamplerAddressModeRepeat];
             else
-                [self setTextureAddressMode:MTLSamplerAddressModeClampToEdge];
+                [self setTextureAddressMode:MTLSamplerAddressModeClampToZero];
 
             // draw a quad in the correct orientation
             UIImageOrientation orientation = UIImageOrientationUp;
@@ -346,8 +416,16 @@ static void texture_load(void* data, id<MTLTexture> texture) {
         }
         else if (prim->type == RENDER_PRIMITIVE_LINE) {
             // wide line.
-            [self setShader:shader_map[prim->blendmode]];
-            [self drawLine:CGPointMake(prim->bounds_x0, prim->bounds_y0) to:CGPointMake(prim->bounds_x1, prim->bounds_y1) width:prim->width color:color];
+            if (prim->blendmode == BLENDMODE_ADD) {
+                // this line is a vector line, use a special shader
+                [self setShader:_line_shader];
+                [self drawLine:CGPointMake(prim->bounds_x0, prim->bounds_y0) to:CGPointMake(prim->bounds_x1, prim->bounds_y1) width:(prim->width * _line_width_scale) color:color];
+            }
+            else {
+                // this line is from MAME UI, draw normal
+                [self setShader:shader_map[prim->blendmode]];
+                [self drawLine:CGPointMake(prim->bounds_x0, prim->bounds_y0) to:CGPointMake(prim->bounds_x1, prim->bounds_y1) width:prim->width color:color];
+            }
         }
         else {
             NSLog(@"Unknown RENDER_PRIMITIVE!");
