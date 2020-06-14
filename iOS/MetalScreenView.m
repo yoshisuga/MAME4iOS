@@ -118,13 +118,16 @@ TIMER_INIT_END
              @"Wombat1: mame_screen_test, mame-screen-size, frame-count, 1.0, 8.0, 8.0",
              @"Wombat2: mame_screen_test, mame-screen-size, frame-count, wombat_rate=2.0, wombat_u=16.0, wombat_v=16.0",
              @"Test (dot): mame_screen_dot, mame-screen-matrix",
-             @"Test (line): mame_screen_line, mame-screen-matrix",
+             @"Test (scanline): mame_screen_line, mame-screen-matrix",
              @"Test (rainbow): mame_screen_rainbow, mame-screen-matrix, frame-count, rainbow_h = 16.0 4.0 32.0 1.0, rainbow_speed = 1.0 1.0 16.0",
 #endif
     ];
 }
 + (NSArray*)lineShaderList {
     return @[kScreenViewShaderDefault,
+#ifdef DEBUG
+    @"Wombat: mame_test_vector_line, blend=add",
+#endif
     ];
 }
 + (NSArray*)filterList {
@@ -167,7 +170,7 @@ TIMER_INIT_END
     
     // get the shader to use when drawing VECTOR lines
     _line_shader = _options[kScreenViewLineShader] ?: kScreenViewShaderDefault;
-    _line_width_scale = 2.0;    // TODO: make this settable??
+    _line_width_scale = 2.0;    // TODO: read this from the shader string??
     
     if ([_line_shader length] == 0 || [_line_shader isEqualToString:kScreenViewShaderDefault] || [_line_shader isEqualToString:kScreenViewShaderNone]) {
         _line_shader = ShaderAdd;
@@ -345,7 +348,7 @@ static void texture_load(void* data, id<MTLTexture> texture) {
                        width:prim->texture_width height:prim->texture_height
                       format:(prim->texformat == TEXFORMAT_RGB15 ? MTLPixelFormatBGR5A1Unorm : MTLPixelFormatBGRA8Unorm)
                 texture_load:texture_load texture_load_data:prim];
-            
+
             // set the shader
             if (prim->screentex) {
                 // render of the game screen, use a custom shader
@@ -384,11 +387,12 @@ static void texture_load(void* data, id<MTLTexture> texture) {
                 [self setShader:shader_tex_map[prim->blendmode]];
             }
             
+            // set the address mode.
             if (prim->texwrap)
                 [self setTextureAddressMode:MTLSamplerAddressModeRepeat];
             else
                 [self setTextureAddressMode:MTLSamplerAddressModeClampToZero];
-
+            
             // draw a quad in the correct orientation
             UIImageOrientation orientation = UIImageOrientationUp;
             if (prim->texorient == ORIENTATION_ROT90)
@@ -402,7 +406,7 @@ static void texture_load(void* data, id<MTLTexture> texture) {
         }
         else if (prim->type == RENDER_PRIMITIVE_QUAD) {
             // solid color quad. only ALPHA or NONE blend mode.
-
+            
             if (prim->blendmode == BLENDMODE_ALPHA && prim->color_a != 1.0)
                 [self setShader:ShaderAlpha];
             else
@@ -416,7 +420,7 @@ static void texture_load(void* data, id<MTLTexture> texture) {
             [self drawLine:CGPointMake(prim->bounds_x0, prim->bounds_y0) to:CGPointMake(prim->bounds_x1, prim->bounds_y1) color:color];
         }
         else if (prim->type == RENDER_PRIMITIVE_LINE) {
-            // wide line.
+            // wide line, if the blendmode is ADD this is a VECTOR line, else a UI line.
             if (prim->blendmode == BLENDMODE_ADD) {
                 // this line is a vector line, use a special shader
                 [self setShader:_line_shader];

@@ -350,18 +350,12 @@
 }
 -(void)drawLine:(CGPoint)start to:(CGPoint)end width:(CGFloat)width color:(VertexColor)color {
     
-    // make the width a little wider so we can blend down the alpha on the edges.
-    // width = width * 1.2;
-
     simd_float2 p0 = simd_make_float2(start.x, start.y);
     simd_float2 p1 = simd_make_float2(end.x, end.y);
 
     simd_float4 color0 = color;
     simd_float4 color1 = simd_make_float4(color.xyz, color.w * 0.25);
     
-    // vector from p0 -> p1
-    simd_float2 v;
-
     // if p0 == p1, draw a little diamond
     //   2 + 4
     //    /|\
@@ -377,18 +371,28 @@
     //  |     \|                                  |/
     //  v    3 +----------------------------------+ 5
 
-    if (p0.x == p1.x && p0.y == p1.y)
-        v = simd_make_float2(width * 0.5, 0);
+    // vector from p0 -> p1
+    simd_float2 v = p1 - p0;
+    float length = simd_length(v);
+    float width2 = width * 0.5;
+    
+    // normalize vector and scale it by half width.
+    if (length < 0.001)
+        v = simd_make_float2(width2, 0);
     else
-        v = simd_normalize(p1 - p0) * width * 0.5;
+        v = v * (1.0 / length) * width2;
+    
+    // encode the position on the line in the texture coordinates for the fragment shader.
+    //      vary texture_u from -1 to +1 along the line width, zero is center.
+    //      vary texture_v from 0 to length along the line length.
 
     Vertex2D vertices[] = {
-        Vertex2D(p0.x - v.y,p0.y + v.x,0.0,0.0,color1),  // 2
-        Vertex2D(p1.x - v.y,p1.y + v.x,0.0,0.0,color1),  // 4
-        Vertex2D(p0.x - v.x,p0.y - v.y,0.0,0.0,color0),  // 1
-        Vertex2D(p1.x + v.x,p1.y + v.y,0.0,0.0,color0),  // 6
-        Vertex2D(p0.x + v.y,p0.y - v.x,0.0,0.0,color1),  // 3
-        Vertex2D(p1.x + v.y,p1.y - v.x,0.0,0.0,color1),  // 5
+        Vertex2D(p0.x - v.y,p0.y + v.x,+1.0,0.0,        color1),  // 2
+        Vertex2D(p1.x - v.y,p1.y + v.x,+1.0,length,     color1),  // 4
+        Vertex2D(p0.x - v.x,p0.y - v.y, 0.0,-width2,    color0),  // 1
+        Vertex2D(p1.x + v.x,p1.y + v.y, 0.0,length+width2,color0),// 6
+        Vertex2D(p0.x + v.y,p0.y - v.x,-1.0,0.0,        color1),  // 3
+        Vertex2D(p1.x + v.y,p1.y - v.x,-1.0,length,     color1),  // 5
     };
     [self drawPrim:MTLPrimitiveTypeTriangleStrip vertices:vertices count:sizeof(vertices)/sizeof(vertices[0])];
 }

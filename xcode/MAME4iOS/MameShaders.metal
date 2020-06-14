@@ -69,6 +69,24 @@ mame_screen_line(VertexOutput v [[stage_in]],
     return color;
 }
 
+
+// test Shader to draw the VECTOR lines
+//
+// color.a is itterated from 1.0 on center line to 0.25 on the line edge.
+//
+// texture u is itterated along the width of the line, -1 .. +1, with 0 being the center line
+// texture v is itterated along the length of the line 0 ... length (the length is in model cordinates)
+//
+struct MameTestVectorLine {
+};
+fragment float4
+mame_test_vector_line(VertexOutput v [[stage_in]],
+                constant MameTestVectorLine &uniforms [[buffer(0)]])
+{
+    float4 color = v.color;
+    return color;
+}
+
 constant float4 six_colors[] = {
     float4(94, 189, 62, 255),
     float4(255, 185, 0, 255),
