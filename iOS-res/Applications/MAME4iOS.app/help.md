@@ -203,10 +203,10 @@ we suppoprt a small subset of the keys supported by the command line MAME.
 | | |  
 -|-
      ARROW KEYS      | emulate a dpad or joystick
-     LEFT CONTROL    | A
-     LEFT OPTION/ALT | B
-     SPACE           | Y
-     LEFT SHIFT      | X
+     LEFT CONTROL    | 🅐 
+     LEFT OPTION/ALT | 🅑
+     SPACE           | 🅨
+     LEFT SHIFT      | 🅧
      LEFT CMD        | L1
      RIGHT CMD       | R1
      1               | Player 1 START
@@ -215,8 +215,8 @@ we suppoprt a small subset of the keys supported by the command line MAME.
      6               | Player 2 COIN
      TAB             | MAME UI MENU
      ESC             | MAME UI EXIT
-     RETURN          | MAME UI SELECT (aka A)
-     DELETE          | MAME UI BACK (aka B)
+     RETURN          | MAME UI SELECT (aka 🅐)
+     DELETE          | MAME UI BACK (aka 🅑)
      BQUOTE          | MAME4iOS MENU
      ⌘+ENTER       | TOGGLE FULLSCREEN
      ⌘+I                  | TOGGLE INTEGER SCALE
@@ -225,6 +225,7 @@ we suppoprt a small subset of the keys supported by the command line MAME.
      ⌘+F                  | TOGGLE FILTER (Nearest and Linear)
      ⌘+T                  | TOGGLE THROTTLE
      ⌘+V                  | TOGGLE VSYNC
+     ⌘+P                  | TOGGLE PAUSE
      ⌘+M                  | TOGGLE `useMetal`
      ⌘+A                  | TOGGLE `Keep Aspect Ratio`
      ⌘+X                  | TOGGLE `Force Pixel Aspect`
