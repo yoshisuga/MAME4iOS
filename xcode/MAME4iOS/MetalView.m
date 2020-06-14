@@ -53,8 +53,6 @@
     // sampler states
     MTLSamplerMinMagFilter _texture_filter;
     MTLSamplerAddressMode _texture_address_mode;
-    _Static_assert(MTLSamplerAddressModeClampToEdge == 0 && MTLSamplerAddressModeClampToZero == 4, "MTLSamplerAddressMode bad!");
-    _Static_assert(MTLSamplerMinMagFilterNearest == 0 && MTLSamplerMinMagFilterLinear == 1, "MTLSamplerMinMagFilter bad!");
     id<MTLSamplerState> _texture_sampler[5*2];
 
     // current vertex buffer for current frame.
@@ -840,6 +838,10 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 -(void)updateSamplerState {
     assert(_texture_filter == MTLSamplerMinMagFilterNearest || _texture_filter == MTLSamplerMinMagFilterLinear);
     assert(_texture_address_mode >= MTLSamplerAddressModeClampToEdge && _texture_address_mode <= MTLSamplerAddressModeClampToZero);
+    _Static_assert(MTLSamplerAddressModeClampToEdge == 0 && MTLSamplerAddressModeClampToZero == 4, "MTLSamplerAddressMode bad!");
+    _Static_assert(MTLSamplerMinMagFilterNearest == 0 && MTLSamplerMinMagFilterLinear == 1, "MTLSamplerMinMagFilter bad!");
+    _Static_assert(sizeof(_texture_sampler) / sizeof(_texture_sampler[0]) == 5*2, "_texture_sampler wrong size!");
+
     NSUInteger index = (_texture_address_mode * 2) + _texture_filter;
     
     id<MTLSamplerState> sampler = _texture_sampler[index];
