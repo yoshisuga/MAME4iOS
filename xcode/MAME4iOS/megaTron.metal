@@ -27,7 +27,6 @@ struct Push
     float TRINITRON_CURVE;
     float CORNER;
     float CRT_GAMMA;
-//  float ZOOM;
 };
 
 static inline __attribute__((always_inline))
@@ -80,10 +79,6 @@ float3 megaTronFetch(thread float2& uv, constant Push& params, thread texture2d<
 {
     uv *= (float2(params.SourceSize.z, params.SourceSize.w) / params.SourceSize.zw);
     float3 param = texture.sample(SourceSmplr, uv, bias(-16.0)).xyz;
-    //float3 param = texture.sample(SourceSmplr, uv).xyz; // original from RA port
-    //float3 param = texture.sample(SourceSmplr, uv, bias(-16.0)).xyz; // with linear filter and edge clamp to black
-    //float3 param = 1.0; // debug generate white frame for debug visualization
-    //float3 param = v.tex.xy,1.0; // debug show uv
     return FromSrgb(param, params);
 }
 
