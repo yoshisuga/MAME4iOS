@@ -214,6 +214,8 @@ static EmulatorController *sharedInstance = nil;
 static const int buttonPressReleaseCycles = 2;
 static const int buttonNextPressCycles = 32;
 
+static BOOL g_video_reset = FALSE;
+
 // called by the OSD layer when redner target changes size
 // **NOTE** this is called on the MAME background thread, dont do anything stupid.
 void iphone_Reset_Views(void)
@@ -228,8 +230,12 @@ void iphone_Reset_Views(void)
     
     if (!myosd_inGame)
         [sharedInstance performSelectorOnMainThread:@selector(moveROMS) withObject:nil waitUntilDone:NO];
-    
-    [sharedInstance performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:NO];
+
+    // set this flag to cause the next call to myosd_handle_turbo (aka myosd_poll_input) to reset the UI
+    // ...we need this delay so MAME/OSD can setup some variables we need to configure the UI
+    // ...like myosd_mouse, myosd_num_ways, myosd_num_players, etc....
+    g_video_reset = TRUE;
+    //[sharedInstance performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:NO];
 }
 // called by the OSD layer to update the current software frame
 // **NOTE** this is called on the MAME background thread, dont do anything stupid.
@@ -1818,6 +1824,12 @@ static void push_mame_buttons(int player, int button1, int button2)
 // called from inside MAME droid_ios_poll_input
 void myosd_handle_turbo() {
     
+    // g_video_reset is set when iphone_Reset_Views is called, and we need to configure the UI
+    if (g_video_reset) {
+        g_video_reset = FALSE;
+        [sharedInstance performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:NO];
+    }
+    
     // keep myosd_waysStick uptodate
     if (ways_auto)
         myosd_waysStick = myosd_num_ways;
@@ -2499,6 +2511,9 @@ UIColor* colorWithHexString(NSString* string) {
             g_pref_keep_aspect_ratio = !g_pref_keep_aspect_ratio;
             [self changeUI];
             break;
+        case 'P':
+            myosd_mame_pause = 1;
+            break;
         case 'M':
         {
             // toggle Metal, but in order to load the right shader we need to change the global Options.
@@ -2510,11 +2525,6 @@ UIColor* colorWithHexString(NSString* string) {
             break;
         }
 #ifdef DEBUG
-        case 'P':
-            // **NOTE** this pauses the MAME render thread, it is not the same as the PAUSE key in MAME.
-            g_emulation_paused = !g_emulation_paused;
-            change_pause(g_emulation_paused);
-            break;
         case 'R':
             g_enable_debug_view = !g_enable_debug_view;
             [self changeUI];
