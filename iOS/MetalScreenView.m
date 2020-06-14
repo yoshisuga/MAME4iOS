@@ -99,19 +99,20 @@ TIMER_INIT_END
                             Light Boost = 1.3 0.1 3.0 0.1, \
                             Vignette Strength = 0.05 0.0 1.0 0.05,\
                             Zoom Factor = 1.0 0.01 5.0 0.1",
-             @"megaTron - Shadow Mask: megaTron, mame-screen-src-rect, mame-screen-dst-rect,\
+             @"megaTron : megaTron, mame-screen-src-rect, mame-screen-dst-rect,\
                             Shadow Mask Type = 3.0 0.0 3.0 1.0,\
                             Shadow Mask Intensity = 0.5 0.0 1.0 0.05,\
                             Scanline Thinness = 0.7 0.0 1.0 0.05,\
-                            Horizontal Scanline Blur = 1.8 1.0 3.0 0.05,\
+                            Horizontal Scanline Blur = 1.8 1.0 10.0 0.05,\
                             CRT Curvature = 0.02 0.0 0.25 0.01,\
                             Use Trinitron-style Curvature = 0.0 0.0 1.0 1.0,\
                             CRT Corner Roundness = 3.0 2.0 11.0 1.0,\
                             CRT Gamma = 2.9 0.0 5.0 0.1",
              @"megaTron - Shadow Mask Strong: megaTron, mame-screen-src-rect, mame-screen-dst-rect,3.0,0.75,0.6,1.4,0.02,1.0,2.0,3.0",
+             @"megaTron - Vertical Games (Use Linear Filter): megaTron, mame-screen-src-rect, mame-screen-dst-rect,3.0,0.4,0.8,3.0,0.02,0.0,3.0,2.9",
              @"megaTron - Grille Mask: megaTron, mame-screen-src-rect, mame-screen-dst-rect,2.0,0.85,0.6,2.0,0.02,1.0,2.0,3.0",
              @"megaTron - Grille Mask Lite: megaTron, mame-screen-src-rect, mame-screen-dst-rect,1.0,0.6,0.6,1.6,0.02,1.0,2.0,2.8",
-             @"megaTron - No Shadow Mask but with Blur: megaTron, mame-screen-src-rect, mame-screen-dst-rect,0.0,0.6,0.6,1.0,0.02,0.0,2.0,2.6",
+             @"megaTron - No Shadow Mask but Blurred: megaTron, mame-screen-src-rect, mame-screen-dst-rect,0.0,0.6,0.6,1.0,0.02,0.0,2.0,2.6",
              
 #ifdef DEBUG
              @"Wombat1: mame_screen_test, mame-screen-size, frame-count, 1.0, 8.0, 8.0",
