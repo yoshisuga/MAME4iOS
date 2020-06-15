@@ -12,9 +12,6 @@
 #define HUD_COLOR   [self.tintColor colorWithAlphaComponent:0.2]
 #define HUD_BLUR    TRUE
 
-//#define HUD_COLOR   [UIColor.blackColor colorWithAlphaComponent:0.8]
-//#define HUD_BLUR    FALSE
-
 @implementation InfoHUD {
     UIStackView* _stack;
     NSMutableDictionary* _views;
@@ -46,14 +43,17 @@
         self.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
     
     [self addSubview:_stack];
-    self.backgroundColor = HUD_COLOR;
-    [self addGestureRecognizer:[[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(pan:)]];
     
+    UIPanGestureRecognizer* pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(pan:)];
+    pan.delegate = (id<UIGestureRecognizerDelegate>)self;
+    [self addGestureRecognizer:pan];
+
+    self.backgroundColor = HUD_COLOR;
 #if HUD_BLUR
     if (@available(iOS 13.0, *))
-        [self addBlur:UIBlurEffectStyleSystemUltraThinMaterialDark withVibrancy:NO];
+        [self addBlur:UIBlurEffectStyleSystemUltraThinMaterialDark];
     else
-        [self addBlur:UIBlurEffectStyleDark withVibrancy:NO];
+        [self addBlur:UIBlurEffectStyleDark];
 #endif
 
     return self;
@@ -69,35 +69,25 @@
     _font = font ?: [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
 }
 
-- (void)addBlur:(UIBlurEffectStyle)style withVibrancy:(BOOL)vibrancy {
+- (void)addBlur:(UIBlurEffectStyle)style {
     UIBlurEffect* blur = [UIBlurEffect effectWithStyle:style];
     UIVisualEffectView* effectView = [[UIVisualEffectView alloc] initWithEffect:blur];
     effectView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     effectView.frame = self.bounds;
     [self addSubview:effectView];
     [self sendSubviewToBack:effectView];
-    //self.backgroundColor = UIColor.clearColor;
-
-    // add vibrancy
-    if (vibrancy) {
-        UIVibrancyEffect* vibrancy;
-        if (@available(iOS 13.0, *))
-            vibrancy = [UIVibrancyEffect effectForBlurEffect:blur style:UIVibrancyEffectStyleLabel];
-        else
-            vibrancy = [UIVibrancyEffect effectForBlurEffect:blur];
-
-        UIVisualEffectView* vibrancyView = [[UIVisualEffectView alloc] initWithEffect:vibrancy];
-        vibrancyView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        vibrancyView.frame = self.bounds;
-        assert(self.subviews.count == 2);
-        [vibrancyView.contentView addSubview:self.subviews.lastObject];
-
-        [effectView.contentView addSubview:vibrancyView];
-        effectView.backgroundColor = self.backgroundColor;
-        self.backgroundColor = UIColor.clearColor;
-    }
 }
 
+// called before touchesBegan:withEvent: is called on the gesture recognizer for a new touch. return NO to prevent the gesture recognizer from seeing this touch
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
+    if ([touch.view isKindOfClass:[UISlider class]]) {
+        UISlider* slider = (UISlider*)touch.view;
+        CGRect rect = [slider thumbRectForBounds:slider.bounds trackRect:[slider trackRectForBounds:slider.bounds] value:slider.value];
+        if (CGRectContainsPoint(CGRectInset(rect, -8, -8), [touch locationInView:slider]))
+            return NO;
+    }
+    return YES;
+}
 - (void)pan:(UIPanGestureRecognizer*)pan {
     CGPoint translation = [pan translationInView:self];
     [pan setTranslation:CGPointZero inView:self];
