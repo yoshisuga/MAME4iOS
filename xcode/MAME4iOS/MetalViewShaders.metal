@@ -28,19 +28,19 @@ vertex_default(unsigned int index [[ vertex_id ]],
 
 // default fragment shader
 // just copy the color from the vertex, no texture, no lighting, no nuth'n
-fragment half4
+fragment float4
 fragment_default(VertexOutput v [[stage_in]])
 {
-    return half4(v.color.r,v.color.g,v.color.b,v.color.a);
+    return v.color;
 }
 
 // default fragment shader for a texture
 // sample the texture using the passed in sampler, and multiply by the vertex color
-fragment half4
+fragment float4
 fragment_texture(VertexOutput v [[stage_in]], texture2d<float> texture [[texture(0)]], sampler texture_sampler [[sampler(0)]])
 {
     float4 color = texture.sample(texture_sampler, v.tex);
-    return half4(color * v.color);
+    return color * v.color;
 }
 
 
@@ -51,7 +51,7 @@ struct TestUniforms {
     float  frame_num;
     packed_float3 color;
 };
-fragment half4
+fragment float4
 fragment_test(VertexOutput v [[stage_in]], constant TestUniforms &uniforms [[buffer(0)]])
 {
     float Y = v.color.r * 0.2126 + v.color.g * 0.7152 + v.color.b * 0.0722;
@@ -59,7 +59,7 @@ fragment_test(VertexOutput v [[stage_in]], constant TestUniforms &uniforms [[buf
     float f = abs(cos(t * 2*M_PI_F * 0.25));
     float4 color = float4(uniforms.color * Y * f, v.color.a);
     
-    return half4(color);
+    return color;
 }
 
 
