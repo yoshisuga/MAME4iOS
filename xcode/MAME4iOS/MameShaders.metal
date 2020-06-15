@@ -69,24 +69,7 @@ mame_screen_line(VertexOutput v [[stage_in]],
     return color;
 }
 
-
-// test Shader to draw the VECTOR lines
-//
-// color.a is itterated from 1.0 on center line to 0.25 on the line edge.
-//
-// texture u is itterated along the width of the line, -1 .. +1, with 0 being the center line
-// texture v is itterated along the length of the line 0 ... length (the length is in model cordinates)
-//
-struct MameTestVectorLine {
-};
-fragment float4
-mame_test_vector_line(VertexOutput v [[stage_in]],
-                constant MameTestVectorLine &uniforms [[buffer(0)]])
-{
-    float4 color = v.color;
-    return color;
-}
-
+// [six colors](https://commons.wikimedia.org/wiki/File:Apple_Computer_Logo_rainbow.svg)
 constant float4 six_colors[] = {
     float4(94, 189, 62, 255),
     float4(255, 185, 0, 255),
@@ -95,6 +78,51 @@ constant float4 six_colors[] = {
     float4(151, 57, 153, 255),
     float4(0, 156, 223, 255),
 };
+
+// test Shader to draw the VECTOR lines
+//
+// width_scale must always be the first uniform, it is the amount the line width is expanded by.
+//
+// color.a is itterated from 1.0 on center line to 0.25 on the line edge.
+//
+// texture x is itterated along the length of the line 0 ... length (the length is in model cordinates)
+// texture y is itterated along the width of the line, -1 .. +1, with 0 being the center line
+//
+struct MameTestVectorDash {
+    float   width_scale;
+    float   frame_count;
+    float   dash_length;
+    float   speed;
+};
+fragment float4
+mame_test_vector_dash(VertexOutput v [[stage_in]],
+                constant MameTestVectorDash &uniforms [[buffer(0)]])
+{
+    float t = (uniforms.frame_count / 60.0) * uniforms.speed * 8.0;
+    float d = v.tex.x;      // distance along the line
+//    float w = v.tex.y;      // position across the line
+//    float a = 1.0 - abs(w);
+    int n = floor((d + t) / uniforms.dash_length);
+
+    if (n & 1)
+        return float4(six_colors[(n/2)%6].xyz * float3(1.0/255.0), 1 /*a*/);
+    else
+        return  float4(0,0,0,0);
+}
+
+struct MameTestVectorPulse {
+    float   width_scale;
+    float   frame_count;
+    float   rate;
+};
+fragment float4
+mame_test_vector_pulse(VertexOutput v [[stage_in]],
+                constant MameTestVectorPulse &uniforms [[buffer(0)]])
+{
+    float t = (uniforms.frame_count / 60.0);
+    float f = sin(t * M_PI_F * 2.0 / uniforms.rate) * 0.33 + 0.67;
+    return v.color * f;
+}
 
 // Shader to draw the MAME game SCREEN....
 struct MameScreenRainbowUniforms {
