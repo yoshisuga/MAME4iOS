@@ -42,7 +42,7 @@
     if ( section == kFilterSection ) {
         return 2;
     } else if ( section == kScreenSection ) {
-        return 8;
+        return 9;
     } else if ( section == kMiscSection ) {
         return 7;
     } else if ( section == kDefaultsSection ) {
@@ -104,27 +104,31 @@
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
             cell.detailTextLabel.text = [Options.arrayFilter optionName:op.filter];
         } else if ( indexPath.row == 1 ) {
-            cell.textLabel.text   = @"Effect";
-            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-            cell.detailTextLabel.text = [Options.arrayEffect optionName:op.effect];
-        } else if ( indexPath.row == 2 ) {
             cell.textLabel.text   = @"Border";
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
             cell.detailTextLabel.text = [Options.arrayBorder optionName:op.border];
+        } else if ( indexPath.row == 2 ) {
+            cell.textLabel.text   = @"Screen Shader";
+            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+            cell.detailTextLabel.text = [Options.arrayScreenShader optionName:op.screenShader];
         } else if ( indexPath.row == 3 ) {
+            cell.textLabel.text   = @"Vector Shader";
+            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+            cell.detailTextLabel.text = [Options.arrayLineShader optionName:op.lineShader];
+        } else if ( indexPath.row == 4 ) {
             cell.textLabel.text   = @"ColorSpace";
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
             cell.detailTextLabel.text = [Options.arrayColorSpace optionName:op.colorSpace];
-        } else if ( indexPath.row == 4 ) {
+        } else if ( indexPath.row == 5 ) {
             cell.textLabel.text =  @"Use Metal";
             cell.accessoryView = [self optionSwitchForKey:@"useMetal"];
-        } else if ( indexPath.row == 5 ) {
+        } else if ( indexPath.row == 6 ) {
             cell.textLabel.text = @"Keep Aspect Ratio";
             cell.accessoryView = [self optionSwitchForKey:@"keepAspectRatio"];
-        } else if ( indexPath.row == 6 ) {
+        } else if ( indexPath.row == 7 ) {
             cell.textLabel.text = @"Integer Scaling Only";
             cell.accessoryView = [self optionSwitchForKey:@"integerScalingOnly"];
-        } else if ( indexPath.row == 7 ) {
+        } else if ( indexPath.row == 8 ) {
             cell.textLabel.text   = @"Force Pixel Aspect";
             cell.accessoryView = [self optionSwitchForKey:@"forcepxa"];
         }
@@ -186,12 +190,15 @@
             ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"filter" list:Options.arrayFilter title:cell.textLabel.text];
             [[self navigationController] pushViewController:listController animated:YES];
         } else if ( indexPath.row == 1 ) {
-            ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"effect" list:Options.arrayEffect title:cell.textLabel.text];
-            [[self navigationController] pushViewController:listController animated:YES];
-        } else if ( indexPath.row == 2 ) {
             ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"border" list:Options.arrayBorder title:cell.textLabel.text];
             [[self navigationController] pushViewController:listController animated:YES];
+        } else if ( indexPath.row == 2 ) {
+            ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"screenShader" list:Options.arrayScreenShader title:cell.textLabel.text];
+            [[self navigationController] pushViewController:listController animated:YES];
         } else if ( indexPath.row == 3 ) {
+            ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"lineShader" list:Options.arrayLineShader title:cell.textLabel.text];
+            [[self navigationController] pushViewController:listController animated:YES];
+        } else if ( indexPath.row == 4 ) {
             ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"colorSpace" list:Options.arrayColorSpace title:cell.textLabel.text];
             [[self navigationController] pushViewController:listController animated:YES];
         }
