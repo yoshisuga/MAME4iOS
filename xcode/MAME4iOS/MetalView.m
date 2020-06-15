@@ -53,8 +53,6 @@
     // sampler states
     MTLSamplerMinMagFilter _texture_filter;
     MTLSamplerAddressMode _texture_address_mode;
-    _Static_assert(MTLSamplerAddressModeClampToEdge == 0 && MTLSamplerAddressModeClampToZero == 4, "MTLSamplerAddressMode bad!");
-    _Static_assert(MTLSamplerMinMagFilterNearest == 0 && MTLSamplerMinMagFilterLinear == 1, "MTLSamplerMinMagFilter bad!");
     id<MTLSamplerState> _texture_sampler[5*2];
 
     // current vertex buffer for current frame.
@@ -383,16 +381,16 @@
         v = v * (1.0 / length) * width2;
     
     // encode the position on the line in the texture coordinates for the fragment shader.
-    //      vary texture_u from -1 to +1 along the line width, zero is center.
-    //      vary texture_v from 0 to length along the line length.
+    //      vary texture_u from 0 to length along the line length.
+    //      vary texture_v from -1 to +1 along the line width, zero is center.
 
     Vertex2D vertices[] = {
-        Vertex2D(p0.x - v.y,p0.y + v.x,+1.0,0.0,        color1),  // 2
-        Vertex2D(p1.x - v.y,p1.y + v.x,+1.0,length,     color1),  // 4
-        Vertex2D(p0.x - v.x,p0.y - v.y, 0.0,-width2,    color0),  // 1
-        Vertex2D(p1.x + v.x,p1.y + v.y, 0.0,length+width2,color0),// 6
-        Vertex2D(p0.x + v.y,p0.y - v.x,-1.0,0.0,        color1),  // 3
-        Vertex2D(p1.x + v.y,p1.y - v.x,-1.0,length,     color1),  // 5
+        Vertex2D(p0.x - v.y,p0.y + v.x, 0.0,1.0,        color1),  // 2
+        Vertex2D(p1.x - v.y,p1.y + v.x, length,1.0,     color1),  // 4
+        Vertex2D(p0.x - v.x,p0.y - v.y, -width2,0.0,    color0),  // 1
+        Vertex2D(p1.x + v.x,p1.y + v.y, length+width2,0.0,color0),// 6
+        Vertex2D(p0.x + v.y,p0.y - v.x, 0.0,-1.0,       color1),  // 3
+        Vertex2D(p1.x + v.y,p1.y - v.x, length,-1.0,    color1),  // 5
     };
     [self drawPrim:MTLPrimitiveTypeTriangleStrip vertices:vertices count:sizeof(vertices)/sizeof(vertices[0])];
 }
@@ -527,6 +525,14 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         arr[i] = [arr[i] stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
     return arr;
 }
+
+//// split and trim a string
+//- (NSMutableArray*)split:(NSString*)str sep:(NSString*) sep {
+//    NSMutableArray* arr = [[str componentsSeparatedByString:sep] mutableCopy];
+//    for (int i=0; i<arr.count; i++)
+//        arr[i] = [arr[i] stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
+//    return arr;
+//}
 
 /// a shader is a string that selects the fragment function and blend mode to use.
 /// it has the following format:
@@ -844,6 +850,10 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 -(void)updateSamplerState {
     assert(_texture_filter == MTLSamplerMinMagFilterNearest || _texture_filter == MTLSamplerMinMagFilterLinear);
     assert(_texture_address_mode >= MTLSamplerAddressModeClampToEdge && _texture_address_mode <= MTLSamplerAddressModeClampToZero);
+    _Static_assert(MTLSamplerAddressModeClampToEdge == 0 && MTLSamplerAddressModeClampToZero == 4, "MTLSamplerAddressMode bad!");
+    _Static_assert(MTLSamplerMinMagFilterNearest == 0 && MTLSamplerMinMagFilterLinear == 1, "MTLSamplerMinMagFilter bad!");
+    _Static_assert(sizeof(_texture_sampler) / sizeof(_texture_sampler[0]) == 5*2, "_texture_sampler wrong size!");
+
     NSUInteger index = (_texture_address_mode * 2) + _texture_filter;
     
     id<MTLSamplerState> sampler = _texture_sampler[index];
