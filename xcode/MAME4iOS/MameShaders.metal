@@ -18,7 +18,7 @@ struct MameScreenTestUniforms {
     float factor_u;
     float factor_v;
 };
-fragment half4
+fragment float4
 mame_screen_test(VertexOutput v [[stage_in]],
                 texture2d<float> texture [[texture(0)]],
                 sampler texture_sampler [[sampler(0)]],
@@ -31,7 +31,7 @@ mame_screen_test(VertexOutput v [[stage_in]],
     float2 uv = float2(v.tex.x + cos(t) * uniforms.factor_u * (1.0 / uniforms.mame_screen_size.x),
                        v.tex.y + sin(t) * uniforms.factor_v * (1.0 / uniforms.mame_screen_size.y));
     float4 color = texture.sample(texture_sampler, uv) * v.color;
-    return half4(color);
+    return color;
 }
 
 
