@@ -1319,7 +1319,7 @@ void mame_state(int load_save, int slot)
     fpsView.alpha = alpha;
     imageLogo.alpha = (1.0 - alpha);
 #if TARGET_OS_IOS
-    hudView.alpha = alpha;
+    hudView.alpha *= alpha;
 #endif
 }
 
