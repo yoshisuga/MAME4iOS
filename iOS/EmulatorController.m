@@ -1317,8 +1317,10 @@ void mame_state(int load_save, int slot)
     screenView.alpha = alpha;
     imageOverlay.alpha = alpha;
     fpsView.alpha = alpha;
-    hudView.alpha = alpha;
     imageLogo.alpha = (1.0 - alpha);
+#if TARGET_OS_IOS
+    hudView.alpha = alpha;
+#endif
 }
 
 -(void)buildLogoView {
@@ -1721,14 +1723,15 @@ static NSArray* list_trim(NSArray* _list) {
     }
     
     CGRect rect;
+    CGRect bounds = self.view.bounds;
     CGRect frame = hudView.frame;
     CGSize size = [hudView sizeThatFits:CGSizeZero];
     CGFloat w = size.width;
     CGFloat h = size.height;
     
-    if (CGRectGetMidX(frame) < CGRectGetMidX(self.view.bounds) - 32.0)
+    if (CGRectGetMidX(frame) < CGRectGetMidX(bounds) - (bounds.size.width * 0.1))
         rect = CGRectMake(frame.origin.x, frame.origin.y, w, h);
-    else if (CGRectGetMidX(frame) > CGRectGetMidX(self.view.bounds) + 32.0)
+    else if (CGRectGetMidX(frame) > CGRectGetMidX(bounds) + (bounds.size.width * 0.1))
         rect = CGRectMake(frame.origin.x + frame.size.width - w, frame.origin.y, w, h);
     else
         rect = CGRectMake(frame.origin.x + frame.size.width/2 - w/2, frame.origin.y, w, h);
