@@ -152,14 +152,16 @@ TIMER_INIT_END
 //
 + (NSArray*)lineShaderList {
     return @[kScreenViewShaderDefault,
+        @"lineTron: lineTron, blend=add, width-scale=1.5 1 4, frame-count, falloff=2 1 4",
+
 #ifdef DEBUG
-    @"Dash: mame_test_vector_dash, blend=add, width-scale=1.0 0.25 6.0, frame-count, length=25.0, speed=16.0",
-    @"Dash (Fast): mame_test_vector_dash, blend=add, 1.0, frame-count, 15.0, 16.0",
-    @"Dash (Slow): mame_test_vector_dash, blend=add, 1.0, frame-count, 15.0, 2.0",
-             
-    @"Pulse: mame_test_vector_pulse, blend=add, width-scale=1.0 0.25 6.0, frame-count, rate=2.0",
-    @"Pulse (Fast): mame_test_vector_pulse, blend=add, 1.0, frame-count, 0.5",
-    @"Pulse (Slow): mame_test_vector_pulse, blend=add, 1.0, frame-count, 2.0",
+        @"Dash: mame_test_vector_dash, blend=add, width-scale=1.0 0.25 6.0, frame-count, length=25.0, speed=16.0",
+        @"Dash (Fast): mame_test_vector_dash, blend=add, 1.0, frame-count, 15.0, 16.0",
+        @"Dash (Slow): mame_test_vector_dash, blend=add, 1.0, frame-count, 15.0, 2.0",
+                 
+        @"Pulse: mame_test_vector_pulse, blend=add, width-scale=1.0 0.25 6.0, frame-count, rate=2.0",
+        @"Pulse (Fast): mame_test_vector_pulse, blend=add, 1.0, frame-count, 0.5",
+        @"Pulse (Slow): mame_test_vector_pulse, blend=add, 1.0, frame-count, 2.0",
 #endif
     ];
 }
@@ -492,6 +494,9 @@ static void texture_load(void* data, id<MTLTexture> texture) {
             // wide line, if the blendmode is ADD this is a VECTOR line, else a UI line.
             if (prim->blendmode == BLENDMODE_ADD) {
                 // this line is a vector line, use a special shader
+                
+                // pre-multiply color, so shader had non-iterated color
+                color = color * simd_make_float4(color.a, color.a, color.a, 1/color.a);
                 [self setShader:_line_shader];
                 [self drawLine:CGPointMake(prim->bounds_x0, prim->bounds_y0) to:CGPointMake(prim->bounds_x1, prim->bounds_y1) width:(prim->width * _line_width_scale) color:color];
             }

@@ -596,6 +596,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         frag = [_library newFunctionWithName:[NSString stringWithFormat:@"fragment_%@", shader_name]];
     
     if (frag == nil) {
+        assert(FALSE);
         NSLog(@"SHADER NOT FOUND: %@, using default", shader_name);
         frag = [_library newFunctionWithName:@"fragment_default"];
     }
