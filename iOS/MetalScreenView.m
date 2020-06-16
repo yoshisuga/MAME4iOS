@@ -463,7 +463,7 @@ static void texture_load(void* data, id<MTLTexture> texture) {
                 [self setTextureAddressMode:MTLSamplerAddressModeRepeat];
             else
                 [self setTextureAddressMode:MTLSamplerAddressModeClampToZero];
-            
+
             // draw a quad in the correct orientation
             UIImageOrientation orientation = UIImageOrientationUp;
             if (prim->texorient == ORIENTATION_ROT90)
