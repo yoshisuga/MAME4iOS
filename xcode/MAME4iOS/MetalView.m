@@ -53,7 +53,7 @@
     // sampler states
     MTLSamplerMinMagFilter _texture_filter;
     MTLSamplerAddressMode _texture_address_mode;
-    id<MTLSamplerState> _texture_sampler[4];
+    id<MTLSamplerState> _texture_sampler[5*2];
 
     // current vertex buffer for current frame.
     id <MTLBuffer> _vertex_buffer;
@@ -837,10 +837,12 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
 -(void)updateSamplerState {
     assert(_texture_filter == MTLSamplerMinMagFilterNearest || _texture_filter == MTLSamplerMinMagFilterLinear);
-    assert(_texture_address_mode == MTLSamplerAddressModeClampToEdge || _texture_address_mode == MTLSamplerAddressModeRepeat);
-    _Static_assert(MTLSamplerAddressModeClampToEdge == 0 && MTLSamplerAddressModeRepeat  == 2, "MTLSamplerAddressMode bad!");
-    _Static_assert(MTLSamplerMinMagFilterNearest    == 0 && MTLSamplerMinMagFilterLinear == 1, "MTLSamplerMinMagFilter bad!");
-    NSUInteger index = _texture_filter + _texture_address_mode;
+    assert(_texture_address_mode >= MTLSamplerAddressModeClampToEdge && _texture_address_mode <= MTLSamplerAddressModeClampToZero);
+    _Static_assert(MTLSamplerAddressModeClampToEdge == 0 && MTLSamplerAddressModeClampToZero == 4, "MTLSamplerAddressMode bad!");
+    _Static_assert(MTLSamplerMinMagFilterNearest == 0 && MTLSamplerMinMagFilterLinear == 1, "MTLSamplerMinMagFilter bad!");
+    _Static_assert(sizeof(_texture_sampler) / sizeof(_texture_sampler[0]) == 5*2, "_texture_sampler wrong size!");
+
+    NSUInteger index = (_texture_address_mode * 2) + _texture_filter;
     
     id<MTLSamplerState> sampler = _texture_sampler[index];
     
@@ -850,9 +852,10 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         desc.magFilter = _texture_filter;
         desc.sAddressMode = _texture_address_mode;
         desc.tAddressMode = _texture_address_mode;
+        char* address_mode_map[] = {"ClampEdge", "MirrorClamp","Repeat","MirrorRepeat","ClampZero","ClampColor"};
         desc.label = [NSString stringWithFormat:@"filter=%s, mode=%s",
                       (_texture_filter == MTLSamplerMinMagFilterNearest) ? "Nearest" : "Linear",
-                      (_texture_address_mode == MTLSamplerAddressModeClampToEdge) ? "Clamp" : "Wrap"];
+                      address_mode_map[_texture_address_mode]];
         sampler = [_device newSamplerStateWithDescriptor:desc];
         _texture_sampler[index] = sampler;
     }
@@ -868,7 +871,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     }
 }
 -(void)setTextureAddressMode:(MTLSamplerAddressMode)mode {
-    assert(_texture_address_mode == MTLSamplerAddressModeClampToEdge || _texture_address_mode == MTLSamplerAddressModeRepeat);
+    assert(_texture_address_mode >= MTLSamplerAddressModeClampToEdge && _texture_address_mode <= MTLSamplerAddressModeClampToZero);
     if (_texture_address_mode != mode) {
         _texture_address_mode = mode;
         [self updateSamplerState];
