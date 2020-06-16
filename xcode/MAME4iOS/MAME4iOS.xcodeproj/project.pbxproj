@@ -153,6 +153,8 @@
 		EF7B232D23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
 		EF8E427D249348220049C84C /* megaTron.metal in Sources */ = {isa = PBXBuildFile; fileRef = EF8E427C249348220049C84C /* megaTron.metal */; };
 		EF8E427E249348220049C84C /* megaTron.metal in Sources */ = {isa = PBXBuildFile; fileRef = EF8E427C249348220049C84C /* megaTron.metal */; };
+		EF8E4283249915F30049C84C /* lineTron.metal in Sources */ = {isa = PBXBuildFile; fileRef = EF8E4282249915F20049C84C /* lineTron.metal */; };
+		EF8E4284249915F30049C84C /* lineTron.metal in Sources */ = {isa = PBXBuildFile; fileRef = EF8E4282249915F20049C84C /* lineTron.metal */; };
 		EF8EAA86244F7F5D00DA02BB /* SteamControllerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA7F244F7F5D00DA02BB /* SteamControllerManager.m */; };
 		EF8EAA87244F7F5D00DA02BB /* SteamControllerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA7F244F7F5D00DA02BB /* SteamControllerManager.m */; };
 		EF8EAA88244F7F5D00DA02BB /* SteamController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA80244F7F5D00DA02BB /* SteamController.m */; };
@@ -388,6 +390,7 @@
 		EF301CF0240460C5000510FD /* Alert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Alert.m; sourceTree = "<group>"; };
 		EF63E1C024424D2300CFE85D /* whatsnew.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = whatsnew.md; path = "../../iOS-res/Applications/MAME4iOS.app/whatsnew.md"; sourceTree = "<group>"; };
 		EF8E427C249348220049C84C /* megaTron.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = megaTron.metal; sourceTree = "<group>"; };
+		EF8E4282249915F20049C84C /* lineTron.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = lineTron.metal; sourceTree = "<group>"; };
 		EF8EAA7E244F7F5D00DA02BB /* SteamControllerExtendedGamepad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SteamControllerExtendedGamepad.h; sourceTree = "<group>"; };
 		EF8EAA7F244F7F5D00DA02BB /* SteamControllerManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SteamControllerManager.m; sourceTree = "<group>"; };
 		EF8EAA80244F7F5D00DA02BB /* SteamController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SteamController.m; sourceTree = "<group>"; };
@@ -845,6 +848,7 @@
 				EFB7B21B247ACFE300AD96A4 /* MameShaders.metal */,
 				EFB3C6D524890F6200F44780 /* simpleCRT.metal */,
 				EF8E427C249348220049C84C /* megaTron.metal */,
+				EF8E4282249915F20049C84C /* lineTron.metal */,
 			);
 			name = ScreenView;
 			sourceTree = "<group>";
@@ -1061,6 +1065,7 @@
 				92A533C921EBDBAD0089FBB9 /* GCDWebServerFileRequest.m in Sources */,
 				925ABCA81E46DCC500997182 /* ListOptionController.m in Sources */,
 				92A533C621EBDBAD0089FBB9 /* GCDWebServerDataRequest.m in Sources */,
+				EF8E4283249915F30049C84C /* lineTron.metal in Sources */,
 				92A533A821EBDBAD0089FBB9 /* GCDWebServerRequest.m in Sources */,
 				EFB7B21C247ACFE300AD96A4 /* MameShaders.metal in Sources */,
 				925ABCA91E46DCC500997182 /* OptionsController.m in Sources */,
@@ -1115,6 +1120,7 @@
 			files = (
 				EF27F36823F73CD400B1E50A /* ZipFile.m in Sources */,
 				92A533BE21EBDBAD0089FBB9 /* GCDWebServerStreamedResponse.m in Sources */,
+				EF8E4284249915F30049C84C /* lineTron.metal in Sources */,
 				92A533C421EBDBAD0089FBB9 /* GCDWebServerMultiPartFormRequest.m in Sources */,
 				EFB7B21A2479FBD900AD96A4 /* MetalViewShaders.metal in Sources */,
 				926C770A21F271A700103EDE /* ListOptionController.m in Sources */,
