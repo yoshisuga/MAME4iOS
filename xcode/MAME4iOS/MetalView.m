@@ -29,6 +29,7 @@
     
     NSUInteger _maximumFramesPerSecond;
     BOOL _externalDisplay;
+    BOOL _textureCacheFlush;
 
     id <MTLDevice> _device;
     id<MTLLibrary> _library;
@@ -114,6 +115,7 @@
 
 - (void)layoutSubviews {
     [super layoutSubviews];
+    _textureCacheFlush = TRUE;
 }
 - (void)didMoveToWindow {
     [super didMoveToWindow];
@@ -121,6 +123,7 @@
         _layer.contentsScale = self.window.screen.scale;
         _maximumFramesPerSecond = self.window.screen.maximumFramesPerSecond;
         _externalDisplay = (self.window.screen != UIScreen.mainScreen) || TARGET_OS_SIMULATOR;
+        _textureCacheFlush = TRUE;
     }
 }
 - (void)didMoveToSuperview {
@@ -228,6 +231,11 @@
     if (!CGSizeEqualToSize(size, _layer.drawableSize)) {
         _layer.drawableSize = size;
         _frameCount = 0;
+        _textureCacheFlush = TRUE;
+    }
+    
+    if (_textureCacheFlush) {
+        _textureCacheFlush = FALSE;
         [_texture_cache removeAllObjects];
     }
     
