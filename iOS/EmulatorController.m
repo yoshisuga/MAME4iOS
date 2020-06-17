@@ -1568,7 +1568,7 @@ static NSArray* list_trim(NSArray* _list) {
             @"Coin", @"Start",
             [UIImage systemImageNamed:@"rectangle.and.arrow.up.right.and.arrow.down.left"] ?: @"⤢",
             [UIImage systemImageNamed:@"gear"] ?: @"#",
-            [UIImage systemImageNamed:@"slider.horizontal.3"] ?: @"⇵",
+            ((g_pref_showHUD == HudSizeLarge && can_edit_shader) ? [UIImage systemImageNamed:@"slider.horizontal.3"] : [UIImage systemImageNamed:@"list.dash"]) ?: @"=",
             [UIImage systemImageNamed:@"command"] ?: @"⌘"
         ];
         [hudView addToolbar:items handler:^(NSUInteger button) {
