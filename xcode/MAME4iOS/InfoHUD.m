@@ -239,12 +239,74 @@
     [self addValue:@"---"];
 }
 
+// take a image and some text and concat them together
+- (UIImage*)addText:(NSString*)text toImage:(UIImage*)image withAttributes:(NSDictionary<NSAttributedStringKey, id> *)attributes {
+    CGFloat spacing = 4.0;
+    
+    CGSize textSize = [text boundingRectWithSize:CGSizeZero options:NSStringDrawingUsesLineFragmentOrigin attributes:attributes context:nil].size;
+    CGSize size = CGSizeMake(ceil(textSize.width), ceil(textSize.height));
+
+    if (image != nil) {
+        size.width += image.size.width + spacing;
+        size.height = MAX(size.height, image.size.height);
+    }
+    
+    return [[[UIGraphicsImageRenderer alloc] initWithSize:size] imageWithActions:^(UIGraphicsImageRendererContext * context) {
+        CGPoint point = CGPointZero;
+        
+        if (image != nil) {
+            // TODO: align to baseline?
+            [image drawAtPoint:CGPointMake(point.x, (size.height - image.size.height)/2)];
+            point.x += image.size.width + spacing;
+        }
+
+        [text drawAtPoint:CGPointMake(point.x, (size.height - textSize.height)/2) withAttributes:attributes];
+    }];
+}
+
+// convert any strings of the form ":symbol:" with a image
+//      :symbol:                - return a UIImage created from [UIImage systemImageNamed] or [UIImage imageNamed]
+//      :symbol:fallback:       - return symbol as UIImage or fallback if image not found
+//      :symbol:text            - return symbol + text
+//      :symbol:fallback:text   - return symbol or fallback text + text
+- (NSArray*)convertItems:(NSArray*)_items {
+    NSMutableArray* items = [_items mutableCopy];
+    for (NSUInteger idx=0; idx<items.count; idx++) {
+        id item = items[idx];
+        assert([item isKindOfClass:[NSString class]] || [item isKindOfClass:[UIImage class]]);
+        if ([item isKindOfClass:[NSString class]] && [item hasPrefix:@":"]) {
+            NSArray* arr = [(NSString*)item componentsSeparatedByString:@":"];
+            NSString* text = arr.lastObject;
+            
+            UIImage* image = nil;
+            if (@available(iOS 13, tvOS 13, *))
+                image = [[UIImage systemImageNamed:arr[1]] imageByApplyingSymbolConfiguration:[UIImageSymbolConfiguration configurationWithFont:self.font]];
+            if (image == nil)
+                image = [UIImage imageNamed:arr[1]];
+            
+            // use fallback text if image not found.
+            if (image == nil && arr.count == 4)
+                text = [arr[2] stringByAppendingString:text];
+            
+            // if we have both text and an image, combine image + text
+            if (image != nil && text.length > 0)
+                image = [self addText:text toImage:image withAttributes:@{NSFontAttributeName:self.font}];
+            
+            if (image != nil)
+                items[idx] = image;
+            else
+                items[idx] = text;
+        }
+    }
+    return [items copy];
+}
+
 - (void)buttonPress:(UISegmentedControl*)seg {
     void (^handler)(NSUInteger) = objc_getAssociatedObject(seg, @selector(buttonPress:));
     handler(seg.selectedSegmentIndex);
 }
 - (UISegmentedControl*)makeSegmentedControl:(NSArray*)items handler:(void (^)(NSUInteger button))handler {
-    UISegmentedControl* seg = [[UISegmentedControl alloc] initWithItems:items];
+    UISegmentedControl* seg = [[UISegmentedControl alloc] initWithItems:[self convertItems:items]];
     seg.momentary = YES;
     [seg addTarget:self action:@selector(buttonPress:) forControlEvents:UIControlEventValueChanged];
     objc_setAssociatedObject(seg, @selector(buttonPress:), handler, OBJC_ASSOCIATION_RETAIN_NONATOMIC);

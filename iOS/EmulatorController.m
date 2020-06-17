@@ -1553,7 +1553,7 @@ static NSArray* list_trim(NSArray* _list) {
         g_pref_showHUD = HudSizeLarge;
     
     if (g_pref_showHUD == HudSizeTiny) {
-        [hudView addButton:[UIImage systemImageNamed:@"command"] ?: @"⌘" handler:^{
+        [hudView addButton:@":command:⌘:" handler:^{
             Options* op = [[Options alloc] init];
             g_pref_showHUD = HudSizeNormal;
             op.showHUD = g_pref_showHUD;
@@ -1566,10 +1566,10 @@ static NSArray* list_trim(NSArray* _list) {
         // add a toolbar of quick actions.
         NSArray* items = @[
             @"Coin", @"Start",
-            [UIImage systemImageNamed:@"rectangle.and.arrow.up.right.and.arrow.down.left"] ?: @"⤢",
-            [UIImage systemImageNamed:@"gear"] ?: @"#",
-            ((g_pref_showHUD == HudSizeLarge && can_edit_shader) ? [UIImage systemImageNamed:@"slider.horizontal.3"] : [UIImage systemImageNamed:@"list.dash"]) ?: @"=",
-            [UIImage systemImageNamed:@"command"] ?: @"⌘"
+            @":rectangle.and.arrow.up.right.and.arrow.down.left:⤢:",
+            @":gear:#:",
+            (g_pref_showHUD == HudSizeLarge && can_edit_shader) ? @":slider.horizontal.3:=:" : @":list.dash:=:",
+            @":command:⌘:"
         ];
         [hudView addToolbar:items handler:^(NSUInteger button) {
             NSLog(@"HUD BUTTON: %ld", button);
@@ -1610,18 +1610,17 @@ static NSArray* list_trim(NSArray* _list) {
         // add debug toolbar too
 #ifdef DEBUG
         items = @[
-            [UIImage systemImageNamed:@"z.square.fill"] ?: @"Z",
-            [UIImage systemImageNamed:@"a.square.fill"] ?: @"A",
-            [UIImage systemImageNamed:@"x.square.fill"] ?: @"X",
-            [UIImage systemImageNamed:@"i.square.fill"] ?: @"I",
-            [UIImage systemImageNamed:@"p.square.fill"] ?: @"P",
-            [UIImage systemImageNamed:@"d.square.fill"] ?: @"D",
+            @":z.square.fill:Z:",
+            @":a.square.fill:A:",
+            @":x.square.fill:X:",
+            @":i.square.fill:I:",
+            @":p.square.fill:P:",
+            @":d.square.fill:D:",
         ];
         [hudView addToolbar:items handler:^(NSUInteger button) {
             [_self commandKey:"ZAXIPD"[button]];
         }];
 #endif
-
         // add FPS display
         if (g_pref_showFPS) {
             [hudView addValue:@"000:00:00🅼 0000.00fps 000.0ms" forKey:@"FPS"];
@@ -1664,19 +1663,19 @@ static NSArray* list_trim(NSArray* _list) {
     }
 
     if (g_pref_showHUD == HudSizeLarge) {
-        [hudView addButtons:(myosd_num_players >= 2) ? @[@"P1 Start", @"P2 Start"] : @[@"Coin+Start"] handler:^(NSUInteger button) {
+        [hudView addButtons:(myosd_num_players >= 2) ? @[@":person:P1 Start", @":person.2:P2 Start"] : @[@":centsign.circle:Coin+Start"] handler:^(NSUInteger button) {
             [_self startPlayer:(int)button];
         }];
-        [hudView addButtons:@[@"Load", @"Save"] handler:^(NSUInteger button) {
+        [hudView addButtons:@[@":bookmark:Load",@":bookmark.fill:Save"] handler:^(NSUInteger button) {
              [_self runState:button == 0 ? LOAD_STATE : SAVE_STATE];
         }];
-        [hudView addButtons:@[@"MAME Menu", @"Settings"] handler:^(NSUInteger button) {
+        [hudView addButtons:@[@":slider.horizontal.3:Configure",@":gear:Settings"] handler:^(NSUInteger button) {
             if (button == 0)
                 myosd_configure = 1;
             else
                 [_self runSettings];
         }];
-        [hudView addButton:@"Exit Game" color:UIColor.systemRedColor handler:^{
+        [hudView addButton:(myosd_inGame && myosd_in_menu==0) ? @":xmark.circle:Exit Game" : @":arrow.uturn.left.circle:Exit" color:UIColor.systemRedColor handler:^{
             [_self runExit:NO];
         }];
     }
