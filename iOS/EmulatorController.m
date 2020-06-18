@@ -538,8 +538,11 @@ void mame_state(int load_save, int slot)
 - (void)startPlayer:(int)player {
     // add an extra COIN for good luck, some games need two coins to play by default
     push_mame_button(0, MYOSD_SELECT);      // Player 1 COIN
-    // insert a COIN for player X, make sure to not exceed the max coin slot for game
-    push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X (or P1) COIN
+
+    // insert a COIN for each player, make sure to not exceed the max coin slot for game
+    for (int i=0; i<=player; i++)
+         push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X coin
+    
     // then hit START
     push_mame_button(player, MYOSD_START);  // Player X START
 }
@@ -578,11 +581,11 @@ void mame_state(int load_save, int slot)
         }
         else {
             // in-game menu for player 1 or 2, give them options to start 1P or 2P
-            int num_players = MIN(myosd_num_players, 2);
+            int num_players = MIN(myosd_num_players, 4);
 
             for (int player=0; player<num_players; player++) {
-                title = [NSString stringWithFormat:@"Coin+Start %d Player", player+1];
-                NSString* image = @[@"person", @"person.2", @"person.3", @"centsign.circle"][player];
+                title = [NSString stringWithFormat:@"Coin+Start Player %d", player+1];
+                NSString* image = @[@"person", @"person.2", @"person.3", @"person.3"][player];
                 [menu addAction:[UIAlertAction actionWithTitle:title style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:image withPointSize:size] handler:^(UIAlertAction* action) {
                     [self startPlayer:player];
                     [self endMenu];
@@ -1666,6 +1669,11 @@ static NSArray* list_trim(NSArray* _list) {
         [hudView addButtons:(myosd_num_players >= 2) ? @[@":person:P1 Start", @":person.2:P2 Start"] : @[@":centsign.circle:Coin+Start"] handler:^(NSUInteger button) {
             [_self startPlayer:(int)button];
         }];
+        if (myosd_num_players >= 4) {
+            [hudView addButtons:@[@":person.3:P3 Start", @":person.3:P4 Start"] handler:^(NSUInteger button) {
+                [_self startPlayer:(int)button + 2];
+            }];
+        }
         [hudView addButtons:@[@":bookmark:Load",@":bookmark.fill:Save"] handler:^(NSUInteger button) {
              [_self runState:button == 0 ? LOAD_STATE : SAVE_STATE];
         }];
