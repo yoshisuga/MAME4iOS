@@ -535,6 +535,7 @@ void mame_state(int load_save, int slot)
     [self presentViewController:viewController animated:YES completion:nil];
 }
 
+// player is zero based 0=P1, 1=P2, etc
 - (void)startPlayer:(int)player {
     // add an extra COIN for good luck, some games need two coins to play by default
     push_mame_button(0, MYOSD_SELECT);      // Player 1 COIN
@@ -1669,19 +1670,20 @@ static NSArray* list_trim(NSArray* _list) {
         [hudView addButtons:(myosd_num_players >= 2) ? @[@":person:P1 Start", @":person.2:P2 Start"] : @[@":centsign.circle:Coin+Start"] handler:^(NSUInteger button) {
             [_self startPlayer:(int)button];
         }];
-        if (myosd_num_players >= 4) {
-            [hudView addButtons:@[@":person.3:P3 Start", @":person.3:P4 Start"] handler:^(NSUInteger button) {
+        if (myosd_num_players >= 3) {
+            // FYI there is no person.4 symbol, so we just reuse person.3
+            [hudView addButtons:@[@":person.3:P3 Start", (myosd_num_players >= 4) ? @":person.3:P4 Start" : @" "] handler:^(NSUInteger button) {
                 [_self startPlayer:(int)button + 2];
             }];
         }
         [hudView addButtons:@[@":bookmark:Load",@":bookmark.fill:Save"] handler:^(NSUInteger button) {
              [_self runState:button == 0 ? LOAD_STATE : SAVE_STATE];
         }];
-        [hudView addButtons:@[@":slider.horizontal.3:Configure",@":gear:Settings"] handler:^(NSUInteger button) {
+        [hudView addButtons:@[@":slider.horizontal.3:Configure",@":power:Reset"] handler:^(NSUInteger button) {
             if (button == 0)
                 myosd_configure = 1;
             else
-                [_self runSettings];
+                myosd_reset = 1;
         }];
         [hudView addButton:(myosd_inGame && myosd_in_menu==0) ? @":xmark.circle:Exit Game" : @":arrow.uturn.left.circle:Exit" color:UIColor.systemRedColor handler:^{
             [_self runExit:NO];
