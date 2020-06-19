@@ -537,15 +537,26 @@ void mame_state(int load_save, int slot)
 
 // player is zero based 0=P1, 1=P2, etc
 - (void)startPlayer:(int)player {
-    // add an extra COIN for good luck, some games need two coins to play by default
-    push_mame_button(0, MYOSD_SELECT);      // Player 1 COIN
-
-    // insert a COIN for each player, make sure to not exceed the max coin slot for game
-    for (int i=0; i<=player; i++)
-         push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X coin
     
-    // then hit START
-    push_mame_button(player, MYOSD_START);  // Player X START
+    // P1 or P2 Start
+    if (player < 2) {
+        // add an extra COIN for good luck, some games need two coins to play by default
+        push_mame_button(0, MYOSD_SELECT);      // Player 1 COIN
+        // insert a COIN, make sure to not exceed the max coin slot for game
+        push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X (or P1) COIN
+        // then hit START
+        push_mame_button(player, MYOSD_START);  // Player X START
+    }
+    // P3 or P4 Start
+    else {
+        // insert a COIN for each player, make sure to not exceed the max coin slot for game
+        for (int i=0; i<=player; i++)
+             push_mame_button((i < myosd_num_coins ? i : 0), MYOSD_SELECT);  // Player X coin
+
+        // then hit START for each player
+        for (int i=player; i>=0; i--)
+            push_mame_button(i, MYOSD_START);  // Player X START
+    }
 }
 
 - (void)runMenu:(int)player from:(UIView*)view
@@ -4191,7 +4202,10 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
             int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
             if (menuButtonHandler(pressed)) {
                 NSLog(@"%d: OPTION", index);
-                [self startPlayer:player];
+                if (player < 2)    // add a extra coin for luck, or games that default to two credits.
+                    push_mame_button(0, MYOSD_SELECT);  // Player 1 coin
+                push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X COIN
+                push_mame_button(player, MYOSD_START); // Player X START
             }
         };
         
