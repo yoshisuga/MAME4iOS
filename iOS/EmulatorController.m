@@ -587,16 +587,17 @@ void mame_state(int load_save, int slot)
         if (player >= 2 && myosd_num_players > 2) {
             // in-game menu for player 3+ just give them a COIN+START option....
             [menu addAction:[UIAlertAction actionWithTitle:@"Coin+Start" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"centsign.circle" withPointSize:size] handler:^(UIAlertAction* action) {
-                [self startPlayer:player];
+                push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X (or P1) COIN
+                push_mame_button(player, MYOSD_START);  // Player X START
                 [self endMenu];
             }]];
         }
         else {
-            // in-game menu for player 1 or 2, give them options to start 1P or 2P
+            // in-game menu for player 1-4, give them options to start.
             int num_players = MIN(myosd_num_players, 4);
 
             for (int player=0; player<num_players; player++) {
-                title = [NSString stringWithFormat:@"Coin+Start Player %d", player+1];
+                title = [NSString stringWithFormat:@"%d Player Start", player+1];
                 NSString* image = @[@"person", @"person.2", @"person.3", @"person.3"][player];
                 [menu addAction:[UIAlertAction actionWithTitle:title style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:image withPointSize:size] handler:^(UIAlertAction* action) {
                     [self startPlayer:player];
@@ -616,18 +617,6 @@ void mame_state(int load_save, int slot)
         [self runSettings];
     }]];
 
-#ifdef XXDEBUG
-    [menu addAction:[UIAlertAction actionWithTitle:(g_enable_debug_view ? @"DEBUG OFF" : @"DEBUG ON") style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"bolt" withPointSize:size] handler:^(UIAlertAction* action) {
-        [self endMenu];
-        g_enable_debug_view = !g_enable_debug_view;
-        [self changeUI];
-    }]];
-    [menu addAction:[UIAlertAction actionWithTitle:(g_device_is_fullscreen ? @"FULLSCREEN OFF" : @"FULLSCREEN ON") style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"arrow.up.left.and.arrow.down.right" withPointSize:size] handler:^(UIAlertAction* action) {
-        [self endMenu];
-        [self commandKey:'\r'];
-    }]];
-#endif
-    
     if(enable_menu_exit_option) {
         [menu addAction:[UIAlertAction actionWithTitle:((myosd_inGame && myosd_in_menu==0) ? @"Exit Game" : @"Exit") style:UIAlertActionStyleDestructive image:[UIImage systemImageNamed:@"arrow.uturn.left.circle" withPointSize:size] handler:^(UIAlertAction* action) {
             [self endMenu];
@@ -4202,7 +4191,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
             int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
             if (menuButtonHandler(pressed)) {
                 NSLog(@"%d: OPTION", index);
-                if (player < 2)    // add a extra coin for luck, or games that default to two credits.
+                if (player < 2)    // add a extra coin for luck, for games that default to two credits.
                     push_mame_button(0, MYOSD_SELECT);  // Player 1 coin
                 push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X COIN
                 push_mame_button(player, MYOSD_START); // Player X START
