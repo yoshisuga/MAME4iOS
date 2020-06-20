@@ -179,7 +179,6 @@
     if ([value isKindOfClass:[NSString class]] && [value hasPrefix:@"**"] && [value hasSuffix:@"**"]) {
         value = [value substringWithRange:NSMakeRange(2, [value length]-4)];
         label.font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
-        //label.textAlignment = NSTextAlignmentCenter;
     }
     
     if ([value isKindOfClass:[NSString class]])
@@ -238,65 +237,72 @@
 - (void)addSeparator {
     [self addValue:@"---"];
 }
-
-// take a image and some text and concat them together
-- (UIImage*)addText:(NSString*)text toImage:(UIImage*)image withAttributes:(NSDictionary<NSAttributedStringKey, id> *)attributes {
-    CGFloat spacing = 4.0;
-    
-    CGSize textSize = [text boundingRectWithSize:CGSizeZero options:NSStringDrawingUsesLineFragmentOrigin attributes:attributes context:nil].size;
-    CGSize size = CGSizeMake(ceil(textSize.width), ceil(textSize.height));
-
-    if (image != nil) {
-        size.width += image.size.width + spacing;
-        size.height = MAX(size.height, image.size.height);
-    }
-    
-    return [[[UIGraphicsImageRenderer alloc] initWithSize:size] imageWithActions:^(UIGraphicsImageRendererContext * context) {
-        CGPoint point = CGPointZero;
-        
-        if (image != nil) {
-            // TODO: align to baseline?
-            [image drawAtPoint:CGPointMake(point.x, (size.height - image.size.height)/2)];
-            point.x += image.size.width + spacing;
-        }
-
-        [text drawAtPoint:CGPointMake(point.x, (size.height - textSize.height)/2) withAttributes:attributes];
-    }];
+- (void)addTitle:(NSString*)str {
+    [self addValue:str];
+    UILabel* label = (UILabel*)_stack.subviews.lastObject;
+    label.font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
+    label.textAlignment = NSTextAlignmentCenter;
 }
 
-// convert any strings of the form ":symbol:" with a image
-//      :symbol:                - return a UIImage created from [UIImage systemImageNamed] or [UIImage imageNamed]
-//      :symbol:fallback:       - return symbol as UIImage or fallback if image not found
-//      :symbol:text            - return symbol + text
-//      :symbol:fallback:text   - return symbol or fallback text + text
+
+// convert text to a UIImaage, replacing any strings of the form ":symbol:" with a systemImage
+//      :symbol-name:                - return a UIImage created from [UIImage systemImageNamed] or [UIImage imageNamed]
+//      :symbol-name:fallback:       - return symbol as UIImage or fallback text if image not found
+//      :symbol-name:text            - return symbol + text
+//      :symbol-name:fallback:text   - return symbol or fallback text + text
++ (UIImage*)imageWithString:(NSString*)text withFont:(UIFont*)_font {
+
+    UIImage* image;
+    UIFont* font = _font ?: [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+
+    // handle :symbol-name: or :symbol-name:fallback:
+    NSArray* arr = [(NSString*)text componentsSeparatedByString:@":"];
+    if (arr.count > 2) {
+        text = arr.lastObject;
+
+        if (@available(iOS 13.0, *))
+            image = [[UIImage systemImageNamed:arr[1]] imageByApplyingSymbolConfiguration:[UIImageSymbolConfiguration configurationWithFont:font]];
+
+        // use fallback text if image not found.
+        if (image == nil && arr.count == 4)
+            text = [arr[2] stringByAppendingString:text];
+    }
+    
+    // if we have both text and an image, combine image + text
+    if (image == nil || text.length > 0) {
+        CGFloat spacing = 4.0;
+        NSDictionary* attributes = @{NSFontAttributeName:font};
+        
+        CGSize textSize = [text boundingRectWithSize:CGSizeZero options:NSStringDrawingUsesLineFragmentOrigin attributes:attributes context:nil].size;
+        CGSize size = CGSizeMake(ceil(textSize.width), ceil(textSize.height));
+
+        if (image != nil) {
+            size.width += image.size.width + spacing;
+            size.height = MAX(size.height, image.size.height);
+        }
+        
+        image = [[[UIGraphicsImageRenderer alloc] initWithSize:size] imageWithActions:^(UIGraphicsImageRendererContext * context) {
+            CGPoint point = CGPointZero;
+            
+            if (image != nil) {
+                // TODO: align to baseline?
+                [image drawAtPoint:CGPointMake(point.x, (size.height - image.size.height)/2)];
+                point.x += image.size.width + spacing;
+            }
+
+            [text drawAtPoint:CGPointMake(point.x, (size.height - textSize.height)/2) withAttributes:attributes];
+        }];
+    }
+
+    return image;
+}
+
 - (NSArray*)convertItems:(NSArray*)_items {
     NSMutableArray* items = [_items mutableCopy];
     for (NSUInteger idx=0; idx<items.count; idx++) {
         id item = items[idx];
-        assert([item isKindOfClass:[NSString class]] || [item isKindOfClass:[UIImage class]]);
-        if ([item isKindOfClass:[NSString class]] && [item hasPrefix:@":"]) {
-            NSArray* arr = [(NSString*)item componentsSeparatedByString:@":"];
-            NSString* text = arr.lastObject;
-            
-            UIImage* image = nil;
-            if (@available(iOS 13, tvOS 13, *))
-                image = [[UIImage systemImageNamed:arr[1]] imageByApplyingSymbolConfiguration:[UIImageSymbolConfiguration configurationWithFont:self.font]];
-            if (image == nil)
-                image = [UIImage imageNamed:arr[1]];
-            
-            // use fallback text if image not found.
-            if (image == nil && arr.count == 4)
-                text = [arr[2] stringByAppendingString:text];
-            
-            // if we have both text and an image, combine image + text
-            if (image != nil && text.length > 0)
-                image = [self addText:text toImage:image withAttributes:@{NSFontAttributeName:self.font}];
-            
-            if (image != nil)
-                items[idx] = image;
-            else
-                items[idx] = text;
-        }
+        if ([item isKindOfClass:[NSString class]] && [item hasPrefix:@":"])
+            items[idx] = [InfoHUD imageWithString:item withFont:self.font];
     }
     return [items copy];
 }
@@ -312,6 +318,8 @@
     objc_setAssociatedObject(seg, @selector(buttonPress:), handler, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     if (@available(iOS 13.0, *))
          seg.selectedSegmentTintColor = self.tintColor;
+    if (items.firstObject == (id)@"")
+        seg.alpha = 0.0;
     return seg;
 }
 
