@@ -539,7 +539,7 @@ void mame_state(int load_save, int slot)
 - (void)startPlayer:(int)player {
     
     // P1 or P2 Start
-    if (player < 2) {
+    if (player < 2 && myosd_num_players <= 2) {
         // add an extra COIN for good luck, some games need two coins to play by default
         push_mame_button(0, MYOSD_SELECT);      // Player 1 COIN
         // insert a COIN, make sure to not exceed the max coin slot for game
@@ -1672,8 +1672,9 @@ static NSArray* list_trim(NSArray* _list) {
         }];
         if (myosd_num_players >= 3) {
             // FYI there is no person.4 symbol, so we just reuse person.3
-            [hudView addButtons:@[@":person.3:P3 Start", (myosd_num_players >= 4) ? @":person.3:P4 Start" : @" "] handler:^(NSUInteger button) {
-                [_self startPlayer:(int)button + 2];
+            [hudView addButtons:@[@":person.3:P3 Start", (myosd_num_players >= 4) ? @":person.3:P4 Start" : @""] handler:^(NSUInteger button) {
+                if (button+2 < myosd_num_players)
+                    [_self startPlayer:(int)button + 2];
             }];
         }
         [hudView addButtons:@[@":bookmark:Load",@":bookmark.fill:Save"] handler:^(NSUInteger button) {
