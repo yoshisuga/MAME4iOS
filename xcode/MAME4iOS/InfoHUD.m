@@ -119,7 +119,6 @@
     for (UIView* view in _stack.subviews)
         [view removeFromSuperview];
     _width = 0.0;
-    //[self sizeToFit];
 }
 
 - (UIImage*)dotWithColor:(UIColor*)color size:(CGSize)size
@@ -210,7 +209,6 @@
     }
     
     [self setValue:value forKey:key];
-    //[self sizeToFit];
 }
 - (void)addValue:(id)value forKey:(NSString *)key format:(NSString*)format min:(id)min max:(id)max {
     [self addValue:value forKey:key format:format min:min max:max step:nil];
