@@ -75,6 +75,8 @@ TIMER_INIT_END
     NSString* _line_width_scale_variable;
 }
 
+#pragma mark - SCREEN SHADER and LINE SHADER Options
+
 // SCREEN SHADER
 //
 // Metal shader string is of the form:
@@ -122,6 +124,8 @@ TIMER_INIT_END
              @"megaTron - Grille Mask: megaTron, mame-screen-src-rect, mame-screen-dst-rect,2.0,0.85,0.6,2.0,0.02,1.0,2.0,3.0",
              @"megaTron - Grille Mask Lite: megaTron, mame-screen-src-rect, mame-screen-dst-rect,1.0,0.6,0.6,1.6,0.02,1.0,2.0,2.8",
              @"megaTron - No Shadow Mask but Blurred: megaTron, mame-screen-src-rect, mame-screen-dst-rect,0.0,0.6,0.6,1.0,0.02,0.0,2.0,2.6",
+             
+             @"ulTron : ulTron, mame-screen-src-rect, mame-screen-dst-rect",
              
 #ifdef DEBUG
              @"Wombat1: mame_screen_test, mame-screen-size, frame-count, 1.0, 8.0, 8.0",
@@ -171,6 +175,8 @@ TIMER_INIT_END
 + (NSArray*)colorSpaceList {
     return [CGScreenView colorSpaceList];
 }
+
+#pragma mark - MetalScreenView INIT
 
 // split and trim a string
 // TODO: move this to a common place??
@@ -241,6 +247,8 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     [self setNeedsLayout];
 }
 
+#pragma mark - MetalScreenView UIView stuff
+
 - (void)layoutSubviews {
     [super layoutSubviews];
 }
@@ -250,6 +258,8 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 - (void)didMoveToSuperview {
     [super didMoveToSuperview];
 }
+
+#pragma mark - texture conversion
 
 static void texture_load(void* data, id<MTLTexture> texture) {
     
@@ -356,6 +366,8 @@ static void texture_load(void* data, id<MTLTexture> texture) {
     }
     TIMER_STOP(texture_load)
 }
+
+#pragma mark - draw MAME primitives
 
 // return 1 if you handled the draw, 0 for a software render
 // NOTE this is called on MAME background thread, dont do anything stupid.
@@ -547,6 +559,8 @@ static void texture_load(void* data, id<MTLTexture> texture) {
     // always return 1 saying we handled the draw.
     return 1;
 }
+
+#pragma mark - CODE COVERAGE and DEBUG stuff
 
 #ifdef DEBUG
 //
