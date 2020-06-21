@@ -103,7 +103,7 @@ TIMER_INIT_END
 //
 + (NSArray*)screenShaderList {
     return @[kScreenViewShaderDefault,
-             @"Simple CRT: simpleCRT, mame-screen-dst-rect, mame-screen-src-rect,\
+             @"simpleTron: simpleCRT, mame-screen-dst-rect, mame-screen-src-rect,\
                             Vertical Curvature = 5.0 1.0 10.0 0.1,\
                             Horizontal Curvature = 4.0 1.0 10.0 0.1,\
                             Curvature Strength = 0.25 0.0 1.0 0.05,\
