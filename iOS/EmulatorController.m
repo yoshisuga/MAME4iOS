@@ -535,13 +535,28 @@ void mame_state(int load_save, int slot)
     [self presentViewController:viewController animated:YES completion:nil];
 }
 
+// player is zero based 0=P1, 1=P2, etc
 - (void)startPlayer:(int)player {
-    // add an extra COIN for good luck, some games need two coins to play by default
-    push_mame_button(0, MYOSD_SELECT);      // Player 1 COIN
-    // insert a COIN for player X, make sure to not exceed the max coin slot for game
-    push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X (or P1) COIN
-    // then hit START
-    push_mame_button(player, MYOSD_START);  // Player X START
+    
+    // P1 or P2 Start
+    if (player < 2 && myosd_num_players <= 2) {
+        // add an extra COIN for good luck, some games need two coins to play by default
+        push_mame_button(0, MYOSD_SELECT);      // Player 1 COIN
+        // insert a COIN, make sure to not exceed the max coin slot for game
+        push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X (or P1) COIN
+        // then hit START
+        push_mame_button(player, MYOSD_START);  // Player X START
+    }
+    // P3 or P4 Start
+    else {
+        // insert a COIN for each player, make sure to not exceed the max coin slot for game
+        for (int i=0; i<=player; i++)
+             push_mame_button((i < myosd_num_coins ? i : 0), MYOSD_SELECT);  // Player X coin
+
+        // then hit START for each player
+        for (int i=player; i>=0; i--)
+            push_mame_button(i, MYOSD_START);  // Player X START
+    }
 }
 
 - (void)runMenu:(int)player from:(UIView*)view
@@ -572,17 +587,18 @@ void mame_state(int load_save, int slot)
         if (player >= 2 && myosd_num_players > 2) {
             // in-game menu for player 3+ just give them a COIN+START option....
             [menu addAction:[UIAlertAction actionWithTitle:@"Coin+Start" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"centsign.circle" withPointSize:size] handler:^(UIAlertAction* action) {
-                [self startPlayer:player];
+                push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X (or P1) COIN
+                push_mame_button(player, MYOSD_START);  // Player X START
                 [self endMenu];
             }]];
         }
         else {
-            // in-game menu for player 1 or 2, give them options to start 1P or 2P
-            int num_players = MIN(myosd_num_players, 2);
+            // in-game menu for player 1-4, give them options to start.
+            int num_players = MIN(myosd_num_players, 4);
 
             for (int player=0; player<num_players; player++) {
-                title = [NSString stringWithFormat:@"Coin+Start %d Player", player+1];
-                NSString* image = @[@"person", @"person.2", @"person.3", @"centsign.circle"][player];
+                title = [NSString stringWithFormat:@"%d Player Start", player+1];
+                NSString* image = @[@"person", @"person.2", @"person.3", @"person.3"][player];
                 [menu addAction:[UIAlertAction actionWithTitle:title style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:image withPointSize:size] handler:^(UIAlertAction* action) {
                     [self startPlayer:player];
                     [self endMenu];
@@ -601,18 +617,6 @@ void mame_state(int load_save, int slot)
         [self runSettings];
     }]];
 
-#ifdef XXDEBUG
-    [menu addAction:[UIAlertAction actionWithTitle:(g_enable_debug_view ? @"DEBUG OFF" : @"DEBUG ON") style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"bolt" withPointSize:size] handler:^(UIAlertAction* action) {
-        [self endMenu];
-        g_enable_debug_view = !g_enable_debug_view;
-        [self changeUI];
-    }]];
-    [menu addAction:[UIAlertAction actionWithTitle:(g_device_is_fullscreen ? @"FULLSCREEN OFF" : @"FULLSCREEN ON") style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"arrow.up.left.and.arrow.down.right" withPointSize:size] handler:^(UIAlertAction* action) {
-        [self endMenu];
-        [self commandKey:'\r'];
-    }]];
-#endif
-    
     if(enable_menu_exit_option) {
         [menu addAction:[UIAlertAction actionWithTitle:((myosd_inGame && myosd_in_menu==0) ? @"Exit Game" : @"Exit") style:UIAlertActionStyleDestructive image:[UIImage systemImageNamed:@"arrow.uturn.left.circle" withPointSize:size] handler:^(UIAlertAction* action) {
             [self endMenu];
@@ -1666,14 +1670,21 @@ static NSArray* list_trim(NSArray* _list) {
         [hudView addButtons:(myosd_num_players >= 2) ? @[@":person:P1 Start", @":person.2:P2 Start"] : @[@":centsign.circle:Coin+Start"] handler:^(NSUInteger button) {
             [_self startPlayer:(int)button];
         }];
+        if (myosd_num_players >= 3) {
+            // FYI there is no person.4 symbol, so we just reuse person.3
+            [hudView addButtons:@[@":person.3:P3 Start", (myosd_num_players >= 4) ? @":person.3:P4 Start" : @""] handler:^(NSUInteger button) {
+                if (button+2 < myosd_num_players)
+                    [_self startPlayer:(int)button + 2];
+            }];
+        }
         [hudView addButtons:@[@":bookmark:Load",@":bookmark.fill:Save"] handler:^(NSUInteger button) {
              [_self runState:button == 0 ? LOAD_STATE : SAVE_STATE];
         }];
-        [hudView addButtons:@[@":slider.horizontal.3:Configure",@":gear:Settings"] handler:^(NSUInteger button) {
+        [hudView addButtons:@[@":slider.horizontal.3:Configure",@":power:Reset"] handler:^(NSUInteger button) {
             if (button == 0)
                 myosd_configure = 1;
             else
-                [_self runSettings];
+                myosd_reset = 1;
         }];
         [hudView addButton:(myosd_inGame && myosd_in_menu==0) ? @":xmark.circle:Exit Game" : @":arrow.uturn.left.circle:Exit" color:UIColor.systemRedColor handler:^{
             [_self runExit:NO];
@@ -4181,7 +4192,10 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
             int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
             if (menuButtonHandler(pressed)) {
                 NSLog(@"%d: OPTION", index);
-                [self startPlayer:player];
+                if (player < 2)    // add a extra coin for luck, for games that default to two credits.
+                    push_mame_button(0, MYOSD_SELECT);  // Player 1 coin
+                push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X COIN
+                push_mame_button(player, MYOSD_START); // Player X START
             }
         };
         
