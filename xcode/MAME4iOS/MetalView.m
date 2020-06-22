@@ -29,6 +29,7 @@
     
     NSUInteger _maximumFramesPerSecond;
     BOOL _externalDisplay;
+    BOOL _textureCacheFlush;
 
     id <MTLDevice> _device;
     id<MTLLibrary> _library;
@@ -114,6 +115,7 @@
 
 - (void)layoutSubviews {
     [super layoutSubviews];
+    _textureCacheFlush = TRUE;
 }
 - (void)didMoveToWindow {
     [super didMoveToWindow];
@@ -121,6 +123,7 @@
         _layer.contentsScale = self.window.screen.scale;
         _maximumFramesPerSecond = self.window.screen.maximumFramesPerSecond;
         _externalDisplay = (self.window.screen != UIScreen.mainScreen) || TARGET_OS_SIMULATOR;
+        _textureCacheFlush = TRUE;
     }
 }
 - (void)didMoveToSuperview {
@@ -228,6 +231,11 @@
     if (!CGSizeEqualToSize(size, _layer.drawableSize)) {
         _layer.drawableSize = size;
         _frameCount = 0;
+        _textureCacheFlush = TRUE;
+    }
+    
+    if (_textureCacheFlush) {
+        _textureCacheFlush = FALSE;
         [_texture_cache removeAllObjects];
     }
     
@@ -348,18 +356,12 @@
 }
 -(void)drawLine:(CGPoint)start to:(CGPoint)end width:(CGFloat)width color:(VertexColor)color {
     
-    // make the width a little wider so we can blend down the alpha on the edges.
-    // width = width * 1.2;
-
     simd_float2 p0 = simd_make_float2(start.x, start.y);
     simd_float2 p1 = simd_make_float2(end.x, end.y);
 
     simd_float4 color0 = color;
     simd_float4 color1 = simd_make_float4(color.xyz, color.w * 0.25);
     
-    // vector from p0 -> p1
-    simd_float2 v;
-
     // if p0 == p1, draw a little diamond
     //   2 + 4
     //    /|\
@@ -375,18 +377,28 @@
     //  |     \|                                  |/
     //  v    3 +----------------------------------+ 5
 
-    if (p0.x == p1.x && p0.y == p1.y)
-        v = simd_make_float2(width * 0.5, 0);
+    // vector from p0 -> p1
+    simd_float2 v = p1 - p0;
+    float length = simd_length(v);
+    float width2 = width * 0.5;
+    
+    // normalize vector and scale it by half width.
+    if (length < 0.001)
+        v = simd_make_float2(width2, 0);
     else
-        v = simd_normalize(p1 - p0) * width * 0.5;
+        v = v * (1.0 / length) * width2;
+    
+    // encode the position on the line in the texture coordinates for the fragment shader.
+    //      vary texture_u from 0 to length along the line length.
+    //      vary texture_v from -1 to +1 along the line width, zero is center.
 
     Vertex2D vertices[] = {
-        Vertex2D(p0.x - v.y,p0.y + v.x,0.0,0.0,color1),  // 2
-        Vertex2D(p1.x - v.y,p1.y + v.x,0.0,0.0,color1),  // 4
-        Vertex2D(p0.x - v.x,p0.y - v.y,0.0,0.0,color0),  // 1
-        Vertex2D(p1.x + v.x,p1.y + v.y,0.0,0.0,color0),  // 6
-        Vertex2D(p0.x + v.y,p0.y - v.x,0.0,0.0,color1),  // 3
-        Vertex2D(p1.x + v.y,p1.y - v.x,0.0,0.0,color1),  // 5
+        Vertex2D(p0.x - v.y,p0.y + v.x, 0.0,1.0,        color1),  // 2
+        Vertex2D(p1.x - v.y,p1.y + v.x, length,1.0,     color1),  // 4
+        Vertex2D(p0.x - v.x,p0.y - v.y, -width2,0.0,    color0),  // 1
+        Vertex2D(p1.x + v.x,p1.y + v.y, length+width2,0.0,color0),// 6
+        Vertex2D(p0.x + v.y,p0.y - v.x, 0.0,-1.0,       color1),  // 3
+        Vertex2D(p1.x + v.y,p1.y - v.x, length,-1.0,    color1),  // 5
     };
     [self drawPrim:MTLPrimitiveTypeTriangleStrip vertices:vertices count:sizeof(vertices)/sizeof(vertices[0])];
 }
@@ -522,6 +534,14 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     return arr;
 }
 
+//// split and trim a string
+//- (NSMutableArray*)split:(NSString*)str sep:(NSString*) sep {
+//    NSMutableArray* arr = [[str componentsSeparatedByString:sep] mutableCopy];
+//    for (int i=0; i<arr.count; i++)
+//        arr[i] = [arr[i] stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
+//    return arr;
+//}
+
 /// a shader is a string that selects the fragment function and blend mode to use.
 /// it has the following format:
 ///
@@ -584,6 +604,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         frag = [_library newFunctionWithName:[NSString stringWithFormat:@"fragment_%@", shader_name]];
     
     if (frag == nil) {
+        assert(FALSE);
         NSLog(@"SHADER NOT FOUND: %@, using default", shader_name);
         frag = [_library newFunctionWithName:@"fragment_default"];
     }

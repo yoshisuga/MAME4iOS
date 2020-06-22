@@ -31,6 +31,7 @@ enum
 	KEY_PGDN,
 	KEY_SERVICE,
     KEY_CONFIGURE,
+    KEY_PAUSE,
 	KEY_TOTAL
 };
 
@@ -144,6 +145,7 @@ void droid_ios_init_input(running_machine *machine)
 
     input_device_item_add(keyboard_device, "Service", &keyboard_state[KEY_SERVICE], ITEM_ID_F2, my_get_state);
     input_device_item_add(keyboard_device, "Configure", &keyboard_state[KEY_CONFIGURE], ITEM_ID_TAB, my_get_state);
+    input_device_item_add(keyboard_device, "Pause", &keyboard_state[KEY_PAUSE], ITEM_ID_PAUSE, my_get_state);
 
     for (int i = 0; i < 4; i++)
     {
@@ -398,6 +400,7 @@ void droid_ios_poll_input(running_machine *machine)
             }
         }
         
+        // SERVICE key
 		if(myosd_service && !myosd_in_menu && !netplay)
 		{
 			keyboard_state[KEY_SERVICE] = 0x80;
@@ -417,6 +420,17 @@ void droid_ios_poll_input(running_machine *machine)
         else
         {
             keyboard_state[KEY_CONFIGURE] = 0;
+        }
+
+        // PAUSE key
+        if(myosd_mame_pause)
+        {
+            keyboard_state[KEY_PAUSE] = 0x80;
+            myosd_mame_pause = 0;
+        }
+        else
+        {
+            keyboard_state[KEY_PAUSE] = 0;
         }
 
 		keyboard_state[KEY_LOAD] =  0;
@@ -703,6 +717,9 @@ void osd_customize_input_type_list(input_type_desc *typelist)
                 // input_seq_set_2(&typedesc->seq[SEQ_TYPE_STANDARD], INPUT_CODE_SET_DEVINDEX(JOYCODE_SELECT, 0), INPUT_CODE_SET_DEVINDEX(JOYCODE_START, 0));
                 input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD], KEYCODE_TAB);
 				break;
+            case IPT_UI_PAUSE:
+                input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD], KEYCODE_PAUSE);
+                break;
 			case IPT_COIN1:
 				input_seq_set_1(&typedesc->seq[SEQ_TYPE_STANDARD], INPUT_CODE_SET_DEVINDEX(JOYCODE_SELECT, 0));
 				break;

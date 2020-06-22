@@ -125,7 +125,8 @@ int g_controller_opacity = 50;
 int g_device_is_landscape = 0;
 int g_device_is_fullscreen = 0;
 
-NSString* g_pref_effect;
+NSString* g_pref_screen_shader;
+NSString* g_pref_line_shader;
 NSString* g_pref_filter;
 NSString* g_pref_border;
 NSString* g_pref_colorspace;
@@ -196,7 +197,7 @@ static int ways_auto = 0;
 static int change_layout=0;
 #endif
 
-#define kInfoHUDFrameKey @"info_hud_frame"
+#define kHUDPositionKey  @"hud_rect"
 #define kSelectedGameKey @"selected_game"
 static BOOL g_mame_reset = FALSE;           // do a full reset (delete cfg files) before running MAME
 static char g_mame_game[MAX_GAME_NAME];     // game MAME should run (or empty is menu)
@@ -213,6 +214,8 @@ static EmulatorController *sharedInstance = nil;
 static const int buttonPressReleaseCycles = 2;
 static const int buttonNextPressCycles = 32;
 
+static BOOL g_video_reset = FALSE;
+
 // called by the OSD layer when redner target changes size
 // **NOTE** this is called on the MAME background thread, dont do anything stupid.
 void iphone_Reset_Views(void)
@@ -227,8 +230,12 @@ void iphone_Reset_Views(void)
     
     if (!myosd_inGame)
         [sharedInstance performSelectorOnMainThread:@selector(moveROMS) withObject:nil waitUntilDone:NO];
-    
-    [sharedInstance performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:NO];
+
+    // set this flag to cause the next call to myosd_handle_turbo (aka myosd_poll_input) to reset the UI
+    // ...we need this delay so MAME/OSD can setup some variables we need to configure the UI
+    // ...like myosd_mouse, myosd_num_ways, myosd_num_players, etc....
+    g_video_reset = TRUE;
+    //[sharedInstance performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:NO];
 }
 // called by the OSD layer to update the current software frame
 // **NOTE** this is called on the MAME background thread, dont do anything stupid.
@@ -704,8 +711,9 @@ void mame_state(int load_save, int slot)
     [[NSUserDefaults standardUserDefaults] setObject:name forKey:kSelectedGameKey];
     
 #if TARGET_OS_IOS
+    // also save the position of the HUD
     if (hudView)
-        [NSUserDefaults.standardUserDefaults setValue:NSStringFromCGRect(hudView.frame) forKey:kInfoHUDFrameKey];
+        [NSUserDefaults.standardUserDefaults setValue:NSStringFromCGRect(hudView.frame) forKey:kHUDPositionKey];
 #endif
     
     [[NSUserDefaults standardUserDefaults] synchronize];
@@ -796,7 +804,8 @@ void mame_state(int load_save, int slot)
     g_pref_keep_aspect_ratio = [op keepAspectRatio];
     
     g_pref_filter = [Options.arrayFilter optionData:op.filter];
-    g_pref_effect = [Options.arrayEffect optionData:op.effect];
+    g_pref_screen_shader = [Options.arrayScreenShader optionData:op.screenShader];
+    g_pref_line_shader = [Options.arrayLineShader optionData:op.lineShader];
     g_pref_border = [Options.arrayBorder optionData:op.border];
     
     g_pref_colorspace = [Options.arrayColorSpace optionData:op.colorSpace];
@@ -1309,6 +1318,9 @@ void mame_state(int load_save, int slot)
     imageOverlay.alpha = alpha;
     fpsView.alpha = alpha;
     imageLogo.alpha = (1.0 - alpha);
+#if TARGET_OS_IOS
+    hudView.alpha *= alpha;
+#endif
 }
 
 -(void)buildLogoView {
@@ -1436,12 +1448,15 @@ static int gcd(int a, int b) {
         }];
     }
     
+#if DebugLog
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(logShader) object:nil];
     [self performSelector:@selector(logShader) withObject:nil afterDelay:0.500];
+#endif
 }
 -(void)hudOptionChange:(PopupSegmentedControl*)seg {
     NSLog(@"HUD OPTION CHANGE %ld: %@", seg.selectedSegmentIndex, [seg titleForSegmentAtIndex:seg.selectedSegmentIndex]);
     NSString* str = [seg titleForSegmentAtIndex:seg.selectedSegmentIndex];
+    BOOL is_vector_game = seg.tag;
     Options* op = [[Options alloc] init];
     switch ([seg.superview.subviews indexOfObject:seg]) {
         case 0:
@@ -1451,7 +1466,10 @@ static int gcd(int a, int b) {
             op.border = str;
             break;
         case 2:
-            op.effect = str;
+            if (is_vector_game)
+                op.lineShader = str;
+            else
+                op.screenShader = str;
             break;
     }
     [op saveOptions];
@@ -1475,40 +1493,49 @@ static NSArray* list_trim(NSArray* _list) {
     return [list copy];
 }
 
+#if DebugLog
 -(void)logShader {
     NSDictionary* shader_variables = ([screenView isKindOfClass:[MetalScreenView class]]) ?  [(MetalScreenView*)screenView getShaderVariables] : nil;
-    NSString* shader = g_pref_effect;
-    NSMutableArray* arr = [split(shader, @",") mutableCopy];
     
-    for (int i=0; i<arr.count; i++) {
-        if ([arr[i] hasPrefix:@"blend="] || ![arr[i] containsString:@"="])
-            continue;
-        NSString* key = split(arr[i], @"=").firstObject;
-        NSArray* vals = split(split(arr[i], @"=").lastObject, @" ");
-        arr[i] = shader_variables[key] ?: vals.firstObject;
+    for (NSString* shader in @[g_pref_line_shader, g_pref_screen_shader]) {
+        NSMutableArray* arr = [split(shader, @",") mutableCopy];
+        
+        for (int i=0; i<arr.count; i++) {
+            if ([arr[i] hasPrefix:@"blend="] || ![arr[i] containsString:@"="])
+                continue;
+            NSString* key = split(arr[i], @"=").firstObject;
+            NSArray* vals = split(split(arr[i], @"=").lastObject, @" ");
+            arr[i] = shader_variables[key] ?: vals.firstObject;
 
-        float step = (vals.count > 3) ? [vals[3] floatValue] : 0.001;
-        arr[i] = @(round([arr[i] floatValue] / step) * step);
+            float step = (vals.count > 3) ? [vals[3] floatValue] : 0.001;
+            arr[i] = @(round([arr[i] floatValue] / step) * step);
+        }
+        NSLog(@"%s SHADER: \"%@\"", (shader==g_pref_screen_shader) ? "SCREEN" : "LINE", [arr componentsJoinedByString:@", "]);
     }
-    NSLog(@"SHADER: \"%@\"", [arr componentsJoinedByString:@", "]);
 }
+#endif
 
 -(void)buildHUD {
 
-    if (hudView)
-        [NSUserDefaults.standardUserDefaults setValue:NSStringFromCGRect(hudView.frame) forKey:kInfoHUDFrameKey];
-
     if (g_pref_showHUD <= 0) {
+        if (hudView != nil)
+            [NSUserDefaults.standardUserDefaults setValue:NSStringFromCGRect(hudView.frame) forKey:kHUDPositionKey];
         [hudView removeFromSuperview];
         hudView = nil;
         return;
     }
     
     if (hudView == nil) {
+        CGRect rect = CGRectFromString([NSUserDefaults.standardUserDefaults stringForKey:kHUDPositionKey] ?: @"");
+        
+        if (CGRectIsEmpty(rect))
+            rect = CGRectMake(self.view.bounds.size.width/2, self.view.safeAreaInsets.top + 16, 0, 0);
+
         hudView = [[InfoHUD alloc] init];
         hudView.font = [UIFont monospacedDigitSystemFontOfSize:(TARGET_OS_IOS ? 16.0 : 32.0) weight:UIFontWeightRegular];
         hudView.layoutMargins = UIEdgeInsetsMake(8, 8, 8, 8);
         [hudView addTarget:self action:@selector(hudChange:) forControlEvents:UIControlEventValueChanged];
+        hudView.frame = rect;
         [self.view addSubview:hudView];
     }
     else {
@@ -1517,21 +1544,16 @@ static NSArray* list_trim(NSArray* _list) {
     
     [hudView removeAll];
     EmulatorController* _self = self;
-    
-    BOOL can_edit_shader = [[g_pref_effect stringByReplacingOccurrencesOfString:@"blend=" withString:@""] componentsSeparatedByString:@"="].count > 1;
+
+    BOOL is_vector_game = [screenView isKindOfClass:[MetalScreenView class]] ? [(MetalScreenView*)screenView numScreens] == 0 : FALSE;
+    NSString* shader = is_vector_game ? g_pref_line_shader : g_pref_screen_shader;
+    BOOL can_edit_shader = [[shader stringByReplacingOccurrencesOfString:@"blend=" withString:@""] componentsSeparatedByString:@"="].count > 1;
     
     if (g_pref_showHUD == HudSizeEditor && !can_edit_shader)
         g_pref_showHUD = HudSizeLarge;
     
-    // leave a little space on the left/right so you can grab the HUD without hitting a button.
-    // TODO: Hmmmm maybe there is a better way....
-    if (g_pref_showHUD == HudSizeTiny || (g_pref_showHUD == HudSizeNormal && !g_pref_showFPS))
-        hudView.layoutMargins = UIEdgeInsetsMake(8, 16, 8, 16);
-    else
-        hudView.layoutMargins = UIEdgeInsetsMake(8, 8, 8, 8);
-    
     if (g_pref_showHUD == HudSizeTiny) {
-        [hudView addButton:[UIImage systemImageNamed:@"command"] ?: @"⌘" handler:^{
+        [hudView addButton:@":command:⌘:" handler:^{
             Options* op = [[Options alloc] init];
             g_pref_showHUD = HudSizeNormal;
             op.showHUD = g_pref_showHUD;
@@ -1544,10 +1566,10 @@ static NSArray* list_trim(NSArray* _list) {
         // add a toolbar of quick actions.
         NSArray* items = @[
             @"Coin", @"Start",
-            [UIImage systemImageNamed:@"rectangle.and.arrow.up.right.and.arrow.down.left"] ?: @"⤢",
-            [UIImage systemImageNamed:@"gear"] ?: @"#",
-            [UIImage systemImageNamed:@"slider.horizontal.3"] ?: @"⇵",
-            [UIImage systemImageNamed:@"command"] ?: @"⌘"
+            @":rectangle.and.arrow.up.right.and.arrow.down.left:⤢:",
+            @":gear:#:",
+            (g_pref_showHUD == HudSizeLarge && can_edit_shader) ? @":slider.horizontal.3:=:" : @":list.dash:=:",
+            @":command:⌘:"
         ];
         [hudView addToolbar:items handler:^(NSUInteger button) {
             NSLog(@"HUD BUTTON: %ld", button);
@@ -1588,18 +1610,17 @@ static NSArray* list_trim(NSArray* _list) {
         // add debug toolbar too
 #ifdef DEBUG
         items = @[
-            [UIImage systemImageNamed:@"z.square.fill"] ?: @"Z",
-            [UIImage systemImageNamed:@"a.square.fill"] ?: @"A",
-            [UIImage systemImageNamed:@"x.square.fill"] ?: @"X",
-            [UIImage systemImageNamed:@"i.square.fill"] ?: @"I",
-            [UIImage systemImageNamed:@"p.square.fill"] ?: @"P",
-            [UIImage systemImageNamed:@"d.square.fill"] ?: @"D",
+            @":z.square.fill:Z:",
+            @":a.square.fill:A:",
+            @":x.square.fill:X:",
+            @":i.square.fill:I:",
+            @":p.square.fill:P:",
+            @":d.square.fill:D:",
         ];
         [hudView addToolbar:items handler:^(NSUInteger button) {
             [_self commandKey:"ZAXIPD"[button]];
         }];
 #endif
-
         // add FPS display
         if (g_pref_showFPS) {
             [hudView addValue:@"000:00:00🅼 0000.00fps 000.0ms" forKey:@"FPS"];
@@ -1614,14 +1635,19 @@ static NSArray* list_trim(NSArray* _list) {
         NSArray* items = @[
             [[PopupSegmentedControl alloc] initWithItems:list_trim(Options.arrayFilter)],
             [[PopupSegmentedControl alloc] initWithItems:list_trim(Options.arrayBorder)],
-            [[PopupSegmentedControl alloc] initWithItems:list_trim(Options.arrayEffect)],
+            [[PopupSegmentedControl alloc] initWithItems:list_trim(is_vector_game ? Options.arrayLineShader : Options.arrayScreenShader)],
         ];
 
         Options *op = [[Options alloc] init];
         [items[0] setSelectedSegmentIndex:[Options.arrayFilter indexOfOption:op.filter]];
         [items[1] setSelectedSegmentIndex:[Options.arrayBorder indexOfOption:op.border]];
-        [items[2] setSelectedSegmentIndex:[Options.arrayEffect indexOfOption:op.effect]];
-        
+        [items[2] setTag:is_vector_game];
+
+        if (is_vector_game)
+            [items[2] setSelectedSegmentIndex:[Options.arrayLineShader indexOfOption:op.lineShader]];
+        else
+            [items[2] setSelectedSegmentIndex:[Options.arrayScreenShader indexOfOption:op.screenShader]];
+
         [items[0] setTitle:@"Filter" forSegmentAtIndex:UISegmentedControlNoSegment];
         [items[1] setTitle:@"Border" forSegmentAtIndex:UISegmentedControlNoSegment];
         [items[2] setTitle:@"Shader" forSegmentAtIndex:UISegmentedControlNoSegment];
@@ -1637,19 +1663,19 @@ static NSArray* list_trim(NSArray* _list) {
     }
 
     if (g_pref_showHUD == HudSizeLarge) {
-        [hudView addButtons:(myosd_num_players >= 2) ? @[@"P1 Start", @"P2 Start"] : @[@"Coin+Start"] handler:^(NSUInteger button) {
+        [hudView addButtons:(myosd_num_players >= 2) ? @[@":person:P1 Start", @":person.2:P2 Start"] : @[@":centsign.circle:Coin+Start"] handler:^(NSUInteger button) {
             [_self startPlayer:(int)button];
         }];
-        [hudView addButtons:@[@"Load", @"Save"] handler:^(NSUInteger button) {
+        [hudView addButtons:@[@":bookmark:Load",@":bookmark.fill:Save"] handler:^(NSUInteger button) {
              [_self runState:button == 0 ? LOAD_STATE : SAVE_STATE];
         }];
-        [hudView addButtons:@[@"MAME Menu", @"Settings"] handler:^(NSUInteger button) {
+        [hudView addButtons:@[@":slider.horizontal.3:Configure",@":gear:Settings"] handler:^(NSUInteger button) {
             if (button == 0)
                 myosd_configure = 1;
             else
                 [_self runSettings];
         }];
-        [hudView addButton:@"Exit Game" color:UIColor.systemRedColor handler:^{
+        [hudView addButton:(myosd_inGame && myosd_in_menu==0) ? @":xmark.circle:Exit Game" : @":arrow.uturn.left.circle:Exit" color:UIColor.systemRedColor handler:^{
             [_self runExit:NO];
         }];
     }
@@ -1657,52 +1683,85 @@ static NSArray* list_trim(NSArray* _list) {
     // add a bunch of slider controls to tweak with the current Shader
     if (g_pref_showHUD == HudSizeEditor) {
         NSDictionary* shader_variables = ([screenView isKindOfClass:[MetalScreenView class]]) ?  [(MetalScreenView*)screenView getShaderVariables] : nil;
-        NSString* shader = g_pref_effect;
         NSArray* shader_arr = split(shader, @",");
-        
-        int count = 0;
+
+        [hudView addSeparator];
+        [hudView addText:[NSString stringWithFormat:@"Shader: %@", shader_arr.firstObject]];
+
         for (NSString* str in shader_arr) {
             NSArray* arr = split(str, @"=");
             if (arr.count < 2 || [arr[0] isEqualToString:@"blend"])
                 continue;
 
-            if (count++ == 0) {
-                [hudView addSeparator];
-                [hudView addText:[NSString stringWithFormat:@"Shader: %@", shader_arr.firstObject]];
-            }
-
             NSString* name = arr[0];
             arr = split(arr[1], @" ");
             NSNumber* value = shader_variables[name] ?: @([arr[0] floatValue]);
             NSNumber* min = (arr.count > 1) ? @([arr[1] floatValue]) : @(0);
-            NSNumber* max = (arr.count > 2) ? @([arr[2] floatValue]) : @([value floatValue]);
+            NSNumber* max = (arr.count > 2) ? @([arr[2] floatValue]) : @([arr[0] floatValue]);
             NSNumber* step= (arr.count > 3) ? @([arr[3] floatValue]) : nil;
 
             [hudView addValue:value forKey:name format:nil min:min max:max step:step];
         }
+#if DebugLog
         [self logShader];
+#endif
     }
     
-    [hudView sizeToFit];
-    CGFloat w = hudView.bounds.size.width;
-    CGFloat h = hudView.bounds.size.height;
-
-    CGRect rect = CGRectFromString([NSUserDefaults.standardUserDefaults stringForKey:kInfoHUDFrameKey] ?: @"");
+    // add a grab handle on the left so you can move the HUD without hitting a button.
+    if (g_pref_showHUD > 0) {
+        hudView.layoutMargins = UIEdgeInsetsMake(8, 16, 8, 8);
+        CGFloat height = [hudView sizeThatFits:CGSizeZero].height;
+        CGFloat h = MIN(height * 0.5, 64.0);
+        CGFloat w = hudView.layoutMargins.left / 4;
+        UIView* grab = [hudView viewWithTag:42] ?: [[UIView alloc] init];
+        grab.frame = CGRectMake((hudView.layoutMargins.left - w)/2, (height - h)/2, w, h);
+        grab.tag = 42;
+        grab.backgroundColor = [UIColor.darkGrayColor colorWithAlphaComponent:0.25];
+        grab.layer.cornerRadius = w/2;
+        [hudView addSubview:grab];
+    }
     
-    if (CGRectIsEmpty(rect))
-        rect = CGRectMake(self.view.bounds.size.width/2, self.view.safeAreaInsets.top + 16, 0, 0);
+    CGRect rect;
+    CGRect bounds = self.view.bounds;
+    CGRect frame = hudView.frame;
+    CGSize size = [hudView sizeThatFits:CGSizeZero];
+    CGFloat w = size.width;
+    CGFloat h = size.height;
+    
+    if (CGRectGetMidX(frame) < CGRectGetMidX(bounds) - (bounds.size.width * 0.1))
+        rect = CGRectMake(frame.origin.x, frame.origin.y, w, h);
+    else if (CGRectGetMidX(frame) > CGRectGetMidX(bounds) + (bounds.size.width * 0.1))
+        rect = CGRectMake(frame.origin.x + frame.size.width - w, frame.origin.y, w, h);
+    else
+        rect = CGRectMake(frame.origin.x + frame.size.width/2 - w/2, frame.origin.y, w, h);
 
-    rect = CGRectMake(rect.origin.x + rect.size.width/2 - w/2, rect.origin.y, w, h);
     rect.origin.x = MAX(self.view.safeAreaInsets.left + 8, MIN(self.view.bounds.size.width  - self.view.safeAreaInsets.right  - w - 8, rect.origin.x));
     rect.origin.y = MAX(self.view.safeAreaInsets.top + 8,  MIN(self.view.bounds.size.height - self.view.safeAreaInsets.bottom - h - 8, rect.origin.y));
+    [NSUserDefaults.standardUserDefaults setValue:NSStringFromCGRect(rect) forKey:kHUDPositionKey];
 
-    hudView.frame = rect;
+    [UIView animateWithDuration:0.250 animations:^{
+        self->hudView.frame = rect;
+        if (g_pref_showHUD == HudSizeTiny)
+            self->hudView.alpha = ((float)g_controller_opacity / 100.0f);
+        else
+            self->hudView.alpha = 1.0;
+    }];
 }
 #else
 -(void)buildHUD {
     // TODO: HUD on tvOS
 }
 #endif
+
+- (void)resetUI {
+    NSLog(@"RESET UI (MAME VIDEO MODE CHANGE)");
+    
+    // shrink the HUD back to Normal on a game reset.
+    if (g_pref_showHUD > HudSizeTiny)
+        g_pref_showHUD = HudSizeNormal;
+        
+    [self changeUI];
+}
 
 - (void)changeUI { @autoreleasepool {
 
@@ -1798,6 +1857,12 @@ static void push_mame_buttons(int player, int button1, int button2)
 
 // called from inside MAME droid_ios_poll_input
 void myosd_handle_turbo() {
+    
+    // g_video_reset is set when iphone_Reset_Views is called, and we need to configure the UI fresh
+    if (g_video_reset) {
+        g_video_reset = FALSE;
+        [sharedInstance performSelectorOnMainThread:@selector(resetUI) withObject:nil waitUntilDone:NO];
+    }
     
     // keep myosd_waysStick uptodate
     if (ways_auto)
@@ -2004,7 +2069,9 @@ void myosd_handle_turbo() {
             if(i==BTN_L1 && (num_buttons < 5 || !myosd_inGame))continue;
             if(i==BTN_R1 && (num_buttons < 6 || !myosd_inGame))continue;
             
-            if (touch_buttons_disabled && (i != BTN_SELECT && i != BTN_START && i != BTN_L2 && i != BTN_R2 )) continue;
+            if (touch_buttons_disabled && !(i == BTN_SELECT || i == BTN_START || i == BTN_EXIT || i == BTN_OPTION)) continue;
+            
+            if ((g_pref_showHUD > 0) && (i == BTN_SELECT || i == BTN_START || i == BTN_EXIT || i == BTN_OPTION)) continue;
         }
         
         NSString *name_up = nameImgButton_NotPress[i];
@@ -2048,6 +2115,30 @@ void myosd_handle_turbo() {
     [self.view addSubview: imageBack];
 }
 #endif
+
+// border string is of the form:
+//        <Friendly Name> : <resource image name>
+//        <Friendly Name> : <resource image name>, <fraction of border that is opaque>
+//        <Friendly Name> : #RRGGBB
+//        <Friendly Name> : #RRGGBBAA, <border width>
+//        <Friendly Name> : #RRGGBBAA, <border width>, <corner radius>
++ (NSArray*)borderList {
+    return @[@"None",
+             @"Dark : border-dark",
+             @"Light : border-light",
+             @"Solid : #007AFFaa, 2.0, 8.0",
+#ifdef DEBUG
+             @"Test : border-test",
+             @"Test 1: border-test, 0.5",
+             @"Test 2: border-test, 1.0",
+             @"Red : #ff0000, 2.0",
+             @"Blue : #0000FF",
+             @"Green : #00FF00ee, 4.0, 16.0",
+             @"Purple : #80008080, 4.0, 16.0",
+             @"Tint : #007Aff, 2.0, 8.0",
+#endif
+    ];
+}
 
 // load any border image and return the size needed to inset the game rect
 // border can be <resource name> , <fraction of border that is opaque>
@@ -2268,7 +2359,8 @@ UIColor* colorWithHexString(NSString* string) {
     
     NSDictionary* options = @{
         kScreenViewFilter: g_pref_filter,
-        kScreenViewEffect: g_pref_effect,
+        kScreenViewScreenShader: g_pref_screen_shader,
+        kScreenViewLineShader: g_pref_line_shader,
         kScreenViewColorSpace: g_pref_colorspace,
     };
     
@@ -2455,6 +2547,9 @@ UIColor* colorWithHexString(NSString* string) {
             g_pref_keep_aspect_ratio = !g_pref_keep_aspect_ratio;
             [self changeUI];
             break;
+        case 'P':
+            myosd_mame_pause = 1;
+            break;
         case 'M':
         {
             // toggle Metal, but in order to load the right shader we need to change the global Options.
@@ -2466,11 +2561,6 @@ UIColor* colorWithHexString(NSString* string) {
             break;
         }
 #ifdef DEBUG
-        case 'P':
-            // **NOTE** this pauses the MAME render thread, it is not the same as the PAUSE key in MAME.
-            g_emulation_paused = !g_emulation_paused;
-            change_pause(g_emulation_paused);
-            break;
         case 'R':
             g_enable_debug_view = !g_enable_debug_view;
             [self changeUI];
@@ -3542,7 +3632,7 @@ UIColor* colorWithHexString(NSString* string) {
 
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:nil message:msg preferredStyle:UIAlertControllerStyleAlert];
     [alert addAction:[UIAlertAction actionWithTitle:@"Reset" style:UIAlertActionStyleDestructive handler:^(UIAlertAction* action) {
-        [NSUserDefaults.standardUserDefaults setValue:@"" forKey:kInfoHUDFrameKey];
+        [NSUserDefaults.standardUserDefaults setValue:@"" forKey:kHUDPositionKey];
         [Options resetOptions];
         [ChooseGameController reset];
         g_mame_reset = TRUE;

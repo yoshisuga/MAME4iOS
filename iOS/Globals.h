@@ -101,11 +101,6 @@ extern int g_enable_debug_view;
 extern int g_device_is_landscape;
 extern int g_device_is_fullscreen;
 
-extern NSString* g_pref_effect;
-extern NSString* g_pref_filter;
-extern NSString* g_pref_border;
-extern NSString* g_pref_colorspace;
-
 extern int g_pref_integer_scale_only;
 extern int g_pref_keep_aspect_ratio;
 extern int g_pref_full_screen_land;

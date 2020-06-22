@@ -25,14 +25,16 @@ NS_ASSUME_NONNULL_BEGIN
 @property (class, readonly, strong) NSArray* arrayControlType;
 @property (class, readonly, strong) NSArray* arrayBorder;
 @property (class, readonly, strong) NSArray* arrayFilter;
-@property (class, readonly, strong) NSArray* arrayEffect;
+@property (class, readonly, strong) NSArray* arrayScreenShader;
+@property (class, readonly, strong) NSArray* arrayLineShader;
 @property (class, readonly, strong) NSArray* arrayColorSpace;
 
 @property (readwrite,assign) int keepAspectRatio;
 
 @property (readwrite,strong) NSString *filter;
 @property (readwrite,strong) NSString *border;
-@property (readwrite,strong) NSString *effect;
+@property (readwrite,strong) NSString *screenShader;
+@property (readwrite,strong) NSString *lineShader;
 @property (readwrite,strong) NSString *colorSpace;
 
 @property (readwrite,assign) int useMetal;

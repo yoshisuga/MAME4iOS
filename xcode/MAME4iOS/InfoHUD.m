@@ -12,9 +12,6 @@
 #define HUD_COLOR   [self.tintColor colorWithAlphaComponent:0.2]
 #define HUD_BLUR    TRUE
 
-//#define HUD_COLOR   [UIColor.blackColor colorWithAlphaComponent:0.8]
-//#define HUD_BLUR    FALSE
-
 @implementation InfoHUD {
     UIStackView* _stack;
     NSMutableDictionary* _views;
@@ -46,14 +43,17 @@
         self.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
     
     [self addSubview:_stack];
-    self.backgroundColor = HUD_COLOR;
-    [self addGestureRecognizer:[[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(pan:)]];
     
+    UIPanGestureRecognizer* pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(pan:)];
+    pan.delegate = (id<UIGestureRecognizerDelegate>)self;
+    [self addGestureRecognizer:pan];
+
+    self.backgroundColor = HUD_COLOR;
 #if HUD_BLUR
     if (@available(iOS 13.0, *))
-        [self addBlur:UIBlurEffectStyleSystemUltraThinMaterialDark withVibrancy:NO];
+        [self addBlur:UIBlurEffectStyleSystemUltraThinMaterialDark];
     else
-        [self addBlur:UIBlurEffectStyleDark withVibrancy:NO];
+        [self addBlur:UIBlurEffectStyleDark];
 #endif
 
     return self;
@@ -69,33 +69,25 @@
     _font = font ?: [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
 }
 
-- (void)addBlur:(UIBlurEffectStyle)style withVibrancy:(BOOL)vibrancy {
+- (void)addBlur:(UIBlurEffectStyle)style {
     UIBlurEffect* blur = [UIBlurEffect effectWithStyle:style];
     UIVisualEffectView* effectView = [[UIVisualEffectView alloc] initWithEffect:blur];
     effectView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     effectView.frame = self.bounds;
-
-    // add vibrancy
-    if (vibrancy) {
-        UIVibrancyEffect* vibrancy;
-        if (@available(iOS 13.0, *))
-            vibrancy = [UIVibrancyEffect effectForBlurEffect:blur style:UIVibrancyEffectStyleLabel];
-        else
-            vibrancy = [UIVibrancyEffect effectForBlurEffect:blur];
-
-        UIVisualEffectView* effectView = [[UIVisualEffectView alloc] initWithEffect:vibrancy];
-        effectView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        effectView.frame = self.bounds;
-        [effectView.contentView addSubview:self.subviews.firstObject];
-        [self addSubview:effectView];
-    }
-
-    [effectView.contentView addSubview:self.subviews.firstObject];
     [self addSubview:effectView];
-    effectView.backgroundColor = self.backgroundColor;
-    self.backgroundColor = UIColor.clearColor;
+    [self sendSubviewToBack:effectView];
 }
 
+// called before touchesBegan:withEvent: is called on the gesture recognizer for a new touch. return NO to prevent the gesture recognizer from seeing this touch
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
+    if ([touch.view isKindOfClass:[UISlider class]]) {
+        UISlider* slider = (UISlider*)touch.view;
+        CGRect rect = [slider thumbRectForBounds:slider.bounds trackRect:[slider trackRectForBounds:slider.bounds] value:slider.value];
+        if (CGRectContainsPoint(CGRectInset(rect, -8, -8), [touch locationInView:slider]))
+            return NO;
+    }
+    return YES;
+}
 - (void)pan:(UIPanGestureRecognizer*)pan {
     CGPoint translation = [pan translationInView:self];
     [pan setTranslation:CGPointZero inView:self];
@@ -127,7 +119,7 @@
     for (UIView* view in _stack.subviews)
         [view removeFromSuperview];
     _width = 0.0;
-    [self sizeToFit];
+    //[self sizeToFit];
 }
 
 - (UIImage*)dotWithColor:(UIColor*)color size:(CGSize)size
@@ -141,7 +133,9 @@
 - (UIView*)separatorViewWithHeight:(CGFloat)height color:(UIColor*)color {
     UIView* view = [[UIView alloc] init];
     view.backgroundColor = color;
-    [view addConstraint:[NSLayoutConstraint constraintWithItem:view attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:height]];
+    [view addConstraint:[NSLayoutConstraint constraintWithItem:view attribute:NSLayoutAttributeHeight
+                                                     relatedBy:NSLayoutRelationEqual toItem:nil
+                                                     attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:height]];
     return view;
 }
 
@@ -163,7 +157,9 @@
         format = [@"%2$@: " stringByAppendingString:format];
 
     if ([value isKindOfClass:[NSString class]] && [value isEqualToString:@"---"]) {
-        value = [self separatorViewWithHeight:1.0 color:UIColor.grayColor];
+        value = [self separatorViewWithHeight:1.0 color:UIColor.clearColor];
+        [_stack addArrangedSubview:value];
+        value = [self separatorViewWithHeight:1.0 color:UIColor.darkGrayColor];
     }
 
     if ([value isKindOfClass:[UIView class]]) {
@@ -191,7 +187,6 @@
 
     if ([value isKindOfClass:[NSNumber class]] && min != nil && max != nil) {
         UISlider* slider = [[UISlider alloc] init];
-        [slider setThumbImage:[self dotWithColor:UIColor.whiteColor size:CGSizeMake(16,16)] forState:UIControlStateNormal];
         [slider addConstraint:[NSLayoutConstraint constraintWithItem:slider attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:24.0]];
         [slider addTarget:self action:@selector(slide:) forControlEvents:UIControlEventValueChanged];
         slider.minimumValue = [min floatValue];
@@ -211,10 +206,12 @@
             slider.tintColor = UIColor.systemBlueColor;
         if ([key hasSuffix:@"_a"] || [key hasSuffix:@"_alpha"]  || [key hasSuffix:@"-a"] || [key hasSuffix:@"-alpha"])
             slider.minimumTrackTintColor = UIColor.darkGrayColor;
+
+        [slider setThumbImage:[self dotWithColor:(slider.minimumTrackTintColor ?: slider.tintColor) size:CGSizeMake(12,12)] forState:UIControlStateNormal];
     }
     
     [self setValue:value forKey:key];
-    [self sizeToFit];
+    //[self sizeToFit];
 }
 - (void)addValue:(id)value forKey:(NSString *)key format:(NSString*)format min:(id)min max:(id)max {
     [self addValue:value forKey:key format:format min:min max:max step:nil];
@@ -242,12 +239,74 @@
     [self addValue:@"---"];
 }
 
+// take a image and some text and concat them together
+- (UIImage*)addText:(NSString*)text toImage:(UIImage*)image withAttributes:(NSDictionary<NSAttributedStringKey, id> *)attributes {
+    CGFloat spacing = 4.0;
+    
+    CGSize textSize = [text boundingRectWithSize:CGSizeZero options:NSStringDrawingUsesLineFragmentOrigin attributes:attributes context:nil].size;
+    CGSize size = CGSizeMake(ceil(textSize.width), ceil(textSize.height));
+
+    if (image != nil) {
+        size.width += image.size.width + spacing;
+        size.height = MAX(size.height, image.size.height);
+    }
+    
+    return [[[UIGraphicsImageRenderer alloc] initWithSize:size] imageWithActions:^(UIGraphicsImageRendererContext * context) {
+        CGPoint point = CGPointZero;
+        
+        if (image != nil) {
+            // TODO: align to baseline?
+            [image drawAtPoint:CGPointMake(point.x, (size.height - image.size.height)/2)];
+            point.x += image.size.width + spacing;
+        }
+
+        [text drawAtPoint:CGPointMake(point.x, (size.height - textSize.height)/2) withAttributes:attributes];
+    }];
+}
+
+// convert any strings of the form ":symbol:" with a image
+//      :symbol:                - return a UIImage created from [UIImage systemImageNamed] or [UIImage imageNamed]
+//      :symbol:fallback:       - return symbol as UIImage or fallback if image not found
+//      :symbol:text            - return symbol + text
+//      :symbol:fallback:text   - return symbol or fallback text + text
+- (NSArray*)convertItems:(NSArray*)_items {
+    NSMutableArray* items = [_items mutableCopy];
+    for (NSUInteger idx=0; idx<items.count; idx++) {
+        id item = items[idx];
+        assert([item isKindOfClass:[NSString class]] || [item isKindOfClass:[UIImage class]]);
+        if ([item isKindOfClass:[NSString class]] && [item hasPrefix:@":"]) {
+            NSArray* arr = [(NSString*)item componentsSeparatedByString:@":"];
+            NSString* text = arr.lastObject;
+            
+            UIImage* image = nil;
+            if (@available(iOS 13, tvOS 13, *))
+                image = [[UIImage systemImageNamed:arr[1]] imageByApplyingSymbolConfiguration:[UIImageSymbolConfiguration configurationWithFont:self.font]];
+            if (image == nil)
+                image = [UIImage imageNamed:arr[1]];
+            
+            // use fallback text if image not found.
+            if (image == nil && arr.count == 4)
+                text = [arr[2] stringByAppendingString:text];
+            
+            // if we have both text and an image, combine image + text
+            if (image != nil && text.length > 0)
+                image = [self addText:text toImage:image withAttributes:@{NSFontAttributeName:self.font}];
+            
+            if (image != nil)
+                items[idx] = image;
+            else
+                items[idx] = text;
+        }
+    }
+    return [items copy];
+}
+
 - (void)buttonPress:(UISegmentedControl*)seg {
     void (^handler)(NSUInteger) = objc_getAssociatedObject(seg, @selector(buttonPress:));
     handler(seg.selectedSegmentIndex);
 }
 - (UISegmentedControl*)makeSegmentedControl:(NSArray*)items handler:(void (^)(NSUInteger button))handler {
-    UISegmentedControl* seg = [[UISegmentedControl alloc] initWithItems:items];
+    UISegmentedControl* seg = [[UISegmentedControl alloc] initWithItems:[self convertItems:items]];
     seg.momentary = YES;
     [seg addTarget:self action:@selector(buttonPress:) forControlEvents:UIControlEventValueChanged];
     objc_setAssociatedObject(seg, @selector(buttonPress:), handler, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
