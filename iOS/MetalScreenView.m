@@ -125,7 +125,21 @@ TIMER_INIT_END
              @"megaTron - Grille Mask Lite: megaTron, mame-screen-src-rect, mame-screen-dst-rect,1.0,0.6,0.6,1.6,0.02,1.0,2.0,2.8",
              @"megaTron - No Shadow Mask but Blurred: megaTron, mame-screen-src-rect, mame-screen-dst-rect,0.0,0.6,0.6,1.0,0.02,0.0,2.0,2.6",
              
-             @"ulTron : ulTron, mame-screen-src-rect, mame-screen-dst-rect",
+             @"ulTron : ultron,\
+                        mame-screen-src-rect,\
+                        mame-screen-dst-rect,\
+                        Scanline Sharpness = -6.0 -20.0 0.0 1.0,\
+                        Pixel Sharpness = -3.0 -20.0 0.0 1.0,\
+                        Horizontal Curve = 0.031 0.0 0.125 0.01,\
+                        Vertical Curve = 0.041 0.0 0.125 0.01,\
+                        Dark Shadow Mask Strength = 0.5 0.0 2.0 0.1,\
+                        Bright Shadow Mask Strength = 1.0 0.0 2.0 0.1,\
+                        Shadow Mask Type = 3.0 0.0 4.0 1.0,\
+                        Overal Brightness Boost = 1.0 0.0 2.0 0.05,\
+                        Horizontal Phosphor Glow Softness = -1.5 -2.0 -0.5 0.1,\
+                        Vertical Phosphor Glow Softness = -2.0 -4.0 -1.0 0.1,\
+                        Glow Amount = 0.15 0.0 1.0 0.05,\
+                        Phosphor Focus = 1.75 0.0 10.0 0.05",
              
 #ifdef DEBUG
              @"Wombat1: mame_screen_test, mame-screen-size, frame-count, 1.0, 8.0, 8.0",
