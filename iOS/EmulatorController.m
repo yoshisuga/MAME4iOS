@@ -88,7 +88,7 @@
 #define NSLog(...) (void)0
 #endif
 
-#define UPDATE_FPS_EVERY    1
+#define UPDATE_FPS_EVERY    60
 #define OPAQUE_FPS          FALSE
 
 // mfi Controllers
