@@ -170,7 +170,7 @@ TIMER_INIT_END
 //
 + (NSArray*)lineShaderList {
     return @[kScreenViewShaderDefault,
-        @"lineTron: lineTron, blend=add, width-scale=1.5 1 4, frame-count, falloff=2 1 4",
+        @"lineTron: lineTron, blend=copy, width-scale=0.5 0.1 4, frame-count, falloff=1 1 4, strength = 2.0 0.2 3.0 0.1",
 
 #ifdef DEBUG
         @"Dash: mame_test_vector_dash, blend=add, width-scale=1.0 0.25 6.0, frame-count, length=25.0, speed=16.0",
