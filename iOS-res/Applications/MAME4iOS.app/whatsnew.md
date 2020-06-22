@@ -1,4 +1,12 @@
 <img src="mame_logo.png" width="60%">
+# Version 2020.11
+* Added new Vector Shader category for Vector games on both iOS and tvOS.
+* The HUD has received a lot of Ux updates, better sizing, new options, etc. 
+* Added a means to Pause MAME but still tweak the Shaders in realtime (available in debug mode).
+* Various texture cache fixes.
+* Added in `ulTron` CRT Screen Shader: this is the ulTimate CRT shader *but* it is very heavy to compute and may not perform in realtime on lower class hardware and/or at higher Resolutions.
+* Renamed the simpleCRT Screen Shader to `simpleTron`, to better align with the other shader naming conventions.
+* Added in `lineTron` Vector shader, for the best dang lookin' Vector games around...
 
 # Version 2020.10
 * New `megaTron` Shader.

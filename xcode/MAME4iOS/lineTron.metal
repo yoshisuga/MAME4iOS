@@ -26,11 +26,12 @@ struct Push
     float   width_scale;
     float   frame_count;
     float   falloff;
+    float   strength;
 };
 
 fragment float4
 lineTron(VertexOutput v[[stage_in]], constant Push& params [[buffer(0)]])
 {
     float a = exp(-pow(v.tex.y * params.falloff, 2));
-    return float4(v.color.rgb, a);
+    return float4((v.color.rgb*params.strength), a);
 }
