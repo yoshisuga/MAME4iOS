@@ -1376,8 +1376,12 @@ void mame_state(int load_save, int slot)
 #endif
     fpsView.shadowColor = UIColor.blackColor;
     fpsView.shadowOffset = CGSizeMake(1.0,1.0);
+#if UPDATE_FPS_EVERY == 1
     fpsView.text = @"000:00:00🅼\n0000.00fps 000.0ms";
-
+#else
+    fpsView.text = @"0000.00fps 000.0ms 🅼";
+#endif
+    
     CGPoint pos = screenView.frame.origin;
 
     // if we have room above, go single line.
@@ -1419,6 +1423,7 @@ static int gcd(int a, int b) {
     if (frame_count == 0)
         return;
 
+#if UPDATE_FPS_EVERY == 1
     // get the timecode assuming 60fps
     NSUInteger frame = frame_count % 60;
     NSUInteger sec = (frame_count / 60) % 60;
@@ -1427,7 +1432,12 @@ static int gcd(int a, int b) {
     NSString* fps = [NSString stringWithFormat:@"%03d:%02d:%02d%@ %.2ffps %.1fms", (int)min, (int)sec, (int)frame,
                     [screenView isKindOfClass:[MetalScreenView class]] ? @"🅼" : @"",
                     screenView.frameRateAverage, screenView.renderTimeAverage * 1000.0];
-
+#else
+    NSString* fps = [NSString stringWithFormat:@"%.2ffps %.1fms %@",
+                     screenView.frameRateAverage, screenView.renderTimeAverage * 1000.0,
+                     [screenView isKindOfClass:[MetalScreenView class]] ? @"🅼" : @""];
+#endif
+    
     fpsView.text = fps;
 #if TARGET_OS_IOS
     [hudView setValue:fps forKey:@"FPS"];
@@ -1627,7 +1637,7 @@ static NSArray* list_trim(NSArray* _list) {
 #endif
         // add FPS display
         if (g_pref_showFPS) {
-            [hudView addValue:@"000:00:00🅼 0000.00fps 000.0ms" forKey:@"FPS"];
+            [hudView addValue:@"0000.00fps 000.0ms" forKey:@"FPS"];
 #ifdef DEBUG
             [hudView addValue:@"WWWWxHHHH@2x" forKey:@"SIZE"];
 #endif
