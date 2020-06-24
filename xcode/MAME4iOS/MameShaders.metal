@@ -79,10 +79,18 @@ constant float4 six_colors[] = {
     float4(0, 156, 223, 255),
 };
 
+float4 rainbow(float f) {
+    float4 color0 = six_colors[(int)floor(f) % 6] * (1.0/255.0);
+    float4 color1 = six_colors[(int) ceil(f) % 6] * (1.0/255.0);
+
+    return mix(color0, color1, fract(f));
+}
+
 // test Shader to draw the VECTOR lines
 //
 // width_scale must always be the first uniform, it is the amount the line width is expanded by.
 //
+// color.rgb is the line color
 // color.a is itterated from 1.0 on center line to 0.25 on the line edge.
 //
 // texture x is itterated along the length of the line 0 ... length (the length is in model cordinates)
@@ -105,7 +113,7 @@ mame_test_vector_dash(VertexOutput v [[stage_in]],
     int n = floor((d + t) / uniforms.dash_length);
 
     if (n & 1)
-        return float4(six_colors[(n/2)%6].xyz * float3(1.0/255.0), 1 /*a*/);
+        return float4(rainbow(n/2).rgb, 1 /*a*/);
     else
         return  float4(0,0,0,0);
 }
@@ -124,6 +132,33 @@ mame_test_vector_pulse(VertexOutput v [[stage_in]],
     return v.color * f;
 }
 
+struct MameTestVectorFade {
+    float   width_scale;
+    float   line_time;  // time (in seconds) of the line: 0.0 = now, +1.0 = 1sec in the past
+    float   falloff;
+    float   strength;
+};
+fragment float4
+mame_test_vector_fade(VertexOutput v [[stage_in]],
+                constant MameTestVectorFade &uniforms [[buffer(0)]])
+{
+    float t = uniforms.line_time;
+    float4 color = v.color;
+    
+    if (t == 0.0) {
+        // current line, just use color as is, but scale alpha back to a 1.0 width line.
+        if (abs(v.tex.y) > 1.0)
+            color.a = 0.0;
+        else
+            color.a = mix(1.0, 0.25, abs(v.tex.y));
+    }
+    else {
+        color = color * /*rainbow(t * 6) * */ exp(-pow(t * uniforms.falloff, 2)) * uniforms.strength;
+        //color.a = 1.0;
+    }
+    return color;
+}
+
 // Shader to draw the MAME game SCREEN....
 struct MameScreenRainbowUniforms {
     float2x2 mame_screen_matrix;  // matrix to convert texture coordinates (u,v) to crt scanlines (x,y)
@@ -138,7 +173,7 @@ mame_screen_rainbow(VertexOutput v [[stage_in]],
                 constant MameScreenRainbowUniforms &uniforms [[buffer(0)]])
 {
     float2 uv = uniforms.mame_screen_matrix * v.tex;
-    float4 shade = six_colors[(int)(uv.y/uniforms.rainbow_height + uniforms.frame_count/60 * uniforms.rainbow_speed) % 6] * float4(1.0/255.0);
+    float4 shade = rainbow(uv.y/uniforms.rainbow_height + uniforms.frame_count/60 * uniforms.rainbow_speed);
     float4 color = (texture.sample(tsamp, v.tex) + shade) * 0.5;
     return color;
 }

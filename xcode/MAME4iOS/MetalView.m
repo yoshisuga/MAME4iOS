@@ -282,6 +282,8 @@
     // set default (frame based) shader variables
     [self setShaderVariables:@{
         @"frame-count": @(_frameCount),
+        @"frame-rate": @(_frameRate),
+        @"frame-time": @(_frameCount / _frameRate),     // TODO: send CACurrentMediaTime()??
         @"render-target-size": @(size),
     }];
     
