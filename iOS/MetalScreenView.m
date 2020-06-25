@@ -46,7 +46,7 @@
 #import "MetalScreenView.h"
 #import "myosd.h"
 
-#define DebugLog 0
+#define DebugLog 1
 #if DebugLog == 0
 #define NSLog(...) (void)0
 #endif
@@ -62,6 +62,8 @@ TIMER_INIT(texture_load)
 TIMER_INIT(texture_load_pal16)
 TIMER_INIT(texture_load_rgb32)
 TIMER_INIT(texture_load_rgb15)
+TIMER_INIT(line_prim)
+TIMER_INIT(quad_prim)
 TIMER_INIT_END
 
 #pragma mark - MetalScreenView
@@ -75,8 +77,8 @@ TIMER_INIT_END
     NSString* _line_width_scale_variable;
     BOOL _line_shader_wants_past_lines;
     
-    #define LINE_BUFFER_SIZE 8192
-    #define LINE_MAX_FADE_TIME 4.0
+    #define LINE_BUFFER_SIZE (8*1024)
+    #define LINE_MAX_FADE_TIME 2.0
     myosd_render_primitive* _line_buffer;
     int _line_buffer_base;
     int _line_buffer_count;
@@ -354,12 +356,12 @@ static void texture_load(void* data, id<MTLTexture> texture) {
     static char* texture_format_name[] = {"UNDEFINED", "PAL16", "PALA16", "555", "RGB", "ARGB", "YUV16"};
     texture.label = [NSString stringWithFormat:@"MAME %08lX:%d %dx%d %s", (NSUInteger)prim->texture_base, prim->texture_seqid, prim->texture_width, prim->texture_height, texture_format_name[prim->texformat]];
 
-    TIMER_START(texture_load)
+    TIMER_START(texture_load);
 
     switch (prim->texformat) {
         case TEXFORMAT_RGB15:
         {
-            TIMER_START(texture_load_rgb15)
+            TIMER_START(texture_load_rgb15);
             if (prim->texture_palette == NULL) {
                 [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:prim->texture_base bytesPerRow:prim->texture_rowpixels*2];
             }
@@ -379,13 +381,13 @@ static void texture_load(void* data, id<MTLTexture> texture) {
                 }
                 [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:myosd_screen bytesPerRow:width*2];
             }
-            TIMER_STOP(texture_load_rgb15)
+            TIMER_STOP(texture_load_rgb15);
             break;
         }
         case TEXFORMAT_RGB32:
         case TEXFORMAT_ARGB32:
         {
-            TIMER_START(texture_load_rgb32)
+            TIMER_START(texture_load_rgb32);
             if (prim->texture_palette == NULL) {
                 [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:prim->texture_base bytesPerRow:prim->texture_rowpixels*4];
             }
@@ -405,13 +407,13 @@ static void texture_load(void* data, id<MTLTexture> texture) {
                 }
                 [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:myosd_screen bytesPerRow:width*4];
             }
-            TIMER_STOP(texture_load_rgb32)
+            TIMER_STOP(texture_load_rgb32);
             break;
         }
         case TEXFORMAT_PALETTE16:
         case TEXFORMAT_PALETTEA16:
         {
-            TIMER_START(texture_load_pal16)
+            TIMER_START(texture_load_pal16);
             uint16_t* src = prim->texture_base;
             uint32_t* dst = (uint32_t*)myosd_screen;
             const uint32_t* pal = prim->texture_palette;
@@ -434,7 +436,7 @@ static void texture_load(void* data, id<MTLTexture> texture) {
                     *dst++ = pal[*src++];
                 src += prim->texture_rowpixels - width;
             }
-            TIMER_STOP(texture_load_pal16)
+            TIMER_STOP(texture_load_pal16);
             [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:myosd_screen bytesPerRow:width*4];
             break;
         }
@@ -448,7 +450,7 @@ static void texture_load(void* data, id<MTLTexture> texture) {
             assert(FALSE);
             break;
     }
-    TIMER_STOP(texture_load)
+    TIMER_STOP(texture_load);
 }
 
 #pragma mark - draw MAME primitives
@@ -481,7 +483,7 @@ static void texture_load(void* data, id<MTLTexture> texture) {
         return 1;
     }
     NSTimeInterval time = CACurrentMediaTime();
-    TIMER_START(draw_screen)
+    TIMER_START(draw_screen);
 
     NSUInteger num_screens = 0;
     
@@ -503,6 +505,11 @@ static void texture_load(void* data, id<MTLTexture> texture) {
     // walk the primitive list and render
     for (myosd_render_primitive* prim = prim_list; prim != NULL; prim = prim->next) {
         
+        if (prim->type == RENDER_PRIMITIVE_QUAD)
+            TIMER_START(quad_prim);
+        else
+            TIMER_START(line_prim);
+
         VertexColor color = VertexColor(prim->color_r, prim->color_g, prim->color_b, prim->color_a);
         
         CGRect rect = CGRectMake(floor(prim->bounds_x0 + 0.5),  floor(prim->bounds_y0 + 0.5),
@@ -601,7 +608,9 @@ static void texture_load(void* data, id<MTLTexture> texture) {
                         [self drawPastLines];
                         [self setShaderVariables:@{@"line-time": @(0.0)}];
                     }
-                    [self saveLine:prim];
+                    // only save lines at 30Hz
+                    if ((self.frameCount & 1) == 0)
+                        [self saveLine:prim];
                 }
 
                 // pre-multiply color, so shader has non-iterated color
@@ -619,6 +628,11 @@ static void texture_load(void* data, id<MTLTexture> texture) {
             NSLog(@"Unknown RENDER_PRIMITIVE!");
             assert(FALSE);  // bad primitive
         }
+        
+        if (prim->type == RENDER_PRIMITIVE_QUAD)
+            TIMER_STOP(quad_prim);
+        else
+            TIMER_STOP(line_prim);
     }
     
 #if 0
@@ -637,7 +651,7 @@ static void texture_load(void* data, id<MTLTexture> texture) {
 #endif
     
     [self drawEnd];
-    TIMER_STOP(draw_screen)
+    TIMER_STOP(draw_screen);
     
     if (TIMER_COUNT(draw_screen) % 100 == 0) {
         TIMER_DUMP();
