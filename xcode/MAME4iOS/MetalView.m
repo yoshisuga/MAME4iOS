@@ -291,23 +291,29 @@
 -(void)drawEnd {
     assert(_drawable != nil);
     NSArray* buffers = _vertex_buffer_list;
-    __weak typeof(self) weakSelf = self;
+    __weak typeof(self) _self = self;
     BOOL externalDisplay = _externalDisplay;
     [_buffer addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
-        [weakSelf returnBuffers:buffers];
+        [_self returnBuffers:buffers];
         if (externalDisplay)
-            [weakSelf updateFPS:CACurrentMediaTime()];
+            [_self updateFPS:CACurrentMediaTime()];
     }];
+#if !TARGET_OS_SIMULATOR
     if (!externalDisplay) {
         [_drawable addPresentedHandler:^(id<MTLDrawable> drawable) {
-            [weakSelf updateFPS:drawable.presentedTime];
+            [_self updateFPS:drawable.presentedTime];
         }];
     }
+#endif
     [_encoder endEncoding];
+#if !TARGET_OS_SIMULATOR
     if (_preferredFramesPerSecond != 0 && _preferredFramesPerSecond * 2 <= _maximumFramesPerSecond && _layer.maximumDrawableCount == 3)
         [_buffer presentDrawable:_drawable afterMinimumDuration:1.0/_preferredFramesPerSecond];
     else
         [_buffer presentDrawable:_drawable];
+#else
+    [_buffer presentDrawable:_drawable];
+#endif
     [_buffer commit];
     _drawable = nil;
     _buffer = nil;

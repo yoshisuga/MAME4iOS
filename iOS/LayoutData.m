@@ -71,6 +71,10 @@
     return self;
 }
 
++ (BOOL)supportsSecureCoding {
+    return YES;
+}
+
 - (id)initWithCoder:(NSCoder *)decoder {
     if (self = [super init]) {
         self.type = [decoder decodeIntForKey:@"type"];
@@ -218,18 +222,23 @@
     [filemgr removeItemAtPath:[LayoutData getLayoutFilePath] error:&error];
 }
 
-+(void)saveLayoutData:(NSMutableArray *)data {
-    
-    [NSKeyedArchiver archiveRootObject:data toFile:[LayoutData getLayoutFilePath]];
++(void)saveLayoutData:(NSMutableArray *)layoutData {
+//    [NSKeyedArchiver archiveRootObject:layoutData toFile:[LayoutData getLayoutFilePath]];
+    NSError* error = nil;
+    NSData* data = [NSKeyedArchiver archivedDataWithRootObject:layoutData requiringSecureCoding:YES error:&error];
+    [data writeToFile:[LayoutData getLayoutFilePath] atomically:NO];
 }
 
 
 +(void)loadLayoutData:(EmulatorController *)emuController{
-    NSMutableArray *data = nil;
+    NSArray *data = nil;
+    NSError* error = nil;
     int i = 0;
-        
-    data = [NSKeyedUnarchiver unarchiveObjectWithFile:[LayoutData getLayoutFilePath]]; //devuelve un autorelease
     
+    data = [NSKeyedUnarchiver unarchivedObjectOfClasses:[NSSet setWithArray:@[[NSArray class], [LayoutData class]]]
+                                               fromData:[NSData dataWithContentsOfFile:[LayoutData getLayoutFilePath]]
+                                                  error:&error];
+        
     if(data != nil) {
         for(i=0; i<data.count ; i++)
         {
@@ -264,7 +273,7 @@
     }
 }
 
-+(void)printAsTextFileFormat:(NSMutableArray*)data emuController:(EmulatorController*)emuController {
++(void)printAsTextFileFormat:(NSArray*)data emuController:(EmulatorController*)emuController {
     NSMutableArray *layoutTextData = [[NSMutableArray alloc] init];
     NSArray<NSArray*> *fileDataLayoutElements = @[
                                      @[ @(kType_DPadRect), @(DPAD_DOWN_LEFT_RECT), @"//DownLeft"],    // 1
