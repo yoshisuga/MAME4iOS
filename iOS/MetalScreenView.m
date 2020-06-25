@@ -73,6 +73,13 @@ TIMER_INIT_END
     Shader _line_shader;
     CGFloat _line_width_scale;
     NSString* _line_width_scale_variable;
+    BOOL _line_shader_wants_past_lines;
+    
+    #define LINE_BUFFER_SIZE 8192
+    #define LINE_MAX_FADE_TIME 4.0
+    myosd_render_primitive* _line_buffer;
+    int _line_buffer_base;
+    int _line_buffer_count;
 }
 
 #pragma mark - SCREEN SHADER and LINE SHADER Options
@@ -159,6 +166,7 @@ TIMER_INIT_END
 //
 // when the line fragment shader is called, the following is set:
 //
+//      color.rgb is the line color
 //      color.a is itterated from 1.0 on center line to 0.25 on the line edge.
 //      texture.x is itterated along the length of the line 0 ... length (the length is in model cordinates)
 //      texture.y is itterated along the width of the line, -1 .. +1, with 0 being the center line
@@ -166,11 +174,17 @@ TIMER_INIT_END
 //  the default line shader just uses the passed color and a blend mode of ADD.
 //  so the default line shader depends on the color.a being ramped down to 0.25x and color.rgb being the line color.
 //
-// TODO: MAME draws all lines with a alpha value, maybe we should pre-multiply and pass color to the shader with color.a = 1?
+//  PAST LINES
+//
+//  if a line shader specifies `line-time` as a parameter value, we will re-draw a buffer of past lines every frame.
+//
+//      `line-time` == 0.0  - lines for the current frame
+//      `line-time` > 0.0   - lines for past frames (line-time is the number of seconds in the past)
 //
 + (NSArray*)lineShaderList {
     return @[kScreenViewShaderDefault,
         @"lineTron: lineTron, blend=copy, width-scale=0.5 0.1 4, frame-count, falloff=1 1 4, strength = 2.0 0.2 3.0 0.1",
+        @"lineFade: mame_test_vector_fade, blend=alpha, width-scale=1.2 1 8, line-time, falloff=2 1 4, strength = 0.5 0.1 3.0 0.1",
 
 #ifdef DEBUG
         @"Dash: mame_test_vector_dash, blend=add, width-scale=1.0 0.25 6.0, frame-count, length=25.0, speed=16.0",
@@ -237,8 +251,11 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     if ([_line_shader length] == 0 || [_line_shader isEqualToString:kScreenViewShaderDefault] || [_line_shader isEqualToString:kScreenViewShaderNone])
         _line_shader = ShaderAdd;
     
+    // see if the line shader wants past lines, ie does it list `line-time` in the parameter list.
+    _line_shader_wants_past_lines = [_line_shader rangeOfString:@"line-time"].length != 0;
+    
     // parse the first param of the line shader to get the line width scale factor.
-    // NOTE the first param can be a variable or a contant, support variables for the HUD.
+    // NOTE the first param can be a variable or a constant, support variables for the HUD.
     _line_width_scale = 1.0;
     _line_width_scale_variable = nil;
     NSArray* arr = split(_line_shader, @",");
@@ -251,14 +268,20 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         _line_width_scale_variable = split(arr[idx],@"=").firstObject;
     
     NSLog(@"FILTER: %@", _filter == MTLSamplerMinMagFilterNearest ? @"NEAREST" : @"LINEAR");
-    NSLog(@"SCREEN SHADER: %@", _screen_shader);
-    NSLog(@"LINE SHADER: %@", _line_shader);
+    NSLog(@"SCREEN SHADER: %@", split(_screen_shader, @",").firstObject);
+    NSLog(@"LINE SHADER: %@", split(_line_shader, @",").firstObject);
+    NSLog(@"LINE SHADER WANTS PAST LINES: %@", _line_shader_wants_past_lines ? @"YES" : @"NO");
     if (_line_width_scale_variable != nil)
         NSLog(@"    width-scale: %@", _line_width_scale_variable);
     else
         NSLog(@"    width-scale: %0.3f", _line_width_scale);
 
     [self setNeedsLayout];
+}
+
+- (void)dealloc {
+    if (_line_buffer != NULL)
+        free(_line_buffer);
 }
 
 #pragma mark - MetalScreenView UIView stuff
@@ -271,6 +294,53 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 }
 - (void)didMoveToSuperview {
     [super didMoveToSuperview];
+}
+
+#pragma mark - LINE BUFFER
+
+- (void)saveLine:(myosd_render_primitive*) line {
+    assert(line->type == RENDER_PRIMITIVE_LINE);
+    
+    if (_line_buffer == NULL)
+        _line_buffer = malloc(LINE_BUFFER_SIZE * sizeof(_line_buffer[0]));
+
+    int i = (_line_buffer_base + _line_buffer_count + 1) % LINE_BUFFER_SIZE;
+    
+    _line_buffer[i] = *line;
+    _line_buffer[i].texture_seqid = (uint32_t)self.frameCount;
+    
+    if (_line_buffer_count < LINE_BUFFER_SIZE)
+        _line_buffer_count++;
+    else
+        _line_buffer_base = (_line_buffer_base + 1) % LINE_BUFFER_SIZE;
+}
+
+- (void)drawPastLines {
+    NSUInteger frameCount = self.frameCount;
+    CGFloat frameRate = self.frameRate;
+    CGFloat line_time = CGFLOAT_MAX;
+    
+    for (int i=0; i<_line_buffer_count; i++) {
+        myosd_render_primitive* prim = _line_buffer + (_line_buffer_base + i) % LINE_BUFFER_SIZE;
+        
+        // calculate how far back in time this line is....
+        NSTimeInterval t = (frameCount - (NSUInteger)prim->texture_seqid) / frameRate;
+        
+        // ignore lines from the future, or too far in the past
+        if (t <= 0.0 || t > LINE_MAX_FADE_TIME)
+            continue;
+        
+        if (line_time != t) {
+            line_time = t;
+            [self setShaderVariables:@{@"line-time": @(line_time)}];
+        }
+        
+        VertexColor color = VertexColor(prim->color_r, prim->color_g, prim->color_b, prim->color_a);
+        color = color * simd_make_float4(color.a, color.a, color.a, 1/color.a);     // pre-multiply alpha
+        
+        [self setShader:_line_shader];
+        [self drawLine:CGPointMake(prim->bounds_x0, prim->bounds_y0) to:CGPointMake(prim->bounds_x1, prim->bounds_y1) width:(prim->width * _line_width_scale) color:color];
+    }
 }
 
 #pragma mark - texture conversion
@@ -427,7 +497,9 @@ static void texture_load(void* data, id<MTLTexture> texture) {
         if (val != nil && [val isKindOfClass:[NSNumber class]])
             _line_width_scale = [(NSNumber*)val floatValue];
     }
-
+    
+    BOOL first_line = TRUE;
+    
     // walk the primitive list and render
     for (myosd_render_primitive* prim = prim_list; prim != NULL; prim = prim->next) {
         
@@ -521,7 +593,18 @@ static void texture_load(void* data, id<MTLTexture> texture) {
             if (prim->blendmode == BLENDMODE_ADD) {
                 // this line is a vector line, use a special shader
                 
-                // pre-multiply color, so shader had non-iterated color
+                // handle lines from the past.
+                if (_line_shader_wants_past_lines) {
+                    // first time we see a line, draw all old lines, and set line-time=0.0
+                    if (first_line) {
+                        first_line = FALSE;
+                        [self drawPastLines];
+                        [self setShaderVariables:@{@"line-time": @(0.0)}];
+                    }
+                    [self saveLine:prim];
+                }
+
+                // pre-multiply color, so shader has non-iterated color
                 color = color * simd_make_float4(color.a, color.a, color.a, 1/color.a);
                 [self setShader:_line_shader];
                 [self drawLine:CGPointMake(prim->bounds_x0, prim->bounds_y0) to:CGPointMake(prim->bounds_x1, prim->bounds_y1) width:(prim->width * _line_width_scale) color:color];
