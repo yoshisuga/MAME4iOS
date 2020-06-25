@@ -429,6 +429,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
 
 - (void)startEmulation {
     NSParameterAssert(g_emulation_initiated == 0);
+    [self updateOptions];
     
     sharedInstance = self;
     
