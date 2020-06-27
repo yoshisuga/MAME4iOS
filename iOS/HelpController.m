@@ -43,10 +43,11 @@
  */
 
 #import "HelpController.h"
+#import <WebKit/WebKit.h>
 #import "Globals.h"
 
 @implementation HelpController {
-    UIWebView *aWebView;
+    WKWebView *aWebView;
     NSString* html_name;
     NSString* html_title;
 }
@@ -76,7 +77,7 @@
     self.view.backgroundColor = [UIColor whiteColor];
     self.view.autoresizesSubviews = TRUE;
         
-    aWebView =[ [ UIWebView alloc ] initWithFrame: view.frame];
+    aWebView =[[WKWebView alloc] initWithFrame:view.frame];
     aWebView.backgroundColor = UIColor.whiteColor;
     if (@available(iOS 12.0, *)) {
         if (self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark) {
@@ -91,7 +92,7 @@
 
 -(void)viewWillAppear:(BOOL)animated
 {
-    aWebView.delegate = self;
+    aWebView.navigationDelegate = (id)self;
     [self loadHTML:html_name];
     self.title = html_title;
 }
@@ -99,17 +100,26 @@
 -(void)viewWillDisappear:(BOOL)animated
 {
     [aWebView stopLoading];
-    aWebView.delegate = nil;
+    aWebView.navigationDelegate = nil;
 }
 
--(BOOL) webView:(UIWebView *)inWeb shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)type {
-    if ( type == UIWebViewNavigationTypeLinkClicked && !request.URL.isFileURL) {
-        [[UIApplication sharedApplication] openURL:request.URL options:@{} completionHandler:nil];
-        return NO;
+#pragma MARK - WKNavigationDelegate
+
+- (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {
+    
+    // we only care about user clicked links
+    if (navigationAction.request.URL != nil && ![navigationAction.request.URL isFileURL] && navigationAction.navigationType == WKNavigationTypeLinkActivated) {
+        [[UIApplication sharedApplication] openURL:navigationAction.request.URL options:@{} completionHandler:nil];
+        return decisionHandler(WKNavigationActionPolicyCancel);
     }
     
-    return YES;
+    return decisionHandler(WKNavigationActionPolicyAllow);
 }
+
+#pragma MARK - loadHTML
+
+static NSString* html_viewport =
+@"<meta name=\"viewport\" content=\"width=device-width, shrink-to-fit=YES\">";
 
 static NSString* html_custom_style =
 @"<style>\n\
@@ -145,6 +155,11 @@ code {background-color:lightgray; width:100%; overflow-x:scroll}\n\
     // hack in our style sheet at the end of the <head></head> only if the HTML does not have a dark-mode compatible inline style already.
     if (!([HTMLData containsString:@"<style"] && [HTMLData containsString:@"prefers-color-scheme"])) {
         HTMLData = [HTMLData stringByReplacingOccurrencesOfString:@"</head>" withString:[html_custom_style stringByAppendingString:@"</head>"]];
+    }
+    
+    // hack in a viewport at the end of the <head></head> only if the HTML does not have one.
+    if (![HTMLData containsString:@"<meta name=\"viewport\""]) {
+        HTMLData = [HTMLData stringByReplacingOccurrencesOfString:@"</head>" withString:[html_viewport stringByAppendingString:@"</head>"]];
     }
     
     NSURL *aURL = [NSURL fileURLWithPath:[NSString stringWithUTF8String:get_resource_path("")]];

@@ -50,7 +50,6 @@
 
 #if TARGET_OS_IOS
 #import <Intents/Intents.h>
-#import "HelpController.h"
 #import "OptionsController.h"
 #import "AnalogStick.h"
 #import "AnalogStick.h"
@@ -429,6 +428,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
 
 - (void)startEmulation {
     NSParameterAssert(g_emulation_initiated == 0);
+    [self updateOptions];
     
     sharedInstance = self;
     
@@ -3805,7 +3805,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     // add all the controllers with a extendedGamepad profile first
     for (GCController* controler in GCController.controllers) {
 #if TARGET_IPHONE_SIMULATOR // ignore the bogus controller in the simulator
-        if ([controler.vendorName isEqualToString:@"Generic Controller"])
+        if (controler.vendorName == nil || [controler.vendorName isEqualToString:@"Generic Controller"])
             continue;
 #endif
         if (controler.extendedGamepad != nil)
