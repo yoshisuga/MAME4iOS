@@ -63,6 +63,7 @@ typedef void (*texture_load_function_t)(void*, id<MTLTexture>);
 -(void)drawPoint:(CGPoint)point size:(CGFloat)size color:(VertexColor)color;
 -(void)drawLine:(CGPoint)start to:(CGPoint)end color:(VertexColor)color;
 -(void)drawLine:(CGPoint)start to:(CGPoint)end width:(CGFloat)width color:(VertexColor)color;
+-(void)drawLine:(CGPoint)start to:(CGPoint)end width:(CGFloat)width color:(VertexColor)color edgeAlpha:(CGFloat)alpha;
 -(void)drawRect:(CGRect)rect color:(VertexColor)color;
 -(void)drawRect:(CGRect)rect color:(VertexColor)color orientation:(UIImageOrientation)orientation;
 -(void)drawTriangle:(CGPoint*)points color:(VertexColor)color;
