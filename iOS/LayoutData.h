@@ -72,7 +72,7 @@ enum LayoutSubtype
 
 @class EmulatorController;
 
-@interface LayoutData : NSObject <NSCoding> 
+@interface LayoutData : NSObject <NSSecureCoding> 
 {
    @public  int type;
    @public  int subtype;

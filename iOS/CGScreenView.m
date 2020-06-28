@@ -137,6 +137,62 @@
     NSTimeInterval _lastDisplayTime;
 }
 
+// CoreGraphics effect string is of the form:
+//        <Friendly Name> : <overlay image> [,<overlay image> ...]
+//
++ (NSArray*)screenShaderList {
+    return @[kScreenViewShaderNone,
+             @"Scanline : effect-scanline",
+             @"CRT : effect-crt, effect-scanline",
+#ifdef DEBUG
+             @"Test Dot : effect-dot",
+             @"Test All : effect-crt, effect-scanline, effect-dot",
+#endif
+    ];
+}
++ (NSArray<NSString*>*)lineShaderList {
+    return @[kScreenViewShaderDefault];
+}
++ (NSArray*)filterList {
+    return @[kScreenViewFilterNearest,kScreenViewFilterLinear];
+}
+
+//
+// color space data, we define the colorSpaces here, in one place, so it stays in-sync with the UI.
+//
+// you can specify a colorSpace in two ways, with a system name or with parameters.
+// these strings are of the form <Friendly Name> : <colorSpace name OR colorSpace parameters>
+//
+// colorSpace name is one of the sytem contants passed to `CGColorSpaceCreateWithName`
+// see (Color Space Names)[https://developer.apple.com/documentation/coregraphics/cgcolorspace/color_space_names]
+//
+// colorSpace parameters are 3 - 18 floating point numbers separated with commas.
+// see [CGColorSpaceCreateCalibratedRGB](https://developer.apple.com/documentation/coregraphics/1408861-cgcolorspacecreatecalibratedrgb)
+//
+// if <colorSpace name OR colorSpace parameters> is blank or not valid, a device-dependent RGB color space is used.
+//
+// NOTE: not all iOS devices support color matching.
+//
++ (NSArray*)colorSpaceList {
+
+    // TODO: find out what devices??
+    BOOL deviceSupportsColorMatching = TRUE;
+    
+    if (!deviceSupportsColorMatching)
+        return @[@"Default"];
+
+    return @[@"DeviceRGB",
+             @"sRGB : kCGColorSpaceSRGB",
+             @"CRT (sRGB, D65, 2.5) :    0.95047,1.0,1.08883, 0,0,0, 2.5,2.5,2.5, 0.412456,0.212673,0.019334,0.357576,0.715152,0.119192,0.180437,0.072175,0.950304",
+             @"Rec709 (sRGB, D65, 2.4) : 0.95047,1.0,1.08883, 0,0,0, 2.4,2.4,2.4, 0.412456,0.212673,0.019334,0.357576,0.715152,0.119192,0.180437,0.072175,0.950304",
+#ifdef DEBUG
+             @"Adobe RGB : kCGColorSpaceAdobeRGB1998",
+             @"Linear sRGB : kCGColorSpaceLinearSRGB",
+             @"NTSC Luminance : 0.9504,1.0000,1.0888, 0,0,0, 1,1,1, 0.299,0.299,0.299, 0.587,0.587,0.587, 0.114,0.114,0.114",
+#endif
+    ];
+}
+
 + (Class) layerClass
 {
     return [CGScreenLayer class];
@@ -185,9 +241,9 @@
         [self.subviews.firstObject removeFromSuperview];
 
     // create overlay to handle effect
-    NSString* effect = _options[kScreenViewEffect];
+    NSString* effect = _options[kScreenViewScreenShader];
     
-    if ([effect length] != 0 && ![effect isEqualToString:kScreenViewEffectNone]) {
+    if ([effect length] != 0 && ![effect isEqualToString:kScreenViewShaderNone] && ![effect isEqualToString:kScreenViewShaderDefault]) {
         for (int i=0; i<_mame_screen_count; i++) {
             
             CGRect source_rect = CGRectMake(0, 0, myosd_video_width, myosd_video_height);
@@ -447,10 +503,10 @@ static BOOL g_render_dump = 0;
         int wrap = prim->texwrap;
 
         if (prim->type == RENDER_PRIMITIVE_LINE) {
-            NSLog(@"    LINE (%.0f,%.0f) -> (%.0f,%.0f) (%0.2f,%0.2f,%0.2f,%0.2f) %f %s%s",
+            NSLog(@"    LINE (%.0f,%.0f) -> (%.0f,%.0f) (%0.2f,%0.2f,%0.2f,%0.2f) %f %s%s%s",
                   prim->bounds_x0, prim->bounds_y0, prim->bounds_x1, prim->bounds_y1,
                   prim->color_r, prim->color_g, prim->color_b, prim->color_a,
-                  prim->width, blend_mode_name[blend], aa ? " AA" : "");
+                  prim->width, blend_mode_name[blend], aa ? " AA" : "", screen ? " SCREEN" : "");
         }
         else if (prim->type == RENDER_PRIMITIVE_QUAD && prim->texture_base == NULL) {
             NSLog(@"    QUAD [%.0f,%.0f,%.0f,%.0f] (%0.2f,%0.2f,%0.2f,%0.2f) %s%s",

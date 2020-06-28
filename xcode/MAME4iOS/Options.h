@@ -25,33 +25,27 @@ NS_ASSUME_NONNULL_BEGIN
 @property (class, readonly, strong) NSArray* arrayControlType;
 @property (class, readonly, strong) NSArray* arrayBorder;
 @property (class, readonly, strong) NSArray* arrayFilter;
-@property (class, readonly, strong) NSArray* arrayEffect;
+@property (class, readonly, strong) NSArray* arrayScreenShader;
+@property (class, readonly, strong) NSArray* arrayLineShader;
 @property (class, readonly, strong) NSArray* arrayColorSpace;
 
-@property (readwrite,assign) int keepAspectRatioPort;
-@property (readwrite,assign) int keepAspectRatioLand;
+@property (readwrite,assign) int keepAspectRatio;
 
-@property (readwrite,strong) NSString *filterPort;
-@property (readwrite,strong) NSString *filterLand;
+@property (readwrite,strong) NSString *filter;
+@property (readwrite,strong) NSString *border;
+@property (readwrite,strong) NSString *screenShader;
+@property (readwrite,strong) NSString *lineShader;
+@property (readwrite,strong) NSString *colorSpace;
 
-@property (readwrite,strong) NSString *borderPort;
-@property (readwrite,strong) NSString *borderLand;
-
-@property (readwrite,strong) NSString *effectPort;
-@property (readwrite,strong) NSString *effectLand;
-
-@property (readwrite,strong) NSString *sourceColorSpace;
 @property (readwrite,assign) int useMetal;
-
 @property (readwrite,assign) int integerScalingOnly;
 
 @property (readwrite,assign) int showFPS;
+@property (readwrite,assign) int showHUD;
 @property (readwrite,assign) int animatedButtons;
-@property (readwrite,assign) int fourButtonsLand;
-@property (readwrite,assign) int fullLand;
-@property (readwrite,assign) int fullPort;
-@property (readwrite,assign) int fullLandJoy;
-@property (readwrite,assign) int fullPortJoy;
+@property (readwrite,assign) int fullscreenLandscape;
+@property (readwrite,assign) int fullscreenPortrait;
+@property (readwrite,assign) int fullscreenJoystick;
 
 @property (readwrite,assign) int btDeadZoneValue;
 @property (readwrite,assign) int touchDeadZone;

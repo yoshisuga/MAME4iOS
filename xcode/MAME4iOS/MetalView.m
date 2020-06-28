@@ -28,10 +28,14 @@
     #pragma clang diagnostic pop
     
     NSUInteger _maximumFramesPerSecond;
+    BOOL _externalDisplay;
+    BOOL _textureCacheFlush;
 
     id <MTLDevice> _device;
     id<MTLLibrary> _library;
     id<MTLCommandQueue> _queue;
+    NSLock* _draw_lock;
+    NSThread* _draw_thread;     // you can draw from either the main or background
 
     // vertex buffer cache
     NSMutableArray<id<MTLBuffer>>* _vertex_buffer_cache;
@@ -50,7 +54,7 @@
     // sampler states
     MTLSamplerMinMagFilter _texture_filter;
     MTLSamplerAddressMode _texture_address_mode;
-    id<MTLSamplerState> _texture_sampler[4];
+    id<MTLSamplerState> _texture_sampler[5*2];
 
     // current vertex buffer for current frame.
     id <MTLBuffer> _vertex_buffer;
@@ -80,27 +84,26 @@
 #pragma clang diagnostic pop
 
 + (BOOL)isSupported {
-    static BOOL isMetalSupported;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        isMetalSupported = MTLCreateSystemDefaultDevice() != nil;
-    });
-    return isMetalSupported;
+    static int g_isMetalSupported;
+    if (g_isMetalSupported == 0)
+        g_isMetalSupported = (MTLCreateSystemDefaultDevice() != nil) ? 1 : 2;
+    return g_isMetalSupported == 1;
 }
 
 - (id)initWithFrame:(CGRect)frame {
-	if ((self = [super initWithFrame:frame])!=nil) {
+    if ((self = [super initWithFrame:frame])!=nil) {
         self.opaque = YES;
         self.clearsContextBeforeDrawing = NO;
+        _draw_lock = [[NSLock alloc] init];
         
         // CAMetalLayer avalibility is wrong in the iOS 11.3.4 sdk???
         #pragma clang diagnostic push
         #pragma clang diagnostic ignored "-Wpartial-availability"
         _layer = (CAMetalLayer*)self.layer;
         #pragma clang diagnostic pop
-	}
+    }
     
-	return self;
+    return self;
 }
 
 -(CGColorSpaceRef)colorSpace {
@@ -112,13 +115,15 @@
 
 - (void)layoutSubviews {
     [super layoutSubviews];
-    _frameCount = 0;
+    _textureCacheFlush = TRUE;
 }
 - (void)didMoveToWindow {
     [super didMoveToWindow];
     if (self.window != nil) {
         _layer.contentsScale = self.window.screen.scale;
         _maximumFramesPerSecond = self.window.screen.maximumFramesPerSecond;
+        _externalDisplay = (self.window.screen != UIScreen.mainScreen) || TARGET_OS_SIMULATOR;
+        _textureCacheFlush = TRUE;
     }
 }
 - (void)didMoveToSuperview {
@@ -226,6 +231,11 @@
     if (!CGSizeEqualToSize(size, _layer.drawableSize)) {
         _layer.drawableSize = size;
         _frameCount = 0;
+        _textureCacheFlush = TRUE;
+    }
+    
+    if (_textureCacheFlush) {
+        _textureCacheFlush = FALSE;
         [_texture_cache removeAllObjects];
     }
     
@@ -234,6 +244,9 @@
     
     if (_drawable == nil)
         return FALSE;
+    
+    [_draw_lock lock];
+    _draw_thread = [NSThread currentThread];
 
     _startRenderTime = CACurrentMediaTime();
     
@@ -269,6 +282,8 @@
     // set default (frame based) shader variables
     [self setShaderVariables:@{
         @"frame-count": @(_frameCount),
+        @"frame-rate": @(_frameRate),
+        @"frame-time": @(_frameCount / _frameRate),     // TODO: send CACurrentMediaTime()??
         @"render-target-size": @(size),
     }];
     
@@ -278,23 +293,29 @@
 -(void)drawEnd {
     assert(_drawable != nil);
     NSArray* buffers = _vertex_buffer_list;
-    __weak typeof(self) weakSelf = self;
+    __weak typeof(self) _self = self;
+    BOOL externalDisplay = _externalDisplay;
     [_buffer addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
-        [weakSelf returnBuffers:buffers];
-#if TARGET_OS_SIMULATOR
-        [weakSelf updateFPS:CACurrentMediaTime()];
-#endif
+        [_self returnBuffers:buffers];
+        if (externalDisplay)
+            [_self updateFPS:CACurrentMediaTime()];
     }];
 #if !TARGET_OS_SIMULATOR
-    [_drawable addPresentedHandler:^(id<MTLDrawable> drawable) {
-        [weakSelf updateFPS:drawable.presentedTime];
-    }];
+    if (!externalDisplay) {
+        [_drawable addPresentedHandler:^(id<MTLDrawable> drawable) {
+            [_self updateFPS:drawable.presentedTime];
+        }];
+    }
 #endif
     [_encoder endEncoding];
+#if !TARGET_OS_SIMULATOR
     if (_preferredFramesPerSecond != 0 && _preferredFramesPerSecond * 2 <= _maximumFramesPerSecond && _layer.maximumDrawableCount == 3)
         [_buffer presentDrawable:_drawable afterMinimumDuration:1.0/_preferredFramesPerSecond];
     else
         [_buffer presentDrawable:_drawable];
+#else
+    [_buffer presentDrawable:_drawable];
+#endif
     [_buffer commit];
     _drawable = nil;
     _buffer = nil;
@@ -307,6 +328,8 @@
         _renderTimeAverage = (_renderTimeAverage * _frameCount + _renderTime) / (_frameCount+1);
     else
         _renderTimeAverage = _renderTime;
+    
+    [_draw_lock unlock];
 }
 
 #pragma mark - draw primitives
@@ -341,18 +364,12 @@
 }
 -(void)drawLine:(CGPoint)start to:(CGPoint)end width:(CGFloat)width color:(VertexColor)color {
     
-    // make the width a little wider so we can blend down the alpha on the edges.
-    // width = width * 1.2;
-
     simd_float2 p0 = simd_make_float2(start.x, start.y);
     simd_float2 p1 = simd_make_float2(end.x, end.y);
 
     simd_float4 color0 = color;
     simd_float4 color1 = simd_make_float4(color.xyz, color.w * 0.25);
     
-    // vector from p0 -> p1
-    simd_float2 v;
-
     // if p0 == p1, draw a little diamond
     //   2 + 4
     //    /|\
@@ -368,18 +385,28 @@
     //  |     \|                                  |/
     //  v    3 +----------------------------------+ 5
 
-    if (p0.x == p1.x && p0.y == p1.y)
-        v = simd_make_float2(width * 0.5, 0);
+    // vector from p0 -> p1
+    simd_float2 v = p1 - p0;
+    float length = simd_length(v);
+    float width2 = width * 0.5;
+    
+    // normalize vector and scale it by half width.
+    if (length < 0.001)
+        v = simd_make_float2(width2, 0);
     else
-        v = simd_normalize(p1 - p0) * width * 0.5;
+        v = v * (1.0 / length) * width2;
+    
+    // encode the position on the line in the texture coordinates for the fragment shader.
+    //      vary texture_u from 0 to length along the line length.
+    //      vary texture_v from -1 to +1 along the line width, zero is center.
 
     Vertex2D vertices[] = {
-        Vertex2D(p0.x - v.y,p0.y + v.x,0.0,0.0,color1),  // 2
-        Vertex2D(p1.x - v.y,p1.y + v.x,0.0,0.0,color1),  // 4
-        Vertex2D(p0.x - v.x,p0.y - v.y,0.0,0.0,color0),  // 1
-        Vertex2D(p1.x + v.x,p1.y + v.y,0.0,0.0,color0),  // 6
-        Vertex2D(p0.x + v.y,p0.y - v.x,0.0,0.0,color1),  // 3
-        Vertex2D(p1.x + v.y,p1.y - v.x,0.0,0.0,color1),  // 5
+        Vertex2D(p0.x - v.y,p0.y + v.x, 0.0,1.0,        color1),  // 2
+        Vertex2D(p1.x - v.y,p1.y + v.x, length,1.0,     color1),  // 4
+        Vertex2D(p0.x - v.x,p0.y - v.y, -width2,0.0,    color0),  // 1
+        Vertex2D(p1.x + v.x,p1.y + v.y, length+width2,0.0,color0),// 6
+        Vertex2D(p0.x + v.y,p0.y - v.x, 0.0,-1.0,       color1),  // 3
+        Vertex2D(p1.x + v.y,p1.y - v.x, length,-1.0,    color1),  // 5
     };
     [self drawPrim:MTLPrimitiveTypeTriangleStrip vertices:vertices count:sizeof(vertices)/sizeof(vertices[0])];
 }
@@ -452,20 +479,18 @@
     if ((_frameCount % RESET_AVERAGE_EVERY) == 0) {
         _frameRateAverage = 0;
         _renderTimeAverage = 0;
-        _lastDrawTime = 0;
-        _frameRate = 0;
     }
 
-    if (_lastDrawTime != 0 &&  (drawTime - _lastDrawTime) >= (1.0 / 1000.0)) {
+    self->_frameCount += 1;
+    
+    if (_lastDrawTime != 0 && (drawTime - _lastDrawTime) >= (1.0 / 1000.0)) {
         _frameRate  = 1.0 / (drawTime - _lastDrawTime);
         if (_frameRateAverage != 0)
-            _frameRateAverage = (_frameRateAverage * _frameCount + _frameRate) / (_frameCount+1);
+            _frameRateAverage = (_frameRateAverage * (_frameCount-1) + _frameRate) / (_frameCount);
         else
             _frameRateAverage = _frameRate;
     }
     _lastDrawTime = drawTime;
-    
-    self->_frameCount += 1;
 }
 
 #pragma mark - transforms
@@ -516,6 +541,14 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         arr[i] = [arr[i] stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
     return arr;
 }
+
+//// split and trim a string
+//- (NSMutableArray*)split:(NSString*)str sep:(NSString*) sep {
+//    NSMutableArray* arr = [[str componentsSeparatedByString:sep] mutableCopy];
+//    for (int i=0; i<arr.count; i++)
+//        arr[i] = [arr[i] stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
+//    return arr;
+//}
 
 /// a shader is a string that selects the fragment function and blend mode to use.
 /// it has the following format:
@@ -579,6 +612,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         frag = [_library newFunctionWithName:[NSString stringWithFormat:@"fragment_%@", shader_name]];
     
     if (frag == nil) {
+        assert(FALSE);
         NSLog(@"SHADER NOT FOUND: %@, using default", shader_name);
         frag = [_library newFunctionWithName:@"fragment_default"];
     }
@@ -645,7 +679,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
                 NSArray* arr = split(str, @"=");
                 str = arr.firstObject;
                 if (_shader_variables[str] == nil)
-                    _shader_variables[str] = [formater numberFromString:arr[1]] ?: @(0);
+                    _shader_variables[str] = @([arr[1] floatValue]);
             }
             arr[i] = [formater numberFromString:str] ?: str;
         }
@@ -679,7 +713,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
             if (val == nil) {
                 NSLog(@"UNKNOWN SHADER VARIABLE '%@' for shader \"%@\"", param, _shader_current);
                 assert(FALSE);
-                continue;
+                val = @(0);
             }
         }
         assert([val isKindOfClass:[NSValue class]]);
@@ -726,7 +760,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 }
 
 /// add to the dictionary used to resolve named shader variables
-- (void)setShaderVariables:(NSDictionary *)variables {
+- (void)setShaderVariablesInternal:(NSDictionary *)variables {
 #ifdef DEBUG
     for (NSString* key in variables.allKeys) {
         assert([key isKindOfClass:[NSString class]]);
@@ -753,8 +787,34 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 #endif
     
     // if the currently set shader has params, re-set the render state
-    if (_shader_params[_shader_current] != nil)
+    if (_encoder != nil && _shader_params[_shader_current] != nil)
         [self setShader:nil];
+}
+
+/// add to the dictionary used to resolve named shader variables
+- (void)setShaderVariables:(NSDictionary *)variables {
+    if ([NSThread currentThread] == _draw_thread) {
+        [self setShaderVariablesInternal:variables];
+    }
+    else {
+        [_draw_lock lock];
+        [self setShaderVariablesInternal:variables];
+        [_draw_lock unlock];
+    }
+}
+
+/// get a snapshot of the current shader variables.
+-(NSDictionary<NSString*, NSValue*>*)getShaderVariables {
+    if ([NSThread currentThread] == _draw_thread) {
+        return _shader_variables;
+    }
+    else {
+        NSDictionary* variables;
+        [_draw_lock lock];
+        variables = [_shader_variables copy];
+        [_draw_lock unlock];
+        return variables;
+    }
 }
 
 #pragma mark - textures
@@ -767,6 +827,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 ///    texture identifier  - a unique identifier for this texture.
 ///    hash - a value that changes when texture is modified, use 0 if texture is static.
 ///    width, height - size of the texture (used to create on cache miss)
+///    format -MTLPixelFormat
 ///    texture_load - callback used to load image data.
 ///    texture_load_data - opaque data passed to load callback (can be same as texture identifier)
 ///
@@ -805,10 +866,12 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
 -(void)updateSamplerState {
     assert(_texture_filter == MTLSamplerMinMagFilterNearest || _texture_filter == MTLSamplerMinMagFilterLinear);
-    assert(_texture_address_mode == MTLSamplerAddressModeClampToEdge || _texture_address_mode == MTLSamplerAddressModeRepeat);
-    _Static_assert(MTLSamplerAddressModeClampToEdge == 0 && MTLSamplerAddressModeRepeat  == 2, "MTLSamplerAddressMode bad!");
-    _Static_assert(MTLSamplerMinMagFilterNearest    == 0 && MTLSamplerMinMagFilterLinear == 1, "MTLSamplerMinMagFilter bad!");
-    NSUInteger index = _texture_filter + _texture_address_mode;
+    assert(_texture_address_mode >= MTLSamplerAddressModeClampToEdge && _texture_address_mode <= MTLSamplerAddressModeClampToZero);
+    _Static_assert(MTLSamplerAddressModeClampToEdge == 0 && MTLSamplerAddressModeClampToZero == 4, "MTLSamplerAddressMode bad!");
+    _Static_assert(MTLSamplerMinMagFilterNearest == 0 && MTLSamplerMinMagFilterLinear == 1, "MTLSamplerMinMagFilter bad!");
+    _Static_assert(sizeof(_texture_sampler) / sizeof(_texture_sampler[0]) == 5*2, "_texture_sampler wrong size!");
+
+    NSUInteger index = (_texture_address_mode * 2) + _texture_filter;
     
     id<MTLSamplerState> sampler = _texture_sampler[index];
     
@@ -818,9 +881,10 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         desc.magFilter = _texture_filter;
         desc.sAddressMode = _texture_address_mode;
         desc.tAddressMode = _texture_address_mode;
+        char* address_mode_map[] = {"ClampEdge", "MirrorClamp","Repeat","MirrorRepeat","ClampZero","ClampColor"};
         desc.label = [NSString stringWithFormat:@"filter=%s, mode=%s",
                       (_texture_filter == MTLSamplerMinMagFilterNearest) ? "Nearest" : "Linear",
-                      (_texture_address_mode == MTLSamplerAddressModeClampToEdge) ? "Clamp" : "Wrap"];
+                      address_mode_map[_texture_address_mode]];
         sampler = [_device newSamplerStateWithDescriptor:desc];
         _texture_sampler[index] = sampler;
     }
@@ -829,12 +893,14 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 }
 
 -(void)setTextureFilter:(MTLSamplerMinMagFilter)filter {
+    assert(_texture_filter == MTLSamplerMinMagFilterNearest || _texture_filter == MTLSamplerMinMagFilterLinear);
     if (_texture_filter != filter) {
         _texture_filter = filter;
         [self updateSamplerState];
     }
 }
 -(void)setTextureAddressMode:(MTLSamplerAddressMode)mode {
+    assert(_texture_address_mode >= MTLSamplerAddressModeClampToEdge && _texture_address_mode <= MTLSamplerAddressModeClampToZero);
     if (_texture_address_mode != mode) {
         _texture_address_mode = mode;
         [self updateSamplerState];

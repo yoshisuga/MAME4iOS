@@ -46,5 +46,7 @@
 
 @interface MetalScreenView : MetalView <ScreenView>
 
+@property(readonly, nonatomic) NSUInteger numScreens;  // number of screens rendered last frame.  0: VECTOR GAME, 1+: RASTER GAME
+
 @end
 

@@ -9,6 +9,9 @@
 #include "myosd.h"
 #import "Options.h"
 #import "Globals.h"
+#import "EmulatorController.h"  // for borderList
+#import "MetalScreenView.h"     // for shader and filter list
+#import "CGScreenView.h"        // for shader and filter list
 
 @implementation Options
 
@@ -33,112 +36,37 @@
 + (NSArray*)arrayControlType {
     return @[@"Keyboard or 8BitDo",@"iCade or compatible",@"iCP, Gametel",@"iMpulse"];
 }
-// border string is of the form:
-//        <Friendly Name> : <resource image name>
-//        <Friendly Name> : <resource image name>, <fraction of border that is opaque>
-//        <Friendly Name> : #RRGGBB
-//        <Friendly Name> : #RRGGBBAA, <border width>
-//        <Friendly Name> : #RRGGBBAA, <border width>, <corner radius>
+
 + (NSArray*)arrayBorder {
-    return @[@"None",
-             @"Dark : border-dark",
-             @"Light : border-light",
-             @"Solid : #007AFFaa, 2.0, 8.0",
-#ifdef DEBUG
-             @"Test : border-test",
-             @"Test 1: border-test, 0.5",
-             @"Test 2: border-test, 1.0",
-             @"Red : #ff0000, 2.0",
-             @"Blue : #0000FF",
-             @"Green : #00FF00ee, 4.0, 16.0",
-             @"Purple : #80008080, 4.0, 16.0",
-             @"Tint : #007Aff, 2.0, 8.0",
-#endif
-    ];
+    return [EmulatorController borderList];
 }
 + (NSArray*)arrayFilter {
-    return @[@"Nearest",
-             @"Linear",
-    ];
-}
-
-// CoreGraphics effect string is of the form:
-//        <Friendly Name> : <overlay image> [,<overlay image> ...]
-//
-+ (NSArray*)arrayCoreGraphicsEffects {
-    return @[@"None",
-             @"Scanline : effect-scanline",
-             @"CRT : effect-crt, effect-scanline",
-#ifdef DEBUG
-             @"Test Dot : effect-dot",
-             @"Test All : effect-crt, effect-scanline, effect-dot",
-#endif
-    ];
-}
-
-// Metal effect string is of the form:
-//        <Friendly Name> : <shader description>
-//
-// NOTE: see MetalView.h for what a <shader description> is.
-//
-// NOTE arrayCoreGraphicsEffects and arrayMetalEffects should use the same friendly name
-// for similar effects, so if the user turns off/on metal the choosen effect wont get reset to default.
-//
-+ (NSArray*)arrayMetalEffects {
-    return @[@"None",
-             @"Simple CRT: simpleCRT, mame-screen-dst-rect, mame-screen-src-rect",
-#ifdef DEBUG
-             @"Wombat1: mame_screen_test, mame-screen-size, frame-count, 1.0, 8.0, 8.0",
-             @"Wombat2: mame_screen_test, mame-screen-size, frame-count, wombat_rate=2.0, wombat_u=16.0, wombat_v=16.0",
-             @"Test (dot): mame_screen_dot, mame-screen-matrix",
-             @"Test (line): mame_screen_line, mame-screen-matrix",
-             @"Test (rainbow): mame_screen_rainbow, mame-screen-matrix, frame-count, rainbow_h = 16.0, rainbow_speed=1.0",
-#endif
-    ];
-}
-
-+ (NSArray*)arrayEffect {
     Options* op = [[Options alloc] init];
     if (g_isMetalSupported && op.useMetal)
-        return [self arrayMetalEffects];
+        return [MetalScreenView filterList];
     else
-        return [self arrayCoreGraphicsEffects];
+        return [CGScreenView filterList];
 }
-
-//
-// color space data, we define the colorSpaces here, in one place, so it stays in-sync with the UI.
-//
-// you can specify a colorSpace in two ways, with a system name or with parameters.
-// these strings are of the form <Friendly Name> : <colorSpace name OR colorSpace parameters>
-//
-// colorSpace name is one of the sytem contants passed to `CGColorSpaceCreateWithName`
-// see (Color Space Names)[https://developer.apple.com/documentation/coregraphics/cgcolorspace/color_space_names]
-//
-// colorSpace parameters are 3 - 18 floating point numbers separated with commas.
-// see [CGColorSpaceCreateCalibratedRGB](https://developer.apple.com/documentation/coregraphics/1408861-cgcolorspacecreatecalibratedrgb)
-//
-// if <colorSpace name OR colorSpace parameters> is blank or not valid, a device-dependent RGB color space is used.
-//
-// NOTE: not all iOS devices support color matching.
-//
++ (NSArray*)arrayScreenShader {
+    Options* op = [[Options alloc] init];
+    if (g_isMetalSupported && op.useMetal)
+        return [MetalScreenView screenShaderList];
+    else
+        return [CGScreenView screenShaderList];
+}
++ (NSArray*)arrayLineShader {
+    Options* op = [[Options alloc] init];
+    if (g_isMetalSupported && op.useMetal)
+        return [MetalScreenView lineShaderList];
+    else
+        return [CGScreenView lineShaderList];
+}
 + (NSArray*)arrayColorSpace {
-
-    // TODO: find out what devices??
-    BOOL deviceSupportsColorMatching = TRUE;
-    
-    if (!deviceSupportsColorMatching)
-        return @[@"Default"];
-
-    return @[@"DeviceRGB",
-             @"sRGB : kCGColorSpaceSRGB",
-             @"CRT (sRGB, D65, 2.5) :    0.95047,1.0,1.08883, 0,0,0, 2.5,2.5,2.5, 0.412456,0.212673,0.019334,0.357576,0.715152,0.119192,0.180437,0.072175,0.950304",
-             @"Rec709 (sRGB, D65, 2.4) : 0.95047,1.0,1.08883, 0,0,0, 2.4,2.4,2.4, 0.412456,0.212673,0.019334,0.357576,0.715152,0.119192,0.180437,0.072175,0.950304",
-#ifdef DEBUG
-             @"Adobe RGB : kCGColorSpaceAdobeRGB1998",
-             @"Linear sRGB : kCGColorSpaceLinearSRGB",
-             @"NTSC Luminance : 0.9504,1.0000,1.0888, 0,0,0, 1,1,1, 0.299,0.299,0.299, 0.587,0.587,0.587, 0.114,0.114,0.114",
-#endif
-    ];
+    Options* op = [[Options alloc] init];
+    if (g_isMetalSupported && op.useMetal)
+        return [MetalScreenView colorSpaceList];
+    else
+        return [CGScreenView colorSpaceList];
 }
 
 #pragma mark - instance code
@@ -184,33 +112,26 @@
 
     if(![plist isKindOfClass:[NSDictionary class]])
     {
-        _keepAspectRatioPort=1;
-        _keepAspectRatioLand=1;
+        _keepAspectRatio=1;
         
-        _filterPort = @"";
-        _filterLand = @"";
+        _filter = @"";
+        _border = @"";
+        _screenShader = @"";
+        _lineShader = @"";
 
-        _borderPort = @"";
-        _borderLand = @"";
-
-        _effectPort = @"";
-        _effectLand = @"";
-        
-        _sourceColorSpace = @"";
+        _colorSpace = @"";
         _useMetal = 1;
         
         _integerScalingOnly = 0;
 
         _showFPS = 0;
+        _showHUD = 0;
         _showINFO = 0;
-        _fourButtonsLand = 0;
         _animatedButtons = 1;
         
-        _fullLand = 1;
-        _fullPort = 0;
-        
-        _fullLandJoy = 1;
-        _fullPortJoy = 1;
+        _fullscreenLandscape= 1;
+        _fullscreenPortrait = 0;
+        _fullscreenJoystick = 1;
         
         _btDeadZoneValue = 2;
         _touchDeadZone = 1;
@@ -300,19 +221,14 @@
     {
         NSDictionary* optionsDict = plist;
 
-        _keepAspectRatioPort = [[optionsDict objectForKey:@"KeepAspectPort"] intValue];
-        _keepAspectRatioLand = [[optionsDict objectForKey:@"KeepAspectLand"] intValue];
+        _keepAspectRatio = [([optionsDict objectForKey:@"KeepAspect"] ?: @(1)) intValue];
         
-        _filterPort = [optionsDict objectForKey:@"filterPort"] ?: @"";
-        _filterLand = [optionsDict objectForKey:@"filterLand"] ?: @"";
+        _filter = [optionsDict objectForKey:@"filter"] ?: @"";
+        _border = [optionsDict objectForKey:@"border"] ?: @"";
+        _screenShader = [optionsDict objectForKey:@"screen-shader"] ?: [optionsDict objectForKey:@"effect"] ?: @"";
+        _lineShader = [optionsDict objectForKey:@"line-shader"] ?: @"";
 
-        _borderPort = [optionsDict objectForKey:@"borderPort"] ?: @"";
-        _borderLand = [optionsDict objectForKey:@"borderLand"] ?: @"";
-
-        _effectPort = [optionsDict objectForKey:@"effectPort"] ?: @"";
-        _effectLand = [optionsDict objectForKey:@"effectLand"] ?: @"";
-        
-        _sourceColorSpace = [optionsDict objectForKey:@"sourceColorSpace"] ?: @"";
+        _colorSpace = [optionsDict objectForKey:@"sourceColorSpace"] ?: @"";
         _useMetal = [([optionsDict objectForKey:@"useMetal"] ?: @(TRUE)) boolValue];
 
         _integerScalingOnly = [[optionsDict objectForKey:@"integerScalingOnly"] boolValue];
@@ -330,14 +246,13 @@
             _touchControlsOpacity = [prefTouchControlOpacity floatValue];
         }
         _showFPS =  [[optionsDict objectForKey:@"showFPS"] intValue];
+        _showHUD =  [[optionsDict objectForKey:@"showHUD"] intValue];
         _showINFO =  [[optionsDict objectForKey:@"showINFO"] intValue];
-        _fourButtonsLand =  [[optionsDict objectForKey:@"fourButtonsLand"] intValue];
         _animatedButtons =  [[optionsDict objectForKey:@"animatedButtons"] intValue];
         
-        _fullLand =  [[optionsDict objectForKey:@"fullLand"] intValue];
-        _fullPort =  [[optionsDict objectForKey:@"fullPort"] intValue];
-        _fullLandJoy =  [([optionsDict objectForKey:@"fullLandJoy"] ?: @(1)) intValue];
-        _fullPortJoy =  [([optionsDict objectForKey:@"fullPortJoy"] ?: @(1)) intValue];
+        _fullscreenLandscape =  [([optionsDict objectForKey:@"fullLand"] ?: @(1)) intValue];
+        _fullscreenPortrait  =  [([optionsDict objectForKey:@"fullPort"] ?: @(0)) intValue];
+        _fullscreenJoystick  =  [([optionsDict objectForKey:@"fullJoy"]  ?: @(1)) intValue];
 
         _turboXEnabled = [[optionsDict objectForKey:@"turboXEnabled"] intValue];
         _turboYEnabled = [[optionsDict objectForKey:@"turboYEnabled"] intValue];
@@ -426,19 +341,14 @@
 - (void)saveOptions
 {
     NSDictionary* optionsDict = [NSDictionary dictionaryWithObjectsAndKeys:
-                             [NSString stringWithFormat:@"%d", _keepAspectRatioPort], @"KeepAspectPort",
-                             [NSString stringWithFormat:@"%d", _keepAspectRatioLand], @"KeepAspectLand",
-                             
-                             _filterPort, @"filterPort",
-                             _filterLand, @"filterLand",
+                             [NSString stringWithFormat:@"%d", _keepAspectRatio], @"KeepAspect",
+                              
+                             _filter, @"filter",
+                             _border, @"border",
+                             _screenShader, @"screen-shader",
+                             _lineShader, @"line-shader",
 
-                             _borderPort, @"borderPort",
-                             _borderLand, @"borderLand",
-
-                             _effectPort, @"effectPort",
-                             _effectLand, @"effectLand",
-                             
-                             _sourceColorSpace, @"sourceColorSpace",
+                             _colorSpace, @"sourceColorSpace",
                              [NSString stringWithFormat:@"%d", _useMetal], @"useMetal",
                                  
                              [NSString stringWithFormat:@"%d", _integerScalingOnly], @"integerScalingOnly",
@@ -452,8 +362,8 @@
                              [NSString stringWithFormat:@"%f", _touchAnalogSensitivity], @"touchAnalogSensitivity",
                              [NSString stringWithFormat:@"%f", _touchControlsOpacity], @"touchControlsOpacity",
                              [NSString stringWithFormat:@"%d", _showFPS], @"showFPS",
+                             [NSString stringWithFormat:@"%d", _showHUD], @"showHUD",
                              [NSString stringWithFormat:@"%d", _showINFO], @"showINFO",
-                             [NSString stringWithFormat:@"%d", _fourButtonsLand], @"fourButtonsLand",
                              [NSString stringWithFormat:@"%d", _animatedButtons], @"animatedButtons",
                              
                              [NSString stringWithFormat:@"%d", _turboXEnabled], @"turboXEnabled",
@@ -465,11 +375,9 @@
                              
                              [NSString stringWithFormat:@"%d", _touchDirectionalEnabled], @"touchDirectionalEnabled",
                              
-                             [NSString stringWithFormat:@"%d", _fullLand], @"fullLand",
-                             [NSString stringWithFormat:@"%d", _fullPort], @"fullPort",
-                             
-                             [NSString stringWithFormat:@"%d", _fullLandJoy], @"fullLandJoy",
-                             [NSString stringWithFormat:@"%d", _fullPortJoy], @"fullPortJoy",
+                             [NSString stringWithFormat:@"%d", _fullscreenLandscape], @"fullLand",
+                             [NSString stringWithFormat:@"%d", _fullscreenPortrait], @"fullPort",
+                             [NSString stringWithFormat:@"%d", _fullscreenJoystick], @"fullJoy",
 
                              [NSString stringWithFormat:@"%d", _btDeadZoneValue], @"btDeadZoneValue",
                              [NSString stringWithFormat:@"%d", _touchDeadZone], @"touchDeadZone",

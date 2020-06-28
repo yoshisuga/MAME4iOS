@@ -44,7 +44,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface HelpController : UIViewController<UIWebViewDelegate>
+@interface HelpController : UIViewController
 
 - (id)initWithName:(NSString*)name title:(NSString*)title;
 - (void)loadHTML:(NSString*)name;

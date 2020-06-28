@@ -71,6 +71,8 @@ extern int  myosd_pxasp1;
 extern int  myosd_video_threaded;
 extern int  myosd_service;
 extern int  myosd_configure;
+extern int  myosd_mame_pause;           // NOTE myosd_pause is the state of the MAME thread, this is a request for MAME to PAUSE
+extern int  myosd_reset;
 
 //
 // inGame   in_menu

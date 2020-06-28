@@ -16,7 +16,7 @@ NOWERROR = 1
 
 ########## iOS settings
 
-OSVERSION=11.0 # set minimum tvOS and iOS versions.
+OSVERSION=12.0 # set minimum tvOS and iOS versions.
 
 iOS = 1
 
@@ -666,10 +666,15 @@ endif
 else
 
 CCOMFLAGS += -arch x86_64
-CCOMFLAGS += -mios-simulator-version-min=$(OSVERSION)
 CCOMFLAGS += -D__IPHONE_OS_VERSION_MIN_REQUIRED=110000
 
 LDFLAGS += -arch x86_64
+
+ifndef tvOS
+CCOMFLAGS += -mios-simulator-version-min=$(OSVERSION)
+else
+CCOMFLAGS += -mtvos-simulator-version-min=$(OSVERSION) 
+endif
 
 endif
 

@@ -55,6 +55,8 @@ int  myosd_force_pxaspect = 0;
 int  myosd_pxasp1 = 1;
 int  myosd_service = 0;
 int  myosd_configure = 0;
+int  myosd_mame_pause = 0;
+int  myosd_reset = 0;
 
 int myosd_video_threaded=-1;
 int myosd_dbl_buffer=1;
