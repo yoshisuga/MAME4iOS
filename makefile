@@ -16,7 +16,7 @@ NOWERROR = 1
 
 ########## iOS settings
 
-OSVERSION=11.0 # set minimum tvOS and iOS versions.
+OSVERSION=12.0 # set minimum tvOS and iOS versions.
 
 iOS = 1
 
