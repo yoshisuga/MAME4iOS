@@ -64,7 +64,6 @@ TIMER_INIT(texture_load_rgb32)
 TIMER_INIT(texture_load_rgb15)
 TIMER_INIT(line_prim)
 TIMER_INIT(quad_prim)
-TIMER_INIT(vsync_sleep)
 TIMER_INIT_END
 
 #pragma mark - MetalScreenView
@@ -78,7 +77,6 @@ TIMER_INIT_END
     NSString* _line_width_scale_variable;
     BOOL _line_shader_wants_past_lines;
     
-    CADisplayLink* _displayLink;
     NSTimeInterval _drawScreenStart;
 
     #define LINE_BUFFER_SIZE (16*1024)
@@ -294,29 +292,6 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 - (void)dealloc {
     if (_line_buffer != NULL)
         free(_line_buffer);
-}
-
-#pragma mark - MetalScreenView UIView stuff
-
-- (void)layoutSubviews {
-    [super layoutSubviews];
-}
-- (void)didMoveToSuperview {
-    [super didMoveToSuperview];
-}
-- (void)didMoveToWindow {
-    [super didMoveToWindow];
-
-    [_displayLink invalidate];
-    _displayLink = nil;
-
-    if (self.window != nil) {
-        _displayLink = [self.window.screen displayLinkWithTarget:self selector:@selector(displayLink)];
-        [_displayLink addToRunLoop:NSRunLoop.mainRunLoop forMode:NSRunLoopCommonModes];
-        _displayLink.preferredFramesPerSecond = 60; // self.preferredFramesPerSecond;
-    }
-}
-- (void)displayLink {
 }
 
 #pragma mark - LINE BUFFER
@@ -686,12 +661,6 @@ static void texture_load(void* data, id<MTLTexture> texture) {
         TIMER_RESET();
     }
     
-    // SLEEP - dont starve other threads, MAME does not like to sleep, let Metal and Audio do some work.
-    TIMER_START(vsync_sleep);
-    NSTimeInterval time = _displayLink.targetTimestamp - CACurrentMediaTime();
-    [NSThread sleepForTimeInterval:floor(time * 1000.0) / 1000.0];
-    TIMER_STOP(vsync_sleep);
-
     // always return 1 saying we handled the draw.
     return 1;
 }

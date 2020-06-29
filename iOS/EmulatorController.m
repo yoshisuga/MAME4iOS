@@ -454,8 +454,8 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     else
       policy = SCHED_FIFO;
            
-    if(pthread_setschedparam(main_tid, policy, &param) != 0)    
-             fprintf(stderr, "Error setting pthread priority\n");
+    if(pthread_setschedparam(main_tid, policy, &param) != 0)
+        fprintf(stderr, "Error setting pthread priority\n");
     
 #if TARGET_OS_IOS
     _impactFeedback = [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleLight];
@@ -971,9 +971,8 @@ void mame_state(int load_save, int slot)
     if (g_pref_metal && [MetalScreenView isSupported]) {
         myosd_sleep = 1;            // sleep to let Metal get work done.
         myosd_video_threaded = 0;   // dont need an extra thread
-        myosd_vsync = -1;           // dont force 60Hz, just use the machine value.
-        myosd_frameskip_value = 0;  // *DONT* try to skip frames, we render so fast it is confusing MAME.
-        //myosd_frameskip_value = -1; // AUTO frameskip
+        //myosd_vsync = -1;           // dont force 60Hz, just use the machine value.
+        myosd_frameskip_value = -1; // AUTO frameskip
     }
     
 #if TARGET_OS_IOS
