@@ -142,6 +142,7 @@ enum {
     HudSizeEditor = 4,      // HUD is expanded to include Shader editing sliders.
 };
 int g_pref_showHUD = 0;
+int g_pref_saveHUD = 0;     // previous value of g_pref_showHUD
 
 int g_pref_keep_aspect_ratio = 0;
 
@@ -1354,7 +1355,7 @@ void mame_state(int load_save, int slot)
 
 -(void)buildFrameRateView {
     
-    BOOL showFPS = g_pref_showFPS && ((g_pref_showHUD <= 0) || (g_pref_showHUD == HudSizeTiny));
+    BOOL showFPS = g_pref_showFPS && (g_pref_showHUD == HudSizeZero || g_pref_showHUD == HudSizeTiny);
 
     myosd_fps = showFPS;
 
@@ -1530,7 +1531,7 @@ static NSArray* list_trim(NSArray* _list) {
 
 -(void)buildHUD {
 
-    if (g_pref_showHUD <= 0) {
+    if (g_pref_showHUD == HudSizeZero) {
         if (hudView != nil)
             [NSUserDefaults.standardUserDefaults setValue:NSStringFromCGRect(hudView.frame) forKey:kHUDPositionKey];
         [hudView removeFromSuperview];
@@ -1568,7 +1569,10 @@ static NSArray* list_trim(NSArray* _list) {
     if (g_pref_showHUD == HudSizeTiny) {
         [hudView addButton:@":command:⌘:" handler:^{
             Options* op = [[Options alloc] init];
-            g_pref_showHUD = HudSizeNormal;
+            if (g_pref_saveHUD != HudSizeZero)
+                g_pref_showHUD = g_pref_saveHUD;    // restore HUD to previous size.
+            else
+                g_pref_showHUD = HudSizeNormal;     // if HUD is OFF turn it on at Normal size.
             op.showHUD = g_pref_showHUD;
             [op saveOptions];
             [_self changeUI];
@@ -1614,6 +1618,7 @@ static NSArray* list_trim(NSArray* _list) {
                     break;
                 }
                 case 5:
+                    g_pref_saveHUD = g_pref_showHUD;
                     g_pref_showHUD = HudSizeTiny;
                     [_self changeUI];
                     break;
@@ -1728,7 +1733,7 @@ static NSArray* list_trim(NSArray* _list) {
     }
     
     // add a grab handle on the left so you can move the HUD without hitting a button.
-    if (g_pref_showHUD > 0) {
+    if (g_pref_showHUD != HudSizeZero) {
         hudView.layoutMargins = UIEdgeInsetsMake(8, 16, 8, 8);
         CGFloat height = [hudView sizeThatFits:CGSizeZero].height;
         CGFloat h = MIN(height * 0.5, 64.0);
@@ -2541,10 +2546,16 @@ UIColor* colorWithHexString(NSString* string) {
         {
             Options* op = [[Options alloc] init];
 
-            if (g_pref_showHUD == HudSizeZero)
-                g_pref_showHUD = HudSizeNormal;         // if HUD is OFF turn it on at Normal size.
-            else
-                g_pref_showHUD = -g_pref_showHUD;       // if HUD is ON, hide it but keep the size.
+            if (g_pref_showHUD == HudSizeZero) {
+                if (g_pref_saveHUD != HudSizeZero)
+                    g_pref_showHUD = g_pref_saveHUD;    // restore HUD to previous size.
+                else
+                    g_pref_showHUD = HudSizeNormal;     // if HUD is OFF turn it on at Normal size.
+            }
+            else {
+                g_pref_saveHUD = g_pref_showHUD;        // if HUD is ON, hide it but keep the size.
+                g_pref_showHUD = HudSizeZero;
+            }
 
             op.showHUD = g_pref_showHUD;
             [op saveOptions];

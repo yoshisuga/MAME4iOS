@@ -195,7 +195,10 @@
         label.text = key;
         UISwitch* sw = [[UISwitch alloc] init];
         [sw addTarget:self action:@selector(switch:) forControlEvents:UIControlEventValueChanged];
-        sw.transform = CGAffineTransformMakeScale(0.5, 0.5);
+        CGFloat h = _font.pointSize * 0.8;
+        CGFloat scale =  h / [sw sizeThatFits:CGSizeZero].height;
+        sw.transform = CGAffineTransformMakeScale(scale, scale);
+        [sw addConstraint:[NSLayoutConstraint constraintWithItem:sw attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:h]];
         sw.tag = (NSUInteger)(__bridge void*)key;
         sw.onTintColor = self.tintColor;
         label.tag = (NSUInteger)(__bridge void*)sw;
@@ -287,6 +290,11 @@
 - (UISegmentedControl*)makeSegmentedControl:(NSArray*)items handler:(void (^)(NSUInteger button))handler {
     UISegmentedControl* seg = [[UISegmentedControl alloc] initWithItems:[self convertItems:items]];
     seg.momentary = YES;
+    [seg setTitleTextAttributes:@{NSFontAttributeName:_font} forState:UIControlStateNormal];
+    
+    CGFloat scale = [[UIFontMetrics metricsForTextStyle:UIFontTextStyleBody] scaledValueForValue:1.0];
+    [seg addConstraint:[NSLayoutConstraint constraintWithItem:seg attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:seg.bounds.size.height * scale]];
+
     [seg addTarget:self action:@selector(buttonPress:) forControlEvents:UIControlEventValueChanged];
     objc_setAssociatedObject(seg, @selector(buttonPress:), handler, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     if (@available(iOS 13.0, *))
