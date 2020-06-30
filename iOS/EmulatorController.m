@@ -1569,7 +1569,7 @@ static NSArray* list_trim(NSArray* _list) {
     if (g_pref_showHUD == HudSizeTiny) {
         [hudView addButton:@":command:⌘:" handler:^{
             Options* op = [[Options alloc] init];
-            if (g_pref_saveHUD != HudSizeZero)
+            if (g_pref_saveHUD != HudSizeZero && g_pref_saveHUD != HudSizeTiny)
                 g_pref_showHUD = g_pref_saveHUD;    // restore HUD to previous size.
             else
                 g_pref_showHUD = HudSizeNormal;     // if HUD is OFF turn it on at Normal size.
@@ -1618,10 +1618,15 @@ static NSArray* list_trim(NSArray* _list) {
                     break;
                 }
                 case 5:
+                {
+                    Options* op = [[Options alloc] init];
                     g_pref_saveHUD = g_pref_showHUD;
                     g_pref_showHUD = HudSizeTiny;
+                    op.showHUD = g_pref_showHUD;
+                    [op saveOptions];
                     [_self changeUI];
                     break;
+                }
             }
         }];
         
@@ -1782,6 +1787,7 @@ static NSArray* list_trim(NSArray* _list) {
     NSLog(@"RESET UI (MAME VIDEO MODE CHANGE)");
     
     // shrink the HUD back to Normal on a game reset.
+    // ...we do this because buttons in the expanded HUD depend on game info (num players, etc)
     if (g_pref_showHUD > HudSizeTiny)
         g_pref_showHUD = HudSizeNormal;
         
