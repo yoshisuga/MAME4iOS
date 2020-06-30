@@ -79,7 +79,7 @@
     if (arr.count > 2) {
         text = arr.lastObject;
 
-        if (@available(iOS 13.0, *))
+        if (@available(iOS 13.0, tvOS 13.0, *))
             image = [[UIImage systemImageNamed:arr[1]] imageByApplyingSymbolConfiguration:[UIImageSymbolConfiguration configurationWithFont:font]];
 
         // use fallback text if image not found.

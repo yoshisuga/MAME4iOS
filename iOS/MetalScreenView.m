@@ -79,8 +79,8 @@ TIMER_INIT_END
     
     NSTimeInterval _drawScreenStart;
 
-    #define LINE_BUFFER_SIZE (16*1024)
-    #define LINE_MAX_FADE_TIME 2.0
+    #define LINE_BUFFER_SIZE (8*1024)
+    #define LINE_MAX_FADE_TIME 1.0
     myosd_render_primitive* _line_buffer;
     int _line_buffer_base;
     int _line_buffer_count;
