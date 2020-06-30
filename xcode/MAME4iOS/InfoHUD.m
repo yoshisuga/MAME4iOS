@@ -8,7 +8,6 @@
 
 #import "InfoHUD.h"
 #import <objc/runtime.h> // just for Associated Objects, I promise!
-#import "SystemImage.h"
 
 #define HUD_COLOR   [self.tintColor colorWithAlphaComponent:0.2]
 #define HUD_BLUR    TRUE
@@ -198,6 +197,7 @@
         [sw addTarget:self action:@selector(switch:) forControlEvents:UIControlEventValueChanged];
         sw.transform = CGAffineTransformMakeScale(0.5, 0.5);
         sw.tag = (NSUInteger)(__bridge void*)key;
+        sw.onTintColor = self.tintColor;
         label.tag = (NSUInteger)(__bridge void*)sw;
         [_stack.subviews.lastObject removeFromSuperview];
         UIStackView* stack = [[UIStackView alloc] initWithArrangedSubviews:@[label, sw]];
@@ -262,12 +262,20 @@
     label.textAlignment = NSTextAlignmentCenter;
 }
 
++ (UIImage*)imageWithString:(NSString*)str withFont:(UIFont*)font {
+    return nil;
+}
+
 - (NSArray*)convertItems:(NSArray*)_items {
+    
+    if (![[UIImage class] respondsToSelector:@selector(imageWithString:withFont:)])
+        return _items;
+        
     NSMutableArray* items = [_items mutableCopy];
     for (NSUInteger idx=0; idx<items.count; idx++) {
         id item = items[idx];
         if ([item isKindOfClass:[NSString class]] && [item hasPrefix:@":"])
-            items[idx] = [UIImage imageWithString:item withFont:self.font];
+            items[idx] = [[UIImage class] performSelector:@selector(imageWithString:withFont:) withObject:item withObject:self.font];
     }
     return [items copy];
 }
