@@ -119,5 +119,7 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+    <key>CADisableMinimumFrameDuration</key>
+    <true/>
 </dict>
 </plist>
