@@ -971,7 +971,7 @@ void mame_state(int load_save, int slot)
     if (g_pref_metal && [MetalScreenView isSupported]) {
         myosd_sleep = 1;            // sleep to let Metal get work done.
         myosd_video_threaded = 0;   // dont need an extra thread
-        //myosd_vsync = -1;           // dont force 60Hz, just use the machine value.
+        myosd_vsync = -1;           // dont force 60Hz, just use the machine value.
         myosd_frameskip_value = -1; // AUTO frameskip
     }
     
