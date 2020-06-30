@@ -8,6 +8,7 @@
 
 #import "InfoHUD.h"
 #import <objc/runtime.h> // just for Associated Objects, I promise!
+#import "SystemImage.h"
 
 #define HUD_COLOR   [self.tintColor colorWithAlphaComponent:0.2]
 #define HUD_BLUR    TRUE
@@ -103,6 +104,13 @@
     _changedKey = key;
     [self sendActionsForControlEvents:UIControlEventValueChanged];
 }
+- (void)switch:(UISwitch*)sender {
+    NSString* key = (__bridge NSString*)(void*)sender.tag;
+    [self setValue:@(sender.isOn ? 1.0 : 0.0) forKey:key];
+    _changedKey = key;
+    [self sendActionsForControlEvents:UIControlEventValueChanged];
+}
+
 
 - (void)setLayoutMargins:(UIEdgeInsets)layoutMargins {
     [super setLayoutMargins:layoutMargins];
@@ -182,8 +190,20 @@
     
     if ([value isKindOfClass:[NSString class]])
         _width = MAX(_width, ceil([value sizeWithAttributes:@{NSFontAttributeName:label.font}].width));
-
-    if ([value isKindOfClass:[NSNumber class]] && min != nil && max != nil) {
+    
+    if ([value isKindOfClass:[NSNumber class]] && [min floatValue] == 0.0 && [max floatValue] == 1.0 && [step floatValue] == 1.0) {
+        _format[key] = nil;
+        label.text = key;
+        UISwitch* sw = [[UISwitch alloc] init];
+        [sw addTarget:self action:@selector(switch:) forControlEvents:UIControlEventValueChanged];
+        sw.transform = CGAffineTransformMakeScale(0.5, 0.5);
+        sw.tag = (NSUInteger)(__bridge void*)key;
+        label.tag = (NSUInteger)(__bridge void*)sw;
+        [_stack.subviews.lastObject removeFromSuperview];
+        UIStackView* stack = [[UIStackView alloc] initWithArrangedSubviews:@[label, sw]];
+        [_stack addArrangedSubview:stack];
+    }
+    else if ([value isKindOfClass:[NSNumber class]] && min != nil && max != nil) {
         UISlider* slider = [[UISlider alloc] init];
         [slider addConstraint:[NSLayoutConstraint constraintWithItem:slider attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:24.0]];
         [slider addTarget:self action:@selector(slide:) forControlEvents:UIControlEventValueChanged];
@@ -242,65 +262,12 @@
     label.textAlignment = NSTextAlignmentCenter;
 }
 
-
-// convert text to a UIImaage, replacing any strings of the form ":symbol:" with a systemImage
-//      :symbol-name:                - return a UIImage created from [UIImage systemImageNamed] or [UIImage imageNamed]
-//      :symbol-name:fallback:       - return symbol as UIImage or fallback text if image not found
-//      :symbol-name:text            - return symbol + text
-//      :symbol-name:fallback:text   - return symbol or fallback text + text
-+ (UIImage*)imageWithString:(NSString*)text withFont:(UIFont*)_font {
-
-    UIImage* image;
-    UIFont* font = _font ?: [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-
-    // handle :symbol-name: or :symbol-name:fallback:
-    NSArray* arr = [(NSString*)text componentsSeparatedByString:@":"];
-    if (arr.count > 2) {
-        text = arr.lastObject;
-
-        if (@available(iOS 13.0, *))
-            image = [[UIImage systemImageNamed:arr[1]] imageByApplyingSymbolConfiguration:[UIImageSymbolConfiguration configurationWithFont:font]];
-
-        // use fallback text if image not found.
-        if (image == nil && arr.count == 4)
-            text = [arr[2] stringByAppendingString:text];
-    }
-    
-    // if we have both text and an image, combine image + text
-    if (image == nil || text.length > 0) {
-        CGFloat spacing = 4.0;
-        NSDictionary* attributes = @{NSFontAttributeName:font};
-        
-        CGSize textSize = [text boundingRectWithSize:CGSizeZero options:NSStringDrawingUsesLineFragmentOrigin attributes:attributes context:nil].size;
-        CGSize size = CGSizeMake(ceil(textSize.width), ceil(textSize.height));
-
-        if (image != nil) {
-            size.width += image.size.width + spacing;
-            size.height = MAX(size.height, image.size.height);
-        }
-        
-        image = [[[UIGraphicsImageRenderer alloc] initWithSize:size] imageWithActions:^(UIGraphicsImageRendererContext * context) {
-            CGPoint point = CGPointZero;
-            
-            if (image != nil) {
-                // TODO: align to baseline?
-                [image drawAtPoint:CGPointMake(point.x, (size.height - image.size.height)/2)];
-                point.x += image.size.width + spacing;
-            }
-
-            [text drawAtPoint:CGPointMake(point.x, (size.height - textSize.height)/2) withAttributes:attributes];
-        }];
-    }
-
-    return image;
-}
-
 - (NSArray*)convertItems:(NSArray*)_items {
     NSMutableArray* items = [_items mutableCopy];
     for (NSUInteger idx=0; idx<items.count; idx++) {
         id item = items[idx];
         if ([item isKindOfClass:[NSString class]] && [item hasPrefix:@":"])
-            items[idx] = [InfoHUD imageWithString:item withFont:self.font];
+            items[idx] = [UIImage imageWithString:item withFont:self.font];
     }
     return [items copy];
 }
@@ -369,10 +336,13 @@
         float step = [_step[key] floatValue];
         if (step != 0.0)
             val = round(val / step) * step;
-        label.text = [NSString stringWithFormat:format, val, key];
+        if (format != nil)
+            label.text = [NSString stringWithFormat:format, val, key];
         UISlider* slider = (__bridge UISlider*)(void*)label.tag;
         if ([slider isKindOfClass:[UISlider class]] && !slider.isTracking)
             slider.value = val;
+        if ([slider isKindOfClass:[UISwitch class]])
+            [(UISwitch*)slider setOn:val != 0.0];
     }
     else if ([value isKindOfClass:[NSString class]]) {
         label.text = value;
@@ -395,6 +365,8 @@
     float step = [_step[key] floatValue];
     if (([slider isKindOfClass:[UISlider class]]))
         return @((step != 0.0) ? round(slider.value / step) * step : slider.value);
+    else if (([slider isKindOfClass:[UISwitch class]]))
+        return [(UISwitch*)slider isOn] ? @(1) : @(0);
     else if ([label.text containsString:@": "])
         return @([label.text componentsSeparatedByString:@": "].lastObject.floatValue);
     else

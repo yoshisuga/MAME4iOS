@@ -45,13 +45,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (id)valueForKey:(NSString *)key;
 - (NSDictionary*)getValues;
 
-// convert text to a UIImaage, replacing any strings of the form ":symbol:" with a systemImage
-//      :symbol-name:                - return a UIImage created from [UIImage systemImageNamed] or [UIImage imageNamed]
-//      :symbol-name:fallback:       - return symbol as UIImage or fallback text if image not found
-//      :symbol-name:text            - return symbol + text
-//      :symbol-name:fallback:text   - return symbol or fallback text + text
-+ (UIImage*)imageWithString:(NSString*)text withFont:(UIFont*)_font;
-
 @end
 
 NS_ASSUME_NONNULL_END
