@@ -195,10 +195,9 @@
         label.text = key;
         UISwitch* sw = [[UISwitch alloc] init];
         [sw addTarget:self action:@selector(switch:) forControlEvents:UIControlEventValueChanged];
-        CGFloat h = _font.pointSize * 0.8;
+        CGFloat h = _font.lineHeight * 1.2;
         CGFloat scale =  h / [sw sizeThatFits:CGSizeZero].height;
         sw.transform = CGAffineTransformMakeScale(scale, scale);
-        [sw addConstraint:[NSLayoutConstraint constraintWithItem:sw attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:h]];
         sw.tag = (NSUInteger)(__bridge void*)key;
         sw.onTintColor = self.tintColor;
         label.tag = (NSUInteger)(__bridge void*)sw;
