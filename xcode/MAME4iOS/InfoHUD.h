@@ -13,6 +13,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface InfoHUD : UIControl
 
 @property(nonatomic) CGFloat spacing;
+@property(nonatomic) BOOL moveable;
+@property(nonatomic) BOOL sizeable;
 @property(null_resettable,nonatomic,strong) UIFont* font;
 @property(readonly,nonatomic,strong) NSString* changedKey;
 

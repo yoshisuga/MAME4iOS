@@ -198,6 +198,7 @@ static int change_layout=0;
 #endif
 
 #define kHUDPositionKey  @"hud_rect"
+#define kHUDScaleKey     @"hud_scale"
 #define kSelectedGameKey @"selected_game"
 static BOOL g_mame_reset = FALSE;           // do a full reset (delete cfg files) before running MAME
 static char g_mame_game[MAX_GAME_NAME];     // game MAME should run (or empty is menu)
@@ -723,8 +724,10 @@ void mame_state(int load_save, int slot)
     
 #if TARGET_OS_IOS
     // also save the position of the HUD
-    if (hudView)
-        [NSUserDefaults.standardUserDefaults setValue:NSStringFromCGRect(hudView.frame) forKey:kHUDPositionKey];
+    if (hudView) {
+        [NSUserDefaults.standardUserDefaults setObject:NSStringFromCGRect(hudView.frame) forKey:kHUDPositionKey];
+        [NSUserDefaults.standardUserDefaults setFloat:hudView.transform.a forKey:kHUDScaleKey];
+    }
 #endif
     
     [[NSUserDefaults standardUserDefaults] synchronize];
@@ -1538,8 +1541,10 @@ static NSArray* list_trim(NSArray* _list) {
 -(void)buildHUD {
 
     if (g_pref_showHUD == HudSizeZero) {
-        if (hudView != nil)
-            [NSUserDefaults.standardUserDefaults setValue:NSStringFromCGRect(hudView.frame) forKey:kHUDPositionKey];
+        if (hudView) {
+            [NSUserDefaults.standardUserDefaults setObject:NSStringFromCGRect(hudView.frame) forKey:kHUDPositionKey];
+            [NSUserDefaults.standardUserDefaults setFloat:hudView.transform.a forKey:kHUDScaleKey];
+        }
         [hudView removeFromSuperview];
         hudView = nil;
         return;
@@ -1547,14 +1552,18 @@ static NSArray* list_trim(NSArray* _list) {
     
     if (hudView == nil) {
         CGRect rect = CGRectFromString([NSUserDefaults.standardUserDefaults stringForKey:kHUDPositionKey] ?: @"");
-        
-        if (CGRectIsEmpty(rect))
+        CGFloat scale = [NSUserDefaults.standardUserDefaults floatForKey:kHUDScaleKey] ?: 1.0;
+
+        if (CGRectIsEmpty(rect)) {
             rect = CGRectMake(self.view.bounds.size.width/2, self.view.safeAreaInsets.top + 16, 0, 0);
+            scale = 1.0;
+        }
 
         hudView = [[InfoHUD alloc] init];
         hudView.font = [UIFont monospacedDigitSystemFontOfSize:hudView.font.pointSize weight:UIFontWeightRegular];
         hudView.layoutMargins = UIEdgeInsetsMake(8, 8, 8, 8);
         [hudView addTarget:self action:@selector(hudChange:) forControlEvents:UIControlEventValueChanged];
+        hudView.transform = CGAffineTransformMakeScale(scale, scale);
         hudView.frame = rect;
         [self.view addSubview:hudView];
     }
@@ -1684,10 +1693,9 @@ static NSArray* list_trim(NSArray* _list) {
         for (PopupSegmentedControl* seg in items) {
             [seg addTarget:self action:@selector(hudOptionChange:) forControlEvents:UIControlEventValueChanged];
             
-            // TODO: move this scaling into PopupSegmentedControll??
             [seg setTitleTextAttributes:@{NSFontAttributeName:hudView.font} forState:UIControlStateNormal];
-            CGFloat scale = [[UIFontMetrics metricsForTextStyle:UIFontTextStyleBody] scaledValueForValue:1.0];
-            [seg addConstraint:[NSLayoutConstraint constraintWithItem:seg attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:seg.bounds.size.height * scale]];
+            CGFloat h = hudView.font.lineHeight * 1.5;
+            [seg addConstraint:[NSLayoutConstraint constraintWithItem:seg attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:h]];
 
             if (@available(iOS 13.0, *)) {
                 seg.selectedSegmentTintColor = self.view.tintColor;
@@ -1766,9 +1774,10 @@ static NSArray* list_trim(NSArray* _list) {
     CGRect rect;
     CGRect bounds = self.view.bounds;
     CGRect frame = hudView.frame;
+    CGFloat scale = hudView.transform.a;
     CGSize size = [hudView sizeThatFits:CGSizeZero];
-    CGFloat w = size.width;
-    CGFloat h = size.height;
+    CGFloat w = size.width * scale;
+    CGFloat h = size.height * scale;
     
     if (CGRectGetMidX(frame) < CGRectGetMidX(bounds) - (bounds.size.width * 0.1))
         rect = CGRectMake(frame.origin.x, frame.origin.y, w, h);
@@ -1780,6 +1789,7 @@ static NSArray* list_trim(NSArray* _list) {
     rect.origin.x = MAX(self.view.safeAreaInsets.left + 8, MIN(self.view.bounds.size.width  - self.view.safeAreaInsets.right  - w - 8, rect.origin.x));
     rect.origin.y = MAX(self.view.safeAreaInsets.top + 8,  MIN(self.view.bounds.size.height - self.view.safeAreaInsets.bottom - h - 8, rect.origin.y));
     [NSUserDefaults.standardUserDefaults setValue:NSStringFromCGRect(rect) forKey:kHUDPositionKey];
+    [NSUserDefaults.standardUserDefaults setFloat:hudView.transform.a forKey:kHUDScaleKey];
 
     [UIView animateWithDuration:0.250 animations:^{
         self->hudView.frame = rect;
@@ -3681,7 +3691,8 @@ UIColor* colorWithHexString(NSString* string) {
 
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:nil message:msg preferredStyle:UIAlertControllerStyleAlert];
     [alert addAction:[UIAlertAction actionWithTitle:@"Reset" style:UIAlertActionStyleDestructive handler:^(UIAlertAction* action) {
-        [NSUserDefaults.standardUserDefaults setValue:@"" forKey:kHUDPositionKey];
+        [NSUserDefaults.standardUserDefaults removeObjectForKey:kHUDPositionKey];
+        [NSUserDefaults.standardUserDefaults removeObjectForKey:kHUDScaleKey];
         [Options resetOptions];
         [ChooseGameController reset];
         g_mame_reset = TRUE;

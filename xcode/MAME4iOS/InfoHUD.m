@@ -27,6 +27,9 @@
     self.layoutMargins = UIEdgeInsetsMake(16, 16, 16, 16);
     self.insetsLayoutMarginsFromSafeArea = NO;
     
+    _moveable = TRUE;
+    _sizeable = TRUE;
+    
     _views = [[NSMutableDictionary alloc] init];
     _format = [[NSMutableDictionary alloc] init];
     _step = [[NSMutableDictionary alloc] init];
@@ -47,6 +50,8 @@
     UIPanGestureRecognizer* pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(pan:)];
     pan.delegate = (id<UIGestureRecognizerDelegate>)self;
     [self addGestureRecognizer:pan];
+
+    [self addGestureRecognizer: [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(pinch:)]];
 
     self.backgroundColor = HUD_COLOR;
 #if HUD_BLUR
@@ -89,14 +94,23 @@
     return YES;
 }
 - (void)pan:(UIPanGestureRecognizer*)pan {
-    CGPoint translation = [pan translationInView:self];
-    [pan setTranslation:CGPointZero inView:self];
+    if (!_moveable)
+        return;
+    CGPoint translation = [pan translationInView:self.superview];
+    [pan setTranslation:CGPointZero inView:self.superview];
     
     CGPoint center = self.center;
     center.x += translation.x;
     center.y += translation.y;
     self.center = center;
 }
+- (void)pinch:(UIPinchGestureRecognizer*)pinch {
+    if (!_sizeable)
+        return;
+    self.transform = CGAffineTransformScale(self.transform, pinch.scale, pinch.scale);
+    pinch.scale = 1.0;
+}
+
 - (void)slide:(UISlider*)slider {
     NSString* key = (__bridge NSString*)(void*)slider.tag;
     [self setValue:@(slider.value) forKey:key];
@@ -195,7 +209,7 @@
         label.text = key;
         UISwitch* sw = [[UISwitch alloc] init];
         [sw addTarget:self action:@selector(switch:) forControlEvents:UIControlEventValueChanged];
-        CGFloat h = _font.lineHeight * 1.2;
+        CGFloat h = _font.lineHeight;
         CGFloat scale =  h / [sw sizeThatFits:CGSizeZero].height;
         sw.transform = CGAffineTransformMakeScale(scale, scale);
         sw.tag = (NSUInteger)(__bridge void*)key;
@@ -207,7 +221,8 @@
     }
     else if ([value isKindOfClass:[NSNumber class]] && min != nil && max != nil) {
         UISlider* slider = [[UISlider alloc] init];
-        [slider addConstraint:[NSLayoutConstraint constraintWithItem:slider attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:24.0]];
+        CGFloat h = _font.lineHeight;
+        [slider addConstraint:[NSLayoutConstraint constraintWithItem:slider attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:h]];
         [slider addTarget:self action:@selector(slide:) forControlEvents:UIControlEventValueChanged];
         slider.minimumValue = [min floatValue];
         slider.maximumValue = [max floatValue];
@@ -291,8 +306,8 @@
     seg.momentary = YES;
     [seg setTitleTextAttributes:@{NSFontAttributeName:_font} forState:UIControlStateNormal];
     
-    CGFloat scale = [[UIFontMetrics metricsForTextStyle:UIFontTextStyleBody] scaledValueForValue:1.0];
-    [seg addConstraint:[NSLayoutConstraint constraintWithItem:seg attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:seg.bounds.size.height * scale]];
+    CGFloat h = _font.lineHeight * 1.5;
+    [seg addConstraint:[NSLayoutConstraint constraintWithItem:seg attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:h]];
 
     [seg addTarget:self action:@selector(buttonPress:) forControlEvents:UIControlEventValueChanged];
     objc_setAssociatedObject(seg, @selector(buttonPress:), handler, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
@@ -310,7 +325,7 @@
 }
 - (void)addButtons:(NSArray*)items handler:(void (^)(NSUInteger button))handler {
     UIStackView* stack = [[UIStackView alloc] init];
-    stack.spacing = 4.0;
+    stack.spacing = self.spacing;
     stack.distribution = UIStackViewDistributionFillEqually;
 
     for (NSUInteger i = 0; i<items.count; i++) {
