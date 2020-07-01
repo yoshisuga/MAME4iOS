@@ -1683,6 +1683,12 @@ static NSArray* list_trim(NSArray* _list) {
 
         for (PopupSegmentedControl* seg in items) {
             [seg addTarget:self action:@selector(hudOptionChange:) forControlEvents:UIControlEventValueChanged];
+            
+            // TODO: move this scaling into PopupSegmentedControll??
+            [seg setTitleTextAttributes:@{NSFontAttributeName:hudView.font} forState:UIControlStateNormal];
+            CGFloat scale = [[UIFontMetrics metricsForTextStyle:UIFontTextStyleBody] scaledValueForValue:1.0];
+            [seg addConstraint:[NSLayoutConstraint constraintWithItem:seg attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:seg.bounds.size.height * scale]];
+
             if (@available(iOS 13.0, *)) {
                 seg.selectedSegmentTintColor = self.view.tintColor;
                 seg.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
