@@ -4,6 +4,7 @@
 * `Metal` frame-skip updates and fixes.
 * Updated the `lineTron` vector shader.
 * The HUD will honor the system DynamicType size.
+* PINCH and ZOOM to resize the HUD to exacly the size you want.
 * set MAME pause_brightness to 1.0
 
 # Version 2020.11
