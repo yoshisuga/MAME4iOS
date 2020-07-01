@@ -51,7 +51,10 @@
     pan.delegate = (id<UIGestureRecognizerDelegate>)self;
     [self addGestureRecognizer:pan];
 
-    [self addGestureRecognizer: [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(pinch:)]];
+    UIPinchGestureRecognizer* pinch = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(pinch:)];
+    pinch.delegate = (id<UIGestureRecognizerDelegate>)self;
+    pinch.delaysTouchesBegan = YES;
+    [self addGestureRecognizer:pinch];
 
     self.backgroundColor = HUD_COLOR;
 #if HUD_BLUR
@@ -85,13 +88,16 @@
 
 // called before touchesBegan:withEvent: is called on the gesture recognizer for a new touch. return NO to prevent the gesture recognizer from seeing this touch
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
-    if ([touch.view isKindOfClass:[UISlider class]]) {
+    if (gestureRecognizer.view == self && [touch.view isKindOfClass:[UISlider class]]) {
         UISlider* slider = (UISlider*)touch.view;
         CGRect rect = [slider thumbRectForBounds:slider.bounds trackRect:[slider trackRectForBounds:slider.bounds] value:slider.value];
         if (CGRectContainsPoint(CGRectInset(rect, -8, -8), [touch locationInView:slider]))
             return NO;
     }
     return YES;
+}
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
+    return gestureRecognizer.view == otherGestureRecognizer.view;
 }
 - (void)pan:(UIPanGestureRecognizer*)pan {
     if (!_moveable)
