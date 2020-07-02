@@ -24,7 +24,7 @@ using namespace metal;
 struct Push
 {
     float   width_scale;
-    float   frame_count;
+    float   line_time;  // time (in seconds) of the line: 0.0 = now, +1.0 = 1sec in the past
     float   falloff;
     float   strength;
 };
@@ -34,4 +34,17 @@ lineTron(VertexOutput v[[stage_in]], constant Push& params [[buffer(0)]])
 {
     float a = exp(-pow(v.tex.y * params.falloff, 2));
     return float4((v.color.rgb*params.strength), a);
+}
+
+fragment float4
+fadeTron(VertexOutput v [[stage_in]], constant Push& params [[buffer(0)]])
+{
+    float t = params.line_time;
+    float4 color = v.color;
+    
+    // if t==0.0, just use color as is. else fade out color in time, and alpha edge
+    if (t != 0.0)
+        color = float4(color.rgb * exp(-pow(t * params.falloff, 2)) * params.strength, mix(1.0, 0.0, abs(v.tex.y)));
+
+    return color;
 }

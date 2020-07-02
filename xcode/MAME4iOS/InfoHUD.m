@@ -27,6 +27,9 @@
     self.layoutMargins = UIEdgeInsetsMake(16, 16, 16, 16);
     self.insetsLayoutMarginsFromSafeArea = NO;
     
+    _moveable = TRUE;
+    _sizeable = TRUE;
+    
     _views = [[NSMutableDictionary alloc] init];
     _format = [[NSMutableDictionary alloc] init];
     _step = [[NSMutableDictionary alloc] init];
@@ -47,6 +50,11 @@
     UIPanGestureRecognizer* pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(pan:)];
     pan.delegate = (id<UIGestureRecognizerDelegate>)self;
     [self addGestureRecognizer:pan];
+
+    UIPinchGestureRecognizer* pinch = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(pinch:)];
+    pinch.delegate = (id<UIGestureRecognizerDelegate>)self;
+    pinch.delaysTouchesBegan = YES;
+    [self addGestureRecognizer:pinch];
 
     self.backgroundColor = HUD_COLOR;
 #if HUD_BLUR
@@ -80,7 +88,7 @@
 
 // called before touchesBegan:withEvent: is called on the gesture recognizer for a new touch. return NO to prevent the gesture recognizer from seeing this touch
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
-    if ([touch.view isKindOfClass:[UISlider class]]) {
+    if (gestureRecognizer.view == self && [touch.view isKindOfClass:[UISlider class]]) {
         UISlider* slider = (UISlider*)touch.view;
         CGRect rect = [slider thumbRectForBounds:slider.bounds trackRect:[slider trackRectForBounds:slider.bounds] value:slider.value];
         if (CGRectContainsPoint(CGRectInset(rect, -8, -8), [touch locationInView:slider]))
@@ -88,21 +96,40 @@
     }
     return YES;
 }
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
+    return gestureRecognizer.view == otherGestureRecognizer.view;
+}
 - (void)pan:(UIPanGestureRecognizer*)pan {
-    CGPoint translation = [pan translationInView:self];
-    [pan setTranslation:CGPointZero inView:self];
+    if (!_moveable)
+        return;
+    CGPoint translation = [pan translationInView:self.superview];
+    [pan setTranslation:CGPointZero inView:self.superview];
     
     CGPoint center = self.center;
     center.x += translation.x;
     center.y += translation.y;
     self.center = center;
 }
+- (void)pinch:(UIPinchGestureRecognizer*)pinch {
+    if (!_sizeable)
+        return;
+    self.transform = CGAffineTransformScale(self.transform, pinch.scale, pinch.scale);
+    pinch.scale = 1.0;
+}
+
 - (void)slide:(UISlider*)slider {
     NSString* key = (__bridge NSString*)(void*)slider.tag;
     [self setValue:@(slider.value) forKey:key];
     _changedKey = key;
     [self sendActionsForControlEvents:UIControlEventValueChanged];
 }
+- (void)switch:(UISwitch*)sender {
+    NSString* key = (__bridge NSString*)(void*)sender.tag;
+    [self setValue:@(sender.isOn ? 1.0 : 0.0) forKey:key];
+    _changedKey = key;
+    [self sendActionsForControlEvents:UIControlEventValueChanged];
+}
+
 
 - (void)setLayoutMargins:(UIEdgeInsets)layoutMargins {
     [super setLayoutMargins:layoutMargins];
@@ -182,10 +209,26 @@
     
     if ([value isKindOfClass:[NSString class]])
         _width = MAX(_width, ceil([value sizeWithAttributes:@{NSFontAttributeName:label.font}].width));
-
-    if ([value isKindOfClass:[NSNumber class]] && min != nil && max != nil) {
+    
+    if ([value isKindOfClass:[NSNumber class]] && [min floatValue] == 0.0 && [max floatValue] == 1.0 && [step floatValue] == 1.0) {
+        _format[key] = nil;
+        label.text = key;
+        UISwitch* sw = [[UISwitch alloc] init];
+        [sw addTarget:self action:@selector(switch:) forControlEvents:UIControlEventValueChanged];
+        CGFloat h = _font.lineHeight;
+        CGFloat scale =  h / [sw sizeThatFits:CGSizeZero].height;
+        sw.transform = CGAffineTransformMakeScale(scale, scale);
+        sw.tag = (NSUInteger)(__bridge void*)key;
+        sw.onTintColor = self.tintColor;
+        label.tag = (NSUInteger)(__bridge void*)sw;
+        [_stack.subviews.lastObject removeFromSuperview];
+        UIStackView* stack = [[UIStackView alloc] initWithArrangedSubviews:@[label, sw]];
+        [_stack addArrangedSubview:stack];
+    }
+    else if ([value isKindOfClass:[NSNumber class]] && min != nil && max != nil) {
         UISlider* slider = [[UISlider alloc] init];
-        [slider addConstraint:[NSLayoutConstraint constraintWithItem:slider attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:24.0]];
+        CGFloat h = _font.lineHeight;
+        [slider addConstraint:[NSLayoutConstraint constraintWithItem:slider attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:h]];
         [slider addTarget:self action:@selector(slide:) forControlEvents:UIControlEventValueChanged];
         slider.minimumValue = [min floatValue];
         slider.maximumValue = [max floatValue];
@@ -242,65 +285,20 @@
     label.textAlignment = NSTextAlignmentCenter;
 }
 
-
-// convert text to a UIImaage, replacing any strings of the form ":symbol:" with a systemImage
-//      :symbol-name:                - return a UIImage created from [UIImage systemImageNamed] or [UIImage imageNamed]
-//      :symbol-name:fallback:       - return symbol as UIImage or fallback text if image not found
-//      :symbol-name:text            - return symbol + text
-//      :symbol-name:fallback:text   - return symbol or fallback text + text
-+ (UIImage*)imageWithString:(NSString*)text withFont:(UIFont*)_font {
-
-    UIImage* image;
-    UIFont* font = _font ?: [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-
-    // handle :symbol-name: or :symbol-name:fallback:
-    NSArray* arr = [(NSString*)text componentsSeparatedByString:@":"];
-    if (arr.count > 2) {
-        text = arr.lastObject;
-
-        if (@available(iOS 13.0, *))
-            image = [[UIImage systemImageNamed:arr[1]] imageByApplyingSymbolConfiguration:[UIImageSymbolConfiguration configurationWithFont:font]];
-
-        // use fallback text if image not found.
-        if (image == nil && arr.count == 4)
-            text = [arr[2] stringByAppendingString:text];
-    }
-    
-    // if we have both text and an image, combine image + text
-    if (image == nil || text.length > 0) {
-        CGFloat spacing = 4.0;
-        NSDictionary* attributes = @{NSFontAttributeName:font};
-        
-        CGSize textSize = [text boundingRectWithSize:CGSizeZero options:NSStringDrawingUsesLineFragmentOrigin attributes:attributes context:nil].size;
-        CGSize size = CGSizeMake(ceil(textSize.width), ceil(textSize.height));
-
-        if (image != nil) {
-            size.width += image.size.width + spacing;
-            size.height = MAX(size.height, image.size.height);
-        }
-        
-        image = [[[UIGraphicsImageRenderer alloc] initWithSize:size] imageWithActions:^(UIGraphicsImageRendererContext * context) {
-            CGPoint point = CGPointZero;
-            
-            if (image != nil) {
-                // TODO: align to baseline?
-                [image drawAtPoint:CGPointMake(point.x, (size.height - image.size.height)/2)];
-                point.x += image.size.width + spacing;
-            }
-
-            [text drawAtPoint:CGPointMake(point.x, (size.height - textSize.height)/2) withAttributes:attributes];
-        }];
-    }
-
-    return image;
++ (UIImage*)imageWithString:(NSString*)str withFont:(UIFont*)font {
+    return nil;
 }
 
 - (NSArray*)convertItems:(NSArray*)_items {
+    
+    if (![[UIImage class] respondsToSelector:@selector(imageWithString:withFont:)])
+        return _items;
+        
     NSMutableArray* items = [_items mutableCopy];
     for (NSUInteger idx=0; idx<items.count; idx++) {
         id item = items[idx];
         if ([item isKindOfClass:[NSString class]] && [item hasPrefix:@":"])
-            items[idx] = [InfoHUD imageWithString:item withFont:self.font];
+            items[idx] = [[UIImage class] performSelector:@selector(imageWithString:withFont:) withObject:item withObject:self.font];
     }
     return [items copy];
 }
@@ -312,6 +310,11 @@
 - (UISegmentedControl*)makeSegmentedControl:(NSArray*)items handler:(void (^)(NSUInteger button))handler {
     UISegmentedControl* seg = [[UISegmentedControl alloc] initWithItems:[self convertItems:items]];
     seg.momentary = YES;
+    [seg setTitleTextAttributes:@{NSFontAttributeName:_font} forState:UIControlStateNormal];
+    
+    CGFloat h = _font.lineHeight * 1.5;
+    [seg addConstraint:[NSLayoutConstraint constraintWithItem:seg attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:h]];
+
     [seg addTarget:self action:@selector(buttonPress:) forControlEvents:UIControlEventValueChanged];
     objc_setAssociatedObject(seg, @selector(buttonPress:), handler, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     if (@available(iOS 13.0, *))
@@ -328,7 +331,7 @@
 }
 - (void)addButtons:(NSArray*)items handler:(void (^)(NSUInteger button))handler {
     UIStackView* stack = [[UIStackView alloc] init];
-    stack.spacing = 4.0;
+    stack.spacing = self.spacing;
     stack.distribution = UIStackViewDistributionFillEqually;
 
     for (NSUInteger i = 0; i<items.count; i++) {
@@ -369,10 +372,13 @@
         float step = [_step[key] floatValue];
         if (step != 0.0)
             val = round(val / step) * step;
-        label.text = [NSString stringWithFormat:format, val, key];
+        if (format != nil)
+            label.text = [NSString stringWithFormat:format, val, key];
         UISlider* slider = (__bridge UISlider*)(void*)label.tag;
         if ([slider isKindOfClass:[UISlider class]] && !slider.isTracking)
             slider.value = val;
+        if ([slider isKindOfClass:[UISwitch class]])
+            [(UISwitch*)slider setOn:val != 0.0];
     }
     else if ([value isKindOfClass:[NSString class]]) {
         label.text = value;
@@ -395,6 +401,8 @@
     float step = [_step[key] floatValue];
     if (([slider isKindOfClass:[UISlider class]]))
         return @((step != 0.0) ? round(slider.value / step) * step : slider.value);
+    else if (([slider isKindOfClass:[UISwitch class]]))
+        return [(UISwitch*)slider isOn] ? @(1) : @(0);
     else if ([label.text containsString:@": "])
         return @([label.text componentsSeparatedByString:@": "].lastObject.floatValue);
     else

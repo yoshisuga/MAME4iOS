@@ -41,12 +41,8 @@ typedef struct _TIMER {
 #define TIMER_INIT_BEGIN enum {
 #define TIMER_INIT(name) TIMER_##name,
 #define TIMER_INIT_END TIMER_COUNT}; static TIMER __timers[TIMER_COUNT];
-#define TIMER_START(t) \
-    __timers[TIMER_##t].name = #t; \
-    __timers[TIMER_##t].time -= CACurrentMediaTime();
-#define TIMER_STOP(t) \
-    __timers[TIMER_##t].time += CACurrentMediaTime(); \
-    __timers[TIMER_##t].count++;
+#define TIMER_START(t) (__timers[TIMER_##t].name = #t, __timers[TIMER_##t].time -= CACurrentMediaTime())
+#define TIMER_STOP(t)  (__timers[TIMER_##t].count++,   __timers[TIMER_##t].time += CACurrentMediaTime())
 #define TIMER_COUNT(t) __timers[TIMER_##t].count
 #define TIMER_TIME(t)  __timers[TIMER_##t].time
 #define TIMER_DUMP() \
@@ -60,11 +56,11 @@ typedef struct _TIMER {
 #define TIMER_INIT_BEGIN
 #define TIMER_INIT(name)
 #define TIMER_INIT_END
-#define TIMER_START(t)
-#define TIMER_STOP(t)
+#define TIMER_START(t) (void)0
+#define TIMER_STOP(t) (void)0
 #define TIMER_COUNT(t) 0
 #define TIMER_TIME(t) 0
-#define TIMER_DUMP()
-#define TIMER_RESET()
+#define TIMER_DUMP() (void)0
+#define TIMER_RESET() (void)0
 #endif
 
