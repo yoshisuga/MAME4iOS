@@ -1749,7 +1749,24 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 // called when input happens on a gamecontroller, keyboard, or touch screen
 // check for input related to moving and selecting.
 -(void)handle_MENU {
+    // get input from all DPADs
     unsigned long pad_status = myosd_pad_status | myosd_joy_status[0] | myosd_joy_status[1];
+    
+    // get input from left and right joystick #1
+    static NSTimeInterval g_last_input_time;
+    NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
+    if (now - g_last_input_time > 0.250 && (pad_status & (MYOSD_UP|MYOSD_DOWN|MYOSD_LEFT|MYOSD_RIGHT)) == 0) {
+        if (round(joy_analog_y[0][0] * 1000.0) / 1000.0 == +1.0 || round(joy_analog_y[0][1] * 1000.0) / 1000.0 == +1.0)
+            pad_status |= MYOSD_UP;
+        if (round(joy_analog_y[0][0] * 1000.0) / 1000.0 == -1.0 || round(joy_analog_y[0][1] * 1000.0) / 1000.0 == -1.0)
+            pad_status |= MYOSD_DOWN;
+        if (round(joy_analog_x[0][0] * 1000.0) / 1000.0 == +1.0 || round(joy_analog_x[0][1] * 1000.0) / 1000.0 == +1.0)
+            pad_status |= MYOSD_RIGHT;
+        if (round(joy_analog_x[0][0] * 1000.0) / 1000.0 == -1.0 || round(joy_analog_x[0][1] * 1000.0) / 1000.0 == -1.0)
+            pad_status |= MYOSD_LEFT;
+        if  (pad_status & (MYOSD_UP|MYOSD_DOWN|MYOSD_LEFT|MYOSD_RIGHT))
+            g_last_input_time = now;
+    }
 
     if (pad_status & MYOSD_A)
         [self onCommandSelect];
