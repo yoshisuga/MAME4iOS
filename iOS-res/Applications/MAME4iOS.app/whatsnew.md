@@ -1,8 +1,16 @@
 <img src="mame_logo.png" width="60%">
 
+# Version 2020.12
+* `Metal` frame-skip updates and fixes.
+* Updated the `lineTron` vector shader.
+* The HUD will honor the system DynamicType size.
+* PINCH and ZOOM to resize the HUD to exacly the size you want.
+* set MAME pause_brightness to 1.0
+
 # Version 2020.11
 * Added new Vector Shader category for Vector games on both iOS and tvOS.
 * The HUD has received a lot of Ux updates, better sizing, new options, etc. 
+* The HUD will honor the system DynamicType size.
 * Added a means to Pause MAME but still tweak the Shaders in realtime (available in debug mode).
 * Various texture cache fixes.
 * Added in `ulTron` CRT Screen Shader: this is the ulTimate CRT shader *but* it is very heavy to compute and may not perform in realtime on lower class hardware and/or at higher Resolutions.

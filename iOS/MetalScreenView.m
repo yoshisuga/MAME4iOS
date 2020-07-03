@@ -62,6 +62,8 @@ TIMER_INIT(texture_load)
 TIMER_INIT(texture_load_pal16)
 TIMER_INIT(texture_load_rgb32)
 TIMER_INIT(texture_load_rgb15)
+TIMER_INIT(line_prim)
+TIMER_INIT(quad_prim)
 TIMER_INIT_END
 
 #pragma mark - MetalScreenView
@@ -75,8 +77,10 @@ TIMER_INIT_END
     NSString* _line_width_scale_variable;
     BOOL _line_shader_wants_past_lines;
     
-    #define LINE_BUFFER_SIZE 8192
-    #define LINE_MAX_FADE_TIME 4.0
+    NSTimeInterval _drawScreenStart;
+
+    #define LINE_BUFFER_SIZE (8*1024)
+    #define LINE_MAX_FADE_TIME 1.0
     myosd_render_primitive* _line_buffer;
     int _line_buffer_base;
     int _line_buffer_count;
@@ -183,8 +187,8 @@ TIMER_INIT_END
 //
 + (NSArray*)lineShaderList {
     return @[kScreenViewShaderDefault,
-        @"lineTron: lineTron, blend=copy, width-scale=0.5 0.1 4, frame-count, falloff=1 1 4, strength = 2.0 0.2 3.0 0.1",
-        @"lineFade: mame_test_vector_fade, blend=alpha, width-scale=1.2 1 8, line-time, falloff=2 1 4, strength = 0.5 0.1 3.0 0.1",
+        @"lineTron: lineTron, blend=copy,  line-width-scale=0.5 0.1 4, 0.0,       line-falloff=1 1 4, line-strength = 2.0 0.2 3.0 0.1",
+        @"fadeTron: fadeTron, blend=alpha, fade-width-scale=1.2 0.1 8, line-time, fade-falloff=3 1 8, fade-strength = 0.2 0.1 3.0 0.1",
 
 #ifdef DEBUG
         @"Dash: mame_test_vector_dash, blend=add, width-scale=1.0 0.25 6.0, frame-count, length=25.0, speed=16.0",
@@ -194,6 +198,9 @@ TIMER_INIT_END
         @"Pulse: mame_test_vector_pulse, blend=add, width-scale=1.0 0.25 6.0, frame-count, rate=2.0",
         @"Pulse (Fast): mame_test_vector_pulse, blend=add, 1.0, frame-count, 0.5",
         @"Pulse (Slow): mame_test_vector_pulse, blend=add, 1.0, frame-count, 2.0",
+
+        @"Fade (Alpha): mame_test_vector_fade, blend=alpha, fade-width-scale=1.2 1 8, line-time, fade-falloff=2 1 4, fade-strength = 0.5 0.1 3.0 0.1",
+        @"Fade (Add):   mame_test_vector_fade, blend=add,   fade-width-scale=1.2 1 8, line-time, fade-falloff=2 1 4, fade-strength = 0.5 0.1 3.0 0.1",
 #endif
     ];
 }
@@ -249,11 +256,14 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     _line_shader = _options[kScreenViewLineShader] ?: kScreenViewShaderDefault;
     
     if ([_line_shader length] == 0 || [_line_shader isEqualToString:kScreenViewShaderDefault] || [_line_shader isEqualToString:kScreenViewShaderNone])
-        _line_shader = ShaderAdd;
+        _line_shader = nil;
     
-    // see if the line shader wants past lines, ie does it list `line-time` in the parameter list.
+    // see if the line shader wants past lines, ie does it list `line-time` in the parameter list.x
     _line_shader_wants_past_lines = [_line_shader rangeOfString:@"line-time"].length != 0;
     
+    if (_line_shader_wants_past_lines)
+        [self setShaderVariables:@{@"line-time": @(0.0)}];
+
     // parse the first param of the line shader to get the line width scale factor.
     // NOTE the first param can be a variable or a constant, support variables for the HUD.
     _line_width_scale = 1.0;
@@ -284,18 +294,6 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         free(_line_buffer);
 }
 
-#pragma mark - MetalScreenView UIView stuff
-
-- (void)layoutSubviews {
-    [super layoutSubviews];
-}
-- (void)didMoveToWindow {
-    [super didMoveToWindow];
-}
-- (void)didMoveToSuperview {
-    [super didMoveToSuperview];
-}
-
 #pragma mark - LINE BUFFER
 
 - (void)saveLine:(myosd_render_primitive*) line {
@@ -307,8 +305,8 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     int i = (_line_buffer_base + _line_buffer_count + 1) % LINE_BUFFER_SIZE;
     
     _line_buffer[i] = *line;
-    _line_buffer[i].texture_seqid = (uint32_t)self.frameCount;
-    
+    _line_buffer[i].texcoords[0].u = _drawScreenStart;
+
     if (_line_buffer_count < LINE_BUFFER_SIZE)
         _line_buffer_count++;
     else
@@ -316,16 +314,14 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 }
 
 - (void)drawPastLines {
-    NSUInteger frameCount = self.frameCount;
-    CGFloat frameRate = self.frameRate;
     CGFloat line_time = CGFLOAT_MAX;
     
     for (int i=0; i<_line_buffer_count; i++) {
         myosd_render_primitive* prim = _line_buffer + (_line_buffer_base + i) % LINE_BUFFER_SIZE;
         
         // calculate how far back in time this line is....
-        NSTimeInterval t = (frameCount - (NSUInteger)prim->texture_seqid) / frameRate;
-        
+        NSTimeInterval t = _drawScreenStart - prim->texcoords[0].u;
+
         // ignore lines from the future, or too far in the past
         if (t <= 0.0 || t > LINE_MAX_FADE_TIME)
             continue;
@@ -338,7 +334,6 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         VertexColor color = VertexColor(prim->color_r, prim->color_g, prim->color_b, prim->color_a);
         color = color * simd_make_float4(color.a, color.a, color.a, 1/color.a);     // pre-multiply alpha
         
-        [self setShader:_line_shader];
         [self drawLine:CGPointMake(prim->bounds_x0, prim->bounds_y0) to:CGPointMake(prim->bounds_x1, prim->bounds_y1) width:(prim->width * _line_width_scale) color:color];
     }
 }
@@ -354,12 +349,12 @@ static void texture_load(void* data, id<MTLTexture> texture) {
     static char* texture_format_name[] = {"UNDEFINED", "PAL16", "PALA16", "555", "RGB", "ARGB", "YUV16"};
     texture.label = [NSString stringWithFormat:@"MAME %08lX:%d %dx%d %s", (NSUInteger)prim->texture_base, prim->texture_seqid, prim->texture_width, prim->texture_height, texture_format_name[prim->texformat]];
 
-    TIMER_START(texture_load)
+    TIMER_START(texture_load);
 
     switch (prim->texformat) {
         case TEXFORMAT_RGB15:
         {
-            TIMER_START(texture_load_rgb15)
+            TIMER_START(texture_load_rgb15);
             if (prim->texture_palette == NULL) {
                 [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:prim->texture_base bytesPerRow:prim->texture_rowpixels*2];
             }
@@ -379,13 +374,13 @@ static void texture_load(void* data, id<MTLTexture> texture) {
                 }
                 [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:myosd_screen bytesPerRow:width*2];
             }
-            TIMER_STOP(texture_load_rgb15)
+            TIMER_STOP(texture_load_rgb15);
             break;
         }
         case TEXFORMAT_RGB32:
         case TEXFORMAT_ARGB32:
         {
-            TIMER_START(texture_load_rgb32)
+            TIMER_START(texture_load_rgb32);
             if (prim->texture_palette == NULL) {
                 [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:prim->texture_base bytesPerRow:prim->texture_rowpixels*4];
             }
@@ -405,13 +400,13 @@ static void texture_load(void* data, id<MTLTexture> texture) {
                 }
                 [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:myosd_screen bytesPerRow:width*4];
             }
-            TIMER_STOP(texture_load_rgb32)
+            TIMER_STOP(texture_load_rgb32);
             break;
         }
         case TEXFORMAT_PALETTE16:
         case TEXFORMAT_PALETTEA16:
         {
-            TIMER_START(texture_load_pal16)
+            TIMER_START(texture_load_pal16);
             uint16_t* src = prim->texture_base;
             uint32_t* dst = (uint32_t*)myosd_screen;
             const uint32_t* pal = prim->texture_palette;
@@ -434,7 +429,7 @@ static void texture_load(void* data, id<MTLTexture> texture) {
                     *dst++ = pal[*src++];
                 src += prim->texture_rowpixels - width;
             }
-            TIMER_STOP(texture_load_pal16)
+            TIMER_STOP(texture_load_pal16);
             [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:myosd_screen bytesPerRow:width*4];
             break;
         }
@@ -448,7 +443,7 @@ static void texture_load(void* data, id<MTLTexture> texture) {
             assert(FALSE);
             break;
     }
-    TIMER_STOP(texture_load)
+    TIMER_STOP(texture_load);
 }
 
 #pragma mark - draw MAME primitives
@@ -480,8 +475,8 @@ static void texture_load(void* data, id<MTLTexture> texture) {
         NSLog(@"drawBegin *FAIL* dropping frame on the floor.");
         return 1;
     }
-    NSTimeInterval time = CACurrentMediaTime();
-    TIMER_START(draw_screen)
+    _drawScreenStart = CACurrentMediaTime();
+    TIMER_START(draw_screen);
 
     NSUInteger num_screens = 0;
     
@@ -503,6 +498,11 @@ static void texture_load(void* data, id<MTLTexture> texture) {
     // walk the primitive list and render
     for (myosd_render_primitive* prim = prim_list; prim != NULL; prim = prim->next) {
         
+        if (prim->type == RENDER_PRIMITIVE_QUAD)
+            TIMER_START(quad_prim);
+        else
+            TIMER_START(line_prim);
+
         VertexColor color = VertexColor(prim->color_r, prim->color_g, prim->color_b, prim->color_a);
         
         CGRect rect = CGRectMake(floor(prim->bounds_x0 + 0.5),  floor(prim->bounds_y0 + 0.5),
@@ -590,9 +590,13 @@ static void texture_load(void* data, id<MTLTexture> texture) {
         }
         else if (prim->type == RENDER_PRIMITIVE_LINE) {
             // wide line, if the blendmode is ADD this is a VECTOR line, else a UI line.
-            if (prim->blendmode == BLENDMODE_ADD) {
+            if (prim->blendmode == BLENDMODE_ADD && _line_shader != nil) {
                 // this line is a vector line, use a special shader
-                
+
+                // pre-multiply color, so shader has non-iterated color
+                color = color * simd_make_float4(color.a, color.a, color.a, 1/color.a);
+                [self setShader:_line_shader];
+
                 // handle lines from the past.
                 if (_line_shader_wants_past_lines) {
                     // first time we see a line, draw all old lines, and set line-time=0.0
@@ -602,23 +606,32 @@ static void texture_load(void* data, id<MTLTexture> texture) {
                         [self setShaderVariables:@{@"line-time": @(0.0)}];
                     }
                     [self saveLine:prim];
-                }
 
-                // pre-multiply color, so shader has non-iterated color
-                color = color * simd_make_float4(color.a, color.a, color.a, 1/color.a);
-                [self setShader:_line_shader];
-                [self drawLine:CGPointMake(prim->bounds_x0, prim->bounds_y0) to:CGPointMake(prim->bounds_x1, prim->bounds_y1) width:(prim->width * _line_width_scale) color:color];
+                    [self drawLine:CGPointMake(prim->bounds_x0, prim->bounds_y0) to:CGPointMake(prim->bounds_x1, prim->bounds_y1) width:prim->width color:color edgeAlpha:0.0];
+                }
+                else {
+                    [self drawLine:CGPointMake(prim->bounds_x0, prim->bounds_y0) to:CGPointMake(prim->bounds_x1, prim->bounds_y1) width:(prim->width * _line_width_scale) color:color];
+                }
             }
             else {
                 // this line is from MAME UI, draw normal
                 [self setShader:shader_map[prim->blendmode]];
-                [self drawLine:CGPointMake(prim->bounds_x0, prim->bounds_y0) to:CGPointMake(prim->bounds_x1, prim->bounds_y1) width:prim->width color:color];
+                
+                if (prim->blendmode == BLENDMODE_NONE)
+                    [self drawLine:CGPointMake(prim->bounds_x0, prim->bounds_y0) to:CGPointMake(prim->bounds_x1, prim->bounds_y1) width:prim->width color:color];
+                else
+                    [self drawLine:CGPointMake(prim->bounds_x0, prim->bounds_y0) to:CGPointMake(prim->bounds_x1, prim->bounds_y1) width:prim->width color:color edgeAlpha:0.0];
             }
         }
         else {
             NSLog(@"Unknown RENDER_PRIMITIVE!");
             assert(FALSE);  // bad primitive
         }
+        
+        if (prim->type == RENDER_PRIMITIVE_QUAD)
+            TIMER_STOP(quad_prim);
+        else
+            TIMER_STOP(line_prim);
     }
     
 #if 0
@@ -637,22 +650,17 @@ static void texture_load(void* data, id<MTLTexture> texture) {
 #endif
     
     [self drawEnd];
-    TIMER_STOP(draw_screen)
+    TIMER_STOP(draw_screen);
     
+    // set the number of SCREENs we rendered, so the app can detect RASTER vs VECTOR game.
+    _numScreens = num_screens;
+
+    // DUMP TIMERS....
     if (TIMER_COUNT(draw_screen) % 100 == 0) {
         TIMER_DUMP();
         TIMER_RESET();
     }
     
-    time = CACurrentMediaTime() - time;
-
-    // dont starve other threads, MAME does not like to sleep, let Metal and Audio do some work.
-    if (time < 0.005)
-        usleep((0.005 - time) * 1000000.0);
-    
-    // set the number of SCREENs we rendered, so the app can detect RASTER vs VECTOR game.
-    _numScreens = num_screens;
-
     // always return 1 saying we handled the draw.
     return 1;
 }

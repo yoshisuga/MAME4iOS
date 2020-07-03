@@ -142,6 +142,7 @@ enum {
     HudSizeEditor = 4,      // HUD is expanded to include Shader editing sliders.
 };
 int g_pref_showHUD = 0;
+int g_pref_saveHUD = 0;     // previous value of g_pref_showHUD
 
 int g_pref_keep_aspect_ratio = 0;
 
@@ -197,6 +198,7 @@ static int change_layout=0;
 #endif
 
 #define kHUDPositionKey  @"hud_rect"
+#define kHUDScaleKey     @"hud_scale"
 #define kSelectedGameKey @"selected_game"
 static BOOL g_mame_reset = FALSE;           // do a full reset (delete cfg files) before running MAME
 static char g_mame_game[MAX_GAME_NAME];     // game MAME should run (or empty is menu)
@@ -282,8 +284,14 @@ int iphone_DrawScreen(myosd_render_primitive* prim_list) {
 // run MAME (or pass NULL for main menu)
 int run_mame(char* game)
 {
-    char* argv[] = {"mame4ios", game};
-    return iOS_main((game && *game) ? 2 : 1,argv);
+    char* argv[] = {"mame4ios", "-pause_brightness", "1.0", game};
+    
+    int argc = sizeof(argv) / sizeof(argv[0]);
+    
+    if (game == NULL || *game == 0)
+        argc--;
+
+    return iOS_main(argc,argv);
 }
 
 void* app_Thread_Start(void* args)
@@ -454,8 +462,8 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     else
       policy = SCHED_FIFO;
            
-    if(pthread_setschedparam(main_tid, policy, &param) != 0)    
-             fprintf(stderr, "Error setting pthread priority\n");
+    if(pthread_setschedparam(main_tid, policy, &param) != 0)
+        fprintf(stderr, "Error setting pthread priority\n");
     
 #if TARGET_OS_IOS
     _impactFeedback = [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleLight];
@@ -716,8 +724,10 @@ void mame_state(int load_save, int slot)
     
 #if TARGET_OS_IOS
     // also save the position of the HUD
-    if (hudView)
-        [NSUserDefaults.standardUserDefaults setValue:NSStringFromCGRect(hudView.frame) forKey:kHUDPositionKey];
+    if (hudView) {
+        [NSUserDefaults.standardUserDefaults setObject:NSStringFromCGRect(hudView.frame) forKey:kHUDPositionKey];
+        [NSUserDefaults.standardUserDefaults setFloat:hudView.transform.a forKey:kHUDScaleKey];
+    }
 #endif
     
     [[NSUserDefaults standardUserDefaults] synchronize];
@@ -971,9 +981,8 @@ void mame_state(int load_save, int slot)
     if (g_pref_metal && [MetalScreenView isSupported]) {
         myosd_sleep = 1;            // sleep to let Metal get work done.
         myosd_video_threaded = 0;   // dont need an extra thread
-        myosd_vsync = -1;           // dont force 60Hz, just use the machine value.
-        myosd_frameskip_value = 0;  // *DONT* try to skip frames, we render so fast it is confusing MAME.
-        //myosd_frameskip_value = -1; // AUTO frameskip
+        myosd_vsync = -1;           // dont force 60Hz, just use the machine value, let MAME frameskip do what it can.
+        myosd_frameskip_value = -1; // AUTO frameskip
     }
     
 #if TARGET_OS_IOS
@@ -1355,7 +1364,7 @@ void mame_state(int load_save, int slot)
 
 -(void)buildFrameRateView {
     
-    BOOL showFPS = g_pref_showFPS && ((g_pref_showHUD <= 0) || (g_pref_showHUD == HudSizeTiny));
+    BOOL showFPS = g_pref_showFPS && (g_pref_showHUD == HudSizeZero || g_pref_showHUD == HudSizeTiny);
 
     myosd_fps = showFPS;
 
@@ -1531,9 +1540,11 @@ static NSArray* list_trim(NSArray* _list) {
 
 -(void)buildHUD {
 
-    if (g_pref_showHUD <= 0) {
-        if (hudView != nil)
-            [NSUserDefaults.standardUserDefaults setValue:NSStringFromCGRect(hudView.frame) forKey:kHUDPositionKey];
+    if (g_pref_showHUD == HudSizeZero) {
+        if (hudView) {
+            [NSUserDefaults.standardUserDefaults setObject:NSStringFromCGRect(hudView.frame) forKey:kHUDPositionKey];
+            [NSUserDefaults.standardUserDefaults setFloat:hudView.transform.a forKey:kHUDScaleKey];
+        }
         [hudView removeFromSuperview];
         hudView = nil;
         return;
@@ -1541,14 +1552,18 @@ static NSArray* list_trim(NSArray* _list) {
     
     if (hudView == nil) {
         CGRect rect = CGRectFromString([NSUserDefaults.standardUserDefaults stringForKey:kHUDPositionKey] ?: @"");
-        
-        if (CGRectIsEmpty(rect))
+        CGFloat scale = [NSUserDefaults.standardUserDefaults floatForKey:kHUDScaleKey] ?: 1.0;
+
+        if (CGRectIsEmpty(rect)) {
             rect = CGRectMake(self.view.bounds.size.width/2, self.view.safeAreaInsets.top + 16, 0, 0);
+            scale = 1.0;
+        }
 
         hudView = [[InfoHUD alloc] init];
-        hudView.font = [UIFont monospacedDigitSystemFontOfSize:(TARGET_OS_IOS ? 16.0 : 32.0) weight:UIFontWeightRegular];
+        hudView.font = [UIFont monospacedDigitSystemFontOfSize:hudView.font.pointSize weight:UIFontWeightRegular];
         hudView.layoutMargins = UIEdgeInsetsMake(8, 8, 8, 8);
         [hudView addTarget:self action:@selector(hudChange:) forControlEvents:UIControlEventValueChanged];
+        hudView.transform = CGAffineTransformMakeScale(scale, scale);
         hudView.frame = rect;
         [self.view addSubview:hudView];
     }
@@ -1569,7 +1584,10 @@ static NSArray* list_trim(NSArray* _list) {
     if (g_pref_showHUD == HudSizeTiny) {
         [hudView addButton:@":command:⌘:" handler:^{
             Options* op = [[Options alloc] init];
-            g_pref_showHUD = HudSizeNormal;
+            if (g_pref_saveHUD != HudSizeZero && g_pref_saveHUD != HudSizeTiny)
+                g_pref_showHUD = g_pref_saveHUD;    // restore HUD to previous size.
+            else
+                g_pref_showHUD = HudSizeNormal;     // if HUD is OFF turn it on at Normal size.
             op.showHUD = g_pref_showHUD;
             [op saveOptions];
             [_self changeUI];
@@ -1615,9 +1633,15 @@ static NSArray* list_trim(NSArray* _list) {
                     break;
                 }
                 case 5:
+                {
+                    Options* op = [[Options alloc] init];
+                    g_pref_saveHUD = g_pref_showHUD;
                     g_pref_showHUD = HudSizeTiny;
+                    op.showHUD = g_pref_showHUD;
+                    [op saveOptions];
                     [_self changeUI];
                     break;
+                }
             }
         }];
         
@@ -1668,6 +1692,11 @@ static NSArray* list_trim(NSArray* _list) {
 
         for (PopupSegmentedControl* seg in items) {
             [seg addTarget:self action:@selector(hudOptionChange:) forControlEvents:UIControlEventValueChanged];
+            
+            [seg setTitleTextAttributes:@{NSFontAttributeName:hudView.font} forState:UIControlStateNormal];
+            CGFloat h = hudView.font.lineHeight * 1.5;
+            [seg addConstraint:[NSLayoutConstraint constraintWithItem:seg attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:h]];
+
             if (@available(iOS 13.0, *)) {
                 seg.selectedSegmentTintColor = self.view.tintColor;
                 seg.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
@@ -1729,7 +1758,7 @@ static NSArray* list_trim(NSArray* _list) {
     }
     
     // add a grab handle on the left so you can move the HUD without hitting a button.
-    if (g_pref_showHUD > 0) {
+    if (g_pref_showHUD != HudSizeZero) {
         hudView.layoutMargins = UIEdgeInsetsMake(8, 16, 8, 8);
         CGFloat height = [hudView sizeThatFits:CGSizeZero].height;
         CGFloat h = MIN(height * 0.5, 64.0);
@@ -1745,9 +1774,10 @@ static NSArray* list_trim(NSArray* _list) {
     CGRect rect;
     CGRect bounds = self.view.bounds;
     CGRect frame = hudView.frame;
+    CGFloat scale = hudView.transform.a;
     CGSize size = [hudView sizeThatFits:CGSizeZero];
-    CGFloat w = size.width;
-    CGFloat h = size.height;
+    CGFloat w = size.width * scale;
+    CGFloat h = size.height * scale;
     
     if (CGRectGetMidX(frame) < CGRectGetMidX(bounds) - (bounds.size.width * 0.1))
         rect = CGRectMake(frame.origin.x, frame.origin.y, w, h);
@@ -1759,6 +1789,7 @@ static NSArray* list_trim(NSArray* _list) {
     rect.origin.x = MAX(self.view.safeAreaInsets.left + 8, MIN(self.view.bounds.size.width  - self.view.safeAreaInsets.right  - w - 8, rect.origin.x));
     rect.origin.y = MAX(self.view.safeAreaInsets.top + 8,  MIN(self.view.bounds.size.height - self.view.safeAreaInsets.bottom - h - 8, rect.origin.y));
     [NSUserDefaults.standardUserDefaults setValue:NSStringFromCGRect(rect) forKey:kHUDPositionKey];
+    [NSUserDefaults.standardUserDefaults setFloat:hudView.transform.a forKey:kHUDScaleKey];
 
     [UIView animateWithDuration:0.250 animations:^{
         self->hudView.frame = rect;
@@ -1778,6 +1809,7 @@ static NSArray* list_trim(NSArray* _list) {
     NSLog(@"RESET UI (MAME VIDEO MODE CHANGE)");
     
     // shrink the HUD back to Normal on a game reset.
+    // ...we do this because buttons in the expanded HUD depend on game info (num players, etc)
     if (g_pref_showHUD > HudSizeTiny)
         g_pref_showHUD = HudSizeNormal;
         
@@ -2542,10 +2574,16 @@ UIColor* colorWithHexString(NSString* string) {
         {
             Options* op = [[Options alloc] init];
 
-            if (g_pref_showHUD == HudSizeZero)
-                g_pref_showHUD = HudSizeNormal;         // if HUD is OFF turn it on at Normal size.
-            else
-                g_pref_showHUD = -g_pref_showHUD;       // if HUD is ON, hide it but keep the size.
+            if (g_pref_showHUD == HudSizeZero) {
+                if (g_pref_saveHUD != HudSizeZero)
+                    g_pref_showHUD = g_pref_saveHUD;    // restore HUD to previous size.
+                else
+                    g_pref_showHUD = HudSizeNormal;     // if HUD is OFF turn it on at Normal size.
+            }
+            else {
+                g_pref_saveHUD = g_pref_showHUD;        // if HUD is ON, hide it but keep the size.
+                g_pref_showHUD = HudSizeZero;
+            }
 
             op.showHUD = g_pref_showHUD;
             [op saveOptions];
@@ -3653,7 +3691,8 @@ UIColor* colorWithHexString(NSString* string) {
 
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:nil message:msg preferredStyle:UIAlertControllerStyleAlert];
     [alert addAction:[UIAlertAction actionWithTitle:@"Reset" style:UIAlertActionStyleDestructive handler:^(UIAlertAction* action) {
-        [NSUserDefaults.standardUserDefaults setValue:@"" forKey:kHUDPositionKey];
+        [NSUserDefaults.standardUserDefaults removeObjectForKey:kHUDPositionKey];
+        [NSUserDefaults.standardUserDefaults removeObjectForKey:kHUDScaleKey];
         [Options resetOptions];
         [ChooseGameController reset];
         g_mame_reset = TRUE;

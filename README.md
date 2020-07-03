@@ -15,21 +15,22 @@ MAME stands for Multi Arcade Machine Emulator, and lets you play arcade games fr
 
 More than 2000 games are supported, and the currently supported romset version is MAME 0.139u1 (September 2010).
 
-It has been updated to compile and runs on Xcode 10/iOS 9+ by [Les Bird](http://www.lesbird.com/iMame4All/iMame4All_Xcode.html), and he has graciously added support for MFI Controllers.
+It has been updated to compile and runs on Xcode 10+/iOS/tvOS 9+ by [Les Bird](http://www.lesbird.com/iMame4All/iMame4All_Xcode.html), and he has graciously added support for MFI Controllers.
 
-This repo adds support for:
+This repo adds additional support for:
 
 - 64-bit binary to run on modern and future iOS devices
 - Supports modern device screen sizes, including iPhone X/XR/XS/XS Max and iPad Pro
 - A native iOS/iPadOS/tvOS frontend (by @ToddLa, new in 2020!)
-- tvOS (new in 2019!)
+- A native Metal rendering engine (by @ToddLa, new in 2020!)
+- tvOS support (new in 2019!)
 - An in-app web server to transfer files from your computer (new in 2019!)
 - Transfer ROMs, Artwork, and ROMSETs via AirDrop or iOS File Sharing (new in 2020!)
 - Multiple MFI controllers (up to 4 with dual analog support - @DarrenBranford)
 - Supports using the touch screen as a lightgun
 - Turbo mode toggle for buttons
 - Touch analog for games like Arkanoid
-- Builds in Xcode 11, runs on latest iOS 13 version
+- Builds in Xcode 11.x/12.x and runs on latest iOS 13/14 versions
 
 ## Installation / Sideloading
 
@@ -53,7 +54,7 @@ Building MAME4iOS requires a prebuilt MAME binary (it has not been included in t
         - tvOS: `./make-tvos.sh`<br>
         <sup>AppleTV (4/4k and above)</sup><br>
         - simulator: `./make-sim.sh`<br>
-        <sup>iOS/tvOS (version 10.0 and above)</sup><br>
+        <sup>iOS/tvOS (version 12.0 and above)</sup><br>
 
 4. Choose the appropriate build target in Xcode:
     - `MAME4iOS 64-bit Release` (iPhone/iPad)
@@ -72,13 +73,13 @@ Even if you are not in the paid Apple Developer Program, you can sideload the ap
 
 ## tvOS
 
-MAME for tvOS support was just added in early 2019, and it currently can run games, but UI support and controller support is still in-progress. Most notably:
+MAME for tvOS support was added in early 2019, and it currently can run games has full native UI support and MFI controller support with most notably:
 
-- MFI controllers, Xbox One, PS4 DualShock, and Siri Remote supported.
+- MFI controllers, Xbox One, PS4 DualShock, and Siri Remote suppor.
 
 ## Using MAME
 
-When you start MAME, you are presented with the default MAME UI, which is pretty utilitarian and is far from following the Apple Human User Interface Guidelines. But you're not here to nominate Design Awards, you're here to relive some memories!
+When you start MAME4iOS, you are now presented with an updated and native iOS/tvOS MAME UI
 
 ### MAME UI Controls
 
@@ -97,9 +98,11 @@ When you start MAME, you are presented with the default MAME UI, which is pretty
 
 ### iOS
 
-For iOS users, you can download ROMs using Safari and save them to the `roms` directory by choosing the "Save to Files" (go to "On My iPhone" -> MAME4iOS) option after downloading a ROM. You can also use a third party program like iExplorer or iFunBox to transfer ROMs to the MAME4iOS app directory.
+For iOS users, you can download ROMs using Safari and save them to the `roms` directory by choosing the "Save to Files" (go to "On My iPhone" -> MAME4iOS) option after downloading a ROM. 
 
-You can also use the "Upload Files" option in the menu (from the options button or pressing Y + Menu in-game) to start the webserver, and enter the address shown on the web browser on your computer.
+You can also use the "Start Server" option in the menu (from the options button or pressing Y + Menu in-game) to start the webserver, and enter the address shown on the web browser on your computer.
+
+Yoiu can also use the "Import ROMs" option to open up the native iOS file browser and load files that are saved locally or that exist on iCloud.
 
 ### tvOS
 
@@ -143,7 +146,7 @@ to start playing a game, hit MENU and select "Coin + Start" from the list.
     PLAY            - X button
     MENU            - bring up the MAME4iOS menu
 
-## Touch Screen Lightgun Support (new in 2018)
+## Touch Screen Lightgun Support (new in 2018, iOS only)
 
 You can now use the touch screen for lightgun games like Operation Wolf and Lethal Enforcers. Holding down your finger simulates holding down the trigger, which is mapped to the "X" button. Tap with 2 fingers for the secondary fire, or the "B" button.
 
@@ -161,7 +164,7 @@ Touch Lightgun setup is in Settings -> Input -> Touch Lightgun, where you can di
 
 Under Settings -> Game Input, there's a section called "Turbo Mode Toggle", that lets you turn on turbo firing for individual buttons. Holding down the button causes the button to fire in turbo mode.
 
-## Touch Analog Mode (new in 2019)
+## Touch Analog Mode (new in 2019, iOS only)
 
 Also in Settings -> Game Input, you'll find a section called "Touch Analog" and "Touch Directional Input". "Touch Analog" lets you use your touchscreen as an analog device for games using input controls such as trackballs and knobs. These include games like Arkanoid or Crystal Castles. You can adjust the sensitivity of the analog controls, and also choose to hide the d-pad/analog stick in this mode.
 

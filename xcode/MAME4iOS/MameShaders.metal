@@ -147,14 +147,9 @@ mame_test_vector_fade(VertexOutput v [[stage_in]],
     
     if (t == 0.0) {
         // current line, just use color as is, but scale alpha back to a 1.0 width line.
-        if (abs(v.tex.y) > 1.0)
-            color.a = 0.0;
-        else
-            color.a = mix(1.0, 0.25, abs(v.tex.y));
     }
     else {
-        color = color * /*rainbow(t * 6) * */ exp(-pow(t * uniforms.falloff, 2)) * uniforms.strength;
-        //color.a = 1.0;
+        color = color * exp(-pow(t * uniforms.falloff, 2)) * uniforms.strength;
     }
     return color;
 }

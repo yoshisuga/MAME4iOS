@@ -389,8 +389,8 @@ void* threaded_video(void* args)
 
 //SQ buffers for sound between MAME and iOS AudioQueue. AudioQueue
 //SQ callback reads from these.
-//SQ Size: (44100/30fps) * bytesize * stereo * (3 buffers)
-#define TAM (1470 * 2 * 2 * 3)
+//SQ Size: (48000/30fps) * bytesize * stereo * (3 buffers)
+#define TAM (1600 * 2 * 2 * 3)
 unsigned char ptr_buf[TAM];
 unsigned head = 0;
 unsigned tail = 0;
