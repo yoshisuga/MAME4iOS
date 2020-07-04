@@ -1768,7 +1768,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
             g_last_input_time = now;
     }
 
-    if (pad_status & MYOSD_A)
+    if (pad_status & (MYOSD_A|MYOSD_SELECT|MYOSD_START))
         [self onCommandSelect];
     if (pad_status & MYOSD_UP)
         [self onCommandUp];

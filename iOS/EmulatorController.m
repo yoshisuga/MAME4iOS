@@ -3941,8 +3941,6 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         //      MENU+A  = LOAD STATE
         //      MENU+Y  = SAVE STATE
         //
-        //      OPTION   = COIN + START
-        //
         BOOL (^menuButtonHandler)(BOOL) = ^BOOL(BOOL pressed){
             static int g_menu_modifier_button_pressed[NUM_JOY];
             int player = (isSiriRemote || index >= myosd_num_inputs) ? 0 : index; // siri remote is always player 1
@@ -4028,9 +4026,10 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 #endif
             #pragma clang diagnostic push
             #pragma clang diagnostic ignored "-Wpartial-availability"
+            GCControllerButtonInput *buttonHome = [gamepad respondsToSelector:@selector(buttonHome)] ? [gamepad buttonHome] : nil;
             GCControllerButtonInput *buttonMenu = [gamepad respondsToSelector:@selector(buttonMenu)] ? [gamepad buttonMenu] : nil;
-            GCControllerButtonInput *buttonOptions = [gamepad respondsToSelector:@selector(buttonOptions)] ? [gamepad buttonOptions] : nil;
-            if ((element != buttonMenu && buttonMenu.pressed) || (element != buttonOptions && buttonOptions.pressed)) {
+            GCControllerButtonInput *buttonMeta = buttonHome ?: buttonMenu;
+            if (element != buttonMeta && buttonMeta.pressed) {
                 menuButtonHandler(TRUE);
                 return;
             }
@@ -4237,37 +4236,77 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         
         #pragma clang diagnostic push
         #pragma clang diagnostic ignored "-Wpartial-availability"
+        GCControllerButtonInput *buttonHome = [gamepad respondsToSelector:@selector(buttonHome)] ? [gamepad buttonHome] : nil;
         GCControllerButtonInput *buttonMenu = [gamepad respondsToSelector:@selector(buttonMenu)] ? [gamepad buttonMenu] : nil;
         GCControllerButtonInput *buttonOptions = [gamepad respondsToSelector:@selector(buttonOptions)] ? [gamepad buttonOptions] : nil;
         #pragma clang diagnostic pop
-
-        // MENU BUTTON
-        buttonMenu.pressedChangedHandler = ^(GCControllerButtonInput* button, float value, BOOL pressed) {
-            int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
-            if (menuButtonHandler(pressed))
-                [self toggleMenu:player];
-        };
         
-        // OPTION BUTTON
-        buttonOptions.pressedChangedHandler = ^(GCControllerButtonInput* button, float value, BOOL pressed) {
-            int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
-            if (menuButtonHandler(pressed)) {
-                NSLog(@"%d: OPTION", index);
-                if (player < 2)    // add a extra coin for luck, for games that default to two credits.
-                    push_mame_button(0, MYOSD_SELECT);  // Player 1 coin
-                push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X COIN
-                push_mame_button(player, MYOSD_START); // Player X START
-            }
-        };
-        
-        // old skoool PAUSE button
-        if (buttonMenu == nil && buttonOptions == nil) {
-            MFIController.controllerPausedHandler = ^(GCController *controller) {
+        // iOS 14+ we have three buttons: OPTION(left) HOME(center), MENU(right)
+        //      HOME   => MAME4iOS MENU
+        //      OPTION => SELECT/COIN
+        //      MENU   => START
+        if (buttonHome != nil && buttonMenu != nil && buttonOptions != nil) {
+            // HOME BUTTON => MAME4iOS MENU
+            buttonHome.pressedChangedHandler = ^(GCControllerButtonInput* button, float value, BOOL pressed) {
+                NSLog(@"%d: MENU/HOME %s", index, (pressed ? "DOWN" : "UP"));
                 int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
-                menuButtonHandler(TRUE);
-                if (menuButtonHandler(FALSE))
+                if (menuButtonHandler(pressed))
                     [self toggleMenu:player];
             };
+            // OPTION BUTTON => SELECT
+            buttonOptions.pressedChangedHandler = ^(GCControllerButtonInput* button, float value, BOOL pressed) {
+                NSLog(@"%d: SELECT %s", index, (pressed ? "DOWN" : "UP"));
+                int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
+                if (pressed)
+                    myosd_joy_status[player] |= MYOSD_SELECT;
+                else
+                    myosd_joy_status[player] &= ~MYOSD_SELECT;
+                [self handle_INPUT];
+            };
+            // MENU BUTTON => START
+            buttonMenu.pressedChangedHandler = ^(GCControllerButtonInput* button, float value, BOOL pressed) {
+                NSLog(@"%d: START %s", index, (pressed ? "DOWN" : "UP"));
+                int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
+                if (pressed)
+                    myosd_joy_status[player] |= MYOSD_START;
+                else
+                    myosd_joy_status[player] &= ~MYOSD_START;
+                [self handle_INPUT];
+            };
+        }
+        // iOS 13+ we have (up to) two buttons MENU(right), and OPTION(left)
+        //      MENU   => MAME4iOS MENU
+        //      OPTION => do a SELECT + START (Px START)
+        else {
+            // MENU BUTTON
+            buttonMenu.pressedChangedHandler = ^(GCControllerButtonInput* button, float value, BOOL pressed) {
+                NSLog(@"%d: MENU %s", index, (pressed ? "DOWN" : "UP"));
+                int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
+                if (menuButtonHandler(pressed))
+                    [self toggleMenu:player];
+            };
+            // OPTION BUTTON => Px START
+            buttonOptions.pressedChangedHandler = ^(GCControllerButtonInput* button, float value, BOOL pressed) {
+                NSLog(@"%d: OPTION %s", index, (pressed ? "DOWN" : "UP"));
+                int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
+                if (pressed && !g_emulation_paused) {
+                    if (player < 2)    // add a extra coin for luck, for games that default to two credits.
+                        push_mame_button(0, MYOSD_SELECT);  // Player 1 coin
+                    push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X COIN
+                    push_mame_button(player, MYOSD_START); // Player X START
+                }
+            };
+            // < iOS 13 we only have a PAUSE handler, and we only get a single event on button up
+            // PASUE => MAME4iOS MENU
+            if (buttonMenu == nil && buttonOptions == nil) {
+                NSLog(@"%d: PAUSE", index);
+                MFIController.controllerPausedHandler = ^(GCController *controller) {
+                    int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
+                    menuButtonHandler(TRUE);
+                    if (menuButtonHandler(FALSE))
+                        [self toggleMenu:player];
+                };
+            }
         }
     }
 }
