@@ -1049,8 +1049,29 @@ void mame_state(int load_save, int slot)
     }];
 }
 
-// declare selector, never called.
-- (void)handle_MENU:(NSNumber*)status {}
+- (void)handle_MENU:(NSNumber*)status {
+    
+    // if we are showing an alert map controller input to the alert
+    UIAlertController* alert = (UIAlertController*)[self presentedViewController];
+
+    if ([alert isKindOfClass:[UIAlertController class]])
+    {
+        unsigned long pad_status = [status longValue];
+
+        if (pad_status & (MYOSD_A|MYOSD_SELECT))
+            [alert dismissWithDefault];
+        if (pad_status & MYOSD_B)
+            [alert dismissWithCancel];
+        if (pad_status & MYOSD_Y)
+            [alert dismissWithTitle:@"Ⓨ"];
+        if (pad_status & MYOSD_X)
+            [alert dismissWithTitle:@"Ⓧ"];
+        if (pad_status & MYOSD_UP)
+            [alert moveDefaultAction:-1];
+        if (pad_status & MYOSD_DOWN)
+            [alert moveDefaultAction:+1];
+    }
+}
 
 - (void)handle_MENU
 {
@@ -1084,31 +1105,12 @@ void mame_state(int load_save, int slot)
                 g_last_input_time = now;
         }
 
-        // if we are showing an alert map controller input to the alert
-        if ([viewController isKindOfClass:[UIAlertController class]])
-        {
-            UIAlertController* alert = (UIAlertController*)viewController;
-
-            if (pad_status & (MYOSD_A|MYOSD_SELECT))
-                [alert dismissWithDefault];
-            if (pad_status & MYOSD_B)
-                [alert dismissWithCancel];
-            if (pad_status & MYOSD_Y)
-                [alert dismissWithTitle:@"Ⓨ"];
-            if (pad_status & MYOSD_X)
-                [alert dismissWithTitle:@"Ⓧ"];
-            if (pad_status & MYOSD_UP)
-                [alert moveDefaultAction:-1];
-            if (pad_status & MYOSD_DOWN)
-                [alert moveDefaultAction:+1];
-            return;
-        }
-        
         // if we are showing some other UI, give it a chance to handle input.
         if ([viewController respondsToSelector:@selector(handle_MENU:)])
             [viewController performSelector:@selector(handle_MENU:) withObject:@(pad_status)];
+        else
+            [self handle_MENU:@(pad_status)];
         
-        // if we are showing something else, just ignore.
         return;
     }
 
