@@ -530,7 +530,8 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
             [self setTexture:0 texture:prim->texture_base hash:prim->texture_seqid
                        width:prim->texture_width height:prim->texture_height
                       format:(prim->texformat == TEXFORMAT_RGB15 ? MTLPixelFormatBGR5A1Unorm : MTLPixelFormatBGRA8Unorm)
-                    colorspace:_screenColorSpace texture_load:^(id<MTLTexture> texture) {load_texture_prim(texture, prim);} ];
+                  colorspace:(prim->screentex ? _screenColorSpace : NULL)
+                texture_load:^(id<MTLTexture> texture) {load_texture_prim(texture, prim);} ];
             // set the shader
             if (prim->screentex) {
                 // render of the game screen, use a custom shader
