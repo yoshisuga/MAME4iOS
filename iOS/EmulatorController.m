@@ -1049,6 +1049,8 @@ void mame_state(int load_save, int slot)
     }];
 }
 
+// declare selector, never called.
+- (void)handle_MENU:(NSNumber*)status {}
 
 - (void)handle_MENU
 {
@@ -1056,51 +1058,59 @@ void mame_state(int load_save, int slot)
     unsigned long pad_status = myosd_pad_status | myosd_joy_status[0] | myosd_joy_status[1] | myosd_joy_status[2] | myosd_joy_status[3];
 
 #if TARGET_OS_IOS   // NOT needed on tvOS it handles it with the focus engine
-
-    // get input from left and right joystick #1
-    static NSTimeInterval g_last_input_time;
-    NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
-    if (now - g_last_input_time > 0.250 && (pad_status & (MYOSD_UP|MYOSD_DOWN|MYOSD_LEFT|MYOSD_RIGHT)) == 0) {
-        if (round(joy_analog_y[0][0] * 1000.0) / 1000.0 == +1.0 || round(joy_analog_y[0][1] * 1000.0) / 1000.0 == +1.0)
-            pad_status |= MYOSD_UP;
-        if (round(joy_analog_y[0][0] * 1000.0) / 1000.0 == -1.0 || round(joy_analog_y[0][1] * 1000.0) / 1000.0 == -1.0)
-            pad_status |= MYOSD_DOWN;
-        if  (pad_status & (MYOSD_UP|MYOSD_DOWN|MYOSD_LEFT|MYOSD_RIGHT))
-            g_last_input_time = now;
-    }
-    
     UIViewController* viewController = [self presentedViewController];
-    
-    if ([viewController isKindOfClass:[UINavigationController class]])
-        viewController = [(UINavigationController*)viewController topViewController];
 
-    // if we are showing an alert map controller input to the alert
-    if ([viewController isKindOfClass:[UIAlertController class]])
-    {
-        UIAlertController* alert = (UIAlertController*)viewController;
+    // if a viewController is up send the input to it.
+    if (viewController != nil) {
 
-        if (pad_status & MYOSD_A)
-            [alert dismissWithDefault];
-        if (pad_status & MYOSD_B)
-            [alert dismissWithCancel];
-        if (pad_status & MYOSD_Y)
-            [alert dismissWithTitle:@"Ⓨ"];
-        if (pad_status & MYOSD_X)
-            [alert dismissWithTitle:@"Ⓧ"];
-        if (pad_status & MYOSD_UP)
-            [alert moveDefaultAction:-1];
-        if (pad_status & MYOSD_DOWN)
-            [alert moveDefaultAction:+1];
+        if ([viewController isKindOfClass:[UINavigationController class]])
+            viewController = [(UINavigationController*)viewController topViewController];
+
+        // get input from left and right joystick of any player
+        static NSTimeInterval g_last_input_time;
+        NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
+        if ((now - g_last_input_time) > 0.250 && (pad_status & (MYOSD_UP|MYOSD_DOWN|MYOSD_LEFT|MYOSD_RIGHT)) == 0) {
+            for (int i=0; i<NUM_JOY; i++) {
+                if (round(joy_analog_y[i][0] * 1000.0) / 1000.0 == +1.0 || round(joy_analog_y[i][1] * 1000.0) / 1000.0 == +1.0)
+                    pad_status |= MYOSD_UP;
+                if (round(joy_analog_y[i][0] * 1000.0) / 1000.0 == -1.0 || round(joy_analog_y[i][1] * 1000.0) / 1000.0 == -1.0)
+                    pad_status |= MYOSD_DOWN;
+                if (round(joy_analog_x[i][0] * 1000.0) / 1000.0 == +1.0 || round(joy_analog_x[i][1] * 1000.0) / 1000.0 == +1.0)
+                    pad_status |= MYOSD_RIGHT;
+                if (round(joy_analog_x[i][0] * 1000.0) / 1000.0 == -1.0 || round(joy_analog_x[i][1] * 1000.0) / 1000.0 == -1.0)
+                    pad_status |= MYOSD_LEFT;
+            }
+            if  (pad_status & (MYOSD_UP|MYOSD_DOWN|MYOSD_LEFT|MYOSD_RIGHT))
+                g_last_input_time = now;
+        }
+
+        // if we are showing an alert map controller input to the alert
+        if ([viewController isKindOfClass:[UIAlertController class]])
+        {
+            UIAlertController* alert = (UIAlertController*)viewController;
+
+            if (pad_status & (MYOSD_A|MYOSD_SELECT))
+                [alert dismissWithDefault];
+            if (pad_status & MYOSD_B)
+                [alert dismissWithCancel];
+            if (pad_status & MYOSD_Y)
+                [alert dismissWithTitle:@"Ⓨ"];
+            if (pad_status & MYOSD_X)
+                [alert dismissWithTitle:@"Ⓧ"];
+            if (pad_status & MYOSD_UP)
+                [alert moveDefaultAction:-1];
+            if (pad_status & MYOSD_DOWN)
+                [alert moveDefaultAction:+1];
+            return;
+        }
+        
+        // if we are showing some other UI, give it a chance to handle input.
+        if ([viewController respondsToSelector:@selector(handle_MENU:)])
+            [viewController performSelector:@selector(handle_MENU:) withObject:@(pad_status)];
+        
+        // if we are showing something else, just ignore.
         return;
     }
-    
-    // if we are showing some other UI, give it a chance to handle input.
-    if ([viewController respondsToSelector:@selector(handle_MENU)])
-        [viewController performSelector:@selector(handle_MENU)];
-    
-    // if we are showing something else, just ignore.
-    if (viewController != nil)
-        return;
 
     // touch screen EXIT button
     if ((buttonState & MYOSD_EXIT) && !(pad_status & MYOSD_EXIT))
