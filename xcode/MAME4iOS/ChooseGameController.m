@@ -1748,10 +1748,13 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 // called when input happens on a gamecontroller, keyboard, or touch screen
 // check for input related to moving and selecting.
--(void)handle_MENU {
-    unsigned long pad_status = myosd_pad_status | myosd_joy_status[0] | myosd_joy_status[1];
-
-    if (pad_status & MYOSD_A)
+-(void)handle_MENU:(NSNumber*)status
+{
+    // get input from all DPADs
+    unsigned long pad_status = [status longValue];
+    
+    // get input from left and right joystick #1
+    if (pad_status & (MYOSD_A|MYOSD_SELECT|MYOSD_START))
         [self onCommandSelect];
     if (pad_status & MYOSD_UP)
         [self onCommandUp];

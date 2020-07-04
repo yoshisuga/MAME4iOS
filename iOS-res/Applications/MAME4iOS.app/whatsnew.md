@@ -6,6 +6,7 @@
 * The HUD will honor the system DynamicType size.
 * PINCH and ZOOM to resize the HUD to exacly the size you want.
 * set MAME pause_brightness to 1.0
+* Support for Xbox `GUIDE`, DualShock `PS`, and Steam `STEAM` buttons on iOS 14.
 
 # Version 2020.11
 * Added new Vector Shader category for Vector games on both iOS and tvOS.
