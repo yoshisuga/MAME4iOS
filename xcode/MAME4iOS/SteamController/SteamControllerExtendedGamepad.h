@@ -49,6 +49,7 @@ typedef struct {
 #pragma mark - Steam Controller
     BOOL steamBackButton;
     BOOL steamForwardButton;
+    BOOL steamSteamButton;
 } SteamControllerExtendedGamepadSnapshotData;
 #pragma pack(pop)
 
@@ -71,8 +72,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, nullable) SteamControllerButtonInput *rightThumbstickButton;
 @property (nonatomic, readonly, nullable) SteamControllerButtonInput *buttonOptions;
 @property (nonatomic, readonly, nullable) SteamControllerButtonInput *buttonMenu;
+@property (nonatomic, readonly, nullable) SteamControllerButtonInput *buttonHome;
 @property (nonatomic, readonly, nullable) SteamControllerButtonInput *steamBackButton;
 @property (nonatomic, readonly, nullable) SteamControllerButtonInput *steamForwardButton;
+@property (nonatomic, readonly, nullable) SteamControllerButtonInput *steamSteamButton;
 @property (nonatomic, assign) SteamControllerExtendedGamepadSnapshotData state;
 
 - (instancetype)initWithController:(SteamController*)controller;
