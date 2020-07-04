@@ -339,6 +339,7 @@ __attribute__((objc_direct_members))
     [self setShaderVariables:@{
         @"frame-count": @(_frameCount),
         @"render-target-size": @(size),
+        @"render-target-depth": @(_wideColor ? 10 : 8),
     }];
     
     return TRUE;
