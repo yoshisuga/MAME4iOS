@@ -238,24 +238,47 @@ Some of the supported game controllers include, but are not limited to:
 * Xbox Wireless Controller with Bluetooth (Model 1708)
 * PlayStation DUALSHOCK®4 Wireless Controller
 * MFi (Made for iOS) Bluetooth controllers, like the SteelSeries Nimbus, Horipad Ultimate, and more may be supported.
+* XInput compatible controllers. (Pair via Options > Accessibility > Switch Control)
 * iCade
 * 8BitDo M30, Zero, and others
 * Steam Game Controllers
 * iMpulse
 
-Some of the new features added to the Controller experience include:
-
-* supports new controller types on iOS 13
-* new buttons (MENU, OPTIONS) on iOS 13+
-* you can now navigate a iOS Alert.
-  - dpad up/down move the current selection
-  - **A** - select the currently selected item.
-  - **B** - cancel the Alert
-
 To start playing a game using a controller, do one of the following.
-* hit the OPTIONS button (this will add a Coin and Start)
-* hit MENU and select "Coin + Start".
-* hit MENU+L1 to add a Coin, then hit MENU+R1 to Start.
+* hit MENU and select `Coin + Start` or `1 Player Start`
+* hit MENU+L1 to add a Coin, then hit MENU+R1 to Start. (iOS 13)
+* hit SELECT, then START (iOS 14+)
+
+## Xbox Controller (on iOS 14+)
+
+| | |  
+-|-
+`VIEW`     |SELECT                
+`GUIDE`           |MAME4iOS MENU   
+`MENU`     |START              
+
+## Xbox Controller (on iOS 13)
+
+| | |  
+-|-
+`VIEW`     |SELECT + START                
+`MENU`     |MAME4iOS MENU              
+
+## Playstation Dualshock (on iOS 14+)
+
+| | |  
+-|-
+`SHARE`     |SELECT                
+`PS Button`           |MAME4iOS MENU   
+`OPTIONS`     |START      
+
+## Playstation Dualshock (on iOS 13)
+
+| | |  
+-|-
+`SHARE`     |SELECT + START               
+`OPTIONS`     |MAME4iOS MENU       
+
 
 ## Steam Game Controlers
 
@@ -263,7 +286,16 @@ To start playing a game using a controller, do one of the following.
 
 To use a Steam Controller, make sure it is updated to BLE Firmware, and it paired with iOS device, see [here](https://support.steampowered.com/kb_article.php?ref=7728-QESJ-4420).
 
-## MENU/OPTION button on game controllers
+Steam Controller Buttons
+
+| | |  
+-|-
+`BACK`     |SELECT                 
+`STEAM Button`           |MAME4iOS MENU   
+`START`     |START              
+
+
+## MENU button on game controllers
 
 | | |  
 -|-
@@ -276,11 +308,8 @@ MENU+X       |Exit Game
 MENU+B       |Open MAME menu   
 MENU+A       |Load State  X (slot1) or Y (slot 2)            
 MENU+Y       |Save State  X (slot1) or Y (slot 2)              
-OPTION         |Insert Coin and Start   
 
 **NOTE** on versions prior to iOS 13 only MiFi controllers are reconized and when doing multiple button combinations the secondary button must be pressed first.  For example to insert a coin hold down L1 and hit MENU.  on iOS 13+ you can hold MENU and then hit L1.
-
-**NOTE** you can also use OPTION as a modifier, for example either MENU+L1 or OPTION+L1 will insert a coin.
 
 ## Multiplayer game start using game controllers
 
