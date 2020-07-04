@@ -1159,7 +1159,6 @@ static void texture_load_uiimage(id<MTLTexture> texture, UIImage* image) {
     
     CGContextRef bitmap = CGBitmapContextCreate(bitmap_data, width, height, 8, width*4, colorSpace, bitmapInfo);
     CGContextDrawImage(bitmap, CGRectMake(0, 0, width, height), image.CGImage);
-    CGColorSpaceRelease(colorSpace);
     CGContextRelease(bitmap);
 
     [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:bitmap_data bytesPerRow:width*4];
