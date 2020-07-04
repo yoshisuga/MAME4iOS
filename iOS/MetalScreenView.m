@@ -42,9 +42,9 @@
  * under a MAME license, as set out in http://mamedev.org/
  */
 #import <Metal/Metal.h>
-#import "CGScreenView.h"        // for colorspace helper.
 #import "MetalScreenView.h"
 #import "myosd.h"
+#import "ColorSpace.h"
 
 #define DebugLog 0
 #if DebugLog == 0
@@ -71,7 +71,10 @@ TIMER_INIT_END
 @implementation MetalScreenView {
     NSDictionary* _options;
     MTLSamplerMinMagFilter _filter;
+    
     Shader _screen_shader;
+    CGColorSpaceRef _screenColorSpace;  // color space used to render MAME screen
+    
     Shader _line_shader;
     CGFloat _line_width_scale;
     NSString* _line_width_scale_variable;
@@ -207,8 +210,35 @@ TIMER_INIT_END
 + (NSArray*)filterList {
     return @[kScreenViewFilterNearest,kScreenViewFilterLinear];
 }
+
+//
+// COLOR SPACE
+//
+// color space data, we define the colorSpaces here, in one place, so it stays in-sync with the UI.
+//
+// you can specify a colorSpace in two ways, with a system name or with parameters.
+// these strings are of the form <Friendly Name> : <colorSpace name OR colorSpace parameters>
+//
+// colorSpace name is one of the sytem contants passed to `CGColorSpaceCreateWithName`
+// see (Color Space Names)[https://developer.apple.com/documentation/coregraphics/cgcolorspace/color_space_names]
+//
+// colorSpace parameters are 3 - 18 floating point numbers separated with commas.
+// see [CGColorSpaceCreateCalibratedRGB](https://developer.apple.com/documentation/coregraphics/1408861-cgcolorspacecreatecalibratedrgb)
+//
+// if <colorSpace name OR colorSpace parameters> is blank or not valid, a device-dependent RGB color space is used.
+//
 + (NSArray*)colorSpaceList {
-    return [CGScreenView colorSpaceList];
+
+    return @[kScreenViewColorSpaceDevice,
+             @"sRGB : kCGColorSpaceSRGB",
+             @"CRT (sRGB, D65, 2.5) :    0.95047,1.0,1.08883, 0,0,0, 2.5,2.5,2.5, 0.412456,0.212673,0.019334,0.357576,0.715152,0.119192,0.180437,0.072175,0.950304",
+             @"Rec709 (sRGB, D65, 2.4) : 0.95047,1.0,1.08883, 0,0,0, 2.4,2.4,2.4, 0.412456,0.212673,0.019334,0.357576,0.715152,0.119192,0.180437,0.072175,0.950304",
+#ifdef DEBUG
+             @"Adobe RGB : kCGColorSpaceAdobeRGB1998",
+             @"Linear sRGB : kCGColorSpaceLinearSRGB",
+             @"NTSC Luminance : 0.9504,1.0000,1.0888, 0,0,0, 1,1,1, 0.299,0.299,0.299, 0.587,0.587,0.587, 0.114,0.114,0.114",
+#endif
+    ];
 }
 
 #pragma mark - MetalScreenView INIT
@@ -231,12 +261,10 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     // set a custom color space
     NSString* color_space = _options[kScreenViewColorSpace];
 
-    if (color_space != nil)
-    {
-        CGColorSpaceRef colorSpace = [CGScreenView createColorSpaceFromString:color_space];
-        [(id)self.layer setColorspace:colorSpace];
-        CGColorSpaceRelease(colorSpace);
-    }
+    if (color_space != nil && color_space.length != 0 && ![color_space isEqualToString:kScreenViewColorSpaceDevice])
+        _screenColorSpace = ColorSpaceFromString(color_space);
+    else
+        _screenColorSpace = NULL;
     
     // enable filtering
     NSString* filter_string = _options[kScreenViewFilter];
@@ -279,6 +307,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     
     NSLog(@"FILTER: %@", _filter == MTLSamplerMinMagFilterNearest ? @"NEAREST" : @"LINEAR");
     NSLog(@"SCREEN SHADER: %@", split(_screen_shader, @",").firstObject);
+    NSLog(@"SCREEN COLORSPACE: %@", _screenColorSpace);
     NSLog(@"LINE SHADER: %@", split(_line_shader, @",").firstObject);
     NSLog(@"LINE SHADER WANTS PAST LINES: %@", _line_shader_wants_past_lines ? @"YES" : @"NO");
     if (_line_width_scale_variable != nil)
@@ -340,9 +369,8 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
 #pragma mark - texture conversion
 
-static void texture_load(void* data, id<MTLTexture> texture) {
+static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* prim) {
     
-    myosd_render_primitive* prim = (myosd_render_primitive*)data;
     NSUInteger width = texture.width;
     NSUInteger height = texture.height;
     
@@ -458,19 +486,6 @@ static void texture_load(void* data, id<MTLTexture> texture) {
     [self drawScreenDebug:prim_list];
 #endif
     
-#if 0
-    // before calling draw-begin do a pass and load all textures.
-    for (myosd_render_primitive* prim = prim_list; prim != NULL; prim = prim->next) {
-        if (prim->type == RENDER_PRIMITIVE_QUAD && prim->texture_base != NULL) {
-            // set the texture
-            [self loadTexture:prim->texture_base hash:prim->texture_seqid
-                       width:prim->texture_width height:prim->texture_height
-                      format:(prim->texformat == TEXFORMAT_RGB15 ? MTLPixelFormatBGR5A1Unorm : MTLPixelFormatBGRA8Unorm)
-                texture_load:texture_load texture_load_data:prim];
-        }
-    }
-#endif
-
     if (![self drawBegin]) {
         NSLog(@"drawBegin *FAIL* dropping frame on the floor.");
         return 1;
@@ -515,8 +530,7 @@ static void texture_load(void* data, id<MTLTexture> texture) {
             [self setTexture:0 texture:prim->texture_base hash:prim->texture_seqid
                        width:prim->texture_width height:prim->texture_height
                       format:(prim->texformat == TEXFORMAT_RGB15 ? MTLPixelFormatBGR5A1Unorm : MTLPixelFormatBGRA8Unorm)
-                texture_load:texture_load texture_load_data:prim];
-
+                    colorspace:_screenColorSpace texture_load:^(id<MTLTexture> texture) {load_texture_prim(texture, prim);} ];
             // set the shader
             if (prim->screentex) {
                 // render of the game screen, use a custom shader
@@ -633,21 +647,6 @@ static void texture_load(void* data, id<MTLTexture> texture) {
         else
             TIMER_STOP(line_prim);
     }
-    
-#if 0
-    // walk the primitive list and draw wire frame
-    for (myosd_render_primitive* prim = prim_list; prim != NULL; prim = prim->next) {
-        
-        VertexColor color = VertexColor(0, 1, 0, 1);
-        [self setShader:ShaderNone];
-
-        [self drawLine:CGPointMake(prim->bounds_x0, prim->bounds_y0) to:CGPointMake(prim->bounds_x1, prim->bounds_y0) color:color];
-        [self drawLine:CGPointMake(prim->bounds_x1, prim->bounds_y0) to:CGPointMake(prim->bounds_x1, prim->bounds_y1) color:color];
-        [self drawLine:CGPointMake(prim->bounds_x1, prim->bounds_y1) to:CGPointMake(prim->bounds_x0, prim->bounds_y1) color:color];
-        [self drawLine:CGPointMake(prim->bounds_x0, prim->bounds_y1) to:CGPointMake(prim->bounds_x0, prim->bounds_y0) color:color];
-        [self drawLine:CGPointMake(prim->bounds_x0, prim->bounds_y0) to:CGPointMake(prim->bounds_x1, prim->bounds_y1) color:color];
-    }
-#endif
     
     [self drawEnd];
     TIMER_STOP(draw_screen);

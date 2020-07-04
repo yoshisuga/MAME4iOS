@@ -1262,17 +1262,6 @@ void mame_state(int load_save, int slot)
 
     if (g_mame_game[0] && g_mame_game[0] != ' ')
         [self updateUserActivity:@{kGameInfoName:[NSString stringWithUTF8String:g_mame_game]}];
-    
-#ifdef DEBUG
-    // create all color spaces, to test for validness.
-    for (NSString* string in Options.arrayColorSpace) {
-        NSString* color_space_data = [[string componentsSeparatedByString:@":"].lastObject stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
-        CGColorSpaceRef colorSpace = [CGScreenView createColorSpaceFromString:color_space_data];
-        NSLog(@"COLORSPACE DATA: %@", string);
-        NSLog(@"     COLORSPACE: %@", colorSpace);
-        CGColorSpaceRelease(colorSpace);
-    }
-#endif
 }
 
 -(void)viewWillAppear:(BOOL)animated {
