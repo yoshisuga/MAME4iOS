@@ -82,6 +82,13 @@
 #import "SystemImage.h"
 #import "SteamController.h"
 
+// declare these selectors, so we can use them, and ARC wont complain
+#ifndef __IPHONE_14_0
+@interface NSObject()
+-(GCControllerButtonInput*)buttonHome;
+@end
+#endif
+
 #define DebugLog 0
 #if DebugLog == 0
 #define NSLog(...) (void)0
