@@ -1,5 +1,8 @@
 <img src="mame_logo.png" width="60%">
 
+# Version 2020.13
+* Support for Xbox `GUIDE`, DualShock `PS`, and Steam `STEAM` buttons on iOS 14.
+
 # Version 2020.12
 * `Metal` frame-skip updates and fixes.
 * Updated the `lineTron` vector shader.
