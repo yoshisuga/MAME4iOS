@@ -611,6 +611,46 @@ __attribute__((objc_direct_members))
 
     [self drawPrim:MTLPrimitiveTypeTriangleStrip vertices:vertices count:sizeof(vertices)/sizeof(vertices[0])];
 }
+-(void)drawGradientRect:(CGRect)rect color:(VertexColor)color1 color:(VertexColor)color2 orientation:(UIImageOrientation)orientation {
+    
+    Vertex2D vertices[] = {
+        Vertex2D(rect.origin.x,rect.origin.y,0.0,0.0,color1),
+        Vertex2D(rect.origin.x + rect.size.width,rect.origin.y,1.0,0.0,color2),
+        Vertex2D(rect.origin.x,rect.origin.y + rect.size.height,0.0,1.0,color1),
+        Vertex2D(rect.origin.x + rect.size.width,rect.origin.y + rect.size.height,1.0,1.0,color2),
+    };
+    
+    switch (orientation) {
+        case UIImageOrientationUp:
+            vertices[0].color = color2;
+            vertices[1].color = color2;
+            vertices[2].color = color1;
+            vertices[3].color = color1;
+            break;
+        case UIImageOrientationDown:
+            vertices[0].color = color1;
+            vertices[1].color = color1;
+            vertices[2].color = color2;
+            vertices[3].color = color2;
+            break;
+        case UIImageOrientationLeft:
+            vertices[0].color = color2;
+            vertices[1].color = color1;
+            vertices[2].color = color2;
+            vertices[3].color = color1;
+            break;
+        case UIImageOrientationRight:
+            break;
+        case UIImageOrientationUpMirrored:
+        case UIImageOrientationDownMirrored:
+        case UIImageOrientationLeftMirrored:
+        case UIImageOrientationRightMirrored:
+            assert(FALSE);
+            break;
+    }
+
+    [self drawPrim:MTLPrimitiveTypeTriangleStrip vertices:vertices count:sizeof(vertices)/sizeof(vertices[0])];
+}
 -(void)drawRect:(CGRect)rect color:(VertexColor)color {
     Vertex2D vertices[] = {
         Vertex2D(rect.origin.x,rect.origin.y,0.0,0.0,color),

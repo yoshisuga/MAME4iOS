@@ -63,6 +63,7 @@ static Shader const ShaderTextureMultiply = @"texture, blend=mul";
 -(void)drawLine:(CGPoint)start to:(CGPoint)end width:(CGFloat)width color:(VertexColor)color edgeAlpha:(CGFloat)alpha;
 -(void)drawRect:(CGRect)rect color:(VertexColor)color;
 -(void)drawRect:(CGRect)rect color:(VertexColor)color orientation:(UIImageOrientation)orientation;
+-(void)drawGradientRect:(CGRect)rect color:(VertexColor)color1 color:(VertexColor)color2 orientation:(UIImageOrientation)orientation;
 -(void)drawTriangle:(CGPoint*)points color:(VertexColor)color;
 -(void)drawEnd;
 
