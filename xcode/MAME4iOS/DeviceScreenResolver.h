@@ -17,11 +17,13 @@ typedef NS_ENUM(NSUInteger, DeviceScreenType) {
     IPHONE_6_7_8_PLUS,
     IPHONE_X_XS,
     IPHONE_XR_XS_MAX,
+    IPHONE_GENERIC,
     IPAD,
     IPAD_PRO_10_5,
     IPAD_PRO_11,
     IPAD_PRO_12_9,
     IPAD_GEN_7,
+    IPAD_GENERIC,
 };
 
 @interface DeviceScreenResolver : NSObject

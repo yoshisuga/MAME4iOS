@@ -11,10 +11,22 @@
 @implementation DeviceScreenResolver
 
 +(DeviceScreenType) resolve {
-    CGFloat width = [[UIScreen mainScreen] bounds].size.width;
-    CGFloat height = [[UIScreen mainScreen] bounds].size.height;
-    CGFloat maxLength = fmaxf(width, height);
-    if ( [[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone ) {
+    UIUserInterfaceIdiom idiom = UIDevice.currentDevice.userInterfaceIdiom;
+    CGSize screenSize = UIScreen.mainScreen.bounds.size;
+    CGSize windowSize = UIApplication.sharedApplication.keyWindow.bounds.size;
+    CGFloat maxLength = MAX(screenSize.width, screenSize.height);
+
+    if ( idiom == UIUserInterfaceIdiomPad && !CGSizeEqualToSize(windowSize, CGSizeZero) && !CGSizeEqualToSize(screenSize, windowSize)) {
+        // we are on an iPad in SlideOver or SplitScreen mode. pretend to be a generic iPhone or iPad based on aspect.
+
+        CGFloat aspect = MAX(windowSize.width, windowSize.height) / MIN(windowSize.width, windowSize.height);
+
+        if (aspect >= 1.5)
+            return IPHONE_GENERIC;
+        else
+            return IPAD_GENERIC;
+    }
+    else if ( idiom == UIUserInterfaceIdiomPhone ) {
         if ( maxLength < 568.0f ) {
             return IPHONE_4_OR_LESS;
         } else if ( maxLength == 568.0f ) {
@@ -28,9 +40,9 @@
         } else if ( maxLength == 896.0f ) {
             return IPHONE_XR_XS_MAX;
         } else {
-            return IPHONE_XR_XS_MAX;
+            return IPHONE_GENERIC;
         }
-    } else if ( [[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad ) {
+    } else if ( idiom == UIUserInterfaceIdiomPad ) {
         if ( maxLength <= 1024.0f ) {
             return IPAD;
         } else if ( maxLength == 1080.0f ) {
@@ -42,10 +54,10 @@
         } else if ( maxLength == 1366.0f ) {
             return IPAD_PRO_12_9;
         } else {
-            return IPAD_PRO_12_9;
+            return IPAD_GENERIC;
         }
     } else {
-        return IPHONE_XR_XS_MAX;
+        return IPAD_GENERIC;
     }
 }
 
