@@ -1827,12 +1827,6 @@ static NSArray* list_trim(NSArray* _list) {
 
 - (void)resetUI {
     NSLog(@"RESET UI (MAME VIDEO MODE CHANGE)");
-    
-    // shrink the HUD back to Normal on a game reset.
-    // ...we do this because buttons in the expanded HUD depend on game info (num players, etc)
-    if (g_pref_showHUD > HudSizeTiny)
-        g_pref_showHUD = HudSizeNormal;
-        
     [self changeUI];
 }
 

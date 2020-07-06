@@ -685,8 +685,8 @@ VertexColor VertexColorP3(CGFloat r, CGFloat g, CGFloat b, CGFloat a) {
     simd_float4 colors[] = {simd_make_float4(1, 0, 0, 1), simd_make_float4(0, 1, 0, 1), simd_make_float4(0, 0, 1, 1), simd_make_float4(1, 1, 0, 1), simd_make_float4(1, 1, 1, 1)};
     int n = sizeof(colors)/sizeof(colors[0]);
     
-    CGFloat space_x = 4;
-    CGFloat space_y = 4;
+    CGFloat space_x = width / 32;
+    CGFloat space_y = width / 32;
     CGFloat y = 0;
     CGFloat x = 0;
     CGFloat w = (width - (n-1) * space_x) / n;
@@ -742,8 +742,8 @@ VertexColor VertexColorP3(CGFloat r, CGFloat g, CGFloat b, CGFloat a) {
     y += h;
 
     // draw RGB gradients in SRGB and P3.
+    h = width/16;
     w = width/2;
-    h = 16;
     x = 0;
     y += space_y;
     [self setShader:ShaderCopy];
