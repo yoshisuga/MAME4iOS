@@ -70,9 +70,7 @@
         
         switchP1aspx = nil;
         
-        switchTouchDeadZone = nil;
         arrayAnalogDZValue = [[NSArray alloc] initWithObjects:@"1", @"2", @"3",@"4", @"5", @"6", nil];
-        arrayBTDZValue = [[NSArray alloc] initWithObjects:@"1", @"2", @"3",@"4", @"5", @"6", nil];
         
         switchLightgunEnabled = nil;
         switchLightgunBottomScreenReload = nil;
@@ -118,7 +116,7 @@
         case 3: return 1;
         case 4: return 2;
         case 5: return 1;
-        case 6: return 3-!g_btjoy_available;
+        case 6: return 1;
         case 7: return 2;
         case 8: return 6;
         case 9: return 4;
@@ -320,29 +318,9 @@
             switch (indexPath.row)
             {   case 0:
                 {
-                    cell.textLabel.text   = @"Touch DPAD";
-                    switchTouchDeadZone  = [[UISwitch alloc] initWithFrame:CGRectZero];
-                    cell.accessoryView = switchTouchDeadZone ;
-                    [switchTouchDeadZone setOn:[op touchDeadZone] animated:NO];
-                    [switchTouchDeadZone addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
-                    break;
-                }
-                case 1:
-                {
                     cell.textLabel.text   = @"Touch Stick";
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                     cell.detailTextLabel.text = [arrayAnalogDZValue objectAtIndex:op.analogDeadZoneValue];
-                    break;
-                }
-                case 2:
-                {
-                    if(g_btjoy_available)
-                    {
-                        cell.textLabel.text   = @"BT Analog";
-                        
-                        cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                        cell.detailTextLabel.text = [arrayBTDZValue objectAtIndex:op.btDeadZoneValue];
-                    }
                     break;
                 }
             }
@@ -507,8 +485,6 @@
     
 	if(sender == switchAnimatedButtons)
         op.animatedButtons=  [switchAnimatedButtons isOn];
-	if(sender == switchTouchDeadZone)
-        op.touchDeadZone = [switchTouchDeadZone isOn];
     if(sender == switchAplusB)
         op.aplusb = [switchAplusB isOn];
     if(sender == switchP1aspx)
@@ -608,16 +584,10 @@
         [tableView reloadData];
     }
 
-    if(section==6 && row==1)
+    if(section==6 && row==0)
     {
         ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
                                                                                       type:kTypeAnalogDZValue list:arrayAnalogDZValue];
-        [[self navigationController] pushViewController:listController animated:YES];
-    }
-    if(section==6 && row==2)
-    {
-        ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
-                                                                                      type:kTypeBTDZValue list:arrayBTDZValue];
         [[self navigationController] pushViewController:listController animated:YES];
     }
 

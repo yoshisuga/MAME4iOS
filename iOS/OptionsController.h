@@ -66,7 +66,6 @@ enum ListOptionType
     kTypeTouchType,
     kTypeControlType,
     kTypeAnalogDZValue,
-    kTypeBTDZValue,
     kTypeSoundValue,
     kTypeFSValue,
     kTypeOverscanValue,
