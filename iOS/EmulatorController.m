@@ -1458,13 +1458,15 @@ static int gcd(int a, int b) {
     NSUInteger sec = (frame_count / 60) % 60;
     NSUInteger min = (frame_count / 3600);
     
-    NSString* fps = [NSString stringWithFormat:@"%03d:%02d:%02d%@ %.2ffps %.1fms", (int)min, (int)sec, (int)frame,
+    NSString* fps = [NSString stringWithFormat:@"%03d:%02d:%02d%@%@ %.2ffps %.1fms", (int)min, (int)sec, (int)frame,
                     [screenView isKindOfClass:[MetalScreenView class]] ? @"🅼" : @"",
+                    [screenView isKindOfClass:[MetalScreenView class]] && [(MetalScreenView*)screenView pixelFormat] == MTLPixelFormatBGR10_XR ? @"🆆" : @"",
                     screenView.frameRateAverage, screenView.renderTimeAverage * 1000.0];
 #else
-    NSString* fps = [NSString stringWithFormat:@"%.2ffps %.1fms %@",
+    NSString* fps = [NSString stringWithFormat:@"%.2ffps %.1fms %@%@",
                      screenView.frameRateAverage, screenView.renderTimeAverage * 1000.0,
-                     [screenView isKindOfClass:[MetalScreenView class]] ? @"🅼" : @""];
+                     [screenView isKindOfClass:[MetalScreenView class]] ? @"🅼" : @"",
+                     [screenView isKindOfClass:[MetalScreenView class]] && [(MetalScreenView*)screenView pixelFormat] == MTLPixelFormatBGR10_XR ? @"🆆" : @""];
 #endif
     
     fpsView.text = fps;
