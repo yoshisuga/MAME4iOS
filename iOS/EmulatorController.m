@@ -2600,12 +2600,15 @@ UIColor* colorWithHexString(NSString* string) {
         case '\r':
             {
                 Options* op = [[Options alloc] init];
-                if (g_joy_used)
-                    op.fullscreenJoystick = g_pref_full_screen_joy = !g_device_is_fullscreen;
-                else if (g_device_is_landscape)
+
+                if (g_device_is_landscape)
                     op.fullscreenLandscape = g_pref_full_screen_land = !g_device_is_fullscreen;
                 else
                     op.fullscreenPortrait = g_pref_full_screen_port = !g_device_is_fullscreen;
+
+                // if user is manualy controling fullscreen, then turn off fullscreen joy.
+                op.fullscreenJoystick = g_pref_full_screen_joy = !g_device_is_fullscreen;
+                    
                 [op saveOptions];
                 [self changeUI];
                 break;

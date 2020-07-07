@@ -596,15 +596,19 @@
             
     }
     
-    // only treat iCade as a controler when used for first time.
-    if(g_iCade_used == 0 && g_pref_ext_control_type != EXT_CONTROL_NONE)
+    // using just a keyboard in non-fullscreen should not be counted as a controller
+    if (g_device_is_fullscreen || g_pref_ext_control_type != EXT_CONTROL_NONE)
     {
-        g_iCade_used = 1;
-        g_joy_used = 1;
-        myosd_num_of_joys = 1;
-        [emuController changeUI];
+        // only treat iCade as a controler when DPAD used for first time.
+        if(g_iCade_used == 0 && (myosd_joy_status[0] & (MYOSD_DOWN|MYOSD_UP|MYOSD_RIGHT|MYOSD_LEFT)))
+        {
+            g_iCade_used = 1;
+            g_joy_used = 1;
+            myosd_num_of_joys = 1;
+            [emuController changeUI];
+        }
     }
-        
+    
     if(joy2 && myosd_num_of_joys<2)
     {
         myosd_num_of_joys = 2;
