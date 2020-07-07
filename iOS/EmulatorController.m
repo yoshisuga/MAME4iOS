@@ -2148,6 +2148,14 @@ void myosd_handle_turbo() {
         buttonViews[i] = [ [ UIImageView alloc ] initWithImage:[self loadImage:name_up] highlightedImage:[self loadImage:name_down]];
         buttonViews[i].frame = rButtonImages[i];
         
+#ifdef __IPHONE_13_4
+        if (@available(iOS 13.4, *)) {
+            if (i == BTN_SELECT || i == BTN_START || i == BTN_EXIT || i == BTN_OPTION) {
+                [buttonViews[i] addInteraction:[[UIPointerInteraction alloc] initWithDelegate:(id)self]];
+                [buttonViews[i] setUserInteractionEnabled:TRUE];
+            }
+        }
+#endif
         if (g_device_is_fullscreen)
             [buttonViews[i] setAlpha:((float)g_controller_opacity / 100.0f)];
         
@@ -2156,7 +2164,19 @@ void myosd_handle_turbo() {
 
     [self showDebugRects];
 }
+
+#pragma mark - UIPointerInteractionDelegate
+
+#ifdef __IPHONE_13_4
+- (UIPointerStyle *)pointerInteraction:(UIPointerInteraction *)interaction styleForRegion:(UIPointerRegion *)region API_AVAILABLE(ios(13.4)) {
+    UITargetedPreview* preview = [[UITargetedPreview alloc] initWithView:interaction.view];
+    return [UIPointerStyle styleWithEffect:[UIPointerEffect effectWithPreview:preview] shape:nil];
+}
 #endif
+
+#endif  // TARGET_OS_IOS
+
+#pragma mark - background and overlay image
 
 #if TARGET_OS_IOS
 - (void)buildBackgroundImage {
@@ -2294,6 +2314,8 @@ UIColor* colorWithHexString(NSString* string) {
         [screenView.superview addSubview:imageOverlay];
     }
 }
+
+#pragma mark - SCREEN VIEW SETUP
 
 - (void)buildScreenView {
     
