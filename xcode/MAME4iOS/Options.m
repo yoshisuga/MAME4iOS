@@ -34,7 +34,7 @@
                      nil];
 }
 + (NSArray*)arrayControlType {
-    return @[@"Keyboard or 8BitDo",@"iCade or compatible",@"iCP, Gametel",@"iMpulse"];
+    return @[@"Keyboard",@"iCade or compatible",@"iCP, Gametel",@"iMpulse", @"8BitDo Zero"];
 }
 
 + (NSArray*)arrayBorder {

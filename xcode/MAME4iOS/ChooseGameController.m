@@ -1787,22 +1787,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
         _key_commands_type = g_pref_ext_control_type;
 
-        if (g_pref_ext_control_type >= EXT_CONTROL_ICADE) {
-            // iCade
-            _key_commands = [_key_commands arrayByAddingObjectsFromArray:@[
-                [UIKeyCommand keyCommandWithInput:@"y" modifierFlags:0 action:@selector(onCommandSelect)], // SELECT
-                [UIKeyCommand keyCommandWithInput:@"h" modifierFlags:0 action:@selector(onCommandSelect)], // START
-                [UIKeyCommand keyCommandWithInput:@"k" modifierFlags:0 action:@selector(onCommandSelect)], // A
-                [UIKeyCommand keyCommandWithInput:@"o" modifierFlags:0 action:@selector(onCommandSelect)], // B
-                [UIKeyCommand keyCommandWithInput:@"i" modifierFlags:0 action:@selector(onCommandSelect)], // Y
-                [UIKeyCommand keyCommandWithInput:@"l" modifierFlags:0 action:@selector(onCommandSelect)], // X
-                [UIKeyCommand keyCommandWithInput:@"w" modifierFlags:0 action:@selector(onCommandUp)],
-                [UIKeyCommand keyCommandWithInput:@"x" modifierFlags:0 action:@selector(onCommandDown)],
-                [UIKeyCommand keyCommandWithInput:@"a" modifierFlags:0 action:@selector(onCommandLeft)],
-                [UIKeyCommand keyCommandWithInput:@"d" modifierFlags:0 action:@selector(onCommandRight)],
-            ]];
-        }
-        else {
+        if (g_pref_ext_control_type == EXT_CONTROL_8BITDO) {
             // 8BitDo
             _key_commands = [_key_commands arrayByAddingObjectsFromArray:@[
                 [UIKeyCommand keyCommandWithInput:@"n" modifierFlags:0 action:@selector(onCommandSelect)], // SELECT
@@ -1812,6 +1797,18 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
                 [UIKeyCommand keyCommandWithInput:@"d" modifierFlags:0 action:@selector(onCommandDown)],
                 [UIKeyCommand keyCommandWithInput:@"e" modifierFlags:0 action:@selector(onCommandLeft)],
                 [UIKeyCommand keyCommandWithInput:@"f" modifierFlags:0 action:@selector(onCommandRight)],
+            ]];
+        }
+        else if (g_pref_ext_control_type >= EXT_CONTROL_ICADE) {
+            // iCade
+            _key_commands = [_key_commands arrayByAddingObjectsFromArray:@[
+                [UIKeyCommand keyCommandWithInput:@"y" modifierFlags:0 action:@selector(onCommandSelect)], // SELECT
+                [UIKeyCommand keyCommandWithInput:@"h" modifierFlags:0 action:@selector(onCommandSelect)], // START
+                [UIKeyCommand keyCommandWithInput:@"k" modifierFlags:0 action:@selector(onCommandSelect)], // A
+                [UIKeyCommand keyCommandWithInput:@"w" modifierFlags:0 action:@selector(onCommandUp)],
+                [UIKeyCommand keyCommandWithInput:@"x" modifierFlags:0 action:@selector(onCommandDown)],
+                [UIKeyCommand keyCommandWithInput:@"a" modifierFlags:0 action:@selector(onCommandLeft)],
+                [UIKeyCommand keyCommandWithInput:@"d" modifierFlags:0 action:@selector(onCommandRight)],
             ]];
         }
     }
