@@ -2081,6 +2081,13 @@ void myosd_handle_turbo() {
                 continue;
             [self showDebugRect:rect color:UIColor.systemBlueColor title:[NSString stringWithFormat:@"%d", i]];
         }
+        for (int i=0; i<NUM_BUTTONS; i++)
+        {
+            CGRect rect = rButtonImages[i];
+            if (CGRectIsEmpty(rect))
+                continue;
+            [self showDebugRect:rect color:UIColor.systemPurpleColor title:[NSString stringWithFormat:@"%d", i]];
+        }
     }
 #endif
 }
@@ -2116,6 +2123,11 @@ void myosd_handle_turbo() {
         //analogStickView
         analogStickView = [[AnalogStickView alloc] initWithFrame:rStickWindow withEmuController:self];
         [inputView addSubview:analogStickView];
+        // stick background
+        UIImageView* image = [[UIImageView alloc] initWithImage:[self loadImage:@"stick-background"]];
+        CGRect rect = [inputView convertRect:rStickWindow toView:imageBack];
+        image.frame = scale_rect(rect, g_device_is_landscape ? 1.0 : 1.2);
+        [imageBack addSubview:image];
     }
     
     // get the number of fullscreen buttons to display, handle the auto case.
@@ -3126,7 +3138,7 @@ UIColor* colorWithHexString(NSString* string) {
         deviceName = @"iPad_gen_7";
     } else if ( screenType == IPAD_GENERIC ) {
         // default to the largest iPad if unknown
-        deviceName = @"iPad_pro_12_9";
+        deviceName = @"iPad_pro_11";
     } else {
         assert(FALSE);
         deviceName = @"iPhone_xr_xs_max";
@@ -3240,7 +3252,7 @@ CGRect transform_rect(CGRect rect, CGSize fromSize, CGSize toSize) {
 CGRect convert_rect(CGRect rect, CGSize fromSize, CGSize toSize) {
     CGFloat scale_x = toSize.width / fromSize.width;
     CGFloat scale_y = toSize.height / fromSize.height;
-    CGFloat scale = MAX(scale_x, scale_y);
+    CGFloat scale = (scale_x + scale_y)/2; // MAX(scale_x, scale_y);
     
     // transform center
     CGFloat x = CGRectGetMidX(rect) * scale_x;
@@ -3248,6 +3260,9 @@ CGRect convert_rect(CGRect rect, CGSize fromSize, CGSize toSize) {
     // scale width/height by same amount
     CGFloat w = CGRectGetWidth(rect) * scale;
     CGFloat h = CGRectGetHeight(rect) * scale;
+    // clip to the screen edge
+    x = MAX(w/2,MIN(toSize.width - w/2, x));
+    y = MAX(h/2,MIN(toSize.height- h/2, y));
 
     // return a new rect centered
     return CGRectMake(x - w/2, y - h/2, w, h);
@@ -3329,7 +3344,7 @@ CGRect convert_rect(CGRect rect, CGSize fromSize, CGSize toSize) {
         config = "config_iPad_gen_7.txt";
     } else if ( screenType == IPAD_GENERIC ) {
         // default to the largest iPad if unknown
-        config = "config_iPad_pro_12_9.txt";
+        config = "config_iPad_pro_11.txt";
     } else {
         assert(FALSE);
         config = "config_iPad_pro_12_9.txt";
