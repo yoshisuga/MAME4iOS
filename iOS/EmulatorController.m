@@ -2201,7 +2201,9 @@ void myosd_handle_turbo() {
     BOOL isIpad = self.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular && self.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassRegular;
     
     if (g_device_is_landscape) {
-        imageName = (UIScreen.mainScreen.nativeBounds.size.width <= 640.0) ? @"back_landscape_iPhone_5.png" : @"back_landscape_iPhone_6.png";
+        // 320pt is the width of iPhone 5, 5s, 5c, SE, 4, 4s, 2G, 3G, 3GS
+        // 375pt is the width of iPhone 6, 6s, 7, 8
+        imageName = (UIScreen.mainScreen.nativeBounds.size.width <= (375.0 * 2.0)) ? @"back_landscape_iPhone.png" : @"back_landscape_iPhone_Long.png";
         imageName = isIpad ? @"back_landscape_iPad.png" : imageName;
     }
     else {
