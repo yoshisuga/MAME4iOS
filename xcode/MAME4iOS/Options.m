@@ -34,7 +34,7 @@
                      nil];
 }
 + (NSArray*)arrayControlType {
-    return @[@"Keyboard or 8BitDo",@"iCade or compatible",@"iCP, Gametel",@"iMpulse"];
+    return @[@"Keyboard",@"iCade or compatible",@"iCP, Gametel",@"iMpulse", @"8BitDo Zero"];
 }
 
 + (NSArray*)arrayBorder {
@@ -132,9 +132,6 @@
         _fullscreenLandscape= 1;
         _fullscreenPortrait = 0;
         _fullscreenJoystick = 1;
-        
-        _btDeadZoneValue = 2;
-        _touchDeadZone = 1;
         
         _overscanValue = 0;
         _tvoutNative = 1;
@@ -263,9 +260,6 @@
         
         _touchDirectionalEnabled = [[optionsDict objectForKey:@"touchDirectionalEnabled"] intValue];
         
-        _btDeadZoneValue =  [[optionsDict objectForKey:@"btDeadZoneValue"] intValue];
-        _touchDeadZone =  [[optionsDict objectForKey:@"touchDeadZone"] intValue];
-        
         _overscanValue =  [[optionsDict objectForKey:@"overscanValue"] intValue];
         _tvoutNative =  [[optionsDict objectForKey:@"tvoutNative"] intValue];
         
@@ -379,9 +373,6 @@
                              [NSString stringWithFormat:@"%d", _fullscreenPortrait], @"fullPort",
                              [NSString stringWithFormat:@"%d", _fullscreenJoystick], @"fullJoy",
 
-                             [NSString stringWithFormat:@"%d", _btDeadZoneValue], @"btDeadZoneValue",
-                             [NSString stringWithFormat:@"%d", _touchDeadZone], @"touchDeadZone",
-                             
                              [NSString stringWithFormat:@"%d", _overscanValue], @"overscanValue",
                              [NSString stringWithFormat:@"%d", _tvoutNative], @"tvoutNative",
                              

@@ -130,10 +130,6 @@
             self.title = @"Stick Touch DZ";
             value = op.analogDeadZoneValue;
             break;
-        case kTypeBTDZValue:
-            self.title = @"BT Analog DZ";
-            value = op.btDeadZoneValue;
-            break;
         case kTypeSoundValue:
             self.title = @"Sound";
             value = op.soundValue;
@@ -282,9 +278,6 @@
             break;
         case kTypeAnalogDZValue:
             op.analogDeadZoneValue =value;
-            break;
-        case kTypeBTDZValue:
-            op.btDeadZoneValue =value;
             break;
         case kTypeSoundValue:
             op.soundValue =value;

@@ -35,9 +35,6 @@
 		925ABCC11E46DCC500997182 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE6808D1635BA7000051BC2 /* CoreGraphics.framework */; };
 		925ABCC21E46DCC500997182 /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE9454C7172BB23100B81C32 /* GameKit.framework */; };
 		925ABCC41E46DCC500997182 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE680CD163B147100051BC2 /* libz.dylib */; };
-		925ABCC81E46DCC500997182 /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = CEE6809B1635BA7000051BC2 /* Default.png */; };
-		925ABCC91E46DCC500997182 /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CEE6809D1635BA7000051BC2 /* Default@2x.png */; };
-		925ABCCA1E46DCC500997182 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = CEE6809F1635BA7000051BC2 /* Default-568h@2x.png */; };
 		925ABCCC1E46DCC500997182 /* config_iPad.txt in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC11163C5DA100A05CD0 /* config_iPad.txt */; };
 		925ABCCD1E46DCC500997182 /* config_iPhone.txt in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC12163C5DA100A05CD0 /* config_iPhone.txt */; };
 		925ABCCE1E46DCC500997182 /* crt-1.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC13163C5DA100A05CD0 /* crt-1.png */; };
@@ -351,9 +348,6 @@
 		CEE6808D1635BA7000051BC2 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		CEE680911635BA7000051BC2 /* MAME4iOS-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "MAME4iOS-Info.plist"; sourceTree = "<group>"; };
 		CEE680971635BA7000051BC2 /* MAME4iOS-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MAME4iOS-Prefix.pch"; sourceTree = "<group>"; };
-		CEE6809B1635BA7000051BC2 /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Default.png; sourceTree = "<group>"; };
-		CEE6809D1635BA7000051BC2 /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x.png"; sourceTree = "<group>"; };
-		CEE6809F1635BA7000051BC2 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		CEE680A61635BAA400051BC2 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		CEE680AA1635BB2700051BC2 /* AnalogStick.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AnalogStick.h; path = ../../iOS/AnalogStick.h; sourceTree = "<group>"; };
 		CEE680AB1635BB2700051BC2 /* AnalogStick.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AnalogStick.m; path = ../../iOS/AnalogStick.m; sourceTree = "<group>"; };
@@ -748,9 +742,6 @@
 				CEB6982716AAB39F0005E140 /* MAME4iOS144.png */,
 				CEE680911635BA7000051BC2 /* MAME4iOS-Info.plist */,
 				CEE680971635BA7000051BC2 /* MAME4iOS-Prefix.pch */,
-				CEE6809B1635BA7000051BC2 /* Default.png */,
-				CEE6809D1635BA7000051BC2 /* Default@2x.png */,
-				CEE6809F1635BA7000051BC2 /* Default-568h@2x.png */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -949,10 +940,7 @@
 			files = (
 				9268D84D21661E3800AB0470 /* config_iPhone_x.txt in Resources */,
 				921CC326216A936800A39154 /* config_iPad_pro_12_9.txt in Resources */,
-				925ABCC81E46DCC500997182 /* Default.png in Resources */,
-				925ABCC91E46DCC500997182 /* Default@2x.png in Resources */,
 				9268D85321661F1700AB0470 /* config_iPhone_6_plus.txt in Resources */,
-				925ABCCA1E46DCC500997182 /* Default-568h@2x.png in Resources */,
 				9268D84A21661CA500AB0470 /* config_iPhone_xr_xs_max.txt in Resources */,
 				EF26AE08241848800078FD30 /* mame_logo.png in Resources */,
 				EF0088122459F4FC0058C2A1 /* history0139.zip in Resources */,

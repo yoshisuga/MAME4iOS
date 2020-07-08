@@ -118,7 +118,6 @@
 - (UIView *)getButtonView:(int)i;
 - (UIView *)getDPADView;
 - (UIView *)getStickView;
-- (void)getControllerCoords:(int)orientation;
 #endif
 
 - (void)getConf;

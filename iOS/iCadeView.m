@@ -118,7 +118,7 @@
 
 - (void)insertText:(NSString *)text {
     
-    if (g_pref_ext_control_type < EXT_CONTROL_ICADE)
+    if (g_pref_ext_control_type == EXT_CONTROL_NONE || g_pref_ext_control_type == EXT_CONTROL_8BITDO)
         return;
 
 #if TARGET_OS_IOS
@@ -390,15 +390,11 @@
             
             //L1(iCade) or START (iCP) or 2P LEFT(iMpulse)
         case 'u':   //button down
-            if(g_pref_ext_control_type <= EXT_CONTROL_ICADE) {
-                myosd_joy_status[0] |= MYOSD_L1;
-                joy1 = 1;
-            }
-            else if(g_pref_ext_control_type == EXT_CONTROL_ICP){
+            if (g_pref_ext_control_type == EXT_CONTROL_ICP) {
                 myosd_joy_status[0] |= MYOSD_START;
                 joy1 = 1;
             }
-            else {
+            else if (g_pref_ext_control_type == EXT_CONTROL_IMPULSE) {
                 if(STICK4WAY)
                 {
                     myosd_joy_status[1] &= ~MYOSD_UP;
@@ -408,18 +404,18 @@
                 left2 = 1;
                 joy2 = 1;
             }
-           
-            break;
-        case 'f':   //button up
-            if(g_pref_ext_control_type <= EXT_CONTROL_ICADE) {
-                myosd_joy_status[0] &= ~MYOSD_L1;
+            else {
+                myosd_joy_status[0] |= MYOSD_L1;
                 joy1 = 1;
             }
-            else if(g_pref_ext_control_type == EXT_CONTROL_ICP){
+
+            break;
+        case 'f':   //button up
+            if (g_pref_ext_control_type == EXT_CONTROL_ICP) {
                 myosd_joy_status[0] &= ~MYOSD_START;
                 joy1 = 1;
             }
-            else{
+            else if (g_pref_ext_control_type == EXT_CONTROL_IMPULSE) {
                 if(STICK4WAY)
                 {
                     if(up2)myosd_joy_status[1] |= MYOSD_UP;
@@ -429,33 +425,37 @@
                 left2 = 0;
                 joy2 = 1;
             }
-            
+            else {
+                myosd_joy_status[0] &= ~MYOSD_L1;
+                joy1 = 1;
+            }
+
             break;
             
             //Start(iCade) or L1(iCP) or Coin / Select(iMpulse)
         case 'h':   //button down
-            if(g_pref_ext_control_type <= EXT_CONTROL_ICADE) {
-                myosd_joy_status[0] |= MYOSD_START;
-            }
-            else if(g_pref_ext_control_type == EXT_CONTROL_ICP){
+            if(g_pref_ext_control_type == EXT_CONTROL_ICP) {
                 myosd_joy_status[0] |= MYOSD_L1;
             }
-            else
+            else if (g_pref_ext_control_type == EXT_CONTROL_IMPULSE)
             {
                 myosd_joy_status[0] |= MYOSD_SELECT;
+            }
+            else {
+                myosd_joy_status[0] |= MYOSD_START;
             }
             joy1 = 1;
             break;
         case 'r':   //button up
-            if(g_pref_ext_control_type <= EXT_CONTROL_ICADE) {
-                myosd_joy_status[0] &= ~MYOSD_START;
-            }
-            else if(g_pref_ext_control_type == EXT_CONTROL_ICP){
+            if (g_pref_ext_control_type == EXT_CONTROL_ICP) {
                 myosd_joy_status[0] &= ~MYOSD_L1;
             }
-            else
+            else if (g_pref_ext_control_type == EXT_CONTROL_IMPULSE)
             {
                 myosd_joy_status[0] &= ~MYOSD_SELECT;
+            }
+            else {
+                myosd_joy_status[0] &= ~MYOSD_START;
             }
             joy1 = 1;
             break;
@@ -596,15 +596,19 @@
             
     }
     
-    // only treat iCade (or keyboard) as a controler when the dpad is used for first time.
-    if(g_iCade_used == 0 && (myosd_joy_status[0] & (MYOSD_DOWN|MYOSD_UP|MYOSD_RIGHT|MYOSD_LEFT)))
+    // using just a keyboard in non-fullscreen should not be counted as a controller
+    if (g_device_is_fullscreen || g_pref_ext_control_type != EXT_CONTROL_NONE)
     {
-        g_iCade_used = 1;
-        g_joy_used = 1;
-        myosd_num_of_joys = 1;
-        [emuController changeUI];
+        // only treat iCade as a controler when DPAD used for first time.
+        if(g_iCade_used == 0 && (myosd_joy_status[0] & (MYOSD_DOWN|MYOSD_UP|MYOSD_RIGHT|MYOSD_LEFT)))
+        {
+            g_iCade_used = 1;
+            g_joy_used = 1;
+            myosd_num_of_joys = 1;
+            [emuController changeUI];
+        }
     }
-        
+    
     if(joy2 && myosd_num_of_joys<2)
     {
         myosd_num_of_joys = 2;
@@ -751,7 +755,7 @@
 
     NSLog(@"_keyCommandForEvent:'%@' '%@' keyCode:%@ isKeyDown:%@ time:%f", [event valueForKey:@"_unmodifiedInput"], [event valueForKey:@"_modifiedInput"], [event valueForKey:@"_keyCode"], [event valueForKey:@"_isKeyDown"], [event timestamp]);
 
-    if (g_pref_ext_control_type != EXT_CONTROL_NONE)
+    if (!(g_pref_ext_control_type == EXT_CONTROL_NONE || g_pref_ext_control_type == EXT_CONTROL_8BITDO))
     {
 #if TARGET_OS_TV
         if (isKeyDown)
@@ -825,8 +829,7 @@
     }
     
     // command keys (ALT+ works in the simulator CMD+ does not)
-    if (g_keyboard_state[KEY_LCMD] || g_keyboard_state[KEY_RCMD] ||
-        g_keyboard_state[KEY_LALT] || g_keyboard_state[KEY_RALT])
+    if (g_keyboard_state[TARGET_OS_SIMULATOR ? KEY_LALT : KEY_LCMD] || g_keyboard_state[TARGET_OS_SIMULATOR ? KEY_RALT : KEY_RCMD])
     {
         if (isKeyDown && keyCode == KEY_RETURN)
             [emuController commandKey:'\r'];
@@ -835,8 +838,10 @@
         if (isKeyDown && keyCode >= KEY_0 && keyCode <= KEY_9)
             [emuController commandKey:'0' + (keyCode - KEY_0)];
     }
+    
     // 8BitDo
-    else switch (keyCode + (isKeyDown ? KEY_DOWN : 0)) {
+    if (g_pref_ext_control_type == EXT_CONTROL_8BITDO) {
+        switch (keyCode + (isKeyDown ? KEY_DOWN : 0)) {
             
         // DPAD
         case KEY_F:            iCadeKey = @"c"; break;
@@ -869,6 +874,7 @@
         case KEY_O+KEY_DOWN:    iCadeKey = @"h"; break;
         case KEY_N:             iCadeKey = @"t"; break;
         case KEY_N+KEY_DOWN:    iCadeKey = @"y"; break;
+        }
     }
 
     if (iCadeKey != nil) {

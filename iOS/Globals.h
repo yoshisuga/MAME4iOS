@@ -85,7 +85,6 @@ extern unsigned long myosd_joy_status[NUM_JOY];
 extern float joy_analog_x[NUM_JOY][4];
 extern float joy_analog_y[NUM_JOY][2];
 
-extern int g_isIpad;
 extern int g_isMetalSupported;
 
 extern int g_emulation_initiated;
@@ -93,7 +92,6 @@ extern int g_emulation_paused;
 
 extern int g_joy_used;
 extern int g_iCade_used;
-extern int g_btjoy_available;
 
 extern int g_controller_opacity;
 extern int g_enable_debug_view;
@@ -112,8 +110,6 @@ extern int g_pref_BplusX;
 extern int g_pref_full_num_buttons;
 extern int g_pref_skin;
 extern int g_skin_data;
-extern int g_pref_BT_DZ_value;
-extern int g_pref_touch_DZ;
 extern int g_pref_analog_DZ_value;
 extern int g_pref_input_touch_type;
 extern int g_pref_ext_control_type;
@@ -127,11 +123,9 @@ extern float g_stick_size;
 enum { PORTRAIT_VIEW_FULL=0,
     PORTRAIT_VIEW_NOT_FULL=1,
     PORTRAIT_IMAGE_BACK=2,
-    PORTRAIT_IMAGE_OVERLAY=3,
     LANDSCAPE_VIEW_FULL=4,
     LANDSCAPE_VIEW_NOT_FULL=5,
     LANDSCAPE_IMAGE_BACK=6,
-    LANDSCAPE_IMAGE_OVERLAY=7,
     FRAME_RECT_LAST_VALUE=8
 };
 
@@ -168,7 +162,7 @@ enum { BTN_B=0,BTN_X,BTN_A,BTN_Y,BTN_SELECT,BTN_START,BTN_L1,BTN_R1,BTN_EXIT,BTN
 
 enum { TOUCH_INPUT_DPAD=0,TOUCH_INPUT_DSTICK=1, TOUCH_INPUT_ANALOG=2};
 
-enum { EXT_CONTROL_NONE=0,EXT_CONTROL_ICADE=1,EXT_CONTROL_ICP = 2,EXT_CONTROL_IMPULSE = 3};
+enum { EXT_CONTROL_NONE=0,EXT_CONTROL_ICADE=1,EXT_CONTROL_ICP=2,EXT_CONTROL_IMPULSE=3,EXT_CONTROL_8BITDO=4};
 
 extern const char* get_resource_path(const char* file);
 extern const char* get_documents_path(const char* file);

@@ -111,7 +111,6 @@ int buttonMask[NUM_BUTTONS];    // map a button index to a button MYOSD_* mask
 // Touch Directional Input tracking
 int touchDirectionalCyclesAfterMoved = 0;
 
-int g_isIpad = 0;
 int g_isMetalSupported = 0;
 
 int g_emulation_paused = 0;
@@ -119,11 +118,6 @@ int g_emulation_initiated=0;
 
 int g_joy_used = 0;
 int g_iCade_used = 0;
-#ifdef BTJOY
-int g_btjoy_available = 1;
-#else
-int g_btjoy_available = 0;
-#endif
 
 int g_enable_debug_view = 0;
 int g_controller_opacity = 50;
@@ -161,8 +155,6 @@ int g_pref_full_screen_joy = 1;
 int g_pref_BplusX=0;
 int g_pref_full_num_buttons=4;
 int g_pref_skin = 1;
-int g_pref_BT_DZ_value = 2;
-int g_pref_touch_DZ = 1;
 
 int g_pref_input_touch_type = TOUCH_INPUT_DSTICK;
 int g_pref_analog_DZ_value = 2;
@@ -681,9 +673,12 @@ void mame_state(int load_save, int slot)
     {
         NSString* yes = (controllers.count > 0 && TARGET_OS_IOS) ? @"Ⓐ Yes" : @"Yes";
         NSString* no  = (controllers.count > 0 && TARGET_OS_IOS) ? @"Ⓑ No" : @"No";
+        UIAlertControllerStyle style = UIAlertControllerStyleAlert;
+        
+        if (view != nil && self.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular && self.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassRegular)
+            style = UIAlertControllerStyleActionSheet;
 
-        UIAlertController *exitAlertController = [UIAlertController alertControllerWithTitle:@"Are you sure you want to exit?" message:nil
-                                                                              preferredStyle:(view != nil && g_isIpad) ? UIAlertControllerStyleActionSheet : UIAlertControllerStyleAlert];
+        UIAlertController *exitAlertController = [UIAlertController alertControllerWithTitle:@"Are you sure you want to exit?" message:nil preferredStyle:style];
 
         [self startMenu];
         [exitAlertController addAction:[UIAlertAction actionWithTitle:yes style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
@@ -847,9 +842,6 @@ void mame_state(int load_save, int slot)
     // always use skin 1
     g_pref_skin = 1;
     g_skin_data = g_pref_skin;
-    
-    g_pref_BT_DZ_value = [op btDeadZoneValue];
-    g_pref_touch_DZ = [op touchDeadZone];
     
     g_pref_nativeTVOUT = [op tvoutNative];
     g_pref_overscanTVOUT = [op overscanValue];
@@ -1838,12 +1830,6 @@ static NSArray* list_trim(NSArray* _list) {
 
 - (void)resetUI {
     NSLog(@"RESET UI (MAME VIDEO MODE CHANGE)");
-    
-    // shrink the HUD back to Normal on a game reset.
-    // ...we do this because buttons in the expanded HUD depend on game info (num players, etc)
-    if (g_pref_showHUD > HudSizeTiny)
-        g_pref_showHUD = HudSizeNormal;
-        
     [self changeUI];
 }
 
@@ -1855,8 +1841,6 @@ static NSArray* list_trim(NSArray* _list) {
         g_emulation_paused = 1;
         change_pause(1);
     }
-    
-    [self getConf];
     
     // reset the frame count when you first turn on/off
     if (g_pref_showFPS != (fpsView != nil))
@@ -1881,6 +1865,7 @@ static NSArray* list_trim(NSArray* _list) {
     [imageExternalDisplay removeFromSuperview];
     imageExternalDisplay = nil;
 
+    [self getConf];
     [self buildScreenView];
     [self buildLogoView];
     [self buildFrameRateView];
@@ -2096,6 +2081,13 @@ void myosd_handle_turbo() {
                 continue;
             [self showDebugRect:rect color:UIColor.systemBlueColor title:[NSString stringWithFormat:@"%d", i]];
         }
+        for (int i=0; i<NUM_BUTTONS; i++)
+        {
+            CGRect rect = rButtonImages[i];
+            if (CGRectIsEmpty(rect))
+                continue;
+            [self showDebugRect:rect color:UIColor.systemPurpleColor title:[NSString stringWithFormat:@"%d", i]];
+        }
     }
 #endif
 }
@@ -2131,6 +2123,13 @@ void myosd_handle_turbo() {
         //analogStickView
         analogStickView = [[AnalogStickView alloc] initWithFrame:rStickWindow withEmuController:self];
         [inputView addSubview:analogStickView];
+        // stick background
+        if (imageBack != nil) {
+            UIImageView* image = [[UIImageView alloc] initWithImage:[self loadImage:@"stick-background"]];
+            CGRect rect = [inputView convertRect:rStickWindow toView:imageBack];
+            image.frame = scale_rect(rect, g_device_is_landscape ? 1.0 : 1.2);
+            [imageBack addSubview:image];
+        }
     }
     
     // get the number of fullscreen buttons to display, handle the auto case.
@@ -2163,6 +2162,14 @@ void myosd_handle_turbo() {
         buttonViews[i] = [ [ UIImageView alloc ] initWithImage:[self loadImage:name_up] highlightedImage:[self loadImage:name_down]];
         buttonViews[i].frame = rButtonImages[i];
         
+#ifdef __IPHONE_13_4
+        if (@available(iOS 13.4, *)) {
+            if (i == BTN_SELECT || i == BTN_START || i == BTN_EXIT || i == BTN_OPTION) {
+                [buttonViews[i] addInteraction:[[UIPointerInteraction alloc] initWithDelegate:(id)self]];
+                [buttonViews[i] setUserInteractionEnabled:TRUE];
+            }
+        }
+#endif
         if (g_device_is_fullscreen)
             [buttonViews[i] setAlpha:((float)g_controller_opacity / 100.0f)];
         
@@ -2171,7 +2178,19 @@ void myosd_handle_turbo() {
 
     [self showDebugRects];
 }
+
+#pragma mark - UIPointerInteractionDelegate
+
+#ifdef __IPHONE_13_4
+- (UIPointerStyle *)pointerInteraction:(UIPointerInteraction *)interaction styleForRegion:(UIPointerRegion *)region API_AVAILABLE(ios(13.4)) {
+    UITargetedPreview* preview = [[UITargetedPreview alloc] initWithView:interaction.view];
+    return [UIPointerStyle styleWithEffect:[UIPointerEffect effectWithPreview:preview] shape:nil];
+}
 #endif
+
+#endif  // TARGET_OS_IOS
+
+#pragma mark - background and overlay image
 
 #if TARGET_OS_IOS
 - (void)buildBackgroundImage {
@@ -2181,12 +2200,16 @@ void myosd_handle_turbo() {
 
     NSString* imageName;
     
+    BOOL isIpad = self.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular && self.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassRegular;
+    
     if (g_device_is_landscape) {
-        imageName = (UIScreen.mainScreen.nativeBounds.size.width <= 640.0) ? @"back_landscape_iPhone_5.png" : @"back_landscape_iPhone_6.png";
-        imageName = g_isIpad ? @"back_landscape_iPad.png" : imageName;
+        // 320pt is the width of iPhone 5, 5s, 5c, SE, 4, 4s, 2G, 3G, 3GS
+        // 375pt is the width of iPhone 6, 6s, 7, 8
+        imageName = (UIScreen.mainScreen.nativeBounds.size.width <= (375.0 * 2.0)) ? @"back_landscape_iPhone.png" : @"back_landscape_iPhone_Long.png";
+        imageName = isIpad ? @"back_landscape_iPad.png" : imageName;
     }
     else {
-        imageName = g_isIpad ? @"back_portrait_iPad.png" : @"back_portrait_iPhone.png";
+        imageName = isIpad ? @"back_portrait_iPad.png" : @"back_portrait_iPhone.png";
     }
        
     imageBack = [[UIImageView alloc] initWithImage:[self loadImage:imageName]];
@@ -2308,26 +2331,31 @@ UIColor* colorWithHexString(NSString* string) {
     }
 }
 
+#pragma mark - SCREEN VIEW SETUP
+
 - (void)buildScreenView {
     
-    g_device_is_landscape = (self.view.bounds.size.width >= self.view.bounds.size.height * 1.333);
+    g_device_is_landscape = (self.view.bounds.size.width >= self.view.bounds.size.height * 0.75);
 
-    if (externalView != nil)
-        g_device_is_fullscreen = FALSE;
-    else if (g_joy_used)
-         g_device_is_fullscreen = g_pref_full_screen_joy;
-    else if (g_device_is_landscape)
+    if (g_device_is_landscape)
         g_device_is_fullscreen = g_pref_full_screen_land;
     else
         g_device_is_fullscreen = g_pref_full_screen_port;
+
+    if (g_joy_used && g_pref_full_screen_joy)
+         g_device_is_fullscreen = TRUE;
+
+    if (externalView != nil)
+        g_device_is_fullscreen = FALSE;
 
     CGRect r;
 
 #if TARGET_OS_IOS
     [self getControllerCoords:g_device_is_landscape];
+    [self fixControllerCoords:g_device_is_landscape];
     [self adjustSizes];
     [LayoutData loadLayoutData:self];
-   
+
     [self buildBackgroundImage];
     
     [self setNeedsUpdateOfHomeIndicatorAutoHidden];
@@ -2578,12 +2606,15 @@ UIColor* colorWithHexString(NSString* string) {
         case '\r':
             {
                 Options* op = [[Options alloc] init];
-                if (g_joy_used)
-                    op.fullscreenJoystick = g_pref_full_screen_joy = !g_device_is_fullscreen;
-                else if (g_device_is_landscape)
+
+                if (g_device_is_landscape)
                     op.fullscreenLandscape = g_pref_full_screen_land = !g_device_is_fullscreen;
                 else
                     op.fullscreenPortrait = g_pref_full_screen_port = !g_device_is_fullscreen;
+
+                // if user is manualy controling fullscreen, then turn off fullscreen joy.
+                op.fullscreenJoystick = g_pref_full_screen_joy = FALSE;
+                    
                 [op saveOptions];
                 [self changeUI];
                 break;
@@ -3082,7 +3113,7 @@ UIColor* colorWithHexString(NSString* string) {
 }
 
 
-- (void)getControllerCoords:(int)orientation {
+- (void)getControllerCoords:(BOOL)is_landscape {
     char string[256];
     FILE *fp;
     
@@ -3101,28 +3132,30 @@ UIColor* colorWithHexString(NSString* string) {
         deviceName = @"iPhone_5";
     } else if ( screenType == IPHONE_4_OR_LESS ) {
         deviceName = @"iPhone";
-    } else if ( g_isIpad ) {
-        if ( screenType == IPAD_PRO_12_9 ) {
-            deviceName = @"iPad_pro_12_9";
-        } else if ( screenType == IPAD_PRO_10_5 ) {
-            deviceName = @"iPad_pro_10_5";
-        } else if ( screenType == IPAD_PRO_11 ) {
-            deviceName = @"iPad_pro_11";
-        } else if ( screenType == IPAD ) {
-            deviceName = @"iPad";
-        } else if ( screenType == IPAD_GEN_7 ) {
-            deviceName = @"iPad_gen_7";
-        } else {
-            deviceName = @"iPad_pro_12_9";
-        }
-    } else {
+    } else if ( screenType == IPHONE_GENERIC ) {
         // default to the largest iPhone if unknown
+        deviceName = @"iPhone_xr_xs_max";
+    } else if ( screenType == IPAD_PRO_12_9 ) {
+        deviceName = @"iPad_pro_12_9";
+    } else if ( screenType == IPAD_PRO_10_5 ) {
+        deviceName = @"iPad_pro_10_5";
+    } else if ( screenType == IPAD_PRO_11 ) {
+        deviceName = @"iPad_pro_11";
+    } else if ( screenType == IPAD ) {
+        deviceName = @"iPad";
+    } else if ( screenType == IPAD_GEN_7 ) {
+        deviceName = @"iPad_gen_7";
+    } else if ( screenType == IPAD_GENERIC ) {
+        // default to the largest iPad if unknown
+        deviceName = @"iPad_pro_11";
+    } else {
+        assert(FALSE);
         deviceName = @"iPhone_xr_xs_max";
     }
     
     NSLog(@"DEVICE: %@", deviceName);
     
-	if(!orientation)
+	if(!is_landscape)
 	{
         if (g_device_is_fullscreen)
             fp = [self loadFile:[NSString stringWithFormat:@"controller_portrait_full_%@.txt", deviceName]];
@@ -3215,42 +3248,73 @@ UIColor* colorWithHexString(NSString* string) {
         SWAPRECT(rInput[BTN_X_A_RECT], rInput[BTN_B_Y_RECT]);
         SWAPRECT(rInput[BTN_A_Y_RECT], rInput[BTN_B_X_RECT]);
     }
-    
-    if(g_pref_touch_DZ)
-    {
-        //ajustamos
-        if(!g_isIpad)
-        {
-           if(!orientation)
-           {
-             rInput[DPAD_LEFT_RECT].size.width -= 17;//Left.size.width * 0.2;
-             rInput[DPAD_RIGHT_RECT].origin.x += 17;//Right.size.width * 0.2;
-             rInput[DPAD_RIGHT_RECT].size.width -= 17;//Right.size.width * 0.2;
-           }
-           else
-           {
-             rInput[DPAD_LEFT_RECT].size.width -= 14;
-             rInput[DPAD_RIGHT_RECT].origin.x += 20;
-             rInput[DPAD_RIGHT_RECT].size.width -= 20;
-           }
-        }
-        else
-        {
-           if(!orientation)
-           {
-             rInput[DPAD_LEFT_RECT].size.width -= 22;//Left.size.width * 0.2;
-             rInput[DPAD_RIGHT_RECT].origin.x += 22;//Right.size.width * 0.2;
-             rInput[DPAD_RIGHT_RECT].size.width -= 22;//Right.size.width * 0.2;
-           }
-           else
-           {
-             rInput[DPAD_LEFT_RECT].size.width -= 22;
-             rInput[DPAD_RIGHT_RECT].origin.x += 22;
-             rInput[DPAD_RIGHT_RECT].size.width -= 22;
-           }
-        }    
-    }
   }
+}
+
+// transform a rect
+CGRect transform_rect(CGRect rect, CGSize fromSize, CGSize toSize) {
+    CGFloat scale_x = toSize.width / fromSize.width;
+    CGFloat scale_y = toSize.height / fromSize.height;
+    return CGRectMake(rect.origin.x * scale_x, rect.origin.y * scale_y, rect.size.width * scale_x, rect.size.height * scale_y);
+}
+// convert a rect, but keep aspect ratio
+CGRect convert_rect(CGRect rect, CGSize fromSize, CGSize toSize) {
+    CGFloat scale_x = toSize.width / fromSize.width;
+    CGFloat scale_y = toSize.height / fromSize.height;
+    CGFloat scale = (scale_x + scale_y)/2; // MAX(scale_x, scale_y);
+    
+    // transform center
+    CGFloat x = CGRectGetMidX(rect) * scale_x;
+    CGFloat y = CGRectGetMidY(rect) * scale_y;
+    // scale width/height by same amount
+    CGFloat w = CGRectGetWidth(rect) * scale;
+    CGFloat h = CGRectGetHeight(rect) * scale;
+    // clip to the screen edge
+    x = MAX(w/2,MIN(toSize.width - w/2, x));
+    y = MAX(h/2,MIN(toSize.height- h/2, y));
+
+    // return a new rect centered
+    return CGRectMake(x - w/2, y - h/2, w, h);
+}
+
+// if our window size does not match the config we just loaded, scale it to fit!
+- (void)fixControllerCoords:(BOOL)is_landscape {
+    CGSize windowSize = self.view.bounds.size;
+    CGSize configSize = is_landscape ? rFrames[LANDSCAPE_VIEW_FULL].size : rFrames[PORTRAIT_VIEW_FULL].size;
+
+    if (windowSize.width == 0.0 || windowSize.height == 0.0)
+        return;
+    
+    if (CGSizeEqualToSize(windowSize, configSize))
+        return;
+
+    // the VIEW_FULL in the config files should be the size of the screen
+    assert(rFrames[PORTRAIT_VIEW_FULL].origin.x == 0.0);
+    assert(rFrames[PORTRAIT_VIEW_FULL].origin.y == 0.0);
+    assert(rFrames[LANDSCAPE_VIEW_FULL].origin.x == 0.0);
+    assert(rFrames[LANDSCAPE_VIEW_FULL].origin.y == 0.0);
+
+    if (is_landscape) {
+        rFrames[LANDSCAPE_VIEW_FULL] = CGRectMake(0, 0, windowSize.width, windowSize.height);
+        rFrames[LANDSCAPE_VIEW_NOT_FULL] = transform_rect(rFrames[LANDSCAPE_VIEW_NOT_FULL], configSize, windowSize);
+        rFrames[LANDSCAPE_IMAGE_BACK] = transform_rect(rFrames[LANDSCAPE_IMAGE_BACK], configSize, windowSize);
+    }
+    else {
+        rFrames[PORTRAIT_VIEW_FULL] = CGRectMake(0, 0, windowSize.width, windowSize.height);
+        rFrames[PORTRAIT_VIEW_NOT_FULL] = transform_rect(rFrames[PORTRAIT_VIEW_NOT_FULL], configSize, windowSize);
+        rFrames[PORTRAIT_IMAGE_BACK] = transform_rect(rFrames[PORTRAIT_IMAGE_BACK], configSize, windowSize);
+    }
+    
+    // now go over all the input rects and convert them.
+    for (int i=0; i<INPUT_LAST_VALUE; i++)
+        rInput[i] = convert_rect(rInput[i], configSize, windowSize);
+    
+    // now go over all the button rects and convert them.
+    for (int i=0; i<NUM_BUTTONS; i++)
+        rButtonImages[i] = convert_rect(rButtonImages[i], configSize, windowSize);
+    
+    // and dont forget the stick
+    rStickWindow = convert_rect(rStickWindow, configSize, windowSize);
 }
 
 #endif
@@ -3274,28 +3338,31 @@ UIColor* colorWithHexString(NSString* string) {
         config = "config_iPhone_5.txt";
     } else if ( screenType == IPHONE_4_OR_LESS ) {
         config = "config_iPhone.txt";
-    } else if ( g_isIpad ) {
-        if ( screenType == IPAD_PRO_12_9 ) {
-            config = "config_iPad_pro_12_9.txt";
-        } else if ( screenType == IPAD_PRO_10_5 ) {
-            config = "config_iPad_pro_10_5.txt";
-        } else if ( screenType == IPAD_PRO_11 ) {
-            config = "config_iPad_pro_11.txt";
-        } else if ( screenType == IPAD ) {
-            config = "config_iPad.txt";
-        } else if ( screenType == IPAD_GEN_7 ) {
-            config = "config_iPad_gen_7.txt";
-        } else {
-            config = "config_iPad_pro_12_9.txt";
-        }
-    } else {
+    } else if ( screenType == IPHONE_GENERIC ) {
         // default to the largest iPhone if unknown
         config = "config_iPhone_xr_xs_max.txt";
+    } else if ( screenType == IPAD_PRO_12_9 ) {
+        config = "config_iPad_pro_12_9.txt";
+    } else if ( screenType == IPAD_PRO_10_5 ) {
+        config = "config_iPad_pro_10_5.txt";
+    } else if ( screenType == IPAD_PRO_11 ) {
+        config = "config_iPad_pro_11.txt";
+    } else if ( screenType == IPAD ) {
+        config = "config_iPad.txt";
+    } else if ( screenType == IPAD_GEN_7 ) {
+        config = "config_iPad_gen_7.txt";
+    } else if ( screenType == IPAD_GENERIC ) {
+        // default to the largest iPad if unknown
+        config = "config_iPad_pro_11.txt";
+    } else {
+        assert(FALSE);
+        config = "config_iPad_pro_12_9.txt";
     }
     
     NSLog(@"USING CONFIG: %s", config);
     
     FILE *fp = [self loadFile:[NSString stringWithUTF8String:config]];
+    assert(fp != NULL);
 
     if (fp)
     {
@@ -3314,19 +3381,13 @@ UIColor* colorWithHexString(NSString* string) {
             
             switch(i)
             {
-                case 0:    rFrames[PORTRAIT_VIEW_FULL]         = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+                case 0:    rFrames[PORTRAIT_VIEW_FULL]     = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
                 case 1:    rFrames[PORTRAIT_VIEW_NOT_FULL] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-                case 2:    rFrames[PORTRAIT_IMAGE_BACK]         = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-                case 3:    rFrames[PORTRAIT_IMAGE_OVERLAY]         = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+                case 2:    rFrames[PORTRAIT_IMAGE_BACK]    = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
                     
-                case 4:    rFrames[LANDSCAPE_VIEW_FULL] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+                case 4:    rFrames[LANDSCAPE_VIEW_FULL]     = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
                 case 5:    rFrames[LANDSCAPE_VIEW_NOT_FULL] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-                case 6:    rFrames[LANDSCAPE_IMAGE_BACK]      = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-                case 7:    rFrames[LANDSCAPE_IMAGE_OVERLAY]         = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-                    
-                    //case 8:    g_enable_debug_view = coords[0]; break;
-                    //case 9:    main_thread_priority_type = coords[0]; break;
-                    //case 10:   video_thread_priority_type = coords[0]; break;
+                case 6:    rFrames[LANDSCAPE_IMAGE_BACK]    = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
             }
             i++;
         }

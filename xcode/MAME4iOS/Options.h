@@ -47,9 +47,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite,assign) int fullscreenPortrait;
 @property (readwrite,assign) int fullscreenJoystick;
 
-@property (readwrite,assign) int btDeadZoneValue;
-@property (readwrite,assign) int touchDeadZone;
-
 @property (readwrite,assign) int overscanValue;
 @property (readwrite,assign) int tvoutNative;
 

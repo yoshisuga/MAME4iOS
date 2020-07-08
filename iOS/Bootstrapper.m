@@ -56,10 +56,6 @@
 
 #include <sys/stat.h>
 
-#define IS_IPAD   ( [ [ [ UIDevice currentDevice ] model ] isEqualToString: @"iPad" ] )
-#define IS_IPHONE ( [ [ [ UIDevice currentDevice ] model ] isEqualToString: @"iPhone" ] )
-#define IS_IPOD   ( [ [ [ UIDevice currentDevice ] model ] isEqualToString: @"iPod touch" ] )
-
 const char* get_resource_path(const char* file)
 {
     static char resource_path[1024];
@@ -139,8 +135,6 @@ unsigned long read_mfi_controller(unsigned long res){
 #endif
 #endif
 
-    g_isIpad = IS_IPAD;
-    
 	hrViewController = [[EmulatorController alloc] init];
 	
 	deviceWindow = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
