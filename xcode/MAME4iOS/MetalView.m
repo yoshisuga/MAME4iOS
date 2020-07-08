@@ -117,7 +117,7 @@ __attribute__((objc_direct_members))
         _colorSpaceExtendedSRGB = CGColorSpaceCreateWithName(kCGColorSpaceExtendedSRGB);
 
         _pixelFormat = MTLPixelFormatBGRA8Unorm;
-        _colorSpace = CGColorSpaceCreateDeviceRGB();
+        _colorSpace = _colorSpaceDevice;
 
         // CAMetalLayer avalibility is wrong in the iOS 11.3.4 sdk???
         #pragma clang diagnostic push
@@ -130,7 +130,6 @@ __attribute__((objc_direct_members))
 }
 
 - (void)dealloc {
-    CGColorSpaceRelease(_colorSpace);
     CGColorSpaceRelease(_colorSpaceDevice);
     CGColorSpaceRelease(_colorSpaceSRGB);
     CGColorSpaceRelease(_colorSpaceExtendedSRGB);
@@ -147,12 +146,16 @@ __attribute__((objc_direct_members))
     if (_window != nil) {
         _layer.contentsScale = _window.screen.scale;
         _maximumFramesPerSecond = _window.screen.maximumFramesPerSecond;
-        _externalDisplay = (_window.screen != UIScreen.mainScreen) || TARGET_OS_SIMULATOR;
-        _wideColor = _window.screen.traitCollection.displayGamut == UIDisplayGamutP3 && !TARGET_OS_SIMULATOR;
-        CGColorSpaceRelease(_colorSpace);
+        _externalDisplay = (_window.screen != UIScreen.mainScreen);
+        // TODO: wideColor on macCatalyst!
+        _wideColor = _window.screen.traitCollection.displayGamut == UIDisplayGamutP3 && !(TARGET_OS_SIMULATOR || TARGET_OS_MACCATALYST);
         if (_wideColor) {
             _colorSpace = _colorSpaceExtendedSRGB;
+#if TARGET_OS_MACCATALYST
+            _pixelFormat = MTLPixelFormatRGBA16Float;
+#else
             _pixelFormat = MTLPixelFormatBGR10_XR;
+#endif
         }
         else {
             _colorSpace = _colorSpaceSRGB;
@@ -352,10 +355,10 @@ __attribute__((objc_direct_members))
     BOOL externalDisplay = _externalDisplay;
     [_command addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
         [_self returnBuffers:buffers];
-        if (externalDisplay)
+        if (externalDisplay || TARGET_OS_SIMULATOR || TARGET_OS_MACCATALYST)
             [_self updateFPS:CACurrentMediaTime()];
     }];
-#if !TARGET_OS_SIMULATOR
+#if !(TARGET_OS_SIMULATOR || TARGET_OS_MACCATALYST)
     if (!externalDisplay) {
         [_drawable addPresentedHandler:^(id<MTLDrawable> drawable) {
             [_self updateFPS:drawable.presentedTime];
@@ -363,7 +366,7 @@ __attribute__((objc_direct_members))
     }
 #endif
     [_encoder endEncoding];
-#if !TARGET_OS_SIMULATOR
+#if !(TARGET_OS_SIMULATOR || TARGET_OS_MACCATALYST)
     if (_preferredFramesPerSecond != 0 && _preferredFramesPerSecond * 2 <= _maximumFramesPerSecond && _layer.maximumDrawableCount == 3)
         [_command presentDrawable:_drawable afterMinimumDuration:1.0/_preferredFramesPerSecond];
     else
@@ -1198,6 +1201,7 @@ static void texture_load_uiimage(id<MTLTexture> texture, UIImage* image) {
     uint32_t bitmapInfo = kCGImageAlphaPremultipliedLast;
     
     CGContextRef bitmap = CGBitmapContextCreate(bitmap_data, width, height, 8, width*4, colorSpace, bitmapInfo);
+    CGContextSetBlendMode(bitmap, kCGBlendModeCopy);
     CGContextDrawImage(bitmap, CGRectMake(0, 0, width, height), image.CGImage);
     CGContextRelease(bitmap);
 
