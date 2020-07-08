@@ -45,6 +45,22 @@
 #ifndef MAME4iOS_Globals_h
 #define MAME4iOS_Globals_h
 
+/* define PRODUCT_NAME */
+
+#if TARGET_OS_MACCATALYST
+    #define PRODUCT_NAME        "MAME4mac"
+    #define PRODUCT_NAME_LONG   "MAME for macOS"
+#elif TARGET_OS_TV
+    #define PRODUCT_NAME        "MAME4tvOS"
+    #define PRODUCT_NAME        "MAME for AppleTV"
+#elif TARGET_OS_SIMULATOR
+    #define PRODUCT_NAME        "MAME4sim"
+    #define PRODUCT_NAME_LONG   "MAME for Simulator"
+#else
+    #define PRODUCT_NAME        "MAME4iOS"
+    #define PRODUCT_NAME_LONG   "MAME for iOS"
+#endif
+
 /* Convert between radians and degrees */
 #ifndef RAD_TO_DEGREE
 #define RAD_TO_DEGREE(r)	((r * 180.0f) / M_PI)

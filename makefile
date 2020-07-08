@@ -373,6 +373,8 @@ else
 
 ifdef tvOS
 EMULATOR = libmamearm64-tvos.a
+else ifdef macCatalyst
+EMULATOR = libmamearm64-mac.a
 else
 EMULATOR = libmamearm64.a
 endif
@@ -642,7 +644,10 @@ endif
 
 ifndef iOSSIMULATOR
 
-ifeq ($(iOSARMV7),1)
+ifeq ($(macCatalyst),1)
+CCOMFLAGS += -arch x86_64
+LDFLAGS += -arch x86_64
+else ifeq ($(iOSARMV7),1)
 CCOMFLAGS += -arch armv7
 LDFLAGS += -arch armv7
 else ifeq ($(iOSARM64),1)
@@ -653,14 +658,18 @@ CCOMFLAGS += -arch armv7s
 LDFLAGS += -arch armv7s
 endif
 
-ifndef tvOS #iOS goes here
-CCOMFLAGS += -isysroot $(IOSSDK) -miphoneos-version-min=$(OSVERSION) -fPIC
-LDFLAGS += -lz -isysroot $(IOSSDK) -miphoneos-version-min=$(OSVERSION) -fPIC -stdlib=libc++ -dynamiclib
-else
-
+ifdef tvOS
 #tvOS goes here
 CCOMFLAGS += -isysroot $(TVOSSDK) -mtvos-version-min=$(OSVERSION) -fPIC -fembed-bitcode
-LDFLAGS += -lz -isysroot $(TVOSSDK) -miphoneos-version-min=$(OSVERSION) -fPIC -dynamiclib
+LDFLAGS += -lz -isysroot $(TVOSSDK) -mtvos-version-min=$(OSVERSION) -fPIC -dynamiclib
+else ifdef macCatalyst
+#macCatalyst goes here
+CCOMFLAGS += -isysroot $(MACOSSDK) -miphoneos-version-min=$(OSVERSION) -fPIC -target x86_64-apple-ios13.1-macabi
+LDFLAGS += -lz -isysroot $(MACOSSDK) -miphoneos-version-min=$(OSVERSION) -fPIC -stdlib=libc++ -dynamiclib
+else
+#iOS goes here
+CCOMFLAGS += -isysroot $(IOSSDK) -miphoneos-version-min=$(OSVERSION) -fPIC
+LDFLAGS += -lz -isysroot $(IOSSDK) -miphoneos-version-min=$(OSVERSION) -fPIC -stdlib=libc++ -dynamiclib
 endif
 
 else

@@ -117,25 +117,19 @@
 }
 
 - (void)insertText:(NSString *)text {
-    
-    if (g_pref_ext_control_type == EXT_CONTROL_NONE || g_pref_ext_control_type == EXT_CONTROL_8BITDO)
-        return;
-
-#if TARGET_OS_IOS
-    [self iCadeKey:text];
-#endif
-    
-#if 0  // TODO: is this really nessesarry???
-    static int cycleResponder = 0;
-    if (++cycleResponder > 20) {
-        // necessary to clear a buffer that accumulates internally
-        cycleResponder = 0;
-        [self resignFirstResponder];
-        [self becomeFirstResponder];
-    }
-#endif
 }
 
+- (void)deleteBackward {
+}
+
+
+#pragma mark handle iCade key
+
+// iCade keys
+//        we      yt uf im og
+//      aq  dc    hr jn kp lv
+//        xz
+//
 - (void)iCadeKey:(NSString *)text {
     
     static int up = 0;
@@ -625,10 +619,6 @@
     [emuController handle_INPUT];
 }
 
-- (void)deleteBackward {
-    // This space intentionally left blank to complete protocol
-}
-
 #pragma mark Hardare Keyboard
 
 //
@@ -678,6 +668,7 @@
 //    d    n o    j
 //
 
+// NOTE you can find these constants now-a-days in UIKeyConstants.h
 #define KEY_RARROW   79
 #define KEY_LARROW   80
 #define KEY_DARROW   81
@@ -740,28 +731,14 @@
 
 #define KEY_DOWN     0x8000
 
-// Overloaded _keyCommandForEvent (UIResponder.h) // Only exists in iOS 9+
--(UIKeyCommand *)_keyCommandForEvent:(UIEvent *)event { // UIPhysicalKeyboardEvent
+-(void)hardwareKey:(NSString*)key keyCode:(int)keyCode isKeyDown:(BOOL)isKeyDown modifierFlags:(UIKeyModifierFlags)modifierFlags {
     
-    static BOOL g_keyboard_state[256];
-    
-    int keyCode = [[event valueForKey:@"_keyCode"] intValue];
-    BOOL isKeyDown = [[event valueForKey:@"_isKeyDown"] boolValue];
-
-    if (keyCode <= 0 || keyCode > 255 || g_keyboard_state[keyCode] == isKeyDown)
-        return nil;
-    
-    g_keyboard_state[keyCode] = isKeyDown;
-
-    NSLog(@"_keyCommandForEvent:'%@' '%@' keyCode:%@ isKeyDown:%@ time:%f", [event valueForKey:@"_unmodifiedInput"], [event valueForKey:@"_modifiedInput"], [event valueForKey:@"_keyCode"], [event valueForKey:@"_isKeyDown"], [event timestamp]);
-
     if (!(g_pref_ext_control_type == EXT_CONTROL_NONE || g_pref_ext_control_type == EXT_CONTROL_8BITDO))
     {
-#if TARGET_OS_TV
         if (isKeyDown)
-            [self iCadeKey:[event valueForKey:@"_unmodifiedInput"]];
-#endif
-        return nil;
+            [self iCadeKey:key];
+
+        return;
     }
     
     NSString* iCadeKey = nil;
@@ -829,7 +806,7 @@
     }
     
     // command keys (ALT+ works in the simulator CMD+ does not)
-    if (g_keyboard_state[TARGET_OS_SIMULATOR ? KEY_LALT : KEY_LCMD] || g_keyboard_state[TARGET_OS_SIMULATOR ? KEY_RALT : KEY_RCMD])
+    if (modifierFlags & (TARGET_OS_SIMULATOR ? UIKeyModifierAlternate : UIKeyModifierCommand))
     {
         if (isKeyDown && keyCode == KEY_RETURN)
             [emuController commandKey:'\r'];
@@ -880,8 +857,52 @@
     if (iCadeKey != nil) {
         [self iCadeKey:iCadeKey];
     }
+}
 
+// get keyboad input on macOS or iOS 13.4+
+#if __IPHONE_OS_VERSION_MIN_REQUIRED >= 130400 || TARGET_OS_MACCATALYST
+
+- (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
+    for (UIPress* press in presses) {
+        if (press.key != nil) {
+            [self hardwareKey:press.key.charactersIgnoringModifiers keyCode:(int)press.key.keyCode isKeyDown:TRUE modifierFlags:press.key.modifierFlags];
+        }
+    }
+}
+
+- (void)pressesEnded:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
+    for (UIPress* press in presses) {
+        if (press.key != nil) {
+            [self hardwareKey:press.key.charactersIgnoringModifiers keyCode:(int)press.key.keyCode isKeyDown:FALSE modifierFlags:press.key.modifierFlags];
+        }
+    }
+}
+
+#else
+
+// Overloaded _keyCommandForEvent (UIResponder.h) // Only exists in iOS 9+
+-(UIKeyCommand *)_keyCommandForEvent:(UIEvent *)event { // UIPhysicalKeyboardEvent
+    
+    static BOOL g_keyboard_state[256];
+    
+    int keyCode = [[event valueForKey:@"_keyCode"] intValue];
+    BOOL isKeyDown = [[event valueForKey:@"_isKeyDown"] boolValue];
+    int modifierFlags = [[event valueForKey:@"_modifierFlags"] intValue];
+    NSString* key = [event valueForKey:@"_unmodifiedInput"];
+
+    if (keyCode <= 0 || keyCode > 255 || g_keyboard_state[keyCode] == isKeyDown)
+        return nil;
+    
+    g_keyboard_state[keyCode] = isKeyDown;
+
+    NSLog(@"_keyCommandForEvent:'%@' '%@' keyCode:%@ isKeyDown:%@ time:%f", [event valueForKey:@"_unmodifiedInput"], [event valueForKey:@"_modifiedInput"], [event valueForKey:@"_keyCode"], [event valueForKey:@"_isKeyDown"], [event timestamp]);
+    
+    [self hardwareKey:key keyCode:keyCode isKeyDown:isKeyDown modifierFlags:modifierFlags];
     return nil;
 }
+
+#endif
+
+
 
 @end

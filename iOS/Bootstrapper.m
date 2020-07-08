@@ -63,7 +63,7 @@ const char* get_resource_path(const char* file)
 #ifdef JAILBREAK
     sprintf(resource_path, "/Applications/MAME4iOS.app/%s", file);
 #else
-    const char *userPath = [[[NSBundle mainBundle] bundlePath] cStringUsingEncoding:NSASCIIStringEncoding];
+    const char *userPath = [[[NSBundle mainBundle] resourcePath] cStringUsingEncoding:NSASCIIStringEncoding];
     sprintf(resource_path, "%s/%s", userPath, file);
 #endif
     return resource_path;
@@ -149,7 +149,7 @@ unsigned long read_mfi_controller(unsigned long res){
         
     [UIApplication sharedApplication].idleTimerDisabled = YES;
 	 
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     externalWindow = [[UIWindow alloc] initWithFrame:CGRectZero];
     externalWindow.hidden = YES;
     
@@ -268,12 +268,9 @@ unsigned long read_mfi_controller(unsigned long res){
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {
-#ifdef BTJOY
-    [BTJoyHelper endBTJoy];
-#endif
 }
 
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 // called when a screen is attached *or* detached
 - (void)prepareScreen
 {

@@ -13,7 +13,10 @@
 +(DeviceScreenType) resolve {
     UIUserInterfaceIdiom idiom = UIDevice.currentDevice.userInterfaceIdiom;
     CGSize screenSize = UIScreen.mainScreen.bounds.size;
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wdeprecated"
     CGSize windowSize = UIApplication.sharedApplication.keyWindow.bounds.size;
+    #pragma clang diagnostic pop
     CGFloat maxLength = MAX(screenSize.width, screenSize.height);
 
     if ( idiom == UIUserInterfaceIdiomPad && !CGSizeEqualToSize(windowSize, CGSizeZero) && !CGSizeEqualToSize(screenSize, windowSize)) {

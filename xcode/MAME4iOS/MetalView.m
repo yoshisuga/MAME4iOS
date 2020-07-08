@@ -297,10 +297,10 @@
     BOOL externalDisplay = _externalDisplay;
     [_buffer addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
         [_self returnBuffers:buffers];
-        if (externalDisplay)
+        if (externalDisplay || TARGET_OS_SIMULATOR || TARGET_OS_MACCATALYST)
             [_self updateFPS:CACurrentMediaTime()];
     }];
-#if !TARGET_OS_SIMULATOR
+#if !(TARGET_OS_SIMULATOR || TARGET_OS_MACCATALYST)
     if (!externalDisplay) {
         [_drawable addPresentedHandler:^(id<MTLDrawable> drawable) {
             [_self updateFPS:drawable.presentedTime];
@@ -308,7 +308,7 @@
     }
 #endif
     [_encoder endEncoding];
-#if !TARGET_OS_SIMULATOR
+#if !(TARGET_OS_SIMULATOR || TARGET_OS_MACCATALYST)
     if (_preferredFramesPerSecond != 0 && _preferredFramesPerSecond * 2 <= _maximumFramesPerSecond && _layer.maximumDrawableCount == 3)
         [_buffer presentDrawable:_drawable afterMinimumDuration:1.0/_preferredFramesPerSecond];
     else

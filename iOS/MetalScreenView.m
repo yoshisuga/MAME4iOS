@@ -354,6 +354,8 @@ static void texture_load(void* data, id<MTLTexture> texture) {
     switch (prim->texformat) {
         case TEXFORMAT_RGB15:
         {
+            // TODO: fix for macCatalyst
+            assert(FALSE);
             TIMER_START(texture_load_rgb15);
             if (prim->texture_palette == NULL) {
                 [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:prim->texture_base bytesPerRow:prim->texture_rowpixels*2];
@@ -514,7 +516,11 @@ static void texture_load(void* data, id<MTLTexture> texture) {
             // set the texture
             [self setTexture:0 texture:prim->texture_base hash:prim->texture_seqid
                        width:prim->texture_width height:prim->texture_height
+#if TARGET_OS_MACCATALYST
+                      format:MTLPixelFormatBGRA8Unorm
+#else
                       format:(prim->texformat == TEXFORMAT_RGB15 ? MTLPixelFormatBGR5A1Unorm : MTLPixelFormatBGRA8Unorm)
+#endif
                 texture_load:texture_load texture_load_data:prim];
 
             // set the shader

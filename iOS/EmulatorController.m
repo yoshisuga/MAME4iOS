@@ -68,9 +68,6 @@
 #endif
 
 #import "iCadeView.h"
-#ifdef BTJOY
-#import "BTJoyHelper.h"
-#endif
 #import <pthread.h>
 #import "UIView+Toast.h"
 #import "DeviceScreenResolver.h"
@@ -2632,7 +2629,8 @@ UIColor* colorWithHexString(NSString* string) {
             g_pref_filter = [g_pref_filter isEqualToString:kScreenViewFilterNearest] ? kScreenViewFilterLinear : kScreenViewFilterNearest;
             [self changeUI];
             break;
-        case 'H':
+        case 'H':   /* CMD+H is hide on macOS, so CMD+U will also show/hide the HUD */
+        case 'U':
         {
             Options* op = [[Options alloc] init];
 
@@ -3778,8 +3776,7 @@ CGRect convert_rect(CGRect rect, CGSize fromSize, CGSize toSize) {
 - (void)runReset {
     NSLog(@"RESET: %s", g_mame_game);
     
-    NSString* msg = [NSString stringWithFormat:@"Reset %@ back to factory defaults?",
-            TARGET_OS_IOS ? @"MAME4iOS" : @"MAME4tvOS"];
+    NSString* msg = @"Reset " PRODUCT_NAME " back to factory defaults?";
 
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:nil message:msg preferredStyle:UIAlertControllerStyleAlert];
     [alert addAction:[UIAlertAction actionWithTitle:@"Reset" style:UIAlertActionStyleDestructive handler:^(UIAlertAction* action) {
@@ -4378,6 +4375,8 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
             };
             // < iOS 13 we only have a PAUSE handler, and we only get a single event on button up
             // PASUE => MAME4iOS MENU
+            #pragma clang diagnostic push
+            #pragma clang diagnostic ignored "-Wdeprecated"
             if (buttonMenu == nil && buttonOptions == nil) {
                 NSLog(@"%d: PAUSE", index);
                 MFIController.controllerPausedHandler = ^(GCController *controller) {
@@ -4387,6 +4386,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
                         [self toggleMenu:player];
                 };
             }
+            #pragma clang diagnostic pop
         }
     }
 }
@@ -4445,11 +4445,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     if ( server.bonjourServerURL != nil ) {
         [servers appendString:[NSString stringWithFormat:@"%@",server.bonjourServerURL]];
     }
-#if TARGET_OS_TV
-    NSString* welcome = @"Welcome to MAME for AppleTV";
-#else
-    NSString* welcome = @"Welcome to MAME4iOS";
-#endif
+    NSString* welcome = @"Welcome to " PRODUCT_NAME_LONG;
     NSString* message = [NSString stringWithFormat:@"\nTo transfer ROMs from your computer go to one of these addresses in your web browser:\n\n%@",servers];
     NSString* title = g_no_roms_found ? welcome : @"Web Server Started";
     NSString* done  = g_no_roms_found ? @"Reload ROMs" : @"Stop Server";
@@ -4573,7 +4569,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 #if TARGET_OS_IOS
         NSLog(@"NO GAMES, ASK USER WHAT TO DO....");
 
-        NSString* title = @"Welcome to MAME4iOS";
+        NSString* title = @"Welcome to " PRODUCT_NAME_LONG;
         NSString* message = @"\nTo transfer ROMs from your computer, Start Server, Import ROMs, or use AirDrop.";
         
         UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
