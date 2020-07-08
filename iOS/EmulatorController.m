@@ -2337,14 +2337,16 @@ UIColor* colorWithHexString(NSString* string) {
     
     g_device_is_landscape = (self.view.bounds.size.width >= self.view.bounds.size.height * 0.75);
 
-    if (externalView != nil)
-        g_device_is_fullscreen = FALSE;
-    else if (g_joy_used)
-         g_device_is_fullscreen = g_pref_full_screen_joy;
-    else if (g_device_is_landscape)
+    if (g_device_is_landscape)
         g_device_is_fullscreen = g_pref_full_screen_land;
     else
         g_device_is_fullscreen = g_pref_full_screen_port;
+
+    if (g_joy_used && g_pref_full_screen_joy)
+         g_device_is_fullscreen = TRUE;
+
+    if (externalView != nil)
+        g_device_is_fullscreen = FALSE;
 
     CGRect r;
 
@@ -2611,7 +2613,7 @@ UIColor* colorWithHexString(NSString* string) {
                     op.fullscreenPortrait = g_pref_full_screen_port = !g_device_is_fullscreen;
 
                 // if user is manualy controling fullscreen, then turn off fullscreen joy.
-                op.fullscreenJoystick = g_pref_full_screen_joy = !g_device_is_fullscreen;
+                op.fullscreenJoystick = g_pref_full_screen_joy = FALSE;
                     
                 [op saveOptions];
                 [self changeUI];
