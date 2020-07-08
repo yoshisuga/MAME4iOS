@@ -2124,10 +2124,12 @@ void myosd_handle_turbo() {
         analogStickView = [[AnalogStickView alloc] initWithFrame:rStickWindow withEmuController:self];
         [inputView addSubview:analogStickView];
         // stick background
-        UIImageView* image = [[UIImageView alloc] initWithImage:[self loadImage:@"stick-background"]];
-        CGRect rect = [inputView convertRect:rStickWindow toView:imageBack];
-        image.frame = scale_rect(rect, g_device_is_landscape ? 1.0 : 1.2);
-        [imageBack addSubview:image];
+        if (imageBack != nil) {
+            UIImageView* image = [[UIImageView alloc] initWithImage:[self loadImage:@"stick-background"]];
+            CGRect rect = [inputView convertRect:rStickWindow toView:imageBack];
+            image.frame = scale_rect(rect, g_device_is_landscape ? 1.0 : 1.2);
+            [imageBack addSubview:image];
+        }
     }
     
     // get the number of fullscreen buttons to display, handle the auto case.
