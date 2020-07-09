@@ -7,6 +7,9 @@
 * PINCH and ZOOM to resize the HUD to exacly the size you want.
 * set MAME pause_brightness to 1.0
 * Support for Xbox `GUIDE`, DualShock `PS`, and Steam `STEAM` buttons on iOS 14.
+* Support WideColor (aka DisplayP3) devices.
+* Support SlideOver and SplitScreen on iPad.
+* Support macOS via Catalyst, requires macOS 10.15 (aka Catalina) or higher.
 
 # Version 2020.11
 * Added new Vector Shader category for Vector games on both iOS and tvOS.
