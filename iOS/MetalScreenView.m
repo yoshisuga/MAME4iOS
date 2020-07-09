@@ -387,29 +387,24 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
     switch (prim->texformat) {
         case TEXFORMAT_RGB15:
         {
-            // TODO: fix for macCatalyst
-            assert(FALSE);
+            // map 0-31 -> 0-255
+            static uint32_t pal_ident[32] = {0,8,16,24,32,41,49,57,65,74,82,90,98,106,115,123,131,139,148,156,164,172,180,189,197,205,213,222,230,238,246,255};
             TIMER_START(texture_load_rgb15);
-            if (prim->texture_palette == NULL) {
-                [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:prim->texture_base bytesPerRow:prim->texture_rowpixels*2];
-            }
-            else {
-                uint16_t* src = prim->texture_base;
-                uint16_t* dst = (uint16_t*)myosd_screen;
-                const uint32_t* pal = prim->texture_palette;
-                for (NSUInteger y=0; y<height; y++) {
-                    for (NSUInteger x=0; x<width; x++) {
-                        uint16_t u16 = *src++;
-                        *dst++ = ((pal[(u16 >>  0) & 0x1F]       ) >> 3) |
-                                 ((pal[(u16 >>  5) & 0x1F] & 0xF8) << 2) |
-                                 ((pal[(u16 >> 10) & 0x1F] & 0xF8) << 7) |
-                                 0x8000;
-                    }
-                    src += prim->texture_rowpixels - width;
+            uint16_t* src = prim->texture_base;
+            uint32_t* dst = (uint32_t*)myosd_screen;
+            const uint32_t* pal = prim->texture_palette ?: pal_ident;
+            for (NSUInteger y=0; y<height; y++) {
+                for (NSUInteger x=0; x<width; x++) {
+                    uint16_t u16 = *src++;
+                    *dst++ = (pal[(u16 >>  0) & 0x1F] >>  0) |
+                             (pal[(u16 >>  5) & 0x1F] <<  8) |
+                             (pal[(u16 >> 10) & 0x1F] << 16) |
+                             0xFF000000;
                 }
-                [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:myosd_screen bytesPerRow:width*2];
+                src += prim->texture_rowpixels - width;
             }
             TIMER_STOP(texture_load_rgb15);
+            [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:myosd_screen bytesPerRow:width*4];
             break;
         }
         case TEXFORMAT_RGB32:
