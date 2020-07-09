@@ -44,10 +44,6 @@
 		925ABCD21E46DCC500997182 /* SKIN_1 in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC1D163C5DA100A05CD0 /* SKIN_1 */; };
 		925ABCD51E46DCC500997182 /* config_iPhone_5.txt in Resources */ = {isa = PBXBuildFile; fileRef = CE8D87D7164FE4BE00685BC4 /* config_iPhone_5.txt */; };
 		925ABCD71E46DCC500997182 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = CEB8E0DB16A3311500A6FEDC /* LICENSE */; };
-		925ABCD81E46DCC500997182 /* MAME4iOS72.png in Resources */ = {isa = PBXBuildFile; fileRef = CEB6982516AAB39F0005E140 /* MAME4iOS72.png */; };
-		925ABCD91E46DCC500997182 /* MAME4iOS114.png in Resources */ = {isa = PBXBuildFile; fileRef = CEB6982616AAB39F0005E140 /* MAME4iOS114.png */; };
-		925ABCDA1E46DCC500997182 /* MAME4iOS144.png in Resources */ = {isa = PBXBuildFile; fileRef = CEB6982716AAB39F0005E140 /* MAME4iOS144.png */; };
-		925ABCDB1E46DCC500997182 /* MAME4iOS57.png in Resources */ = {isa = PBXBuildFile; fileRef = CEB6982416AAB39F0005E140 /* MAME4iOS57.png */; };
 		925ABCDD1E46DCC500997182 /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = CE30090316FA47CB000EDCF1 /* Category.ini */; };
 		925ABCDE1E46DCC500997182 /* hiscore.dat in Resources */ = {isa = PBXBuildFile; fileRef = CE30090616FA47E4000EDCF1 /* hiscore.dat */; };
 		925ABCE51E46DD6E00997182 /* libmamearm64.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 925ABCE41E46DD6E00997182 /* libmamearm64.a */; platformFilter = ios; };
@@ -285,12 +281,8 @@
 		EFA7A14C24B65C020009CF88 /* effect-dot.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F8142465DFB100DDA88C /* effect-dot.png */; };
 		EFA7A14D24B65C020009CF88 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = CEB8E0DB16A3311500A6FEDC /* LICENSE */; };
 		EFA7A14E24B65C020009CF88 /* GCDWebUploader.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 92A533CC21EBDDF20089FBB9 /* GCDWebUploader.bundle */; };
-		EFA7A14F24B65C020009CF88 /* MAME4iOS72.png in Resources */ = {isa = PBXBuildFile; fileRef = CEB6982516AAB39F0005E140 /* MAME4iOS72.png */; };
 		EFA7A15024B65C020009CF88 /* mameui.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA756FE2405585D00A02AAB /* mameui.png */; };
 		EFA7A15124B65C020009CF88 /* iCadeControls.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA757212408488D00A02AAB /* iCadeControls.png */; };
-		EFA7A15224B65C020009CF88 /* MAME4iOS114.png in Resources */ = {isa = PBXBuildFile; fileRef = CEB6982616AAB39F0005E140 /* MAME4iOS114.png */; };
-		EFA7A15324B65C020009CF88 /* MAME4iOS144.png in Resources */ = {isa = PBXBuildFile; fileRef = CEB6982716AAB39F0005E140 /* MAME4iOS144.png */; };
-		EFA7A15424B65C020009CF88 /* MAME4iOS57.png in Resources */ = {isa = PBXBuildFile; fileRef = CEB6982416AAB39F0005E140 /* MAME4iOS57.png */; };
 		EFA7A15524B65C020009CF88 /* effect-scanline.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F81A2466BE8500DDA88C /* effect-scanline.png */; };
 		EFA7A15624B65C020009CF88 /* config_iPad_pro_10_5.txt in Resources */ = {isa = PBXBuildFile; fileRef = 921CC321216A903600A39154 /* config_iPad_pro_10_5.txt */; };
 		EFA7A15724B65C020009CF88 /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = CE30090316FA47CB000EDCF1 /* Category.ini */; };
@@ -298,6 +290,8 @@
 		EFA7A16324B65FCC0009CF88 /* MAME4mac-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = EFA7A16124B65FCC0009CF88 /* MAME4mac-Info.plist */; };
 		EFA7A16424B792B50009CF88 /* ColorSpace.m in Sources */ = {isa = PBXBuildFile; fileRef = EF950BA924B1211F00DC9A47 /* ColorSpace.m */; };
 		EFA7A16624B792CE0009CF88 /* MetalPerformanceShaders.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA7A16524B792CE0009CF88 /* MetalPerformanceShaders.framework */; };
+		EFA7A16B24B7A38E0009CF88 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EFA7A16A24B7A38E0009CF88 /* Assets.xcassets */; };
+		EFA7A16D24B7A40F0009CF88 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EFA7A16C24B7A40F0009CF88 /* Assets.xcassets */; };
 		EFA98FB124A4E2BF007B6689 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA98FAE24A4CC49007B6689 /* CoreServices.framework */; };
 		EFA98FB324A4E2D5007B6689 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA98FB224A4E2D5007B6689 /* CoreServices.framework */; };
 		EFA98FB524A4F811007B6689 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA98FB424A4F810007B6689 /* WebKit.framework */; };
@@ -469,10 +463,6 @@
 		CE9454D31731DE4D00B81C32 /* NetplayGameKit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NetplayGameKit.m; path = ../../iOS/NetplayGameKit.m; sourceTree = "<group>"; };
 		CE9454D61731DF2600B81C32 /* FilterOptionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FilterOptionController.h; path = ../../iOS/FilterOptionController.h; sourceTree = "<group>"; };
 		CE9454D71731DF2700B81C32 /* FilterOptionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FilterOptionController.m; path = ../../iOS/FilterOptionController.m; sourceTree = "<group>"; };
-		CEB6982416AAB39F0005E140 /* MAME4iOS57.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MAME4iOS57.png; sourceTree = "<group>"; };
-		CEB6982516AAB39F0005E140 /* MAME4iOS72.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MAME4iOS72.png; sourceTree = "<group>"; };
-		CEB6982616AAB39F0005E140 /* MAME4iOS114.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MAME4iOS114.png; sourceTree = "<group>"; };
-		CEB6982716AAB39F0005E140 /* MAME4iOS144.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MAME4iOS144.png; sourceTree = "<group>"; };
 		CEB8E0DB16A3311500A6FEDC /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = folder; name = LICENSE; path = "../../iOS-res/Applications/MAME4iOS.app/LICENSE"; sourceTree = "<group>"; };
 		CEBFBC11163C5DA100A05CD0 /* config_iPad.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = config_iPad.txt; path = "../../iOS-res/Applications/MAME4iOS.app/config_iPad.txt"; sourceTree = "<group>"; };
 		CEBFBC12163C5DA100A05CD0 /* config_iPhone.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = config_iPhone.txt; path = "../../iOS-res/Applications/MAME4iOS.app/config_iPhone.txt"; sourceTree = "<group>"; };
@@ -558,6 +548,8 @@
 		EFA7A16124B65FCC0009CF88 /* MAME4mac-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "MAME4mac-Info.plist"; sourceTree = "<group>"; };
 		EFA7A16224B65FCC0009CF88 /* MAME4mac.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = MAME4mac.entitlements; sourceTree = "<group>"; };
 		EFA7A16524B792CE0009CF88 /* MetalPerformanceShaders.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalPerformanceShaders.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/System/Library/Frameworks/MetalPerformanceShaders.framework; sourceTree = DEVELOPER_DIR; };
+		EFA7A16A24B7A38E0009CF88 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		EFA7A16C24B7A40F0009CF88 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		EFA98FAE24A4CC49007B6689 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		EFA98FB224A4E2D5007B6689 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS14.0.sdk/System/Library/Frameworks/CoreServices.framework; sourceTree = DEVELOPER_DIR; };
 		EFA98FB424A4F810007B6689 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
@@ -914,24 +906,13 @@
 		CEE6808F1635BA7000051BC2 /* MAME4iOS */ = {
 			isa = PBXGroup;
 			children = (
+				EFA7A16A24B7A38E0009CF88 /* Assets.xcassets */,
 				CE87C2FE16F5C21A00ABE4F6 /* MAME4iOS.entitlements */,
 				EF29C8802401C73900AFFA4E /* Launch Screen.storyboard */,
-				CEE680901635BA7000051BC2 /* Supporting Files */,
-			);
-			path = MAME4iOS;
-			sourceTree = "<group>";
-		};
-		CEE680901635BA7000051BC2 /* Supporting Files */ = {
-			isa = PBXGroup;
-			children = (
-				CEB6982416AAB39F0005E140 /* MAME4iOS57.png */,
-				CEB6982516AAB39F0005E140 /* MAME4iOS72.png */,
-				CEB6982616AAB39F0005E140 /* MAME4iOS114.png */,
-				CEB6982716AAB39F0005E140 /* MAME4iOS144.png */,
 				CEE680911635BA7000051BC2 /* MAME4iOS-Info.plist */,
 				CEE680971635BA7000051BC2 /* MAME4iOS-Prefix.pch */,
 			);
-			name = "Supporting Files";
+			path = MAME4iOS;
 			sourceTree = "<group>";
 		};
 		CEE680C51635BB8500051BC2 /* Includes */ = {
@@ -1032,6 +1013,7 @@
 		EFA7A16024B65E7F0009CF88 /* MAME4mac */ = {
 			isa = PBXGroup;
 			children = (
+				EFA7A16C24B7A40F0009CF88 /* Assets.xcassets */,
 				EFA7A16124B65FCC0009CF88 /* MAME4mac-Info.plist */,
 				EFA7A16224B65FCC0009CF88 /* MAME4mac.entitlements */,
 			);
@@ -1174,6 +1156,7 @@
 				EF0E08AE2401840700E98F01 /* help.md in Resources */,
 				EFF9F81E2466BEE100DDA88C /* effect-crt.png in Resources */,
 				925ABCD01E46DCC500997182 /* scanline-1.png in Resources */,
+				EFA7A16B24B7A38E0009CF88 /* Assets.xcassets in Resources */,
 				EF00880F2459F4EF0058C2A1 /* cheat0139.zip in Resources */,
 				EF29C8852402E51200AFFA4E /* config_iPad_gen_7.txt in Resources */,
 				927BD1A62209E80F00ECF6C9 /* config_iPad_pro_11.txt in Resources */,
@@ -1190,12 +1173,8 @@
 				EFF9F8152465DFB200DDA88C /* effect-dot.png in Resources */,
 				925ABCD71E46DCC500997182 /* LICENSE in Resources */,
 				92A533D021EBDDF20089FBB9 /* GCDWebUploader.bundle in Resources */,
-				925ABCD81E46DCC500997182 /* MAME4iOS72.png in Resources */,
 				EFA756FF2405585D00A02AAB /* mameui.png in Resources */,
 				EFA757222408488D00A02AAB /* iCadeControls.png in Resources */,
-				925ABCD91E46DCC500997182 /* MAME4iOS114.png in Resources */,
-				925ABCDA1E46DCC500997182 /* MAME4iOS144.png in Resources */,
-				925ABCDB1E46DCC500997182 /* MAME4iOS57.png in Resources */,
 				EFF9F81B2466BE8500DDA88C /* effect-scanline.png in Resources */,
 				921CC323216A903600A39154 /* config_iPad_pro_10_5.txt in Resources */,
 				925ABCDD1E46DCC500997182 /* Category.ini in Resources */,
@@ -1254,6 +1233,7 @@
 				EFA7A14024B65C020009CF88 /* config_iPad_gen_7.txt in Resources */,
 				EFA7A14124B65C020009CF88 /* config_iPad_pro_11.txt in Resources */,
 				EFA7A14224B65C020009CF88 /* scanline-2.png in Resources */,
+				EFA7A16D24B7A40F0009CF88 /* Assets.xcassets in Resources */,
 				EFA7A14324B65C020009CF88 /* dpad.png in Resources */,
 				EFA7A14424B65C020009CF88 /* Launch Screen.storyboard in Resources */,
 				EFA7A14524B65C020009CF88 /* SKIN_1 in Resources */,
@@ -1266,13 +1246,9 @@
 				EFA7A14C24B65C020009CF88 /* effect-dot.png in Resources */,
 				EFA7A14D24B65C020009CF88 /* LICENSE in Resources */,
 				EFA7A14E24B65C020009CF88 /* GCDWebUploader.bundle in Resources */,
-				EFA7A14F24B65C020009CF88 /* MAME4iOS72.png in Resources */,
 				EFA7A15024B65C020009CF88 /* mameui.png in Resources */,
 				EFA7A15124B65C020009CF88 /* iCadeControls.png in Resources */,
-				EFA7A15224B65C020009CF88 /* MAME4iOS114.png in Resources */,
 				EFA7A16324B65FCC0009CF88 /* MAME4mac-Info.plist in Resources */,
-				EFA7A15324B65C020009CF88 /* MAME4iOS144.png in Resources */,
-				EFA7A15424B65C020009CF88 /* MAME4iOS57.png in Resources */,
 				EFA7A15524B65C020009CF88 /* effect-scanline.png in Resources */,
 				EFA7A15624B65C020009CF88 /* config_iPad_pro_10_5.txt in Resources */,
 				EFA7A15724B65C020009CF88 /* Category.ini in Resources */,
@@ -1529,6 +1505,7 @@
 		925ABCE01E46DCC500997182 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_ENTITLEMENTS = MAME4iOS/MAME4iOS.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Yoshinobu Sugawara (R72X3BF4KE)";
@@ -1569,6 +1546,7 @@
 		925ABCE11E46DCC500997182 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_ENTITLEMENTS = MAME4iOS/MAME4iOS.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Yoshinobu Sugawara (R72X3BF4KE)";
@@ -1848,6 +1826,7 @@
 		EFA7A15C24B65C020009CF88 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = MacIcon;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_ENTITLEMENTS = MAME4mac/MAME4mac.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Yoshinobu Sugawara (R72X3BF4KE)";
@@ -1888,6 +1867,7 @@
 		EFA7A15D24B65C020009CF88 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = MacIcon;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_ENTITLEMENTS = MAME4mac/MAME4mac.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Yoshinobu Sugawara (R72X3BF4KE)";
