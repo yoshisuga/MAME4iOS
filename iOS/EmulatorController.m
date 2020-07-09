@@ -1251,17 +1251,6 @@ void mame_state(int load_save, int slot)
 
     if (g_mame_game[0] && g_mame_game[0] != ' ')
         [self updateUserActivity:@{kGameInfoName:[NSString stringWithUTF8String:g_mame_game]}];
-    
-#ifdef DEBUG
-    // create all color spaces, to test for validness.
-    for (NSString* string in Options.arrayColorSpace) {
-        NSString* color_space_data = [[string componentsSeparatedByString:@":"].lastObject stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
-        CGColorSpaceRef colorSpace = [CGScreenView createColorSpaceFromString:color_space_data];
-        NSLog(@"COLORSPACE DATA: %@", string);
-        NSLog(@"     COLORSPACE: %@", colorSpace);
-        CGColorSpaceRelease(colorSpace);
-    }
-#endif
 }
 
 -(void)viewWillAppear:(BOOL)animated {
@@ -1458,13 +1447,15 @@ static int gcd(int a, int b) {
     NSUInteger sec = (frame_count / 60) % 60;
     NSUInteger min = (frame_count / 3600);
     
-    NSString* fps = [NSString stringWithFormat:@"%03d:%02d:%02d%@ %.2ffps %.1fms", (int)min, (int)sec, (int)frame,
+    NSString* fps = [NSString stringWithFormat:@"%03d:%02d:%02d%@%@ %.2ffps %.1fms", (int)min, (int)sec, (int)frame,
                     [screenView isKindOfClass:[MetalScreenView class]] ? @"🅼" : @"",
+                    [screenView isKindOfClass:[MetalScreenView class]] && [(MetalScreenView*)screenView pixelFormat] == MTLPixelFormatBGR10_XR ? @"🆆" : @"",
                     screenView.frameRateAverage, screenView.renderTimeAverage * 1000.0];
 #else
-    NSString* fps = [NSString stringWithFormat:@"%.2ffps %.1fms %@",
+    NSString* fps = [NSString stringWithFormat:@"%.2ffps %.1fms %@%@",
                      screenView.frameRateAverage, screenView.renderTimeAverage * 1000.0,
-                     [screenView isKindOfClass:[MetalScreenView class]] ? @"🅼" : @""];
+                     [screenView isKindOfClass:[MetalScreenView class]] ? @"🅼" : @"",
+                     [screenView isKindOfClass:[MetalScreenView class]] && [(MetalScreenView*)screenView pixelFormat] == MTLPixelFormatBGR10_XR ? @"🆆" : @""];
 #endif
     
     fpsView.text = fps;

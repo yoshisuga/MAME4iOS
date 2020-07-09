@@ -162,6 +162,10 @@
 		EF8EAA8D244F7F5D00DA02BB /* SteamControllerInput.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA83244F7F5D00DA02BB /* SteamControllerInput.m */; };
 		EF941F0024427D1200D58F7F /* OptionsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF941EFF24427D1200D58F7F /* OptionsTableViewController.m */; };
 		EF941F0124427D1200D58F7F /* OptionsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF941EFF24427D1200D58F7F /* OptionsTableViewController.m */; };
+		EF950BAA24B1211F00DC9A47 /* ColorSpace.m in Sources */ = {isa = PBXBuildFile; fileRef = EF950BA924B1211F00DC9A47 /* ColorSpace.m */; };
+		EF950BAB24B1211F00DC9A47 /* ColorSpace.m in Sources */ = {isa = PBXBuildFile; fileRef = EF950BA924B1211F00DC9A47 /* ColorSpace.m */; };
+		EF950BAD24B1239F00DC9A47 /* MetalPerformanceShaders.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF950BAC24B1239F00DC9A47 /* MetalPerformanceShaders.framework */; };
+		EF950BAF24B123A900DC9A47 /* MetalPerformanceShaders.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF950BAE24B123A900DC9A47 /* MetalPerformanceShaders.framework */; };
 		EFA756FF2405585D00A02AAB /* mameui.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA756FE2405585D00A02AAB /* mameui.png */; };
 		EFA757002405585D00A02AAB /* mameui.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA756FE2405585D00A02AAB /* mameui.png */; };
 		EFA7570524057FD800A02AAB /* default_game_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA7570424057FD800A02AAB /* default_game_icon.png */; };
@@ -535,6 +539,10 @@
 		EF8EAA8F244F822C00DA02BB /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		EF941EFE24427D1200D58F7F /* OptionsTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OptionsTableViewController.h; path = ../../iOS/OptionsTableViewController.h; sourceTree = "<group>"; };
 		EF941EFF24427D1200D58F7F /* OptionsTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OptionsTableViewController.m; path = ../../iOS/OptionsTableViewController.m; sourceTree = "<group>"; };
+		EF950BA824B1211F00DC9A47 /* ColorSpace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ColorSpace.h; sourceTree = "<group>"; };
+		EF950BA924B1211F00DC9A47 /* ColorSpace.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ColorSpace.m; sourceTree = "<group>"; };
+		EF950BAC24B1239F00DC9A47 /* MetalPerformanceShaders.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalPerformanceShaders.framework; path = System/Library/Frameworks/MetalPerformanceShaders.framework; sourceTree = SDKROOT; };
+		EF950BAE24B123A900DC9A47 /* MetalPerformanceShaders.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalPerformanceShaders.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS14.0.sdk/System/Library/Frameworks/MetalPerformanceShaders.framework; sourceTree = DEVELOPER_DIR; };
 		EF9F9C9E240070E700352554 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../../README.md; sourceTree = "<group>"; };
 		EFA756FE2405585D00A02AAB /* mameui.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = mameui.png; sourceTree = "<group>"; };
 		EFA7570424057FD800A02AAB /* default_game_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = default_game_icon.png; sourceTree = "<group>"; };
@@ -604,6 +612,7 @@
 				925ABCC01E46DCC500997182 /* Foundation.framework in Frameworks */,
 				925ABCC11E46DCC500997182 /* CoreGraphics.framework in Frameworks */,
 				925ABCC21E46DCC500997182 /* GameKit.framework in Frameworks */,
+				EF950BAD24B1239F00DC9A47 /* MetalPerformanceShaders.framework in Frameworks */,
 				925ABCC41E46DCC500997182 /* libz.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -622,6 +631,7 @@
 				92ECB90621EA998000D1E3D0 /* CoreFoundation.framework in Frameworks */,
 				EFA757082405B9EA00A02AAB /* AVFoundation.framework in Frameworks */,
 				92ECB90421EA997A00D1E3D0 /* GameController.framework in Frameworks */,
+				EF950BAF24B123A900DC9A47 /* MetalPerformanceShaders.framework in Frameworks */,
 				92ECB90121EA993E00D1E3D0 /* libc++.tbd in Frameworks */,
 				EFA98FB324A4E2D5007B6689 /* CoreServices.framework in Frameworks */,
 				92ECB8FF21EA992100D1E3D0 /* libmamearm64-tvos.a in Frameworks */,
@@ -848,6 +858,8 @@
 		CEE680881635BA7000051BC2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				EF950BAC24B1239F00DC9A47 /* MetalPerformanceShaders.framework */,
+				EF950BAE24B123A900DC9A47 /* MetalPerformanceShaders.framework */,
 				EFA98FB424A4F810007B6689 /* WebKit.framework */,
 				EFA98FAE24A4CC49007B6689 /* CoreServices.framework */,
 				EFA98FB224A4E2D5007B6689 /* CoreServices.framework */,
@@ -961,6 +973,8 @@
 			isa = PBXGroup;
 			children = (
 				EF06A576248064AC00A974B8 /* Timer.h */,
+				EF950BA824B1211F00DC9A47 /* ColorSpace.h */,
+				EF950BA924B1211F00DC9A47 /* ColorSpace.m */,
 				EFB7B2162479FBD900AD96A4 /* MetalView.h */,
 				EFB7B2132479FBD800AD96A4 /* MetalView.m */,
 				EFB7B2142479FBD800AD96A4 /* MetalViewShaders.h */,
@@ -1105,10 +1119,12 @@
 				ORGANIZATIONNAME = Seleuco;
 				TargetAttributes = {
 					925ABCA41E46DCC500997182 = {
+						DevelopmentTeam = 8RUN83V8CA;
 						ProvisioningStyle = Automatic;
 					};
 					92ECB8EA21EA984D00D1E3D0 = {
 						CreatedOnToolsVersion = 10.1;
+						DevelopmentTeam = 8RUN83V8CA;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -1367,6 +1383,7 @@
 				925ABCB61E46DCC500997182 /* InputOptionController.m in Sources */,
 				92A533C321EBDBAD0089FBB9 /* GCDWebServerMultiPartFormRequest.m in Sources */,
 				EF26AE0C241AA6900078FD30 /* FileItemProvider.m in Sources */,
+				EF950BAA24B1211F00DC9A47 /* ColorSpace.m in Sources */,
 				925ABCB71E46DCC500997182 /* DefaultOptionController.m in Sources */,
 				EF7B232C23FD0469001FF51D /* (null) in Sources */,
 				EF8E427D249348220049C84C /* megaTron.metal in Sources */,
@@ -1388,6 +1405,7 @@
 			files = (
 				EF27F36823F73CD400B1E50A /* ZipFile.m in Sources */,
 				EF8E428C249FE5410049C84C /* ulTron.metal in Sources */,
+				EF950BAB24B1211F00DC9A47 /* ColorSpace.m in Sources */,
 				92A533BE21EBDBAD0089FBB9 /* GCDWebServerStreamedResponse.m in Sources */,
 				EF8E4284249915F30049C84C /* lineTron.metal in Sources */,
 				92A533C421EBDBAD0089FBB9 /* GCDWebServerMultiPartFormRequest.m in Sources */,

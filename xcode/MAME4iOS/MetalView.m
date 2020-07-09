@@ -7,6 +7,7 @@
 //
 #import <UIKit/UIKit.h>
 #import <Metal/Metal.h>
+#import <MetalPerformanceShaders/MetalPerformanceShaders.h>
 #import "MetalView.h"
 #import "MetalViewShaders.h"
 
@@ -15,10 +16,14 @@
 #define NSLog(...) (void)0
 #endif
 
-#define NUM_VERTEX 4096     // number of vertices in a vertex buffer.
+#define NUM_VERTEX (8*1024)       // number of vertices in a vertex buffer.
 
 #define RESET_AVERAGE_EVERY 120   // reset averages every this many frames
 
+// Direct method and property calls with Xcode 12 and above.
+#if defined(__IPHONE_14_0)
+__attribute__((objc_direct_members))
+#endif
 @implementation MetalView {
 
     // CAMetalLayer avalibility is wrong in the iOS 11.3.4 sdk???
@@ -27,9 +32,19 @@
     CAMetalLayer* _layer;
     #pragma clang diagnostic pop
     
+    NSUInteger _prim_count;
+    NSUInteger _vert_count;
+
+    CGColorSpaceRef _colorSpaceDevice;
+    CGColorSpaceRef _colorSpaceSRGB;
+    CGColorSpaceRef _colorSpaceExtendedSRGB;
+
     NSUInteger _maximumFramesPerSecond;
-    BOOL _externalDisplay;
+    UIWindow* _window;
+    BOOL _externalDisplay;      // we are on an external display
+    BOOL _wideColor;            // display supports wide-color
     BOOL _textureCacheFlush;
+    BOOL _resetDevice;
 
     id <MTLDevice> _device;
     id<MTLLibrary> _library;
@@ -64,9 +79,10 @@
     NSArray<id<MTLBuffer>>* _vertex_buffer_list;
 
     id<CAMetalDrawable> _drawable;
-    id<MTLCommandBuffer> _buffer;
+    id<MTLCommandBuffer> _command;
+    id<MTLCommandBuffer> _compute;
     id<MTLRenderCommandEncoder> _encoder;
-    
+
     NSTimeInterval _lastDrawTime;
     NSTimeInterval _startRenderTime;
     
@@ -96,6 +112,13 @@
         self.clearsContextBeforeDrawing = NO;
         _draw_lock = [[NSLock alloc] init];
         
+        _colorSpaceDevice = CGColorSpaceCreateDeviceRGB();
+        _colorSpaceSRGB = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
+        _colorSpaceExtendedSRGB = CGColorSpaceCreateWithName(kCGColorSpaceExtendedSRGB);
+
+        _pixelFormat = MTLPixelFormatBGRA8Unorm;
+        _colorSpace = _colorSpaceDevice;
+
         // CAMetalLayer avalibility is wrong in the iOS 11.3.4 sdk???
         #pragma clang diagnostic push
         #pragma clang diagnostic ignored "-Wpartial-availability"
@@ -106,24 +129,40 @@
     return self;
 }
 
--(CGColorSpaceRef)colorSpace {
-    return _layer.colorspace;
-}
--(void)setColorSpace:(CGColorSpaceRef)colorSpace {
-    _layer.colorspace = colorSpace;
+- (void)dealloc {
+    CGColorSpaceRelease(_colorSpaceDevice);
+    CGColorSpaceRelease(_colorSpaceSRGB);
+    CGColorSpaceRelease(_colorSpaceExtendedSRGB);
 }
 
 - (void)layoutSubviews {
     [super layoutSubviews];
+    // TODO: have an explicit texture flush method?
     _textureCacheFlush = TRUE;
 }
 - (void)didMoveToWindow {
     [super didMoveToWindow];
-    if (self.window != nil) {
-        _layer.contentsScale = self.window.screen.scale;
-        _maximumFramesPerSecond = self.window.screen.maximumFramesPerSecond;
-        _externalDisplay = (self.window.screen != UIScreen.mainScreen) || TARGET_OS_SIMULATOR;
+    _window = self.window;
+    if (_window != nil) {
+        _layer.contentsScale = _window.screen.scale;
+        _maximumFramesPerSecond = _window.screen.maximumFramesPerSecond;
+        _externalDisplay = (_window.screen != UIScreen.mainScreen);
+        // TODO: wideColor on macCatalyst!
+        _wideColor = _window.screen.traitCollection.displayGamut == UIDisplayGamutP3 && !(TARGET_OS_SIMULATOR || TARGET_OS_MACCATALYST);
+        if (_wideColor) {
+            _colorSpace = _colorSpaceExtendedSRGB;
+#if TARGET_OS_MACCATALYST
+            _pixelFormat = MTLPixelFormatRGBA16Float;
+#else
+            _pixelFormat = MTLPixelFormatBGR10_XR;
+#endif
+        }
+        else {
+            _colorSpace = _colorSpaceSRGB;
+            _pixelFormat = MTLPixelFormatBGRA8Unorm;
+        }
         _textureCacheFlush = TRUE;
+        _resetDevice = TRUE;
     }
 }
 - (void)didMoveToSuperview {
@@ -141,6 +180,10 @@
 #pragma mark - device init
 
 - (void)initDevice {
+    
+    if (_window == nil)
+        return;
+    
     // INIT
     _device = MTLCreateSystemDefaultDevice();
     
@@ -148,9 +191,11 @@
         return;
     
     _frameCount = 0;
+    _resetDevice = FALSE;
     
     _layer.device = _device;
-    _layer.pixelFormat = MTLPixelFormatBGRA8Unorm;
+    _layer.pixelFormat = _pixelFormat;
+    //_layer.colorspace = _colorSpace;
     _layer.framebufferOnly = TRUE;
     _layer.maximumDrawableCount = 3;    // TODO: !
 
@@ -158,8 +203,10 @@
     _queue = [_device newCommandQueue];
     
     // cache of vertex buffers.
-    _vertex_buffer_cache = _vertex_buffer_cache ?: [[NSMutableArray alloc] init];
     _vertex_buffer_cache_lock = _vertex_buffer_cache_lock ?: [[NSLock alloc] init];
+    [_vertex_buffer_cache_lock lock];
+    _vertex_buffer_cache = [[NSMutableArray alloc] init];
+    [_vertex_buffer_cache_lock unlock];
     
     // shader cache
     _shader_state = [[NSMutableDictionary alloc] init];
@@ -211,13 +258,14 @@
 #pragma mark - draw begin and end
 
 -(BOOL)drawBegin {
-    // nested drawBegin, BAD!
+    
+    // nested drawBegin, very BAD!
     assert(_encoder == nil);
     if (_encoder != nil)
         return FALSE;
     
     // need to (re)create device.
-    if (_device == nil)
+    if (_device == nil || _resetDevice)
         [self initDevice];
     
     if (_device == nil)
@@ -227,6 +275,9 @@
     CGSize size = _layer.bounds.size;
     CGFloat scale = _layer.contentsScale;
     size = CGSizeMake(floor(size.width * scale), floor(size.height * scale));
+    
+    if (size.width == 0.0 && size.height == 0.0)
+        return FALSE;
 
     if (!CGSizeEqualToSize(size, _layer.drawableSize)) {
         _layer.drawableSize = size;
@@ -234,6 +285,7 @@
         _textureCacheFlush = TRUE;
     }
     
+    // TODO: flush unused textures via a LRU rule?
     if (_textureCacheFlush) {
         _textureCacheFlush = FALSE;
         [_texture_cache removeAllObjects];
@@ -242,24 +294,31 @@
     // now de-queue a drawable and get to work.
     _drawable = _layer.nextDrawable;
     
-    if (_drawable == nil)
+    if (_drawable == nil) {
         return FALSE;
+    }
     
     [_draw_lock lock];
     _draw_thread = [NSThread currentThread];
 
     _startRenderTime = CACurrentMediaTime();
+    _prim_count = 0;
+    _vert_count = 0;
     
-    _buffer = [_queue commandBuffer];
+    _command = [_queue commandBuffer];
 
     MTLRenderPassDescriptor* desc = [[MTLRenderPassDescriptor alloc] init];
     desc.colorAttachments[0].texture = _drawable.texture;
+    
     if (_layer.backgroundColor != nil) {
         desc.colorAttachments[0].loadAction = MTLLoadActionClear;
-        const CGFloat* c = CGColorGetComponents(_layer.backgroundColor);
+        // color match the layer background color and use that as the clear color
+        CGColorRef color = CGColorCreateCopyByMatchingToColorSpace(_colorSpace, kCGRenderingIntentDefault, _layer.backgroundColor, NULL);
+        const CGFloat* c = CGColorGetComponents(color);
         desc.colorAttachments[0].clearColor = MTLClearColorMake(c[0], c[1], c[2], c[3]);
+        CGColorRelease(color);
     }
-    _encoder = [_buffer renderCommandEncoderWithDescriptor:desc];
+    _encoder = [_command renderCommandEncoderWithDescriptor:desc];
     
     // get a fresh vertex buffer
     _vertex_buffer = [self getBuffer];
@@ -282,9 +341,8 @@
     // set default (frame based) shader variables
     [self setShaderVariables:@{
         @"frame-count": @(_frameCount),
-        @"frame-rate": @(_frameRate),
-        @"frame-time": @(_frameCount / _frameRate),     // TODO: send CACurrentMediaTime()??
         @"render-target-size": @(size),
+        @"render-target-depth": @(_wideColor ? 10 : 8),
     }];
     
     return TRUE;
@@ -295,7 +353,7 @@
     NSArray* buffers = _vertex_buffer_list;
     __weak typeof(self) _self = self;
     BOOL externalDisplay = _externalDisplay;
-    [_buffer addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
+    [_command addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
         [_self returnBuffers:buffers];
         if (externalDisplay || TARGET_OS_SIMULATOR || TARGET_OS_MACCATALYST)
             [_self updateFPS:CACurrentMediaTime()];
@@ -310,15 +368,17 @@
     [_encoder endEncoding];
 #if !(TARGET_OS_SIMULATOR || TARGET_OS_MACCATALYST)
     if (_preferredFramesPerSecond != 0 && _preferredFramesPerSecond * 2 <= _maximumFramesPerSecond && _layer.maximumDrawableCount == 3)
-        [_buffer presentDrawable:_drawable afterMinimumDuration:1.0/_preferredFramesPerSecond];
+        [_command presentDrawable:_drawable afterMinimumDuration:1.0/_preferredFramesPerSecond];
     else
-        [_buffer presentDrawable:_drawable];
+        [_command presentDrawable:_drawable];
 #else
-    [_buffer presentDrawable:_drawable];
+    [_command presentDrawable:_drawable];
 #endif
-    [_buffer commit];
+    [_compute commit];
+    [_command commit];
     _drawable = nil;
-    _buffer = nil;
+    _command = nil;
+    _compute = nil;
     _encoder = nil;
     _vertex_buffer = nil;
     _vertex_buffer_list = nil;
@@ -328,6 +388,9 @@
         _renderTimeAverage = (_renderTimeAverage * _frameCount + _renderTime) / (_frameCount+1);
     else
         _renderTimeAverage = _renderTime;
+    
+    _primCount = _prim_count;
+    _vertexCount = _vert_count;
     
     [_draw_lock unlock];
 }
@@ -354,13 +417,23 @@
     
     [_encoder drawPrimitives:type vertexStart:_vertex_buffer_base vertexCount:count];
     _vertex_buffer_base += count;
+
+    _vert_count += count;
+
+    if (type == MTLPrimitiveTypeTriangleStrip)
+        _prim_count += (count - 2);
+    else if (type == MTLPrimitiveTypeLineStrip)
+        _prim_count += (count - 1);
+    else if (type == MTLPrimitiveTypeTriangle)
+        _prim_count += (count / 3);
+    else if (type == MTLPrimitiveTypeLine)
+        _prim_count += (count / 2);
 }
 -(void)drawLine:(CGPoint)start to:(CGPoint)end color:(VertexColor)color {
-    Vertex2D vertices[] = {
+    [self drawPrim:MTLPrimitiveTypeLine vertices:(Vertex2D[]){
         Vertex2D(start.x,start.y,0.0,0.0,color),
         Vertex2D(end.x,end.y,0.0,0.0,color),
-    };
-    [self drawPrim:MTLPrimitiveTypeLine vertices:vertices count:sizeof(vertices)/sizeof(vertices[0])];
+    } count:2];
 }
 -(void)drawLineOld:(CGPoint)start to:(CGPoint)end width:(CGFloat)width color:(VertexColor)color edgeAlpha:(CGFloat)alpha {
     
@@ -497,7 +570,6 @@
         Vertex2D(p1.x + v.x + v.y, p1.y + v.y - v.x, len+w2, -1.0, color),  // 4
     } count:4];
 }
-
 -(void)drawPoint:(CGPoint)point size:(CGFloat)size color:(VertexColor)color {
     // *NOTE* we dont use MTLPrimitiveTypePoint, because that needs a special vertex shader
     [self drawLine:point to:point width:size color:color];
@@ -531,6 +603,46 @@
             vertices[1].tex = simd_make_float2(0,0);
             vertices[2].tex = simd_make_float2(1,1);
             vertices[3].tex = simd_make_float2(1,0);
+            break;
+        case UIImageOrientationUpMirrored:
+        case UIImageOrientationDownMirrored:
+        case UIImageOrientationLeftMirrored:
+        case UIImageOrientationRightMirrored:
+            assert(FALSE);
+            break;
+    }
+
+    [self drawPrim:MTLPrimitiveTypeTriangleStrip vertices:vertices count:sizeof(vertices)/sizeof(vertices[0])];
+}
+-(void)drawGradientRect:(CGRect)rect color:(VertexColor)color1 color:(VertexColor)color2 orientation:(UIImageOrientation)orientation {
+    
+    Vertex2D vertices[] = {
+        Vertex2D(rect.origin.x,rect.origin.y,0.0,0.0,color1),
+        Vertex2D(rect.origin.x + rect.size.width,rect.origin.y,1.0,0.0,color2),
+        Vertex2D(rect.origin.x,rect.origin.y + rect.size.height,0.0,1.0,color1),
+        Vertex2D(rect.origin.x + rect.size.width,rect.origin.y + rect.size.height,1.0,1.0,color2),
+    };
+    
+    switch (orientation) {
+        case UIImageOrientationUp:
+            vertices[0].color = color2;
+            vertices[1].color = color2;
+            vertices[2].color = color1;
+            vertices[3].color = color1;
+            break;
+        case UIImageOrientationDown:
+            vertices[0].color = color1;
+            vertices[1].color = color1;
+            vertices[2].color = color2;
+            vertices[3].color = color2;
+            break;
+        case UIImageOrientationLeft:
+            vertices[0].color = color2;
+            vertices[1].color = color1;
+            vertices[2].color = color2;
+            vertices[3].color = color1;
+            break;
+        case UIImageOrientationRight:
             break;
         case UIImageOrientationUpMirrored:
         case UIImageOrientationDownMirrored:
@@ -630,14 +742,6 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     return arr;
 }
 
-//// split and trim a string
-//- (NSMutableArray*)split:(NSString*)str sep:(NSString*) sep {
-//    NSMutableArray* arr = [[str componentsSeparatedByString:sep] mutableCopy];
-//    for (int i=0; i<arr.count; i++)
-//        arr[i] = [arr[i] stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
-//    return arr;
-//}
-
 /// a shader is a string that selects the fragment function and blend mode to use.
 /// it has the following format:
 ///
@@ -648,6 +752,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 ///     <blend mode>    -  blend mode used to write into render target.
 ///                 blend=copy   - D.rgb = S.rgb
 ///                 blend=alpha  - D.rgb = S.rgb * S.a + D.rgb * (1-S.a)
+///                 blend=premulalpha - D.rgb = S.rgb + D.rgb * (1-S.a)
 ///                 blend=add     - D.rgb = S.rgb * S.a + D.rgb
 ///                 blend=mul     - D.rgb = S.rgb * D.rgb
 ///
@@ -907,6 +1012,63 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
 #pragma mark - textures
 
+// texture pixel format and texture usage combined in a single NSUInteger
+#define MTLPixelFormatMask          0x0FFFFFF
+#define MTLPixelFormatUsageMask     0xF000000
+#define MTLPixelFormatReadOnly      0x0000000   // MTLTextureUsageShaderRead
+#define MTLPixelFormatReadWrite     0x1000000   // MTLTextureUsageShaderRead + MTLTextureUsageShaderWrite
+
+// helper to create a texture
+-(id<MTLTexture>)textureWithFormat:(MTLPixelFormat)format width:(NSUInteger)width height:(NSUInteger)height {
+    MTLTextureDescriptor* desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:(format & MTLPixelFormatMask) width:width height:height mipmapped:NO];
+
+    if ((format & MTLPixelFormatUsageMask) == MTLPixelFormatReadWrite)
+        desc.usage = (MTLTextureUsageShaderRead | MTLTextureUsageShaderWrite);
+
+    return [_device newTextureWithDescriptor:desc];
+}
+
+///
+/// get a MTLTexture from the cache
+///
+/// - parameters:
+///    texture identifier  - a unique identifier for this texture.
+///    hash - a value that changes when texture is modified, use 0 if texture is static.
+///    width, height, format, usage - size and format of the texture (used to create on cache miss)
+///    texture_load - callback used to load image data.
+///
+-(id<MTLTexture>)getTexture:(void*)identifier hash:(NSUInteger)hash width:(NSUInteger)width height:(NSUInteger)height format:(MTLPixelFormat)format texture_load:(void (^)(id<MTLTexture> texture))texture_load {
+    
+    if (identifier == NULL)
+        return nil;
+    
+    NSNumber* texture_id = @((NSUInteger)identifier);
+    id<MTLTexture> texture = _texture_cache[texture_id];
+    NSUInteger texture_hash = [_texture_hash[texture_id] unsignedLongValue];
+    
+    // check for a cache hit, and texture data not changed (hash and size is the same)
+    if (texture != nil && texture_hash == hash && texture.width == width && texture.height == height) {
+        return texture;
+    }
+    
+    // create a new Metal texture (if needed), load the data, and put in cache
+    if (texture == nil || texture.width != width || texture.height != height) {
+        texture = [self textureWithFormat:format width:width height:height];
+        texture.label = [NSString stringWithFormat:@"%08lX:%ld %ldx%ld", (NSUInteger)identifier, hash, width, height];
+        assert(texture != nil);
+    }
+    
+    // call handler to fill the texture.
+    if (texture_load != nil)
+        texture_load(texture);
+    
+    // store in cache for next time.
+    _texture_cache[texture_id] = texture;
+    _texture_hash[texture_id] = @(hash);
+    
+    return texture;
+}
+
 ///
 /// get a MTLTexture from the cache and bind it to a texture index.
 ///
@@ -914,43 +1076,17 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 ///    index - the texture index to bind to (ie 0, 1, 2, ...)
 ///    texture identifier  - a unique identifier for this texture.
 ///    hash - a value that changes when texture is modified, use 0 if texture is static.
-///    width, height - size of the texture (used to create on cache miss)
-///    format -MTLPixelFormat
+///    width, height, format - size and format of the texture (used to create on cache miss)
 ///    texture_load - callback used to load image data.
-///    texture_load_data - opaque data passed to load callback (can be same as texture identifier)
 ///
--(void)setTexture:(NSUInteger)index texture:(void*)identifier hash:(NSUInteger)hash width:(NSUInteger)width height:(NSUInteger)height format:(MTLPixelFormat)format texture_load:(texture_load_function_t)texture_load texture_load_data:(void*)texture_load_data {
-    assert(_device != nil);
-    assert(texture_load != NULL);
-    
-    if (identifier == NULL)
-        return;
-    
-    NSNumber* texture_id = @((NSUInteger)identifier);
-    id<MTLTexture> texture = _texture_cache[texture_id];
-    NSUInteger texture_hash = [_texture_hash[texture_id] unsignedLongValue];
-    
-    // check for a cache hit, and texture data not changed (hash is the same)
-    if (texture != nil && texture_hash == hash && texture.width == width && texture.height == height) {
-        [_encoder setFragmentTexture:texture atIndex:index];
-        return;
-    }
-    
-    // create a new Metal texture (if needed), load the data, and put in cache
-    if (texture == nil || texture.width != width || texture.height != height) {
-        MTLTextureDescriptor* desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:format
-                width:width height:height mipmapped:NO];
-        texture = [_device newTextureWithDescriptor:desc];
-        texture.label = [NSString stringWithFormat:@"%08lX:%ld %ldx%ld", (NSUInteger)identifier, hash, width, height];
-        assert(texture != nil);
-    }
-    
-    texture_load(texture_load_data, texture);
-    _texture_cache[texture_id] = texture;
-    _texture_hash[texture_id] = @(hash);
-
+-(void)setTexture:(NSUInteger)index texture:(void*)identifier hash:(NSUInteger)hash width:(NSUInteger)width height:(NSUInteger)height format:(MTLPixelFormat)format texture_load:(void (NS_NOESCAPE ^)(id<MTLTexture> texture))texture_load {
+    assert(_encoder != nil);
+    assert(texture_load != nil);
+    id<MTLTexture> texture = [self getTexture:identifier hash:hash width:width height:height format:format texture_load:texture_load];
     [_encoder setFragmentTexture:texture atIndex:index];
 }
+
+#pragma mark - filter and address mode
 
 -(void)updateSamplerState {
     assert(_texture_filter == MTLSamplerMinMagFilterNearest || _texture_filter == MTLSamplerMinMagFilterLinear);
@@ -995,25 +1131,78 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     }
 }
 
+#pragma mark - texture color space converstion
+
+///
+/// get a MTLTexture from the cache and bind it to a texture index.
+///
+/// - parameters:
+///    index - the texture index to bind to (ie 0, 1, 2, ...)
+///    texture identifier  - a unique identifier for this texture.
+///    hash - a value that changes when texture is modified, use 0 if texture is static.
+///    width, height, format - size and format of the texture (used to create on cache miss)
+///    colorspace - CGColorSpace of the texture data. pass NULL for no color conversion.
+///    texture_load - callback used to load image data.
+///
+-(void)setTexture:(NSUInteger)index texture:(void*)identifier hash:(NSUInteger)hash width:(NSUInteger)width height:(NSUInteger)height format:(MTLPixelFormat)format colorspace:(CGColorSpaceRef)colorspace texture_load:(void (NS_NOESCAPE ^)(id<MTLTexture> texture))texture_load {
+    assert(_encoder != nil);
+    assert(texture_load != nil);
+    
+    // filter out noop colorspaces
+    if (colorspace != NULL) {
+        if (colorspace == _colorSpaceDevice || CFEqual(colorspace, _colorSpaceDevice))
+            colorspace = NULL;
+
+        if (format == _pixelFormat && (colorspace == _colorSpace || CFEqual(colorspace, _colorSpace)))
+            colorspace = NULL;
+        
+        // TODO: is this right?
+        if ((format == MTLPixelFormatRGBA8Unorm || format == MTLPixelFormatBGRA8Unorm) && (colorspace == _colorSpaceSRGB || CFEqual(colorspace, _colorSpaceSRGB)))
+            colorspace = NULL;
+    }
+    
+    // no color space just set the texture like normal.
+    if (colorspace == NULL)
+        return [self setTexture:index texture:identifier hash:hash width:width height:height format:format texture_load:texture_load];
+    
+    // generate a new identifier for the cache, but use the same hash
+    void* new_identifier = (void*)((NSUInteger)identifier ^ 0x914F6CDD1D);
+    MTLPixelFormat new_format = _pixelFormat | MTLPixelFormatReadWrite;   // use a RW texture format in the device native format
+    [self setTexture:index texture:new_identifier hash:hash width:width height:height format:new_format texture_load:^(id<MTLTexture> dst_texture) {
+        // cache miss we need to do color conversion in compute shader
+        
+        // get the original texture from the cache....
+        id<MTLTexture> src_texture = [self getTexture:identifier hash:hash width:width height:height format:format texture_load:texture_load];
+
+        // make a color convert object, and encode it into a compute command buffer
+        CGColorConversionInfoRef info = CGColorConversionInfoCreate(colorspace, self->_colorSpace);
+        MPSImageConversion* conv = [[MPSImageConversion alloc] initWithDevice:self->_device
+            srcAlpha:MPSAlphaTypeAlphaIsOne destAlpha:MPSAlphaTypeAlphaIsOne backgroundColor:nil conversionInfo:info];
+        CFRelease(info);
+
+        if (self->_compute == nil)
+            self->_compute = [self->_queue commandBuffer];
+
+        [conv encodeToCommandBuffer:self->_compute sourceTexture:src_texture destinationTexture:dst_texture];
+    }];
+}
+
 #pragma mark - UIImage textures
 
-void texture_load_uiimage(void* data, id<MTLTexture> texture) {
-    UIImage* image = (__bridge UIImage*)data;
+static void texture_load_uiimage(id<MTLTexture> texture, UIImage* image) {
     NSUInteger width = texture.width;
     NSUInteger height = texture.height;
 
     void* bitmap_data = malloc(width * height * 4);
     
-    // TODO: use the right colorSpace!
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    CGColorSpaceRef colorSpace = CGImageGetColorSpace(image.CGImage);
 
     assert(texture.pixelFormat == MTLPixelFormatRGBA8Unorm);
     uint32_t bitmapInfo = kCGImageAlphaPremultipliedLast;
     
     CGContextRef bitmap = CGBitmapContextCreate(bitmap_data, width, height, 8, width*4, colorSpace, bitmapInfo);
-    //CGContextSetBlendMode(bitmap, kCGBlendModeNormal);
+    CGContextSetBlendMode(bitmap, kCGBlendModeCopy);
     CGContextDrawImage(bitmap, CGRectMake(0, 0, width, height), image.CGImage);
-    CGColorSpaceRelease(colorSpace);
     CGContextRelease(bitmap);
 
     [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:bitmap_data bytesPerRow:width*4];
@@ -1024,10 +1213,14 @@ void texture_load_uiimage(void* data, id<MTLTexture> texture) {
 
 /// set a UIImage as a texture
 -(void)setTexture:(NSUInteger)index image:(UIImage *)image {
-    [self setTexture:index texture:(void*)image hash:42
+    [self setTexture:index texture:(void*)image hash:0
                width:(image.size.width * image.scale) height:(image.size.width * image.scale)
-              format:MTLPixelFormatRGBA8Unorm
-        texture_load:texture_load_uiimage texture_load_data:(void*)image];
+              format:MTLPixelFormatRGBA8Unorm colorspace:CGImageGetColorSpace(image.CGImage)
+        texture_load:^(id<MTLTexture> texture) {
+            texture_load_uiimage(texture, image);
+    }];
 }
 
 @end
+
+

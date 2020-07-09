@@ -10,8 +10,6 @@
 
 typedef simd_float4 VertexColor;
 #define VertexColor(r,g,b,a) simd_make_float4(r,g,b,a)
-#define VertexRGBA(r,g,b,a)  simd_make_float4(r,g,b,a)
-#define VertexRGB(r,g,b)     simd_make_float4(r,g,b,1)
 
 typedef struct {
     simd_float2 position;
@@ -32,18 +30,14 @@ static Shader const ShaderTextureAlpha  = @"texture, blend=alpha";
 static Shader const ShaderTextureAdd    = @"texture, blend=add";
 static Shader const ShaderTextureMultiply = @"texture, blend=mul";
 
-typedef void (*texture_load_function_t)(void*, id<MTLTexture>);
-
 //
 // MetalView - a UIView subclass for custom drawing with Metal (in 2D)
-//
-// THREADING ISSUES
-//
 //
 @interface MetalView : UIView
 
 @property(class, readonly) BOOL isSupported;
-@property(readwrite) CGColorSpaceRef colorSpace;
+@property(readonly) CGColorSpaceRef colorSpace;
+@property(readonly) MTLPixelFormat pixelFormat;
 
 @property(nonatomic) NSInteger preferredFramesPerSecond;
 
@@ -57,6 +51,9 @@ typedef void (*texture_load_function_t)(void*, id<MTLTexture>);
 @property(readonly)  CGFloat    frameRateAverage;   // average frameRate
 @property(readonly)  CGFloat    renderTime;         // time it took last frame to render (sec)
 @property(readonly)  CGFloat    renderTimeAverage;  // average renderTime
+@property(readonly)  NSUInteger vertexCount;        // total verticies drawn last frame.
+@property(readonly)  NSUInteger primCount;          // total primitives drawn last frame.
+
 
 -(BOOL)drawBegin;
 -(void)drawPrim:(MTLPrimitiveType)type vertices:(Vertex2D*)vertices count:(NSUInteger)count;
@@ -66,6 +63,7 @@ typedef void (*texture_load_function_t)(void*, id<MTLTexture>);
 -(void)drawLine:(CGPoint)start to:(CGPoint)end width:(CGFloat)width color:(VertexColor)color edgeAlpha:(CGFloat)alpha;
 -(void)drawRect:(CGRect)rect color:(VertexColor)color;
 -(void)drawRect:(CGRect)rect color:(VertexColor)color orientation:(UIImageOrientation)orientation;
+-(void)drawGradientRect:(CGRect)rect color:(VertexColor)color1 color:(VertexColor)color2 orientation:(UIImageOrientation)orientation;
 -(void)drawTriangle:(CGPoint*)points color:(VertexColor)color;
 -(void)drawEnd;
 
@@ -86,6 +84,7 @@ typedef void (*texture_load_function_t)(void*, id<MTLTexture>);
 ///     <blend mode>    -  blend mode used to write into render target.
 ///                 blend=copy   - D.rgb = S.rgb
 ///                 blend=alpha  - D.rgb = S.rgb * S.a + D.rgb * (1-S.a)
+///                 blend=premulalpha - D.rgb = S.rgb + D.rgb * (1-S.a)
 ///                 blend=add     - D.rgb = S.rgb * S.a + D.rgb
 ///                 blend=mul     - D.rgb = S.rgb * D.rgb
 ///
@@ -107,7 +106,8 @@ typedef void (*texture_load_function_t)(void*, id<MTLTexture>);
 
 -(void)setTextureFilter:(MTLSamplerMinMagFilter)filter;
 -(void)setTextureAddressMode:(MTLSamplerAddressMode)mode;
--(void)setTexture:(NSUInteger)index texture:(void*)texture hash:(NSUInteger)hash width:(NSUInteger)width height:(NSUInteger)height format:(MTLPixelFormat)format texture_load:(texture_load_function_t)texture_load texture_load_data:(void*)texture_load_data;
+-(void)setTexture:(NSUInteger)index texture:(void*)identifier hash:(NSUInteger)hash width:(NSUInteger)width height:(NSUInteger)height format:(MTLPixelFormat)format texture_load:(void (NS_NOESCAPE ^)(id<MTLTexture> texture))texture_load;
+-(void)setTexture:(NSUInteger)index texture:(void*)identifier hash:(NSUInteger)hash width:(NSUInteger)width height:(NSUInteger)height format:(MTLPixelFormat)format colorspace:(CGColorSpaceRef)colorspace texture_load:(void (NS_NOESCAPE ^)(id<MTLTexture> texture))texture_load;
 
 /// set a UIImage as a texture
 -(void)setTexture:(NSUInteger)index image:(UIImage*)image;

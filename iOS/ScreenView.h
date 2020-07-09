@@ -59,6 +59,8 @@
 #define kScreenViewShaderNone       @"None"
 #define kScreenViewShaderDefault    @"Default"
 
+#define kScreenViewColorSpaceDevice @"Default"
+
 @protocol ScreenView <NSObject>
 
 // the Settings UI will let the user choose from these, format of a entry is is:
