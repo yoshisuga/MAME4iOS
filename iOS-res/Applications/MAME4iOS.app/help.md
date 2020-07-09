@@ -2,7 +2,7 @@
 ### Version $(APP_VERSION) ($(APP_DATE)) 
 ### MAME (0.139u1 )  by David Valdeita (Seleuco)
 
-![Icon](MAME4iOS144.png)
+<img src="mame_logo.png" width="60%">
 
 ## INTRODUCTION
 
