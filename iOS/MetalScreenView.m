@@ -375,6 +375,10 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
     NSUInteger width = texture.width;
     NSUInteger height = texture.height;
     
+    assert(texture.pixelFormat == MTLPixelFormatBGRA8Unorm);
+    assert(texture.width == prim->texture_width);
+    assert(texture.height == prim->texture_height);
+
     static char* texture_format_name[] = {"UNDEFINED", "PAL16", "PALA16", "555", "RGB", "ARGB", "YUV16"};
     texture.label = [NSString stringWithFormat:@"MAME %08lX:%d %dx%d %s", (NSUInteger)prim->texture_base, prim->texture_seqid, prim->texture_width, prim->texture_height, texture_format_name[prim->texformat]];
 
@@ -532,12 +536,9 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
             // set the texture
             [self setTexture:0 texture:prim->texture_base hash:prim->texture_seqid
                        width:prim->texture_width height:prim->texture_height
-#if TARGET_OS_MACCATALYST
                       format:MTLPixelFormatBGRA8Unorm
-#else
-                      format:(prim->texformat == TEXFORMAT_RGB15 ? MTLPixelFormatBGR5A1Unorm : MTLPixelFormatBGRA8Unorm)
-#endif
-                texture_load:texture_load texture_load_data:prim];
+                  colorspace:(prim->screentex ? _screenColorSpace : NULL)
+                texture_load:^(id<MTLTexture> texture) {load_texture_prim(texture, prim);} ];
 
             // set the shader
             if (prim->screentex) {

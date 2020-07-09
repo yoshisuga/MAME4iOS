@@ -296,6 +296,8 @@
 		EFA7A15724B65C020009CF88 /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = CE30090316FA47CB000EDCF1 /* Category.ini */; };
 		EFA7A15824B65C020009CF88 /* hiscore.dat in Resources */ = {isa = PBXBuildFile; fileRef = CE30090616FA47E4000EDCF1 /* hiscore.dat */; };
 		EFA7A16324B65FCC0009CF88 /* MAME4mac-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = EFA7A16124B65FCC0009CF88 /* MAME4mac-Info.plist */; };
+		EFA7A16424B792B50009CF88 /* ColorSpace.m in Sources */ = {isa = PBXBuildFile; fileRef = EF950BA924B1211F00DC9A47 /* ColorSpace.m */; };
+		EFA7A16624B792CE0009CF88 /* MetalPerformanceShaders.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA7A16524B792CE0009CF88 /* MetalPerformanceShaders.framework */; };
 		EFA98FB124A4E2BF007B6689 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA98FAE24A4CC49007B6689 /* CoreServices.framework */; };
 		EFA98FB324A4E2D5007B6689 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA98FB224A4E2D5007B6689 /* CoreServices.framework */; };
 		EFA98FB524A4F811007B6689 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA98FB424A4F810007B6689 /* WebKit.framework */; };
@@ -555,6 +557,7 @@
 		EFA7A15E24B65C020009CF88 /* MAME4mac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MAME4mac.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EFA7A16124B65FCC0009CF88 /* MAME4mac-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "MAME4mac-Info.plist"; sourceTree = "<group>"; };
 		EFA7A16224B65FCC0009CF88 /* MAME4mac.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = MAME4mac.entitlements; sourceTree = "<group>"; };
+		EFA7A16524B792CE0009CF88 /* MetalPerformanceShaders.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalPerformanceShaders.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/System/Library/Frameworks/MetalPerformanceShaders.framework; sourceTree = DEVELOPER_DIR; };
 		EFA98FAE24A4CC49007B6689 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		EFA98FB224A4E2D5007B6689 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS14.0.sdk/System/Library/Frameworks/CoreServices.framework; sourceTree = DEVELOPER_DIR; };
 		EFA98FB424A4F810007B6689 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
@@ -661,6 +664,7 @@
 				EFA7A12924B65C020009CF88 /* AVFoundation.framework in Frameworks */,
 				EFA7A12A24B65C020009CF88 /* UIKit.framework in Frameworks */,
 				EFA7A12B24B65C020009CF88 /* Foundation.framework in Frameworks */,
+				EFA7A16624B792CE0009CF88 /* MetalPerformanceShaders.framework in Frameworks */,
 				EFA7A12C24B65C020009CF88 /* CoreGraphics.framework in Frameworks */,
 				EFA7A12D24B65C020009CF88 /* GameKit.framework in Frameworks */,
 				EFA7A12E24B65C020009CF88 /* libz.dylib in Frameworks */,
@@ -860,6 +864,7 @@
 			children = (
 				EF950BAC24B1239F00DC9A47 /* MetalPerformanceShaders.framework */,
 				EF950BAE24B123A900DC9A47 /* MetalPerformanceShaders.framework */,
+				EFA7A16524B792CE0009CF88 /* MetalPerformanceShaders.framework */,
 				EFA98FB424A4F810007B6689 /* WebKit.framework */,
 				EFA98FAE24A4CC49007B6689 /* CoreServices.framework */,
 				EFA98FB224A4E2D5007B6689 /* CoreServices.framework */,
@@ -1502,6 +1507,7 @@
 				EFA7A10924B65C020009CF88 /* InputOptionController.m in Sources */,
 				EFA7A10A24B65C020009CF88 /* GCDWebServerMultiPartFormRequest.m in Sources */,
 				EFA7A10B24B65C020009CF88 /* FileItemProvider.m in Sources */,
+				EFA7A16424B792B50009CF88 /* ColorSpace.m in Sources */,
 				EFA7A10C24B65C020009CF88 /* DefaultOptionController.m in Sources */,
 				EFA7A10D24B65C020009CF88 /* (null) in Sources */,
 				EFA7A10E24B65C020009CF88 /* megaTron.metal in Sources */,

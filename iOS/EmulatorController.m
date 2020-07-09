@@ -1455,7 +1455,7 @@ static int gcd(int a, int b) {
     NSString* fps = [NSString stringWithFormat:@"%.2ffps %.1fms %@%@",
                      screenView.frameRateAverage, screenView.renderTimeAverage * 1000.0,
                      [screenView isKindOfClass:[MetalScreenView class]] ? @"🅼" : @"",
-                     [screenView isKindOfClass:[MetalScreenView class]] && [(MetalScreenView*)screenView pixelFormat] == MTLPixelFormatBGR10_XR ? @"🆆" : @""];
+                     [screenView isKindOfClass:[MetalScreenView class]] && [(MetalScreenView*)screenView pixelFormat] != MTLPixelFormatBGRA8Unorm ? @"🆆" : @""];
 #endif
     
     fpsView.text = fps;
@@ -2349,6 +2349,7 @@ UIColor* colorWithHexString(NSString* string) {
         // https://developer.apple.com/design/human-interface-guidelines/ios/overview/mac-catalyst/
         
         // TODO: what happens on Big Sur?
+        assert(self.traitCollection.userInterfaceIdiom != 5); // UIUserInterfaceIdiomMac does not do this scaling.
         screenSize.width = floor(screenSize.width / 0.77);
         screenSize.height = floor(screenSize.height / 0.77);
 

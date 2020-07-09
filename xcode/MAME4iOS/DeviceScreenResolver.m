@@ -19,6 +19,10 @@
     #pragma clang diagnostic pop
     CGFloat maxLength = MAX(screenSize.width, screenSize.height);
 
+    assert(idiom != 5);     // 5 is UIUserInterfaceIdiomMac
+    assert(idiom != UIUserInterfaceIdiomUnspecified);
+    assert(idiom == UIUserInterfaceIdiomPad || idiom == UIUserInterfaceIdiomPhone);
+    
     if ( idiom == UIUserInterfaceIdiomPad && !CGSizeEqualToSize(windowSize, CGSizeZero) && !CGSizeEqualToSize(screenSize, windowSize)) {
         // we are on an iPad in SlideOver or SplitScreen mode. pretend to be a generic iPhone or iPad based on aspect.
 
@@ -60,6 +64,7 @@
             return IPAD_GENERIC;
         }
     } else {
+        assert(FALSE);
         return IPAD_GENERIC;
     }
 }
