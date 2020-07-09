@@ -1776,6 +1776,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     
     if (_key_commands == nil || g_pref_ext_control_type != _key_commands_type) {
         
+#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_13_0
         // standard keyboard
         _key_commands = @[
             [UIKeyCommand commandWithTitle:@"SELECT" image:nil action:@selector(onCommandSelect) input:@"\r"                modifierFlags:0 propertyList:nil],
@@ -1784,6 +1785,16 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
             [UIKeyCommand commandWithTitle:@"LEFT"   image:nil action:@selector(onCommandLeft)   input:UIKeyInputLeftArrow  modifierFlags:0 propertyList:nil],
             [UIKeyCommand commandWithTitle:@"RIGHT"  image:nil action:@selector(onCommandRight)  input:UIKeyInputRightArrow modifierFlags:0 propertyList:nil],
         ];
+#else
+        // standard keyboard
+        _key_commands = @[
+            [UIKeyCommand keyCommandWithInput:@"\r" modifierFlags:0 action:@selector(onCommandSelect) discoverabilityTitle:@"SELECT"],
+            [UIKeyCommand keyCommandWithInput:UIKeyInputUpArrow modifierFlags:0 action:@selector(onCommandUp) discoverabilityTitle:@"UP"],
+            [UIKeyCommand keyCommandWithInput:UIKeyInputDownArrow modifierFlags:0 action:@selector(onCommandDown) discoverabilityTitle:@"DOWN"],
+            [UIKeyCommand keyCommandWithInput:UIKeyInputLeftArrow modifierFlags:0 action:@selector(onCommandLeft) discoverabilityTitle:@"LEFT"],
+            [UIKeyCommand keyCommandWithInput:UIKeyInputRightArrow modifierFlags:0 action:@selector(onCommandRight) discoverabilityTitle:@"RIGHT"]
+        ];
+#endif
 
         _key_commands_type = g_pref_ext_control_type;
 
