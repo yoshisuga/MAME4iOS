@@ -140,6 +140,9 @@
 		EF301CF2240460C5000510FD /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF301CF0240460C5000510FD /* Alert.m */; };
 		EF301CF3240460F3000510FD /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF27F36323F73CD400B1E50A /* ZipFile.m */; };
 		EF63E1C124424D2300CFE85D /* whatsnew.md in Resources */ = {isa = PBXBuildFile; fileRef = EF63E1C024424D2300CFE85D /* whatsnew.md */; };
+		EF79BDD524B7C0DA00824BFD /* gitinfo.json.sh in Resources */ = {isa = PBXBuildFile; fileRef = EF79BDD424B7C0DA00824BFD /* gitinfo.json.sh */; };
+		EF79BDD624B7C0DA00824BFD /* gitinfo.json.sh in Resources */ = {isa = PBXBuildFile; fileRef = EF79BDD424B7C0DA00824BFD /* gitinfo.json.sh */; };
+		EF79BDD724B7C0DA00824BFD /* gitinfo.json.sh in Resources */ = {isa = PBXBuildFile; fileRef = EF79BDD424B7C0DA00824BFD /* gitinfo.json.sh */; };
 		EF7B232C23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
 		EF7B232D23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
 		EF8E427D249348220049C84C /* megaTron.metal in Sources */ = {isa = PBXBuildFile; fileRef = EF8E427C249348220049C84C /* megaTron.metal */; };
@@ -287,7 +290,6 @@
 		EFA7A15624B65C020009CF88 /* config_iPad_pro_10_5.txt in Resources */ = {isa = PBXBuildFile; fileRef = 921CC321216A903600A39154 /* config_iPad_pro_10_5.txt */; };
 		EFA7A15724B65C020009CF88 /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = CE30090316FA47CB000EDCF1 /* Category.ini */; };
 		EFA7A15824B65C020009CF88 /* hiscore.dat in Resources */ = {isa = PBXBuildFile; fileRef = CE30090616FA47E4000EDCF1 /* hiscore.dat */; };
-		EFA7A16324B65FCC0009CF88 /* MAME4mac-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = EFA7A16124B65FCC0009CF88 /* MAME4mac-Info.plist */; };
 		EFA7A16424B792B50009CF88 /* ColorSpace.m in Sources */ = {isa = PBXBuildFile; fileRef = EF950BA924B1211F00DC9A47 /* ColorSpace.m */; };
 		EFA7A16624B792CE0009CF88 /* MetalPerformanceShaders.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA7A16524B792CE0009CF88 /* MetalPerformanceShaders.framework */; };
 		EFA7A16B24B7A38E0009CF88 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EFA7A16A24B7A38E0009CF88 /* Assets.xcassets */; };
@@ -342,6 +344,45 @@
 				"$(DERIVED_FILE_DIR)/$(INPUT_FILE_BASE).html",
 			);
 			script = "\"$PROJECT_DIR/../../Markdown_1.1.9/Markdown.pl\" --stub \"$INPUT_FILE_PATH\" > \"$DERIVED_FILE_DIR/$INPUT_FILE_BASE.html\"\n";
+		};
+		EF79BDD324B7BEB500824BFD /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.json.sh";
+			fileType = pattern.proxy;
+			inputFiles = (
+			);
+			isEditable = 1;
+			outputFiles = (
+				"$(DERIVED_FILE_DIR)/$(INPUT_FILE_BASE)",
+			);
+			script = "/bin/sh \"$INPUT_FILE_PATH\" > \"$DERIVED_FILE_DIR/$INPUT_FILE_BASE\"\n";
+		};
+		EF79BDDB24B7D75000824BFD /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.json.sh";
+			fileType = pattern.proxy;
+			inputFiles = (
+			);
+			isEditable = 1;
+			outputFiles = (
+				"$(DERIVED_FILE_DIR)/$(INPUT_FILE_BASE)",
+			);
+			script = "/bin/sh \"$INPUT_FILE_PATH\" > \"$DERIVED_FILE_DIR/$INPUT_FILE_BASE\"\n";
+		};
+		EF79BDDC24B7D77400824BFD /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.json.sh";
+			fileType = pattern.proxy;
+			inputFiles = (
+			);
+			isEditable = 1;
+			outputFiles = (
+				"$(DERIVED_FILE_DIR)/$(INPUT_FILE_BASE)",
+			);
+			script = "/bin/sh \"$INPUT_FILE_PATH\" > \"$DERIVED_FILE_DIR/$INPUT_FILE_BASE\"\n";
 		};
 		EFA7A15A24B65C020009CF88 /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
@@ -516,6 +557,7 @@
 		EF301CEF240460C5000510FD /* Alert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Alert.h; sourceTree = "<group>"; };
 		EF301CF0240460C5000510FD /* Alert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Alert.m; sourceTree = "<group>"; };
 		EF63E1C024424D2300CFE85D /* whatsnew.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = whatsnew.md; path = "../../iOS-res/Applications/MAME4iOS.app/whatsnew.md"; sourceTree = "<group>"; };
+		EF79BDD424B7C0DA00824BFD /* gitinfo.json.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = gitinfo.json.sh; sourceTree = "<group>"; };
 		EF8E427C249348220049C84C /* megaTron.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = megaTron.metal; sourceTree = "<group>"; };
 		EF8E4282249915F20049C84C /* lineTron.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = lineTron.metal; sourceTree = "<group>"; };
 		EF8E428A249FE5410049C84C /* ulTron.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = ulTron.metal; sourceTree = "<group>"; };
@@ -781,6 +823,7 @@
 		CEBFBC0E163C5BD300A05CD0 /* resources */ = {
 			isa = PBXGroup;
 			children = (
+				EF79BDD424B7C0DA00824BFD /* gitinfo.json.sh */,
 				EFF9F80C2464864600DDA88C /* border-dark.png */,
 				EFF9F80B2464864600DDA88C /* border-light.png */,
 				EFF9F80D2464864600DDA88C /* border-test.png */,
@@ -1044,12 +1087,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 925ABCDF1E46DCC500997182 /* Build configuration list for PBXNativeTarget "MAME4iOS" */;
 			buildPhases = (
+				EF79BDD924B7D71800824BFD /* ShellScript */,
 				925ABCA51E46DCC500997182 /* Sources */,
 				925ABCB81E46DCC500997182 /* Frameworks */,
 				925ABCC61E46DCC500997182 /* Resources */,
-				EF0E58CE2444E61000D7588F /* ShellScript */,
 			);
 			buildRules = (
+				EF79BDDC24B7D77400824BFD /* PBXBuildRule */,
 				EF0E08AF2401853D00E98F01 /* PBXBuildRule */,
 			);
 			dependencies = (
@@ -1063,12 +1107,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 92ECB8FD21EA985000D1E3D0 /* Build configuration list for PBXNativeTarget "MAME tvOS" */;
 			buildPhases = (
+				EF79BDDA24B7D72C00824BFD /* ShellScript */,
 				92ECB8E721EA984D00D1E3D0 /* Sources */,
 				92ECB8E821EA984D00D1E3D0 /* Frameworks */,
 				92ECB8E921EA984D00D1E3D0 /* Resources */,
-				EF0E58CF2444F0C000D7588F /* ShellScript */,
 			);
 			buildRules = (
+				EF79BDDB24B7D75000824BFD /* PBXBuildRule */,
 			);
 			dependencies = (
 			);
@@ -1081,12 +1126,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = EFA7A15B24B65C020009CF88 /* Build configuration list for PBXNativeTarget "MAME4mac" */;
 			buildPhases = (
+				EF79BDD824B7CE8100824BFD /* ShellScript */,
 				EFA7A0DF24B65C020009CF88 /* Sources */,
 				EFA7A11824B65C020009CF88 /* Frameworks */,
 				EFA7A12F24B65C020009CF88 /* Resources */,
-				EFA7A15924B65C020009CF88 /* ShellScript */,
 			);
 			buildRules = (
+				EF79BDD324B7BEB500824BFD /* PBXBuildRule */,
 				EFA7A15A24B65C020009CF88 /* PBXBuildRule */,
 			);
 			dependencies = (
@@ -1173,6 +1219,7 @@
 				EFF9F8152465DFB200DDA88C /* effect-dot.png in Resources */,
 				925ABCD71E46DCC500997182 /* LICENSE in Resources */,
 				92A533D021EBDDF20089FBB9 /* GCDWebUploader.bundle in Resources */,
+				EF79BDD524B7C0DA00824BFD /* gitinfo.json.sh in Resources */,
 				EFA756FF2405585D00A02AAB /* mameui.png in Resources */,
 				EFA757222408488D00A02AAB /* iCadeControls.png in Resources */,
 				EFF9F81B2466BE8500DDA88C /* effect-scanline.png in Resources */,
@@ -1194,6 +1241,7 @@
 				926C770721F26DFA00103EDE /* crt-2.png in Resources */,
 				EF26AE09241848800078FD30 /* mame_logo.png in Resources */,
 				926C770921F26E0000103EDE /* scanline-2.png in Resources */,
+				EF79BDD624B7C0DA00824BFD /* gitinfo.json.sh in Resources */,
 				EFA757002405585D00A02AAB /* mameui.png in Resources */,
 				EFF9F80F2464864600DDA88C /* border-light.png in Resources */,
 				EF0088132459F4FC0058C2A1 /* history0139.zip in Resources */,
@@ -1246,9 +1294,9 @@
 				EFA7A14C24B65C020009CF88 /* effect-dot.png in Resources */,
 				EFA7A14D24B65C020009CF88 /* LICENSE in Resources */,
 				EFA7A14E24B65C020009CF88 /* GCDWebUploader.bundle in Resources */,
+				EF79BDD724B7C0DA00824BFD /* gitinfo.json.sh in Resources */,
 				EFA7A15024B65C020009CF88 /* mameui.png in Resources */,
 				EFA7A15124B65C020009CF88 /* iCadeControls.png in Resources */,
-				EFA7A16324B65FCC0009CF88 /* MAME4mac-Info.plist in Resources */,
 				EFA7A15524B65C020009CF88 /* effect-scanline.png in Resources */,
 				EFA7A15624B65C020009CF88 /* config_iPad_pro_10_5.txt in Resources */,
 				EFA7A15724B65C020009CF88 /* Category.ini in Resources */,
@@ -1259,7 +1307,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		EF0E58CE2444E61000D7588F /* ShellScript */ = {
+		EF79BDD824B7CE8100824BFD /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1273,11 +1321,10 @@
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/bash;
-			shellScript = "PLISTBUDDY=\"/usr/libexec/PlistBuddy\"\nINFOPLIST=\"${BUILT_PRODUCTS_DIR}/${INFOPLIST_PATH}\"\n\nGIT_COMMIT=`git rev-parse HEAD`\nGIT_BRANCH=`git rev-parse --abbrev-ref HEAD`\n\n$PLISTBUDDY -c \"Delete :git-commit\" \"${INFOPLIST}\" || true\n$PLISTBUDDY -c \"Delete :git-branch\" \"${INFOPLIST}\" || true\n\n$PLISTBUDDY -c \"Add :git-commit string $GIT_COMMIT\" \"${INFOPLIST}\"\n$PLISTBUDDY -c \"Add :git-branch string $GIT_BRANCH\" \"${INFOPLIST}\"\n";
-			showEnvVarsInLog = 0;
+			shellPath = /bin/sh;
+			shellScript = "# force this resource to update each build\ntouch gitinfo.json.sh\n";
 		};
-		EF0E58CF2444F0C000D7588F /* ShellScript */ = {
+		EF79BDD924B7D71800824BFD /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1291,11 +1338,10 @@
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/bash;
-			shellScript = "PLISTBUDDY=\"/usr/libexec/PlistBuddy\"\nINFOPLIST=\"${BUILT_PRODUCTS_DIR}/${INFOPLIST_PATH}\"\n\nGIT_COMMIT=`git rev-parse HEAD`\nGIT_BRANCH=`git rev-parse --abbrev-ref HEAD`\n\n$PLISTBUDDY -c \"Delete :git-commit\" \"${INFOPLIST}\" || true\n$PLISTBUDDY -c \"Delete :git-branch\" \"${INFOPLIST}\" || true\n\n$PLISTBUDDY -c \"Add :git-commit string $GIT_COMMIT\" \"${INFOPLIST}\"\n$PLISTBUDDY -c \"Add :git-branch string $GIT_BRANCH\" \"${INFOPLIST}\"\n";
-			showEnvVarsInLog = 0;
+			shellPath = /bin/sh;
+			shellScript = "# force this resource to update each build\ntouch gitinfo.json.sh\n";
 		};
-		EFA7A15924B65C020009CF88 /* ShellScript */ = {
+		EF79BDDA24B7D72C00824BFD /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1309,9 +1355,8 @@
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/bash;
-			shellScript = "PLISTBUDDY=\"/usr/libexec/PlistBuddy\"\nINFOPLIST=\"${BUILT_PRODUCTS_DIR}/${INFOPLIST_PATH}\"\n\nGIT_COMMIT=`git rev-parse HEAD`\nGIT_BRANCH=`git rev-parse --abbrev-ref HEAD`\n\n$PLISTBUDDY -c \"Delete :git-commit\" \"${INFOPLIST}\" || true\n$PLISTBUDDY -c \"Delete :git-branch\" \"${INFOPLIST}\" || true\n\n$PLISTBUDDY -c \"Add :git-commit string $GIT_COMMIT\" \"${INFOPLIST}\"\n$PLISTBUDDY -c \"Add :git-branch string $GIT_BRANCH\" \"${INFOPLIST}\"\n";
-			showEnvVarsInLog = 0;
+			shellPath = /bin/sh;
+			shellScript = "# force this resource to update each build\ntouch gitinfo.json.sh\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
