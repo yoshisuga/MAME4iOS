@@ -52,7 +52,7 @@
     #define PRODUCT_NAME_LONG   "MAME for macOS"
 #elif TARGET_OS_TV
     #define PRODUCT_NAME        "MAME4tvOS"
-    #define PRODUCT_NAME        "MAME for AppleTV"
+    #define PRODUCT_NAME_LONG   "MAME for AppleTV"
 #elif TARGET_OS_SIMULATOR
     #define PRODUCT_NAME        "MAME4sim"
     #define PRODUCT_NAME_LONG   "MAME for Simulator"
