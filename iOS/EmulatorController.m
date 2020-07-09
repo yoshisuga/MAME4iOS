@@ -2344,6 +2344,33 @@ UIColor* colorWithHexString(NSString* string) {
 
     if (externalView != nil)
         g_device_is_fullscreen = FALSE;
+    
+#if TARGET_OS_MACCATALYST
+    if (self.view.window != nil) {
+        CGSize windowSize = self.view.window.bounds.size;
+        CGSize screenSize = self.view.window.screen.bounds.size;
+        
+        // on Catalina the screenSize is a lie, so go to the NSScreen to get it!
+        // TODO: test for Big Sur?
+        screenSize = [(id)([NSClassFromString(@"NSScreen") mainScreen]) frame].size;
+
+        // To ensure that your text and interface elements are consistent with the macOS display environment, iOS views automatically scale down to 77%.
+        // https://developer.apple.com/design/human-interface-guidelines/ios/overview/mac-catalyst/
+        
+        // TODO: what happens on Big Sur?
+        screenSize.width = floor(screenSize.width / 0.77);
+        screenSize.height = floor(screenSize.height / 0.77);
+
+        NSLog(@"screenSize: %@", NSStringFromSize(screenSize));
+        NSLog(@"windowSize: %@", NSStringFromSize(windowSize));
+
+        // TODO: what about toolbars or other Chrome?
+        if (windowSize.width >= screenSize.width && windowSize.height >= screenSize.height) {
+            NSLog(@"CATALYST FULLSCREEN");
+            g_device_is_fullscreen = TRUE;
+        }
+    }
+#endif
 
     CGRect r;
 
