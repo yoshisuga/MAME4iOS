@@ -45,7 +45,7 @@
 #import "EmulatorController.h"
 #import <UIKit/UIScreen.h>
 
-@interface Bootstrapper : NSObject <UIApplicationDelegate>  {
+@interface Bootstrapper : UIResponder <UIApplicationDelegate>  {
 	UIWindow		    *deviceWindow;
 	UIWindow            *externalWindow;
 	EmulatorController	*hrViewController;

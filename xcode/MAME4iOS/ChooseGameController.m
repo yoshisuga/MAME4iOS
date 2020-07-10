@@ -1690,6 +1690,26 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     [self runMenu:indexPath];
 }
 
+#pragma mark MENU
+
+#if TARGET_OS_IOS
+-(BOOL)canPerformAction:(SEL)action withSender:(id)sender {
+    if (action == @selector(filePlay) || action == @selector(fileInfo)) {
+        NSIndexPath* indexPath = self.collectionView.indexPathsForSelectedItems.firstObject;
+        return indexPath != nil;
+    }
+    return [super canPerformAction:action withSender:sender];
+}
+
+-(void)filePlay {
+    [self onCommandSelect];
+}
+-(void)fileInfo {
+    NSIndexPath* indexPath = self.collectionView.indexPathsForSelectedItems.firstObject;
+    [self info:[self getGameInfo:indexPath]];
+}
+#endif
+
 #pragma mark Keyboard and Game Controller navigation
 
 #if TARGET_OS_IOS

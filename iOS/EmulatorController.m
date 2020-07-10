@@ -2397,10 +2397,17 @@ UIColor* colorWithHexString(NSString* string) {
 
     // Handle Safe Area (iPhone X and above) adjust the view down away from the notch, before adjusting for aspect
     if ( externalView == nil ) {
-        // in fullscreen mode, we dont want to correct for the bottom inset, because we hide the home indicator.
         UIEdgeInsets safeArea = self.view.safeAreaInsets;
+
+        // in fullscreen mode, we dont want to correct for the bottom inset, because we hide the home indicator.
         if (g_device_is_fullscreen)
             safeArea.bottom = 0.0;
+
+#if TARGET_OS_MACCATALYST
+        // in macApp, we dont want to correct for the top inset, if we have hidden the titlebar and want to go edge to edge.
+        if (self.view.window.windowScene.titlebar.titleVisibility == UITitlebarTitleVisibilityHidden && self.view.window.windowScene.titlebar.toolbar == nil)
+            safeArea.top = 0.0;
+#endif
         r = CGRectIntersection(r, UIEdgeInsetsInsetRect(self.view.bounds, safeArea));
     }
 #elif TARGET_OS_TV
@@ -2613,6 +2620,41 @@ UIColor* colorWithHexString(NSString* string) {
 }
 #endif
 
+#pragma mark - MENU
+
+-(BOOL)canPerformAction:(SEL)action withSender:(id)sender {
+    NSLog(@"canPerformAction: %@", NSStringFromSelector(action));
+    
+    if (action == @selector(mameSelect) ||
+        action == @selector(mameStart) ||
+        action == @selector(mameConfigure) ||
+        action == @selector(mameFullscreen) ||
+        action == @selector(mamePause) ||
+        action == @selector(mameReset)) {
+        return !g_emulation_paused && [self presentedViewController] == nil;
+    }
+    return [super canPerformAction:action withSender:sender];
+}
+-(void)mameSelect {
+    push_mame_button(0, MYOSD_SELECT);
+}
+-(void)mameStart {
+    push_mame_button(0, MYOSD_START);
+}
+-(void)mameConfigure {
+    myosd_configure = 1;
+}
+-(void)mamePause {
+    myosd_mame_pause = 1;
+}
+-(void)mameReset {
+    myosd_reset = 1;
+}
+-(void)mameFullscreen {
+    [self commandKey:'\r'];
+}
+
+
 #pragma mark - KEYBOARD INPUT
 
 // called from keyboard handler on any CMD+key (or OPTION+key) used for DEBUG stuff.
@@ -2630,7 +2672,14 @@ UIColor* colorWithHexString(NSString* string) {
 
                 // if user is manualy controling fullscreen, then turn off fullscreen joy.
                 op.fullscreenJoystick = g_pref_full_screen_joy = FALSE;
-                    
+                
+#if TARGET_OS_MACCATALYST
+                // in macApp we really only want one flag for "fullscreen"
+                // NOTE: macApp has two concepts of fullsceen g_device_is_fullscreen is if
+                // the game SCREEN fills our window, and a macApp's window can be fullscreen
+                op.fullscreenLandscape = g_pref_full_screen_land = !g_device_is_fullscreen;
+                op.fullscreenPortrait = g_pref_full_screen_port = !g_device_is_fullscreen;
+#endif
                 [op saveOptions];
                 [self changeUI];
                 break;
