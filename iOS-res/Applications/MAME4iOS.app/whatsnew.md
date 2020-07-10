@@ -10,6 +10,8 @@
 * Support WideColor (aka DisplayP3) devices.
 * Support SlideOver and SplitScreen on iPad.
 * Support macOS via Catalyst, requires macOS 10.15 (aka Catalina) or higher.
+* Mac menu bar and edge to edge game window.
+* A,B,Y,X,L,R on a hardware keyboard will function as buttons.
 
 # Version 2020.11
 * Added new Vector Shader category for Vector games on both iOS and tvOS.
