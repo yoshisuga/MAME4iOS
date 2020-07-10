@@ -2623,15 +2623,17 @@ UIColor* colorWithHexString(NSString* string) {
 #pragma mark - MENU
 
 -(BOOL)canPerformAction:(SEL)action withSender:(id)sender {
-    NSLog(@"canPerformAction: %@", NSStringFromSelector(action));
-    
     if (action == @selector(mameSelect) ||
         action == @selector(mameStart) ||
         action == @selector(mameConfigure) ||
+        action == @selector(mameSettings) ||
         action == @selector(mameFullscreen) ||
         action == @selector(mamePause) ||
         action == @selector(mameExit) ||
         action == @selector(mameReset)) {
+
+        NSLog(@"canPerformAction: %@: %d", NSStringFromSelector(action), !g_emulation_paused && [self presentedViewController] == nil);
+        
         return !g_emulation_paused && [self presentedViewController] == nil;
     }
     return [super canPerformAction:action withSender:sender];
@@ -2644,6 +2646,9 @@ UIColor* colorWithHexString(NSString* string) {
 }
 -(void)mameConfigure {
     myosd_configure = 1;
+}
+-(void)mameSettings {
+    [self runSettings];
 }
 -(void)mamePause {
     myosd_mame_pause = 1;

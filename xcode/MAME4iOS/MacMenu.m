@@ -26,6 +26,7 @@
 - (void)mameSelect;
 - (void)mameStart;
 - (void)mamePause;
+- (void)mameSettings;
 - (void)mameConfigure;
 - (void)mameReset;
 - (void)mameFullscreen;
@@ -71,6 +72,7 @@
         [UIKeyCommand commandWithTitle:@"Start"     image:[UIImage systemImageNamed:@"person"]              action:@selector(mameStart)     input:@"1" modifierFlags:0 propertyList:nil],
         [UIKeyCommand commandWithTitle:@"Fullscreen"image:[UIImage systemImageNamed:@"rectangle.and.arrow.up.right.and.arrow.down.left"]
                                 action:@selector(mameFullscreen) input:@"\r" modifierFlags:UIKeyModifierCommand propertyList:nil],
+        [UIKeyCommand commandWithTitle:@"Settings"  image:[UIImage systemImageNamed:@"gear"]                action:@selector(mameSettings)  input:@"," modifierFlags:UIKeyModifierCommand propertyList:nil],
         [UIKeyCommand commandWithTitle:@"Configure" image:[UIImage systemImageNamed:@"slider.horizontal.3"] action:@selector(mameConfigure) input:@"\t" modifierFlags:0 propertyList:nil],
         [UIKeyCommand commandWithTitle:@"Pause"     image:[UIImage systemImageNamed:@"pause.circle"]        action:@selector(mamePause)     input:@"P" modifierFlags:0 propertyList:nil],
         [UIKeyCommand commandWithTitle:@"Reset"     image:[UIImage systemImageNamed:@"power"]               action:@selector(mameReset)     input:UIKeyInputF3 modifierFlags:0 propertyList:nil],
