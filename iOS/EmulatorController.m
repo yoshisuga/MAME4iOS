@@ -2630,6 +2630,7 @@ UIColor* colorWithHexString(NSString* string) {
         action == @selector(mameConfigure) ||
         action == @selector(mameFullscreen) ||
         action == @selector(mamePause) ||
+        action == @selector(mameExit) ||
         action == @selector(mameReset)) {
         return !g_emulation_paused && [self presentedViewController] == nil;
     }
@@ -2653,6 +2654,10 @@ UIColor* colorWithHexString(NSString* string) {
 -(void)mameFullscreen {
     [self commandKey:'\r'];
 }
+-(void)mameExit {
+    [self runExit];
+}
+
 
 
 #pragma mark - KEYBOARD INPUT

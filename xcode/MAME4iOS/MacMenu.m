@@ -21,6 +21,7 @@
 
 - (void)filePlay;
 - (void)fileInfo;
+- (void)fileFavorite;
 
 - (void)mameSelect;
 - (void)mameStart;
@@ -28,6 +29,7 @@
 - (void)mameConfigure;
 - (void)mameReset;
 - (void)mameFullscreen;
+- (void)mameExit;
 
 @end
 
@@ -50,8 +52,6 @@
     
     //[self addMenuItem:UIMenuView title:@"FULLSCREEN" action:@selector(toggleFullScreen:) key:@"\r" modifierFlags:UIKeyModifierCommand using:builder];
 
-    // TODO: DO **NOT** add any UIKeyCommands as menu items, we loose all keyboard input if you do!
-
     [builder insertChildMenu:[UIMenu menuWithTitle:@"FILE" image:nil identifier:nil options:UIMenuOptionsDisplayInline children:@[
         [UICommand commandWithTitle:@"Import..."     image:[UIImage systemImageNamed:@"square.and.arrow.down"]      action:@selector(fileImport) propertyList:nil],
         [UICommand commandWithTitle:@"Export..."     image:[UIImage systemImageNamed:@"square.and.arrow.up"]        action:@selector(fileExport) propertyList:nil],
@@ -59,17 +59,20 @@
     ]] atStartOfMenuForIdentifier:UIMenuFile];
 
     [builder insertSiblingMenu:[UIMenu menuWithTitle:@"FILE" image:nil identifier:nil options:UIMenuOptionsDisplayInline children:@[
-        [UICommand commandWithTitle:@"Play"     image:[UIImage systemImageNamed:@"play.circle"] action:@selector(filePlay) propertyList:nil],
-        [UICommand commandWithTitle:@"Get Info" image:[UIImage systemImageNamed:@"info.circle"] action:@selector(fileInfo) propertyList:nil],
+        [UIKeyCommand commandWithTitle:@"Play"     image:[UIImage systemImageNamed:@"play.circle"] action:@selector(filePlay) input:@" " modifierFlags:0 propertyList:nil],
+        [UIKeyCommand commandWithTitle:@"Favorite" image:[UIImage systemImageNamed:@"star.circle"] action:@selector(fileFavorite) input:@"f" modifierFlags:UIKeyModifierCommand propertyList:nil],
+        [UIKeyCommand commandWithTitle:@"Get Info" image:[UIImage systemImageNamed:@"info.circle"] action:@selector(fileInfo) input:@"i" modifierFlags:UIKeyModifierCommand propertyList:nil],
     ]] beforeMenuForIdentifier:UIMenuClose];
 
     UIMenu* mame = [UIMenu menuWithTitle:@"MAME" image:nil identifier:nil options:0 children:@[
-        [UICommand commandWithTitle:@"Coin"      image:[UIImage systemImageNamed:@"centsign.circle"]     action:@selector(mameSelect)    propertyList:nil],
-        [UICommand commandWithTitle:@"Start"     image:[UIImage systemImageNamed:@"person"]              action:@selector(mameStart)     propertyList:nil],
-        [UICommand commandWithTitle:@"Fullscreen"image:[UIImage systemImageNamed:@"rectangle.and.arrow.up.right.and.arrow.down.left"] action:@selector(mameFullscreen)propertyList:nil],
-        [UICommand commandWithTitle:@"Configure" image:[UIImage systemImageNamed:@"slider.horizontal.3"] action:@selector(mameConfigure) propertyList:nil],
-        [UICommand commandWithTitle:@"Pause"     image:[UIImage systemImageNamed:@"pause.circle"]        action:@selector(mamePause)     propertyList:nil],
-        [UICommand commandWithTitle:@"Reset"     image:[UIImage systemImageNamed:@"power"]               action:@selector(mameReset)     propertyList:nil],
+        [UIKeyCommand commandWithTitle:@"Coin"      image:[UIImage systemImageNamed:@"centsign.circle"]     action:@selector(mameSelect)    input:@"5" modifierFlags:0 propertyList:nil],
+        [UIKeyCommand commandWithTitle:@"Start"     image:[UIImage systemImageNamed:@"person"]              action:@selector(mameStart)     input:@"1" modifierFlags:0 propertyList:nil],
+        [UIKeyCommand commandWithTitle:@"Fullscreen"image:[UIImage systemImageNamed:@"rectangle.and.arrow.up.right.and.arrow.down.left"]
+                                action:@selector(mameFullscreen) input:@"\r" modifierFlags:UIKeyModifierCommand propertyList:nil],
+        [UIKeyCommand commandWithTitle:@"Configure" image:[UIImage systemImageNamed:@"slider.horizontal.3"] action:@selector(mameConfigure) input:@"\t" modifierFlags:0 propertyList:nil],
+        [UIKeyCommand commandWithTitle:@"Pause"     image:[UIImage systemImageNamed:@"pause.circle"]        action:@selector(mamePause)     input:@"P" modifierFlags:0 propertyList:nil],
+        [UIKeyCommand commandWithTitle:@"Reset"     image:[UIImage systemImageNamed:@"power"]               action:@selector(mameReset)     input:UIKeyInputF3 modifierFlags:0 propertyList:nil],
+        [UIKeyCommand commandWithTitle:@"Exit"      image:[UIImage systemImageNamed:@"x.circle"]            action:@selector(mameExit)      input:UIKeyInputEscape modifierFlags:0  propertyList:nil],
     ]];
     [builder insertSiblingMenu:mame afterMenuForIdentifier:UIMenuView];
     

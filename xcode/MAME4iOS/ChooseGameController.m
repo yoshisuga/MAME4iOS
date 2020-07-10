@@ -1550,7 +1550,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         ]];
     }
     
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     if (@available(iOS 12.0, *)) {
         NSUserActivity* activity = [ChooseGameController userActivityForGame:game];
         INVoiceShortcut* shortcut = [self getVoiceShortcut:activity];
@@ -1694,15 +1694,22 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 #if TARGET_OS_IOS
 -(BOOL)canPerformAction:(SEL)action withSender:(id)sender {
-    if (action == @selector(filePlay) || action == @selector(fileInfo)) {
-        NSIndexPath* indexPath = self.collectionView.indexPathsForSelectedItems.firstObject;
+    NSIndexPath* indexPath = self.collectionView.indexPathsForSelectedItems.firstObject;
+
+    if (action == @selector(filePlay) || action == @selector(fileInfo) || action == @selector(fileFavorite))
         return indexPath != nil;
-    }
-    return [super canPerformAction:action withSender:sender];
+    else
+        return [super canPerformAction:action withSender:sender];
 }
+
 
 -(void)filePlay {
     [self onCommandSelect];
+}
+-(void)fileFavorite {
+    NSDictionary* game = [self getGameInfo:self.collectionView.indexPathsForSelectedItems.firstObject];
+    [self setFavorite:game isFavorite:![self isFavorite:game]];
+    [self filterGameList];
 }
 -(void)fileInfo {
     NSIndexPath* indexPath = self.collectionView.indexPathsForSelectedItems.firstObject;
