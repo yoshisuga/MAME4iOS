@@ -64,6 +64,8 @@
         [UIKeyCommand commandWithTitle:@"Get Info" image:[UIImage systemImageNamed:@"info.circle"] action:@selector(fileInfo) input:@"i" modifierFlags:UIKeyModifierCommand propertyList:nil],
     ]] beforeMenuForIdentifier:UIMenuClose];
 
+    // **NOTE** the keyboard shortcuts here are mostly for discoverability, the real key handling takes place in iCadeView.m
+    // TODO: find out why some keys are handled by iCadeView.m and some are handled by UIKeyCommand, weird responder chain magic??
     UIMenu* mame = [UIMenu menuWithTitle:@"MAME" image:nil identifier:nil options:0 children:@[
         [UIKeyCommand commandWithTitle:@"Coin"      image:[UIImage systemImageNamed:@"centsign.circle"]     action:@selector(mameSelect)    input:@"5" modifierFlags:0 propertyList:nil],
         [UIKeyCommand commandWithTitle:@"Start"     image:[UIImage systemImageNamed:@"person"]              action:@selector(mameStart)     input:@"1" modifierFlags:0 propertyList:nil],

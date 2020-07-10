@@ -149,7 +149,7 @@
         return;
 #endif
     
-    NSLog(@"%s: %@ (%d)", __FUNCTION__, text.debugDescription, [text characterAtIndex:0]);
+    //NSLog(@"%s: %@ (%d)", __FUNCTION__, text.debugDescription, [text characterAtIndex:0]);
 
     int joy1 = 0;
     int joy2 = 0;
@@ -733,6 +733,14 @@
 
 -(void)hardwareKey:(NSString*)key keyCode:(int)keyCode isKeyDown:(BOOL)isKeyDown modifierFlags:(UIKeyModifierFlags)modifierFlags {
     
+    NSLog(@"hardwareKey: %s%s%s%s%@ (%d) %s",
+          (modifierFlags & UIKeyModifierShift)     ? "SHIFT+" : "",
+          (modifierFlags & UIKeyModifierAlternate) ? "ALT+" : "",
+          (modifierFlags & UIKeyModifierControl)   ? "CONTROL+" : "",
+          (modifierFlags & UIKeyModifierCommand)   ? "CMD+" : "",
+          [key.debugDescription stringByReplacingOccurrencesOfString:@"\r" withString:@"⏎"],
+          keyCode, isKeyDown ? "DOWN" : "UP");
+    
     // iCade (or compatible...)
     if (!(g_pref_ext_control_type == EXT_CONTROL_NONE || g_pref_ext_control_type == EXT_CONTROL_8BITDO))
     {
@@ -922,8 +930,6 @@
     
     g_keyboard_state[keyCode] = isKeyDown;
 
-    NSLog(@"_keyCommandForEvent:'%@' '%@' keyCode:%@ isKeyDown:%@ time:%f", [event valueForKey:@"_unmodifiedInput"], [event valueForKey:@"_modifiedInput"], [event valueForKey:@"_keyCode"], [event valueForKey:@"_isKeyDown"], [event timestamp]);
-    
     [self hardwareKey:key keyCode:keyCode isKeyDown:isKeyDown modifierFlags:modifierFlags];
     return nil;
 }
