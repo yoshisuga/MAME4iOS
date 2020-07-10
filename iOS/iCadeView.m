@@ -733,9 +733,10 @@
 
 -(void)hardwareKey:(NSString*)key keyCode:(int)keyCode isKeyDown:(BOOL)isKeyDown modifierFlags:(UIKeyModifierFlags)modifierFlags {
     
+    // iCade (or compatible...)
     if (!(g_pref_ext_control_type == EXT_CONTROL_NONE || g_pref_ext_control_type == EXT_CONTROL_8BITDO))
     {
-        if (isKeyDown)
+        if (isKeyDown && modifierFlags == 0)
             [self iCadeKey:key];
 
         return;
@@ -805,6 +806,32 @@
         case KEY_BQUOTE+KEY_DOWN:   break;
     }
     
+    // Plain Keyboard support A,B,X,Y,L,R as buttons (in addition to CTRL, ALT, SPACE, SHIFT, LCMD, RCMD)
+    if (g_pref_ext_control_type == EXT_CONTROL_NONE && modifierFlags == 0) {
+        switch (keyCode + (isKeyDown ? KEY_DOWN : 0)) {
+            // A/B/Y/X
+            case KEY_A:          iCadeKey = @"p"; break;
+            case KEY_A+KEY_DOWN: iCadeKey = @"k"; break;
+            case KEY_B:          iCadeKey = @"g"; break;
+            case KEY_B+KEY_DOWN: iCadeKey = @"o"; break;
+            case KEY_Y:          iCadeKey = @"m"; break;
+            case KEY_Y+KEY_DOWN: iCadeKey = @"i"; break;
+            case KEY_X:          iCadeKey = @"v"; break;
+            case KEY_X+KEY_DOWN: iCadeKey = @"l"; break;
+                
+            // L1/R1
+            case KEY_L:          iCadeKey = @"f"; break;
+            case KEY_L+KEY_DOWN: iCadeKey = @"u"; break;
+            case KEY_R:          iCadeKey = @"n"; break;
+            case KEY_R+KEY_DOWN: iCadeKey = @"j"; break;
+                
+            // PAUSE
+            case KEY_P:          myosd_mame_pause = 1; break;
+            case KEY_P+KEY_DOWN: break;
+        }
+    }
+    
+    
     // command keys (ALT+ works in the simulator CMD+ does not)
     if (modifierFlags & (TARGET_OS_SIMULATOR ? UIKeyModifierAlternate : UIKeyModifierCommand))
     {
@@ -817,7 +844,7 @@
     }
     
     // 8BitDo
-    if (g_pref_ext_control_type == EXT_CONTROL_8BITDO) {
+    if (g_pref_ext_control_type == EXT_CONTROL_8BITDO && modifierFlags == 0) {
         switch (keyCode + (isKeyDown ? KEY_DOWN : 0)) {
             
         // DPAD
