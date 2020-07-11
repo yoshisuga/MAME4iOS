@@ -37,10 +37,6 @@
 		925ABCC41E46DCC500997182 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE680CD163B147100051BC2 /* libz.dylib */; };
 		925ABCCC1E46DCC500997182 /* config_iPad.txt in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC11163C5DA100A05CD0 /* config_iPad.txt */; };
 		925ABCCD1E46DCC500997182 /* config_iPhone.txt in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC12163C5DA100A05CD0 /* config_iPhone.txt */; };
-		925ABCCE1E46DCC500997182 /* crt-1.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC13163C5DA100A05CD0 /* crt-1.png */; };
-		925ABCCF1E46DCC500997182 /* crt-2.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC14163C5DA100A05CD0 /* crt-2.png */; };
-		925ABCD01E46DCC500997182 /* scanline-1.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC1B163C5DA100A05CD0 /* scanline-1.png */; };
-		925ABCD11E46DCC500997182 /* scanline-2.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC1C163C5DA100A05CD0 /* scanline-2.png */; };
 		925ABCD21E46DCC500997182 /* SKIN_1 in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC1D163C5DA100A05CD0 /* SKIN_1 */; };
 		925ABCD51E46DCC500997182 /* config_iPhone_5.txt in Resources */ = {isa = PBXBuildFile; fileRef = CE8D87D7164FE4BE00685BC4 /* config_iPhone_5.txt */; };
 		925ABCD71E46DCC500997182 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = CEB8E0DB16A3311500A6FEDC /* LICENSE */; };
@@ -53,10 +49,6 @@
 		9268D85621661F8E00AB0470 /* config_iPhone_6.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9268D85421661F8E00AB0470 /* config_iPhone_6.txt */; };
 		9268D85A2166841000AB0470 /* DeviceScreenResolver.m in Sources */ = {isa = PBXBuildFile; fileRef = 9268D8582166840F00AB0470 /* DeviceScreenResolver.m */; };
 		926C76FF21F1C87700103EDE /* TVOptionsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 926C76FE21F1C87700103EDE /* TVOptionsController.m */; };
-		926C770621F26DEA00103EDE /* crt-1.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC13163C5DA100A05CD0 /* crt-1.png */; };
-		926C770721F26DFA00103EDE /* crt-2.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC14163C5DA100A05CD0 /* crt-2.png */; };
-		926C770821F26DFD00103EDE /* scanline-1.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC1B163C5DA100A05CD0 /* scanline-1.png */; };
-		926C770921F26E0000103EDE /* scanline-2.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC1C163C5DA100A05CD0 /* scanline-2.png */; };
 		926C770A21F271A700103EDE /* ListOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE90575B166A89D000653872 /* ListOptionController.m */; };
 		926C770B21F31B1400103EDE /* FilterOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE9454D71731DF2700B81C32 /* FilterOptionController.m */; };
 		926C771321F39D2F00103EDE /* hiscore.dat in Resources */ = {isa = PBXBuildFile; fileRef = CE30090616FA47E4000EDCF1 /* hiscore.dat */; };
@@ -115,7 +107,6 @@
 		92ECB91021EA99B600D1E3D0 /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92ECB90F21EA99B600D1E3D0 /* GameKit.framework */; };
 		92ECB91221EAA1B700D1E3D0 /* EmulatorController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680B51635BB4900051BC2 /* EmulatorController.m */; };
 		92ECB91921EAD57900D1E3D0 /* UIView+Toast.m in Sources */ = {isa = PBXBuildFile; fileRef = 92B99F0D2022706600CC44E3 /* UIView+Toast.m */; };
-		B5FAE31721FCDE0C003F44D0 /* scanline_tvOS201901.png in Resources */ = {isa = PBXBuildFile; fileRef = B5FAE31621FCDE0C003F44D0 /* scanline_tvOS201901.png */; };
 		B5FAE31921FCE64D003F44D0 /* MAME_tvOS.lsr in Resources */ = {isa = PBXBuildFile; fileRef = B5FAE31821FCE64D003F44D0 /* MAME_tvOS.lsr */; };
 		E9856CF023C9A7C50071666D /* MultipeerConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E9856CEF23C9A7C50071666D /* MultipeerConnectivity.framework */; };
 		EF00880F2459F4EF0058C2A1 /* cheat0139.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF00880E2459F4EF0058C2A1 /* cheat0139.zip */; };
@@ -263,16 +254,12 @@
 		EFA7A13624B65C020009CF88 /* config_iPad.txt in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC11163C5DA100A05CD0 /* config_iPad.txt */; };
 		EFA7A13724B65C020009CF88 /* default_game_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA7570424057FD800A02AAB /* default_game_icon.png */; };
 		EFA7A13824B65C020009CF88 /* config_iPhone.txt in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC12163C5DA100A05CD0 /* config_iPhone.txt */; };
-		EFA7A13924B65C020009CF88 /* crt-1.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC13163C5DA100A05CD0 /* crt-1.png */; };
 		EFA7A13A24B65C020009CF88 /* border-light.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F80B2464864600DDA88C /* border-light.png */; };
-		EFA7A13B24B65C020009CF88 /* crt-2.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC14163C5DA100A05CD0 /* crt-2.png */; };
 		EFA7A13C24B65C020009CF88 /* help.md in Resources */ = {isa = PBXBuildFile; fileRef = EF0E08AC2401840700E98F01 /* help.md */; };
 		EFA7A13D24B65C020009CF88 /* effect-crt.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F81D2466BEE100DDA88C /* effect-crt.png */; };
-		EFA7A13E24B65C020009CF88 /* scanline-1.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC1B163C5DA100A05CD0 /* scanline-1.png */; };
 		EFA7A13F24B65C020009CF88 /* cheat0139.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF00880E2459F4EF0058C2A1 /* cheat0139.zip */; };
 		EFA7A14024B65C020009CF88 /* config_iPad_gen_7.txt in Resources */ = {isa = PBXBuildFile; fileRef = EF29C8832402E51100AFFA4E /* config_iPad_gen_7.txt */; };
 		EFA7A14124B65C020009CF88 /* config_iPad_pro_11.txt in Resources */ = {isa = PBXBuildFile; fileRef = 927BD1A52209E80F00ECF6C9 /* config_iPad_pro_11.txt */; };
-		EFA7A14224B65C020009CF88 /* scanline-2.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC1C163C5DA100A05CD0 /* scanline-2.png */; };
 		EFA7A14324B65C020009CF88 /* dpad.png in Resources */ = {isa = PBXBuildFile; fileRef = 920BBDED201FC29700AE7D50 /* dpad.png */; };
 		EFA7A14424B65C020009CF88 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EF29C8802401C73900AFFA4E /* Launch Screen.storyboard */; };
 		EFA7A14524B65C020009CF88 /* SKIN_1 in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC1D163C5DA100A05CD0 /* SKIN_1 */; };
@@ -475,7 +462,6 @@
 		92ECB90D21EA99A200D1E3D0 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.1.sdk/System/Library/Frameworks/CoreGraphics.framework; sourceTree = DEVELOPER_DIR; };
 		92ECB90F21EA99B600D1E3D0 /* GameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameKit.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.1.sdk/System/Library/Frameworks/GameKit.framework; sourceTree = DEVELOPER_DIR; };
 		B370F8AF1C8549010069377D /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = System/Library/Frameworks/GameController.framework; sourceTree = SDKROOT; };
-		B5FAE31621FCDE0C003F44D0 /* scanline_tvOS201901.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = scanline_tvOS201901.png; sourceTree = "<group>"; };
 		B5FAE31821FCE64D003F44D0 /* MAME_tvOS.lsr */ = {isa = PBXFileReference; lastKnownFileType = file; path = MAME_tvOS.lsr; sourceTree = "<group>"; };
 		CE30090316FA47CB000EDCF1 /* Category.ini */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Category.ini; path = "../../iOS-res/Applications/MAME4iOS.app/Category.ini"; sourceTree = "<group>"; };
 		CE30090616FA47E4000EDCF1 /* hiscore.dat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = hiscore.dat; path = "../../iOS-res/Applications/MAME4iOS.app/hiscore.dat"; sourceTree = "<group>"; };
@@ -508,10 +494,6 @@
 		CEB8E0DB16A3311500A6FEDC /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = folder; name = LICENSE; path = "../../iOS-res/Applications/MAME4iOS.app/LICENSE"; sourceTree = "<group>"; };
 		CEBFBC11163C5DA100A05CD0 /* config_iPad.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = config_iPad.txt; path = "../../iOS-res/Applications/MAME4iOS.app/config_iPad.txt"; sourceTree = "<group>"; };
 		CEBFBC12163C5DA100A05CD0 /* config_iPhone.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = config_iPhone.txt; path = "../../iOS-res/Applications/MAME4iOS.app/config_iPhone.txt"; sourceTree = "<group>"; };
-		CEBFBC13163C5DA100A05CD0 /* crt-1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "crt-1.png"; path = "../../iOS-res/Applications/MAME4iOS.app/crt-1.png"; sourceTree = "<group>"; };
-		CEBFBC14163C5DA100A05CD0 /* crt-2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "crt-2.png"; path = "../../iOS-res/Applications/MAME4iOS.app/crt-2.png"; sourceTree = "<group>"; };
-		CEBFBC1B163C5DA100A05CD0 /* scanline-1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "scanline-1.png"; path = "../../iOS-res/Applications/MAME4iOS.app/scanline-1.png"; sourceTree = "<group>"; };
-		CEBFBC1C163C5DA100A05CD0 /* scanline-2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "scanline-2.png"; path = "../../iOS-res/Applications/MAME4iOS.app/scanline-2.png"; sourceTree = "<group>"; };
 		CEBFBC1D163C5DA100A05CD0 /* SKIN_1 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SKIN_1; path = "../../iOS-res/Applications/MAME4iOS.app/SKIN_1"; sourceTree = "<group>"; };
 		CEBFBC1E163C5DA100A05CD0 /* SKIN_2 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SKIN_2; path = "../../iOS-res/Applications/MAME4iOS.app/SKIN_2"; sourceTree = "<group>"; };
 		CEBFBC1F163C5DA100A05CD0 /* SKIN_3 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SKIN_3; path = "../../iOS-res/Applications/MAME4iOS.app/SKIN_3"; sourceTree = "<group>"; };
@@ -836,7 +818,6 @@
 				EFA7570424057FD800A02AAB /* default_game_icon.png */,
 				EF26AE07241848800078FD30 /* mame_logo.png */,
 				EFA756FE2405585D00A02AAB /* mameui.png */,
-				B5FAE31621FCDE0C003F44D0 /* scanline_tvOS201901.png */,
 				920BBDED201FC29700AE7D50 /* dpad.png */,
 				920BBDF020210C3700AE7D50 /* menu.png */,
 				CE30090616FA47E4000EDCF1 /* hiscore.dat */,
@@ -857,10 +838,6 @@
 				927BD1A52209E80F00ECF6C9 /* config_iPad_pro_11.txt */,
 				921CC324216A936800A39154 /* config_iPad_pro_12_9.txt */,
 				EF29C8832402E51100AFFA4E /* config_iPad_gen_7.txt */,
-				CEBFBC13163C5DA100A05CD0 /* crt-1.png */,
-				CEBFBC14163C5DA100A05CD0 /* crt-2.png */,
-				CEBFBC1B163C5DA100A05CD0 /* scanline-1.png */,
-				CEBFBC1C163C5DA100A05CD0 /* scanline-2.png */,
 				CEBFBC1D163C5DA100A05CD0 /* SKIN_1 */,
 				CEBFBC1E163C5DA100A05CD0 /* SKIN_2 */,
 				CEBFBC1F163C5DA100A05CD0 /* SKIN_3 */,
@@ -1197,17 +1174,13 @@
 				925ABCCC1E46DCC500997182 /* config_iPad.txt in Resources */,
 				EFA7570524057FD800A02AAB /* default_game_icon.png in Resources */,
 				925ABCCD1E46DCC500997182 /* config_iPhone.txt in Resources */,
-				925ABCCE1E46DCC500997182 /* crt-1.png in Resources */,
 				EFF9F80E2464864600DDA88C /* border-light.png in Resources */,
-				925ABCCF1E46DCC500997182 /* crt-2.png in Resources */,
 				EF0E08AE2401840700E98F01 /* help.md in Resources */,
 				EFF9F81E2466BEE100DDA88C /* effect-crt.png in Resources */,
-				925ABCD01E46DCC500997182 /* scanline-1.png in Resources */,
 				EFA7A16B24B7A38E0009CF88 /* Assets.xcassets in Resources */,
 				EF00880F2459F4EF0058C2A1 /* cheat0139.zip in Resources */,
 				EF29C8852402E51200AFFA4E /* config_iPad_gen_7.txt in Resources */,
 				927BD1A62209E80F00ECF6C9 /* config_iPad_pro_11.txt in Resources */,
-				925ABCD11E46DCC500997182 /* scanline-2.png in Resources */,
 				920BBDEF201FC29700AE7D50 /* dpad.png in Resources */,
 				EF29C8822401C73A00AFFA4E /* Launch Screen.storyboard in Resources */,
 				925ABCD21E46DCC500997182 /* SKIN_1 in Resources */,
@@ -1239,19 +1212,14 @@
 				EF0088102459F4EF0058C2A1 /* cheat0139.zip in Resources */,
 				EFF9F81F2466BEE100DDA88C /* effect-crt.png in Resources */,
 				EFD4D14A23C0F6AB00857A76 /* Category.ini in Resources */,
-				926C770721F26DFA00103EDE /* crt-2.png in Resources */,
 				EF26AE09241848800078FD30 /* mame_logo.png in Resources */,
-				926C770921F26E0000103EDE /* scanline-2.png in Resources */,
 				EF79BDD624B7C0DA00824BFD /* gitinfo.json.sh in Resources */,
 				EFA757002405585D00A02AAB /* mameui.png in Resources */,
 				EFF9F80F2464864600DDA88C /* border-light.png in Resources */,
 				EF0088132459F4FC0058C2A1 /* history0139.zip in Resources */,
 				EFA7570624057FD800A02AAB /* default_game_icon.png in Resources */,
-				926C770621F26DEA00103EDE /* crt-1.png in Resources */,
 				EFF9F8132464864600DDA88C /* border-test.png in Resources */,
 				92ECB8F721EA985000D1E3D0 /* Assets.xcassets in Resources */,
-				B5FAE31721FCDE0C003F44D0 /* scanline_tvOS201901.png in Resources */,
-				926C770821F26DFD00103EDE /* scanline-1.png in Resources */,
 				92A533D121EBDDF20089FBB9 /* GCDWebUploader.bundle in Resources */,
 				EFF9F8162465DFB200DDA88C /* effect-dot.png in Resources */,
 				926C771321F39D2F00103EDE /* hiscore.dat in Resources */,
@@ -1272,16 +1240,12 @@
 				EFA7A13624B65C020009CF88 /* config_iPad.txt in Resources */,
 				EFA7A13724B65C020009CF88 /* default_game_icon.png in Resources */,
 				EFA7A13824B65C020009CF88 /* config_iPhone.txt in Resources */,
-				EFA7A13924B65C020009CF88 /* crt-1.png in Resources */,
 				EFA7A13A24B65C020009CF88 /* border-light.png in Resources */,
-				EFA7A13B24B65C020009CF88 /* crt-2.png in Resources */,
 				EFA7A13C24B65C020009CF88 /* help.md in Resources */,
 				EFA7A13D24B65C020009CF88 /* effect-crt.png in Resources */,
-				EFA7A13E24B65C020009CF88 /* scanline-1.png in Resources */,
 				EFA7A13F24B65C020009CF88 /* cheat0139.zip in Resources */,
 				EFA7A14024B65C020009CF88 /* config_iPad_gen_7.txt in Resources */,
 				EFA7A14124B65C020009CF88 /* config_iPad_pro_11.txt in Resources */,
-				EFA7A14224B65C020009CF88 /* scanline-2.png in Resources */,
 				EFA7A16D24B7A40F0009CF88 /* Assets.xcassets in Resources */,
 				EFA7A14324B65C020009CF88 /* dpad.png in Resources */,
 				EFA7A14424B65C020009CF88 /* Launch Screen.storyboard in Resources */,
@@ -1559,7 +1523,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CURRENT_PROJECT_VERSION = 2020.11;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 8RUN83V8CA;
 				ENABLE_BITCODE = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MAME4iOS/MAME4iOS-Prefix.pch";
@@ -1579,7 +1543,7 @@
 				MARKETING_VERSION = 2020.11;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4ios;
+				PRODUCT_BUNDLE_IDENTIFIER = com.toddla.mame4ios;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.toddla.mame4mac;
 				PRODUCT_NAME = MAME4iOS;
 				PROVISIONING_PROFILE = "";
@@ -1600,7 +1564,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CURRENT_PROJECT_VERSION = 2020.11;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 8RUN83V8CA;
 				ENABLE_BITCODE = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MAME4iOS/MAME4iOS-Prefix.pch";
@@ -1616,7 +1580,7 @@
 				MARKETING_VERSION = 2020.11;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4ios;
+				PRODUCT_BUNDLE_IDENTIFIER = com.toddla.mame4ios;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.toddla.mame4mac;
 				PRODUCT_NAME = MAME4iOS;
 				PROVISIONING_PROFILE = "";
@@ -1661,7 +1625,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2020.11;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 8RUN83V8CA;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -1686,7 +1650,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4tvos;
+				PRODUCT_BUNDLE_IDENTIFIER = com.toddla.mame4tvos;
 				PRODUCT_NAME = MAME4tvOS;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;
@@ -1731,7 +1695,7 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 2020.11;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 8RUN83V8CA;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -1755,7 +1719,7 @@
 				MARKETING_VERSION = 2020.11;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4tvos;
+				PRODUCT_BUNDLE_IDENTIFIER = com.toddla.mame4tvos;
 				PRODUCT_NAME = MAME4tvOS;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;
@@ -1880,7 +1844,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CURRENT_PROJECT_VERSION = 2020.11;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 8RUN83V8CA;
 				ENABLE_BITCODE = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MAME4iOS/MAME4iOS-Prefix.pch";
@@ -1900,7 +1864,7 @@
 				MARKETING_VERSION = 2020.11;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4mac;
+				PRODUCT_BUNDLE_IDENTIFIER = com.toddla.mame4mac;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1921,7 +1885,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CURRENT_PROJECT_VERSION = 2020.11;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 8RUN83V8CA;
 				ENABLE_BITCODE = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MAME4iOS/MAME4iOS-Prefix.pch";
@@ -1937,7 +1901,7 @@
 				MARKETING_VERSION = 2020.11;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4mac;
+				PRODUCT_BUNDLE_IDENTIFIER = com.toddla.mame4mac;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";

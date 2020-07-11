@@ -123,6 +123,7 @@
 - (void)getConf;
 
 - (void)startEmulation;
+- (void)stopEmulation;
 
 - (void)done:(id)sender;
 

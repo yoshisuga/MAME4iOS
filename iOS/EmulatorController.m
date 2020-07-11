@@ -86,7 +86,7 @@
 @end
 #endif
 
-#define DebugLog 0
+#define DebugLog 1
 #if DebugLog == 0
 #define NSLog(...) (void)0
 #endif
@@ -294,7 +294,7 @@ void* app_Thread_Start(void* args)
 {
     g_emulation_initiated = 1;
     
-    while (1) {
+    while (g_emulation_initiated) {
         prev_myosd_mouse = myosd_mouse = 0;
         prev_myosd_light_gun = myosd_light_gun = 0;
         
@@ -318,6 +318,9 @@ void* app_Thread_Start(void* args)
             g_mame_game[0] = 0;
         }
     }
+    NSLog(@"thread exit");
+    g_emulation_initiated = -1;
+    return NULL;
 }
 
 // make this public so DEBUG code in InfoDatabase can use it to get list of all ROMs
@@ -431,7 +434,8 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
 #endif
 
 - (void)startEmulation {
-    NSParameterAssert(g_emulation_initiated == 0);
+    if (g_emulation_initiated == 1)
+        return;
     [self updateOptions];
     
     sharedInstance = self;
@@ -467,12 +471,31 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
 #endif
 }
 
+// called durring app exit to cleanly shutdown MAME thread
+- (void)stopEmulation {
+    if (g_emulation_initiated == 0)
+        return;
+    
+    NSLog(@"stopEmulation: START");
+    
+    if (g_emulation_paused)
+        change_pause(g_emulation_paused = 0);
+    
+    g_emulation_initiated = 0;
+    while (g_emulation_initiated == 0) {
+        NSLog(@"stopEmulation: EXIT");
+        myosd_exitGame = 1;
+        [NSThread sleepForTimeInterval:0.100];
+    }
+    NSLog(@"stopEmulation: DONE");
+    g_emulation_initiated = 0;
+}
+
 - (void)startMenu
 {
-    [UIApplication sharedApplication].idleTimerDisabled = NO;
-
     g_emulation_paused = 1;
     change_pause(1);
+    [UIApplication sharedApplication].idleTimerDisabled = NO;
 }
 
 
@@ -2113,7 +2136,8 @@ void myosd_handle_turbo() {
         [inputView addSubview:analogStickView];
         // stick background
         if (imageBack != nil) {
-            UIImageView* image = [[UIImageView alloc] initWithImage:[self loadImage:@"stick-background"]];
+            NSString* back = g_device_is_landscape ? @"stick-background-landscape" : @"stick-background";
+            UIImageView* image = [[UIImageView alloc] initWithImage:[self loadImage:back]];
             CGRect rect = [inputView convertRect:rStickWindow toView:imageBack];
             image.frame = scale_rect(rect, g_device_is_landscape ? 1.0 : 1.2);
             [imageBack addSubview:image];
@@ -3548,6 +3572,7 @@ CGRect convert_rect(CGRect rect, CGSize fromSize, CGSize toSize) {
     NSString *artwPath = [NSString stringWithUTF8String:get_documents_path("artwork")];
     NSString *sampPath = [NSString stringWithUTF8String:get_documents_path("samples")];
     NSString *datsPath = [NSString stringWithUTF8String:get_documents_path("dats")];
+    NSString *skinPath = [NSString stringWithUTF8String:get_documents_path("skins")];
 
     NSString *romPath = [rootPath stringByAppendingPathComponent:romName];
     
@@ -3567,12 +3592,17 @@ CGRect convert_rect(CGRect rect, CGSize fromSize, CGSize toSize) {
     //  * datset, if the ZIP has DATs in it. *NOTE* many ROMSETs have .DAT files, so we only check a whitelist of files.
     //  * artwork, if the ZIP contains a .LAY file, then it is artwork
     //  * samples, if the ZIP contains a .WAV file, then it is samples
+    //  * skin, if the ZIP contains certain .PNG files that we use to draw buttons/etc
     //  * romset, if the ZIP has "normal" files in it assume it is a romset.
     //
+    
+    // list of files that mark a zip as a SKIN
+    NSArray* skin_files = @[@"back_landscape_iPad.png", @"back_landscape_iPhone.png", @"back_portrait_iPad.png", @"back_portrait_iPhone.png", @"game-border.png", @"game-background.png"];
 
     // whitelist of valid .DAT files we will copy to the dats folder
     NSArray* dat_files = @[@"HISTORY.DAT", @"MAMEINFO.DAT"];
     
+    int __block numSKIN = 0;
     int __block numLAY = 0;
     int __block numZIP = 0;
     int __block numCHD = 0;
@@ -3592,6 +3622,10 @@ CGRect convert_rect(CGRect rect, CGSize fromSize, CGSize toSize) {
             numCHD++;
         if ([dat_files containsObject:info.name.lastPathComponent.uppercaseString])
             numDAT++;
+        for (int i=0; i<NUM_BUTTONS; i++)
+            numSKIN += [info.name.lastPathComponent isEqualToString:nameImgButton_Press[i]];
+        if ([skin_files containsObject:info.name.lastPathComponent])
+            numSKIN++;
     }];
 
     NSString* toPath = nil;
@@ -3664,6 +3698,11 @@ CGRect convert_rect(CGRect rect, CGSize fromSize, CGSize toSize) {
         NSLog(@"%@ is a SAMPLES file", romName);
         toPath = [sampPath stringByAppendingPathComponent:romName];
     }
+    else if (numSKIN != 0)
+    {
+        NSLog(@"%@ is a SKIN file", romName);
+        toPath = [skinPath stringByAppendingPathComponent:romName];
+    }
     else if ([romName length] <= 20 && ![romName containsString:@" "])
     {
         NSLog(@"%@ is a ROMSET", romName);
@@ -3686,6 +3725,7 @@ CGRect convert_rect(CGRect rect, CGSize fromSize, CGSize toSize) {
         if(error!=nil)
         {
             NSLog(@"Unable to move rom: %@", [error localizedDescription]);
+            [[NSFileManager defaultManager] removeItemAtPath:romPath error:nil];
             result = FALSE;
         }
     }
@@ -3754,12 +3794,10 @@ CGRect convert_rect(CGRect rect, CGSize fromSize, CGSize toSize) {
                 [progressAlert.presentingViewController dismissViewControllerAnimated:YES completion:^{
                     
                     // reset MAME last game selected...
-                    if (result)
-                       myosd_last_game_selected = 0;
+                    myosd_last_game_selected = 0;
                     
                     // reload the MAME menu....
-                    if (result)
-                        [self performSelectorOnMainThread:@selector(playGame:) withObject:nil waitUntilDone:NO];
+                    [self performSelectorOnMainThread:@selector(playGame:) withObject:nil waitUntilDone:NO];
                     
                     g_move_roms = 0;
                 }];
