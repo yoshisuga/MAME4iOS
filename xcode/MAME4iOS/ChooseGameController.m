@@ -54,8 +54,8 @@
 #define BACKGROUND_COLOR        [UIColor blackColor]
 #define TITLE_COLOR             [UIColor whiteColor]
 #define HEADER_TEXT_COLOR       [UIColor whiteColor]
-#define CELL_BACKGROUND_COLOR   [UIColor colorWithWhite:0.222 alpha:1.0]
-#define CELL_SELECTED_COLOR     self.tintColor
+#define CELL_BACKGROUND_COLOR   [UIColor colorWithWhite:0.222 alpha:0.8]
+#define CELL_SELECTED_COLOR     [self.tintColor colorWithAlphaComponent:0.8]
 
 #define CELL_TITLE_FONT         [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
 #define CELL_TITLE_COLOR        [UIColor whiteColor]
@@ -307,7 +307,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     self.collectionView.allowsSelection = YES;
     self.collectionView.alwaysBounceVertical = YES;
     
-#if TARGET_OS_TV
+ #if TARGET_OS_TV
     UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(menuPress)];
     tap.allowedPressTypes = @[[NSNumber numberWithInteger:UIPressTypeMenu]];
     [self.navigationController.view addGestureRecognizer:tap];
@@ -327,6 +327,18 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     [self.collectionView setContentOffset:CGPointMake(0, (self.collectionView.adjustedContentInset.top - _searchController.searchBar.bounds.size.height) * -1.0) animated:TRUE];
 #endif
 }
+
+- (void)viewWillAppear:(BOOL)animated {
+    if (self.presentingViewController.view.backgroundColor != nil) {
+        self.collectionView.backgroundView = self.collectionView.backgroundView ?: [[UIView alloc] init];
+        self.collectionView.backgroundView.backgroundColor = self.presentingViewController.view.backgroundColor;
+    }
+    else {
+        self.collectionView.backgroundView = nil;
+    }
+}
+
+
 -(void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
@@ -1972,6 +1984,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     [self setNeedsUpdateConstraints];
     
     self.backgroundColor = [UIColor clearColor];
+    
     self.contentView.backgroundColor = CELL_BACKGROUND_COLOR;
 
     self.layer.cornerRadius = 8.0;
