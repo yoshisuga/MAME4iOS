@@ -12,6 +12,8 @@
 * Support macOS via Catalyst, requires macOS 10.15 (aka Catalina) or higher.
 * Mac menu bar and edge to edge game window.
 * A,B,Y,X,L,R on a hardware keyboard will function as buttons.
+* lineTron and simpleTron are now used as the default `LINE` and `SCREEN` shaders.
+* Skin support.
 
 # Version 2020.11
 * Added new Vector Shader category for Vector games on both iOS and tvOS.
