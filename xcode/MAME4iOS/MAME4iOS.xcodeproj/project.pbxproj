@@ -492,7 +492,6 @@
 		CEBFBC11163C5DA100A05CD0 /* config_iPad.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = config_iPad.txt; path = "../../iOS-res/Applications/MAME4iOS.app/config_iPad.txt"; sourceTree = "<group>"; };
 		CEBFBC12163C5DA100A05CD0 /* config_iPhone.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = config_iPhone.txt; path = "../../iOS-res/Applications/MAME4iOS.app/config_iPhone.txt"; sourceTree = "<group>"; };
 		CEBFBC1D163C5DA100A05CD0 /* SKIN_1 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SKIN_1; path = "../../iOS-res/Applications/MAME4iOS.app/SKIN_1"; sourceTree = "<group>"; };
-		CEBFBC1E163C5DA100A05CD0 /* SKIN_2 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SKIN_2; path = "../../iOS-res/Applications/MAME4iOS.app/SKIN_2"; sourceTree = "<group>"; };
 		CEE680891635BA7000051BC2 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		CEE6808B1635BA7000051BC2 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		CEE6808D1635BA7000051BC2 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -837,7 +836,6 @@
 				EF29C8832402E51100AFFA4E /* config_iPad_gen_7.txt */,
 				EF926C9D24BA743B0048392B /* skins */,
 				CEBFBC1D163C5DA100A05CD0 /* SKIN_1 */,
-				CEBFBC1E163C5DA100A05CD0 /* SKIN_2 */,
 				CEB8E0DB16A3311500A6FEDC /* LICENSE */,
 			);
 			name = resources;
