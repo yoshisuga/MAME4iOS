@@ -54,6 +54,8 @@
 #define BACKGROUND_COLOR        [UIColor blackColor]
 #define TITLE_COLOR             [UIColor whiteColor]
 #define HEADER_TEXT_COLOR       [UIColor whiteColor]
+#define HEADER_BACKGROUND_COLOR [UIColor clearColor]
+#define HEADER_PINNED_COLOR     [BACKGROUND_COLOR colorWithAlphaComponent:0.8]
 #define CELL_BACKGROUND_COLOR   [UIColor colorWithWhite:0.222 alpha:0.8]
 #define CELL_SELECTED_COLOR     [self.tintColor colorWithAlphaComponent:0.8]
 
@@ -108,6 +110,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 -(void)setImageAspect:(CGFloat)aspect;
 -(void)setBorderWidth:(CGFloat)width;
 -(void)setCornerRadius:(CGFloat)radius;
+-(void)addBlur:(UIBlurEffectStyle)style;
 -(void)startWait;
 -(void)stopWait;
 
@@ -210,6 +213,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     
     if (@available(iOS 13.0, tvOS 13.0, *)) {
         self.navigationController.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
+        self.navigationController.navigationBar.shadowImage = [[UIImage alloc] init];
     }
     else {
         self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
@@ -794,6 +798,24 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     [self reloadData];
 }
 
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    CGFloat yTop = scrollView.contentOffset.y + scrollView.adjustedContentInset.top;
+    for (GameCell* cell in [self.collectionView visibleSupplementaryViewsOfKind:UICollectionElementKindSectionHeader]) {
+        if (yTop > 0.5 && fabs(yTop - cell.frame.origin.y) <= cell.frame.size.height) {
+            if (@available(iOS 13.0, *))
+                [cell addBlur:UIBlurEffectStyleDark];
+            else
+                cell.contentView.backgroundColor = HEADER_PINNED_COLOR;
+        }
+        else {
+            if (@available(iOS 13.0, *))
+                cell.backgroundView = nil;
+            else
+                cell.contentView.backgroundColor = HEADER_BACKGROUND_COLOR;
+        }
+    }
+}
+
 #pragma mark System
 
 - (BOOL)isSystem:(NSDictionary*)game
@@ -1231,7 +1253,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     cell.text.text = _gameSectionTitles[indexPath.section];
     cell.text.font = [UIFont systemFontOfSize:cell.bounds.size.height * 0.8 weight:UIFontWeightHeavy];
     cell.text.textColor = HEADER_TEXT_COLOR;
-    cell.contentView.backgroundColor = [self.collectionView.backgroundColor colorWithAlphaComponent:0.5];
+    cell.contentView.backgroundColor = HEADER_BACKGROUND_COLOR;
     [cell setTextInsets:UIEdgeInsetsMake(2.0, self.view.safeAreaInsets.left + 2.0, 2.0, self.view.safeAreaInsets.right + 2.0)];
     [cell setCornerRadius:0.0];
     [cell setBorderWidth:0.0];
@@ -1979,7 +2001,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     [self setNeedsUpdateConstraints];
     
     self.backgroundColor = [UIColor clearColor];
-    
+    self.backgroundView = nil;
+
     self.contentView.backgroundColor = CELL_BACKGROUND_COLOR;
 
     self.layer.cornerRadius = 8.0;
@@ -1988,7 +2011,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
     self.contentView.layer.borderWidth = 2.0;
     self.contentView.layer.borderColor = self.contentView.backgroundColor.CGColor;
-
+    
     self.layer.shadowColor = UIColor.clearColor.CGColor;
     self.layer.shadowOffset = CGSizeMake(0.0, 0.0f);
     self.layer.shadowRadius = 8.0;
@@ -2093,6 +2116,15 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     self.layer.cornerRadius = radius;
     self.contentView.layer.cornerRadius = radius;
     self.contentView.clipsToBounds = radius != 0.0;
+}
+-(void)addBlur:(UIBlurEffectStyle)style {
+    if (self.backgroundView != nil)
+        return;
+    UIBlurEffect* blur = [UIBlurEffect effectWithStyle:style];
+    UIVisualEffectView* effectView = [[UIVisualEffectView alloc] initWithEffect:blur];
+    effectView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    effectView.frame = self.bounds;
+    self.backgroundView = effectView;
 }
 
 #if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0
