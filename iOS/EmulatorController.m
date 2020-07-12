@@ -3158,7 +3158,8 @@ void myosd_handle_turbo() {
     
     DeviceScreenType screenType = [DeviceScreenResolver resolve];
     NSString *deviceName = nil;
-	
+    NSString *config_file = nil;
+
     if ( screenType == IPHONE_XR_XS_MAX ) {
         deviceName = @"iPhone_xr_xs_max";
     } else if ( screenType == IPHONE_X_XS ) {
@@ -3192,23 +3193,25 @@ void myosd_handle_turbo() {
         deviceName = @"iPhone_xr_xs_max";
     }
     
-    NSLog(@"DEVICE: %@", deviceName);
-    
 	if(!is_landscape)
 	{
         if (g_device_is_fullscreen)
-            fp = [self loadFile:[NSString stringWithFormat:@"controller_portrait_full_%@.txt", deviceName]];
+            config_file = [NSString stringWithFormat:@"controller_portrait_full_%@.txt", deviceName];
         else
-            fp = [self loadFile:[NSString stringWithFormat:@"controller_portrait_%@.txt", deviceName]];
+            config_file = [NSString stringWithFormat:@"controller_portrait_%@.txt", deviceName];
     }
 	else
 	{
         if (g_device_is_fullscreen)
-            fp = [self loadFile:[NSString stringWithFormat:@"controller_landscape_full_%@.txt",deviceName]];
+            config_file = [NSString stringWithFormat:@"controller_landscape_full_%@.txt",deviceName];
         else
-            fp = [self loadFile:[NSString stringWithFormat:@"controller_landscape_%@.txt", deviceName]];
+            config_file = [NSString stringWithFormat:@"controller_landscape_%@.txt", deviceName];
 	}
 	
+    NSLog(@"USING CONFIG: %@", config_file);
+    fp = [self loadFile:config_file];
+    assert(fp);
+
 	if (fp) 
 	{
 

@@ -10,6 +10,11 @@
 #import "ZipFile.h"
 #import "Globals.h"
 
+#define DebugLog 1
+#if DebugLog == 0
+#define NSLog(...) (void)0
+#endif
+
 @implementation SkinManager {
     NSString* _skin_name;
     NSString* _skin_path;

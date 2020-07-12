@@ -275,28 +275,32 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         _filter = MTLSamplerMinMagFilterLinear;
 
     // get the shader to use when drawing the SCREEN, default to the 3 entry in the list (simpleTron).
-    _screen_shader = _options[kScreenViewScreenShader] ?: kScreenViewShaderDefault;
+    NSString* screen_shader = _options[kScreenViewScreenShader] ?: kScreenViewShaderDefault;
 
     assert([MetalScreenView.screenShaderList[0] isEqualToString:kScreenViewShaderDefault]);
     assert([MetalScreenView.screenShaderList[1] isEqualToString:kScreenViewShaderNone]);
     assert(MetalScreenView.screenShaderList.count > 2);
-    if ([_screen_shader length] == 0 || [_screen_shader isEqualToString:kScreenViewShaderDefault])
-        _screen_shader = split(MetalScreenView.screenShaderList[2], @":").lastObject;
+    if ([screen_shader length] == 0 || [screen_shader isEqualToString:kScreenViewShaderDefault])
+        screen_shader = split(MetalScreenView.screenShaderList[2], @":").lastObject;
 
-    if ([_screen_shader isEqualToString:kScreenViewShaderNone])
-        _screen_shader = ShaderTexture;
+    if ([screen_shader isEqualToString:kScreenViewShaderNone])
+        screen_shader = ShaderTexture;
+    
+    _screen_shader = screen_shader;
 
     // get the shader to use when drawing VECTOR lines, default to lineTron
-    _line_shader = _options[kScreenViewLineShader] ?: kScreenViewShaderDefault;
+    NSString* line_shader = _options[kScreenViewLineShader] ?: kScreenViewShaderDefault;
     
     assert([MetalScreenView.lineShaderList[0] isEqualToString:kScreenViewShaderDefault]);
     assert([MetalScreenView.lineShaderList[1] isEqualToString:kScreenViewShaderNone]);
     assert(MetalScreenView.lineShaderList.count > 2);
-    if ([_line_shader length] == 0 || [_line_shader isEqualToString:kScreenViewShaderDefault])
-        _line_shader = split(MetalScreenView.lineShaderList[2], @":").lastObject;
+    if ([line_shader length] == 0 || [line_shader isEqualToString:kScreenViewShaderDefault])
+        line_shader = split(MetalScreenView.lineShaderList[2], @":").lastObject;
 
-    if ([_line_shader isEqualToString:kScreenViewShaderNone])
-        _line_shader = nil;
+    if ([line_shader isEqualToString:kScreenViewShaderNone])
+        line_shader = nil;
+    
+    _line_shader = line_shader;
     
     // see if the line shader wants past lines, ie does it list `line-time` in the parameter list.x
     _line_shader_wants_past_lines = [_line_shader rangeOfString:@"line-time"].length != 0;
