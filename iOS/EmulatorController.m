@@ -78,6 +78,7 @@
 #import "ZipFile.h"
 #import "SystemImage.h"
 #import "SteamController.h"
+#import "SkinManager.h"
 
 // declare these selectors, so we can use them, and ARC wont complain
 #ifndef __IPHONE_14_0
@@ -125,7 +126,7 @@ int g_device_is_fullscreen = 0;
 NSString* g_pref_screen_shader;
 NSString* g_pref_line_shader;
 NSString* g_pref_filter;
-NSString* g_pref_border;
+NSString* g_pref_skin;
 NSString* g_pref_colorspace;
 
 int g_pref_metal = 0;
@@ -151,7 +152,6 @@ int g_pref_full_screen_joy = 1;
 
 int g_pref_BplusX=0;
 int g_pref_full_num_buttons=4;
-int g_pref_skin = 1;
 
 int g_pref_input_touch_type = TOUCH_INPUT_DSTICK;
 int g_pref_analog_DZ_value = 2;
@@ -402,6 +402,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     CGPoint touchDirectionalMoveStartLocation;
     CGPoint touchDirectionalMoveInitialLocation;
     CGSize  layoutSize;
+    SkinManager* skinManager;
 }
 @end
 
@@ -842,7 +843,9 @@ void mame_state(int load_save, int slot)
     g_pref_filter = [Options.arrayFilter optionData:op.filter];
     g_pref_screen_shader = [Options.arrayScreenShader optionData:op.screenShader];
     g_pref_line_shader = [Options.arrayLineShader optionData:op.lineShader];
-    g_pref_border = [Options.arrayBorder optionData:op.border];
+    
+    g_pref_skin = [Options.arraySkin optionData:op.skin];
+    [skinManager setCurrentSkin:g_pref_skin];
     
     g_pref_colorspace = [Options.arrayColorSpace optionData:op.colorSpace];
 
@@ -858,10 +861,6 @@ void mame_state(int load_save, int slot)
     g_pref_full_screen_joy   = [op fullscreenJoystick];
 
     myosd_pxasp1 = [op p1aspx];
-    
-    // always use skin 1
-    g_pref_skin = 1;
-    g_skin_data = g_pref_skin;
     
     g_pref_nativeTVOUT = [op tvoutNative];
     g_pref_overscanTVOUT = [op overscanValue];
@@ -1031,6 +1030,7 @@ void mame_state(int load_save, int slot)
     // we present settings two ways, from in-game menu (we are parent) and from ChooseGameUI (it is the parent)
     UIViewController* parent = self.topViewController.presentingViewController;
     [(parent ?: self) dismissViewControllerAnimated:YES completion:^{
+        
         if(global_low_latency_sound != [op lowlsound])
         {
             if(myosd_sound_value!=-1)
@@ -1046,8 +1046,13 @@ void mame_state(int load_save, int slot)
             myosd_exitGame = 1;
 
         [self updateOptions];
+        [self changeUI];
         
-        [self performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:YES];
+        // HACK: tell parent to update too
+        if ([parent isKindOfClass:[UINavigationController class]])
+            [[(UINavigationController*)parent topViewController] viewWillAppear:NO];
+        else if (parent != self)
+            [parent viewWillAppear:NO];
         
         NSInteger file_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:[NSString stringWithUTF8String:get_documents_path("")] error:nil] count];
         NSInteger roms_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:[NSString stringWithUTF8String:get_documents_path("roms")] error:nil] count];
@@ -1167,27 +1172,29 @@ void mame_state(int load_save, int slot)
 
    controllers = [[NSMutableArray alloc] initWithCapacity:4];
     
+   skinManager = [[SkinManager alloc] init];
+    
    nameImgButton_NotPress[BTN_B] = @"button_NotPress_B.png";
    nameImgButton_NotPress[BTN_X] = @"button_NotPress_X.png";
    nameImgButton_NotPress[BTN_A] = @"button_NotPress_A.png";
    nameImgButton_NotPress[BTN_Y] = @"button_NotPress_Y.png";
+   nameImgButton_NotPress[BTN_L1] = @"button_NotPress_L1.png";
+   nameImgButton_NotPress[BTN_R1] = @"button_NotPress_R1.png";
    nameImgButton_NotPress[BTN_START] = @"button_NotPress_start.png";
    nameImgButton_NotPress[BTN_SELECT] = @"button_NotPress_select.png";
-   nameImgButton_NotPress[BTN_L1] = @"button_NotPress_R_L1.png";
-   nameImgButton_NotPress[BTN_R1] = @"button_NotPress_R_R1.png";
-   nameImgButton_NotPress[BTN_L2] = @"button_NotPress_R_L2.png";
-   nameImgButton_NotPress[BTN_R2] = @"button_NotPress_R_R2.png";
+   nameImgButton_NotPress[BTN_EXIT] = @"button_NotPress_exit.png";
+   nameImgButton_NotPress[BTN_OPTION] = @"button_NotPress_option.png";
    
    nameImgButton_Press[BTN_B] = @"button_Press_B.png";
    nameImgButton_Press[BTN_X] = @"button_Press_X.png";
    nameImgButton_Press[BTN_A] = @"button_Press_A.png";
    nameImgButton_Press[BTN_Y] = @"button_Press_Y.png";
+   nameImgButton_Press[BTN_L1] = @"button_Press_L1.png";
+   nameImgButton_Press[BTN_R1] = @"button_Press_R1.png";
    nameImgButton_Press[BTN_START] = @"button_Press_start.png";
    nameImgButton_Press[BTN_SELECT] = @"button_Press_select.png";
-   nameImgButton_Press[BTN_L1] = @"button_Press_R_L1.png";
-   nameImgButton_Press[BTN_R1] = @"button_Press_R_R1.png";
-   nameImgButton_Press[BTN_L2] = @"button_Press_R_L2.png";
-   nameImgButton_Press[BTN_R2] = @"button_Press_R_R2.png";
+   nameImgButton_Press[BTN_EXIT] = @"button_Press_exit.png";
+   nameImgButton_Press[BTN_OPTION] = @"button_Press_option.png";
     
     // map a button index to a MYOSD button mask
     buttonMask[BTN_A] = MYOSD_A;
@@ -1520,7 +1527,7 @@ static int gcd(int a, int b) {
             op.filter = str;
             break;
         case 1:
-            op.border = str;
+            op.skin = str;
             break;
         case 2:
             if (is_vector_game)
@@ -1703,16 +1710,16 @@ static NSArray* list_trim(NSArray* _list) {
     }
 
     if (g_pref_showHUD == HudSizeLarge || g_pref_showHUD == HudSizeEditor) {
-        // add set of buttons to select the Filter, Border, and Effect/Shader
+        // add set of buttons to select the Filter, Skin, and Effect/Shader
         NSArray* items = @[
             [[PopupSegmentedControl alloc] initWithItems:list_trim(Options.arrayFilter)],
-            [[PopupSegmentedControl alloc] initWithItems:list_trim(Options.arrayBorder)],
+            [[PopupSegmentedControl alloc] initWithItems:list_trim(Options.arraySkin)],
             [[PopupSegmentedControl alloc] initWithItems:list_trim(is_vector_game ? Options.arrayLineShader : Options.arrayScreenShader)],
         ];
 
         Options *op = [[Options alloc] init];
         [items[0] setSelectedSegmentIndex:[Options.arrayFilter indexOfOption:op.filter]];
-        [items[1] setSelectedSegmentIndex:[Options.arrayBorder indexOfOption:op.border]];
+        [items[1] setSelectedSegmentIndex:[Options.arraySkin indexOfOption:op.skin]];
         [items[2] setTag:is_vector_game];
 
         if (is_vector_game)
@@ -1721,7 +1728,7 @@ static NSArray* list_trim(NSArray* _list) {
             [items[2] setSelectedSegmentIndex:[Options.arrayScreenShader indexOfOption:op.screenShader]];
 
         [items[0] setTitle:@"Filter" forSegmentAtIndex:UISegmentedControlNoSegment];
-        [items[1] setTitle:@"Border" forSegmentAtIndex:UISegmentedControlNoSegment];
+        [items[1] setTitle:@"Skin" forSegmentAtIndex:UISegmentedControlNoSegment];
         [items[2] setTitle:@"Shader" forSegmentAtIndex:UISegmentedControlNoSegment];
 
         for (PopupSegmentedControl* seg in items) {
@@ -2206,6 +2213,14 @@ void myosd_handle_turbo() {
 
 #if TARGET_OS_IOS
 - (void)buildBackgroundImage {
+    
+    // set a tiled image as our background
+    UIImage* image = [self loadImage:@"game-background.png"];
+    
+    if (image != nil)
+        self.view.backgroundColor = [UIColor colorWithPatternImage:image];
+    else
+        self.view.backgroundColor = [UIColor blackColor];
 
     if (g_device_is_fullscreen)
         return;
@@ -2235,48 +2250,18 @@ void myosd_handle_turbo() {
 }
 #endif
 
-// border string is of the form:
-//        <Friendly Name> : <resource image name>
-//        <Friendly Name> : <resource image name>, <fraction of border that is opaque>
-//        <Friendly Name> : #RRGGBB
-//        <Friendly Name> : #RRGGBBAA, <border width>
-//        <Friendly Name> : #RRGGBBAA, <border width>, <corner radius>
-+ (NSArray*)borderList {
-    return @[@"None",
-             @"Dark : border-dark",
-             @"Light : border-light",
-             @"Solid : #007AFFaa, 2.0, 8.0",
-#ifdef DEBUG
-             @"Test : border-test",
-             @"Test 1: border-test, 0.5",
-             @"Test 2: border-test, 1.0",
-             @"Red : #ff0000, 2.0",
-             @"Blue : #0000FF",
-             @"Green : #00FF00ee, 4.0, 16.0",
-             @"Purple : #80008080, 4.0, 16.0",
-             @"Tint : #007Aff, 2.0, 8.0",
-#endif
-    ];
-}
-
 // load any border image and return the size needed to inset the game rect
-// border can be <resource name> , <fraction of border that is opaque>
-//               #<hex color>, <border width>, <corner radius>
 - (void)getOverlayImage:(UIImage**)pImage andSize:(CGSize*)pSize {
     
-    NSString* border_info = g_pref_border;
+    NSString* border_name = @"game-border";
+    CGFloat   border_size = 0.25;
+    UIImage*  image = [self loadImage:border_name];
     
-    if ([border_info length] == 0 || [border_info isEqualToString:@"None"] || [border_info hasPrefix:@"#"]) {
+    if (image == nil) {
         *pImage = nil;
         *pSize = CGSizeZero;
         return;
     }
-
-    NSString* border_name = [border_info componentsSeparatedByString:@","].firstObject;
-    CGFloat   border_size = [border_info componentsSeparatedByString:@","].lastObject.doubleValue ?: 0.25;
-
-    UIImage* image = [self loadImage:border_name];
-    NSAssert(image != nil, @"unable to load border image");
     
     CGFloat scale = externalView ? externalView.window.screen.scale : UIScreen.mainScreen.scale;
     
@@ -2295,47 +2280,7 @@ void myosd_handle_turbo() {
     *pSize = size;
 }
 
-// parse a hex color string, #RRGGBB or #RRGGBBAA, and return a UIColor
-UIColor* colorWithHexString(NSString* string) {
-
-    unsigned int rgba = 0;
-    NSScanner* scanner = [[NSScanner alloc] initWithString:string];
-    [scanner scanString:@"#" intoString:nil];
-    [scanner scanHexInt:&rgba];
-
-    if (scanner.scanLocation <= 7)   // #RRGGBB (not #RRGGBBAA)
-        rgba = (rgba << 8) | 0xFF;
-
-    return [UIColor colorWithRed:((rgba >> 24) & 0xFF) / 255.0
-                           green:((rgba >> 16) & 0xFF) / 255.0
-                            blue:((rgba >>  8) & 0xFF) / 255.0
-                           alpha:((rgba >>  0) & 0xFF) / 255.0];
-}
-
 - (void)buildOverlayImage:(UIImage*)image rect:(CGRect)rect {
-    
-    NSString* border_info = g_pref_border;
-
-    // handle a solid color: #RRGGBBAA, <border width>, <corner radius>
-    if (image == nil && [border_info hasPrefix:@"#"]) {
-        NSArray* info = [border_info componentsSeparatedByString:@","];
-        
-        UIColor* color = colorWithHexString(info.firstObject);
-        CGFloat width = [[info objectAtIndex:1 withDefault:@(1)] doubleValue];
-        CGFloat radius = [[info objectAtIndex:2 withDefault:nil] doubleValue];
-        
-        NSLog(@"BORDER: %@, %f, %f", info.firstObject, width, radius);
-        screenView.layer.borderColor = color.CGColor;
-        screenView.layer.borderWidth = width;
-        screenView.layer.cornerRadius = radius;
-        screenView.layer.masksToBounds = (radius != 0.0);
-    }
-    else {
-        screenView.layer.borderWidth = 0.0;
-        screenView.layer.cornerRadius = 0.0;
-        screenView.layer.masksToBounds = NO;
-    }
-    
     if (image != nil) {
         imageOverlay = [[UIImageView alloc] initWithImage:image];
         imageOverlay.frame = rect;
@@ -3497,33 +3442,7 @@ CGRect convert_rect(CGRect rect, CGSize fromSize, CGSize toSize) {
 }
 
 - (UIImage *)loadImage:(NSString *)name {
-    
-    NSString *path = nil;
-    UIImage *img = nil;
-    
-    static NSCache* g_image_cache = nil;
-    
-    if (g_image_cache == nil)
-        g_image_cache = [[NSCache alloc] init];
-    
-    img = [g_image_cache objectForKey:name];
-    
-    if ([img isKindOfClass:[UIImage class]])
-        return img;
-    if (img != nil)
-        return nil;
-    
-    path = [NSString stringWithUTF8String:get_resource_path("")];
-    img = [UIImage imageWithContentsOfFile:[path stringByAppendingPathComponent:name]];
-    
-    if (img == nil)
-    {
-        NSString* skin_name = [NSString stringWithFormat:@"SKIN_%d/%@", g_pref_skin, name];
-        img = [UIImage imageWithContentsOfFile:[path stringByAppendingPathComponent:skin_name]];
-    }
-
-    [g_image_cache setObject:(img ?: [NSNull null]) forKey:name];
-    return img;
+    return [skinManager loadImage:name];
 }
 
 
@@ -3536,7 +3455,7 @@ CGRect convert_rect(CGRect rect, CGSize fromSize, CGSize toSize) {
 
     if(!fp)
     {
-        name = [NSString stringWithFormat:@"SKIN_%d/%@", g_pref_skin, name];
+        name = [NSString stringWithFormat:@"SKIN_%d/%@", 1, name];
         fp = fopen([path stringByAppendingPathComponent:name].UTF8String, "r");
     }
     

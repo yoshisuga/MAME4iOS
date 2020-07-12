@@ -200,6 +200,7 @@
 +(NSString *)getLayoutFilePath{
     NSString *name = nil;
     NSString *path = nil;
+    int g_skin_data = 1;    // always use skin 1
     if(g_device_is_landscape)
         if(g_device_is_fullscreen)
            name = [NSString stringWithFormat:@"landscape_full_custom_layout_skin_%d.dat", g_skin_data];

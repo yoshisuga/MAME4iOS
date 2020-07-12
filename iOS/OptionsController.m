@@ -131,9 +131,9 @@
                 }
                 case 1:
                 {
-                    cell.textLabel.text   = @"Border";
+                    cell.textLabel.text   = @"Skin";
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                    cell.detailTextLabel.text = [Options.arrayBorder optionName:op.border];
+                    cell.detailTextLabel.text = [Options.arraySkin optionName:op.skin];
                     break;
                 }
                 case 2:
@@ -466,7 +466,7 @@
                 [[self navigationController] pushViewController:listController animated:YES];
             }
             if (row==1){
-                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"border" list:Options.arrayBorder title:cell.textLabel.text];
+                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"skin" list:Options.arraySkin title:cell.textLabel.text];
                 [[self navigationController] pushViewController:listController animated:YES];
             }
             if (row==2){

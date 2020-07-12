@@ -124,8 +124,6 @@ extern int g_pref_animated_DPad;
 extern int g_pref_hide_LR;
 extern int g_pref_BplusX;
 extern int g_pref_full_num_buttons;
-extern int g_pref_skin;
-extern int g_skin_data;
 extern int g_pref_analog_DZ_value;
 extern int g_pref_input_touch_type;
 extern int g_pref_ext_control_type;

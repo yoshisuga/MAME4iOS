@@ -168,6 +168,4 @@
 @property (strong, nonatomic) UISelectionFeedbackGenerator* selectionFeedback;
 #endif
 
-+ (NSArray<NSString*>*)borderList;
-
 @end

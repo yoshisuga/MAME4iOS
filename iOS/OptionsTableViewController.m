@@ -104,7 +104,7 @@
         }
     }
 
-    if ([git_branch isEqualToString:@"master"])
+    if ([git_branch isEqualToString:@"master"] || [git_branch isEqualToString:@"main"])
         git_branch = nil;
     
     if ([git_commit length] > 7)
