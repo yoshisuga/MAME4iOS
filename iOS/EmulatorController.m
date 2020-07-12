@@ -1048,12 +1048,6 @@ void mame_state(int load_save, int slot)
         [self updateOptions];
         [self changeUI];
         
-        // HACK: tell parent to update too
-        if ([parent isKindOfClass:[UINavigationController class]])
-            [[(UINavigationController*)parent topViewController] viewWillAppear:NO];
-        else if (parent != self)
-            [parent viewWillAppear:NO];
-        
         NSInteger file_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:[NSString stringWithUTF8String:get_documents_path("")] error:nil] count];
         NSInteger roms_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:[NSString stringWithUTF8String:get_documents_path("roms")] error:nil] count];
 

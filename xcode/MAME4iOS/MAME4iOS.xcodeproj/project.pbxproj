@@ -155,6 +155,8 @@
 		EF926C9C24BA36980048392B /* SkinManager.m in Sources */ = {isa = PBXBuildFile; fileRef = EF926C9A24BA36980048392B /* SkinManager.m */; };
 		EF926C9E24BA743C0048392B /* skins in Resources */ = {isa = PBXBuildFile; fileRef = EF926C9D24BA743B0048392B /* skins */; };
 		EF926C9F24BA743C0048392B /* skins in Resources */ = {isa = PBXBuildFile; fileRef = EF926C9D24BA743B0048392B /* skins */; };
+		EF926CAA24BB55250048392B /* app-background.png in Resources */ = {isa = PBXBuildFile; fileRef = EF926CA924BB55240048392B /* app-background.png */; };
+		EF926CAB24BB55250048392B /* app-background.png in Resources */ = {isa = PBXBuildFile; fileRef = EF926CA924BB55240048392B /* app-background.png */; };
 		EF941F0024427D1200D58F7F /* OptionsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF941EFF24427D1200D58F7F /* OptionsTableViewController.m */; };
 		EF941F0124427D1200D58F7F /* OptionsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF941EFF24427D1200D58F7F /* OptionsTableViewController.m */; };
 		EF950BAA24B1211F00DC9A47 /* ColorSpace.m in Sources */ = {isa = PBXBuildFile; fileRef = EF950BA924B1211F00DC9A47 /* ColorSpace.m */; };
@@ -552,6 +554,7 @@
 		EF926C9924BA36980048392B /* SkinManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SkinManager.h; sourceTree = "<group>"; };
 		EF926C9A24BA36980048392B /* SkinManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SkinManager.m; sourceTree = "<group>"; };
 		EF926C9D24BA743B0048392B /* skins */ = {isa = PBXFileReference; lastKnownFileType = folder; name = skins; path = "../../iOS-res/Applications/MAME4iOS.app/skins"; sourceTree = "<group>"; };
+		EF926CA924BB55240048392B /* app-background.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "app-background.png"; sourceTree = "<group>"; };
 		EF941EFE24427D1200D58F7F /* OptionsTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OptionsTableViewController.h; path = ../../iOS/OptionsTableViewController.h; sourceTree = "<group>"; };
 		EF941EFF24427D1200D58F7F /* OptionsTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OptionsTableViewController.m; path = ../../iOS/OptionsTableViewController.m; sourceTree = "<group>"; };
 		EF950BA824B1211F00DC9A47 /* ColorSpace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ColorSpace.h; sourceTree = "<group>"; };
@@ -804,6 +807,7 @@
 		CEBFBC0E163C5BD300A05CD0 /* resources */ = {
 			isa = PBXGroup;
 			children = (
+				EF926CA924BB55240048392B /* app-background.png */,
 				EF79BDD424B7C0DA00824BFD /* gitinfo.json.sh */,
 				EFF9F8142465DFB100DDA88C /* effect-dot.png */,
 				EFF9F81A2466BE8500DDA88C /* effect-scanline.png */,
@@ -1189,6 +1193,7 @@
 				EFF9F81B2466BE8500DDA88C /* effect-scanline.png in Resources */,
 				921CC323216A903600A39154 /* config_iPad_pro_10_5.txt in Resources */,
 				EF926C9E24BA743C0048392B /* skins in Resources */,
+				EF926CAA24BB55250048392B /* app-background.png in Resources */,
 				925ABCDD1E46DCC500997182 /* Category.ini in Resources */,
 				925ABCDE1E46DCC500997182 /* hiscore.dat in Resources */,
 			);
@@ -1250,6 +1255,7 @@
 				EFA7A15524B65C020009CF88 /* effect-scanline.png in Resources */,
 				EFA7A15624B65C020009CF88 /* config_iPad_pro_10_5.txt in Resources */,
 				EF926C9F24BA743C0048392B /* skins in Resources */,
+				EF926CAB24BB55250048392B /* app-background.png in Resources */,
 				EFA7A15724B65C020009CF88 /* Category.ini in Resources */,
 				EFA7A15824B65C020009CF88 /* hiscore.dat in Resources */,
 			);

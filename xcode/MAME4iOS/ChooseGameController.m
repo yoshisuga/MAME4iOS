@@ -307,6 +307,12 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     self.collectionView.allowsSelection = YES;
     self.collectionView.alwaysBounceVertical = YES;
     
+    UIImage* background = [UIImage imageNamed:@"app-background"];
+    if (background) {
+        self.collectionView.backgroundView = [[UIView alloc] init];
+        self.collectionView.backgroundView.backgroundColor = [UIColor colorWithPatternImage:background];
+    }
+    
  #if TARGET_OS_TV
     UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(menuPress)];
     tap.allowedPressTypes = @[[NSNumber numberWithInteger:UIPressTypeMenu]];
@@ -327,17 +333,6 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     [self.collectionView setContentOffset:CGPointMake(0, (self.collectionView.adjustedContentInset.top - _searchController.searchBar.bounds.size.height) * -1.0) animated:TRUE];
 #endif
 }
-
-- (void)viewWillAppear:(BOOL)animated {
-    if (self.presentingViewController.view.backgroundColor != nil) {
-        self.collectionView.backgroundView = self.collectionView.backgroundView ?: [[UIView alloc] init];
-        self.collectionView.backgroundView.backgroundColor = self.presentingViewController.view.backgroundColor;
-    }
-    else {
-        self.collectionView.backgroundView = nil;
-    }
-}
-
 
 -(void)viewDidAppear:(BOOL)animated
 {
