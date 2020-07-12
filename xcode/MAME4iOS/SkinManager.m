@@ -138,4 +138,9 @@ static NSArray* g_skin_list;
     return image;
 }
 
+- (void)exportToURL:(NSURL*)url {
+    
+}
+
+
 @end
