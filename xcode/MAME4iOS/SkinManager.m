@@ -109,7 +109,7 @@ static NSArray* g_skin_list;
         [ZipFile enumerate:_skin_path withOptions:ZipFileEnumFiles usingBlock:^(ZipFileInfo* info) {
             NSString* name = info.name.lastPathComponent.stringByDeletingPathExtension.uppercaseString;
             NSString* ext = info.name.pathExtension.uppercaseString;
-            if (!([ext isEqualToString:@"PNG"] || ![ext isEqualToString:@"JPG"]) || data != nil)
+            if (!([ext isEqualToString:@"PNG"] || [ext isEqualToString:@"JPG"]) || data != nil)
                 return;
             if ([name isEqualToString:uname])
                 data = info.data;
