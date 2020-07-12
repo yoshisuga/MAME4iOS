@@ -59,7 +59,7 @@
 #define kScreenViewShaderNone       @"None"
 #define kScreenViewShaderDefault    @"Default"
 
-#define kScreenViewColorSpaceDevice @"Default"
+#define kScreenViewColorSpaceDefault @"Default"
 
 @protocol ScreenView <NSObject>
 

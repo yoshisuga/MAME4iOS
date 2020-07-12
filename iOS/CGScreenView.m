@@ -126,7 +126,7 @@
     return @[kScreenViewFilterNearest,kScreenViewFilterLinear];
 }
 + (NSArray*)colorSpaceList {
-    return @[kScreenViewColorSpaceDevice];
+    return @[kScreenViewColorSpaceDefault];
 }
 
 + (Class) layerClass
