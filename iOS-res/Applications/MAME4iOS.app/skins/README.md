@@ -44,10 +44,10 @@ button_Press_option     | OPTION button in the *down* state
 ### Backgrounds
 Name                        | Description
 --------------------------- | -------------------------------------
-back_landscape_iPad         | background image, landscape iPad
-back_landscape_iPhone       | background image, landscape iPhone
-back_portrait_iPad          | background image, landscape iPad
-back_portrait_iPhone        | background image, landscape iPhone
+background_landscape        | background image, landscape iPad
+background_landscape_wide   | background image, landscape iPhone
+background_portrait         | background image, portrait iPad
+background_portrait_tall    | background image, portrait iPhone
 
 ### Joystick and DPAD
 Name                        | Description
@@ -73,8 +73,6 @@ Name                    | Description
 ----------------------- | -------------------------------------
 background              | background of the whole app, tiled image
 border                  | border image, drawn around the game screen.
-background_landscape    | background used on both iPhone and iPad
-background_portrait     | background used on both iPhone and iPad
 stick-U                 | image of the joystick ball UP
 stick-D                 | image of the joystick ball DOWN
 stick-L                 | image of the joystick ball LEFT

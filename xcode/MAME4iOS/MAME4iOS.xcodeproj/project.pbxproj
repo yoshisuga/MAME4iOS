@@ -155,8 +155,8 @@
 		EF926C9C24BA36980048392B /* SkinManager.m in Sources */ = {isa = PBXBuildFile; fileRef = EF926C9A24BA36980048392B /* SkinManager.m */; };
 		EF926C9E24BA743C0048392B /* skins in Resources */ = {isa = PBXBuildFile; fileRef = EF926C9D24BA743B0048392B /* skins */; };
 		EF926C9F24BA743C0048392B /* skins in Resources */ = {isa = PBXBuildFile; fileRef = EF926C9D24BA743B0048392B /* skins */; };
-		EF926CAA24BB55250048392B /* app-background.png in Resources */ = {isa = PBXBuildFile; fileRef = EF926CA924BB55240048392B /* app-background.png */; };
-		EF926CAB24BB55250048392B /* app-background.png in Resources */ = {isa = PBXBuildFile; fileRef = EF926CA924BB55240048392B /* app-background.png */; };
+		EF926CAA24BB55250048392B /* choose-game-background.png in Resources */ = {isa = PBXBuildFile; fileRef = EF926CA924BB55240048392B /* choose-game-background.png */; };
+		EF926CAB24BB55250048392B /* choose-game-background.png in Resources */ = {isa = PBXBuildFile; fileRef = EF926CA924BB55240048392B /* choose-game-background.png */; };
 		EF941F0024427D1200D58F7F /* OptionsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF941EFF24427D1200D58F7F /* OptionsTableViewController.m */; };
 		EF941F0124427D1200D58F7F /* OptionsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF941EFF24427D1200D58F7F /* OptionsTableViewController.m */; };
 		EF950BAA24B1211F00DC9A47 /* ColorSpace.m in Sources */ = {isa = PBXBuildFile; fileRef = EF950BA924B1211F00DC9A47 /* ColorSpace.m */; };
@@ -297,6 +297,7 @@
 		EFB7B21A2479FBD900AD96A4 /* MetalViewShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B2152479FBD900AD96A4 /* MetalViewShaders.metal */; };
 		EFB7B21C247ACFE300AD96A4 /* MameShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B21B247ACFE300AD96A4 /* MameShaders.metal */; };
 		EFB7B21D247ACFE300AD96A4 /* MameShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B21B247ACFE300AD96A4 /* MameShaders.metal */; };
+		EFCA73E124BD0B3F00D0F264 /* choose-game-background.png in Resources */ = {isa = PBXBuildFile; fileRef = EF926CA924BB55240048392B /* choose-game-background.png */; };
 		EFD4D14A23C0F6AB00857A76 /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = CE30090316FA47CB000EDCF1 /* Category.ini */; };
 		EFE4B6AB2453D7F80009A6F1 /* InfoDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE4B6AA2453D7F80009A6F1 /* InfoDatabase.m */; };
 		EFE4B6AC2453D7F80009A6F1 /* InfoDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE4B6AA2453D7F80009A6F1 /* InfoDatabase.m */; };
@@ -553,7 +554,7 @@
 		EF926C9924BA36980048392B /* SkinManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SkinManager.h; sourceTree = "<group>"; };
 		EF926C9A24BA36980048392B /* SkinManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SkinManager.m; sourceTree = "<group>"; };
 		EF926C9D24BA743B0048392B /* skins */ = {isa = PBXFileReference; lastKnownFileType = folder; name = skins; path = "../../iOS-res/Applications/MAME4iOS.app/skins"; sourceTree = "<group>"; };
-		EF926CA924BB55240048392B /* app-background.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "app-background.png"; sourceTree = "<group>"; };
+		EF926CA924BB55240048392B /* choose-game-background.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "choose-game-background.png"; sourceTree = "<group>"; };
 		EF941EFE24427D1200D58F7F /* OptionsTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OptionsTableViewController.h; path = ../../iOS/OptionsTableViewController.h; sourceTree = "<group>"; };
 		EF941EFF24427D1200D58F7F /* OptionsTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OptionsTableViewController.m; path = ../../iOS/OptionsTableViewController.m; sourceTree = "<group>"; };
 		EF950BA824B1211F00DC9A47 /* ColorSpace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ColorSpace.h; sourceTree = "<group>"; };
@@ -806,7 +807,7 @@
 		CEBFBC0E163C5BD300A05CD0 /* resources */ = {
 			isa = PBXGroup;
 			children = (
-				EF926CA924BB55240048392B /* app-background.png */,
+				EF926CA924BB55240048392B /* choose-game-background.png */,
 				EF79BDD424B7C0DA00824BFD /* gitinfo.json.sh */,
 				EFF9F8142465DFB100DDA88C /* effect-dot.png */,
 				EFF9F81A2466BE8500DDA88C /* effect-scanline.png */,
@@ -1191,7 +1192,7 @@
 				EFF9F81B2466BE8500DDA88C /* effect-scanline.png in Resources */,
 				921CC323216A903600A39154 /* config_iPad_pro_10_5.txt in Resources */,
 				EF926C9E24BA743C0048392B /* skins in Resources */,
-				EF926CAA24BB55250048392B /* app-background.png in Resources */,
+				EF926CAA24BB55250048392B /* choose-game-background.png in Resources */,
 				925ABCDD1E46DCC500997182 /* Category.ini in Resources */,
 				925ABCDE1E46DCC500997182 /* hiscore.dat in Resources */,
 			);
@@ -1213,6 +1214,7 @@
 				92ECB8F721EA985000D1E3D0 /* Assets.xcassets in Resources */,
 				92A533D121EBDDF20089FBB9 /* GCDWebUploader.bundle in Resources */,
 				EFF9F8162465DFB200DDA88C /* effect-dot.png in Resources */,
+				EFCA73E124BD0B3F00D0F264 /* choose-game-background.png in Resources */,
 				926C771321F39D2F00103EDE /* hiscore.dat in Resources */,
 				B5FAE31921FCE64D003F44D0 /* MAME_tvOS.lsr in Resources */,
 			);
@@ -1253,7 +1255,7 @@
 				EFA7A15524B65C020009CF88 /* effect-scanline.png in Resources */,
 				EFA7A15624B65C020009CF88 /* config_iPad_pro_10_5.txt in Resources */,
 				EF926C9F24BA743C0048392B /* skins in Resources */,
-				EF926CAB24BB55250048392B /* app-background.png in Resources */,
+				EF926CAB24BB55250048392B /* choose-game-background.png in Resources */,
 				EFA7A15724B65C020009CF88 /* Category.ini in Resources */,
 				EFA7A15824B65C020009CF88 /* hiscore.dat in Resources */,
 			);

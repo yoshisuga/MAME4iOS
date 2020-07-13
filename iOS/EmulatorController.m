@@ -2219,21 +2219,13 @@ void myosd_handle_turbo() {
     if (g_device_is_fullscreen)
         return;
 
-    // TODO: tile these images? what about portrait?? what about in portrait resizableImageWithCapInsets?
-    image = [self loadImage:g_device_is_landscape ? @"background_landscape.png" : @"background_portrait.png"];
-
-    if (image != nil) {
-        self.view.backgroundColor = [UIColor colorWithPatternImage:image];
-        return;
-    }
-    
     BOOL isIpad = self.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular && self.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassRegular;
     
     NSString* imageName;
     if (g_device_is_landscape)
-        imageName = isIpad ? @"back_landscape_iPad.png" : @"back_landscape_iPhone.png";
+        imageName = isIpad ? @"background_landscape.png" : @"background_landscape_wide.png";
     else
-        imageName = isIpad ? @"back_portrait_iPad.png" : @"back_portrait_iPhone.png";
+        imageName = isIpad ? @"background_portrait.png" : @"background_portrait_tall.png";
     
     image = [self loadImage:imageName];
     
@@ -3516,8 +3508,8 @@ CGRect convert_rect(CGRect rect, CGSize fromSize, CGSize toSize) {
     
     // list of files that mark a zip as a SKIN
     NSArray* skin_files = @[@"skin.json", @"border.png", @"background.png",
-                            @"background_landscape.png", @"back_landscape_iPad.png", @"back_landscape_iPhone.png",
-                            @"background_portrait.png", @"back_portrait_iPad.png", @"back_portrait_iPhone.png"];
+                            @"background_landscape.png", @"background_landscape_wide.png",
+                            @"background_portrait.png", @"back_portrait_tall.png"];
 
     // whitelist of valid .DAT files we will copy to the dats folder
     NSArray* dat_files = @[@"HISTORY.DAT", @"MAMEINFO.DAT"];

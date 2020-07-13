@@ -171,7 +171,7 @@ static NSArray* g_skin_list;
     // add other images/etc
     [files addObjectsFromArray:@[
             @"skin.json", @"README.md",
-            @"border", @"background", @"background_landscape", @"background_portrait",
+            @"border", @"background",
             @"stick-U", @"stick-D", @"stick-L", @"stick-R",
             @"stick-UL", @"stick-DL", @"stick-DR", @"stick-UR",
     ]];
@@ -182,8 +182,6 @@ static NSArray* g_skin_list;
 - (NSDictionary*)getSkinInfo {
     return _skin_info ?: @{@"skin":@{@"version":@(1)}};
 }
-
-
 
 - (BOOL)exportTo:(NSString*)path progressBlock:(nullable BOOL (NS_NOESCAPE ^)(double progress))block {
     NSArray* files = [SkinManager getSkinFiles];
