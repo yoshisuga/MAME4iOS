@@ -138,6 +138,7 @@
 #if TARGET_OS_IOS
 - (void)runImport;
 - (void)runExport;
+- (void)runExportSkin;
 #endif
 
 - (void)handle_INPUT;

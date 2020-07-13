@@ -87,7 +87,7 @@
 @end
 #endif
 
-#define DebugLog 1
+#define DebugLog 0
 #if DebugLog == 0
 #define NSLog(...) (void)0
 #endif
@@ -763,7 +763,7 @@ void mame_state(int load_save, int slot)
         return;
 
     [self startMenu];
-    [self showAlertWithTitle:@"MAME4iOS" message:@"Game is PAUSED" buttons:@[@"Continue"] handler:^(NSUInteger button) {
+    [self showAlertWithTitle:@PRODUCT_NAME message:@"Game is PAUSED" buttons:@[@"Continue"] handler:^(NSUInteger button) {
         [self endMenu];
     }];
 }
@@ -2209,7 +2209,7 @@ void myosd_handle_turbo() {
 - (void)buildBackgroundImage {
     
     // set a tiled image as our background
-    UIImage* image = [self loadImage:@"game-background.png"];
+    UIImage* image = [self loadImage:@"background.png"];
     
     if (image != nil)
         self.view.backgroundColor = [UIColor colorWithPatternImage:image];
@@ -2219,27 +2219,29 @@ void myosd_handle_turbo() {
     if (g_device_is_fullscreen)
         return;
 
-    NSString* imageName;
+    // TODO: tile these images? what about portrait?? what about in portrait resizableImageWithCapInsets?
+    image = [self loadImage:g_device_is_landscape ? @"background_landscape.png" : @"background_portrait.png"];
+
+    if (image != nil) {
+        self.view.backgroundColor = [UIColor colorWithPatternImage:image];
+        return;
+    }
     
     BOOL isIpad = self.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular && self.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassRegular;
     
-    if (g_device_is_landscape) {
-        // 320pt is the width of iPhone 5, 5s, 5c, SE, 4, 4s, 2G, 3G, 3GS
-        // 375pt is the width of iPhone 6, 6s, 7, 8
-        imageName = (UIScreen.mainScreen.nativeBounds.size.width <= (375.0 * 2.0)) ? @"back_landscape_iPhone.png" : @"back_landscape_iPhone_Long.png";
-        imageName = isIpad ? @"back_landscape_iPad.png" : imageName;
-    }
-    else {
+    NSString* imageName;
+    if (g_device_is_landscape)
+        imageName = isIpad ? @"back_landscape_iPad.png" : @"back_landscape_iPhone.png";
+    else
         imageName = isIpad ? @"back_portrait_iPad.png" : @"back_portrait_iPhone.png";
-    }
-       
-    imageBack = [[UIImageView alloc] initWithImage:[self loadImage:imageName]];
-    imageBack.frame = rFrames[g_device_is_landscape ? LANDSCAPE_IMAGE_BACK : PORTRAIT_IMAGE_BACK];
-       
-    imageBack.userInteractionEnabled = NO;
-    imageBack.multipleTouchEnabled = NO;
-    imageBack.clearsContextBeforeDrawing = NO;
     
+    image = [self loadImage:imageName];
+    
+    if (image == nil)
+        return;
+
+    imageBack = [[UIImageView alloc] initWithImage:image];
+    imageBack.frame = rFrames[g_device_is_landscape ? LANDSCAPE_IMAGE_BACK : PORTRAIT_IMAGE_BACK];
     [self.view addSubview: imageBack];
 }
 #endif
@@ -2247,7 +2249,7 @@ void myosd_handle_turbo() {
 // load any border image and return the size needed to inset the game rect
 - (void)getOverlayImage:(UIImage**)pImage andSize:(CGSize*)pSize {
     
-    NSString* border_name = @"game-border";
+    NSString* border_name = @"border";
     CGFloat   border_size = 0.25;
     UIImage*  image = [self loadImage:border_name];
     
@@ -3513,7 +3515,9 @@ CGRect convert_rect(CGRect rect, CGSize fromSize, CGSize toSize) {
     //
     
     // list of files that mark a zip as a SKIN
-    NSArray* skin_files = @[@"back_landscape_iPad.png", @"back_landscape_iPhone.png", @"back_portrait_iPad.png", @"back_portrait_iPhone.png", @"game-border.png", @"game-background.png"];
+    NSArray* skin_files = @[@"skin.json", @"border.png", @"background.png",
+                            @"background_landscape.png", @"back_landscape_iPad.png", @"back_landscape_iPhone.png",
+                            @"background_portrait.png", @"back_portrait_iPad.png", @"back_portrait_iPhone.png"];
 
     // whitelist of valid .DAT files we will copy to the dats folder
     NSArray* dat_files = @[@"HISTORY.DAT", @"MAMEINFO.DAT"];
@@ -3726,12 +3730,14 @@ CGRect convert_rect(CGRect rect, CGSize fromSize, CGSize toSize) {
 }
 
 // ZIP up all the important files in our documents directory
+// this is more than just "ROMs" it saves *all* important files, kind of like an archive or backup.
 // TODO: maybe we should also export the settings.bin or the UserDefaults plist
 // NOTE we specificaly *dont* export CHDs because they are too big, we support importing CHDs just not exporting
 -(BOOL)saveROMS:(NSURL*)url progressBlock:(BOOL (^)(double progress))block {
 
     NSString *rootPath = [NSString stringWithUTF8String:get_documents_path("")];
     NSString *romsPath = [NSString stringWithUTF8String:get_documents_path("roms")];
+    NSString *skinPath = [NSString stringWithUTF8String:get_documents_path("skins")];
 
     NSMutableArray* files = [[NSMutableArray alloc] init];
 
@@ -3746,6 +3752,12 @@ CGRect convert_rect(CGRect rect, CGSize fromSize, CGSize toSize) {
         for (NSString* path in paths) {
             [files addObject:[NSString stringWithFormat:path, [rom stringByDeletingPathExtension]]];
         }
+    }
+    
+    // save everything in the `skins` directory too
+    for (NSString* skin in [NSFileManager.defaultManager contentsOfDirectoryAtPath:skinPath error:nil]) {
+        if ([skin.pathExtension.uppercaseString isEqualToString:@"ZIP"])
+            [files addObject:[NSString stringWithFormat:@"skins/%@", skin]];
     }
     
     NSLog(@"saveROMS: ROMS: %@", roms);
@@ -3782,8 +3794,27 @@ CGRect convert_rect(CGRect rect, CGSize fromSize, CGSize toSize) {
 
 - (void)runExport {
     
-    FileItemProvider* item = [[FileItemProvider alloc] initWithTitle:@"MAME4iOS (export)" typeIdentifier:@"public.zip-archive" saveHandler:^BOOL(NSURL* url, FileItemProviderProgressHandler progressHandler) {
+    FileItemProvider* item = [[FileItemProvider alloc] initWithTitle:@PRODUCT_NAME " (export)" typeIdentifier:@"public.zip-archive" saveHandler:^BOOL(NSURL* url, FileItemProviderProgressHandler progressHandler) {
         return [self saveROMS:url progressBlock:progressHandler];
+    }];
+    
+    // NOTE UIActivityViewController is kind of broken in the Simulator, if you find a crash or problem verify it on a real device.
+    UIActivityViewController* activity = [[UIActivityViewController alloc] initWithActivityItems:@[item] applicationActivities:nil];
+    
+    UIViewController* top = self.topViewController;
+
+    if (activity.popoverPresentationController != nil) {
+        activity.popoverPresentationController.sourceView = top.view;
+        activity.popoverPresentationController.sourceRect = CGRectMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds), 0.0f, 0.0f);
+        activity.popoverPresentationController.permittedArrowDirections = 0;
+    }
+    
+    [top presentViewController:activity animated:YES completion:nil];
+}
+- (void)runExportSkin {
+    
+    FileItemProvider* item = [[FileItemProvider alloc] initWithTitle:@PRODUCT_NAME " (skin)" typeIdentifier:@"public.zip-archive" saveHandler:^BOOL(NSURL* url, FileItemProviderProgressHandler progressHandler) {
+        return [self->skinManager exportTo:url.path progressBlock:progressHandler];
     }];
     
     // NOTE UIActivityViewController is kind of broken in the Simulator, if you find a crash or problem verify it on a real device.
@@ -4631,7 +4662,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         g_mame_game_error[0] = 0;
         g_mame_game[0] = 0;
         
-        [self showAlertWithTitle:@"MAME4iOS" message:msg buttons:@[@"Ok"] handler:^(NSUInteger button) {
+        [self showAlertWithTitle:@PRODUCT_NAME message:msg buttons:@[@"Ok"] handler:^(NSUInteger button) {
             [self performSelectorOnMainThread:@selector(chooseGame:) withObject:games waitUntilDone:FALSE];
         }];
         return;

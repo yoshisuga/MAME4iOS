@@ -10,7 +10,7 @@
 #import "ZipFile.h"
 #import "Globals.h"
 
-#define DebugLog 1
+#define DebugLog 0
 #if DebugLog == 0
 #define NSLog(...) (void)0
 #endif
@@ -143,8 +143,66 @@ static NSArray* g_skin_list;
     return image;
 }
 
-- (void)exportToURL:(NSURL*)url {
+#pragma mark skin export template
+
+// all possible files in a Skin, used to export a template
++ (NSArray<NSString*>*)getSkinFiles {
+
+    NSMutableArray* files = [[NSMutableArray alloc] init];
     
+    // get built-in images
+    NSString* path = [NSString stringWithUTF8String:get_resource_path("SKIN_1")];
+    for (NSString* file in [NSFileManager.defaultManager enumeratorAtPath:path]) {
+        if ([file.pathExtension.uppercaseString isEqualToString:@"PNG"])
+            [files addObject:file];
+    }
+    
+    // add other images/etc
+    [files addObjectsFromArray:@[
+            @"README.md",
+            @"border", @"background", @"background_landscape", @"background_portrait",
+            @"stick-U", @"stick-D", @"stick-L", @"stick-R",
+            @"stick-UL", @"stick-DL", @"stick-DR", @"stick-UR",
+    ]];
+    
+    return files;
+}
+
+
+- (BOOL)exportTo:(NSString*)path progressBlock:(nullable BOOL (NS_NOESCAPE ^)(double progress))block {
+    NSArray* files = [SkinManager getSkinFiles];
+    
+    NSLog(@"SKIN EXPORT: %@\n%@", path, files);
+
+    return [ZipFile exportTo:path fromItems:files withOptions:ZipFileWriteFiles usingBlock:^ZipFileInfo * (NSString* name) {
+        
+        if (block) {
+            BOOL cancel = block((double)[files indexOfObject:name] / [files count]);
+            if (cancel)
+                return nil;
+        }
+        
+        if (name.pathExtension.length == 0)
+            name = [name stringByAppendingPathExtension:@"png"];
+        
+        NSData* data = nil;
+        
+        if ([name isEqualToString:@"README.md"])
+            data = [NSData dataWithContentsOfFile:[NSBundle.mainBundle pathForResource:[NSString stringWithFormat:@"skins/%@", name] ofType:nil]];
+        else
+            data = UIImagePNGRepresentation([self loadImage:name]);
+        
+        if (data != nil)
+            NSLog(@"    FILE: %@ (%d bytes)", name, (int)[data length]);
+        else
+            NSLog(@"    FILE: %@ ** SKIPPED **", name);
+        
+        ZipFileInfo* info = [[ZipFileInfo alloc] init];
+        info.name = data ? name : nil;      // name==nil => skip file
+        info.data = data;
+        info.date = [NSDate date];
+        return info;
+    }];
 }
 
 

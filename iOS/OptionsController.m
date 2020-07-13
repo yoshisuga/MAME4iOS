@@ -337,20 +337,30 @@
            {
                case 0:
                {
-                   cell.textLabel.text = @"Start Server";
-                   cell.accessoryView = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"arrow.up.arrow.down.circle"]];
+                   cell.textLabel.text = @"Import";
+                   cell.imageView.image = [UIImage systemImageNamed:@"square.and.arrow.down.on.square"];
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                    break;
                }
                case 1:
                {
-                   cell.textLabel.text = @"Import ROMs";
-                   cell.accessoryView = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"square.and.arrow.down"]];
+                   cell.textLabel.text = @"Export";
+                   cell.imageView.image = [UIImage systemImageNamed:@"square.and.arrow.up.on.square"];
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                    break;
                }
                case 2:
                {
-                   cell.textLabel.text = @"Export ROMs";
-                   cell.accessoryView = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"square.and.arrow.up"]];
+                   cell.textLabel.text = @"Export Skin";
+                   cell.imageView.image = [UIImage systemImageNamed:@"square.and.arrow.up"];
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   break;
+               }
+               case 3:
+               {
+                   cell.textLabel.text = @"Start Server";
+                   cell.imageView.image = [UIImage systemImageNamed:@"arrow.up.arrow.down.circle"];
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                    break;
                }
            }
@@ -413,7 +423,7 @@
           case kVideoSection: return 10;
           case kMiscSection: return 9;
           case kFilterSection: return 2;
-          case kImportSection: return 3;
+          case kImportSection: return 4;
           case kResetSection: return 1;
       }
     return -1;
@@ -506,13 +516,16 @@
         case kImportSection:
         {
             if (row==0) {
-                [self.emuController runServer];
-            }
-            if (row==1) {
                 [self.emuController runImport];
             }
-            if (row==2) {
+            if (row==1) {
                 [self.emuController runExport];
+            }
+            if (row==2) {
+                [self.emuController runExportSkin];
+            }
+            if (row==3) {
+                [self.emuController runServer];
             }
             break;
         }

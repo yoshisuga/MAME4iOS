@@ -21,7 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable UIImage *)loadImage:(NSString *)name;
 
-- (void)exportToURL:(NSURL*)url;
++ (NSArray<NSString*>*)getSkinFiles;    // all possible files in a Skin, used to export template
+- (BOOL)exportTo:(NSString*)path progressBlock:(nullable BOOL (NS_NOESCAPE ^)(double progress))block;
 
 @end
 
