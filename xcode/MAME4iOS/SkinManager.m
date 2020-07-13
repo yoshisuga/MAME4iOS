@@ -10,7 +10,7 @@
 #import "ZipFile.h"
 #import "Globals.h"
 
-#define DebugLog 0
+#define DebugLog 1
 #if DebugLog == 0
 #define NSLog(...) (void)0
 #endif
@@ -18,6 +18,7 @@
 @implementation SkinManager {
     NSString* _skin_name;
     NSString* _skin_path;
+    NSDictionary* _skin_info;
     NSCache* _image_cache;
 }
 
@@ -71,6 +72,7 @@ static NSArray* g_skin_list;
     
     _skin_name = kSkinNameDefault;
     _skin_path = nil;
+    _skin_info = nil;
     _image_cache = nil;
 
     // look for the Skin first in the user directory, then as a resource, else fail to default.
@@ -86,10 +88,33 @@ static NSArray* g_skin_list;
     
     _skin_name = name;
     _skin_path = path;
+
+    // load skin.json if present.
+    NSData* data = [self loadData:@"skin.json"];
+    if (data != nil) {
+        NSDictionary* info = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+        if ([info isKindOfClass:[NSDictionary class]])
+            _skin_info = info;
+    }
 }
+
 - (void)update {
     g_skin_list = nil;
     _image_cache = nil;
+}
+
+- (nullable NSData *)loadData:(NSString *)name {
+    NSString* uname = name.uppercaseString;
+    __block NSData* data = nil;
+    [ZipFile enumerate:_skin_path withOptions:ZipFileEnumFiles usingBlock:^(ZipFileInfo* info) {
+        if ([info.name.uppercaseString isEqualToString:uname])
+            data = info.data;
+        else if ([info.name.lastPathComponent.uppercaseString isEqualToString:uname])
+            data = info.data;
+        else if ([info.name.lastPathComponent.stringByDeletingPathExtension.uppercaseString isEqualToString:uname])
+            data = info.data;
+    }];
+    return data;
 }
 
 - (nullable UIImage *)loadImage:(NSString *)name {
@@ -109,35 +134,21 @@ static NSArray* g_skin_list;
     // cache miss, look for the image...
     // 1. in the skin file
     if (_skin_path != nil) {
-        __block NSData* data = nil;
-        NSString* uname = name.stringByDeletingPathExtension.uppercaseString;
-        [ZipFile enumerate:_skin_path withOptions:ZipFileEnumFiles usingBlock:^(ZipFileInfo* info) {
-            NSString* name = info.name.lastPathComponent.stringByDeletingPathExtension.uppercaseString;
-            NSString* ext = info.name.pathExtension.uppercaseString;
-            if (!([ext isEqualToString:@"PNG"] || [ext isEqualToString:@"JPG"]) || data != nil)
-                return;
-            if ([name isEqualToString:uname])
-                data = info.data;
-        }];
+        NSData* data = [self loadData:name];
         if (data != nil)
             image = [UIImage imageWithData:data];
     }
 
     // 2. as a resource (in SKIN_1)
-    if (image == nil) {
-        NSString *path = [NSString stringWithUTF8String:get_resource_path("SKIN_1")];
-        image = [UIImage imageWithContentsOfFile:[path stringByAppendingPathComponent:name]];
-    }
+    if (image == nil)
+        image = [UIImage imageNamed:[NSString stringWithFormat:@"SKIN_1/%@", name]];
 
-    // 1. as a resource
-    if (image == nil) {
-        NSString *path = [NSString stringWithUTF8String:get_resource_path("")];
-        image = [UIImage imageWithContentsOfFile:[path stringByAppendingPathComponent:name]];
-    }
+    // 3. as a resource
+    if (image == nil)
+        image = [UIImage imageNamed:name];
     
-    if (image == nil) {
+    if (image == nil)
         NSLog(@"SKIN IMAGE NOT FOUND: %@", name);
-    }
 
     [_image_cache setObject:(image ?: [NSNull null]) forKey:name];
     return image;
@@ -159,7 +170,7 @@ static NSArray* g_skin_list;
     
     // add other images/etc
     [files addObjectsFromArray:@[
-            @"README.md",
+            @"skin.json", @"README.md",
             @"border", @"background", @"background_landscape", @"background_portrait",
             @"stick-U", @"stick-D", @"stick-L", @"stick-R",
             @"stick-UL", @"stick-DL", @"stick-DR", @"stick-UR",
@@ -167,6 +178,11 @@ static NSArray* g_skin_list;
     
     return files;
 }
+
+- (NSDictionary*)getSkinInfo {
+    return _skin_info ?: @{@"skin":@{@"version":@(1)}};
+}
+
 
 
 - (BOOL)exportTo:(NSString*)path progressBlock:(nullable BOOL (NS_NOESCAPE ^)(double progress))block {
@@ -187,7 +203,9 @@ static NSArray* g_skin_list;
         
         NSData* data = nil;
         
-        if ([name isEqualToString:@"README.md"])
+        if ([name isEqualToString:@"skin.json"])
+            data = [NSJSONSerialization dataWithJSONObject:[self getSkinInfo] options:NSJSONWritingPrettyPrinted error:nil];
+        else if ([name isEqualToString:@"README.md"])
             data = [NSData dataWithContentsOfFile:[NSBundle.mainBundle pathForResource:[NSString stringWithFormat:@"skins/%@", name] ofType:nil]];
         else
             data = UIImagePNGRepresentation([self loadImage:name]);

@@ -34,6 +34,7 @@
 
 @end
 
+#if TARGET_OS_MACCATALYST
 
 @implementation Bootstrapper (AppMenu)
 
@@ -104,5 +105,6 @@
 }
 
 @end
+#endif
 
 
