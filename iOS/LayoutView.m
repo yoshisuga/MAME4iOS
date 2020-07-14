@@ -69,11 +69,7 @@
 
 - (void)drawRect:(CGRect)rect {
     
-    int i = 0;
-    
-    //Get the CGContext from this view
 	CGContextRef context = UIGraphicsGetCurrentContext();
-   	
     UIColor* color = [UIColor.whiteColor colorWithAlphaComponent:0.2];
     UIFont* font = [UIFont boldSystemFontOfSize:24];
 
@@ -81,7 +77,7 @@
     CGContextFillRect(context, rFinish);
     [self drawString:@"Touch Here to Finish" withFont:font inRect:rFinish];
     
-    for(i=0; i<layoutDataArray.count ; i++)
+    for(int i=0; i<layoutDataArray.count ; i++)
     {
         LayoutData *ld = (LayoutData *)[layoutDataArray objectAtIndex:i];
         if(ld.type == kType_ButtonRect ||
@@ -108,8 +104,6 @@
             {
                 [self drawString:@"Y+B" withFont:font inRect:[ld getNewRect]];
             }
-
-                
         }
     }
 }
@@ -123,8 +117,6 @@
 
 - (void)updateRelated:(LayoutData *)moved x:(int)ax y:(int)ay
 {
-    int i = 0;
-    
     if(moved.subtype == kSubtype_NONE)
         return;
     
@@ -132,17 +124,15 @@
     {
         UIView *v = [emuController getDPADView];
         v.frame = [moved getNewRect];
-        [v setNeedsDisplay];
     }
     
     if(moved.type == kType_StickRect)
     {
         UIView *v = [emuController getStickView];
         v.frame = [moved getNewRect];
-        [v setNeedsDisplay];
     }
     
-    for(i=0; i<layoutDataArray.count ; i++)
+    for(int i=0; i<layoutDataArray.count ; i++)
     {
         LayoutData *ld = (LayoutData *)[layoutDataArray objectAtIndex:i];
         
@@ -155,7 +145,6 @@
         {
             UIView *v = [emuController getButtonView:ld.value];
             v.frame = [ld getNewRect];
-            [v setNeedsDisplay];
         }
         
     }
@@ -170,13 +159,34 @@
     static int old_ay = 0;
     static int prev_ax = 0;
     static int prev_ay = 0;
+    static CGFloat pinch_distance = 0.0;
     static LayoutData *moved = nil;
     
     int i = 0;
     
+    NSArray* allTouches = [[event allTouches] allObjects];
     
-    NSSet *allTouches = [event allTouches];
-    UITouch *touch = [[allTouches allObjects] objectAtIndex:0];
+    if (allTouches.count == 2) {
+        CGPoint a = [allTouches.firstObject locationInView:self];
+        CGPoint b = [allTouches.lastObject locationInView:self];
+        CGPoint c = CGPointMake((a.x+b.x)/2, (a.y+b.y)/2);
+        CGFloat d = sqrt((a.x-b.x)*(a.x-b.x) + (a.y-b.y)*(a.y-b.y));
+        
+        if (pinch_distance == 0.0)
+            pinch_distance = d;
+        
+        CGFloat pinch_scale = d / pinch_distance;
+        
+        if (MyCGRectContainsPoint(emuController.getStickView.frame, c))
+            NSLog(@"STICK SCALE: %f", pinch_scale);
+        else
+            NSLog(@"BUTTON SCALE: %f", pinch_scale);
+
+        return;
+    }
+    pinch_distance = 0.0;
+    
+    UITouch *touch = allTouches.firstObject;
     
     CGPoint pt = [touch locationInView:self];
     
