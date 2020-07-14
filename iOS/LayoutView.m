@@ -64,7 +64,7 @@
 - (void)layoutSubviews {
     [super layoutSubviews];
     layoutDataArray = [LayoutData createLayoutData:emuController];
-    rFinish =  CGRectMake( (self.bounds.size.width / 2) - 100, (self.bounds.size.height / 4) - 20, 200, 40);
+    rFinish =  CGRectMake( (self.bounds.size.width / 2) - 125, (self.bounds.size.height / 4) - 20, 250, 40);
 }
 
 - (void)drawRect:(CGRect)rect {
@@ -74,14 +74,12 @@
     //Get the CGContext from this view
 	CGContextRef context = UIGraphicsGetCurrentContext();
    	
-    //Set the width of the pen mark
-	CGContextSetLineWidth(context, 2.0);
-    
-    [[UIColor.whiteColor colorWithAlphaComponent:0.2] setFill];
-    [UIColor.redColor setStroke];
-    
+    UIColor* color = [UIColor.whiteColor colorWithAlphaComponent:0.2];
+    UIFont* font = [UIFont boldSystemFontOfSize:24];
+
+    [color setFill];
     CGContextFillRect(context, rFinish);
-    [self drawString:@"Touch Here to Finish" withFont:[UIFont boldSystemFontOfSize:16] inRect:rFinish];
+    [self drawString:@"Touch Here to Finish" withFont:font inRect:rFinish];
     
     for(i=0; i<layoutDataArray.count ; i++)
     {
@@ -91,23 +89,24 @@
            (ld.type == kType_StickRect && g_pref_input_touch_type != TOUCH_INPUT_DPAD)
            )
         {
+            [color setFill];
             CGContextFillRect(context, [ld getNewRect ]);
             
             if(ld.type == kType_ButtonRect && ld.value == BTN_B_X_RECT)
             {
-                [self drawString:@"B+X" withFont:[UIFont boldSystemFontOfSize:16] inRect:[ld getNewRect]];
+                [self drawString:@"B+X" withFont:font inRect:[ld getNewRect]];
             }
             else if(ld.type == kType_ButtonRect && ld.value == BTN_A_Y_RECT)
             {
-                [self drawString:@"A+Y" withFont:[UIFont boldSystemFontOfSize:16] inRect:[ld getNewRect]];
+                [self drawString:@"A+Y" withFont:font inRect:[ld getNewRect]];
             }
             else if(ld.type == kType_ButtonRect && ld.value == BTN_X_A_RECT)
             {
-                [self drawString:@"X+A" withFont:[UIFont boldSystemFontOfSize:16] inRect:[ld getNewRect]];
+                [self drawString:@"X+A" withFont:font inRect:[ld getNewRect]];
             }
             else if(ld.type == kType_ButtonRect && ld.value == BTN_B_Y_RECT)
             {
-                [self drawString:@"Y+B" withFont:[UIFont boldSystemFontOfSize:16] inRect:[ld getNewRect]];
+                [self drawString:@"Y+B" withFont:font inRect:[ld getNewRect]];
             }
 
                 
@@ -115,23 +114,12 @@
     }
 }
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+- (void) drawString: (NSString*) s withFont: (UIFont*) font inRect: (CGRect) rect {
 
-- (void) drawString: (NSString*) s withFont: (UIFont*) font inRect: (CGRect) contextRect {
-    
-    
-    //CGFloat fontHeight = font.pointSize;
-    CGFloat fontHeight = [s sizeWithFont:font].height;
-    
-    CGFloat yOffset = (contextRect.size.height - fontHeight) / 2.0;
-    
-    CGRect textRect = CGRectMake(contextRect.origin.x, contextRect.origin.y + yOffset, contextRect.size.width, fontHeight);
-    
-    [s drawInRect: textRect withFont: font lineBreakMode: NSLineBreakByClipping alignment: NSTextAlignmentCenter];
+    CGSize size = [s sizeWithAttributes:@{NSFontAttributeName:font}];
+    CGPoint pt = CGPointMake(rect.origin.x + (rect.size.width - size.width)/2, rect.origin.y + (rect.size.height - size.height)/2);
+    [s drawAtPoint:pt withAttributes:@{NSFontAttributeName:font, NSForegroundColorAttributeName:UIColor.whiteColor}];
 }
-
-#pragma clang diagnostic pop
 
 - (void)updateRelated:(LayoutData *)moved x:(int)ax y:(int)ay
 {
