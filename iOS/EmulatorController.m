@@ -1352,6 +1352,11 @@ void mame_state(int load_save, int slot)
         alpha = 1.0;
     else
         alpha = 0.0;
+    
+    if (change_layout) {
+        alpha = 0.0;
+        [self.view bringSubviewToFront:layoutView];
+    }
 
     if (screenView.alpha != alpha) {
         if (alpha == 0.0)
@@ -1392,7 +1397,7 @@ void mame_state(int load_save, int slot)
         imageLogo.frame = self.view.bounds;
     else
         imageLogo.frame = g_device_is_landscape ? rFrames[LANDSCAPE_VIEW_NOT_FULL] : rFrames[PORTRAIT_VIEW_NOT_FULL];
-    [screenView.superview addSubview:imageLogo];
+    [screenView.superview insertSubview:imageLogo aboveSubview:screenView];
 }
 
 -(void)buildFrameRateView {
@@ -2320,6 +2325,9 @@ void myosd_handle_turbo() {
         }
     }
 #endif
+    
+    if (change_layout)
+        g_device_is_fullscreen = FALSE;
 
     CGRect r;
 
@@ -3854,58 +3862,38 @@ CGRect convert_rect(CGRect rect, CGSize fromSize, CGSize toSize) {
 #if TARGET_OS_IOS
 -(void)beginCustomizeCurrentLayout{
     
-    if (g_joy_used && g_device_is_fullscreen)
-    {
-        [self showAlertWithTitle:nil message:@"You cannot customize current layout when using a external controller!"];
-    }
-    else
-    {
-        [self dismissViewControllerAnimated:YES completion:nil];
-        
-        if (g_pref_input_touch_type == TOUCH_INPUT_DPAD)
-            g_pref_input_touch_type = TOUCH_INPUT_DSTICK;
-
-        [self changeUI]; //ensure GUI
-        
-        //dont free the screenView, see buildScreenView
-        //[screenView removeFromSuperview];
-        //screenView = nil;
-        screenView.alpha = 0;
-        
-        layoutView = [[LayoutView alloc] initWithFrame:self.view.bounds withEmuController:self];
-        
-        change_layout = 1;
-        
-        [self removeTouchControllerViews];
-        
-        [self buildTouchControllerViews];
-        
-        [self.view addSubview:layoutView];
-    }
+    [self dismissViewControllerAnimated:YES completion:nil];
     
+    if (g_pref_input_touch_type == TOUCH_INPUT_DPAD)
+        g_pref_input_touch_type = TOUCH_INPUT_DSTICK;
+
+    layoutView = [[LayoutView alloc] initWithFrame:self.view.bounds withEmuController:self];
+    layoutView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [self.view addSubview:layoutView];
+
+    change_layout = 1;
+    [self changeUI];
 }
 
 -(void)finishCustomizeCurrentLayout{
     
     [layoutView removeFromSuperview];
+    layoutView = nil;
     
     change_layout = 0;
-    screenView.alpha = 1;
+    [self changeUI]; //ensure GUI
 
     [self done:self];
 }
 
 -(void)resetCurrentLayout{
     
-    if (g_joy_used && g_device_is_fullscreen)
-    {
-        [self showAlertWithTitle:nil message:@"You cannot reset current layout when using a external controller!"];
-        return;
-    }
-    
     [self showAlertWithTitle:nil message:@"Do you want to reset current layout to default?" buttons:@[@"Yes", @"No"] handler:^(NSUInteger buttonIndex) {
         if (buttonIndex == 0)
         {
+            Options* op = [[Options alloc] init];
+            op.skin = @"Default";
+            [op saveOptions];
             [LayoutData removeLayoutData];
             [self done:self];
         }

@@ -54,12 +54,17 @@
 		self.backgroundColor = [UIColor clearColor];
 		self.multipleTouchEnabled = NO;
 	    self.userInteractionEnabled = NO;
+        self.contentMode = UIViewContentModeRedraw;
         
 	    emuController = emulatorController;
-        layoutDataArray = [LayoutData createLayoutData:emuController];
-        rFinish =  CGRectMake( (frame.size.width / 2) - 100, (frame.size.height / 4) - 20, 200, 40);
     }
     return self;
+}
+
+- (void)layoutSubviews {
+    [super layoutSubviews];
+    layoutDataArray = [LayoutData createLayoutData:emuController];
+    rFinish =  CGRectMake( (self.bounds.size.width / 2) - 100, (self.bounds.size.height / 4) - 20, 200, 40);
 }
 
 - (void)drawRect:(CGRect)rect {
@@ -69,20 +74,13 @@
     //Get the CGContext from this view
 	CGContextRef context = UIGraphicsGetCurrentContext();
    	
-    //Set the stroke (pen) color
-	CGContextSetStrokeColorWithColor(context, [UIColor redColor].CGColor);
-	
     //Set the width of the pen mark
 	CGContextSetLineWidth(context, 2.0);
     
-    CGColorSpaceRef colorspace = CGColorSpaceCreateDeviceRGB();
-    CGFloat components[] = {1.0, 1.0, 1.0, 0.2};
-    CGColorRef color = CGColorCreate(colorspace, components);
+    [[UIColor.whiteColor colorWithAlphaComponent:0.2] setFill];
+    [UIColor.redColor setStroke];
     
-    
-    
-    CGContextSetFillColorWithColor(context, color);
-    
+    CGContextFillRect(context, rFinish);
     [self drawString:@"Touch Here to Finish" withFont:[UIFont boldSystemFontOfSize:16] inRect:rFinish];
     
     for(i=0; i<layoutDataArray.count ; i++)
@@ -93,7 +91,6 @@
            (ld.type == kType_StickRect && g_pref_input_touch_type != TOUCH_INPUT_DPAD)
            )
         {
-            
             CGContextFillRect(context, [ld getNewRect ]);
             
             if(ld.type == kType_ButtonRect && ld.value == BTN_B_X_RECT)
@@ -116,10 +113,6 @@
                 
         }
     }
-    
-    CGColorSpaceRelease(colorspace);
-    CGColorRelease(color);
-        
 }
 
 #pragma clang diagnostic push
