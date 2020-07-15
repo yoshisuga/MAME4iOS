@@ -3341,19 +3341,10 @@ CGRect convert_rect(CGRect rect, CGRect src, CGRect dst) {
     if (CGSizeEqualToSize(windowSize, configSize))
         return;
 
-    // the VIEW_FULL in the config files should be the size of the whole screen
-    assert(rFrames[PORTRAIT_VIEW_FULL].origin.x == 0.0);
-    assert(rFrames[PORTRAIT_VIEW_FULL].origin.y == 0.0);
-    assert(rFrames[LANDSCAPE_VIEW_FULL].origin.x == 0.0);
-    assert(rFrames[LANDSCAPE_VIEW_FULL].origin.y == 0.0);
-    
     // all the positions should be relative the the background image.
     CGRect srcRect = is_landscape ? rFrames[LANDSCAPE_IMAGE_BACK] : rFrames[PORTRAIT_IMAGE_BACK];
 
     if (is_landscape) {
-        // all the landscape layouts have background the size of the whole window.
-        assert(CGRectEqualToRect(rFrames[LANDSCAPE_IMAGE_BACK], rFrames[LANDSCAPE_VIEW_FULL]));
-        
         // try to fit a 4:3 game screen with 10% on each side.
         CGFloat w = MIN(windowSize.height * 4 / 3, windowSize.width * 0.80);
         CGFloat h = w * 3 / 4;
@@ -3363,15 +3354,7 @@ CGRect convert_rect(CGRect rect, CGRect src, CGRect dst) {
         rFrames[LANDSCAPE_VIEW_NOT_FULL] = CGRectMake((windowSize.width-w)/2, 0, w, h);
     }
     else {
-        // all the portrait layouts have VIEW_NOT_FULL on top and IMAGE_BACK on bottom...
-        assert(rFrames[PORTRAIT_VIEW_NOT_FULL].size.width == rFrames[PORTRAIT_VIEW_FULL].size.width);
-        assert(rFrames[PORTRAIT_IMAGE_BACK].size.width == rFrames[PORTRAIT_VIEW_FULL].size.width);
-        assert(rFrames[PORTRAIT_VIEW_NOT_FULL].origin.x == 0.0);
-        assert(rFrames[PORTRAIT_VIEW_NOT_FULL].origin.y == 0.0);
-        assert(rFrames[PORTRAIT_VIEW_NOT_FULL].origin.y + rFrames[PORTRAIT_VIEW_NOT_FULL].size.height == rFrames[PORTRAIT_IMAGE_BACK].origin.y);
-        assert(rFrames[PORTRAIT_IMAGE_BACK].origin.y + rFrames[PORTRAIT_IMAGE_BACK].size.height == rFrames[PORTRAIT_VIEW_FULL].size.height);
-
-        // split the window, keeping the aspect ratio of the background image.
+        // split the window, keeping the aspect ratio of the background image, on the bottom.
         CGFloat h = windowSize.width * rFrames[PORTRAIT_IMAGE_BACK].size.height / rFrames[PORTRAIT_IMAGE_BACK].size.width;
 
         rFrames[PORTRAIT_VIEW_FULL] = CGRectMake(0, 0, windowSize.width, windowSize.height);
