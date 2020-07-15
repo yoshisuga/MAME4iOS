@@ -195,7 +195,8 @@ static int change_layout=0;
 
 #define kHUDPositionKey  @"hud_rect"
 #define kHUDScaleKey     @"hud_scale"
-#define kSelectedGameKey @"selected_game"
+#define kSelectedGameInfoKey @"selected_game_info"
+static NSDictionary* g_mame_game_info;
 static BOOL g_mame_reset = FALSE;           // do a full reset (delete cfg files) before running MAME
 static char g_mame_game[MAX_GAME_NAME];     // game MAME should run (or empty is menu)
 static char g_mame_game_error[MAX_GAME_NAME];
@@ -441,12 +442,15 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     
     sharedInstance = self;
     
-    NSString* name = [[NSUserDefaults standardUserDefaults] stringForKey:kSelectedGameKey] ?: @"";
+    g_mame_game_info = [[NSUserDefaults standardUserDefaults] objectForKey:kSelectedGameInfoKey];
+    NSString* name = g_mame_game_info[kGameInfoName] ?: @"";
     if ([name isEqualToString:kGameInfoNameMameMenu])
         name = @" ";
     strncpy(g_mame_game, [name cStringUsingEncoding:NSUTF8StringEncoding], sizeof(g_mame_game));
     g_mame_game_error[0] = 0;
-    [[NSUserDefaults standardUserDefaults] removeObjectForKey:kSelectedGameKey];
+    
+    // delete the UserDefaults, this way if we crash we wont try this game next boot
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:kSelectedGameInfoKey];
     [[NSUserDefaults standardUserDefaults] synchronize];
 	     		    				
     pthread_create(&main_tid, NULL, app_Thread_Start, NULL);
@@ -715,8 +719,10 @@ void mame_state(int load_save, int slot)
     }
     else if (myosd_inGame && myosd_in_menu == 0)
     {
-        if (g_mame_game[0] != ' ')
+        if (g_mame_game[0] != ' ') {
             g_mame_game[0] = 0;
+            g_mame_game_info = nil;
+        }
         myosd_exitGame = 1;
     }
     else if (myosd_inGame && myosd_in_menu != 0)
@@ -726,6 +732,7 @@ void mame_state(int load_save, int slot)
     else
     {
         g_mame_game[0] = 0;
+        g_mame_game_info = nil;
         myosd_exitGame = 1;
     }
 }
@@ -742,8 +749,7 @@ void mame_state(int load_save, int slot)
 - (void)runPause
 {
     // this is called from bootstrapper when app is going into the background, save the current game we are playing so we can restore next time.
-    NSString* name = [NSString stringWithUTF8String:g_mame_game];
-    [[NSUserDefaults standardUserDefaults] setObject:name forKey:kSelectedGameKey];
+    [[NSUserDefaults standardUserDefaults] setObject:g_mame_game_info forKey:kSelectedGameInfoKey];
     
 #if TARGET_OS_IOS
     // also save the position of the HUD
@@ -843,11 +849,10 @@ void mame_state(int load_save, int slot)
     g_pref_filter = [Options.arrayFilter optionData:op.filter];
     g_pref_screen_shader = [Options.arrayScreenShader optionData:op.screenShader];
     g_pref_line_shader = [Options.arrayLineShader optionData:op.lineShader];
-    
+    g_pref_colorspace = [Options.arrayColorSpace optionData:op.colorSpace];
+
     g_pref_skin = [Options.arraySkin optionData:op.skin];
     [skinManager setCurrentSkin:g_pref_skin];
-    
-    g_pref_colorspace = [Options.arrayColorSpace optionData:op.colorSpace];
 
     g_pref_integer_scale_only = op.integerScalingOnly;
     g_pref_metal = op.useMetal;
@@ -1274,7 +1279,7 @@ void mame_state(int load_save, int slot)
     mouseTouchStartLocation = mouseInitialLocation;
 
     if (g_mame_game[0] && g_mame_game[0] != ' ')
-        [self updateUserActivity:@{kGameInfoName:[NSString stringWithUTF8String:g_mame_game]}];
+        [self updateUserActivity:g_mame_game_info];
 }
 
 -(void)viewWillAppear:(BOOL)animated {
@@ -1881,6 +1886,12 @@ static NSArray* list_trim(NSArray* _list) {
 
     [imageExternalDisplay removeFromSuperview];
     imageExternalDisplay = nil;
+    
+    // load the skin based on <ROMNAME>,<PARENT>,<MACHINE>,<USER PREF>
+    if (g_mame_game[0] && g_mame_game[0] != ' ' && g_mame_game_info != nil)
+        [skinManager setCurrentSkin:[NSString stringWithFormat:@"%s,%@,%@,%@", g_mame_game, g_mame_game_info[kGameInfoParent], g_mame_game_info[kGameInfoDriver], g_pref_skin]];
+    else if (g_mame_game[0])
+        [skinManager setCurrentSkin:g_pref_skin];
 
     [self getConf];
     [self buildScreenView];
@@ -2333,9 +2344,9 @@ void myosd_handle_turbo() {
 
 #if TARGET_OS_IOS
     [self getControllerCoords:g_device_is_landscape];
+    [LayoutData loadLayoutData:self];
     [self fixControllerCoords:g_device_is_landscape];
     [self adjustSizes];
-    [LayoutData loadLayoutData:self];
 
     [self buildBackgroundImage];
     
@@ -4579,6 +4590,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         NSLog(@"CANT RUN GAME! (%@ is active)", viewController);
         return;
     }
+
     
     NSString* name = game[kGameInfoName];
     
@@ -4586,10 +4598,12 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         name = @" ";
 
     if (name != nil) {
+        g_mame_game_info = game;
         strncpy(g_mame_game, [name cStringUsingEncoding:NSUTF8StringEncoding], sizeof(g_mame_game));
         [self updateUserActivity:game];
     }
     else {
+        g_mame_game_info = nil;
         g_mame_game[0] = 0;     // run the MENU
     }
 
@@ -4641,6 +4655,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         NSString* msg = [NSString stringWithFormat:@"ERROR RUNNING GAME %s", g_mame_game_error];
         g_mame_game_error[0] = 0;
         g_mame_game[0] = 0;
+        g_mame_game_info = nil;
         
         [self showAlertWithTitle:@PRODUCT_NAME message:msg buttons:@[@"Ok"] handler:^(NSUInteger button) {
             [self performSelectorOnMainThread:@selector(chooseGame:) withObject:games waitUntilDone:FALSE];

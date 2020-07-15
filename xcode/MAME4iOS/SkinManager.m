@@ -17,8 +17,8 @@
 
 @implementation SkinManager {
     NSString* _skin_name;
-    NSString* _skin_path;
-    NSDictionary* _skin_info;
+    NSMutableArray<NSString*>* _skin_paths;
+    NSMutableArray<NSDictionary*>* _skin_infos;
     NSCache* _image_cache;
 }
 
@@ -60,6 +60,7 @@ static NSArray* g_skin_list;
     return self;
 }
 
+// skin name is a comma separated list
 - (void)setCurrentSkin:(NSString*)name {
     
     if (name == nil || name.length == 0)
@@ -70,32 +71,43 @@ static NSArray* g_skin_list;
     
     NSLog(@"LOADING SKIN: %@", name);
     
-    _skin_name = kSkinNameDefault;
-    _skin_path = nil;
-    _skin_info = nil;
-    _image_cache = nil;
-
-    // look for the Skin first in the user directory, then as a resource, else fail to default.
-    NSString* path = [NSString stringWithFormat:@"%s/%@.zip", get_documents_path("skins"), name];
-    
-    if (![NSFileManager.defaultManager fileExistsAtPath:path])
-        path = [NSString stringWithFormat:@"%s/%@.zip", get_resource_path("skins"), name];
-    
-    if (![NSFileManager.defaultManager fileExistsAtPath:path]) {
-        NSLog(@"SKIN FILE NOT FOUND: %@", path);
-        return;
-    }
-    
     _skin_name = name;
-    _skin_path = path;
+    _skin_paths = nil;
+    _skin_infos = nil;
+    _image_cache = nil;
+    
+    for (NSString* name in [_skin_name componentsSeparatedByString:@","]) {
+        
+        // if skin name is empty ignore it (a rom parent can be "0", so ignore that too)
+        if (name.length == 0 || [name isEqualToString:@"0"])
+            continue;
 
-    // load skin.json if present.
-    NSData* data = [self loadData:@"skin.json"];
-    if (data != nil) {
-        NSDictionary* info = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-        if ([info isKindOfClass:[NSDictionary class]])
-            _skin_info = info;
+        // look for the Skin first in the user directory, then as a resource, else fail to default.
+        NSString* path = [NSString stringWithFormat:@"%s/%@.zip", get_documents_path("skins"), name];
+        
+        if (![NSFileManager.defaultManager fileExistsAtPath:path])
+            path = [NSString stringWithFormat:@"%s/%@.zip", get_resource_path("skins"), name];
+        
+        if (![NSFileManager.defaultManager fileExistsAtPath:path])
+            continue;
+        
+        if ([_skin_paths containsObject:path])
+            continue;
+        
+        _skin_paths = _skin_paths ?: [[NSMutableArray alloc] init];
+        _skin_infos = _skin_infos ?: [[NSMutableArray alloc] init];
+        [_skin_paths addObject:path];
+        
+        // load skin.json if present.
+        NSData* data = [self loadData:@"skin.json" from:path];
+        if (data != nil) {
+            NSDictionary* info = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+            if ([info isKindOfClass:[NSDictionary class]])
+                [_skin_infos addObject:info];
+        }
     }
+    
+    NSLog(@"SKIN: %@\n%@\n%@", name, _skin_paths, _skin_infos);
 }
 
 - (void)update {
@@ -103,10 +115,10 @@ static NSArray* g_skin_list;
     _image_cache = nil;
 }
 
-- (nullable NSData *)loadData:(NSString *)name {
+- (nullable NSData *)loadData:(NSString *)name from:(NSString*)path {
     NSString* uname = name.uppercaseString;
     __block NSData* data = nil;
-    [ZipFile enumerate:_skin_path withOptions:ZipFileEnumFiles usingBlock:^(ZipFileInfo* info) {
+    [ZipFile enumerate:path withOptions:ZipFileEnumFiles usingBlock:^(ZipFileInfo* info) {
         if ([info.name.uppercaseString isEqualToString:uname])
             data = info.data;
         else if ([info.name.lastPathComponent.uppercaseString isEqualToString:uname])
@@ -115,6 +127,15 @@ static NSArray* g_skin_list;
             data = info.data;
     }];
     return data;
+}
+
+- (nullable NSData *)loadData:(NSString *)name {
+    for (NSString* path in _skin_paths) {
+        NSData* data = [self loadData:name from:path];
+        if (data != nil)
+            return data;
+    }
+    return nil;
 }
 
 - (nullable UIImage *)loadImage:(NSString *)name {
@@ -132,12 +153,10 @@ static NSArray* g_skin_list;
     NSLog(@"SKIN IMAGE LOAD: %@", name);
     
     // cache miss, look for the image...
-    // 1. in the skin file
-    if (_skin_path != nil) {
-        NSData* data = [self loadData:name];
-        if (data != nil)
-            image = [UIImage imageWithData:data];
-    }
+    // 1. in the skin file(s)
+    NSData* data = [self loadData:name];
+    if (data != nil)
+        image = [UIImage imageWithData:data];
 
     // 2. as a resource (in SKIN_1)
     if (image == nil)
@@ -180,7 +199,8 @@ static NSArray* g_skin_list;
 }
 
 - (NSDictionary*)getSkinInfo {
-    return _skin_info ?: @{@"skin":@{@"version":@(1)}};
+    // TODO: fix me
+    return @{@"info":@{@"version":@(1)}};
 }
 
 - (BOOL)exportTo:(NSString*)path progressBlock:(nullable BOOL (NS_NOESCAPE ^)(double progress))block {
