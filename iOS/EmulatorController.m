@@ -2235,7 +2235,11 @@ void myosd_handle_turbo() {
     if (g_device_is_fullscreen)
         return;
 
+#if TARGET_OS_MACCATALYST
+    BOOL isIpad = [DeviceScreenResolver resolve] == IPAD_GENERIC;
+#else
     BOOL isIpad = self.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular && self.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassRegular;
+#endif
     
     NSString* imageName;
     if (g_device_is_landscape)
