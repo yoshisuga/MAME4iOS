@@ -1445,12 +1445,12 @@ void mame_state(int load_save, int slot)
     // put label in upper-left of screenView, or just above if room...
     CGSize size = [fpsView sizeThatFits:CGSizeZero];
     
-    if (pos.y - size.height > screenView.superview.safeAreaInsets.top)
-        pos.y -= size.height + 4.0;
-    if (pos.x - size.width > screenView.superview.safeAreaInsets.left)
-        pos.x -= size.width + 4.0;
+    if (pos.y - (size.height+4) >= screenView.superview.safeAreaInsets.top)
+        pos.y -= size.height+4;
+    else if (pos.x - (size.width+4) >= screenView.superview.safeAreaInsets.left)
+        pos.x -= size.width+4;
     else {
-        pos.x += 4.0; pos.y += 4.0;
+        pos.x += 4; pos.y += 4;
     }
     
     fpsView.frame = (CGRect){pos, size};
@@ -3310,27 +3310,21 @@ void myosd_handle_turbo() {
   }
 }
 
-// transform a rect
-CGRect transform_rect(CGRect rect, CGSize fromSize, CGSize toSize) {
-    CGFloat scale_x = toSize.width / fromSize.width;
-    CGFloat scale_y = toSize.height / fromSize.height;
-    return CGRectMake(rect.origin.x * scale_x, rect.origin.y * scale_y, rect.size.width * scale_x, rect.size.height * scale_y);
-}
 // convert a rect, but keep aspect ratio
-CGRect convert_rect(CGRect rect, CGSize fromSize, CGSize toSize) {
-    CGFloat scale_x = toSize.width / fromSize.width;
-    CGFloat scale_y = toSize.height / fromSize.height;
+CGRect convert_rect(CGRect rect, CGRect src, CGRect dst) {
+    CGFloat scale_x = dst.size.width / src.size.width;
+    CGFloat scale_y = dst.size.height / src.size.height;
     CGFloat scale = (scale_x + scale_y)/2; // MAX(scale_x, scale_y);
     
     // transform center
-    CGFloat x = CGRectGetMidX(rect) * scale_x;
-    CGFloat y = CGRectGetMidY(rect) * scale_y;
-    // scale width/height by same amount
+    CGFloat x = dst.origin.x + (CGRectGetMidX(rect) - src.origin.x) * scale_x;
+    CGFloat y = dst.origin.y + (CGRectGetMidY(rect) - src.origin.y) * scale_y;
+    // scale width/height by the same amount
     CGFloat w = CGRectGetWidth(rect) * scale;
     CGFloat h = CGRectGetHeight(rect) * scale;
-    // clip to the screen edge
-    x = MAX(w/2,MIN(toSize.width - w/2, x));
-    y = MAX(h/2,MIN(toSize.height- h/2, y));
+    // clip to the dst rect
+    x = MAX(w/2,MIN(dst.origin.x + dst.size.width - w/2, x));
+    y = MAX(h/2,MIN(dst.origin.y + dst.size.height - h/2, y));
 
     // return a new rect centered
     return CGRectMake(x - w/2, y - h/2, w, h);
@@ -3347,33 +3341,56 @@ CGRect convert_rect(CGRect rect, CGSize fromSize, CGSize toSize) {
     if (CGSizeEqualToSize(windowSize, configSize))
         return;
 
-    // the VIEW_FULL in the config files should be the size of the screen
+    // the VIEW_FULL in the config files should be the size of the whole screen
     assert(rFrames[PORTRAIT_VIEW_FULL].origin.x == 0.0);
     assert(rFrames[PORTRAIT_VIEW_FULL].origin.y == 0.0);
     assert(rFrames[LANDSCAPE_VIEW_FULL].origin.x == 0.0);
     assert(rFrames[LANDSCAPE_VIEW_FULL].origin.y == 0.0);
+    
+    // all the positions should be relative the the background image.
+    CGRect srcRect = is_landscape ? rFrames[LANDSCAPE_IMAGE_BACK] : rFrames[PORTRAIT_IMAGE_BACK];
 
     if (is_landscape) {
+        // all the landscape layouts have background the size of the whole window.
+        assert(CGRectEqualToRect(rFrames[LANDSCAPE_IMAGE_BACK], rFrames[LANDSCAPE_VIEW_FULL]));
+        
+        // try to fit a 4:3 game screen with 10% on each side.
+        CGFloat w = MIN(windowSize.height * 4 / 3, windowSize.width * 0.80);
+        CGFloat h = w * 3 / 4;
+
         rFrames[LANDSCAPE_VIEW_FULL] = CGRectMake(0, 0, windowSize.width, windowSize.height);
-        rFrames[LANDSCAPE_VIEW_NOT_FULL] = transform_rect(rFrames[LANDSCAPE_VIEW_NOT_FULL], configSize, windowSize);
-        rFrames[LANDSCAPE_IMAGE_BACK] = transform_rect(rFrames[LANDSCAPE_IMAGE_BACK], configSize, windowSize);
+        rFrames[LANDSCAPE_IMAGE_BACK] = CGRectMake(0, 0, windowSize.width, windowSize.height);
+        rFrames[LANDSCAPE_VIEW_NOT_FULL] = CGRectMake((windowSize.width-w)/2, 0, w, h);
     }
     else {
+        // all the portrait layouts have VIEW_NOT_FULL on top and IMAGE_BACK on bottom...
+        assert(rFrames[PORTRAIT_VIEW_NOT_FULL].size.width == rFrames[PORTRAIT_VIEW_FULL].size.width);
+        assert(rFrames[PORTRAIT_IMAGE_BACK].size.width == rFrames[PORTRAIT_VIEW_FULL].size.width);
+        assert(rFrames[PORTRAIT_VIEW_NOT_FULL].origin.x == 0.0);
+        assert(rFrames[PORTRAIT_VIEW_NOT_FULL].origin.y == 0.0);
+        assert(rFrames[PORTRAIT_VIEW_NOT_FULL].origin.y + rFrames[PORTRAIT_VIEW_NOT_FULL].size.height == rFrames[PORTRAIT_IMAGE_BACK].origin.y);
+        assert(rFrames[PORTRAIT_IMAGE_BACK].origin.y + rFrames[PORTRAIT_IMAGE_BACK].size.height == rFrames[PORTRAIT_VIEW_FULL].size.height);
+
+        // split the window, keeping the aspect ratio of the background image.
+        CGFloat h = windowSize.width * rFrames[PORTRAIT_IMAGE_BACK].size.height / rFrames[PORTRAIT_IMAGE_BACK].size.width;
+
         rFrames[PORTRAIT_VIEW_FULL] = CGRectMake(0, 0, windowSize.width, windowSize.height);
-        rFrames[PORTRAIT_VIEW_NOT_FULL] = transform_rect(rFrames[PORTRAIT_VIEW_NOT_FULL], configSize, windowSize);
-        rFrames[PORTRAIT_IMAGE_BACK] = transform_rect(rFrames[PORTRAIT_IMAGE_BACK], configSize, windowSize);
+        rFrames[PORTRAIT_VIEW_NOT_FULL] = CGRectMake(0, 0, windowSize.width, windowSize.height - h);
+        rFrames[PORTRAIT_IMAGE_BACK] = CGRectMake(0, windowSize.height - h, windowSize.width, h);
     }
     
+    CGRect dstRect = is_landscape ? rFrames[LANDSCAPE_IMAGE_BACK] : rFrames[PORTRAIT_IMAGE_BACK];
+
     // now go over all the input rects and convert them.
     for (int i=0; i<INPUT_LAST_VALUE; i++)
-        rInput[i] = convert_rect(rInput[i], configSize, windowSize);
+        rInput[i] = convert_rect(rInput[i], srcRect, dstRect);
     
     // now go over all the button rects and convert them.
     for (int i=0; i<NUM_BUTTONS; i++)
-        rButtonImages[i] = convert_rect(rButtonImages[i], configSize, windowSize);
+        rButtonImages[i] = convert_rect(rButtonImages[i], srcRect, dstRect);
     
     // and dont forget the stick
-    rStickWindow = convert_rect(rStickWindow, configSize, windowSize);
+    rStickWindow = convert_rect(rStickWindow, srcRect, dstRect);
 }
 
 #endif
