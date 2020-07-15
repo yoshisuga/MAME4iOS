@@ -1429,9 +1429,9 @@ void mame_state(int load_save, int slot)
     fpsView.shadowColor = UIColor.blackColor;
     fpsView.shadowOffset = CGSizeMake(1.0,1.0);
 #if UPDATE_FPS_EVERY == 1
-    fpsView.text = @"000:00:00🅼\n0000.00fps 000.0ms";
+    fpsView.text = @"000:00:00🅼🆆\n0000.00fps 0.0ms";
 #else
-    fpsView.text = @"0000.00fps 000.0ms 🅼";
+    fpsView.text = @"000.00fps 0.0ms 🅼🆆";
 #endif
     
     CGPoint pos = screenView.frame.origin;
