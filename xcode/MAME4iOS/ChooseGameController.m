@@ -803,7 +803,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     for (GameCell* cell in [self.collectionView visibleSupplementaryViewsOfKind:UICollectionElementKindSectionHeader]) {
         if (yTop > 0.5 && fabs(yTop - cell.frame.origin.y) <= cell.frame.size.height) {
             if (@available(iOS 13.0, *))
-                [cell addBlur:UIBlurEffectStyleSystemThickMaterialDark];
+                [cell addBlur:UIBlurEffectStyleDark];
             else
                 cell.contentView.backgroundColor = HEADER_PINNED_COLOR;
         }
