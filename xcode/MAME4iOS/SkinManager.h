@@ -15,7 +15,9 @@ NS_ASSUME_NONNULL_BEGIN
 @interface SkinManager : NSObject
 
 + (NSArray<NSString*>*)getSkinNames;
-- (void)update;
++ (void)reset;
+
+- (void)flush;
 
 - (void)setCurrentSkin:(NSString*)name;
 

@@ -3,6 +3,10 @@
 ## Skin format
 A `Skin` is just a `zip` file with images used to override the MAME4iOS defaults.
 
+## Skin names
+The file name of the Skin is used as the display name in the select UI.
+Skins named with the ROMNAME, PARENT, or DRIVER of the currenly running game will be automaticaly selected.
+
 ## Skin version 1
 Version 1 only lets you change the default images, it **DOES NOT** let you change the size or position of the backgrounds or buttons.
 
@@ -13,6 +17,9 @@ Version 1 only lets you change the default images, it **DOES NOT** let you chang
 * **delete** images you did not modify, so MAME4iOS will use the defaults.
 * re-zip and give the file a friendly name like "My Cool Skin.zip"
 * Choose `Import` or use AirDrop to import `Skin` into MAME4iOS
+
+## Skin location
+Custom Skins are stored in the `skins` folder.
 
 ## Skin files
 The following are the images and names, if a Skin is missing an image file a default one will be used.

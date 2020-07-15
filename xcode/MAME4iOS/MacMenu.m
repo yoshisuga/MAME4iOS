@@ -54,6 +54,7 @@
     
     //[self addMenuItem:UIMenuView title:@"FULLSCREEN" action:@selector(toggleFullScreen:) key:@"\r" modifierFlags:UIKeyModifierCommand using:builder];
 
+    // TODO: do we want `Export Skin...` here? or burried in `Game Input`?
     [builder insertChildMenu:[UIMenu menuWithTitle:@"FILE" image:nil identifier:nil options:UIMenuOptionsDisplayInline children:@[
         [UICommand commandWithTitle:@"Import..."     image:[UIImage systemImageNamed:@"square.and.arrow.down.on.square"]      action:@selector(fileImport) propertyList:nil],
         [UICommand commandWithTitle:@"Export..."     image:[UIImage systemImageNamed:@"square.and.arrow.up.on.square"]        action:@selector(fileExport) propertyList:nil],

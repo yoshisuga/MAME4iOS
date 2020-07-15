@@ -351,6 +351,7 @@
                }
                case 2:
                {
+                   // TODO: do we want this here? or burried in `Game Input`?
                    cell.textLabel.text = @"Export Skin";
                    cell.imageView.image = [UIImage systemImageNamed:@"square.and.arrow.up"];
                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
@@ -476,6 +477,7 @@
                 [[self navigationController] pushViewController:listController animated:YES];
             }
             if (row==1){
+                // TODO: do we want to filter out the Skins that have names that match ROMNAME, PARENT, or MACHINE? and only show "User Skins"?
                 ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"skin" list:Options.arraySkin title:cell.textLabel.text];
                 [[self navigationController] pushViewController:listController animated:YES];
             }

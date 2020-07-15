@@ -54,6 +54,15 @@ static NSArray* g_skin_list;
     return skins;
 }
 
+// factory reset, delete all Skins
++ (void)reset {
+    // delete all files in Skin dir.
+    NSString* skins_path = [NSString stringWithUTF8String:get_documents_path("skins")];
+    [[NSFileManager defaultManager] removeItemAtPath:skins_path error:nil];
+    [[NSFileManager defaultManager] createDirectoryAtPath:skins_path withIntermediateDirectories:NO attributes:nil error:nil];
+    g_skin_list = nil;
+}
+
 - (instancetype)init {
     self = [super init];
     _skin_name = kSkinNameDefault;
@@ -66,7 +75,7 @@ static NSArray* g_skin_list;
     if (name == nil || name.length == 0)
         name = kSkinNameDefault;
     
-    if ([name isEqualToString:_skin_name])
+    if ([_skin_name isEqualToString:name])
         return;
     
     NSLog(@"LOADING SKIN: %@", name);
@@ -110,8 +119,10 @@ static NSArray* g_skin_list;
     NSLog(@"SKIN: %@\n%@\n%@", name, _skin_paths, _skin_infos);
 }
 
-- (void)update {
+// discard any cached data, new skin files have been added, force setCurrentSkin to re-load.
+- (void)flush {
     g_skin_list = nil;
+    _skin_name = nil;
     _image_cache = nil;
 }
 

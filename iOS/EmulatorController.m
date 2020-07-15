@@ -3729,7 +3729,7 @@ CGRect convert_rect(CGRect rect, CGSize fromSize, CGSize toSize) {
                 [progressAlert.presentingViewController dismissViewControllerAnimated:YES completion:^{
                     
                     // tell the SkinManager new files have arived.
-                    [self->skinManager performSelectorOnMainThread:@selector(update) withObject:nil waitUntilDone:NO];
+                    [self->skinManager flush];
                     
                     // reset MAME last game selected...
                     myosd_last_game_selected = 0;
@@ -3863,8 +3863,11 @@ CGRect convert_rect(CGRect rect, CGSize fromSize, CGSize toSize) {
     [alert addAction:[UIAlertAction actionWithTitle:@"Reset" style:UIAlertActionStyleDestructive handler:^(UIAlertAction* action) {
         [NSUserDefaults.standardUserDefaults removeObjectForKey:kHUDPositionKey];
         [NSUserDefaults.standardUserDefaults removeObjectForKey:kHUDScaleKey];
+        [NSUserDefaults.standardUserDefaults removeObjectForKey:kSelectedGameInfoKey];
         [Options resetOptions];
         [ChooseGameController reset];
+        [LayoutData removeLayoutData];
+        [SkinManager reset];
         g_mame_reset = TRUE;
         [self done:self];
     }]];
