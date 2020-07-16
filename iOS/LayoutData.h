@@ -56,7 +56,7 @@ enum LayoutType
 
 enum LayoutSubtype
 {
-    kSubype_A = 0,
+    kSubtype_A = 0,
     kSubtype_B = 1,
     kSubtype_X = 2,
     kSubtype_Y = 3,

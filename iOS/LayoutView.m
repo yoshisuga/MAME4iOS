@@ -85,25 +85,19 @@
            (ld.type == kType_StickRect && g_pref_input_touch_type != TOUCH_INPUT_DPAD)
            )
         {
+            CGRect rect = [ld getNewRect];
+            
             [color setFill];
-            CGContextFillRect(context, [ld getNewRect ]);
+            CGContextFillRect(context, rect);
             
             if(ld.type == kType_ButtonRect && ld.value == BTN_B_X_RECT)
-            {
-                [self drawString:@"B+X" withFont:font inRect:[ld getNewRect]];
-            }
+                [self drawString:@"B+X" withFont:font inRect:rect];
             else if(ld.type == kType_ButtonRect && ld.value == BTN_A_Y_RECT)
-            {
-                [self drawString:@"A+Y" withFont:font inRect:[ld getNewRect]];
-            }
+                [self drawString:@"A+Y" withFont:font inRect:rect];
             else if(ld.type == kType_ButtonRect && ld.value == BTN_X_A_RECT)
-            {
-                [self drawString:@"X+A" withFont:font inRect:[ld getNewRect]];
-            }
+                [self drawString:@"X+A" withFont:font inRect:rect];
             else if(ld.type == kType_ButtonRect && ld.value == BTN_B_Y_RECT)
-            {
-                [self drawString:@"Y+B" withFont:font inRect:[ld getNewRect]];
-            }
+                [self drawString:@"Y+B" withFont:font inRect:rect];
         }
     }
 }
@@ -161,7 +155,9 @@
     static int prev_ay = 0;
     static CGFloat pinch_distance = 0.0;
     static LayoutData *moved = nil;
-    
+    static LayoutData *moved_last = nil;
+    static NSTimeInterval moved_last_time = 0;
+
     int i = 0;
     
     NSArray* allTouches = [[event allTouches] allObjects];
@@ -216,6 +212,17 @@
                          break;
                      }
                  }
+             }
+             
+             // check for a dbl tap
+             if(moved!=nil && moved==moved_last && [NSDate timeIntervalSinceReferenceDate]-moved_last_time<0.250)
+             {
+                 NSLog(@"DBL TAP");
+             }
+             if (moved!=nil)
+             {
+                 moved_last = moved;
+                 moved_last_time = [NSDate timeIntervalSinceReferenceDate];
              }
              
              if(moved==nil && MyCGRectContainsPoint(rFinish, pt))

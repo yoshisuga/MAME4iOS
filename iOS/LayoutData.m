@@ -111,7 +111,7 @@
     //RECT Y,A,B,X
     d = [[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_Y value:BTN_Y_RECT rect: rInputs[BTN_Y_RECT] ];
     [array addObject: d];
-    d = [[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubype_A value:BTN_A_RECT rect: rInputs[BTN_A_RECT] ];
+    d = [[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_A value:BTN_A_RECT rect: rInputs[BTN_A_RECT] ];
     [array addObject: d];
     d = [[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_B value:BTN_B_RECT rect: rInputs[BTN_B_RECT] ];
     [array addObject: d];
@@ -166,7 +166,7 @@
     CGRect *rButtons = [emuController getButtonRects];
     d = [[LayoutData alloc] initWithType:kType_ButtonImgRect subtype:kSubtype_Y value:BTN_Y rect: rButtons[BTN_Y] ];
     [array addObject: d];
-    d = [[LayoutData alloc] initWithType:kType_ButtonImgRect subtype:kSubype_A value:BTN_A rect: rButtons[BTN_A] ];
+    d = [[LayoutData alloc] initWithType:kType_ButtonImgRect subtype:kSubtype_A value:BTN_A rect: rButtons[BTN_A] ];
     [array addObject: d];
     d = [[LayoutData alloc] initWithType:kType_ButtonImgRect subtype:kSubtype_B value:BTN_B rect: rButtons[BTN_B] ];
     [array addObject: d];
