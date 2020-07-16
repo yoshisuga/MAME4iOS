@@ -7,6 +7,9 @@
 //
 #import <UIKit/UIKit.h>
 #import "InfoDatabase.h"
+#ifdef DEBUG
+#import "EmulatorController.h"  // to get list of all ROMs
+#endif
 
 #define DebugLog 0
 #if DebugLog == 0
@@ -214,9 +217,8 @@
             self->_index = index;
 #ifdef DEBUG    // write out a filtered HISTORY.DAT for only the 139u1 ROMS.
             dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND,0), ^{
-                extern NSDictionary* g_category_dict;
                 NSString* path = [self->_path stringByReplacingOccurrencesOfString:@".dat" withString:@"0139.dat"];
-                [self saveDatabaseToPath:path keys:g_category_dict.allKeys];
+                [self saveDatabaseToPath:path keys:[EmulatorController romList]];
             });
 #endif
         });

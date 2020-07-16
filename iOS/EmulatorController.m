@@ -324,41 +324,45 @@ void* app_Thread_Start(void* args)
     return NULL;
 }
 
-// make this public so DEBUG code in InfoDatabase can use it to get list of all ROMs
-NSDictionary* g_category_dict = nil;
+// load Category.ini (a copy of a similar function from uimenu.c)
+NSDictionary* load_category_ini()
+{
+    FILE* file = fopen(get_documents_path("Category.ini"), "r");
+    assert(file != NULL);
+    
+    if (file == NULL)
+        return nil;
 
-// find the category for a game/rom using Category.ini (a copy of a similar function from uimenu.c)
+    NSMutableDictionary* category_dict = [[NSMutableDictionary alloc] init];
+    char line[256];
+    NSString* curcat = @"";
+
+    while (fgets(line, sizeof(line), file) != NULL)
+    {
+        if (line[strlen(line) - 1] == '\n') line[strlen(line) - 1] = '\0';
+        if (line[strlen(line) - 1] == '\r') line[strlen(line) - 1] = '\0';
+        
+        if (line[0] == '\0')
+            continue;
+        
+        if (line[0] == '[')
+        {
+            line[strlen(line) - 1] = '\0';
+            curcat = [NSString stringWithUTF8String:line+1];
+            continue;
+        }
+        
+        [category_dict setObject:curcat forKey:[NSString stringWithUTF8String:line]];
+    }
+    fclose(file);
+    return category_dict;
+}
+
+// find the category for a game/rom using Category.ini
 NSString* find_category(NSString* name)
 {
-    if (g_category_dict == nil)
-    {
-        g_category_dict = [[NSMutableDictionary alloc] init];
-        FILE* file = fopen(get_documents_path("Category.ini"), "r");
-        if (file != NULL)
-        {
-            char line[256];
-            NSString* curcat = @"";
-
-            while (fgets(line, sizeof(line), file) != NULL)
-            {
-                if (line[strlen(line) - 1] == '\n') line[strlen(line) - 1] = '\0';
-                if (line[strlen(line) - 1] == '\r') line[strlen(line) - 1] = '\0';
-                
-                if (line[0] == '\0')
-                    continue;
-                
-                if (line[0] == '[')
-                {
-                    line[strlen(line) - 1] = '\0';
-                    curcat = [NSString stringWithUTF8String:line+1];
-                    continue;
-                }
-                
-                [(NSMutableDictionary*)g_category_dict setObject:curcat forKey:[NSString stringWithUTF8String:line]];
-            }
-            fclose(file);
-        }
-    }
+    static NSDictionary* g_category_dict = nil;
+    g_category_dict = g_category_dict ?: load_category_ini();
     return g_category_dict[name] ?: @"Unkown";
 }
 
@@ -434,6 +438,11 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
 }
 
 #endif
+
++ (NSArray*)romList {
+    // NOTE we cant just use g_category_dict, because that is accessed on the MAME background thread.
+    return [load_category_ini() allKeys];
+}
 
 - (void)startEmulation {
     if (g_emulation_initiated == 1)
@@ -3729,7 +3738,7 @@ CGRect convert_rect(CGRect rect, CGRect src, CGRect dst) {
                 [progressAlert.presentingViewController dismissViewControllerAnimated:YES completion:^{
                     
                     // tell the SkinManager new files have arived.
-                    [self->skinManager flush];
+                    [self->skinManager reload];
                     
                     // reset MAME last game selected...
                     myosd_last_game_selected = 0;
@@ -3909,10 +3918,8 @@ CGRect convert_rect(CGRect rect, CGRect src, CGRect dst) {
     [self showAlertWithTitle:nil message:@"Do you want to reset current layout to default?" buttons:@[@"Yes", @"No"] handler:^(NSUInteger buttonIndex) {
         if (buttonIndex == 0)
         {
-            Options* op = [[Options alloc] init];
-            op.skin = @"Default";
-            [op saveOptions];
             [LayoutData removeLayoutData];
+            [self->skinManager reload];
             [self done:self];
         }
     }];

@@ -7,6 +7,7 @@
 //
 
 #import "SkinManager.h"
+#import "EmulatorController.h"
 #import "ZipFile.h"
 #import "Globals.h"
 
@@ -45,7 +46,12 @@ static NSArray* g_skin_list;
     path = [NSString stringWithUTF8String:get_documents_path("skins")];
     files = [files arrayByAddingObjectsFromArray:[[NSFileManager.defaultManager enumeratorAtPath:path] allObjects]];
     
+    NSArray* roms = [EmulatorController romList];
+    
     for (NSString* file in files) {
+        // dont let user select as the default Skin a ROM specific one.
+        if ([roms containsObject:file.stringByDeletingPathExtension.lowercaseString])
+            continue;
         if ([file.pathExtension.uppercaseString isEqualToString:@"ZIP"])
             [skins addObject:file.lastPathComponent.stringByDeletingPathExtension];
     }
@@ -85,6 +91,10 @@ static NSArray* g_skin_list;
     _skin_infos = nil;
     _image_cache = nil;
     
+    // add any custom button layout (Custom.json, if found)
+    // NOTE Custom.json *overrides* any other Skin, so we add it first
+    [self addInfo:[NSData dataWithContentsOfFile:[NSString stringWithUTF8String:get_documents_path("skins/Custom.json")]]];
+    
     for (NSString* name in [_skin_name componentsSeparatedByString:@","]) {
         
         // if skin name is empty ignore it (a rom parent can be "0", so ignore that too)
@@ -108,28 +118,37 @@ static NSArray* g_skin_list;
         [_skin_paths addObject:path];
         
         // load skin.json if present.
-        NSData* data = [self loadData:@"skin.json" from:path];
-        if (data != nil) {
-            NSDictionary* info = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-            if ([info isKindOfClass:[NSDictionary class]])
-                [_skin_infos addObject:info];
-        }
+        [self addInfo:[self loadData:@"skin.json" from:path]];
     }
     
     NSLog(@"SKIN: %@\n%@\n%@", name, _skin_paths, _skin_infos);
 }
 
 // discard any cached data, new skin files have been added, force setCurrentSkin to re-load.
-- (void)flush {
+- (void)reload {
     g_skin_list = nil;
+    NSString* name = _skin_name;
     _skin_name = nil;
-    _image_cache = nil;
+    [self setCurrentSkin:name];
+}
+
+- (void)addInfo:(NSData*)data {
+    if (data != nil) {
+        NSError* error = nil;
+        NSDictionary* info = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+        if ([info isKindOfClass:[NSDictionary class]])
+            [_skin_infos addObject:info];
+        else
+            NSLog(@"INVALID JSON: %@", error);
+    }
 }
 
 - (nullable NSData *)loadData:(NSString *)name from:(NSString*)path {
     NSString* uname = name.uppercaseString;
     __block NSData* data = nil;
     [ZipFile enumerate:path withOptions:ZipFileEnumFiles usingBlock:^(ZipFileInfo* info) {
+        if (data != nil)
+            return;
         if ([info.name.uppercaseString isEqualToString:uname])
             data = info.data;
         else if ([info.name.lastPathComponent.uppercaseString isEqualToString:uname])
@@ -211,7 +230,7 @@ static NSArray* g_skin_list;
 
 - (NSDictionary*)getSkinInfo {
     // TODO: fix me
-    return @{@"info":@{@"version":@(1)}};
+    return @{@"info":@{@"version":@(1), @"author":@"", @"description":@""}};
 }
 
 - (BOOL)exportTo:(NSString*)path progressBlock:(nullable BOOL (NS_NOESCAPE ^)(double progress))block {

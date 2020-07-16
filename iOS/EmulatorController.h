@@ -112,6 +112,8 @@
 
 }
 
++ (NSArray<NSString*>*)romList;
+
 #if TARGET_OS_IOS
 - (CGRect *)getInputRects;
 - (CGRect *)getButtonRects;

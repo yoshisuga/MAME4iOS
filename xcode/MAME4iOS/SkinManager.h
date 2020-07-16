@@ -17,13 +17,11 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSArray<NSString*>*)getSkinNames;
 + (void)reset;
 
-- (void)flush;
-
 - (void)setCurrentSkin:(NSString*)name;
+- (void)reload;
 
 - (nullable UIImage *)loadImage:(NSString *)name;
 
-+ (NSArray<NSString*>*)getSkinFiles;    // all possible files in a Skin, used to export template
 - (BOOL)exportTo:(NSString*)path progressBlock:(nullable BOOL (NS_NOESCAPE ^)(double progress))block;
 
 @end
