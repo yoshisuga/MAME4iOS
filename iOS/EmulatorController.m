@@ -2185,6 +2185,9 @@ void myosd_handle_turbo() {
     buttonState = 0;
     for (int i=0; i<NUM_BUTTONS; i++)
     {
+        if (nameImgButton_Press[i] == nil)
+            continue;
+        
         // hide buttons that are not used in fullscreen mode (and not laying out)
         if (g_device_is_fullscreen && !change_layout && !g_enable_debug_view)
         {
@@ -2201,9 +2204,27 @@ void myosd_handle_turbo() {
             if ((g_pref_showHUD > 0) && (i == BTN_SELECT || i == BTN_START || i == BTN_EXIT || i == BTN_OPTION)) continue;
         }
         
-        NSString *name_up = nameImgButton_NotPress[i];
-        NSString *name_down = nameImgButton_Press[i];
-        buttonViews[i] = [ [ UIImageView alloc ] initWithImage:[self loadImage:name_up] highlightedImage:[self loadImage:name_down]];
+        UIImage* image_up = [self loadImage:nameImgButton_NotPress[i]];
+        UIImage* image_down = [self loadImage:nameImgButton_Press[i]];
+        if (image_up == nil)
+            continue;
+        // fix the aspect ratio of the command buttons, if the image is not square.
+        if (image_up.size.width != image_up.size.height) {
+            CGFloat h = rButtonImages[i].size.width * image_up.size.height / image_up.size.width;
+            rButtonImages[i].origin.y += (rButtonImages[i].size.height - h) / 2;
+            rButtonImages[i].size.height = h;
+            
+            // TODO: fix this hack! make rInput index by button!
+            if (i == BTN_SELECT)
+                rInput[BTN_SELECT_RECT] = rButtonImages[i];
+            if (i == BTN_START)
+                rInput[BTN_START_RECT] = rButtonImages[i];
+            if (i == BTN_EXIT)
+                rInput[BTN_EXIT_RECT] = rButtonImages[i];
+            if (i == BTN_OPTION)
+                rInput[BTN_OPTION_RECT] = rButtonImages[i];
+        }
+        buttonViews[i] = [ [ UIImageView alloc ] initWithImage:image_up highlightedImage:image_down];
         buttonViews[i].frame = rButtonImages[i];
         
 #ifdef __IPHONE_13_4
@@ -2315,7 +2336,7 @@ void myosd_handle_turbo() {
 
 - (void)buildScreenView {
     
-    g_device_is_landscape = (self.view.bounds.size.width >= self.view.bounds.size.height * 0.75);
+    g_device_is_landscape = (self.view.bounds.size.width >= self.view.bounds.size.height * 1.00);
 
     if (g_device_is_landscape)
         g_device_is_fullscreen = g_pref_full_screen_land;
@@ -2362,9 +2383,14 @@ void myosd_handle_turbo() {
     CGRect r;
 
 #if TARGET_OS_IOS
-    [self getControllerCoords:g_device_is_landscape];
-    [LayoutData loadLayoutData:self];
-    [self fixControllerCoords:g_device_is_landscape];
+    if (TRUE) {
+        [self loadLayout];
+    }
+    else {
+        [self getControllerCoords:g_device_is_landscape];
+        [LayoutData loadLayoutData:self];
+        [self fixControllerCoords:g_device_is_landscape];
+    }
     [self adjustSizes];
 
     [self buildBackgroundImage];
@@ -3322,10 +3348,10 @@ void myosd_handle_turbo() {
     rInput[BTN_EXIT_RECT] = scale_rect(rButtonImages[BTN_EXIT], 1.0);
     rInput[BTN_OPTION_RECT] = scale_rect(rButtonImages[BTN_OPTION], 1.0);
         
-    rButtonImages[BTN_A_X] = rInput[BTN_X_A_RECT];
-    rButtonImages[BTN_B_X] = rInput[BTN_B_X_RECT];
-    rButtonImages[BTN_A_Y] = rInput[BTN_A_Y_RECT];
-    rButtonImages[BTN_B_Y] = rInput[BTN_B_Y_RECT];
+    rButtonImages[BTN_A_X] = scale_rect(rInput[BTN_X_A_RECT], 1.25);
+    rButtonImages[BTN_B_X] = scale_rect(rInput[BTN_B_X_RECT], 1.25);
+    rButtonImages[BTN_A_Y] = scale_rect(rInput[BTN_A_Y_RECT], 1.25);
+    rButtonImages[BTN_B_Y] = scale_rect(rInput[BTN_B_Y_RECT], 1.25);
         
     rButtonImages[BTN_STICK] = rStickWindow;
         
@@ -3512,10 +3538,125 @@ CGRect convert_rect(CGRect rect, CGRect src, CGRect dst) {
     return fp;
 }
 
+#pragma SKIN LAYOUT
+
+- (BOOL)isPhone {
+    CGSize windowSize = self.view.bounds.size;
+    return MAX(windowSize.width, windowSize.height) >= MIN(windowSize.width, windowSize.height) * 1.5;
+}
+- (BOOL)isPad {
+    return ![self isPhone];
+}
+
+
+
+- (void)loadLayout {
+    
+    CGSize windowSize = self.view.bounds.size;
+    assert(windowSize.width != 0.0 && windowSize.height != 0.0);
+    BOOL isPhone = [self isPhone];
+
+    if (g_device_is_landscape) {
+        // try to fit a 4:3 game screen with space on each side.
+        CGFloat w = MIN(windowSize.height * 4 / 3, windowSize.width * 0.75);
+        CGFloat h = w * 3 / 4;
+
+        rFrames[LANDSCAPE_VIEW_FULL] = CGRectMake(0, 0, windowSize.width, windowSize.height);
+        rFrames[LANDSCAPE_IMAGE_BACK] = CGRectMake(0, 0, windowSize.width, windowSize.height);
+        rFrames[LANDSCAPE_VIEW_NOT_FULL] = CGRectMake((windowSize.width-w)/2, 0, w, h);
+    }
+    else {
+        // split the window, keeping the aspect ratio of the background image, on the bottom.
+        UIImage* image = [skinManager loadImage:isPhone ? @"background_portrait_tall" : @"background_portrait"];
+        CGFloat aspect = image ? (image.size.width / image.size.height) : 1.333;
+        CGFloat h = windowSize.width / aspect;
+
+        rFrames[PORTRAIT_VIEW_FULL] = CGRectMake(0, 0, windowSize.width, windowSize.height);
+        rFrames[PORTRAIT_VIEW_NOT_FULL] = CGRectMake(0, 0, windowSize.width, windowSize.height - h);
+        rFrames[PORTRAIT_IMAGE_BACK] = CGRectMake(0, windowSize.height - h, windowSize.width, h);
+    }
+    
+    for (int button=0; button<NUM_BUTTONS; button++)
+        rButtonImages[button] = [self getLayoutRect:button];
+    
+    // if we are fullscreen portrait, we need to move the command buttons to the top of screen
+    if (g_device_is_fullscreen && !g_device_is_landscape) {
+        CGFloat w = rButtonImages[BTN_SELECT].size.width;
+        rButtonImages[BTN_SELECT].origin = CGPointMake(w*0, 0);
+        rButtonImages[BTN_EXIT].origin   = CGPointMake(w*1, 0);
+        rButtonImages[BTN_OPTION].origin = CGPointMake(self.view.bounds.size.width - w*1, 0);
+        rButtonImages[BTN_START].origin  = CGPointMake(self.view.bounds.size.width - w*2, 0);
+    }
+    
+    // ignore the input rects and just use the button rects scaled, the .txt files are not consistant!
+    rInput[BTN_A_RECT] = scale_rect(rButtonImages[BTN_A], 0.80);
+    rInput[BTN_B_RECT] = scale_rect(rButtonImages[BTN_B], 0.80);
+    rInput[BTN_Y_RECT] = scale_rect(rButtonImages[BTN_Y], 0.80);
+    rInput[BTN_X_RECT] = scale_rect(rButtonImages[BTN_X], 0.80);
+    rInput[BTN_L1_RECT] = scale_rect(rButtonImages[BTN_L1], 0.80);
+    rInput[BTN_R1_RECT] = scale_rect(rButtonImages[BTN_R1], 0.80);
+
+    rInput[BTN_SELECT_RECT] = scale_rect(rButtonImages[BTN_SELECT], 1.0);
+    rInput[BTN_START_RECT] = scale_rect(rButtonImages[BTN_START], 1.0);
+    rInput[BTN_EXIT_RECT] = scale_rect(rButtonImages[BTN_EXIT], 1.0);
+    rInput[BTN_OPTION_RECT] = scale_rect(rButtonImages[BTN_OPTION], 1.0);
+//    rInput[BTN_SELECT2_RECT] = scale_rect(rButtonImages[BTN_SELECT2], 1.0);
+//    rInput[BTN_START2_RECT] = scale_rect(rButtonImages[BTN_START2], 1.0);
+
+    rInput[BTN_X_A_RECT] = rButtonImages[BTN_A_X];
+    rInput[BTN_B_X_RECT] = rButtonImages[BTN_B_X];
+    rInput[BTN_A_Y_RECT] = rButtonImages[BTN_A_Y];
+    rInput[BTN_B_Y_RECT] = rButtonImages[BTN_B_Y];
+        
+    rStickWindow = rButtonImages[BTN_STICK];
+}
+
+char* button_key_name[NUM_BUTTONS] = {"A","B","Y","X","L1","R1","A+Y","A+X","B+Y","B+X","SELECT","START","EXIT","OPTION","SELECT2","START2","STICK"};
+
+- (CGRect)getLayoutRect:(int)button {
+    CGRect back = g_device_is_landscape ? rFrames[LANDSCAPE_IMAGE_BACK] : rFrames[PORTRAIT_IMAGE_BACK];
+    char* root;
+    
+    if ([self isPad])
+        root = g_device_is_landscape ? "landscape" : "portrait";
+    else
+        root = g_device_is_landscape ? "landscape_wide" : "portrait_tall";
+
+    NSString* keyPath = [NSString stringWithFormat:@"%s.%s", root, button_key_name[button]];
+    NSString* str = [skinManager valueForKeyPath:keyPath];
+    if (![str isKindOfClass:[NSString class]])
+        return CGRectZero;
+    NSArray* arr = [str componentsSeparatedByString:@","];
+    if (arr.count < 2)
+        return CGRectZero;
+
+    CGFloat scale_x = back.size.width / 1000.0;
+    CGFloat scale_y = back.size.height / 1000.0;
+    CGFloat scale = (scale_x + scale_y) / 2;
+
+    CGFloat x = floor(back.origin.x + [arr[0] intValue] * scale_x);
+    CGFloat y = floor(back.origin.y + [arr[1] intValue] * scale_y);
+    CGFloat r = (arr.count > 2) ? [arr[2] intValue] : (g_device_is_landscape ? 120 : 180);
+
+    CGFloat w = floor(r * scale);
+    CGFloat h = w;
+    return CGRectMake(floor(x - w/2), floor(y - h/2), w, h);
+}
+
+
+
+
 #ifdef DEBUG
 - (void)dumpLayouts {
-
-    char* button_name[] = {"BTN_A","BTN_B","BTN_Y","BTN_X","BTN_L1","BTN_R1","BTN_A_Y","BTN_A_X","BTN_B_Y","BTN_B_X","BTN_SELECT","BTN_START","BTN_EXIT","BTN_OPTION","BTN_MENU","BTN_STICK"};
+    
+    NSDictionary* dict = @{
+        @"portrait"  : [@{} mutableCopy],
+        @"landscape" : [@{} mutableCopy],
+        @"portrait_tall"  : [@{} mutableCopy],
+        @"landscape_wide" : [@{} mutableCopy],
+    };
+    
+    char* button_name[NUM_BUTTONS] = {"BTN_A","BTN_B","BTN_Y","BTN_X","BTN_L1","BTN_R1","BTN_A_Y","BTN_A_X","BTN_B_Y","BTN_B_X","BTN_SELECT","BTN_START","BTN_EXIT","BTN_OPTION","BTN_MENU","BTN_STICK"};
 
     for (g_device_is_landscape = 0; g_device_is_landscape <= 1; g_device_is_landscape++) {
         printf("%s\n", g_device_is_landscape ? "LANDSCAPE" : "PORTRAIT");
@@ -3553,16 +3694,32 @@ CGRect convert_rect(CGRect rect, CGRect src, CGRect dst) {
                 x = round((x - back.origin.x) * 1000.0 / back.size.width);
                 y = round((y - back.origin.y) * 1000.0 / back.size.height);
                 w = round(w * 1000.0 / back.size.width);
+                h = round(h * 1000.0 / back.size.height);
 
                 if (type == IPHONE_5)
                     printf("%s", button_name[i]);
                 printf(",\"%d,%d,%d\"", (int)x, (int)y, (int)w);
+                
+                NSString* name = [NSString stringWithUTF8String:button_key_name[i]];
+                NSString* data = [NSString stringWithFormat:@"%d,%d,%d", (int)x, (int)y, (int)w];
+
+                if (type == IPHONE_6_7_8 && g_device_is_landscape)
+                    dict[@"landscape_wide"][name] = data;
+                if (type == IPHONE_6_7_8 && !g_device_is_landscape)
+                    dict[@"portrait_tall"][name] = data;
+                
+                if (type == IPAD_PRO_11 && g_device_is_landscape)
+                    dict[@"landscape"][name] = data;
+                if (type == IPAD_PRO_11 && !g_device_is_landscape)
+                    dict[@"portrait"][name] = data;
+
             }
             printf("\n");
         }
     }
-    
     [DeviceScreenResolver setType:IPHONE_UNKNOWN];
+
+    NSLog(@"%@", [[NSString alloc] initWithData:[NSJSONSerialization dataWithJSONObject:dict options:NSJSONWritingPrettyPrinted error:nil] encoding:NSUTF8StringEncoding]);
 }
 #endif
 
@@ -4724,7 +4881,8 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         return;
     }
     g_no_roms_found = [games count] == 0;
-    if (FALSE && g_no_roms_found) {
+#ifndef DEBUG
+    if (g_no_roms_found) {
 #if TARGET_OS_IOS
         NSLog(@"NO GAMES, ASK USER WHAT TO DO....");
 
@@ -4748,6 +4906,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 #endif
         return;
     }
+#endif
     if (g_mame_game_error[0] != 0) {
         NSLog(@"ERROR RUNNING GAME %s", g_mame_game_error);
         

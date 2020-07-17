@@ -71,7 +71,6 @@ static NSArray* g_skin_list;
 
 - (instancetype)init {
     self = [super init];
-    _skin_name = kSkinNameDefault;
     return self;
 }
 
@@ -88,7 +87,7 @@ static NSArray* g_skin_list;
     
     _skin_name = name;
     _skin_paths = nil;
-    _skin_infos = nil;
+    _skin_infos = [[NSMutableArray alloc] init];
     _image_cache = nil;
     
     // add any custom button layout (Custom.json, if found)
@@ -114,12 +113,16 @@ static NSArray* g_skin_list;
             continue;
         
         _skin_paths = _skin_paths ?: [[NSMutableArray alloc] init];
-        _skin_infos = _skin_infos ?: [[NSMutableArray alloc] init];
         [_skin_paths addObject:path];
         
         // load skin.json if present.
         [self addInfo:[self loadData:@"skin.json" from:path]];
     }
+    
+    // add our Default layout file in SKIN_1
+    NSData* info = [NSData dataWithContentsOfFile:[NSString stringWithUTF8String:get_resource_path("SKIN_1/skin.json")]];
+    assert(info != nil);
+    [self addInfo:info];
     
     NSLog(@"SKIN: %@\n%@\n%@", name, _skin_paths, _skin_infos);
 }
@@ -135,11 +138,27 @@ static NSArray* g_skin_list;
 - (void)addInfo:(NSData*)data {
     if (data != nil) {
         NSError* error = nil;
-        NSDictionary* info = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
-        if ([info isKindOfClass:[NSDictionary class]])
-            [_skin_infos addObject:info];
-        else
+        NSMutableDictionary* info = [[NSJSONSerialization JSONObjectWithData:data options:0 error:&error] mutableCopy];
+        
+        if (![info isKindOfClass:[NSDictionary class]]) {
             NSLog(@"INVALID JSON: %@", error);
+            assert(FALSE);
+            return;
+        }
+        
+        // if a skin has only one of portrait, portrait_tall use it on both devices.
+        if (info[@"portrait"] == nil && info[@"portrait"] != nil)
+            info[@"portrait"] = info[@"portrait_tall"];
+        if (info[@"portrait_tall"] == nil && info[@"portrait"] != nil)
+            info[@"portrait_tall"] = info[@"portrait"];
+        
+        // if a skin has only one of landscape, landscape_wide use it on both devices.
+        if (info[@"landscape"] == nil && info[@"landscape_wide"] != nil)
+            info[@"landscape"] = info[@"landscape_wide"];
+        if (info[@"landscape_wide"] == nil && info[@"landscape"] != nil)
+            info[@"landscape_wide"] = info[@"landscape"];
+        
+        [_skin_infos addObject:[info copy]];
     }
 }
 
@@ -201,6 +220,16 @@ static NSArray* g_skin_list;
 
     [_image_cache setObject:(image ?: [NSNull null]) forKey:name];
     return image;
+}
+
+// get a value from one of the skin.json files, in priority order.
+- (id)valueForKeyPath:(NSString*)keyPath {
+    for (NSDictionary* info in _skin_infos) {
+        id value = [info valueForKeyPath:keyPath];
+        if (value != nil)
+            return value;
+    }
+    return nil;
 }
 
 #pragma mark skin export template
