@@ -70,7 +70,6 @@
 #import "iCadeView.h"
 #import <pthread.h>
 #import "UIView+Toast.h"
-#import "DeviceScreenResolver.h"
 #import "Bootstrapper.h"
 #import "Options.h"
 #import "WebServer.h"
@@ -1216,12 +1215,6 @@ void mame_state(int load_save, int slot)
     buttonMask[BTN_SELECT] = MYOSD_SELECT;
     buttonMask[BTN_START] = MYOSD_START;
          
-#ifdef DEBUG
-    // DEBUG DUMP all the device layouts
-    [self dumpLayouts];
-#endif
-    [self getConf];
-
 	self.view.userInteractionEnabled = YES;
 
 #if TARGET_OS_IOS
@@ -1514,8 +1507,6 @@ static int gcd(int a, int b) {
     int n = gcd((int)(size.width * scale), (int)(size.height * scale));
     [hudView setValue:[NSString stringWithFormat:@"%dx%d@%dx [%d:%d]", (int)size.width, (int)size.height, (int)scale,
                        (int)(size.width * scale) / n,  (int)(size.height * scale) / n] forKey:@"SIZE"];
-    
-    [hudView setValue: [NSString stringWithFormat:@"%dx%d %@", (int)size.width, (int)size.height, [DeviceScreenResolver resolveName]] forKey:@"SIZE"];
 #endif
 #endif
 }
@@ -1908,7 +1899,6 @@ static NSArray* list_trim(NSArray* _list) {
     else if (g_mame_game[0])
         [skinManager setCurrentSkin:g_pref_skin];
 
-    [self getConf];
     [self buildScreenView];
     [self buildLogoView];
     [self buildFrameRateView];
@@ -2271,17 +2261,11 @@ void myosd_handle_turbo() {
     if (g_device_is_fullscreen)
         return;
 
-#if TARGET_OS_MACCATALYST
-    BOOL isIpad = [DeviceScreenResolver resolve] == IPAD_GENERIC;
-#else
-    BOOL isIpad = self.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular && self.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassRegular;
-#endif
-    
     NSString* imageName;
     if (g_device_is_landscape)
-        imageName = isIpad ? @"background_landscape.png" : @"background_landscape_wide.png";
+        imageName = [self isPad] ? @"background_landscape.png" : @"background_landscape_wide.png";
     else
-        imageName = isIpad ? @"background_portrait.png" : @"background_portrait_tall.png";
+        imageName = [self isPad] ? @"background_portrait.png" : @"background_portrait_tall.png";
     
     image = [self loadImage:imageName];
     
@@ -2383,14 +2367,8 @@ void myosd_handle_turbo() {
     CGRect r;
 
 #if TARGET_OS_IOS
-    if (TRUE) {
-        [self loadLayout];
-    }
-    else {
-        [self getControllerCoords:g_device_is_landscape];
-        [LayoutData loadLayoutData:self];
-        [self fixControllerCoords:g_device_is_landscape];
-    }
+    [self loadLayout];
+    [LayoutData loadLayoutData:self];
     [self adjustSizes];
 
     [self buildBackgroundImage];
@@ -2792,7 +2770,9 @@ void myosd_handle_turbo() {
 
 
 #if TARGET_OS_IOS
+
 #pragma mark Touch Handling
+
 -(NSSet*)touchHandler:(NSSet *)touches withEvent:(UIEvent *)event {
     if(change_layout)
     {
@@ -3209,336 +3189,13 @@ void myosd_handle_turbo() {
     }
 }
 
+#endif
+
 #pragma mark - BUTTON LAYOUT
-
-- (void)getControllerCoords:(BOOL)is_landscape {
-    char string[256];
-    FILE *fp;
-    
-    DeviceScreenType screenType = [DeviceScreenResolver resolve];
-    NSString *deviceName = nil;
-    NSString *config_file = nil;
-
-    if ( screenType == IPHONE_XR_XS_MAX ) {
-        deviceName = @"iPhone_xr_xs_max";
-    } else if ( screenType == IPHONE_X_XS ) {
-        deviceName = @"iPhone_x";
-    } else if ( screenType == IPHONE_6_7_8_PLUS ) {
-        deviceName = @"iPhone_6_plus";
-    } else if ( screenType == IPHONE_6_7_8 ) {
-        deviceName = @"iPhone_6";
-    } else if ( screenType == IPHONE_5 ) {
-        deviceName = @"iPhone_5";
-    } else if ( screenType == IPHONE_4_OR_LESS ) {
-        deviceName = @"iPhone";
-    } else if ( screenType == IPHONE_GENERIC ) {
-        // default to the largest iPhone if unknown
-        deviceName = @"iPhone_xr_xs_max";
-    } else if ( screenType == IPAD_PRO_12_9 ) {
-        deviceName = @"iPad_pro_12_9";
-    } else if ( screenType == IPAD_PRO_10_5 ) {
-        deviceName = @"iPad_pro_10_5";
-    } else if ( screenType == IPAD_PRO_11 ) {
-        deviceName = @"iPad_pro_11";
-    } else if ( screenType == IPAD ) {
-        deviceName = @"iPad";
-    } else if ( screenType == IPAD_GEN_7 ) {
-        deviceName = @"iPad_gen_7";
-    } else if ( screenType == IPAD_GENERIC ) {
-        // default to the largest iPad if unknown
-        deviceName = @"iPad_pro_11";
-    } else {
-        assert(FALSE);
-        deviceName = @"iPhone_xr_xs_max";
-    }
-    
-	if(!is_landscape)
-	{
-        if (g_device_is_fullscreen)
-            config_file = [NSString stringWithFormat:@"controller_portrait_full_%@.txt", deviceName];
-        else
-            config_file = [NSString stringWithFormat:@"controller_portrait_%@.txt", deviceName];
-    }
-	else
-	{
-        if (g_device_is_fullscreen)
-            config_file = [NSString stringWithFormat:@"controller_landscape_full_%@.txt",deviceName];
-        else
-            config_file = [NSString stringWithFormat:@"controller_landscape_%@.txt", deviceName];
-	}
-	
-    //NSLog(@"USING CONFIG: %@", config_file);
-    fp = [self loadFile:config_file];
-    assert(fp);
-
-	if (fp) 
-	{
-
-		int i = 0;
-        while(fgets(string, 256, fp) != NULL && i < 39) 
-       {
-			char* result = strtok(string, ",");
-			int coords[4];
-			int i2 = 1;
-			while( result != NULL && i2 < 5 )
-			{
-				coords[i2 - 1] = atoi(result);
-				result = strtok(NULL, ",");
-				i2++;
-			}
-						
-			switch(i)
-			{
-//    		case 0:    rInput[DPAD_DOWN_LEFT_RECT]   	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-//    		case 1:    rInput[DPAD_DOWN_RECT]   	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-//    		case 2:    rInput[DPAD_DOWN_RIGHT_RECT]    = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-//    		case 3:    rInput[DPAD_LEFT_RECT]  	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-//    		case 4:    rInput[DPAD_RIGHT_RECT]  	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-//    		case 5:    rInput[DPAD_UP_LEFT_RECT]     	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-//    		case 6:    rInput[DPAD_UP_RECT]     	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-//    		case 7:    rInput[DPAD_UP_RIGHT_RECT]  	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-//    		case 8:    rInput[BTN_SELECT_RECT] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-//    		case 9:    rInput[BTN_START_RECT]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-//    		case 10:   rInput[BTN_L1_RECT]   = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-//    		case 11:   rInput[BTN_R1_RECT]   = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-//    		case 12:   rInput[BTN_MENU_RECT]   = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 13:   rInput[BTN_X_A_RECT]   	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-//    		case 14:   rInput[BTN_X_RECT]   	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 15:   rInput[BTN_B_X_RECT]    	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-//    		case 16:   rInput[BTN_A_RECT]  		= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-//    		case 17:   rInput[BTN_B_RECT]  	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 18:   rInput[BTN_A_Y_RECT]     	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-//    		case 19:   rInput[BTN_Y_RECT]     	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 20:   rInput[BTN_B_Y_RECT]  	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-//    		case 21:   rInput[BTN_L2_RECT]   = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-//    		case 22:   rInput[BTN_R2_RECT]   = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 23:    break;
-    		
-    		case 24:   rButtonImages[BTN_B] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 25:   rButtonImages[BTN_X]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 26:   rButtonImages[BTN_A]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 27:   rButtonImages[BTN_Y]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-//          case 28:   /*rDPadImage  = CGRectMake( coords[0], coords[1], coords[2], coords[3] );*/ break;
-            case 29:   rButtonImages[BTN_SELECT]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 30:   rButtonImages[BTN_START]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 31:   rButtonImages[BTN_L1] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 32:   rButtonImages[BTN_R1] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 33:   rButtonImages[BTN_EXIT] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 34:   rButtonImages[BTN_OPTION] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            
-//            case 35:   rStickWindow = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 36:   rStickWindow = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 37:   stick_radio =coords[0]; break;            
-//            case 38:   g_controller_opacity= coords[0]; break;
-			}
-      i++;
-    }
-    fclose(fp);
         
-    // ignore the input rects and just use the button rects scaled, the .txt files are not consistant!
-    rInput[BTN_A_RECT] = scale_rect(rButtonImages[BTN_A], 0.80);
-    rInput[BTN_B_RECT] = scale_rect(rButtonImages[BTN_B], 0.80);
-    rInput[BTN_Y_RECT] = scale_rect(rButtonImages[BTN_Y], 0.80);
-    rInput[BTN_X_RECT] = scale_rect(rButtonImages[BTN_X], 0.80);
-    rInput[BTN_L1_RECT] = scale_rect(rButtonImages[BTN_L1], 0.80);
-    rInput[BTN_R1_RECT] = scale_rect(rButtonImages[BTN_R1], 0.80);
-
-    rInput[BTN_SELECT_RECT] = scale_rect(rButtonImages[BTN_SELECT], 1.0);
-    rInput[BTN_START_RECT] = scale_rect(rButtonImages[BTN_START], 1.0);
-    rInput[BTN_EXIT_RECT] = scale_rect(rButtonImages[BTN_EXIT], 1.0);
-    rInput[BTN_OPTION_RECT] = scale_rect(rButtonImages[BTN_OPTION], 1.0);
-        
-    rButtonImages[BTN_A_X] = scale_rect(rInput[BTN_X_A_RECT], 1.25);
-    rButtonImages[BTN_B_X] = scale_rect(rInput[BTN_B_X_RECT], 1.25);
-    rButtonImages[BTN_A_Y] = scale_rect(rInput[BTN_A_Y_RECT], 1.25);
-    rButtonImages[BTN_B_Y] = scale_rect(rInput[BTN_B_Y_RECT], 1.25);
-        
-    rButtonImages[BTN_STICK] = rStickWindow;
-        
-#define SWAPRECT(a,b) {CGRect t = a; a = b; b = t;}
-        
-    // swap A and B, swap X and Y
-    if(g_pref_nintendoBAYX)
-    {
-        SWAPRECT(rButtonImages[BTN_A], rButtonImages[BTN_B]);
-        SWAPRECT(rButtonImages[BTN_X], rButtonImages[BTN_Y]);
-
-        SWAPRECT(rInput[BTN_A_RECT], rInput[BTN_B_RECT]);
-        SWAPRECT(rInput[BTN_X_RECT], rInput[BTN_Y_RECT]);
-
-        SWAPRECT(rInput[BTN_X_A_RECT], rInput[BTN_B_Y_RECT]);
-        SWAPRECT(rInput[BTN_A_Y_RECT], rInput[BTN_B_X_RECT]);
-    }
-  }
-}
-
-// convert a rect, but keep aspect ratio
-CGRect convert_rect(CGRect rect, CGRect src, CGRect dst) {
-    CGFloat scale_x = dst.size.width / src.size.width;
-    CGFloat scale_y = dst.size.height / src.size.height;
-    CGFloat scale = (scale_x + scale_y)/2; // MAX(scale_x, scale_y);
-    
-    // transform center
-    CGFloat x = dst.origin.x + (CGRectGetMidX(rect) - src.origin.x) * scale_x;
-    CGFloat y = dst.origin.y + (CGRectGetMidY(rect) - src.origin.y) * scale_y;
-    // scale width/height by the same amount
-    CGFloat w = CGRectGetWidth(rect) * scale;
-    CGFloat h = CGRectGetHeight(rect) * scale;
-    // clip to the dst rect
-    x = MAX(w/2,MIN(dst.origin.x + dst.size.width - w/2, x));
-    y = MAX(h/2,MIN(dst.origin.y + dst.size.height - h/2, y));
-
-    // return a new rect centered
-    return CGRectMake(x - w/2, y - h/2, w, h);
-}
-
-// if our window size does not match the config we just loaded, scale it to fit!
-- (void)fixControllerCoords:(BOOL)is_landscape {
-    CGSize windowSize = self.view.bounds.size;
-    CGSize configSize = is_landscape ? rFrames[LANDSCAPE_VIEW_FULL].size : rFrames[PORTRAIT_VIEW_FULL].size;
-
-    if (windowSize.width == 0.0 || windowSize.height == 0.0)
-        return;
-    
-    if (CGSizeEqualToSize(windowSize, configSize))
-        return;
-
-    // all the positions should be relative the the background image.
-    CGRect srcRect = is_landscape ? rFrames[LANDSCAPE_IMAGE_BACK] : rFrames[PORTRAIT_IMAGE_BACK];
-
-    if (is_landscape) {
-        // try to fit a 4:3 game screen with 10% on each side.
-        CGFloat w = MIN(windowSize.height * 4 / 3, windowSize.width * 0.80);
-        CGFloat h = w * 3 / 4;
-
-        rFrames[LANDSCAPE_VIEW_FULL] = CGRectMake(0, 0, windowSize.width, windowSize.height);
-        rFrames[LANDSCAPE_IMAGE_BACK] = CGRectMake(0, 0, windowSize.width, windowSize.height);
-        rFrames[LANDSCAPE_VIEW_NOT_FULL] = CGRectMake((windowSize.width-w)/2, 0, w, h);
-    }
-    else {
-        // split the window, keeping the aspect ratio of the background image, on the bottom.
-        CGFloat h = windowSize.width * rFrames[PORTRAIT_IMAGE_BACK].size.height / rFrames[PORTRAIT_IMAGE_BACK].size.width;
-
-        rFrames[PORTRAIT_VIEW_FULL] = CGRectMake(0, 0, windowSize.width, windowSize.height);
-        rFrames[PORTRAIT_VIEW_NOT_FULL] = CGRectMake(0, 0, windowSize.width, windowSize.height - h);
-        rFrames[PORTRAIT_IMAGE_BACK] = CGRectMake(0, windowSize.height - h, windowSize.width, h);
-    }
-    
-    CGRect dstRect = is_landscape ? rFrames[LANDSCAPE_IMAGE_BACK] : rFrames[PORTRAIT_IMAGE_BACK];
-
-    // now go over all the input rects and convert them.
-    for (int i=0; i<INPUT_LAST_VALUE; i++)
-        rInput[i] = convert_rect(rInput[i], srcRect, dstRect);
-    
-    // now go over all the button rects and convert them.
-    for (int i=0; i<NUM_BUTTONS; i++)
-        rButtonImages[i] = convert_rect(rButtonImages[i], srcRect, dstRect);
-    
-    // and dont forget the stick
-    rStickWindow = convert_rect(rStickWindow, srcRect, dstRect);
-}
-
-#endif
-
-- (void)getConf{
-#if TARGET_OS_IOS
-    char string[256];
-    
-    DeviceScreenType screenType = [DeviceScreenResolver resolve];
-    char* config = "";
-    
-    if ( screenType == IPHONE_XR_XS_MAX ) {
-        config = "config_iPhone_xr_xs_max.txt";
-    } else if ( screenType == IPHONE_X_XS ) {
-        config = "config_iPhone_x.txt";
-    } else if ( screenType == IPHONE_6_7_8_PLUS ) {
-        config = "config_iPhone_6_plus.txt";
-    } else if ( screenType == IPHONE_6_7_8 ) {
-        config = "config_iPhone_6.txt";
-    } else if ( screenType == IPHONE_5 ) {
-        config = "config_iPhone_5.txt";
-    } else if ( screenType == IPHONE_4_OR_LESS ) {
-        config = "config_iPhone.txt";
-    } else if ( screenType == IPHONE_GENERIC ) {
-        // default to the largest iPhone if unknown
-        config = "config_iPhone_xr_xs_max.txt";
-    } else if ( screenType == IPAD_PRO_12_9 ) {
-        config = "config_iPad_pro_12_9.txt";
-    } else if ( screenType == IPAD_PRO_10_5 ) {
-        config = "config_iPad_pro_10_5.txt";
-    } else if ( screenType == IPAD_PRO_11 ) {
-        config = "config_iPad_pro_11.txt";
-    } else if ( screenType == IPAD ) {
-        config = "config_iPad.txt";
-    } else if ( screenType == IPAD_GEN_7 ) {
-        config = "config_iPad_gen_7.txt";
-    } else if ( screenType == IPAD_GENERIC ) {
-        // default to the largest iPad if unknown
-        config = "config_iPad_pro_11.txt";
-    } else {
-        assert(FALSE);
-        config = "config_iPad_pro_12_9.txt";
-    }
-    
-    //NSLog(@"USING CONFIG: %s", config);
-    
-    FILE *fp = [self loadFile:[NSString stringWithUTF8String:config]];
-    assert(fp != NULL);
-
-    if (fp)
-    {
-        int i = 0;
-        while(fgets(string, 256, fp) != NULL && i < 14)
-        {
-            char* result = strtok(string, ",");
-            int coords[4];
-            int i2 = 1;
-            while( result != NULL && i2 < 5 )
-            {
-                coords[i2 - 1] = atoi(result);
-                result = strtok(NULL, ",");
-                i2++;
-            }
-            
-            switch(i)
-            {
-                case 0:    rFrames[PORTRAIT_VIEW_FULL]     = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-                case 1:    rFrames[PORTRAIT_VIEW_NOT_FULL] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-                case 2:    rFrames[PORTRAIT_IMAGE_BACK]    = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-                    
-                case 4:    rFrames[LANDSCAPE_VIEW_FULL]     = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-                case 5:    rFrames[LANDSCAPE_VIEW_NOT_FULL] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-                case 6:    rFrames[LANDSCAPE_IMAGE_BACK]    = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            }
-            i++;
-        }
-        fclose(fp);
-    }
-#endif
-}
-
 - (UIImage *)loadImage:(NSString *)name {
     return [skinManager loadImage:name];
 }
-
-
--(FILE *)loadFile:(NSString*)name {
-    NSString *path = nil;
-    FILE *fp;
-    
-    path = [NSString stringWithUTF8String:get_resource_path("")];
-    fp = fopen([path stringByAppendingPathComponent:name].UTF8String, "r");
-
-    if(!fp)
-    {
-        name = [NSString stringWithFormat:@"SKIN_%d/%@", 1, name];
-        fp = fopen([path stringByAppendingPathComponent:name].UTF8String, "r");
-    }
-    
-    return fp;
-}
-
-#pragma SKIN LAYOUT
 
 - (BOOL)isPhone {
     CGSize windowSize = self.view.bounds.size;
@@ -3547,8 +3204,6 @@ CGRect convert_rect(CGRect rect, CGRect src, CGRect dst) {
 - (BOOL)isPad {
     return ![self isPhone];
 }
-
-
 
 - (void)loadLayout {
     
@@ -3600,20 +3255,34 @@ CGRect convert_rect(CGRect rect, CGRect src, CGRect dst) {
     rInput[BTN_START_RECT] = scale_rect(rButtonImages[BTN_START], 1.0);
     rInput[BTN_EXIT_RECT] = scale_rect(rButtonImages[BTN_EXIT], 1.0);
     rInput[BTN_OPTION_RECT] = scale_rect(rButtonImages[BTN_OPTION], 1.0);
-//    rInput[BTN_SELECT2_RECT] = scale_rect(rButtonImages[BTN_SELECT2], 1.0);
-//    rInput[BTN_START2_RECT] = scale_rect(rButtonImages[BTN_START2], 1.0);
 
     rInput[BTN_X_A_RECT] = rButtonImages[BTN_A_X];
     rInput[BTN_B_X_RECT] = rButtonImages[BTN_B_X];
     rInput[BTN_A_Y_RECT] = rButtonImages[BTN_A_Y];
     rInput[BTN_B_Y_RECT] = rButtonImages[BTN_B_Y];
         
+    stick_radio = 60;
     rStickWindow = rButtonImages[BTN_STICK];
+    
+    #define SWAPRECT(a,b) {CGRect t = a; a = b; b = t;}
+        
+    // swap A and B, swap X and Y
+    if(g_pref_nintendoBAYX)
+    {
+        SWAPRECT(rButtonImages[BTN_A], rButtonImages[BTN_B]);
+        SWAPRECT(rButtonImages[BTN_X], rButtonImages[BTN_Y]);
+
+        SWAPRECT(rInput[BTN_A_RECT], rInput[BTN_B_RECT]);
+        SWAPRECT(rInput[BTN_X_RECT], rInput[BTN_Y_RECT]);
+
+        SWAPRECT(rInput[BTN_X_A_RECT], rInput[BTN_B_Y_RECT]);
+        SWAPRECT(rInput[BTN_A_Y_RECT], rInput[BTN_B_X_RECT]);
+    }
 }
 
-char* button_key_name[NUM_BUTTONS] = {"A","B","Y","X","L1","R1","A+Y","A+X","B+Y","B+X","SELECT","START","EXIT","OPTION","SELECT2","START2","STICK"};
-
 - (CGRect)getLayoutRect:(int)button {
+    static char* button_key_name[NUM_BUTTONS] = {"A","B","Y","X","L1","R1","A+Y","A+X","B+Y","B+X","SELECT","START","EXIT","OPTION","STICK"};
+
     CGRect back = g_device_is_landscape ? rFrames[LANDSCAPE_IMAGE_BACK] : rFrames[PORTRAIT_IMAGE_BACK];
     char* root;
     
@@ -3643,87 +3312,45 @@ char* button_key_name[NUM_BUTTONS] = {"A","B","Y","X","L1","R1","A+Y","A+X","B+Y
     return CGRectMake(floor(x - w/2), floor(y - h/2), w, h);
 }
 
+// scale a CGRect but dont move the center
+CGRect scale_rect(CGRect rect, CGFloat scale) {
+    return CGRectInset(rect, -0.5 * rect.size.width * (scale - 1.0), -0.5 * rect.size.height * (scale - 1.0));
+}
 
-
-
-#ifdef DEBUG
-- (void)dumpLayouts {
+-(void)adjustSizes{
     
-    NSDictionary* dict = @{
-        @"portrait"  : [@{} mutableCopy],
-        @"landscape" : [@{} mutableCopy],
-        @"portrait_tall"  : [@{} mutableCopy],
-        @"landscape_wide" : [@{} mutableCopy],
-    };
+    int i= 0;
     
-    char* button_name[NUM_BUTTONS] = {"BTN_A","BTN_B","BTN_Y","BTN_X","BTN_L1","BTN_R1","BTN_A_Y","BTN_A_X","BTN_B_Y","BTN_B_X","BTN_SELECT","BTN_START","BTN_EXIT","BTN_OPTION","BTN_MENU","BTN_STICK"};
-
-    for (g_device_is_landscape = 0; g_device_is_landscape <= 1; g_device_is_landscape++) {
-        printf("%s\n", g_device_is_landscape ? "LANDSCAPE" : "PORTRAIT");
-
-        printf("Button");
-        for (DeviceScreenType type = IPHONE_5; type <= IPAD_GENERIC; type++) {
-            if (type == IPHONE_GENERIC || type == IPAD_GENERIC)
-                continue;
-            [DeviceScreenResolver setType:type];
-            printf(",%s", [[DeviceScreenResolver resolveName] UTF8String]);
-        }
-        printf("\n");
-        
-        for (int i=0; i<NUM_BUTTONS; i++) {
-            for (DeviceScreenType type = IPHONE_5; type <= IPAD_GENERIC; type++) {
-                if (type == IPHONE_GENERIC || type == IPAD_GENERIC)
-                    continue;
-                [DeviceScreenResolver setType:type];
-                g_device_is_fullscreen = FALSE;
-                [self getConf];
-                CGRect back = g_device_is_landscape ? rFrames[LANDSCAPE_IMAGE_BACK] :  rFrames[PORTRAIT_IMAGE_BACK];
-                [self getControllerCoords:g_device_is_landscape];
-
-                CGRect rect = rButtonImages[i];
-                CGFloat x = CGRectGetMidX(rect);
-                CGFloat y = CGRectGetMidY(rect);
-                CGFloat w = CGRectGetWidth(rect);
-                CGFloat h = CGRectGetHeight(rect);
-                assert(w == h || floor(w/2) == h);
-                
-                if (CGRectEqualToRect(rect, CGRectZero))
-                    y = back.origin.y;
-                
-                // map (x,y,size) to be relative to the background image rect x1000
-                x = round((x - back.origin.x) * 1000.0 / back.size.width);
-                y = round((y - back.origin.y) * 1000.0 / back.size.height);
-                w = round(w * 1000.0 / back.size.width);
-                h = round(h * 1000.0 / back.size.height);
-
-                if (type == IPHONE_5)
-                    printf("%s", button_name[i]);
-                printf(",\"%d,%d,%d\"", (int)x, (int)y, (int)w);
-                
-                NSString* name = [NSString stringWithUTF8String:button_key_name[i]];
-                NSString* data = [NSString stringWithFormat:@"%d,%d,%d", (int)x, (int)y, (int)w];
-
-                if (type == IPHONE_6_7_8 && g_device_is_landscape)
-                    dict[@"landscape_wide"][name] = data;
-                if (type == IPHONE_6_7_8 && !g_device_is_landscape)
-                    dict[@"portrait_tall"][name] = data;
-                
-                if (type == IPAD_PRO_11 && g_device_is_landscape)
-                    dict[@"landscape"][name] = data;
-                if (type == IPAD_PRO_11 && !g_device_is_landscape)
-                    dict[@"portrait"][name] = data;
-
-            }
-            printf("\n");
+    for(i=0;i<INPUT_LAST_VALUE;i++)
+    {
+        if(i==BTN_Y_RECT ||
+           i==BTN_A_RECT ||
+           i==BTN_X_RECT ||
+           i==BTN_B_RECT ||
+           i==BTN_A_Y_RECT ||
+           i==BTN_B_X_RECT ||
+           i==BTN_B_Y_RECT ||
+           i==BTN_X_A_RECT ||
+           i==BTN_L1_RECT ||
+           i==BTN_R1_RECT
+           ){
+           rInput[i] = scale_rect(rInput[i], g_buttons_size);
         }
     }
-    [DeviceScreenResolver setType:IPHONE_UNKNOWN];
-
-    NSLog(@"%@", [[NSString alloc] initWithData:[NSJSONSerialization dataWithJSONObject:dict options:NSJSONWritingPrettyPrinted error:nil] encoding:NSUTF8StringEncoding]);
+    
+    for(i=0;i<NUM_BUTTONS;i++)
+    {
+        if(i==BTN_A || i==BTN_B || i==BTN_X || i==BTN_Y || i==BTN_R1 || i==BTN_L1)
+        {
+            rButtonImages[i] = scale_rect(rButtonImages[i], g_buttons_size);
+        }
+    }
+    
+    if (g_device_is_fullscreen)
+    {
+       rStickWindow = scale_rect(rStickWindow, g_stick_size);
+    }
 }
-#endif
-
-
 
 #pragma MOVE ROMs
 
@@ -4165,46 +3792,6 @@ char* button_key_name[NUM_BUTTONS] = {"A","B","Y","X","L1","R1","A+Y","A+X","B+Y
             [self done:self];
         }
     }];
-}
-
-// scale a CGRect but dont move the center
-CGRect scale_rect(CGRect rect, CGFloat scale) {
-    return CGRectInset(rect, -0.5 * rect.size.width * (scale - 1.0), -0.5 * rect.size.height * (scale - 1.0));
-}
-
--(void)adjustSizes{
-    
-    int i= 0;
-    
-    for(i=0;i<INPUT_LAST_VALUE;i++)
-    {
-        if(i==BTN_Y_RECT ||
-           i==BTN_A_RECT ||
-           i==BTN_X_RECT ||
-           i==BTN_B_RECT ||
-           i==BTN_A_Y_RECT ||
-           i==BTN_B_X_RECT ||
-           i==BTN_B_Y_RECT ||
-           i==BTN_X_A_RECT ||
-           i==BTN_L1_RECT ||
-           i==BTN_R1_RECT
-           ){
-           rInput[i] = scale_rect(rInput[i], g_buttons_size);
-        }
-    }
-    
-    for(i=0;i<NUM_BUTTONS;i++)
-    {
-        if(i==BTN_A || i==BTN_B || i==BTN_X || i==BTN_Y || i==BTN_R1 || i==BTN_L1)
-        {
-            rButtonImages[i] = scale_rect(rButtonImages[i], g_buttons_size);
-        }
-    }
-    
-    if (g_device_is_fullscreen)
-    {
-       rStickWindow = scale_rect(rStickWindow, g_stick_size);
-    }
 }
 #endif
 

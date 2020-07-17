@@ -122,8 +122,6 @@
 - (UIView *)getStickView;
 #endif
 
-- (void)getConf;
-
 - (void)startEmulation;
 - (void)stopEmulation;
 
@@ -149,7 +147,6 @@
 - (void)updateOptions;
 
 - (UIImage *)loadImage:(NSString *)name;
-- (FILE *)loadFile:(NSString *)name;
 
 - (void)moveROMS;
 - (void)playGame:(NSDictionary*)game;

@@ -9,8 +9,6 @@
 /* Begin PBXBuildFile section */
 		920BBDEF201FC29700AE7D50 /* dpad.png in Resources */ = {isa = PBXBuildFile; fileRef = 920BBDED201FC29700AE7D50 /* dpad.png */; };
 		920BBDF220210C3800AE7D50 /* menu.png in Resources */ = {isa = PBXBuildFile; fileRef = 920BBDF020210C3700AE7D50 /* menu.png */; };
-		921CC323216A903600A39154 /* config_iPad_pro_10_5.txt in Resources */ = {isa = PBXBuildFile; fileRef = 921CC321216A903600A39154 /* config_iPad_pro_10_5.txt */; };
-		921CC326216A936800A39154 /* config_iPad_pro_12_9.txt in Resources */ = {isa = PBXBuildFile; fileRef = 921CC324216A936800A39154 /* config_iPad_pro_12_9.txt */; };
 		925ABCA61E46DCC500997182 /* iCadeView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8D87DC1653121200685BC4 /* iCadeView.m */; };
 		925ABCA81E46DCC500997182 /* ListOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE90575B166A89D000653872 /* ListOptionController.m */; };
 		925ABCA91E46DCC500997182 /* OptionsController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680C01635BB6100051BC2 /* OptionsController.m */; };
@@ -35,26 +33,17 @@
 		925ABCC11E46DCC500997182 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE6808D1635BA7000051BC2 /* CoreGraphics.framework */; };
 		925ABCC21E46DCC500997182 /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE9454C7172BB23100B81C32 /* GameKit.framework */; };
 		925ABCC41E46DCC500997182 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE680CD163B147100051BC2 /* libz.dylib */; };
-		925ABCCC1E46DCC500997182 /* config_iPad.txt in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC11163C5DA100A05CD0 /* config_iPad.txt */; };
-		925ABCCD1E46DCC500997182 /* config_iPhone.txt in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC12163C5DA100A05CD0 /* config_iPhone.txt */; };
 		925ABCD21E46DCC500997182 /* SKIN_1 in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC1D163C5DA100A05CD0 /* SKIN_1 */; };
-		925ABCD51E46DCC500997182 /* config_iPhone_5.txt in Resources */ = {isa = PBXBuildFile; fileRef = CE8D87D7164FE4BE00685BC4 /* config_iPhone_5.txt */; };
 		925ABCD71E46DCC500997182 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = CEB8E0DB16A3311500A6FEDC /* LICENSE */; };
 		925ABCDD1E46DCC500997182 /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = CE30090316FA47CB000EDCF1 /* Category.ini */; };
 		925ABCDE1E46DCC500997182 /* hiscore.dat in Resources */ = {isa = PBXBuildFile; fileRef = CE30090616FA47E4000EDCF1 /* hiscore.dat */; };
 		925ABCE51E46DD6E00997182 /* libmamearm64.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 925ABCE41E46DD6E00997182 /* libmamearm64.a */; platformFilter = ios; };
-		9268D84A21661CA500AB0470 /* config_iPhone_xr_xs_max.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9268D84821661CA500AB0470 /* config_iPhone_xr_xs_max.txt */; };
-		9268D84D21661E3800AB0470 /* config_iPhone_x.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9268D84B21661E3800AB0470 /* config_iPhone_x.txt */; };
-		9268D85321661F1700AB0470 /* config_iPhone_6_plus.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9268D85121661F1700AB0470 /* config_iPhone_6_plus.txt */; };
-		9268D85621661F8E00AB0470 /* config_iPhone_6.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9268D85421661F8E00AB0470 /* config_iPhone_6.txt */; };
-		9268D85A2166841000AB0470 /* DeviceScreenResolver.m in Sources */ = {isa = PBXBuildFile; fileRef = 9268D8582166840F00AB0470 /* DeviceScreenResolver.m */; };
 		926C76FF21F1C87700103EDE /* TVOptionsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 926C76FE21F1C87700103EDE /* TVOptionsController.m */; };
 		926C770A21F271A700103EDE /* ListOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE90575B166A89D000653872 /* ListOptionController.m */; };
 		926C770B21F31B1400103EDE /* FilterOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE9454D71731DF2700B81C32 /* FilterOptionController.m */; };
 		926C771321F39D2F00103EDE /* hiscore.dat in Resources */ = {isa = PBXBuildFile; fileRef = CE30090616FA47E4000EDCF1 /* hiscore.dat */; };
 		926C771A21F4F78300103EDE /* DefaultOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8F088717435C3A00E2D5FB /* DefaultOptionController.m */; };
 		926C771D21F5034100103EDE /* TVInputOptionsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 926C771C21F5034100103EDE /* TVInputOptionsController.m */; };
-		927BD1A62209E80F00ECF6C9 /* config_iPad_pro_11.txt in Resources */ = {isa = PBXBuildFile; fileRef = 927BD1A52209E80F00ECF6C9 /* config_iPad_pro_11.txt */; };
 		92A5332321EB57F00089FBB9 /* Options.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5332121EB57F00089FBB9 /* Options.m */; };
 		92A5332421EB57F00089FBB9 /* Options.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5332121EB57F00089FBB9 /* Options.m */; };
 		92A5332521EBC7F40089FBB9 /* iCadeView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8D87DC1653121200685BC4 /* iCadeView.m */; };
@@ -126,7 +115,6 @@
 		EF27F36823F73CD400B1E50A /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF27F36323F73CD400B1E50A /* ZipFile.m */; };
 		EF27F36A23F7475100B1E50A /* libcompression.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = EF27F36923F7475100B1E50A /* libcompression.tbd */; };
 		EF29C8822401C73A00AFFA4E /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EF29C8802401C73900AFFA4E /* Launch Screen.storyboard */; };
-		EF29C8852402E51200AFFA4E /* config_iPad_gen_7.txt in Resources */ = {isa = PBXBuildFile; fileRef = EF29C8832402E51100AFFA4E /* config_iPad_gen_7.txt */; };
 		EF301CF1240460C5000510FD /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF301CF0240460C5000510FD /* Alert.m */; };
 		EF301CF2240460C5000510FD /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF301CF0240460C5000510FD /* Alert.m */; };
 		EF301CF3240460F3000510FD /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF27F36323F73CD400B1E50A /* ZipFile.m */; };
@@ -206,7 +194,6 @@
 		EFA7A0FE24B65C020009CF88 /* GCDWebServerFunctions.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5338E21EBDBAD0089FBB9 /* GCDWebServerFunctions.m */; };
 		EFA7A0FF24B65C020009CF88 /* GCDWebServerStreamedResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5339A21EBDBAD0089FBB9 /* GCDWebServerStreamedResponse.m */; };
 		EFA7A10024B65C020009CF88 /* MetalView.m in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B2132479FBD800AD96A4 /* MetalView.m */; };
-		EFA7A10124B65C020009CF88 /* DeviceScreenResolver.m in Sources */ = {isa = PBXBuildFile; fileRef = 9268D8582166840F00AB0470 /* DeviceScreenResolver.m */; };
 		EFA7A10224B65C020009CF88 /* LayoutView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE6D6E1316D8CADF00F265B7 /* LayoutView.m */; };
 		EFA7A10324B65C020009CF88 /* SteamControllerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA7F244F7F5D00DA02BB /* SteamControllerManager.m */; };
 		EFA7A10424B65C020009CF88 /* GCDWebServerResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5338821EBDBAD0089FBB9 /* GCDWebServerResponse.m */; };
@@ -251,25 +238,15 @@
 		EFA7A12C24B65C020009CF88 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE6808D1635BA7000051BC2 /* CoreGraphics.framework */; };
 		EFA7A12D24B65C020009CF88 /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE9454C7172BB23100B81C32 /* GameKit.framework */; };
 		EFA7A12E24B65C020009CF88 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE680CD163B147100051BC2 /* libz.dylib */; };
-		EFA7A13024B65C020009CF88 /* config_iPhone_x.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9268D84B21661E3800AB0470 /* config_iPhone_x.txt */; };
-		EFA7A13124B65C020009CF88 /* config_iPad_pro_12_9.txt in Resources */ = {isa = PBXBuildFile; fileRef = 921CC324216A936800A39154 /* config_iPad_pro_12_9.txt */; };
-		EFA7A13224B65C020009CF88 /* config_iPhone_6_plus.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9268D85121661F1700AB0470 /* config_iPhone_6_plus.txt */; };
-		EFA7A13324B65C020009CF88 /* config_iPhone_xr_xs_max.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9268D84821661CA500AB0470 /* config_iPhone_xr_xs_max.txt */; };
 		EFA7A13424B65C020009CF88 /* mame_logo.png in Resources */ = {isa = PBXBuildFile; fileRef = EF26AE07241848800078FD30 /* mame_logo.png */; };
 		EFA7A13524B65C020009CF88 /* history0139.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF0088112459F4FC0058C2A1 /* history0139.zip */; };
-		EFA7A13624B65C020009CF88 /* config_iPad.txt in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC11163C5DA100A05CD0 /* config_iPad.txt */; };
 		EFA7A13724B65C020009CF88 /* default_game_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA7570424057FD800A02AAB /* default_game_icon.png */; };
-		EFA7A13824B65C020009CF88 /* config_iPhone.txt in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC12163C5DA100A05CD0 /* config_iPhone.txt */; };
 		EFA7A13C24B65C020009CF88 /* help.md in Resources */ = {isa = PBXBuildFile; fileRef = EF0E08AC2401840700E98F01 /* help.md */; };
 		EFA7A13D24B65C020009CF88 /* effect-crt.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F81D2466BEE100DDA88C /* effect-crt.png */; };
 		EFA7A13F24B65C020009CF88 /* cheat0139.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF00880E2459F4EF0058C2A1 /* cheat0139.zip */; };
-		EFA7A14024B65C020009CF88 /* config_iPad_gen_7.txt in Resources */ = {isa = PBXBuildFile; fileRef = EF29C8832402E51100AFFA4E /* config_iPad_gen_7.txt */; };
-		EFA7A14124B65C020009CF88 /* config_iPad_pro_11.txt in Resources */ = {isa = PBXBuildFile; fileRef = 927BD1A52209E80F00ECF6C9 /* config_iPad_pro_11.txt */; };
 		EFA7A14324B65C020009CF88 /* dpad.png in Resources */ = {isa = PBXBuildFile; fileRef = 920BBDED201FC29700AE7D50 /* dpad.png */; };
 		EFA7A14424B65C020009CF88 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EF29C8802401C73900AFFA4E /* Launch Screen.storyboard */; };
 		EFA7A14524B65C020009CF88 /* SKIN_1 in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC1D163C5DA100A05CD0 /* SKIN_1 */; };
-		EFA7A14624B65C020009CF88 /* config_iPhone_6.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9268D85421661F8E00AB0470 /* config_iPhone_6.txt */; };
-		EFA7A14824B65C020009CF88 /* config_iPhone_5.txt in Resources */ = {isa = PBXBuildFile; fileRef = CE8D87D7164FE4BE00685BC4 /* config_iPhone_5.txt */; };
 		EFA7A14924B65C020009CF88 /* menu.png in Resources */ = {isa = PBXBuildFile; fileRef = 920BBDF020210C3700AE7D50 /* menu.png */; };
 		EFA7A14B24B65C020009CF88 /* whatsnew.md in Resources */ = {isa = PBXBuildFile; fileRef = EF63E1C024424D2300CFE85D /* whatsnew.md */; };
 		EFA7A14C24B65C020009CF88 /* effect-dot.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F8142465DFB100DDA88C /* effect-dot.png */; };
@@ -278,7 +255,6 @@
 		EFA7A15024B65C020009CF88 /* mameui.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA756FE2405585D00A02AAB /* mameui.png */; };
 		EFA7A15124B65C020009CF88 /* iCadeControls.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA757212408488D00A02AAB /* iCadeControls.png */; };
 		EFA7A15524B65C020009CF88 /* effect-scanline.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F81A2466BE8500DDA88C /* effect-scanline.png */; };
-		EFA7A15624B65C020009CF88 /* config_iPad_pro_10_5.txt in Resources */ = {isa = PBXBuildFile; fileRef = 921CC321216A903600A39154 /* config_iPad_pro_10_5.txt */; };
 		EFA7A15724B65C020009CF88 /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = CE30090316FA47CB000EDCF1 /* Category.ini */; };
 		EFA7A15824B65C020009CF88 /* hiscore.dat in Resources */ = {isa = PBXBuildFile; fileRef = CE30090616FA47E4000EDCF1 /* hiscore.dat */; };
 		EFA7A16424B792B50009CF88 /* ColorSpace.m in Sources */ = {isa = PBXBuildFile; fileRef = EF950BA924B1211F00DC9A47 /* ColorSpace.m */; };
@@ -388,21 +364,12 @@
 /* Begin PBXFileReference section */
 		920BBDED201FC29700AE7D50 /* dpad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = dpad.png; sourceTree = "<group>"; };
 		920BBDF020210C3700AE7D50 /* menu.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menu.png; sourceTree = "<group>"; };
-		921CC321216A903600A39154 /* config_iPad_pro_10_5.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = config_iPad_pro_10_5.txt; sourceTree = "<group>"; };
-		921CC324216A936800A39154 /* config_iPad_pro_12_9.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = config_iPad_pro_12_9.txt; sourceTree = "<group>"; };
 		925ABCE21E46DCC500997182 /* MAME4iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MAME4iOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		925ABCE41E46DD6E00997182 /* libmamearm64.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmamearm64.a; path = ../../libmamearm64.a; sourceTree = "<group>"; };
-		9268D84821661CA500AB0470 /* config_iPhone_xr_xs_max.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = config_iPhone_xr_xs_max.txt; sourceTree = "<group>"; };
-		9268D84B21661E3800AB0470 /* config_iPhone_x.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = config_iPhone_x.txt; sourceTree = "<group>"; };
-		9268D85121661F1700AB0470 /* config_iPhone_6_plus.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = config_iPhone_6_plus.txt; sourceTree = "<group>"; };
-		9268D85421661F8E00AB0470 /* config_iPhone_6.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = config_iPhone_6.txt; sourceTree = "<group>"; };
-		9268D8572166840F00AB0470 /* DeviceScreenResolver.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DeviceScreenResolver.h; sourceTree = "<group>"; };
-		9268D8582166840F00AB0470 /* DeviceScreenResolver.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DeviceScreenResolver.m; sourceTree = "<group>"; };
 		926C76FD21F1C87700103EDE /* TVOptionsController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVOptionsController.h; sourceTree = "<group>"; };
 		926C76FE21F1C87700103EDE /* TVOptionsController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TVOptionsController.m; sourceTree = "<group>"; };
 		926C771B21F5034100103EDE /* TVInputOptionsController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVInputOptionsController.h; sourceTree = "<group>"; };
 		926C771C21F5034100103EDE /* TVInputOptionsController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TVInputOptionsController.m; sourceTree = "<group>"; };
-		927BD1A52209E80F00ECF6C9 /* config_iPad_pro_11.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = config_iPad_pro_11.txt; sourceTree = "<group>"; };
 		92A5332021EB57F00089FBB9 /* Options.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Options.h; sourceTree = "<group>"; };
 		92A5332121EB57F00089FBB9 /* Options.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Options.m; sourceTree = "<group>"; };
 		92A5338621EBDBAD0089FBB9 /* GCDWebServerFunctions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDWebServerFunctions.h; sourceTree = "<group>"; };
@@ -469,7 +436,6 @@
 		CE6D6E1316D8CADF00F265B7 /* LayoutView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LayoutView.m; path = ../../iOS/LayoutView.m; sourceTree = "<group>"; };
 		CE87C2FE16F5C21A00ABE4F6 /* MAME4iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = MAME4iOS.entitlements; sourceTree = "<group>"; };
 		CE8A4192170F41FC001ADFA4 /* myosd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = myosd.h; path = "../../../src/osd/droid-ios/myosd.h"; sourceTree = "<group>"; };
-		CE8D87D7164FE4BE00685BC4 /* config_iPhone_5.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = config_iPhone_5.txt; path = "../../iOS-res/Applications/MAME4iOS.app/config_iPhone_5.txt"; sourceTree = "<group>"; };
 		CE8D87DB1653121100685BC4 /* iCadeView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = iCadeView.h; path = ../../iOS/iCadeView.h; sourceTree = "<group>"; };
 		CE8D87DC1653121200685BC4 /* iCadeView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = iCadeView.m; path = ../../iOS/iCadeView.m; sourceTree = "<group>"; };
 		CE8D87DF16541AC400685BC4 /* Globals.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Globals.h; path = ../../iOS/Globals.h; sourceTree = "<group>"; };
@@ -490,8 +456,6 @@
 		CE9454D61731DF2600B81C32 /* FilterOptionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FilterOptionController.h; path = ../../iOS/FilterOptionController.h; sourceTree = "<group>"; };
 		CE9454D71731DF2700B81C32 /* FilterOptionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FilterOptionController.m; path = ../../iOS/FilterOptionController.m; sourceTree = "<group>"; };
 		CEB8E0DB16A3311500A6FEDC /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = folder; name = LICENSE; path = "../../iOS-res/Applications/MAME4iOS.app/LICENSE"; sourceTree = "<group>"; };
-		CEBFBC11163C5DA100A05CD0 /* config_iPad.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = config_iPad.txt; path = "../../iOS-res/Applications/MAME4iOS.app/config_iPad.txt"; sourceTree = "<group>"; };
-		CEBFBC12163C5DA100A05CD0 /* config_iPhone.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = config_iPhone.txt; path = "../../iOS-res/Applications/MAME4iOS.app/config_iPhone.txt"; sourceTree = "<group>"; };
 		CEBFBC1D163C5DA100A05CD0 /* SKIN_1 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SKIN_1; path = "../../iOS-res/Applications/MAME4iOS.app/SKIN_1"; sourceTree = "<group>"; };
 		CEE680891635BA7000051BC2 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		CEE6808B1635BA7000051BC2 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -532,7 +496,6 @@
 		EF27F36423F73CD400B1E50A /* ZipFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZipFile.h; sourceTree = "<group>"; };
 		EF27F36923F7475100B1E50A /* libcompression.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcompression.tbd; path = usr/lib/libcompression.tbd; sourceTree = SDKROOT; };
 		EF29C8802401C73900AFFA4E /* Launch Screen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
-		EF29C8832402E51100AFFA4E /* config_iPad_gen_7.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = config_iPad_gen_7.txt; path = "../../iOS-res/Applications/MAME4iOS.app/config_iPad_gen_7.txt"; sourceTree = "<group>"; };
 		EF301CEF240460C5000510FD /* Alert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Alert.h; sourceTree = "<group>"; };
 		EF301CF0240460C5000510FD /* Alert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Alert.m; sourceTree = "<group>"; };
 		EF63E1C024424D2300CFE85D /* whatsnew.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = whatsnew.md; path = "../../iOS-res/Applications/MAME4iOS.app/whatsnew.md"; sourceTree = "<group>"; };
@@ -780,8 +743,6 @@
 				EF67E11524B8972100AFF489 /* MacMenu.m */,
 				EF19F22E235D1C0300C8EE7F /* ChooseGameController.h */,
 				EF19F229235D1BDF00C8EE7F /* ChooseGameController.m */,
-				9268D8572166840F00AB0470 /* DeviceScreenResolver.h */,
-				9268D8582166840F00AB0470 /* DeviceScreenResolver.m */,
 				CEE680B41635BB4900051BC2 /* EmulatorController.h */,
 				CEE680B51635BB4900051BC2 /* EmulatorController.m */,
 				CE8D87DF16541AC400685BC4 /* Globals.h */,
@@ -824,17 +785,6 @@
 				EF0E08AC2401840700E98F01 /* help.md */,
 				EF63E1C024424D2300CFE85D /* whatsnew.md */,
 				EFA7571E2408308000A02AAB /* help images */,
-				9268D84821661CA500AB0470 /* config_iPhone_xr_xs_max.txt */,
-				9268D84B21661E3800AB0470 /* config_iPhone_x.txt */,
-				9268D85121661F1700AB0470 /* config_iPhone_6_plus.txt */,
-				9268D85421661F8E00AB0470 /* config_iPhone_6.txt */,
-				CE8D87D7164FE4BE00685BC4 /* config_iPhone_5.txt */,
-				CEBFBC12163C5DA100A05CD0 /* config_iPhone.txt */,
-				CEBFBC11163C5DA100A05CD0 /* config_iPad.txt */,
-				921CC321216A903600A39154 /* config_iPad_pro_10_5.txt */,
-				927BD1A52209E80F00ECF6C9 /* config_iPad_pro_11.txt */,
-				921CC324216A936800A39154 /* config_iPad_pro_12_9.txt */,
-				EF29C8832402E51100AFFA4E /* config_iPad_gen_7.txt */,
 				EF926C9D24BA743B0048392B /* skins */,
 				CEBFBC1D163C5DA100A05CD0 /* SKIN_1 */,
 				CEB8E0DB16A3311500A6FEDC /* LICENSE */,
@@ -1161,26 +1111,16 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9268D84D21661E3800AB0470 /* config_iPhone_x.txt in Resources */,
-				921CC326216A936800A39154 /* config_iPad_pro_12_9.txt in Resources */,
-				9268D85321661F1700AB0470 /* config_iPhone_6_plus.txt in Resources */,
-				9268D84A21661CA500AB0470 /* config_iPhone_xr_xs_max.txt in Resources */,
 				EF26AE08241848800078FD30 /* mame_logo.png in Resources */,
 				EF0088122459F4FC0058C2A1 /* history0139.zip in Resources */,
-				925ABCCC1E46DCC500997182 /* config_iPad.txt in Resources */,
 				EFA7570524057FD800A02AAB /* default_game_icon.png in Resources */,
-				925ABCCD1E46DCC500997182 /* config_iPhone.txt in Resources */,
 				EF0E08AE2401840700E98F01 /* help.md in Resources */,
 				EFF9F81E2466BEE100DDA88C /* effect-crt.png in Resources */,
 				EFA7A16B24B7A38E0009CF88 /* Assets.xcassets in Resources */,
 				EF00880F2459F4EF0058C2A1 /* cheat0139.zip in Resources */,
-				EF29C8852402E51200AFFA4E /* config_iPad_gen_7.txt in Resources */,
-				927BD1A62209E80F00ECF6C9 /* config_iPad_pro_11.txt in Resources */,
 				920BBDEF201FC29700AE7D50 /* dpad.png in Resources */,
 				EF29C8822401C73A00AFFA4E /* Launch Screen.storyboard in Resources */,
 				925ABCD21E46DCC500997182 /* SKIN_1 in Resources */,
-				9268D85621661F8E00AB0470 /* config_iPhone_6.txt in Resources */,
-				925ABCD51E46DCC500997182 /* config_iPhone_5.txt in Resources */,
 				920BBDF220210C3800AE7D50 /* menu.png in Resources */,
 				EF63E1C124424D2300CFE85D /* whatsnew.md in Resources */,
 				EFF9F8152465DFB200DDA88C /* effect-dot.png in Resources */,
@@ -1190,7 +1130,6 @@
 				EFA756FF2405585D00A02AAB /* mameui.png in Resources */,
 				EFA757222408488D00A02AAB /* iCadeControls.png in Resources */,
 				EFF9F81B2466BE8500DDA88C /* effect-scanline.png in Resources */,
-				921CC323216A903600A39154 /* config_iPad_pro_10_5.txt in Resources */,
 				EF926C9E24BA743C0048392B /* skins in Resources */,
 				EF926CAA24BB55250048392B /* choose-game-background.png in Resources */,
 				925ABCDD1E46DCC500997182 /* Category.ini in Resources */,
@@ -1224,26 +1163,16 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EFA7A13024B65C020009CF88 /* config_iPhone_x.txt in Resources */,
-				EFA7A13124B65C020009CF88 /* config_iPad_pro_12_9.txt in Resources */,
-				EFA7A13224B65C020009CF88 /* config_iPhone_6_plus.txt in Resources */,
-				EFA7A13324B65C020009CF88 /* config_iPhone_xr_xs_max.txt in Resources */,
 				EFA7A13424B65C020009CF88 /* mame_logo.png in Resources */,
 				EFA7A13524B65C020009CF88 /* history0139.zip in Resources */,
-				EFA7A13624B65C020009CF88 /* config_iPad.txt in Resources */,
 				EFA7A13724B65C020009CF88 /* default_game_icon.png in Resources */,
-				EFA7A13824B65C020009CF88 /* config_iPhone.txt in Resources */,
 				EFA7A13C24B65C020009CF88 /* help.md in Resources */,
 				EFA7A13D24B65C020009CF88 /* effect-crt.png in Resources */,
 				EFA7A13F24B65C020009CF88 /* cheat0139.zip in Resources */,
-				EFA7A14024B65C020009CF88 /* config_iPad_gen_7.txt in Resources */,
-				EFA7A14124B65C020009CF88 /* config_iPad_pro_11.txt in Resources */,
 				EFA7A16D24B7A40F0009CF88 /* Assets.xcassets in Resources */,
 				EFA7A14324B65C020009CF88 /* dpad.png in Resources */,
 				EFA7A14424B65C020009CF88 /* Launch Screen.storyboard in Resources */,
 				EFA7A14524B65C020009CF88 /* SKIN_1 in Resources */,
-				EFA7A14624B65C020009CF88 /* config_iPhone_6.txt in Resources */,
-				EFA7A14824B65C020009CF88 /* config_iPhone_5.txt in Resources */,
 				EFA7A14924B65C020009CF88 /* menu.png in Resources */,
 				EFA7A14B24B65C020009CF88 /* whatsnew.md in Resources */,
 				EFA7A14C24B65C020009CF88 /* effect-dot.png in Resources */,
@@ -1253,7 +1182,6 @@
 				EFA7A15024B65C020009CF88 /* mameui.png in Resources */,
 				EFA7A15124B65C020009CF88 /* iCadeControls.png in Resources */,
 				EFA7A15524B65C020009CF88 /* effect-scanline.png in Resources */,
-				EFA7A15624B65C020009CF88 /* config_iPad_pro_10_5.txt in Resources */,
 				EF926C9F24BA743C0048392B /* skins in Resources */,
 				EF926CAB24BB55250048392B /* choose-game-background.png in Resources */,
 				EFA7A15724B65C020009CF88 /* Category.ini in Resources */,
@@ -1355,7 +1283,6 @@
 				92A533AB21EBDBAD0089FBB9 /* GCDWebServerFunctions.m in Sources */,
 				92A533BD21EBDBAD0089FBB9 /* GCDWebServerStreamedResponse.m in Sources */,
 				EFB7B2172479FBD900AD96A4 /* MetalView.m in Sources */,
-				9268D85A2166841000AB0470 /* DeviceScreenResolver.m in Sources */,
 				925ABCB21E46DCC500997182 /* LayoutView.m in Sources */,
 				EF8EAA86244F7F5D00DA02BB /* SteamControllerManager.m in Sources */,
 				92A533A521EBDBAD0089FBB9 /* GCDWebServerResponse.m in Sources */,
@@ -1475,7 +1402,6 @@
 				EFA7A0FE24B65C020009CF88 /* GCDWebServerFunctions.m in Sources */,
 				EFA7A0FF24B65C020009CF88 /* GCDWebServerStreamedResponse.m in Sources */,
 				EFA7A10024B65C020009CF88 /* MetalView.m in Sources */,
-				EFA7A10124B65C020009CF88 /* DeviceScreenResolver.m in Sources */,
 				EFA7A10224B65C020009CF88 /* LayoutView.m in Sources */,
 				EFA7A10324B65C020009CF88 /* SteamControllerManager.m in Sources */,
 				EFA7A10424B65C020009CF88 /* GCDWebServerResponse.m in Sources */,
