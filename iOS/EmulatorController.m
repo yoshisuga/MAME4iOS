@@ -87,7 +87,7 @@
 @end
 #endif
 
-#define DebugLog 0
+#define DebugLog 1
 #if DebugLog == 0
 #define NSLog(...) (void)0
 #endif
@@ -1216,6 +1216,10 @@ void mame_state(int load_save, int slot)
     buttonMask[BTN_SELECT] = MYOSD_SELECT;
     buttonMask[BTN_START] = MYOSD_START;
          
+#ifdef DEBUG
+    // DEBUG DUMP all the device layouts
+    [self dumpLayouts];
+#endif
     [self getConf];
 
 	self.view.userInteractionEnabled = YES;
@@ -1510,6 +1514,8 @@ static int gcd(int a, int b) {
     int n = gcd((int)(size.width * scale), (int)(size.height * scale));
     [hudView setValue:[NSString stringWithFormat:@"%dx%d@%dx [%d:%d]", (int)size.width, (int)size.height, (int)scale,
                        (int)(size.width * scale) / n,  (int)(size.height * scale) / n] forKey:@"SIZE"];
+    
+    [hudView setValue: [NSString stringWithFormat:@"%dx%d %@", (int)size.width, (int)size.height, [DeviceScreenResolver resolveName]] forKey:@"SIZE"];
 #endif
 #endif
 }
@@ -3177,6 +3183,7 @@ void myosd_handle_turbo() {
     }
 }
 
+#pragma mark - BUTTON LAYOUT
 
 - (void)getControllerCoords:(BOOL)is_landscape {
     char string[256];
@@ -3234,7 +3241,7 @@ void myosd_handle_turbo() {
             config_file = [NSString stringWithFormat:@"controller_landscape_%@.txt", deviceName];
 	}
 	
-    NSLog(@"USING CONFIG: %@", config_file);
+    //NSLog(@"USING CONFIG: %@", config_file);
     fp = [self loadFile:config_file];
     assert(fp);
 
@@ -3256,44 +3263,44 @@ void myosd_handle_turbo() {
 						
 			switch(i)
 			{
-    		case 0:    rInput[DPAD_DOWN_LEFT_RECT]   	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 1:    rInput[DPAD_DOWN_RECT]   	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 2:    rInput[DPAD_DOWN_RIGHT_RECT]    = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 3:    rInput[DPAD_LEFT_RECT]  	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 4:    rInput[DPAD_RIGHT_RECT]  	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 5:    rInput[DPAD_UP_LEFT_RECT]     	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 6:    rInput[DPAD_UP_RECT]     	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 7:    rInput[DPAD_UP_RIGHT_RECT]  	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 8:    rInput[BTN_SELECT_RECT] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 9:    rInput[BTN_START_RECT]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 10:   rInput[BTN_L1_RECT]   = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 11:   rInput[BTN_R1_RECT]   = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 12:   rInput[BTN_MENU_RECT]   = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+//    		case 0:    rInput[DPAD_DOWN_LEFT_RECT]   	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+//    		case 1:    rInput[DPAD_DOWN_RECT]   	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+//    		case 2:    rInput[DPAD_DOWN_RIGHT_RECT]    = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+//    		case 3:    rInput[DPAD_LEFT_RECT]  	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+//    		case 4:    rInput[DPAD_RIGHT_RECT]  	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+//    		case 5:    rInput[DPAD_UP_LEFT_RECT]     	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+//    		case 6:    rInput[DPAD_UP_RECT]     	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+//    		case 7:    rInput[DPAD_UP_RIGHT_RECT]  	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+//    		case 8:    rInput[BTN_SELECT_RECT] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+//    		case 9:    rInput[BTN_START_RECT]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+//    		case 10:   rInput[BTN_L1_RECT]   = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+//    		case 11:   rInput[BTN_R1_RECT]   = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+//    		case 12:   rInput[BTN_MENU_RECT]   = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
     		case 13:   rInput[BTN_X_A_RECT]   	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 14:   rInput[BTN_X_RECT]   	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+//    		case 14:   rInput[BTN_X_RECT]   	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
     		case 15:   rInput[BTN_B_X_RECT]    	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 16:   rInput[BTN_A_RECT]  		= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 17:   rInput[BTN_B_RECT]  	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+//    		case 16:   rInput[BTN_A_RECT]  		= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+//    		case 17:   rInput[BTN_B_RECT]  	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
     		case 18:   rInput[BTN_A_Y_RECT]     	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 19:   rInput[BTN_Y_RECT]     	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+//    		case 19:   rInput[BTN_Y_RECT]     	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
     		case 20:   rInput[BTN_B_Y_RECT]  	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 21:   rInput[BTN_L2_RECT]   = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 22:   rInput[BTN_R2_RECT]   = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+//    		case 21:   rInput[BTN_L2_RECT]   = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+//    		case 22:   rInput[BTN_R2_RECT]   = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
     		case 23:    break;
     		
     		case 24:   rButtonImages[BTN_B] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
             case 25:   rButtonImages[BTN_X]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
             case 26:   rButtonImages[BTN_A]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
             case 27:   rButtonImages[BTN_Y]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 28:   /*rDPadImage  = CGRectMake( coords[0], coords[1], coords[2], coords[3] );*/ break;
+//          case 28:   /*rDPadImage  = CGRectMake( coords[0], coords[1], coords[2], coords[3] );*/ break;
             case 29:   rButtonImages[BTN_SELECT]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
             case 30:   rButtonImages[BTN_START]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
             case 31:   rButtonImages[BTN_L1] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
             case 32:   rButtonImages[BTN_R1] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 33:   rButtonImages[BTN_L2] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 34:   rButtonImages[BTN_R2] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+            case 33:   rButtonImages[BTN_EXIT] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+            case 34:   rButtonImages[BTN_OPTION] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
             
-            case 35:   rStickWindow = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
+//            case 35:   rStickWindow = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
             case 36:   rStickWindow = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
             case 37:   stick_radio =coords[0]; break;            
 //            case 38:   g_controller_opacity= coords[0]; break;
@@ -3301,6 +3308,26 @@ void myosd_handle_turbo() {
       i++;
     }
     fclose(fp);
+        
+    // ignore the input rects and just use the button rects scaled, the .txt files are not consistant!
+    rInput[BTN_A_RECT] = scale_rect(rButtonImages[BTN_A], 0.80);
+    rInput[BTN_B_RECT] = scale_rect(rButtonImages[BTN_B], 0.80);
+    rInput[BTN_Y_RECT] = scale_rect(rButtonImages[BTN_Y], 0.80);
+    rInput[BTN_X_RECT] = scale_rect(rButtonImages[BTN_X], 0.80);
+    rInput[BTN_L1_RECT] = scale_rect(rButtonImages[BTN_L1], 0.80);
+    rInput[BTN_R1_RECT] = scale_rect(rButtonImages[BTN_R1], 0.80);
+
+    rInput[BTN_SELECT_RECT] = scale_rect(rButtonImages[BTN_SELECT], 1.0);
+    rInput[BTN_START_RECT] = scale_rect(rButtonImages[BTN_START], 1.0);
+    rInput[BTN_EXIT_RECT] = scale_rect(rButtonImages[BTN_EXIT], 1.0);
+    rInput[BTN_OPTION_RECT] = scale_rect(rButtonImages[BTN_OPTION], 1.0);
+        
+    rButtonImages[BTN_A_X] = rInput[BTN_X_A_RECT];
+    rButtonImages[BTN_B_X] = rInput[BTN_B_X_RECT];
+    rButtonImages[BTN_A_Y] = rInput[BTN_A_Y_RECT];
+    rButtonImages[BTN_B_Y] = rInput[BTN_B_Y_RECT];
+        
+    rButtonImages[BTN_STICK] = rStickWindow;
         
 #define SWAPRECT(a,b) {CGRect t = a; a = b; b = t;}
         
@@ -3427,7 +3454,7 @@ CGRect convert_rect(CGRect rect, CGRect src, CGRect dst) {
         config = "config_iPad_pro_12_9.txt";
     }
     
-    NSLog(@"USING CONFIG: %s", config);
+    //NSLog(@"USING CONFIG: %s", config);
     
     FILE *fp = [self loadFile:[NSString stringWithUTF8String:config]];
     assert(fp != NULL);
@@ -3484,6 +3511,64 @@ CGRect convert_rect(CGRect rect, CGRect src, CGRect dst) {
     
     return fp;
 }
+
+#ifdef DEBUG
+- (void)dumpLayouts {
+
+    char* button_name[] = {"BTN_A","BTN_B","BTN_Y","BTN_X","BTN_L1","BTN_R1","BTN_A_Y","BTN_A_X","BTN_B_Y","BTN_B_X","BTN_SELECT","BTN_START","BTN_EXIT","BTN_OPTION","BTN_MENU","BTN_STICK"};
+
+    for (g_device_is_landscape = 0; g_device_is_landscape <= 1; g_device_is_landscape++) {
+        printf("%s\n", g_device_is_landscape ? "LANDSCAPE" : "PORTRAIT");
+
+        printf("Button");
+        for (DeviceScreenType type = IPHONE_5; type <= IPAD_GENERIC; type++) {
+            if (type == IPHONE_GENERIC || type == IPAD_GENERIC)
+                continue;
+            [DeviceScreenResolver setType:type];
+            printf(",%s", [[DeviceScreenResolver resolveName] UTF8String]);
+        }
+        printf("\n");
+        
+        for (int i=0; i<NUM_BUTTONS; i++) {
+            for (DeviceScreenType type = IPHONE_5; type <= IPAD_GENERIC; type++) {
+                if (type == IPHONE_GENERIC || type == IPAD_GENERIC)
+                    continue;
+                [DeviceScreenResolver setType:type];
+                g_device_is_fullscreen = FALSE;
+                [self getConf];
+                CGRect back = g_device_is_landscape ? rFrames[LANDSCAPE_IMAGE_BACK] :  rFrames[PORTRAIT_IMAGE_BACK];
+                [self getControllerCoords:g_device_is_landscape];
+
+                CGRect rect = rButtonImages[i];
+                CGFloat x = CGRectGetMidX(rect);
+                CGFloat y = CGRectGetMidY(rect);
+                CGFloat w = CGRectGetWidth(rect);
+                CGFloat h = CGRectGetHeight(rect);
+                assert(w == h || floor(w/2) == h);
+                
+                if (CGRectEqualToRect(rect, CGRectZero))
+                    y = back.origin.y;
+                
+                // map (x,y,size) to be relative to the background image rect x1000
+                x = round((x - back.origin.x) * 1000.0 / back.size.width);
+                y = round((y - back.origin.y) * 1000.0 / back.size.height);
+                w = round(w * 1000.0 / back.size.width);
+
+                if (type == IPHONE_5)
+                    printf("%s", button_name[i]);
+                printf(",\"%d,%d,%d\"", (int)x, (int)y, (int)w);
+            }
+            printf("\n");
+        }
+    }
+    
+    [DeviceScreenResolver setType:IPHONE_UNKNOWN];
+}
+#endif
+
+
+
+#pragma MOVE ROMs
 
 // move a single ZIP file from the document root into where it belongs.
 //
@@ -4639,7 +4724,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         return;
     }
     g_no_roms_found = [games count] == 0;
-    if (g_no_roms_found) {
+    if (FALSE && g_no_roms_found) {
 #if TARGET_OS_IOS
         NSLog(@"NO GAMES, ASK USER WHAT TO DO....");
 

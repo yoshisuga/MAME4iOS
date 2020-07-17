@@ -86,8 +86,13 @@
            )
         {
             CGRect rect = [ld getNewRect];
-            
+
             [color setFill];
+            if (CGRectIsEmpty(rect))
+            {
+                [UIColor.redColor colorWithAlphaComponent:0.2];
+                rect.size = CGSizeMake(100, 100);
+            }
             CGContextFillRect(context, rect);
             
             if(ld.type == kType_ButtonRect && ld.value == BTN_B_X_RECT)

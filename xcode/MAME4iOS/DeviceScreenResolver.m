@@ -10,6 +10,35 @@
 
 @implementation DeviceScreenResolver
 
+static DeviceScreenType g_device_screen_type = IPHONE_UNKNOWN;
+
++(void) setType:(DeviceScreenType)type {
+    g_device_screen_type = type;
+}
+
++(NSString*) resolveName {
+    NSString* type_name_map[] = {
+        @"IPHONE_UNKNOWN",
+        @"IPHONE_4_OR_LESS",
+        @"IPHONE_5",
+        @"IPHONE_6_7_8",
+        @"IPHONE_6_7_8_PLUS",
+        @"IPHONE_X_XS",
+        @"IPHONE_XR_XS_MAX",
+        @"IPHONE_GENERIC",
+        @"IPAD",
+        @"IPAD_PRO_10_5",
+        @"IPAD_PRO_11",
+        @"IPAD_PRO_12_9",
+        @"IPAD_GEN_7",
+        @"IPAD_GENERIC",
+    };
+    return type_name_map[[self resolve]];
+}
+
+
+
+
 +(DeviceScreenType) resolve {
     UIUserInterfaceIdiom idiom = UIDevice.currentDevice.userInterfaceIdiom;
     CGSize screenSize = UIScreen.mainScreen.bounds.size;
@@ -22,6 +51,9 @@
     assert(idiom != 5);     // 5 is UIUserInterfaceIdiomMac
     assert(idiom != UIUserInterfaceIdiomUnspecified);
     assert(idiom == UIUserInterfaceIdiomPad || idiom == UIUserInterfaceIdiomPhone);
+    
+    if (g_device_screen_type != IPHONE_UNKNOWN)
+        return g_device_screen_type;
     
     if ( idiom == UIUserInterfaceIdiomPad && !CGSizeEqualToSize(windowSize, CGSizeZero) && !CGSizeEqualToSize(screenSize, windowSize)) {
         // we are on an iPad in SlideOver or SplitScreen mode. pretend to be a generic iPhone or iPad based on aspect.

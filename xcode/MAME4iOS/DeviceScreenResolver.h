@@ -11,6 +11,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSUInteger, DeviceScreenType) {
+    IPHONE_UNKNOWN = 0,
     IPHONE_4_OR_LESS,
     IPHONE_5,
     IPHONE_6_7_8,
@@ -28,6 +29,8 @@ typedef NS_ENUM(NSUInteger, DeviceScreenType) {
 
 @interface DeviceScreenResolver : NSObject
 +(DeviceScreenType) resolve;
++(NSString*) resolveName;
++(void) setType:(DeviceScreenType)type;
 @end
 
 NS_ASSUME_NONNULL_END
