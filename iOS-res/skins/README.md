@@ -1,27 +1,79 @@
 # MAME4iOS Skins
 
 ## Skin format
-A `Skin` is just a `zip` file with images used to override the MAME4iOS defaults.
+A `Skin` is just a `zip` file with images, and a single file `skin.json` used to override the MAME4iOS defaults.
 
 ## Skin names
 The file name of the Skin is used as the display name in the select UI.
-Skins named with the ROMNAME, PARENT, or DRIVER of the currenly running game will be automaticaly selected.
-
-## Skin version 1
-Version 1 only lets you change the default images, it **DOES NOT** let you change the size or position of the backgrounds or buttons.
-
-## How to create a `Skin`
-* Choose `Export Skin` from the Settings page or File menu, to create a Skin template.
-* un-zip template
-* modify (or add) images
-* **delete** images you did not modify, so MAME4iOS will use the defaults.
-* re-zip and give the file a friendly name like "My Cool Skin.zip"
-* Choose `Import` or use AirDrop to import `Skin` into MAME4iOS
+Skins named with the `ROMNAME`, `PARENT`, or `DRIVER` of the currenly running game will be automaticaly selected.
 
 ## Skin location
 Custom Skins are stored in the `skins` folder.
 
-## Skin files
+## Removing a Skin
+You can remove all Skins by selecting `Reset to Defaults` from `Settings`
+
+## Making a new Skin.
+1. run MAME4iOS and select the `Default` Skin from the UI.
+2. Choose `Export Skin...` you will get a file called "Default Skin Template.zip"
+    - this template will have all default images and button positions.
+    - Unzip template and modify (or add) image files, and edit positions and meta data in `skin.json`
+    - **Important** delete any image files and button positions you dont want to modify.
+    - Rezip the directory and give it a new name, like "My Cool Skin.zip"
+3. Import new Skin zip into MAME4iOS, it should be offered as an option in the UI.
+
+## Changing a Skin.
+1. run MAME4iOS and select the Skin you want to change from the UI.
+2. Choose `Export Skin...` you will get a file named the same as the current Skin.
+    - this template will *only* images and button positions that are different from the default.
+    - Unzip template and edit image files, and positions in `skin.json`
+    - If you need access to images or positions, export a Skin template and copy file, info from the template.
+    - Rezip the directory and give it a new name, if you want.
+3. Import modified Skin zip into MAME4iOS.
+
+## Format of `skin.json`
+
+```
+{
+    "info": { <skin file info, see blow> },
+    "portrait" : { <button locations for portrait mode on iPad> },
+    "portrait_tall" : { <button locations for portrait mode on iPhone> },
+    "landscape" : { <button locations for landscape mode on iPad> },
+    "landscape_wide" : { <button locations for landscape mode on iPhone> }
+}
+```
+
+## `skin.json` skin file info
+Key                     | Description
+----------------------- | -------------------------------------
+version                 | `integer` version number, should be 1
+author                  | `string` name of the author
+description             | `string` long description of the `Skin`, not currently shown.
+base                    | `string` Skin name that this `Skin` is based on.
+
+## `skin.json` button locations
+The following are all the button names, the value in the dictionary is a `string` with 3 numbers separated by commas. The first two numbers are the X,Y of the center point of the button.  The third number is the size of the button, a zero size will hide the button. All positions are specifed as 0...1000 releative to the top left of the background image. For example `"A": "500,500,250"` will put the `A button` in the center of the background, and `"L1": "0,0,0"` will hide the `L1 button`
+
+| Button|
+|-------|
+|A      |                 
+|B      |                 
+|Y      |
+|X      |
+|L1     |
+|L2     |
+|A+Y    |                 
+|A+X    |                 
+|B+Y    |
+|B+X    |
+|SELECT |
+|START  |
+|EXIT   |
+|OPTION |
+|STICK  |
+
+
+## Skin image files
 The following are the images and names, if a Skin is missing an image file a default one will be used.
 
 ### Buttons
