@@ -69,6 +69,15 @@
         return [CGScreenView colorSpaceList];
 }
 
+#pragma mark - utility funciton to set a single option and save it.
+
++ (void)setOption:(id)value forKey:(NSString*)key {
+    Options* op = [[Options alloc] init];
+    [op setValue:value forKey:key];
+    [op saveOptions];
+}
+
+
 #pragma mark - instance code
 
 - (id)init {
