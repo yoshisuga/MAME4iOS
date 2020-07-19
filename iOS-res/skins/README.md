@@ -25,9 +25,9 @@ You can remove all Skins by selecting `Reset to Defaults` from `Settings`
 ## Changing a Skin.
 1. run MAME4iOS and select the Skin you want to change from the UI.
 2. Choose `Export Skin...` you will get a file named the same as the current Skin.
-    - this template will *only* images and button positions that are different from the default.
+    - this template will *only* have images and button positions that are different from the default.
     - Unzip template and edit image files, and positions in `skin.json`
-    - If you need access to images or positions, export a Skin template and copy file, info from the template.
+    - If you need access to default images or positions, export a Skin template and copy images or info from the template.
     - Rezip the directory and give it a new name, if you want.
 3. Import modified Skin zip into MAME4iOS.
 
@@ -49,7 +49,7 @@ Key                     | Description
 version                 | `integer` version number, should be 1
 author                  | `string` name of the author
 description             | `string` long description of the `Skin`, not currently shown.
-base                    | `string` Skin name that this `Skin` is based on.
+base                    | `string` Skin name that this `Skin` was based on.
 
 ## `skin.json` button locations
 The following are all the button names, the value in the dictionary is a `string` with 3 numbers separated by commas. The first two numbers are the X,Y of the center point of the button.  The third number is the size of the button, a zero size will hide the button. All positions are specifed as 0...1000 releative to the top left of the background image. For example `"A": "500,500,250"` will put the `A button` in the center of the background, and `"L1": "0,0,0"` will hide the `L1 button`
