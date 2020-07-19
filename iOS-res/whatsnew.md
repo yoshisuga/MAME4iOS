@@ -13,7 +13,7 @@
 * Mac menu bar and edge to edge game window.
 * A,B,Y,X,L,R on a hardware keyboard will function as buttons.
 * lineTron and simpleTron are now used as the default `LINE` and `SCREEN` shaders.
-* Skin support.
+* Skin support, use `Export Skin...` to create a Skin template file, and open the `README.md` inside the Skin.
 
 # Version 2020.11
 * Added new Vector Shader category for Vector games on both iOS and tvOS.
