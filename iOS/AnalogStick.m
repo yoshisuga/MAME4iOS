@@ -237,39 +237,38 @@
         
         emuController = emulatorController;
         
-        CGRect rect = self.bounds;
-        ptMin = CGPointMake(CGRectGetMinX(rect), CGRectGetMinY(rect));
-        ptMax = CGPointMake(CGRectGetMaxX(rect), CGRectGetMaxY(rect));
-        ptCenter = CGPointMake(CGRectGetMidX(rect), CGRectGetMidY(rect));
+        innerView = [ [ UIImageView alloc ] initWithImage:[self getStickImage]];
+        [self addSubview: innerView];
         
         if (g_device_is_fullscreen)
         {
             outerView = [ [ UIImageView alloc ] initWithImage:[emuController loadImage:@"stick-outer.png"]];
-            outerView.frame = rect;
-            
+            [self insertSubview:outerView belowSubview:innerView];
+
             [outerView setAlpha:((float)g_controller_opacity / 100.0f)];
-            
-            [self addSubview: outerView];
+            [innerView setAlpha:((float)g_controller_opacity / 100.0f)];
         }
         
-        int stick_radio = emuController.stick_radio;
-        
-        stickWidth =  rect.size.width * (stick_radio/100.0f);//0.60;
-        stickHeight = rect.size.height * (stick_radio/100.0f);//0.60;
-        innerView = [ [ UIImageView alloc ] initWithImage:[self getStickImage]];
-        innerView.frame = CGRectMake(ptCenter.x - stickWidth/2, ptCenter.y - stickHeight/2, stickWidth, stickHeight);
-        
-        if(g_device_is_fullscreen)
-            [innerView setAlpha:((float)g_controller_opacity / 100.0f)];
-        
-        [self addSubview: innerView];
-        
-        //self.exclusiveTouch = YES;
-        self.multipleTouchEnabled = YES;//NO;
-        //self.userInteractionEnabled = NO;
+        self.multipleTouchEnabled = YES;
     }
     
     return self;    
+}
+
+- (void)layoutSubviews {
+    [super layoutSubviews];
+
+    CGRect rect = self.bounds;
+    ptMin = CGPointMake(CGRectGetMinX(rect), CGRectGetMinY(rect));
+    ptMax = CGPointMake(CGRectGetMaxX(rect), CGRectGetMaxY(rect));
+    ptCenter = CGPointMake(CGRectGetMidX(rect), CGRectGetMidY(rect));
+    
+    int stick_radio = emuController.stick_radio;
+    stickWidth =  rect.size.width * (stick_radio/100.0f);//0.60;
+    stickHeight = rect.size.height * (stick_radio/100.0f);//0.60;
+
+    innerView.frame = CGRectMake(ptCenter.x - stickWidth/2, ptCenter.y - stickHeight/2, stickWidth, stickHeight);
+    outerView.frame = rect;
 }
 
 - (void)calculateStickState:(CGPoint)pt min:(CGPoint)min max:(CGPoint)max center:(CGPoint)center{
