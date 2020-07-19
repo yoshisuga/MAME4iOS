@@ -260,13 +260,34 @@ static NSArray* g_skin_list;
     return files;
 }
 
-- (NSDictionary*)getSkinInfo {
-    // TODO: fix me
-    return @{@"info":@{@"version":@(1), @"author":@"", @"description":@""}};
+- (NSDictionary*)getSkinInfo:(BOOL)isDefault {
+    NSMutableDictionary* dict = [[NSMutableDictionary alloc] init];
+    NSDictionary* defaults = _skin_infos.lastObject;
+    
+    // copy all the values from our default skin.json
+    for (NSString* section in [defaults allKeys]) {
+        if (![defaults[section] isKindOfClass:[NSDictionary class]])
+              continue;
+        
+        dict[section] = [[NSMutableDictionary alloc] init];
+        for (NSString* key in [defaults[section] allKeys]) {
+            NSString* keyPath = [NSString stringWithFormat:@"%@.%@", section, key];
+            id value = [self valueForKeyPath:keyPath];
+            assert(value != nil);
+            if (isDefault || [section isEqualToString:@"info"] || ![value isEqual:[defaults valueForKeyPath:keyPath]])
+                [dict setValue:value forKeyPath:keyPath];
+        }
+        if ([dict[section] count] == 0)
+            dict[section] = nil;
+    }
+
+    return dict;
 }
 
+// export the current skin data, if the skin is the default skin export everything, else only the changes.
 - (BOOL)exportTo:(NSString*)path progressBlock:(nullable BOOL (NS_NOESCAPE ^)(double progress))block {
     NSArray* files = [SkinManager getSkinFiles];
+    BOOL isDefault = [[_skin_name componentsSeparatedByString:@","].lastObject isEqualToString:kSkinNameDefault];
     
     NSLog(@"SKIN EXPORT: %@\n%@", path, files);
 
@@ -284,12 +305,19 @@ static NSArray* g_skin_list;
         NSData* data = nil;
         
         if ([name isEqualToString:@"skin.json"])
-            data = [NSJSONSerialization dataWithJSONObject:[self getSkinInfo] options:NSJSONWritingPrettyPrinted error:nil];
+            data = [NSJSONSerialization dataWithJSONObject:[self getSkinInfo:isDefault] options:NSJSONWritingPrettyPrinted error:nil];
         else if ([name isEqualToString:@"README.md"])
             data = [NSData dataWithContentsOfFile:[NSBundle.mainBundle pathForResource:[NSString stringWithFormat:@"skins/%@", name] ofType:nil]];
-        else
+        else if (isDefault)
             data = UIImagePNGRepresentation([self loadImage:name]);
-        
+        else {
+            data = UIImagePNGRepresentation([self loadImage:name]);
+            UIImage* image = [UIImage imageNamed:[NSString stringWithFormat:@"SKIN_1/%@", name]];
+
+            if (image != nil && [data isEqualToData:UIImagePNGRepresentation(image)])
+                data = nil;
+        }
+
         if (data != nil)
             NSLog(@"    FILE: %@ (%d bytes)", name, (int)[data length]);
         else

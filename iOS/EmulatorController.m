@@ -1191,7 +1191,7 @@ void mame_state(int load_save, int slot)
 }
 
 -(void)viewDidLoad{
-
+    
    self.view.backgroundColor = [UIColor blackColor];
 
    controllers = [[NSMutableArray alloc] initWithCapacity:4];
@@ -3273,7 +3273,7 @@ void myosd_handle_turbo() {
 - (CGRect)getLayoutRect:(int)button {
     NSString* name = [self getLayoutName];
     CGRect back = g_device_is_landscape ? rFrames[LANDSCAPE_IMAGE_BACK] : rFrames[PORTRAIT_IMAGE_BACK];
-    
+
     NSString* keyPath = [NSString stringWithFormat:@"%@.%@", name, [self getButtonName:button]];
     NSString* str = [skinManager valueForKeyPath:keyPath];
     if (![str isKindOfClass:[NSString class]])
@@ -3281,6 +3281,7 @@ void myosd_handle_turbo() {
     NSArray* arr = [str componentsSeparatedByString:@","];
     if (arr.count < 2)
         return CGRectZero;
+    
 
     CGFloat scale_x = back.size.width / 1000.0;
     CGFloat scale_y = back.size.height / 1000.0;
@@ -3728,7 +3729,15 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 }
 - (void)runExportSkin {
     
-    FileItemProvider* item = [[FileItemProvider alloc] initWithTitle:@PRODUCT_NAME " (skin)" typeIdentifier:@"public.zip-archive" saveHandler:^BOOL(NSURL* url, FileItemProviderProgressHandler progressHandler) {
+    BOOL isDefault = [g_pref_skin isEqualToString:kSkinNameDefault];
+
+    NSString* skin_export_name;
+    if (isDefault)
+        skin_export_name = @PRODUCT_NAME " Default Skin";
+    else
+        skin_export_name = g_pref_skin;
+    
+    FileItemProvider* item = [[FileItemProvider alloc] initWithTitle:skin_export_name typeIdentifier:@"public.zip-archive" saveHandler:^BOOL(NSURL* url, FileItemProviderProgressHandler progressHandler) {
         return [self->skinManager exportTo:url.path progressBlock:progressHandler];
     }];
     
