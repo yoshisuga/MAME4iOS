@@ -16,7 +16,6 @@
 		925ABCAE1E46DCC500997182 /* HelpController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680B71635BB4900051BC2 /* HelpController.m */; };
 		925ABCAF1E46DCC500997182 /* AnalogStick.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680AB1635BB2700051BC2 /* AnalogStick.m */; };
 		925ABCB01E46DCC500997182 /* Bootstrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680AD1635BB2700051BC2 /* Bootstrapper.m */; };
-		925ABCB11E46DCC500997182 /* LayoutData.m in Sources */ = {isa = PBXBuildFile; fileRef = CE6D6E1116D8CADF00F265B7 /* LayoutData.m */; };
 		925ABCB21E46DCC500997182 /* LayoutView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE6D6E1316D8CADF00F265B7 /* LayoutView.m */; };
 		925ABCB31E46DCC500997182 /* NetplayController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE9454CB173160A300B81C32 /* NetplayController.m */; };
 		925ABCB41E46DCC500997182 /* NetplayGameKit.m in Sources */ = {isa = PBXBuildFile; fileRef = CE9454D31731DE4D00B81C32 /* NetplayGameKit.m */; };
@@ -209,7 +208,6 @@
 		EFA7A0F924B65C020009CF88 /* HelpController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680B71635BB4900051BC2 /* HelpController.m */; };
 		EFA7A0FA24B65C020009CF88 /* AnalogStick.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680AB1635BB2700051BC2 /* AnalogStick.m */; };
 		EFA7A0FB24B65C020009CF88 /* Bootstrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680AD1635BB2700051BC2 /* Bootstrapper.m */; };
-		EFA7A0FC24B65C020009CF88 /* LayoutData.m in Sources */ = {isa = PBXBuildFile; fileRef = CE6D6E1116D8CADF00F265B7 /* LayoutData.m */; };
 		EFA7A0FD24B65C020009CF88 /* SystemImage.m in Sources */ = {isa = PBXBuildFile; fileRef = EFA7570B2406D64600A02AAB /* SystemImage.m */; };
 		EFA7A0FE24B65C020009CF88 /* GCDWebServerFunctions.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5338E21EBDBAD0089FBB9 /* GCDWebServerFunctions.m */; };
 		EFA7A0FF24B65C020009CF88 /* GCDWebServerStreamedResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5339A21EBDBAD0089FBB9 /* GCDWebServerStreamedResponse.m */; };
@@ -429,8 +427,6 @@
 		92ECB90F21EA99B600D1E3D0 /* GameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameKit.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.1.sdk/System/Library/Frameworks/GameKit.framework; sourceTree = DEVELOPER_DIR; };
 		B370F8AF1C8549010069377D /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = System/Library/Frameworks/GameController.framework; sourceTree = SDKROOT; };
 		B5FAE31821FCE64D003F44D0 /* MAME_tvOS.lsr */ = {isa = PBXFileReference; lastKnownFileType = file; path = MAME_tvOS.lsr; sourceTree = "<group>"; };
-		CE6D6E1016D8CADF00F265B7 /* LayoutData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LayoutData.h; path = ../../iOS/LayoutData.h; sourceTree = "<group>"; };
-		CE6D6E1116D8CADF00F265B7 /* LayoutData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LayoutData.m; path = ../../iOS/LayoutData.m; sourceTree = "<group>"; };
 		CE6D6E1216D8CADF00F265B7 /* LayoutView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LayoutView.h; path = ../../iOS/LayoutView.h; sourceTree = "<group>"; };
 		CE6D6E1316D8CADF00F265B7 /* LayoutView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LayoutView.m; path = ../../iOS/LayoutView.m; sourceTree = "<group>"; };
 		CE87C2FE16F5C21A00ABE4F6 /* MAME4iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = MAME4iOS.entitlements; sourceTree = "<group>"; };
@@ -749,8 +745,6 @@
 				CE8D87DF16541AC400685BC4 /* Globals.h */,
 				CE8D87DB1653121100685BC4 /* iCadeView.h */,
 				CE8D87DC1653121200685BC4 /* iCadeView.m */,
-				CE6D6E1016D8CADF00F265B7 /* LayoutData.h */,
-				CE6D6E1116D8CADF00F265B7 /* LayoutData.m */,
 				CE6D6E1216D8CADF00F265B7 /* LayoutView.h */,
 				CE6D6E1316D8CADF00F265B7 /* LayoutView.m */,
 				EF926C9924BA36980048392B /* SkinManager.h */,
@@ -1296,7 +1290,6 @@
 				925ABCAE1E46DCC500997182 /* HelpController.m in Sources */,
 				925ABCAF1E46DCC500997182 /* AnalogStick.m in Sources */,
 				925ABCB01E46DCC500997182 /* Bootstrapper.m in Sources */,
-				925ABCB11E46DCC500997182 /* LayoutData.m in Sources */,
 				EFA7570D2406D64600A02AAB /* SystemImage.m in Sources */,
 				92A533AB21EBDBAD0089FBB9 /* GCDWebServerFunctions.m in Sources */,
 				92A533BD21EBDBAD0089FBB9 /* GCDWebServerStreamedResponse.m in Sources */,
@@ -1415,7 +1408,6 @@
 				EFA7A0F924B65C020009CF88 /* HelpController.m in Sources */,
 				EFA7A0FA24B65C020009CF88 /* AnalogStick.m in Sources */,
 				EFA7A0FB24B65C020009CF88 /* Bootstrapper.m in Sources */,
-				EFA7A0FC24B65C020009CF88 /* LayoutData.m in Sources */,
 				EFA7A0FD24B65C020009CF88 /* SystemImage.m in Sources */,
 				EFA7A0FE24B65C020009CF88 /* GCDWebServerFunctions.m in Sources */,
 				EFA7A0FF24B65C020009CF88 /* GCDWebServerStreamedResponse.m in Sources */,

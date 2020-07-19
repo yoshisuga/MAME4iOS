@@ -54,7 +54,6 @@
 #import "AnalogStick.h"
 #import "AnalogStick.h"
 #import "LayoutView.h"
-#import "LayoutData.h"
 #import "NetplayGameKit.h"
 #import "FileItemProvider.h"
 #import "InfoHUD.h"
@@ -419,13 +418,16 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
 - (NSString*)getButtonName:(int)i {
     static NSString* button_name[NUM_BUTTONS] = {@"A",@"B",@"Y",@"X",@"L1",@"R1",@"A+Y",@"A+X",@"B+Y",@"B+X",@"SELECT",@"START",@"EXIT",@"OPTION",@"STICK"};
     _Static_assert(NUM_BUTTONS == 15, "enum size change");
+    assert(i < NUM_BUTTONS);
     return button_name[i];
 }
 - (CGRect)getButtonRect:(int)i {
+    assert(i < NUM_BUTTONS);
     return rButton[i];
 }
 // called by the LayoutView editor (and internaly)
 - (void)setButtonRect:(int)i rect:(CGRect)rect {
+    assert(i < NUM_BUTTONS);
     rInput[i] = rButton[i] = rect;
     
     _Static_assert(BTN_A==0 && BTN_R1== 5, "enum order change");
@@ -442,9 +444,10 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
         rInput[i].size.height = h;
     }
     
-    if (i == BTN_STICK && analogStickView != nil && imageBack != nil) {
-        UIView* back = imageBack.subviews.firstObject;
+    // move the analog stick (and maybe the stick background image)
+    if (i == BTN_STICK && analogStickView != nil) {
         analogStickView.frame = rect;
+        UIView* back = imageBack.subviews.firstObject;
         rect = scale_rect(rect, g_device_is_landscape ? 1.0 : 1.2);
         back.frame = [inputView convertRect:rect toView:imageBack];
     }
@@ -2364,9 +2367,8 @@ void myosd_handle_turbo() {
     CGRect r;
 
 #if TARGET_OS_IOS
-    [self loadLayout];
-    [LayoutData loadLayoutData:self];
-    [self adjustSizes];
+    [self loadLayout];      // load layout from skinManager
+    [self adjustSizes];     // size buttons based on Settings
 
     [self buildBackgroundImage];
     
@@ -3242,11 +3244,6 @@ void myosd_handle_turbo() {
         rInput[BTN_START].origin  =  rButton[BTN_START].origin  = CGPointMake(self.view.bounds.size.width - w*2, 0);
     }
     
-    // for the standard buttons A,B,X,Y,L1,L2 scale down the input rect a tad.
-    _Static_assert((BTN_R1 - BTN_A) == 5, "enum order change");
-    for (int i=BTN_A; i<=BTN_R1; i++)
-        rInput[i] = scale_rect(rButton[i], 0.80);
-
     // set the default "radio" (percent size of the AnalogStick)
     stick_radio = 60;
 
@@ -3266,16 +3263,18 @@ void myosd_handle_turbo() {
     }
 }
 
-- (CGRect)getLayoutRect:(int)button {
-    CGRect back = g_device_is_landscape ? rFrames[LANDSCAPE_IMAGE_BACK] : rFrames[PORTRAIT_IMAGE_BACK];
-    NSString* root;
-    
+- (NSString*)getLayoutName {
     if ([self isPad])
-        root = g_device_is_landscape ? @"landscape" : @"portrait";
+        return g_device_is_landscape ? @"landscape" : @"portrait";
     else
-        root = g_device_is_landscape ? @"landscape_wide" : @"portrait_tall";
+        return g_device_is_landscape ? @"landscape_wide" : @"portrait_tall";
+}
 
-    NSString* keyPath = [NSString stringWithFormat:@"%@.%@", root, [self getButtonName:button]];
+- (CGRect)getLayoutRect:(int)button {
+    NSString* name = [self getLayoutName];
+    CGRect back = g_device_is_landscape ? rFrames[LANDSCAPE_IMAGE_BACK] : rFrames[PORTRAIT_IMAGE_BACK];
+    
+    NSString* keyPath = [NSString stringWithFormat:@"%@.%@", name, [self getButtonName:button]];
     NSString* str = [skinManager valueForKeyPath:keyPath];
     if (![str isKindOfClass:[NSString class]])
         return CGRectZero;
@@ -3303,6 +3302,9 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 
 -(void)adjustSizes{
     
+    if (change_layout)
+        return;
+    
     for(int i=0;i<NUM_BUTTONS;i++)
     {
         if(i==BTN_A || i==BTN_B || i==BTN_X || i==BTN_Y || i==BTN_R1 || i==BTN_L1)
@@ -3315,7 +3317,61 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     if (g_device_is_fullscreen)
     {
         rButton[BTN_STICK] = scale_rect(rButton[BTN_STICK], g_stick_size);
+        rInput[BTN_STICK] = scale_rect(rInput[BTN_STICK], g_stick_size);
     }
+}
+
+#pragma mark - BUTTON LAYOUT (save)
+
+// json file with custom layout with same name as current skin
+- (NSString*)getLayoutPath {
+    NSString* skin_name = g_pref_skin;
+    return [NSString stringWithFormat:@"%s/%@.json", get_documents_path("skins"), skin_name];
+}
+
+- (void)saveLayout {
+    
+    NSString* skin_name = g_pref_skin;
+    NSString* layout_name = [self getLayoutName];
+
+    // load json file with custom layout with same name as current skin
+    NSString* path = [self getLayoutPath];
+    NSData* data = [NSData dataWithContentsOfFile:path];
+    NSMutableDictionary* dict = [(data ? [NSJSONSerialization JSONObjectWithData:data options:0 error:nil] : @{}) mutableCopy];
+
+    dict[layout_name] = [(dict[layout_name] ?: @{}) mutableCopy];
+    dict[@"info"] = [(dict[@"info"] ?: @{}) mutableCopy];
+    
+    NSString* desc = [NSString stringWithFormat:@"Custom Button Layout for %@", skin_name];
+    [dict setValue:@(1) forKeyPath:@"info.version"];
+    [dict setValue:@PRODUCT_NAME_LONG forKeyPath:@"info.author"];
+    [dict setValue:desc forKeyPath:@"info.description"];
+
+    NSLog(@"SAVE LAYOUT: %@\n%@", layout_name, dict);
+
+    for (int i=0; i<NUM_BUTTONS; i++) {
+        CGRect rect = [self getButtonRect:i];
+        
+        if (CGRectEqualToRect(rect, [self getLayoutRect:i]))
+            continue;
+        
+        // TODO: make sure this is an exact inverse of getLayoutRect
+        CGRect back = g_device_is_landscape ? rFrames[LANDSCAPE_IMAGE_BACK] : rFrames[PORTRAIT_IMAGE_BACK];
+        CGFloat scale_x = 1000.0 / back.size.width;
+        CGFloat scale_y = 1000.0 / back.size.height;
+        CGFloat scale = (scale_x + scale_y) / 2;
+        CGFloat x = floor((CGRectGetMidX(rect) - back.origin.x) * scale_x);
+        CGFloat y = floor((CGRectGetMidY(rect) - back.origin.y) * scale_y);
+        CGFloat w = floor(rect.size.width * scale);
+        
+        NSString* value = [NSString stringWithFormat:@"%.0f,%.0f,%.0f", x, y, w];
+        NSString* keyPath = [NSString stringWithFormat:@"%@.%@", layout_name, [self getButtonName:i]];
+        [dict setValue:value forKeyPath:keyPath];
+    }
+    
+    NSLog(@"SAVE LAYOUT: %@\n%@", layout_name, dict);
+    data = [NSJSONSerialization dataWithJSONObject:dict options:NSJSONWritingPrettyPrinted error:nil];
+    [data writeToFile:path atomically:NO];
 }
 
 #pragma MOVE ROMs
@@ -3710,7 +3766,6 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         [NSUserDefaults.standardUserDefaults removeObjectForKey:kSelectedGameInfoKey];
         [Options resetOptions];
         [ChooseGameController reset];
-        [LayoutData removeLayoutData];
         [SkinManager reset];
         g_mame_reset = TRUE;
         [self done:self];
@@ -3750,8 +3805,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     [self showAlertWithTitle:nil message:@"Do you want to reset current layout to default?" buttons:@[@"Yes", @"No"] handler:^(NSUInteger buttonIndex) {
         if (buttonIndex == 0)
         {
-            [LayoutData removeLayoutData];
-            [Options setOption:@"Default" forKey:@"skin"];
+            [NSFileManager.defaultManager removeItemAtPath:[self getLayoutPath] error:nil];
             [self->skinManager reload];
             [self done:self];
         }
@@ -3759,9 +3813,8 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 }
 
 -(void)saveCurrentLayout {
-    assert(FALSE);
-    [LayoutData removeLayoutData];
-    [self->skinManager reload];
+    [self saveLayout];
+    [skinManager reload];
 }
 
 #endif

@@ -83,18 +83,21 @@ static NSArray* g_skin_list;
     if ([_skin_name isEqualToString:name])
         return;
     
-    NSLog(@"LOADING SKIN: %@", name);
+    NSArray* names = [name componentsSeparatedByString:@","];
+    
+    NSLog(@"LOADING SKIN: %@", names);
     
     _skin_name = name;
     _skin_paths = nil;
     _skin_infos = [[NSMutableArray alloc] init];
     _image_cache = nil;
     
-    // add any custom button layout (Custom.json, if found)
-    // NOTE Custom.json *overrides* any other Skin, so we add it first
-    [self addInfo:[NSData dataWithContentsOfFile:[NSString stringWithUTF8String:get_documents_path("skins/Custom.json")]]];
+    // add any custom button layout (<Name>.json, if found)
+    // NOTE Custom layout *overrides* json in the Skin, so we add it first
+    NSString* path = [NSString stringWithFormat:@"%s/%@.json", get_documents_path("skins"), names.lastObject];
+    [self addInfo:[NSData dataWithContentsOfFile:path]];
     
-    for (NSString* name in [_skin_name componentsSeparatedByString:@","]) {
+    for (NSString* name in names) {
         
         // if skin name is empty ignore it (a rom parent can be "0", so ignore that too)
         if (name.length == 0 || [name isEqualToString:@"0"])
@@ -114,7 +117,7 @@ static NSArray* g_skin_list;
         
         _skin_paths = _skin_paths ?: [[NSMutableArray alloc] init];
         [_skin_paths addObject:path];
-        
+
         // load skin.json if present.
         [self addInfo:[self loadData:@"skin.json" from:path]];
     }
