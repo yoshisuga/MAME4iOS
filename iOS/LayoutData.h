@@ -83,15 +83,9 @@ enum LayoutSubtype
 
 }
 
-+(NSMutableArray *)createLayoutData: (EmulatorController *)emuController;
-+(NSString *)getLayoutFilePath;
 +(void)removeLayoutData;
-+(void)saveLayoutData:(NSMutableArray *)data;
 +(void)loadLayoutData:(EmulatorController *)emuController;
     
--(CGRect)getNewRect;
-
-
 @property (readwrite,assign) int type;
 @property (readwrite,assign) int subtype;
 @property (readwrite,assign) int value;

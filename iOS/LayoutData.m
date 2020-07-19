@@ -46,6 +46,12 @@
 #import "Globals.h"
 #import "EmulatorController.h"
 
+//
+// *NOTE* this file is only used to load old layout data, not to create new ones
+//
+// loadLayoutData should be called to load, and removeLayoutData to delete
+// eventualy this file can just be removed.
+//
 @implementation LayoutData
 
 @synthesize type;
@@ -54,7 +60,6 @@
 @synthesize ax;
 @synthesize ay;
 @synthesize rect;
-
 
 -(id)initWithType:(int)type_ subtype:(int)subtype_ value:(int)value_ rect:(CGRect)rect_
 {
@@ -96,107 +101,6 @@
     [encoder encodeInt:ay forKey:@"ay"];
 }
 
--(CGRect)getNewRect{
-    return CGRectMake( rect.origin.x + ax, rect.origin.y + ay, rect.size.width, rect.size.height);
-}
-
-+(NSMutableArray *)createLayoutData: (EmulatorController *)emuController{
-    
-    NSMutableArray *array = [[NSMutableArray alloc] init];
-    
-    CGRect *rInputs = [emuController getInputRects];
-    
-    LayoutData *d = nil;
-    
-    //RECT Y,A,B,X
-    d = [[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_Y value:BTN_Y_RECT rect: rInputs[BTN_Y_RECT] ];
-    [array addObject: d];
-    d = [[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_A value:BTN_A_RECT rect: rInputs[BTN_A_RECT] ];
-    [array addObject: d];
-    d = [[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_B value:BTN_B_RECT rect: rInputs[BTN_B_RECT] ];
-    [array addObject: d];
-    d = [[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_X value:BTN_X_RECT rect: rInputs[BTN_X_RECT] ];
-    [array addObject: d];
-    
-    //RECT SELECT,START
-    d = [[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_SELECT value:BTN_SELECT_RECT rect: rInputs[BTN_SELECT_RECT] ];
-    [array addObject: d];
-    d = [[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_START value:BTN_START_RECT rect: rInputs[BTN_START_RECT] ];
-    [array addObject: d];
-    
-    //RECT L1,L2,R1,R2
-    d = [[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_L1 value:BTN_L1_RECT rect: rInputs[BTN_L1_RECT] ];
-    [array addObject: d];
-    d = [[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_L2 value:BTN_L2_RECT rect: rInputs[BTN_L2_RECT] ];
-    [array addObject: d];
-    d = [[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_R1 value:BTN_R1_RECT rect: rInputs[BTN_R1_RECT] ];
-    [array addObject: d];
-    d = [[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_R2 value:BTN_R2_RECT rect: rInputs[BTN_R2_RECT] ];
-    [array addObject: d];
-    
-    //RECT x + y
-    d = [[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_NONE value:BTN_A_Y_RECT rect: rInputs[BTN_A_Y_RECT] ];
-    [array addObject: d];
-    d = [[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_NONE value:BTN_X_A_RECT rect: rInputs[BTN_X_A_RECT] ];
-    [array addObject: d];
-    d = [[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_NONE value:BTN_B_Y_RECT rect: rInputs[BTN_B_Y_RECT] ];
-    [array addObject: d];
-    d = [[LayoutData alloc] initWithType:kType_ButtonRect subtype:kSubtype_NONE value:BTN_B_X_RECT rect: rInputs[BTN_B_X_RECT] ];
-    [array addObject: d];
-    
-    //RECT DPAD
-    d = [[LayoutData alloc] initWithType:kType_DPadRect subtype:kSubtype_CONTROLLER value:DPAD_UP_RECT rect: rInputs[DPAD_UP_RECT] ];
-    [array addObject: d];
-    d = [[LayoutData alloc] initWithType:kType_DPadRect subtype:kSubtype_CONTROLLER value:DPAD_LEFT_RECT rect: rInputs[DPAD_LEFT_RECT] ];
-    [array addObject: d];
-    d = [[LayoutData alloc] initWithType:kType_DPadRect subtype:kSubtype_CONTROLLER value:DPAD_DOWN_RECT rect: rInputs[DPAD_DOWN_RECT] ];
-    [array addObject: d];
-    d = [[LayoutData alloc] initWithType:kType_DPadRect subtype:kSubtype_CONTROLLER value:DPAD_RIGHT_RECT rect: rInputs[DPAD_RIGHT_RECT] ];
-    [array addObject: d];
-    d = [[LayoutData alloc] initWithType:kType_DPadRect subtype:kSubtype_CONTROLLER value:DPAD_UP_LEFT_RECT rect: rInputs[DPAD_UP_LEFT_RECT] ];
-    [array addObject: d];
-    d = [[LayoutData alloc] initWithType:kType_DPadRect subtype:kSubtype_CONTROLLER value:DPAD_DOWN_LEFT_RECT rect: rInputs[DPAD_DOWN_LEFT_RECT] ];
-    [array addObject: d];
-    d = [[LayoutData alloc] initWithType:kType_DPadRect subtype:kSubtype_CONTROLLER value:DPAD_UP_RIGHT_RECT rect: rInputs[DPAD_UP_RIGHT_RECT] ];
-    [array addObject: d];
-    d = [[LayoutData alloc] initWithType:kType_DPadRect subtype:kSubtype_CONTROLLER value:DPAD_DOWN_RIGHT_RECT rect: rInputs[DPAD_DOWN_RIGHT_RECT] ];
-    [array addObject: d];
-    
-    //BTN img
-    CGRect *rButtons = [emuController getButtonRects];
-    d = [[LayoutData alloc] initWithType:kType_ButtonImgRect subtype:kSubtype_Y value:BTN_Y rect: rButtons[BTN_Y] ];
-    [array addObject: d];
-    d = [[LayoutData alloc] initWithType:kType_ButtonImgRect subtype:kSubtype_A value:BTN_A rect: rButtons[BTN_A] ];
-    [array addObject: d];
-    d = [[LayoutData alloc] initWithType:kType_ButtonImgRect subtype:kSubtype_B value:BTN_B rect: rButtons[BTN_B] ];
-    [array addObject: d];
-    d = [[LayoutData alloc] initWithType:kType_ButtonImgRect subtype:kSubtype_X value:BTN_X rect: rButtons[BTN_X] ];
-    [array addObject: d];
-    
-    d = [[LayoutData alloc] initWithType:kType_ButtonImgRect subtype:kSubtype_SELECT value:BTN_SELECT rect: rButtons[BTN_SELECT] ];
-    [array addObject: d];
-    d = [[LayoutData alloc] initWithType:kType_ButtonImgRect subtype:kSubtype_START value:BTN_START rect: rButtons[BTN_START] ];
-    [array addObject: d];
-    
-    d = [[LayoutData alloc] initWithType:kType_ButtonImgRect subtype:kSubtype_L1 value:BTN_L1 rect: rButtons[BTN_L1] ];
-    [array addObject: d];
-    d = [[LayoutData alloc] initWithType:kType_ButtonImgRect subtype:kSubtype_L2 value:BTN_L2 rect: rButtons[BTN_L2] ];
-    [array addObject: d];
-    d = [[LayoutData alloc] initWithType:kType_ButtonImgRect subtype:kSubtype_R1 value:BTN_R1 rect: rButtons[BTN_R1] ];
-    [array addObject: d];
-    d = [[LayoutData alloc] initWithType:kType_ButtonImgRect subtype:kSubtype_R2 value:BTN_R2 rect: rButtons[BTN_R2] ];
-    [array addObject: d];
-    
-    //rest
-    d = [[LayoutData alloc] initWithType:kType_DPadImgRect subtype:kSubtype_CONTROLLER value:-1 rect: emuController.rStickWindow];
-    [array addObject: d];
-    d = [[LayoutData alloc] initWithType:kType_StickRect subtype:kSubtype_CONTROLLER value:-1 rect: emuController.rStickWindow];
-    [array addObject: d];
-    
-    
-    return array;
-}
-
 +(NSString *)getLayoutFilePath{
     NSString *name = nil;
     NSString *path = nil;
@@ -217,19 +121,10 @@
 }
 
 +(void)removeLayoutData{
-    
     NSFileManager *filemgr = [[NSFileManager alloc] init];
     NSError *error = nil;
     [filemgr removeItemAtPath:[LayoutData getLayoutFilePath] error:&error];
 }
-
-+(void)saveLayoutData:(NSMutableArray *)layoutData {
-//    [NSKeyedArchiver archiveRootObject:layoutData toFile:[LayoutData getLayoutFilePath]];
-    NSError* error = nil;
-    NSData* data = [NSKeyedArchiver archivedDataWithRootObject:layoutData requiringSecureCoding:YES error:&error];
-    [data writeToFile:[LayoutData getLayoutFilePath] atomically:NO];
-}
-
 
 +(void)loadLayoutData:(EmulatorController *)emuController{
     NSArray *data = nil;
@@ -244,134 +139,52 @@
         for(i=0; i<data.count ; i++)
         {
             LayoutData *ld = (LayoutData *)[data objectAtIndex:i];
+            int btn = -1;
             
             switch (ld.type) {
                 case kType_ButtonRect:
-                    [emuController getInputRects][ld.value].origin.x = [ld getNewRect].origin.x ;
-                    [emuController getInputRects][ld.value].origin.y = [ld getNewRect].origin.y ;
+                    /* convert from old enum value to button index.
+                    BTN_A_Y_RECT=4,
+                    BTN_X_A_RECT=5,
+                    BTN_B_Y_RECT=6,
+                    BTN_B_X_RECT=7,
+                    */
+                    if (ld.value == 4) btn = BTN_A_X;
+                    if (ld.value == 5) btn = BTN_A_Y;
+                    if (ld.value == 6) btn = BTN_B_Y;
+                    if (ld.value == 7) btn = BTN_B_X;
                     break;
                 case kType_ButtonImgRect:
-                    [emuController getButtonRects][ld.value].origin.x = [ld getNewRect].origin.x;
-                    [emuController getButtonRects][ld.value].origin.y = [ld getNewRect].origin.y;
-                    break;
-                case kType_DPadRect:
-                    [emuController getInputRects][ld.value].origin.x = [ld getNewRect].origin.x;
-                    [emuController getInputRects][ld.value].origin.y = [ld getNewRect].origin.y;
-                    break;
-                case kType_DPadImgRect:
+                    // convert from old enum value to button index.
+                    // enum { BTN_B=0,BTN_X=1,BTN_A=2,BTN_Y=3,BTN_SELECT=4,BTN_START=5,BTN_L1=6,BTN_R1=7,BTN_EXIT=8,BTN_OPTION=9,NUM_BUTTONS=10};
+                    if (ld.value == 2) btn = BTN_A;
+                    if (ld.value == 0) btn = BTN_B;
+                    if (ld.value == 3) btn = BTN_Y;
+                    if (ld.value == 1) btn = BTN_X;
+                    if (ld.value == 6) btn = BTN_L1;
+                    if (ld.value == 7) btn = BTN_R1;
+                    if (ld.value == 4) btn = BTN_SELECT;
+                    if (ld.value == 5) btn = BTN_START;
+                    if (ld.value == 8) btn = BTN_EXIT;
+                    if (ld.value == 9) btn = BTN_OPTION;
                     break;
                 case kType_StickRect:
-                    emuController.rStickWindow = CGRectMake( [ld getNewRect].origin.x, [ld getNewRect].origin.y,
-                                                            emuController.rStickWindow.size.width, emuController.rStickWindow.size.height) ;
+                    btn = BTN_STICK;
                     break;
                 default:
                     break;
             }
-        }
-        NSLog(@"---------- Printing layout for %@",[LayoutData getLayoutFilePath]);
-        [self printAsTextFileFormat:data emuController:emuController];
-        NSLog(@"---------- End Printing layout");
-    }
-}
-
-+(void)printAsTextFileFormat:(NSArray*)data emuController:(EmulatorController*)emuController {
-    NSMutableArray *layoutTextData = [[NSMutableArray alloc] init];
-    NSArray<NSArray*> *fileDataLayoutElements = @[
-                                     @[ @(kType_DPadRect), @(DPAD_DOWN_LEFT_RECT), @"//DownLeft"],    // 1
-                                     @[ @(kType_DPadRect), @(DPAD_DOWN_RECT), @"//Down"],         // 2
-                                     @[ @(kType_DPadRect), @(DPAD_DOWN_RIGHT_RECT), @"//DownRight "],   // 3
-                                     @[ @(kType_DPadRect), @(DPAD_LEFT_RECT), @"//Left"],         // 4
-                                     @[ @(kType_DPadRect), @(DPAD_RIGHT_RECT), @"//Right"],        // 5
-                                     @[ @(kType_DPadRect), @(DPAD_UP_LEFT_RECT), @"//UpLeft"],      // 6
-                                     @[ @(kType_DPadRect), @(DPAD_UP_RECT), @"//Up"],           // 7
-                                     @[ @(kType_DPadRect), @(DPAD_UP_RIGHT_RECT), @"//UpRight"],     // 8
-                                     @[ @(kType_ButtonRect), @(BTN_SELECT_RECT), @"//Select*"],        // 9
-                                     @[ @(kType_ButtonRect), @(BTN_START_RECT), @"//Start*"],         // 10
-                                     @[ @(kType_ButtonRect), @(BTN_L1_RECT), @"//LPad"],            // 11
-                                     @[ @(kType_ButtonRect), @(BTN_R1_RECT), @"//Rpad"],            // 12
-                                     @[ @(kType_ButtonRect), @(BTN_MENU_RECT), @"//menu"],          // 13
-                                     @[ @(kType_ButtonRect), @(BTN_X_A_RECT), @"//ButtonDownLeft (X + A)"],           // 14
-                                     @[ @(kType_ButtonRect), @(BTN_X_RECT), @"//ButtonDown X*"],             // 15
-                                     @[ @(kType_ButtonRect), @(BTN_B_X_RECT), @"//ButtonDownRight (X + B)"],           // 16
-                                     @[ @(kType_ButtonRect), @(BTN_A_RECT), @"//ButtonLeft A*"],             // 17
-                                     @[ @(kType_ButtonRect), @(BTN_B_RECT), @"//ButtonRight B*"],             // 18
-                                     @[ @(kType_ButtonRect), @(BTN_A_Y_RECT), @"//ButtonUpLeft (A + Y)"],           // 19
-                                     @[ @(kType_ButtonRect), @(BTN_Y_RECT), @"//ButtonUp Y*"],             // 20
-                                     @[ @(kType_ButtonRect), @(BTN_B_Y_RECT), @"//ButtonUpRight (B + Y)"],           // 21
-                                     @[ @(kType_ButtonRect), @(BTN_L2_RECT), @"//L2*"],            // 22
-                                     @[ @(kType_ButtonRect), @(BTN_R2_RECT), @"//R2*"],            // 23
-                                     @[ @(-1), @(-1), @"//showkyboard"],                          // 24 not used (showkyboard)
-                                     @[ @(kType_ButtonImgRect), @(BTN_B), @"//B img"],             // 25
-                                     @[ @(kType_ButtonImgRect), @(BTN_X), @"//X img"],             // 26
-                                     @[ @(kType_ButtonImgRect), @(BTN_A), @"//A img"],             // 27
-                                     @[ @(kType_ButtonImgRect), @(BTN_Y), @"//Y img"],             // 28
-                                     @[ @(kType_DPadImgRect), @(-1), @"//DPad img"],                  // 29
-                                     @[ @(kType_ButtonImgRect), @(BTN_SELECT), @"//select img*"],        // 30
-                                     @[ @(kType_ButtonImgRect), @(BTN_START), @"//start img*"],         // 31
-                                     @[ @(kType_ButtonImgRect), @(BTN_L1), @"//L1 img"],            // 32
-                                     @[ @(kType_ButtonImgRect), @(BTN_R1), @"//R1 img"],            // 33
-                                     @[ @(kType_ButtonImgRect), @(BTN_L2), @"//L2 img"],            // 34
-                                     @[ @(kType_ButtonImgRect), @(BTN_R2), @"//R2 img"],            // 35
-                                     @[ @(kType_StickRect), @(-1), @"//StickWindow*"],                    // 36
-                                     @[ @(kType_StickRect), @(-1), @"//StickArea*"],                    // 37 stick area
-                                     @[ @(-2), @(60), @"//radio_stick"],                                 // 38 radio_stick - -2 means use int in index 1
-                                     @[ @(-2), @(50), @""]                                  // 39 controller opacity: use 50
-                                     ];
-
-    for (NSArray *dataTypeArray in fileDataLayoutElements) {
-        // find in data array
-        NSInteger coordType = [(NSNumber*) [dataTypeArray objectAtIndex:0] intValue];
-        NSInteger coordValue = [(NSNumber*) [dataTypeArray objectAtIndex:1] intValue];
-        NSString *comment = (NSString*) [dataTypeArray objectAtIndex:2];
-        
-        // handle special fields
-        // Unused fields?
-        if ( [comment isEqualToString:@"//showkyboard"] ||
-            [comment isEqualToString:@"//menu"] ) {
-            [layoutTextData addObject:[NSString stringWithFormat:@"0,0,0,0%@",comment]];
-            continue;
-        }
-        
-        /*
-        if ( [comment isEqualToString:@"//StickArea*"] ) {
-            [layoutTextData addObject:[NSString stringWithFormat:@"%i,%i,%i,%i//StickArea*",
-                                       (int)emuController.rStickArea.origin.x,
-                                       (int)emuController.rStickArea.origin.y,
-                                       (int)emuController.rStickArea.size.width,
-                                       (int)emuController.rStickArea.size.height]];
-            continue;
-        }
-        */
-        
-        if ( [comment isEqualToString:@"//DPad img"] ||
-            [comment isEqualToString:@"//StickWindow*"] ||
-            [comment isEqualToString:@"//StickArea*"]) {
-            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"type == %lu",(unsigned long)coordType,(unsigned long)coordValue];
-            NSArray *results = [data filteredArrayUsingPredicate:predicate];
-            if ( results.count == 0 ) {
-                [layoutTextData addObject:[NSString stringWithFormat:@"Could not find layout data for type=%lu and value=%lu",(unsigned long)coordType,(unsigned long)coordValue]];
-                continue;
+            
+            if (btn != -1) {
+                // update the rect relative to the center
+                CGRect rect = [emuController getButtonRect:btn];
+                CGRect new = CGRectOffset(ld.rect, ld.ax, ld.ay);
+                rect.origin.x = CGRectGetMidX(new) - CGRectGetWidth(rect)/2;
+                rect.origin.y = CGRectGetMidY(new) - CGRectGetHeight(rect)/2;
+                [emuController setButtonRect:btn rect:rect];
             }
-            LayoutData *layoutData = results.firstObject;
-            [layoutTextData addObject:[NSString stringWithFormat:@"%i,%i,%i,%i%@",(int)layoutData.rect.origin.x + layoutData.ax,(int)layoutData.rect.origin.y + layoutData.ay,(int)layoutData.rect.size.width,(int)layoutData.rect.size.height,comment]];
-            continue;
         }
-        
-        if ( coordType == -2 ) {
-            [layoutTextData addObject:[NSString stringWithFormat:@"%lu%@",(unsigned long)coordValue,comment]];
-            continue;
-        }
-        
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"type == %lu AND value == %lu",(unsigned long)coordType,(unsigned long)coordValue];
-        NSArray *results = [data filteredArrayUsingPredicate:predicate];
-        if ( results.count == 0 ) {
-            [layoutTextData addObject:[NSString stringWithFormat:@"Could not find layout data for type=%lu and value=%lu",(unsigned long)coordType,(unsigned long)coordValue]];
-            continue;
-        }
-        LayoutData *layoutData = results.firstObject;
-        [layoutTextData addObject:[NSString stringWithFormat:@"%i,%i,%i,%i%@",(int)layoutData.rect.origin.x + layoutData.ax,(int)layoutData.rect.origin.y + layoutData.ay,(int)layoutData.rect.size.width,(int)layoutData.rect.size.height,comment]];
     }
-    NSLog(@"\n%@",[layoutTextData componentsJoinedByString:@"\n"]);
 }
 
 @end

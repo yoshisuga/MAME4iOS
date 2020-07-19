@@ -414,26 +414,40 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
 
 @synthesize externalView;
 @synthesize stick_radio;
-@synthesize rStickWindow;
 
 #if TARGET_OS_IOS
-- (CGRect *)getInputRects{
-    return rInput;
+- (NSString*)getButtonName:(int)i {
+    static NSString* button_name[NUM_BUTTONS] = {@"A",@"B",@"Y",@"X",@"L1",@"R1",@"A+Y",@"A+X",@"B+Y",@"B+X",@"SELECT",@"START",@"EXIT",@"OPTION",@"STICK"};
+    _Static_assert(NUM_BUTTONS == 15, "enum size change");
+    return button_name[i];
 }
+- (CGRect)getButtonRect:(int)i {
+    return rButton[i];
+}
+// called by the LayoutView editor (and internaly)
+- (void)setButtonRect:(int)i rect:(CGRect)rect {
+    rInput[i] = rButton[i] = rect;
+    
+    _Static_assert(BTN_A==0 && BTN_R1== 5, "enum order change");
+    if (i <= BTN_R1)
+        rInput[i] = scale_rect(rButton[i], 0.80);
+    
+    if (buttonViews[i])
+        buttonViews[i].frame = rect;
 
-- (CGRect *)getButtonRects{
-    return rButtonImages;
-}
-
-- (UIView *)getButtonView:(int)i {
-    return buttonViews[i];
-}
-- (UIView *)getDPADView{
-    return analogStickView;
-}
-
-- (UIView *)getStickView{
-    return analogStickView;
+    // fix the aspect ratio of the input rect, if the image is not square.
+    if (buttonViews[i].image != nil && buttonViews[i].image.size.width != buttonViews[i].image.size.height) {
+        CGFloat h = floor(rect.size.width * buttonViews[i].image.size.height / buttonViews[i].image.size.width);
+        rInput[i].origin.y += (rect.size.height-h)/2;
+        rInput[i].size.height = h;
+    }
+    
+    if (i == BTN_STICK && analogStickView != nil && imageBack != nil) {
+        UIView* back = imageBack.subviews.firstObject;
+        analogStickView.frame = rect;
+        rect = scale_rect(rect, g_device_is_landscape ? 1.0 : 1.2);
+        back.frame = [inputView convertRect:rect toView:imageBack];
+    }
 }
 
 #endif
@@ -2105,18 +2119,16 @@ void myosd_handle_turbo() {
         for (UIView* view in @[screenView, analogStickView ?: null, imageOverlay ?: null])
             [self showDebugRect:view.frame color:UIColor.systemYellowColor title:NSStringFromClass([view class])];
         
-        for (int i=0; i<INPUT_LAST_VALUE; i++)
+        for (int i=0; i<NUM_BUTTONS; i++)
         {
             CGRect rect = rInput[i];
-            if (CGRectIsEmpty(rect))
-                continue;
-            if (i>=DPAD_UP_RECT && i<=DPAD_DOWN_RIGHT_RECT)
+            if (CGRectIsEmpty(rect) || CGRectEqualToRect(rect, rButton[i]))
                 continue;
             [self showDebugRect:rect color:UIColor.systemBlueColor title:[NSString stringWithFormat:@"%d", i]];
         }
         for (int i=0; i<NUM_BUTTONS; i++)
         {
-            CGRect rect = rButtonImages[i];
+            CGRect rect = rButton[i];
             if (CGRectIsEmpty(rect))
                 continue;
             [self showDebugRect:rect color:UIColor.systemPurpleColor title:[NSString stringWithFormat:@"%d", i]];
@@ -2154,15 +2166,14 @@ void myosd_handle_turbo() {
                                (g_pref_touch_directional_enabled && g_pref_touch_analog_hide_dpad);
     if ( !touch_dpad_disabled || !myosd_inGame ) {
         //analogStickView
-        analogStickView = [[AnalogStickView alloc] initWithFrame:rStickWindow withEmuController:self];
+        analogStickView = [[AnalogStickView alloc] initWithFrame:rButton[BTN_STICK] withEmuController:self];
         [inputView addSubview:analogStickView];
         // stick background
         if (imageBack != nil) {
             NSString* back = g_device_is_landscape ? @"stick-background-landscape" : @"stick-background";
             UIImageView* image = [[UIImageView alloc] initWithImage:[self loadImage:back]];
-            CGRect rect = [inputView convertRect:rStickWindow toView:imageBack];
-            image.frame = scale_rect(rect, g_device_is_landscape ? 1.0 : 1.2);
             [imageBack addSubview:image];
+            [self setButtonRect:BTN_STICK rect:rButton[BTN_STICK]];
         }
     }
     
@@ -2198,25 +2209,11 @@ void myosd_handle_turbo() {
         UIImage* image_down = [self loadImage:nameImgButton_Press[i]];
         if (image_up == nil)
             continue;
-        // fix the aspect ratio of the command buttons, if the image is not square.
-        if (image_up.size.width != image_up.size.height) {
-            CGFloat h = rButtonImages[i].size.width * image_up.size.height / image_up.size.width;
-            rButtonImages[i].origin.y += (rButtonImages[i].size.height - h) / 2;
-            rButtonImages[i].size.height = h;
-            
-            // TODO: fix this hack! make rInput index by button!
-            if (i == BTN_SELECT)
-                rInput[BTN_SELECT_RECT] = rButtonImages[i];
-            if (i == BTN_START)
-                rInput[BTN_START_RECT] = rButtonImages[i];
-            if (i == BTN_EXIT)
-                rInput[BTN_EXIT_RECT] = rButtonImages[i];
-            if (i == BTN_OPTION)
-                rInput[BTN_OPTION_RECT] = rButtonImages[i];
-        }
         buttonViews[i] = [ [ UIImageView alloc ] initWithImage:image_up highlightedImage:image_down];
-        buttonViews[i].frame = rButtonImages[i];
+        buttonViews[i].contentMode = UIViewContentModeScaleAspectFit;
         
+        [self setButtonRect:i rect:rButton[i]];
+
 #ifdef __IPHONE_13_4
         if (@available(iOS 13.4, *)) {
             if (i == BTN_SELECT || i == BTN_START || i == BTN_EXIT || i == BTN_OPTION) {
@@ -2944,21 +2941,21 @@ void myosd_handle_turbo() {
             BOOL touch_buttons_disabled = myosd_mouse == 1 && g_pref_touch_analog_enabled && g_pref_touch_analog_hide_buttons;
             
             if (buttonViews[BTN_Y] != nil &&
-                !buttonViews[BTN_Y].hidden && MyCGRectContainsPoint(rInput[BTN_Y_RECT], point) &&
+                !buttonViews[BTN_Y].hidden && MyCGRectContainsPoint(rInput[BTN_Y], point) &&
                 !touch_buttons_disabled) {
                 pad_status |= MYOSD_Y;
                 //NSLog(@"MYOSD_Y");
                 [handledTouches addObject:touch];
             }
             else if (buttonViews[BTN_X] != nil &&
-                     !buttonViews[BTN_X].hidden && MyCGRectContainsPoint(rInput[BTN_X_RECT], point) &&
+                     !buttonViews[BTN_X].hidden && MyCGRectContainsPoint(rInput[BTN_X], point) &&
                      !touch_buttons_disabled) {
                 pad_status |= MYOSD_X;
                 //NSLog(@"MYOSD_X");
                 [handledTouches addObject:touch];
             }
             else if (buttonViews[BTN_A] != nil &&
-                     !buttonViews[BTN_A].hidden && MyCGRectContainsPoint(rInput[BTN_A_RECT], point) &&
+                     !buttonViews[BTN_A].hidden && MyCGRectContainsPoint(rInput[BTN_A], point) &&
                      !touch_buttons_disabled) {
                 if(g_pref_BplusX)
                     pad_status |= MYOSD_X | MYOSD_B;
@@ -2967,7 +2964,7 @@ void myosd_handle_turbo() {
                 //NSLog(@"MYOSD_A");
                 [handledTouches addObject:touch];
             }
-            else if (buttonViews[BTN_B] != nil && !buttonViews[BTN_B].hidden && MyCGRectContainsPoint(rInput[BTN_B_RECT], point) &&
+            else if (buttonViews[BTN_B] != nil && !buttonViews[BTN_B].hidden && MyCGRectContainsPoint(rInput[BTN_B], point) &&
                      !touch_buttons_disabled) {
                 pad_status |= MYOSD_B;
                 [handledTouches addObject:touch];
@@ -2977,7 +2974,7 @@ void myosd_handle_turbo() {
                      buttonViews[BTN_Y] != nil &&
                      !buttonViews[BTN_A].hidden &&
                      !buttonViews[BTN_Y].hidden &&
-                     MyCGRectContainsPoint(rInput[BTN_A_Y_RECT], point) &&
+                     MyCGRectContainsPoint(rInput[BTN_A_Y], point) &&
                      !touch_buttons_disabled) {
                 pad_status |= MYOSD_Y | MYOSD_A;
                 [handledTouches addObject:touch];
@@ -2987,7 +2984,7 @@ void myosd_handle_turbo() {
                      buttonViews[BTN_A] != nil &&
                      !buttonViews[BTN_X].hidden &&
                      !buttonViews[BTN_A].hidden &&
-                     MyCGRectContainsPoint(rInput[BTN_X_A_RECT], point) &&
+                     MyCGRectContainsPoint(rInput[BTN_A_X], point) &&
                      !touch_buttons_disabled) {
                 
                 pad_status |= MYOSD_X | MYOSD_A;
@@ -2998,7 +2995,7 @@ void myosd_handle_turbo() {
                      buttonViews[BTN_B] != nil &&
                      !buttonViews[BTN_Y].hidden &&
                      !buttonViews[BTN_B].hidden &&
-                     MyCGRectContainsPoint(rInput[BTN_B_Y_RECT], point) &&
+                     MyCGRectContainsPoint(rInput[BTN_B_Y], point) &&
                      !touch_buttons_disabled) {
                 pad_status |= MYOSD_Y | MYOSD_B;
                 [handledTouches addObject:touch];
@@ -3006,7 +3003,7 @@ void myosd_handle_turbo() {
             }
             else if (!buttonViews[BTN_B].hidden &&
                      !buttonViews[BTN_X].hidden &&
-                     MyCGRectContainsPoint(rInput[BTN_B_X_RECT], point) &&
+                     MyCGRectContainsPoint(rInput[BTN_B_X], point) &&
                      !touch_buttons_disabled) {
                 if(!g_pref_BplusX /*&& g_pref_land_num_buttons>=3*/)
                 {
@@ -3015,44 +3012,45 @@ void myosd_handle_turbo() {
                 }
                 //NSLog(@"MYOSD_X | MYOSD_B");
             }
-            else if (MyCGRectContainsPoint(rInput[BTN_SELECT_RECT], point)) {
+            else if (MyCGRectContainsPoint(rInput[BTN_SELECT], point)) {
                 //NSLog(@"MYOSD_SELECT");
                 pad_status |= MYOSD_SELECT;
                 [handledTouches addObject:touch];
             }
-            else if (MyCGRectContainsPoint(rInput[BTN_START_RECT], point)) {
+            else if (MyCGRectContainsPoint(rInput[BTN_START], point)) {
                 //NSLog(@"MYOSD_START");
                 pad_status |= MYOSD_START;
                 [handledTouches addObject:touch];
             }
-            else if (buttonViews[BTN_L1] != nil && !buttonViews[BTN_L1].hidden && MyCGRectContainsPoint(rInput[BTN_L1_RECT], point) && !touch_buttons_disabled) {
+            else if (buttonViews[BTN_L1] != nil && !buttonViews[BTN_L1].hidden && MyCGRectContainsPoint(rInput[BTN_L1], point) && !touch_buttons_disabled) {
                 //NSLog(@"MYOSD_L");
                 pad_status |= MYOSD_L1;
                 [handledTouches addObject:touch];
             }
-            else if (buttonViews[BTN_R1] != nil && !buttonViews[BTN_R1].hidden && MyCGRectContainsPoint(rInput[BTN_R1_RECT], point) && !touch_buttons_disabled ) {
+            else if (buttonViews[BTN_R1] != nil && !buttonViews[BTN_R1].hidden && MyCGRectContainsPoint(rInput[BTN_R1], point) && !touch_buttons_disabled ) {
                 //NSLog(@"MYOSD_R");
                 pad_status |= MYOSD_R1;
                 [handledTouches addObject:touch];
             }
-            else if (buttonViews[BTN_EXIT] != nil && !buttonViews[BTN_EXIT].hidden && MyCGRectContainsPoint(rInput[BTN_EXIT_RECT], point)) {
+            else if (buttonViews[BTN_EXIT] != nil && !buttonViews[BTN_EXIT].hidden && MyCGRectContainsPoint(rInput[BTN_EXIT], point)) {
                 //NSLog(@"MYOSD_EXIT");
                 pad_status |= MYOSD_EXIT;
                 [handledTouches addObject:touch];
             }
-            else if (buttonViews[BTN_OPTION] != nil && !buttonViews[BTN_OPTION].hidden && MyCGRectContainsPoint(rInput[BTN_OPTION_RECT], point) ) {
+            else if (buttonViews[BTN_OPTION] != nil && !buttonViews[BTN_OPTION].hidden && MyCGRectContainsPoint(rInput[BTN_OPTION], point) ) {
                  //NSLog(@"MYOSD_OPTION");
                  pad_status |= MYOSD_OPTION;
                  [handledTouches addObject:touch];
             }
-            else if (MyCGRectContainsPoint(rInput[BTN_MENU_RECT], point)) {
-                /*
+            /*
+            else if (MyCGRectContainsPoint(rInput[BTN_MENU], point)) {
                  myosd_pad_status |= MYOSD_SELECT;
                  btnStates[BTN_SELECT] = BUTTON_PRESS;
                  myosd_pad_status |= MYOSD_START;
                  btnStates[BTN_START] = BUTTON_PRESS;
-                 */
-            } else if ( myosd_light_gun == 1 && g_pref_lightgun_enabled ) {
+            }
+            */
+            else if ( myosd_light_gun == 1 && g_pref_lightgun_enabled ) {
                 [self handleLightgunTouchesBegan:touches];
             }
             
@@ -3211,6 +3209,7 @@ void myosd_handle_turbo() {
     assert(windowSize.width != 0.0 && windowSize.height != 0.0);
     BOOL isPhone = [self isPhone];
 
+    // set the background and view rects.
     if (g_device_is_landscape) {
         // try to fit a 4:3 game screen with space on each side.
         CGFloat w = MIN(windowSize.height * 4 / 3, windowSize.width * 0.75);
@@ -3222,7 +3221,7 @@ void myosd_handle_turbo() {
     }
     else {
         // split the window, keeping the aspect ratio of the background image, on the bottom.
-        UIImage* image = [skinManager loadImage:isPhone ? @"background_portrait_tall" : @"background_portrait"];
+        UIImage* image = [self loadImage:isPhone ? @"background_portrait_tall" : @"background_portrait"];
         CGFloat aspect = image ? (image.size.width / image.size.height) : 1.333;
         CGFloat h = windowSize.width / aspect;
 
@@ -3232,66 +3231,51 @@ void myosd_handle_turbo() {
     }
     
     for (int button=0; button<NUM_BUTTONS; button++)
-        rButtonImages[button] = [self getLayoutRect:button];
+        rInput[button] = rButton[button] = [self getLayoutRect:button];
     
     // if we are fullscreen portrait, we need to move the command buttons to the top of screen
     if (g_device_is_fullscreen && !g_device_is_landscape) {
-        CGFloat w = rButtonImages[BTN_SELECT].size.width;
-        rButtonImages[BTN_SELECT].origin = CGPointMake(w*0, 0);
-        rButtonImages[BTN_EXIT].origin   = CGPointMake(w*1, 0);
-        rButtonImages[BTN_OPTION].origin = CGPointMake(self.view.bounds.size.width - w*1, 0);
-        rButtonImages[BTN_START].origin  = CGPointMake(self.view.bounds.size.width - w*2, 0);
+        CGFloat w = rButton[BTN_SELECT].size.width;
+        rInput[BTN_SELECT].origin =  rButton[BTN_SELECT].origin = CGPointMake(w*0, 0);
+        rInput[BTN_EXIT].origin   =  rButton[BTN_EXIT].origin   = CGPointMake(w*1, 0);
+        rInput[BTN_OPTION].origin =  rButton[BTN_OPTION].origin = CGPointMake(self.view.bounds.size.width - w*1, 0);
+        rInput[BTN_START].origin  =  rButton[BTN_START].origin  = CGPointMake(self.view.bounds.size.width - w*2, 0);
     }
     
-    // ignore the input rects and just use the button rects scaled, the .txt files are not consistant!
-    rInput[BTN_A_RECT] = scale_rect(rButtonImages[BTN_A], 0.80);
-    rInput[BTN_B_RECT] = scale_rect(rButtonImages[BTN_B], 0.80);
-    rInput[BTN_Y_RECT] = scale_rect(rButtonImages[BTN_Y], 0.80);
-    rInput[BTN_X_RECT] = scale_rect(rButtonImages[BTN_X], 0.80);
-    rInput[BTN_L1_RECT] = scale_rect(rButtonImages[BTN_L1], 0.80);
-    rInput[BTN_R1_RECT] = scale_rect(rButtonImages[BTN_R1], 0.80);
+    // for the standard buttons A,B,X,Y,L1,L2 scale down the input rect a tad.
+    _Static_assert((BTN_R1 - BTN_A) == 5, "enum order change");
+    for (int i=BTN_A; i<=BTN_R1; i++)
+        rInput[i] = scale_rect(rButton[i], 0.80);
 
-    rInput[BTN_SELECT_RECT] = scale_rect(rButtonImages[BTN_SELECT], 1.0);
-    rInput[BTN_START_RECT] = scale_rect(rButtonImages[BTN_START], 1.0);
-    rInput[BTN_EXIT_RECT] = scale_rect(rButtonImages[BTN_EXIT], 1.0);
-    rInput[BTN_OPTION_RECT] = scale_rect(rButtonImages[BTN_OPTION], 1.0);
-
-    rInput[BTN_X_A_RECT] = rButtonImages[BTN_A_X];
-    rInput[BTN_B_X_RECT] = rButtonImages[BTN_B_X];
-    rInput[BTN_A_Y_RECT] = rButtonImages[BTN_A_Y];
-    rInput[BTN_B_Y_RECT] = rButtonImages[BTN_B_Y];
-        
+    // set the default "radio" (percent size of the AnalogStick)
     stick_radio = 60;
-    rStickWindow = rButtonImages[BTN_STICK];
-    
+
     #define SWAPRECT(a,b) {CGRect t = a; a = b; b = t;}
         
     // swap A and B, swap X and Y
     if(g_pref_nintendoBAYX)
     {
-        SWAPRECT(rButtonImages[BTN_A], rButtonImages[BTN_B]);
-        SWAPRECT(rButtonImages[BTN_X], rButtonImages[BTN_Y]);
+        SWAPRECT(rButton[BTN_A], rButton[BTN_B]);
+        SWAPRECT(rButton[BTN_X], rButton[BTN_Y]);
 
-        SWAPRECT(rInput[BTN_A_RECT], rInput[BTN_B_RECT]);
-        SWAPRECT(rInput[BTN_X_RECT], rInput[BTN_Y_RECT]);
+        SWAPRECT(rInput[BTN_A], rInput[BTN_B]);
+        SWAPRECT(rInput[BTN_X], rInput[BTN_Y]);
 
-        SWAPRECT(rInput[BTN_X_A_RECT], rInput[BTN_B_Y_RECT]);
-        SWAPRECT(rInput[BTN_A_Y_RECT], rInput[BTN_B_X_RECT]);
+        SWAPRECT(rInput[BTN_A_X], rInput[BTN_B_Y]);
+        SWAPRECT(rInput[BTN_A_Y], rInput[BTN_B_X]);
     }
 }
 
 - (CGRect)getLayoutRect:(int)button {
-    static char* button_key_name[NUM_BUTTONS] = {"A","B","Y","X","L1","R1","A+Y","A+X","B+Y","B+X","SELECT","START","EXIT","OPTION","STICK"};
-
     CGRect back = g_device_is_landscape ? rFrames[LANDSCAPE_IMAGE_BACK] : rFrames[PORTRAIT_IMAGE_BACK];
-    char* root;
+    NSString* root;
     
     if ([self isPad])
-        root = g_device_is_landscape ? "landscape" : "portrait";
+        root = g_device_is_landscape ? @"landscape" : @"portrait";
     else
-        root = g_device_is_landscape ? "landscape_wide" : "portrait_tall";
+        root = g_device_is_landscape ? @"landscape_wide" : @"portrait_tall";
 
-    NSString* keyPath = [NSString stringWithFormat:@"%s.%s", root, button_key_name[button]];
+    NSString* keyPath = [NSString stringWithFormat:@"%@.%@", root, [self getButtonName:button]];
     NSString* str = [skinManager valueForKeyPath:keyPath];
     if (![str isKindOfClass:[NSString class]])
         return CGRectZero;
@@ -3319,36 +3303,18 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 
 -(void)adjustSizes{
     
-    int i= 0;
-    
-    for(i=0;i<INPUT_LAST_VALUE;i++)
-    {
-        if(i==BTN_Y_RECT ||
-           i==BTN_A_RECT ||
-           i==BTN_X_RECT ||
-           i==BTN_B_RECT ||
-           i==BTN_A_Y_RECT ||
-           i==BTN_B_X_RECT ||
-           i==BTN_B_Y_RECT ||
-           i==BTN_X_A_RECT ||
-           i==BTN_L1_RECT ||
-           i==BTN_R1_RECT
-           ){
-           rInput[i] = scale_rect(rInput[i], g_buttons_size);
-        }
-    }
-    
-    for(i=0;i<NUM_BUTTONS;i++)
+    for(int i=0;i<NUM_BUTTONS;i++)
     {
         if(i==BTN_A || i==BTN_B || i==BTN_X || i==BTN_Y || i==BTN_R1 || i==BTN_L1)
         {
-            rButtonImages[i] = scale_rect(rButtonImages[i], g_buttons_size);
+            rButton[i] = scale_rect(rButton[i], g_buttons_size);
+            rInput[i] = scale_rect(rInput[i], g_buttons_size);
         }
     }
     
     if (g_device_is_fullscreen)
     {
-       rStickWindow = scale_rect(rStickWindow, g_stick_size);
+        rButton[BTN_STICK] = scale_rect(rButton[BTN_STICK], g_stick_size);
     }
 }
 
@@ -3760,9 +3726,6 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     
     [self dismissViewControllerAnimated:YES completion:nil];
     
-    if (g_pref_input_touch_type == TOUCH_INPUT_DPAD)
-        g_pref_input_touch_type = TOUCH_INPUT_DSTICK;
-
     layoutView = [[LayoutView alloc] initWithFrame:self.view.bounds withEmuController:self];
     layoutView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self.view addSubview:layoutView];
@@ -3788,11 +3751,19 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         if (buttonIndex == 0)
         {
             [LayoutData removeLayoutData];
+            [Options setOption:@"Default" forKey:@"skin"];
             [self->skinManager reload];
             [self done:self];
         }
     }];
 }
+
+-(void)saveCurrentLayout {
+    assert(FALSE);
+    [LayoutData removeLayoutData];
+    [self->skinManager reload];
+}
+
 #endif
 
 #pragma mark - MFI Controller
