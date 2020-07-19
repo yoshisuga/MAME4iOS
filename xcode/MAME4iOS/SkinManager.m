@@ -150,7 +150,7 @@ static NSArray* g_skin_list;
         }
         
         // if a skin has only one of portrait, portrait_tall use it on both devices.
-        if (info[@"portrait"] == nil && info[@"portrait"] != nil)
+        if (info[@"portrait"] == nil && info[@"portrait_tall"] != nil)
             info[@"portrait"] = info[@"portrait_tall"];
         if (info[@"portrait_tall"] == nil && info[@"portrait"] != nil)
             info[@"portrait_tall"] = info[@"portrait"];
