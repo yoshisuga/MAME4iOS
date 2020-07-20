@@ -84,20 +84,27 @@ static CGRect CGRectScale(CGRect rect, CGFloat scale) {
 
 // find out the button sizes, used to hide/show a button.
 - (void)getButtonDefaultSize {
-    buttonSize = 0.0;
-    for (int i = BTN_A; i <= BTN_R1; i++)
-        buttonSize = MAX(buttonSize, rLayout[i].size.width);
-    if (buttonSize == 0.0)
+    CGFloat maxSize;
+    
+    maxSize = 0;
+    for (int i = BTN_A; i < BTN_SELECT; i++)
+        maxSize = MAX(maxSize, rLayout[i].size.width);
+    if (maxSize != 0)
+        buttonSize = maxSize;
+    else if (buttonSize == 0)
         buttonSize = floor(MIN(self.bounds.size.width, self.bounds.size.height) / 4.0);
     
-    commandSize = 0.0;
-    for (int i = BTN_SELECT; i <= BTN_OPTION; i++)
-        commandSize = MAX(commandSize, rLayout[i].size.width);
-    if (commandSize == 0.0)
+    maxSize = 0.0;
+    for (int i = BTN_SELECT; i < BTN_STICK; i++)
+        maxSize = MAX(maxSize, rLayout[i].size.width);
+    if (maxSize != 0)
+        commandSize = maxSize;
+    else if (commandSize == 0)
         commandSize = buttonSize;
     
-    stickSize = rLayout[BTN_STICK].size.width;
-    if (stickSize == 0.0)
+    if (rLayout[BTN_STICK].size.width != 0)
+        stickSize = rLayout[BTN_STICK].size.width;
+    else if (stickSize == 0)
         stickSize = buttonSize * 2.0;
 }
 
@@ -178,16 +185,24 @@ static CGRect CGRectScale(CGRect rect, CGFloat scale) {
         CGFloat pinch_scale = d / pinch_distance;
         
         if ((floor(pinch_scale * 1000.0) / 1000.0) != 1.0) {
+            CGRect rButtons = CGRectNull;
+            for (int i=BTN_A; i<=BTN_R1; i++)
+                rButtons = CGRectUnion(rButtons, rLayout[i]);
+
             if (MyCGRectContainsPoint(rLayout[BTN_STICK], c)) {
                 rLayout[BTN_STICK] = CGRectScale(rLayout[BTN_STICK], pinch_scale);
                 [emuController setButtonRect:BTN_STICK rect:rLayout[BTN_STICK]];
             }
+            else if (MyCGRectContainsPoint(rButtons, c)) {
+                for (int i=BTN_A; i<BTN_SELECT; i++) {
+                    rLayout[i] = CGRectScale(rLayout[i], pinch_scale);
+                    [emuController setButtonRect:i rect:rLayout[i]];
+                }
+            }
             else {
-                for (int i=0; i<NUM_BUTTONS; i++) {
-                    if (i != BTN_STICK) {
-                        rLayout[i] = CGRectScale(rLayout[i], pinch_scale);
-                        [emuController setButtonRect:i rect:rLayout[i]];
-                    }
+                for (int i=BTN_SELECT; i<BTN_STICK; i++) {
+                    rLayout[i] = CGRectScale(rLayout[i], pinch_scale);
+                    [emuController setButtonRect:i rect:rLayout[i]];
                 }
             }
             pinch_distance = d;
