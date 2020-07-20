@@ -129,9 +129,15 @@
         _showINFO = 0;
         _animatedButtons = 1;
         
+#if TARGET_OS_MACCATALYST
+        _fullscreenLandscape= 0;
+        _fullscreenPortrait = 0;
+        _fullscreenJoystick = 0;
+#else
         _fullscreenLandscape= 1;
         _fullscreenPortrait = 0;
         _fullscreenJoystick = 1;
+#endif
         
         _overscanValue = 0;
         _tvoutNative = 1;

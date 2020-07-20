@@ -52,7 +52,6 @@
 
 @implementation CGScreenLayer {
     CGContextRef _bitmapContext[2];
-    CGColorSpaceRef _colorSpace;
 }
 
 + (id) defaultActionForKey:(NSString *)key
@@ -60,43 +59,16 @@
     return nil;
 }
 
--(void)setColorSpace:(CGColorSpaceRef)colorSpace {
-    if (colorSpace == _colorSpace)
-        return;
-    
-    CGColorSpaceRetain(colorSpace);
-    CGColorSpaceRelease(_colorSpace);
-    _colorSpace = colorSpace;
-    
-    CGContextRelease(_bitmapContext[0]);
-    _bitmapContext[0] = nil;
-
-    CGContextRelease(_bitmapContext[1]);
-    _bitmapContext[1] = nil;
-}
-
 - (void)setup {
-
-    if (_colorSpace == nil)
-        _colorSpace = CGColorSpaceCreateDeviceRGB();
-    
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
     for (int i=0; i<2; i++) {
         
         CGContextRelease(_bitmapContext[i]);
         _bitmapContext[i] = CGBitmapContextCreate(myosd_screen + i * (MYOSD_BUFFER_WIDTH * MYOSD_BUFFER_HEIGHT),
                                                   myosd_video_width,myosd_video_height,5,myosd_video_width*2,
-                                                  _colorSpace,kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder16Little/*kCGImageAlphaNoneSkipLast*/);
-        
-        // this might have failed because of a unsuported colorspace, try one more time with DeviceRGB
-        if (_bitmapContext[i] == nil) {
-            CGColorSpaceRelease(_colorSpace);
-            _colorSpace = CGColorSpaceCreateDeviceRGB();
-            _bitmapContext[i] = CGBitmapContextCreate(myosd_screen + i * (MYOSD_BUFFER_WIDTH * MYOSD_BUFFER_HEIGHT),
-                                                      myosd_video_width,myosd_video_height,5,myosd_video_width*2,
-                                                      _colorSpace,kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder16Little/*kCGImageAlphaNoneSkipLast*/);
-        }
-        NSAssert(_bitmapContext != nil, @"ack!");
+                                                  colorSpace,kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder16Little/*kCGImageAlphaNoneSkipLast*/);
     }
+    CGColorSpaceRelease(colorSpace);
 }
 
 - (void)display {
@@ -117,9 +89,6 @@
     
     CGContextRelease(_bitmapContext[1]);
     _bitmapContext[1] = nil;
-    
-    CGColorSpaceRelease(_colorSpace);
-    _colorSpace = nil;
 }
 @end
 
@@ -156,41 +125,8 @@
 + (NSArray*)filterList {
     return @[kScreenViewFilterNearest,kScreenViewFilterLinear];
 }
-
-//
-// color space data, we define the colorSpaces here, in one place, so it stays in-sync with the UI.
-//
-// you can specify a colorSpace in two ways, with a system name or with parameters.
-// these strings are of the form <Friendly Name> : <colorSpace name OR colorSpace parameters>
-//
-// colorSpace name is one of the sytem contants passed to `CGColorSpaceCreateWithName`
-// see (Color Space Names)[https://developer.apple.com/documentation/coregraphics/cgcolorspace/color_space_names]
-//
-// colorSpace parameters are 3 - 18 floating point numbers separated with commas.
-// see [CGColorSpaceCreateCalibratedRGB](https://developer.apple.com/documentation/coregraphics/1408861-cgcolorspacecreatecalibratedrgb)
-//
-// if <colorSpace name OR colorSpace parameters> is blank or not valid, a device-dependent RGB color space is used.
-//
-// NOTE: not all iOS devices support color matching.
-//
 + (NSArray*)colorSpaceList {
-
-    // TODO: find out what devices??
-    BOOL deviceSupportsColorMatching = TRUE;
-    
-    if (!deviceSupportsColorMatching)
-        return @[@"Default"];
-
-    return @[@"DeviceRGB",
-             @"sRGB : kCGColorSpaceSRGB",
-             @"CRT (sRGB, D65, 2.5) :    0.95047,1.0,1.08883, 0,0,0, 2.5,2.5,2.5, 0.412456,0.212673,0.019334,0.357576,0.715152,0.119192,0.180437,0.072175,0.950304",
-             @"Rec709 (sRGB, D65, 2.4) : 0.95047,1.0,1.08883, 0,0,0, 2.4,2.4,2.4, 0.412456,0.212673,0.019334,0.357576,0.715152,0.119192,0.180437,0.072175,0.950304",
-#ifdef DEBUG
-             @"Adobe RGB : kCGColorSpaceAdobeRGB1998",
-             @"Linear sRGB : kCGColorSpaceLinearSRGB",
-             @"NTSC Luminance : 0.9504,1.0000,1.0888, 0,0,0, 1,1,1, 0.299,0.299,0.299, 0.587,0.587,0.587, 0.114,0.114,0.114",
-#endif
-    ];
+    return @[kScreenViewColorSpaceDevice];
 }
 
 + (Class) layerClass
@@ -209,16 +145,6 @@
 - (void)setOptions:(NSDictionary *)options {
     _options = options;
     
-    // set a custom color space
-    NSString* color_space = _options[kScreenViewColorSpace];
-
-    if (color_space != nil)
-    {
-        CGColorSpaceRef colorSpace = [[self class] createColorSpaceFromString:color_space];
-        [(CGScreenLayer*)self.layer setColorSpace:colorSpace];
-        CGColorSpaceRelease(colorSpace);
-    }
-
     // enable filtering
     if ([_options[kScreenViewFilter] isEqualToString:kScreenViewFilterLinear])
         self.layer.minificationFilter = self.layer.magnificationFilter = kCAFilterLinear;
@@ -404,68 +330,6 @@
         imageView.frame = dst_rect;
         [self addSubview:imageView];
     }
-}
-
-
-// you can specify a colorSpace in two ways, with a system name or with parameters.
-// these strings are of the form <colorSpace name OR colorSpace parameters>
-+ (CGColorSpaceRef)createColorSpaceFromString:(NSString*)string {
-    
-    static CGColorSpaceRef g_colorspace;
-    static NSString* g_colorspace_string;
-    
-    if ([g_colorspace_string isEqualToString:string]) {
-        CGColorSpaceRetain(g_colorspace);
-        return g_colorspace;
-    }
-    
-    NSArray* values = [string componentsSeparatedByString:@","];
-    NSAssert(values.count == 1 || values.count == 3 || values.count == 6 || values.count == 9 || values.count == 18, @"bad colorspace string");
-
-    CGColorSpaceRef colorSpace;
-
-    if ([string length] == 0 || [string isEqualToString:@"Default"] || [string isEqualToString:@"DeviceRGB"]) {
-        // Default or None
-        colorSpace = nil;
-    }
-    else if (values.count < 3) {
-        // named colorSpace
-        CFStringRef name = (__bridge CFStringRef)[values.firstObject stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
-        colorSpace = CGColorSpaceCreateWithName(name);
-    }
-    else {
-        // calibrated color space <white point>, <black point>, <gamma>, <matrix>
-        CGFloat whitePoint[] = {0.0,0.0,0.0};
-        CGFloat blackPoint[] = {0.0,0.0,0.0};
-        CGFloat gamma[] = {1.0,1.0,1.0};
-        CGFloat matrix[] = {1.0,0.0,0.0, 0.0,1.0,0.0, 0.0,0.0,1.0};
-        
-        for (int i=0; i<3; i++)
-            whitePoint[i] = [values[0+i] doubleValue];
-        
-        if (values.count >= 6) {
-            for (int i=0; i<3; i++)
-                blackPoint[i] = [values[3+i] doubleValue];
-        }
-        if (values.count >= 9) {
-            for (int i=0; i<3; i++)
-                gamma[i] = [values[6+i] doubleValue];
-        }
-        if (values.count >= 18) {
-            for (int i=0; i<9; i++)
-                matrix[i] = [values[9+i] doubleValue];
-        }
-
-        colorSpace = CGColorSpaceCreateCalibratedRGB(whitePoint, blackPoint, gamma, matrix);
-    }
-    
-    colorSpace = colorSpace ?: CGColorSpaceCreateDeviceRGB();
-    CGColorSpaceRelease(g_colorspace);
-    g_colorspace = colorSpace;
-    g_colorspace_string = string;
-
-    CGColorSpaceRetain(g_colorspace);
-    return g_colorspace;
 }
 
 // DEBUG code to NSLog() the render data, hit key CMD+D or OPTION+D to dump once.

@@ -68,9 +68,6 @@
 #endif
 
 #import "iCadeView.h"
-#ifdef BTJOY
-#import "BTJoyHelper.h"
-#endif
 #import <pthread.h>
 #import "UIView+Toast.h"
 #import "DeviceScreenResolver.h"
@@ -1254,17 +1251,6 @@ void mame_state(int load_save, int slot)
 
     if (g_mame_game[0] && g_mame_game[0] != ' ')
         [self updateUserActivity:@{kGameInfoName:[NSString stringWithUTF8String:g_mame_game]}];
-    
-#ifdef DEBUG
-    // create all color spaces, to test for validness.
-    for (NSString* string in Options.arrayColorSpace) {
-        NSString* color_space_data = [[string componentsSeparatedByString:@":"].lastObject stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
-        CGColorSpaceRef colorSpace = [CGScreenView createColorSpaceFromString:color_space_data];
-        NSLog(@"COLORSPACE DATA: %@", string);
-        NSLog(@"     COLORSPACE: %@", colorSpace);
-        CGColorSpaceRelease(colorSpace);
-    }
-#endif
 }
 
 -(void)viewWillAppear:(BOOL)animated {
@@ -1461,13 +1447,15 @@ static int gcd(int a, int b) {
     NSUInteger sec = (frame_count / 60) % 60;
     NSUInteger min = (frame_count / 3600);
     
-    NSString* fps = [NSString stringWithFormat:@"%03d:%02d:%02d%@ %.2ffps %.1fms", (int)min, (int)sec, (int)frame,
+    NSString* fps = [NSString stringWithFormat:@"%03d:%02d:%02d%@%@ %.2ffps %.1fms", (int)min, (int)sec, (int)frame,
                     [screenView isKindOfClass:[MetalScreenView class]] ? @"🅼" : @"",
+                    [screenView isKindOfClass:[MetalScreenView class]] && [(MetalScreenView*)screenView pixelFormat] == MTLPixelFormatBGR10_XR ? @"🆆" : @"",
                     screenView.frameRateAverage, screenView.renderTimeAverage * 1000.0];
 #else
-    NSString* fps = [NSString stringWithFormat:@"%.2ffps %.1fms %@",
+    NSString* fps = [NSString stringWithFormat:@"%.2ffps %.1fms %@%@",
                      screenView.frameRateAverage, screenView.renderTimeAverage * 1000.0,
-                     [screenView isKindOfClass:[MetalScreenView class]] ? @"🅼" : @""];
+                     [screenView isKindOfClass:[MetalScreenView class]] ? @"🅼" : @"",
+                     [screenView isKindOfClass:[MetalScreenView class]] && [(MetalScreenView*)screenView pixelFormat] != MTLPixelFormatBGRA8Unorm ? @"🆆" : @""];
 #endif
     
     fpsView.text = fps;
@@ -2347,6 +2335,34 @@ UIColor* colorWithHexString(NSString* string) {
 
     if (externalView != nil)
         g_device_is_fullscreen = FALSE;
+    
+#if TARGET_OS_MACCATALYST
+    if (self.view.window != nil) {
+        CGSize windowSize = self.view.window.bounds.size;
+        CGSize screenSize = self.view.window.screen.bounds.size;
+        
+        // on Catalina the screenSize is a lie, so go to the NSScreen to get it!
+        // TODO: test for Big Sur?
+        screenSize = [(id)([NSClassFromString(@"NSScreen") mainScreen]) frame].size;
+
+        // To ensure that your text and interface elements are consistent with the macOS display environment, iOS views automatically scale down to 77%.
+        // https://developer.apple.com/design/human-interface-guidelines/ios/overview/mac-catalyst/
+        
+        // TODO: what happens on Big Sur?
+        assert(self.traitCollection.userInterfaceIdiom != 5); // UIUserInterfaceIdiomMac does not do this scaling.
+        screenSize.width = floor(screenSize.width / 0.77);
+        screenSize.height = floor(screenSize.height / 0.77);
+
+        NSLog(@"screenSize: %@", NSStringFromSize(screenSize));
+        NSLog(@"windowSize: %@", NSStringFromSize(windowSize));
+
+        // TODO: what about toolbars or other Chrome?
+        if (windowSize.width >= screenSize.width && windowSize.height >= screenSize.height) {
+            NSLog(@"CATALYST FULLSCREEN");
+            g_device_is_fullscreen = TRUE;
+        }
+    }
+#endif
 
     CGRect r;
 
@@ -2381,10 +2397,17 @@ UIColor* colorWithHexString(NSString* string) {
 
     // Handle Safe Area (iPhone X and above) adjust the view down away from the notch, before adjusting for aspect
     if ( externalView == nil ) {
-        // in fullscreen mode, we dont want to correct for the bottom inset, because we hide the home indicator.
         UIEdgeInsets safeArea = self.view.safeAreaInsets;
+
+        // in fullscreen mode, we dont want to correct for the bottom inset, because we hide the home indicator.
         if (g_device_is_fullscreen)
             safeArea.bottom = 0.0;
+
+#if TARGET_OS_MACCATALYST
+        // in macApp, we dont want to correct for the top inset, if we have hidden the titlebar and want to go edge to edge.
+        if (self.view.window.windowScene.titlebar.titleVisibility == UITitlebarTitleVisibilityHidden && self.view.window.windowScene.titlebar.toolbar == nil)
+            safeArea.top = 0.0;
+#endif
         r = CGRectIntersection(r, UIEdgeInsetsInsetRect(self.view.bounds, safeArea));
     }
 #elif TARGET_OS_TV
@@ -2597,6 +2620,51 @@ UIColor* colorWithHexString(NSString* string) {
 }
 #endif
 
+#pragma mark - MENU
+
+-(BOOL)canPerformAction:(SEL)action withSender:(id)sender {
+    if (action == @selector(mameSelect) ||
+        action == @selector(mameStart) ||
+        action == @selector(mameConfigure) ||
+        action == @selector(mameSettings) ||
+        action == @selector(mameFullscreen) ||
+        action == @selector(mamePause) ||
+        action == @selector(mameExit) ||
+        action == @selector(mameReset)) {
+
+        NSLog(@"canPerformAction: %@: %d", NSStringFromSelector(action), !g_emulation_paused && [self presentedViewController] == nil);
+        
+        return !g_emulation_paused && [self presentedViewController] == nil;
+    }
+    return [super canPerformAction:action withSender:sender];
+}
+-(void)mameSelect {
+    push_mame_button(0, MYOSD_SELECT);
+}
+-(void)mameStart {
+    push_mame_button(0, MYOSD_START);
+}
+-(void)mameConfigure {
+    myosd_configure = 1;
+}
+-(void)mameSettings {
+    [self runSettings];
+}
+-(void)mamePause {
+    myosd_mame_pause = 1;
+}
+-(void)mameReset {
+    myosd_reset = 1;
+}
+-(void)mameFullscreen {
+    [self commandKey:'\r'];
+}
+-(void)mameExit {
+    [self runExit];
+}
+
+
+
 #pragma mark - KEYBOARD INPUT
 
 // called from keyboard handler on any CMD+key (or OPTION+key) used for DEBUG stuff.
@@ -2614,7 +2682,14 @@ UIColor* colorWithHexString(NSString* string) {
 
                 // if user is manualy controling fullscreen, then turn off fullscreen joy.
                 op.fullscreenJoystick = g_pref_full_screen_joy = FALSE;
-                    
+                
+#if TARGET_OS_MACCATALYST
+                // in macApp we really only want one flag for "fullscreen"
+                // NOTE: macApp has two concepts of fullsceen g_device_is_fullscreen is if
+                // the game SCREEN fills our window, and a macApp's window can be fullscreen
+                op.fullscreenLandscape = g_pref_full_screen_land = !g_device_is_fullscreen;
+                op.fullscreenPortrait = g_pref_full_screen_port = !g_device_is_fullscreen;
+#endif
                 [op saveOptions];
                 [self changeUI];
                 break;
@@ -2632,7 +2707,8 @@ UIColor* colorWithHexString(NSString* string) {
             g_pref_filter = [g_pref_filter isEqualToString:kScreenViewFilterNearest] ? kScreenViewFilterLinear : kScreenViewFilterNearest;
             [self changeUI];
             break;
-        case 'H':
+        case 'H':   /* CMD+H is hide on macOS, so CMD+U will also show/hide the HUD */
+        case 'U':
         {
             Options* op = [[Options alloc] init];
 
@@ -3778,8 +3854,7 @@ CGRect convert_rect(CGRect rect, CGSize fromSize, CGSize toSize) {
 - (void)runReset {
     NSLog(@"RESET: %s", g_mame_game);
     
-    NSString* msg = [NSString stringWithFormat:@"Reset %@ back to factory defaults?",
-            TARGET_OS_IOS ? @"MAME4iOS" : @"MAME4tvOS"];
+    NSString* msg = @"Reset " PRODUCT_NAME " back to factory defaults?";
 
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:nil message:msg preferredStyle:UIAlertControllerStyleAlert];
     [alert addAction:[UIAlertAction actionWithTitle:@"Reset" style:UIAlertActionStyleDestructive handler:^(UIAlertAction* action) {
@@ -4378,6 +4453,8 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
             };
             // < iOS 13 we only have a PAUSE handler, and we only get a single event on button up
             // PASUE => MAME4iOS MENU
+            #pragma clang diagnostic push
+            #pragma clang diagnostic ignored "-Wdeprecated"
             if (buttonMenu == nil && buttonOptions == nil) {
                 NSLog(@"%d: PAUSE", index);
                 MFIController.controllerPausedHandler = ^(GCController *controller) {
@@ -4387,6 +4464,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
                         [self toggleMenu:player];
                 };
             }
+            #pragma clang diagnostic pop
         }
     }
 }
@@ -4445,11 +4523,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     if ( server.bonjourServerURL != nil ) {
         [servers appendString:[NSString stringWithFormat:@"%@",server.bonjourServerURL]];
     }
-#if TARGET_OS_TV
-    NSString* welcome = @"Welcome to MAME for AppleTV";
-#else
-    NSString* welcome = @"Welcome to MAME4iOS";
-#endif
+    NSString* welcome = @"Welcome to " PRODUCT_NAME_LONG;
     NSString* message = [NSString stringWithFormat:@"\nTo transfer ROMs from your computer go to one of these addresses in your web browser:\n\n%@",servers];
     NSString* title = g_no_roms_found ? welcome : @"Web Server Started";
     NSString* done  = g_no_roms_found ? @"Reload ROMs" : @"Stop Server";
@@ -4573,7 +4647,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 #if TARGET_OS_IOS
         NSLog(@"NO GAMES, ASK USER WHAT TO DO....");
 
-        NSString* title = @"Welcome to MAME4iOS";
+        NSString* title = @"Welcome to " PRODUCT_NAME_LONG;
         NSString* message = @"\nTo transfer ROMs from your computer, Start Server, Import ROMs, or use AirDrop.";
         
         UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];

@@ -79,10 +79,13 @@
     valueChangedHandler = newHandler;
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
 - (GCExtendedGamepadSnapshot *)saveSnapshot {
     NSData *snapshotData = [NSData dataWithBytes:&state length:state.size];
     return [[GCExtendedGamepadSnapshot alloc] initWithController:self.controller snapshotData:snapshotData];
 }
+#pragma clang diagnostic pop
 
 - (void)setState:(SteamControllerExtendedGamepadSnapshotData)newState {
     SteamControllerExtendedGamepadSnapshotData oldState = state;

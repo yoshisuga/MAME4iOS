@@ -157,6 +157,8 @@ static CBUUID *SteamControllerReportCharacteristicUUID;
     return nil;
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
 - (void (^)(GCController * _Nonnull))controllerPausedHandler {
     return controllerPausedHandler;
 }
@@ -164,6 +166,7 @@ static CBUUID *SteamControllerReportCharacteristicUUID;
 - (void)setControllerPausedHandler:(void (^)(GCController * _Nonnull))newHandler {
     controllerPausedHandler = newHandler;
 }
+#pragma clang diagnostic pop
 
 - (void)setSteamControllerMode:(SteamControllerMode)steamControllerMode {
     _steamControllerMode = steamControllerMode;

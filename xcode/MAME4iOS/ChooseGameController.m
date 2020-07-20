@@ -194,7 +194,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 #else
     UILabel* title = [[UILabel alloc] init];
     CGFloat height = TARGET_OS_IOS ? (44.0 * 0.6) : (44.0 * 1.5);
-    title.text = TARGET_OS_IOS ? @"MAME4iOS" : @"MAME4tvOS";
+    title.text = @PRODUCT_NAME;
     title.font = [UIFont boldSystemFontOfSize:height];
     title.textColor = TITLE_COLOR;
     [title sizeToFit];
@@ -1550,7 +1550,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         ]];
     }
     
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     if (@available(iOS 12.0, *)) {
         NSUserActivity* activity = [ChooseGameController userActivityForGame:game];
         INVoiceShortcut* shortcut = [self getVoiceShortcut:activity];
@@ -1690,6 +1690,33 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     [self runMenu:indexPath];
 }
 
+#pragma mark MENU
+
+#if TARGET_OS_IOS
+-(BOOL)canPerformAction:(SEL)action withSender:(id)sender {
+    NSIndexPath* indexPath = self.collectionView.indexPathsForSelectedItems.firstObject;
+
+    if (action == @selector(filePlay) || action == @selector(fileInfo) || action == @selector(fileFavorite))
+        return indexPath != nil;
+    else
+        return [super canPerformAction:action withSender:sender];
+}
+
+
+-(void)filePlay {
+    [self onCommandSelect];
+}
+-(void)fileFavorite {
+    NSDictionary* game = [self getGameInfo:self.collectionView.indexPathsForSelectedItems.firstObject];
+    [self setFavorite:game isFavorite:![self isFavorite:game]];
+    [self filterGameList];
+}
+-(void)fileInfo {
+    NSIndexPath* indexPath = self.collectionView.indexPathsForSelectedItems.firstObject;
+    [self info:[self getGameInfo:indexPath]];
+}
+#endif
+
 #pragma mark Keyboard and Game Controller navigation
 
 #if TARGET_OS_IOS
@@ -1776,6 +1803,16 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     
     if (_key_commands == nil || g_pref_ext_control_type != _key_commands_type) {
         
+#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_13_0
+        // standard keyboard
+        _key_commands = @[
+            [UIKeyCommand commandWithTitle:@"SELECT" image:nil action:@selector(onCommandSelect) input:@"\r"                modifierFlags:0 propertyList:nil],
+            [UIKeyCommand commandWithTitle:@"UP"     image:nil action:@selector(onCommandUp)     input:UIKeyInputUpArrow    modifierFlags:0 propertyList:nil],
+            [UIKeyCommand commandWithTitle:@"DOWN"   image:nil action:@selector(onCommandDown)   input:UIKeyInputDownArrow  modifierFlags:0 propertyList:nil],
+            [UIKeyCommand commandWithTitle:@"LEFT"   image:nil action:@selector(onCommandLeft)   input:UIKeyInputLeftArrow  modifierFlags:0 propertyList:nil],
+            [UIKeyCommand commandWithTitle:@"RIGHT"  image:nil action:@selector(onCommandRight)  input:UIKeyInputRightArrow modifierFlags:0 propertyList:nil],
+        ];
+#else
         // standard keyboard
         _key_commands = @[
             [UIKeyCommand keyCommandWithInput:@"\r" modifierFlags:0 action:@selector(onCommandSelect) discoverabilityTitle:@"SELECT"],
@@ -1784,6 +1821,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
             [UIKeyCommand keyCommandWithInput:UIKeyInputLeftArrow modifierFlags:0 action:@selector(onCommandLeft) discoverabilityTitle:@"LEFT"],
             [UIKeyCommand keyCommandWithInput:UIKeyInputRightArrow modifierFlags:0 action:@selector(onCommandRight) discoverabilityTitle:@"RIGHT"]
         ];
+#endif
 
         _key_commands_type = g_pref_ext_control_type;
 
@@ -2048,13 +2086,19 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     self.contentView.layer.cornerRadius = radius;
     self.contentView.clipsToBounds = radius != 0.0;
 }
+
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0
+#define UIActivityIndicatorViewStyleMedium UIActivityIndicatorViewStyleWhite
+#define UIActivityIndicatorViewStyleLarge UIActivityIndicatorViewStyleWhiteLarge
+#endif
+
 -(void)startWait
 {
     UIActivityIndicatorView* wait = _image.subviews.lastObject;
     if (![wait isKindOfClass:[UIActivityIndicatorView class]])
     {
         wait = [[UIActivityIndicatorView alloc] initWithFrame:CGRectZero];
-        wait.activityIndicatorViewStyle = self.bounds.size.width <= 100.0 ? UIActivityIndicatorViewStyleWhite : UIActivityIndicatorViewStyleWhiteLarge;
+        wait.activityIndicatorViewStyle = self.bounds.size.width <= 100.0 ? UIActivityIndicatorViewStyleMedium : UIActivityIndicatorViewStyleLarge;
         [wait sizeToFit];
         
         wait.color = self.tintColor;

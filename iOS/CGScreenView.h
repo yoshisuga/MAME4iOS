@@ -45,8 +45,6 @@
 
 @interface CGScreenView : UIView <ScreenView>
 
-+ (CGColorSpaceRef)createColorSpaceFromString:(NSString*)string;
-
 #ifdef DEBUG
 + (void)drawScreenDebugDump;
 + (void)drawScreenDebug:(void*)primatives;
