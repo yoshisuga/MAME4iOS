@@ -116,7 +116,7 @@ TIMER_INIT_END
 //  Presets are simply the @string without the key names, only numbers!
 //
 + (NSArray*)screenShaderList {
-    return @[kScreenViewShaderDefault,
+    return @[kScreenViewShaderDefault, kScreenViewShaderNone,
              @"simpleTron: simpleCRT, mame-screen-dst-rect, mame-screen-src-rect,\
                             Vertical Curvature = 5.0 1.0 10.0 0.1,\
                             Horizontal Curvature = 4.0 1.0 10.0 0.1,\
@@ -190,9 +190,8 @@ TIMER_INIT_END
 //      `line-time` > 0.0   - lines for past frames (line-time is the number of seconds in the past)
 //
 + (NSArray*)lineShaderList {
-    return @[kScreenViewShaderDefault,
-        @"lineTron: lineTron, blend=copy,  line-width-scale=0.5 0.1 4, 0.0,       line-falloff=1 1 4, line-strength = 2.0 0.2 3.0 0.1",
-        @"fadeTron: fadeTron, blend=alpha, fade-width-scale=1.2 0.1 8, line-time, fade-falloff=3 1 8, fade-strength = 0.2 0.1 3.0 0.1",
+    return @[kScreenViewShaderDefault, kScreenViewShaderNone,
+        @"lineTron: lineTron, blend=alpha, fade-width-scale=1.2 0.1 8, line-time, fade-falloff=3 1 8, fade-strength = 0.2 0.1 3.0 0.1",
 
 #ifdef DEBUG
         @"Dash: mame_test_vector_dash, blend=add, width-scale=1.0 0.25 6.0, frame-count, length=25.0, speed=16.0",
@@ -209,7 +208,7 @@ TIMER_INIT_END
     ];
 }
 + (NSArray*)filterList {
-    return @[kScreenViewFilterNearest,kScreenViewFilterLinear];
+    return @[kScreenViewFilterLinear, kScreenViewFilterNearest];
 }
 
 //
@@ -230,7 +229,7 @@ TIMER_INIT_END
 //
 + (NSArray*)colorSpaceList {
 
-    return @[kScreenViewColorSpaceDevice,
+    return @[kScreenViewColorSpaceDefault,
              @"sRGB : kCGColorSpaceSRGB",
              @"CRT (sRGB, D65, 2.5) :    0.95047,1.0,1.08883, 0,0,0, 2.5,2.5,2.5, 0.412456,0.212673,0.019334,0.357576,0.715152,0.119192,0.180437,0.072175,0.950304",
              @"Rec709 (sRGB, D65, 2.4) : 0.95047,1.0,1.08883, 0,0,0, 2.4,2.4,2.4, 0.412456,0.212673,0.019334,0.357576,0.715152,0.119192,0.180437,0.072175,0.950304",
@@ -262,30 +261,46 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     // set a custom color space
     NSString* color_space = _options[kScreenViewColorSpace];
 
-    if (color_space != nil && color_space.length != 0 && ![color_space isEqualToString:kScreenViewColorSpaceDevice])
+    if (color_space != nil && color_space.length != 0 && ![color_space isEqualToString:kScreenViewColorSpaceDefault])
         _screenColorSpace = ColorSpaceFromString(color_space);
     else
         _screenColorSpace = NULL;
     
-    // enable filtering
+    // enable filtering (default to Linear)
     NSString* filter_string = _options[kScreenViewFilter];
-    
-    if ([filter_string isEqualToString:kScreenViewFilterLinear])
-        _filter = MTLSamplerMinMagFilterLinear;
-    else
+
+    if ([filter_string isEqualToString:kScreenViewFilterNearest])
         _filter = MTLSamplerMinMagFilterNearest;
+    else
+        _filter = MTLSamplerMinMagFilterLinear;
+
+    // get the shader to use when drawing the SCREEN, default to the 3 entry in the list (simpleTron).
+    NSString* screen_shader = _options[kScreenViewScreenShader] ?: kScreenViewShaderDefault;
+
+    assert([MetalScreenView.screenShaderList[0] isEqualToString:kScreenViewShaderDefault]);
+    assert([MetalScreenView.screenShaderList[1] isEqualToString:kScreenViewShaderNone]);
+    assert(MetalScreenView.screenShaderList.count > 2);
+    if ([screen_shader length] == 0 || [screen_shader isEqualToString:kScreenViewShaderDefault])
+        screen_shader = split(MetalScreenView.screenShaderList[2], @":").lastObject;
+
+    if ([screen_shader isEqualToString:kScreenViewShaderNone])
+        screen_shader = ShaderTexture;
     
-    // get the shader to use when drawing the SCREEN, default to the plain Texture COPY shader if not specified.
-    _screen_shader = _options[kScreenViewScreenShader] ?: kScreenViewShaderDefault;
+    _screen_shader = screen_shader;
+
+    // get the shader to use when drawing VECTOR lines, default to lineTron
+    NSString* line_shader = _options[kScreenViewLineShader] ?: kScreenViewShaderDefault;
     
-    if ([_screen_shader length] == 0 || [_screen_shader isEqualToString:kScreenViewShaderDefault] || [_screen_shader isEqualToString:kScreenViewShaderNone])
-        _screen_shader = ShaderTexture;
+    assert([MetalScreenView.lineShaderList[0] isEqualToString:kScreenViewShaderDefault]);
+    assert([MetalScreenView.lineShaderList[1] isEqualToString:kScreenViewShaderNone]);
+    assert(MetalScreenView.lineShaderList.count > 2);
+    if ([line_shader length] == 0 || [line_shader isEqualToString:kScreenViewShaderDefault])
+        line_shader = split(MetalScreenView.lineShaderList[2], @":").lastObject;
+
+    if ([line_shader isEqualToString:kScreenViewShaderNone])
+        line_shader = nil;
     
-    // get the shader to use when drawing VECTOR lines, default to the ADD shader if not specified.
-    _line_shader = _options[kScreenViewLineShader] ?: kScreenViewShaderDefault;
-    
-    if ([_line_shader length] == 0 || [_line_shader isEqualToString:kScreenViewShaderDefault] || [_line_shader isEqualToString:kScreenViewShaderNone])
-        _line_shader = nil;
+    _line_shader = line_shader;
     
     // see if the line shader wants past lines, ie does it list `line-time` in the parameter list.x
     _line_shader_wants_past_lines = [_line_shader rangeOfString:@"line-time"].length != 0;

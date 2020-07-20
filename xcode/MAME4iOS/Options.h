@@ -16,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)loadOptions;
 - (void)saveOptions;
 + (void)resetOptions;
++ (void)setOption:(id)value forKey:(NSString*)key;
 
 
 @property (class, readonly, strong) NSArray* arrayEmuRes;
@@ -23,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (class, readonly, strong) NSArray* arrayOverscanValue;
 @property (class, readonly, strong) NSArray* arrayEmuSpeed;
 @property (class, readonly, strong) NSArray* arrayControlType;
-@property (class, readonly, strong) NSArray* arrayBorder;
+@property (class, readonly, strong) NSArray* arraySkin;
 @property (class, readonly, strong) NSArray* arrayFilter;
 @property (class, readonly, strong) NSArray* arrayScreenShader;
 @property (class, readonly, strong) NSArray* arrayLineShader;
@@ -32,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite,assign) int keepAspectRatio;
 
 @property (readwrite,strong) NSString *filter;
-@property (readwrite,strong) NSString *border;
+@property (readwrite,strong) NSString *skin;
 @property (readwrite,strong) NSString *screenShader;
 @property (readwrite,strong) NSString *lineShader;
 @property (readwrite,strong) NSString *colorSpace;

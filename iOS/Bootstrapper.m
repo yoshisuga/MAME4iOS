@@ -98,7 +98,7 @@ unsigned long read_mfi_controller(unsigned long res){
     chdir (get_documents_path(""));
     
     // create directories
-    for (NSString* dir in @[@"iOS", @"artwork", @"titles", @"cfg", @"nvram", @"ini", @"snap", @"sta", @"hi", @"inp", @"memcard", @"samples", @"roms", @"dats", @"cheat"])
+    for (NSString* dir in @[@"iOS", @"artwork", @"titles", @"cfg", @"nvram", @"ini", @"snap", @"sta", @"hi", @"inp", @"memcard", @"samples", @"roms", @"dats", @"cheat", @"skins"])
     {
         NSString* dirPath = [NSString stringWithUTF8String:get_documents_path(dir.UTF8String)];
         
@@ -268,6 +268,12 @@ unsigned long read_mfi_controller(unsigned long res){
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {
+}
+
+- (void)applicationWillTerminate:(UIApplication *)application {
+    // need to cleanly exit MAME thread
+    // MAME static destructors are getting called onexit in Catalyst, sigh C++
+    [hrViewController stopEmulation];
 }
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST

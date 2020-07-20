@@ -43,10 +43,23 @@
  */
 
 #import "LayoutView.h"
-#import "LayoutData.h"
 #import "Alert.h"
 
-@implementation LayoutView
+// scale a CGRect but dont move the center
+static CGRect CGRectScale(CGRect rect, CGFloat scale) {
+    return CGRectInset(rect, -0.5 * rect.size.width * (scale - 1.0), -0.5 * rect.size.height * (scale - 1.0));
+}
+
+@implementation LayoutView {
+    EmulatorController      *emuController;
+    CGRect                  rLayout[NUM_BUTTONS];
+    CGRect                  rFinish;
+    BOOL                    isDirty;
+    CGFloat                 buttonSize;
+    CGFloat                 stickSize;
+    CGFloat                 commandSize;
+}
+
 
 - (id)initWithFrame:(CGRect)frame withEmuController:(EmulatorController*)emulatorController{
     if (self = [super initWithFrame:frame]) {
@@ -54,148 +67,140 @@
 		self.backgroundColor = [UIColor clearColor];
 		self.multipleTouchEnabled = NO;
 	    self.userInteractionEnabled = NO;
+        self.contentMode = UIViewContentModeRedraw;
         
 	    emuController = emulatorController;
-        layoutDataArray = [LayoutData createLayoutData:emuController];
-        rFinish =  CGRectMake( (frame.size.width / 2) - 100, (frame.size.height / 4) - 20, 200, 40);
     }
     return self;
 }
 
+- (void)layoutSubviews {
+    [super layoutSubviews];
+    rFinish =  CGRectMake( (self.bounds.size.width / 2) - 125, 150, 250, 40);
+    for (int i=0; i<NUM_BUTTONS; i++)
+        rLayout[i] = [emuController getButtonRect:i];
+    [self getButtonDefaultSize];
+}
+
+// find out the button sizes, used to hide/show a button.
+- (void)getButtonDefaultSize {
+    buttonSize = 0.0;
+    for (int i = BTN_A; i <= BTN_R1; i++)
+        buttonSize = MAX(buttonSize, rLayout[i].size.width);
+    if (buttonSize == 0.0)
+        buttonSize = floor(MIN(self.bounds.size.width, self.bounds.size.height) / 4.0);
+    
+    commandSize = 0.0;
+    for (int i = BTN_SELECT; i <= BTN_OPTION; i++)
+        commandSize = MAX(commandSize, rLayout[i].size.width);
+    if (commandSize == 0.0)
+        commandSize = buttonSize;
+    
+    stickSize = rLayout[BTN_STICK].size.width;
+    if (stickSize == 0.0)
+        stickSize = buttonSize * 2.0;
+}
+
+
+- (CGRect)getDisplayRect:(int)i {
+    CGRect rect = rLayout[i];
+
+    if (CGRectIsEmpty(rect)) {
+        if (i <= BTN_R1)
+            rect = CGRectInset(rect, -buttonSize/2, -buttonSize/2);
+        else if (i <= BTN_OPTION)
+            rect = CGRectInset(rect, -commandSize/2, -commandSize/2);
+        else if (i == BTN_STICK)
+            rect = CGRectInset(rect, -stickSize/2, -stickSize/2);
+    }
+    
+    return rect;
+}
+
 - (void)drawRect:(CGRect)rect {
     
-    int i = 0;
-    
-    //Get the CGContext from this view
 	CGContextRef context = UIGraphicsGetCurrentContext();
-   	
-    //Set the stroke (pen) color
-	CGContextSetStrokeColorWithColor(context, [UIColor redColor].CGColor);
-	
-    //Set the width of the pen mark
-	CGContextSetLineWidth(context, 2.0);
-    
-    CGColorSpaceRef colorspace = CGColorSpaceCreateDeviceRGB();
-    CGFloat components[] = {1.0, 1.0, 1.0, 0.2};
-    CGColorRef color = CGColorCreate(colorspace, components);
-    
-    
-    
-    CGContextSetFillColorWithColor(context, color);
-    
-    [self drawString:@"Touch Here to Finish" withFont:[UIFont boldSystemFontOfSize:16] inRect:rFinish];
-    
-    for(i=0; i<layoutDataArray.count ; i++)
-    {
-        LayoutData *ld = (LayoutData *)[layoutDataArray objectAtIndex:i];
-        if(ld.type == kType_ButtonRect ||
-           (ld.type == kType_DPadImgRect && g_pref_input_touch_type == TOUCH_INPUT_DPAD) ||
-           (ld.type == kType_StickRect && g_pref_input_touch_type != TOUCH_INPUT_DPAD)
-           )
-        {
-            
-            CGContextFillRect(context, [ld getNewRect ]);
-            
-            if(ld.type == kType_ButtonRect && ld.value == BTN_B_X_RECT)
-            {
-                [self drawString:@"B+X" withFont:[UIFont boldSystemFontOfSize:16] inRect:[ld getNewRect]];
-            }
-            else if(ld.type == kType_ButtonRect && ld.value == BTN_A_Y_RECT)
-            {
-                [self drawString:@"A+Y" withFont:[UIFont boldSystemFontOfSize:16] inRect:[ld getNewRect]];
-            }
-            else if(ld.type == kType_ButtonRect && ld.value == BTN_X_A_RECT)
-            {
-                [self drawString:@"X+A" withFont:[UIFont boldSystemFontOfSize:16] inRect:[ld getNewRect]];
-            }
-            else if(ld.type == kType_ButtonRect && ld.value == BTN_B_Y_RECT)
-            {
-                [self drawString:@"Y+B" withFont:[UIFont boldSystemFontOfSize:16] inRect:[ld getNewRect]];
-            }
+    UIColor* color = [UIColor.whiteColor colorWithAlphaComponent:0.2];
+    UIFont* font = [UIFont boldSystemFontOfSize:24];
 
-                
-        }
-    }
+    [color setFill];
+    CGContextFillRect(context, rFinish);
+    [self drawString:isDirty ? @"Touch Here to Finish" :  @"Touch Here to Exit"
+            withFont:font withColor:UIColor.whiteColor inRect:rFinish];
+    CGRect rHelp = CGRectOffset(rFinish, 0, -75);
+    rHelp.size.height = 3*20;
+    [self drawString:@"Drag button to move\nDouble tap to hide/show\nPinch to scale."
+            withFont:[UIFont systemFontOfSize:20] withColor:UIColor.lightGrayColor inRect:rHelp];
     
-    CGColorSpaceRelease(colorspace);
-    CGColorRelease(color);
+    for(int i=0; i<NUM_BUTTONS; i++)
+    {
+        CGRect rect = [self getDisplayRect:i];
+
+        if (CGRectIsEmpty(rLayout[i]))
+            [[UIColor.redColor colorWithAlphaComponent:0.2] setFill];
+        else
+            [color setFill];
+
+        CGContextFillRect(context, rect);
         
+        NSString* name = [emuController getButtonName:i];
+        if (name != nil)
+            [self drawString:name withFont:font withColor:[color colorWithAlphaComponent:0.5] inRect:rect];
+    }
 }
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+- (void) drawString:(NSString*)s withFont:(UIFont*)font withColor:(UIColor*)color inRect:(CGRect)rect {
 
-- (void) drawString: (NSString*) s withFont: (UIFont*) font inRect: (CGRect) contextRect {
-    
-    
-    //CGFloat fontHeight = font.pointSize;
-    CGFloat fontHeight = [s sizeWithFont:font].height;
-    
-    CGFloat yOffset = (contextRect.size.height - fontHeight) / 2.0;
-    
-    CGRect textRect = CGRectMake(contextRect.origin.x, contextRect.origin.y + yOffset, contextRect.size.width, fontHeight);
-    
-    [s drawInRect: textRect withFont: font lineBreakMode: NSLineBreakByClipping alignment: NSTextAlignmentCenter];
-}
-
-#pragma clang diagnostic pop
-
-- (void)updateRelated:(LayoutData *)moved x:(int)ax y:(int)ay
-{
-    int i = 0;
-    
-    if(moved.subtype == kSubtype_NONE)
-        return;
-    
-    if(moved.type == kType_DPadImgRect)
-    {
-        UIView *v = [emuController getDPADView];
-        v.frame = [moved getNewRect];
-        [v setNeedsDisplay];
-    }
-    
-    if(moved.type == kType_StickRect)
-    {
-        UIView *v = [emuController getStickView];
-        v.frame = [moved getNewRect];
-        [v setNeedsDisplay];
-    }
-    
-    for(i=0; i<layoutDataArray.count ; i++)
-    {
-        LayoutData *ld = (LayoutData *)[layoutDataArray objectAtIndex:i];
-        
-        if(ld==moved || moved.subtype != ld.subtype) continue;
-        
-        ld.ax = moved.ax;
-        ld.ay = moved.ay;
-        
-        if (ld.type == kType_ButtonImgRect)
-        {
-            UIView *v = [emuController getButtonView:ld.value];
-            v.frame = [ld getNewRect];
-            [v setNeedsDisplay];
-        }
-        
-    }
+    CGSize size = [s sizeWithAttributes:@{NSFontAttributeName:font}];
+    CGPoint pt = CGPointMake(rect.origin.x + (rect.size.width - size.width)/2, rect.origin.y + (rect.size.height - size.height)/2);
+    [s drawAtPoint:pt withAttributes:@{NSFontAttributeName:font, NSForegroundColorAttributeName:color}];
 }
 
 - (void)handleTouches:(NSSet *)touches withEvent:(UIEvent *)event
 {
+    static CGPoint grab_point;
+    static CGFloat pinch_distance = 0.0;
+    static int moved = -1;
+    static int moved_last = -1;
+    static NSTimeInterval moved_last_time = 0;
+
+    NSArray* allTouches = [[event allTouches] allObjects];
     
-    static int ax = 0;
-    static int ay = 0;
-    static int old_ax = 0;
-    static int old_ay = 0;
-    static int prev_ax = 0;
-    static int prev_ay = 0;
-    static LayoutData *moved = nil;
+    if (allTouches.count == 2) {
+        CGPoint a = [allTouches.firstObject locationInView:self];
+        CGPoint b = [allTouches.lastObject locationInView:self];
+        CGPoint c = CGPointMake((a.x+b.x)/2, (a.y+b.y)/2);
+        CGFloat d = sqrt((a.x-b.x)*(a.x-b.x) + (a.y-b.y)*(a.y-b.y));
+        
+        if (pinch_distance == 0.0)
+            pinch_distance = d;
+        
+        CGFloat pinch_scale = d / pinch_distance;
+        
+        if ((floor(pinch_scale * 1000.0) / 1000.0) != 1.0) {
+            if (MyCGRectContainsPoint(rLayout[BTN_STICK], c)) {
+                rLayout[BTN_STICK] = CGRectScale(rLayout[BTN_STICK], pinch_scale);
+                [emuController setButtonRect:BTN_STICK rect:rLayout[BTN_STICK]];
+            }
+            else {
+                for (int i=0; i<NUM_BUTTONS; i++) {
+                    if (i != BTN_STICK) {
+                        rLayout[i] = CGRectScale(rLayout[i], pinch_scale);
+                        [emuController setButtonRect:i rect:rLayout[i]];
+                    }
+                }
+            }
+            pinch_distance = d;
+            [self getButtonDefaultSize];
+            [self setNeedsDisplay];
+            isDirty = TRUE;
+        }
+        moved = -1;
+        return;
+    }
+    pinch_distance = 0.0;
     
-    int i = 0;
-    
-    
-    NSSet *allTouches = [event allTouches];
-    UITouch *touch = [[allTouches allObjects] objectAtIndex:0];
+    UITouch *touch = allTouches.firstObject;
     
     CGPoint pt = [touch locationInView:self];
     
@@ -203,59 +208,68 @@
        touch.phase == UITouchPhaseMoved		||
        touch.phase == UITouchPhaseStationary	)
 	{
-	     if(moved == nil)
+	     if(moved == -1)
          {
-             for(i=0; i<layoutDataArray.count ; i++)
+             for(int i=0; i<NUM_BUTTONS; i++)
              {
-                 LayoutData *ld = (LayoutData *)[layoutDataArray objectAtIndex:i];
-                 
-                 if(ld.type == kType_ButtonRect ||
-                    (ld.type == kType_DPadImgRect && g_pref_input_touch_type == TOUCH_INPUT_DPAD) ||
-                    (ld.type == kType_StickRect && g_pref_input_touch_type != TOUCH_INPUT_DPAD))
+                 CGRect rect = [self getDisplayRect:i];
+                 if (MyCGRectContainsPoint(rect, pt))
                  {
-                     if (MyCGRectContainsPoint([ld getNewRect], pt))
-                     {
-                         old_ax = ld.ax;
-                         old_ay = ld.ay;
-                         ax = pt.x;
-                         ay = pt.y;
-                         prev_ax = 0;
-                         prev_ay = 0;
-                         moved = ld;
-                         break;
-                     }
+                     grab_point.x = pt.x - CGRectGetMidX(rect);
+                     grab_point.y = pt.y - CGRectGetMidY(rect);
+                     moved = i;
+                     break;
                  }
              }
              
-             if(moved==nil && MyCGRectContainsPoint(rFinish, pt))
+             // check for a dbl tap
+             if(moved != -1 && moved == moved_last && (NSDate.timeIntervalSinceReferenceDate - moved_last_time) < 0.250)
              {
-                 [emuController showAlertWithTitle:nil message:@"Do you want to save changes?" buttons:@[@"Yes",@"No"] handler:^(NSUInteger buttonIndex) {
-                     if(buttonIndex == 0 )
-                     {
-                         [LayoutData saveLayoutData:self->layoutDataArray];
-                     }
+                 NSLog(@"DBL TAP: %@", [emuController getButtonName:moved]);
+                 
+                 if (CGRectIsEmpty(rLayout[moved]))
+                     rLayout[moved] = [self getDisplayRect:moved];
+                 else
+                     rLayout[moved] = CGRectScale(rLayout[moved], 0.0);
+                 
+                 [emuController setButtonRect:moved rect:rLayout[moved]];
+                 [self setNeedsDisplay];
+                 isDirty = TRUE;
+             }
+             if (moved != -1)
+             {
+                 moved_last = moved;
+                 moved_last_time = NSDate.timeIntervalSinceReferenceDate;
+             }
+             
+             if(moved == -1 && MyCGRectContainsPoint(rFinish, pt))
+             {
+                 if (isDirty) {
+                     [emuController showAlertWithTitle:nil message:@"Do you want to save changes?" buttons:@[@"Yes",@"No"] handler:^(NSUInteger buttonIndex) {
+                         if(buttonIndex == 0 )
+                         {
+                             [self->emuController saveCurrentLayout];
+                         }
+                         [self->emuController finishCustomizeCurrentLayout];
+                     }];
+                 }
+                 else {
                      [self->emuController finishCustomizeCurrentLayout];
-                 }];
+                 }
              }
          }
          else
          {
-             int new_ax = pt.x - ax;
-             int new_ay = pt.y - ay;
-             if(new_ax  != 0 || new_ay !=0)
-             {
-                 prev_ax = new_ax!=0 ? new_ax : prev_ax;
-                 prev_ay = new_ay!=0 ? new_ay : prev_ay;
-                 moved.ax = prev_ax + old_ax;
-                 moved.ay = prev_ay + old_ay;
-                 [self updateRelated:moved x:moved.ax y:moved.ay];
-                 [self setNeedsDisplay];
-             }
+             rLayout[moved].origin.x = floor(pt.x - grab_point.x - rLayout[moved].size.width/2);
+             rLayout[moved].origin.y = floor(pt.y - grab_point.y - rLayout[moved].size.height/2);
+             [emuController setButtonRect:moved rect:rLayout[moved]];
+             [self setNeedsDisplay];
+             isDirty = TRUE;
          }
     }
     else
     {
-        moved = nil;
+        moved = -1;
     }
     
 }

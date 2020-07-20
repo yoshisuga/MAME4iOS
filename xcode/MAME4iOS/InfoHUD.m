@@ -9,7 +9,7 @@
 #import "InfoHUD.h"
 #import <objc/runtime.h> // just for Associated Objects, I promise!
 
-#define HUD_COLOR   [self.tintColor colorWithAlphaComponent:0.2]
+#define HUD_COLOR   [UIColor clearColor] /*[self.tintColor colorWithAlphaComponent:0.2]*/
 #define HUD_BLUR    TRUE
 
 @implementation InfoHUD {

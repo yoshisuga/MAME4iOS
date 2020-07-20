@@ -9,8 +9,6 @@
 /* Begin PBXBuildFile section */
 		920BBDEF201FC29700AE7D50 /* dpad.png in Resources */ = {isa = PBXBuildFile; fileRef = 920BBDED201FC29700AE7D50 /* dpad.png */; };
 		920BBDF220210C3800AE7D50 /* menu.png in Resources */ = {isa = PBXBuildFile; fileRef = 920BBDF020210C3700AE7D50 /* menu.png */; };
-		921CC323216A903600A39154 /* config_iPad_pro_10_5.txt in Resources */ = {isa = PBXBuildFile; fileRef = 921CC321216A903600A39154 /* config_iPad_pro_10_5.txt */; };
-		921CC326216A936800A39154 /* config_iPad_pro_12_9.txt in Resources */ = {isa = PBXBuildFile; fileRef = 921CC324216A936800A39154 /* config_iPad_pro_12_9.txt */; };
 		925ABCA61E46DCC500997182 /* iCadeView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8D87DC1653121200685BC4 /* iCadeView.m */; };
 		925ABCA81E46DCC500997182 /* ListOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE90575B166A89D000653872 /* ListOptionController.m */; };
 		925ABCA91E46DCC500997182 /* OptionsController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680C01635BB6100051BC2 /* OptionsController.m */; };
@@ -18,7 +16,6 @@
 		925ABCAE1E46DCC500997182 /* HelpController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680B71635BB4900051BC2 /* HelpController.m */; };
 		925ABCAF1E46DCC500997182 /* AnalogStick.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680AB1635BB2700051BC2 /* AnalogStick.m */; };
 		925ABCB01E46DCC500997182 /* Bootstrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680AD1635BB2700051BC2 /* Bootstrapper.m */; };
-		925ABCB11E46DCC500997182 /* LayoutData.m in Sources */ = {isa = PBXBuildFile; fileRef = CE6D6E1116D8CADF00F265B7 /* LayoutData.m */; };
 		925ABCB21E46DCC500997182 /* LayoutView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE6D6E1316D8CADF00F265B7 /* LayoutView.m */; };
 		925ABCB31E46DCC500997182 /* NetplayController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE9454CB173160A300B81C32 /* NetplayController.m */; };
 		925ABCB41E46DCC500997182 /* NetplayGameKit.m in Sources */ = {isa = PBXBuildFile; fileRef = CE9454D31731DE4D00B81C32 /* NetplayGameKit.m */; };
@@ -35,34 +32,12 @@
 		925ABCC11E46DCC500997182 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE6808D1635BA7000051BC2 /* CoreGraphics.framework */; };
 		925ABCC21E46DCC500997182 /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE9454C7172BB23100B81C32 /* GameKit.framework */; };
 		925ABCC41E46DCC500997182 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE680CD163B147100051BC2 /* libz.dylib */; };
-		925ABCCC1E46DCC500997182 /* config_iPad.txt in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC11163C5DA100A05CD0 /* config_iPad.txt */; };
-		925ABCCD1E46DCC500997182 /* config_iPhone.txt in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC12163C5DA100A05CD0 /* config_iPhone.txt */; };
-		925ABCCE1E46DCC500997182 /* crt-1.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC13163C5DA100A05CD0 /* crt-1.png */; };
-		925ABCCF1E46DCC500997182 /* crt-2.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC14163C5DA100A05CD0 /* crt-2.png */; };
-		925ABCD01E46DCC500997182 /* scanline-1.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC1B163C5DA100A05CD0 /* scanline-1.png */; };
-		925ABCD11E46DCC500997182 /* scanline-2.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC1C163C5DA100A05CD0 /* scanline-2.png */; };
-		925ABCD21E46DCC500997182 /* SKIN_1 in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC1D163C5DA100A05CD0 /* SKIN_1 */; };
-		925ABCD51E46DCC500997182 /* config_iPhone_5.txt in Resources */ = {isa = PBXBuildFile; fileRef = CE8D87D7164FE4BE00685BC4 /* config_iPhone_5.txt */; };
-		925ABCD71E46DCC500997182 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = CEB8E0DB16A3311500A6FEDC /* LICENSE */; };
-		925ABCDD1E46DCC500997182 /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = CE30090316FA47CB000EDCF1 /* Category.ini */; };
-		925ABCDE1E46DCC500997182 /* hiscore.dat in Resources */ = {isa = PBXBuildFile; fileRef = CE30090616FA47E4000EDCF1 /* hiscore.dat */; };
 		925ABCE51E46DD6E00997182 /* libmamearm64.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 925ABCE41E46DD6E00997182 /* libmamearm64.a */; platformFilter = ios; };
-		9268D84A21661CA500AB0470 /* config_iPhone_xr_xs_max.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9268D84821661CA500AB0470 /* config_iPhone_xr_xs_max.txt */; };
-		9268D84D21661E3800AB0470 /* config_iPhone_x.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9268D84B21661E3800AB0470 /* config_iPhone_x.txt */; };
-		9268D85321661F1700AB0470 /* config_iPhone_6_plus.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9268D85121661F1700AB0470 /* config_iPhone_6_plus.txt */; };
-		9268D85621661F8E00AB0470 /* config_iPhone_6.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9268D85421661F8E00AB0470 /* config_iPhone_6.txt */; };
-		9268D85A2166841000AB0470 /* DeviceScreenResolver.m in Sources */ = {isa = PBXBuildFile; fileRef = 9268D8582166840F00AB0470 /* DeviceScreenResolver.m */; };
 		926C76FF21F1C87700103EDE /* TVOptionsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 926C76FE21F1C87700103EDE /* TVOptionsController.m */; };
-		926C770621F26DEA00103EDE /* crt-1.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC13163C5DA100A05CD0 /* crt-1.png */; };
-		926C770721F26DFA00103EDE /* crt-2.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC14163C5DA100A05CD0 /* crt-2.png */; };
-		926C770821F26DFD00103EDE /* scanline-1.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC1B163C5DA100A05CD0 /* scanline-1.png */; };
-		926C770921F26E0000103EDE /* scanline-2.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC1C163C5DA100A05CD0 /* scanline-2.png */; };
 		926C770A21F271A700103EDE /* ListOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE90575B166A89D000653872 /* ListOptionController.m */; };
 		926C770B21F31B1400103EDE /* FilterOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE9454D71731DF2700B81C32 /* FilterOptionController.m */; };
-		926C771321F39D2F00103EDE /* hiscore.dat in Resources */ = {isa = PBXBuildFile; fileRef = CE30090616FA47E4000EDCF1 /* hiscore.dat */; };
 		926C771A21F4F78300103EDE /* DefaultOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8F088717435C3A00E2D5FB /* DefaultOptionController.m */; };
 		926C771D21F5034100103EDE /* TVInputOptionsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 926C771C21F5034100103EDE /* TVInputOptionsController.m */; };
-		927BD1A62209E80F00ECF6C9 /* config_iPad_pro_11.txt in Resources */ = {isa = PBXBuildFile; fileRef = 927BD1A52209E80F00ECF6C9 /* config_iPad_pro_11.txt */; };
 		92A5332321EB57F00089FBB9 /* Options.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5332121EB57F00089FBB9 /* Options.m */; };
 		92A5332421EB57F00089FBB9 /* Options.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5332121EB57F00089FBB9 /* Options.m */; };
 		92A5332521EBC7F40089FBB9 /* iCadeView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8D87DC1653121200685BC4 /* iCadeView.m */; };
@@ -115,16 +90,48 @@
 		92ECB91021EA99B600D1E3D0 /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92ECB90F21EA99B600D1E3D0 /* GameKit.framework */; };
 		92ECB91221EAA1B700D1E3D0 /* EmulatorController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680B51635BB4900051BC2 /* EmulatorController.m */; };
 		92ECB91921EAD57900D1E3D0 /* UIView+Toast.m in Sources */ = {isa = PBXBuildFile; fileRef = 92B99F0D2022706600CC44E3 /* UIView+Toast.m */; };
-		B5FAE31721FCDE0C003F44D0 /* scanline_tvOS201901.png in Resources */ = {isa = PBXBuildFile; fileRef = B5FAE31621FCDE0C003F44D0 /* scanline_tvOS201901.png */; };
 		B5FAE31921FCE64D003F44D0 /* MAME_tvOS.lsr in Resources */ = {isa = PBXBuildFile; fileRef = B5FAE31821FCE64D003F44D0 /* MAME_tvOS.lsr */; };
 		E9856CF023C9A7C50071666D /* MultipeerConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E9856CEF23C9A7C50071666D /* MultipeerConnectivity.framework */; };
-		EF00880F2459F4EF0058C2A1 /* cheat0139.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF00880E2459F4EF0058C2A1 /* cheat0139.zip */; };
-		EF0088102459F4EF0058C2A1 /* cheat0139.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF00880E2459F4EF0058C2A1 /* cheat0139.zip */; };
-		EF0088122459F4FC0058C2A1 /* history0139.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF0088112459F4FC0058C2A1 /* history0139.zip */; };
-		EF0088132459F4FC0058C2A1 /* history0139.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF0088112459F4FC0058C2A1 /* history0139.zip */; };
-		EF0E08AE2401840700E98F01 /* help.md in Resources */ = {isa = PBXBuildFile; fileRef = EF0E08AC2401840700E98F01 /* help.md */; };
 		EF19F22C235D1BDF00C8EE7F /* ChooseGameController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF19F229235D1BDF00C8EE7F /* ChooseGameController.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		EF19F22D235D1BDF00C8EE7F /* ChooseGameController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF19F229235D1BDF00C8EE7F /* ChooseGameController.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		EF1C93EE24C252C600749C69 /* SKIN_1 in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E124C252C400749C69 /* SKIN_1 */; };
+		EF1C93F024C252C600749C69 /* SKIN_1 in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E124C252C400749C69 /* SKIN_1 */; };
+		EF1C93F124C252C600749C69 /* cheat0139.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E224C252C400749C69 /* cheat0139.zip */; };
+		EF1C93F224C252C600749C69 /* cheat0139.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E224C252C400749C69 /* cheat0139.zip */; };
+		EF1C93F324C252C600749C69 /* cheat0139.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E224C252C400749C69 /* cheat0139.zip */; };
+		EF1C93F424C252C600749C69 /* help.md in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E324C252C400749C69 /* help.md */; };
+		EF1C93F624C252C600749C69 /* help.md in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E324C252C400749C69 /* help.md */; };
+		EF1C93F724C252C600749C69 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E424C252C400749C69 /* LICENSE */; };
+		EF1C93F824C252C600749C69 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E424C252C400749C69 /* LICENSE */; };
+		EF1C93F924C252C600749C69 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E424C252C400749C69 /* LICENSE */; };
+		EF1C93FA24C252C600749C69 /* whatsnew.md in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E524C252C500749C69 /* whatsnew.md */; };
+		EF1C93FC24C252C600749C69 /* whatsnew.md in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E524C252C500749C69 /* whatsnew.md */; };
+		EF1C93FD24C252C600749C69 /* skins in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E624C252C500749C69 /* skins */; };
+		EF1C93FF24C252C600749C69 /* skins in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E624C252C500749C69 /* skins */; };
+		EF1C940024C252C600749C69 /* effect-crt.png in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E724C252C500749C69 /* effect-crt.png */; };
+		EF1C940124C252C600749C69 /* effect-crt.png in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E724C252C500749C69 /* effect-crt.png */; };
+		EF1C940224C252C600749C69 /* effect-crt.png in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E724C252C500749C69 /* effect-crt.png */; };
+		EF1C940324C252C600749C69 /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E824C252C500749C69 /* Category.ini */; };
+		EF1C940424C252C600749C69 /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E824C252C500749C69 /* Category.ini */; };
+		EF1C940524C252C600749C69 /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E824C252C500749C69 /* Category.ini */; };
+		EF1C940924C252C600749C69 /* effect-dot.png in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93EA24C252C500749C69 /* effect-dot.png */; };
+		EF1C940A24C252C600749C69 /* effect-dot.png in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93EA24C252C500749C69 /* effect-dot.png */; };
+		EF1C940B24C252C600749C69 /* effect-dot.png in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93EA24C252C500749C69 /* effect-dot.png */; };
+		EF1C940C24C252C600749C69 /* hiscore.dat in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93EB24C252C500749C69 /* hiscore.dat */; };
+		EF1C940D24C252C600749C69 /* hiscore.dat in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93EB24C252C500749C69 /* hiscore.dat */; };
+		EF1C940E24C252C600749C69 /* hiscore.dat in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93EB24C252C500749C69 /* hiscore.dat */; };
+		EF1C940F24C252C600749C69 /* effect-scanline.png in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93EC24C252C500749C69 /* effect-scanline.png */; };
+		EF1C941024C252C600749C69 /* effect-scanline.png in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93EC24C252C500749C69 /* effect-scanline.png */; };
+		EF1C941124C252C600749C69 /* effect-scanline.png in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93EC24C252C500749C69 /* effect-scanline.png */; };
+		EF1C941224C252C600749C69 /* history0139.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93ED24C252C500749C69 /* history0139.zip */; };
+		EF1C941324C252C600749C69 /* history0139.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93ED24C252C500749C69 /* history0139.zip */; };
+		EF1C941424C252C600749C69 /* history0139.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93ED24C252C500749C69 /* history0139.zip */; };
+		EF1C941824C254FC00749C69 /* choose-game-background.png in Resources */ = {isa = PBXBuildFile; fileRef = EF1C941724C254FC00749C69 /* choose-game-background.png */; };
+		EF1C941924C254FC00749C69 /* choose-game-background.png in Resources */ = {isa = PBXBuildFile; fileRef = EF1C941724C254FC00749C69 /* choose-game-background.png */; };
+		EF1C941A24C254FC00749C69 /* choose-game-background.png in Resources */ = {isa = PBXBuildFile; fileRef = EF1C941724C254FC00749C69 /* choose-game-background.png */; };
+		EF1C941C24C2552900749C69 /* gitinfo.json.sh in Resources */ = {isa = PBXBuildFile; fileRef = EF1C941B24C2552800749C69 /* gitinfo.json.sh */; };
+		EF1C941D24C2552900749C69 /* gitinfo.json.sh in Resources */ = {isa = PBXBuildFile; fileRef = EF1C941B24C2552800749C69 /* gitinfo.json.sh */; };
+		EF1C941E24C2552900749C69 /* gitinfo.json.sh in Resources */ = {isa = PBXBuildFile; fileRef = EF1C941B24C2552800749C69 /* gitinfo.json.sh */; };
 		EF23D331243CB9CF006B3EE2 /* PopupSegmentedControl.m in Sources */ = {isa = PBXBuildFile; fileRef = EF23D330243CB9CE006B3EE2 /* PopupSegmentedControl.m */; };
 		EF23D332243CB9CF006B3EE2 /* PopupSegmentedControl.m in Sources */ = {isa = PBXBuildFile; fileRef = EF23D330243CB9CE006B3EE2 /* PopupSegmentedControl.m */; };
 		EF24933A236264DA00DD0A6C /* ImageCache.m in Sources */ = {isa = PBXBuildFile; fileRef = EF249336236264D900DD0A6C /* ImageCache.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
@@ -135,15 +142,10 @@
 		EF27F36823F73CD400B1E50A /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF27F36323F73CD400B1E50A /* ZipFile.m */; };
 		EF27F36A23F7475100B1E50A /* libcompression.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = EF27F36923F7475100B1E50A /* libcompression.tbd */; };
 		EF29C8822401C73A00AFFA4E /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EF29C8802401C73900AFFA4E /* Launch Screen.storyboard */; };
-		EF29C8852402E51200AFFA4E /* config_iPad_gen_7.txt in Resources */ = {isa = PBXBuildFile; fileRef = EF29C8832402E51100AFFA4E /* config_iPad_gen_7.txt */; };
 		EF301CF1240460C5000510FD /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF301CF0240460C5000510FD /* Alert.m */; };
 		EF301CF2240460C5000510FD /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF301CF0240460C5000510FD /* Alert.m */; };
 		EF301CF3240460F3000510FD /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF27F36323F73CD400B1E50A /* ZipFile.m */; };
-		EF63E1C124424D2300CFE85D /* whatsnew.md in Resources */ = {isa = PBXBuildFile; fileRef = EF63E1C024424D2300CFE85D /* whatsnew.md */; };
 		EF67E11624B8972100AFF489 /* MacMenu.m in Sources */ = {isa = PBXBuildFile; fileRef = EF67E11524B8972100AFF489 /* MacMenu.m */; };
-		EF79BDD524B7C0DA00824BFD /* gitinfo.json.sh in Resources */ = {isa = PBXBuildFile; fileRef = EF79BDD424B7C0DA00824BFD /* gitinfo.json.sh */; };
-		EF79BDD624B7C0DA00824BFD /* gitinfo.json.sh in Resources */ = {isa = PBXBuildFile; fileRef = EF79BDD424B7C0DA00824BFD /* gitinfo.json.sh */; };
-		EF79BDD724B7C0DA00824BFD /* gitinfo.json.sh in Resources */ = {isa = PBXBuildFile; fileRef = EF79BDD424B7C0DA00824BFD /* gitinfo.json.sh */; };
 		EF7B232C23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
 		EF7B232D23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
 		EF8E427D249348220049C84C /* megaTron.metal in Sources */ = {isa = PBXBuildFile; fileRef = EF8E427C249348220049C84C /* megaTron.metal */; };
@@ -160,6 +162,8 @@
 		EF8EAA8B244F7F5D00DA02BB /* SteamControllerExtendedGamepad.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA82244F7F5D00DA02BB /* SteamControllerExtendedGamepad.m */; };
 		EF8EAA8C244F7F5D00DA02BB /* SteamControllerInput.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA83244F7F5D00DA02BB /* SteamControllerInput.m */; };
 		EF8EAA8D244F7F5D00DA02BB /* SteamControllerInput.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA83244F7F5D00DA02BB /* SteamControllerInput.m */; };
+		EF926C9B24BA36980048392B /* SkinManager.m in Sources */ = {isa = PBXBuildFile; fileRef = EF926C9A24BA36980048392B /* SkinManager.m */; };
+		EF926C9C24BA36980048392B /* SkinManager.m in Sources */ = {isa = PBXBuildFile; fileRef = EF926C9A24BA36980048392B /* SkinManager.m */; };
 		EF941F0024427D1200D58F7F /* OptionsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF941EFF24427D1200D58F7F /* OptionsTableViewController.m */; };
 		EF941F0124427D1200D58F7F /* OptionsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF941EFF24427D1200D58F7F /* OptionsTableViewController.m */; };
 		EF950BAA24B1211F00DC9A47 /* ColorSpace.m in Sources */ = {isa = PBXBuildFile; fileRef = EF950BA924B1211F00DC9A47 /* ColorSpace.m */; };
@@ -204,12 +208,10 @@
 		EFA7A0F924B65C020009CF88 /* HelpController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680B71635BB4900051BC2 /* HelpController.m */; };
 		EFA7A0FA24B65C020009CF88 /* AnalogStick.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680AB1635BB2700051BC2 /* AnalogStick.m */; };
 		EFA7A0FB24B65C020009CF88 /* Bootstrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680AD1635BB2700051BC2 /* Bootstrapper.m */; };
-		EFA7A0FC24B65C020009CF88 /* LayoutData.m in Sources */ = {isa = PBXBuildFile; fileRef = CE6D6E1116D8CADF00F265B7 /* LayoutData.m */; };
 		EFA7A0FD24B65C020009CF88 /* SystemImage.m in Sources */ = {isa = PBXBuildFile; fileRef = EFA7570B2406D64600A02AAB /* SystemImage.m */; };
 		EFA7A0FE24B65C020009CF88 /* GCDWebServerFunctions.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5338E21EBDBAD0089FBB9 /* GCDWebServerFunctions.m */; };
 		EFA7A0FF24B65C020009CF88 /* GCDWebServerStreamedResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5339A21EBDBAD0089FBB9 /* GCDWebServerStreamedResponse.m */; };
 		EFA7A10024B65C020009CF88 /* MetalView.m in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B2132479FBD800AD96A4 /* MetalView.m */; };
-		EFA7A10124B65C020009CF88 /* DeviceScreenResolver.m in Sources */ = {isa = PBXBuildFile; fileRef = 9268D8582166840F00AB0470 /* DeviceScreenResolver.m */; };
 		EFA7A10224B65C020009CF88 /* LayoutView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE6D6E1316D8CADF00F265B7 /* LayoutView.m */; };
 		EFA7A10324B65C020009CF88 /* SteamControllerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA7F244F7F5D00DA02BB /* SteamControllerManager.m */; };
 		EFA7A10424B65C020009CF88 /* GCDWebServerResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5338821EBDBAD0089FBB9 /* GCDWebServerResponse.m */; };
@@ -254,43 +256,14 @@
 		EFA7A12C24B65C020009CF88 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE6808D1635BA7000051BC2 /* CoreGraphics.framework */; };
 		EFA7A12D24B65C020009CF88 /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE9454C7172BB23100B81C32 /* GameKit.framework */; };
 		EFA7A12E24B65C020009CF88 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE680CD163B147100051BC2 /* libz.dylib */; };
-		EFA7A13024B65C020009CF88 /* config_iPhone_x.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9268D84B21661E3800AB0470 /* config_iPhone_x.txt */; };
-		EFA7A13124B65C020009CF88 /* config_iPad_pro_12_9.txt in Resources */ = {isa = PBXBuildFile; fileRef = 921CC324216A936800A39154 /* config_iPad_pro_12_9.txt */; };
-		EFA7A13224B65C020009CF88 /* config_iPhone_6_plus.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9268D85121661F1700AB0470 /* config_iPhone_6_plus.txt */; };
-		EFA7A13324B65C020009CF88 /* config_iPhone_xr_xs_max.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9268D84821661CA500AB0470 /* config_iPhone_xr_xs_max.txt */; };
 		EFA7A13424B65C020009CF88 /* mame_logo.png in Resources */ = {isa = PBXBuildFile; fileRef = EF26AE07241848800078FD30 /* mame_logo.png */; };
-		EFA7A13524B65C020009CF88 /* history0139.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF0088112459F4FC0058C2A1 /* history0139.zip */; };
-		EFA7A13624B65C020009CF88 /* config_iPad.txt in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC11163C5DA100A05CD0 /* config_iPad.txt */; };
 		EFA7A13724B65C020009CF88 /* default_game_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA7570424057FD800A02AAB /* default_game_icon.png */; };
-		EFA7A13824B65C020009CF88 /* config_iPhone.txt in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC12163C5DA100A05CD0 /* config_iPhone.txt */; };
-		EFA7A13924B65C020009CF88 /* crt-1.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC13163C5DA100A05CD0 /* crt-1.png */; };
-		EFA7A13A24B65C020009CF88 /* border-light.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F80B2464864600DDA88C /* border-light.png */; };
-		EFA7A13B24B65C020009CF88 /* crt-2.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC14163C5DA100A05CD0 /* crt-2.png */; };
-		EFA7A13C24B65C020009CF88 /* help.md in Resources */ = {isa = PBXBuildFile; fileRef = EF0E08AC2401840700E98F01 /* help.md */; };
-		EFA7A13D24B65C020009CF88 /* effect-crt.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F81D2466BEE100DDA88C /* effect-crt.png */; };
-		EFA7A13E24B65C020009CF88 /* scanline-1.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC1B163C5DA100A05CD0 /* scanline-1.png */; };
-		EFA7A13F24B65C020009CF88 /* cheat0139.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF00880E2459F4EF0058C2A1 /* cheat0139.zip */; };
-		EFA7A14024B65C020009CF88 /* config_iPad_gen_7.txt in Resources */ = {isa = PBXBuildFile; fileRef = EF29C8832402E51100AFFA4E /* config_iPad_gen_7.txt */; };
-		EFA7A14124B65C020009CF88 /* config_iPad_pro_11.txt in Resources */ = {isa = PBXBuildFile; fileRef = 927BD1A52209E80F00ECF6C9 /* config_iPad_pro_11.txt */; };
-		EFA7A14224B65C020009CF88 /* scanline-2.png in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC1C163C5DA100A05CD0 /* scanline-2.png */; };
 		EFA7A14324B65C020009CF88 /* dpad.png in Resources */ = {isa = PBXBuildFile; fileRef = 920BBDED201FC29700AE7D50 /* dpad.png */; };
 		EFA7A14424B65C020009CF88 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EF29C8802401C73900AFFA4E /* Launch Screen.storyboard */; };
-		EFA7A14524B65C020009CF88 /* SKIN_1 in Resources */ = {isa = PBXBuildFile; fileRef = CEBFBC1D163C5DA100A05CD0 /* SKIN_1 */; };
-		EFA7A14624B65C020009CF88 /* config_iPhone_6.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9268D85421661F8E00AB0470 /* config_iPhone_6.txt */; };
-		EFA7A14724B65C020009CF88 /* border-dark.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F80C2464864600DDA88C /* border-dark.png */; };
-		EFA7A14824B65C020009CF88 /* config_iPhone_5.txt in Resources */ = {isa = PBXBuildFile; fileRef = CE8D87D7164FE4BE00685BC4 /* config_iPhone_5.txt */; };
 		EFA7A14924B65C020009CF88 /* menu.png in Resources */ = {isa = PBXBuildFile; fileRef = 920BBDF020210C3700AE7D50 /* menu.png */; };
-		EFA7A14A24B65C020009CF88 /* border-test.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F80D2464864600DDA88C /* border-test.png */; };
-		EFA7A14B24B65C020009CF88 /* whatsnew.md in Resources */ = {isa = PBXBuildFile; fileRef = EF63E1C024424D2300CFE85D /* whatsnew.md */; };
-		EFA7A14C24B65C020009CF88 /* effect-dot.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F8142465DFB100DDA88C /* effect-dot.png */; };
-		EFA7A14D24B65C020009CF88 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = CEB8E0DB16A3311500A6FEDC /* LICENSE */; };
 		EFA7A14E24B65C020009CF88 /* GCDWebUploader.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 92A533CC21EBDDF20089FBB9 /* GCDWebUploader.bundle */; };
 		EFA7A15024B65C020009CF88 /* mameui.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA756FE2405585D00A02AAB /* mameui.png */; };
 		EFA7A15124B65C020009CF88 /* iCadeControls.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA757212408488D00A02AAB /* iCadeControls.png */; };
-		EFA7A15524B65C020009CF88 /* effect-scanline.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F81A2466BE8500DDA88C /* effect-scanline.png */; };
-		EFA7A15624B65C020009CF88 /* config_iPad_pro_10_5.txt in Resources */ = {isa = PBXBuildFile; fileRef = 921CC321216A903600A39154 /* config_iPad_pro_10_5.txt */; };
-		EFA7A15724B65C020009CF88 /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = CE30090316FA47CB000EDCF1 /* Category.ini */; };
-		EFA7A15824B65C020009CF88 /* hiscore.dat in Resources */ = {isa = PBXBuildFile; fileRef = CE30090616FA47E4000EDCF1 /* hiscore.dat */; };
 		EFA7A16424B792B50009CF88 /* ColorSpace.m in Sources */ = {isa = PBXBuildFile; fileRef = EF950BA924B1211F00DC9A47 /* ColorSpace.m */; };
 		EFA7A16624B792CE0009CF88 /* MetalPerformanceShaders.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA7A16524B792CE0009CF88 /* MetalPerformanceShaders.framework */; };
 		EFA7A16B24B7A38E0009CF88 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EFA7A16A24B7A38E0009CF88 /* Assets.xcassets */; };
@@ -307,23 +280,10 @@
 		EFB7B21A2479FBD900AD96A4 /* MetalViewShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B2152479FBD900AD96A4 /* MetalViewShaders.metal */; };
 		EFB7B21C247ACFE300AD96A4 /* MameShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B21B247ACFE300AD96A4 /* MameShaders.metal */; };
 		EFB7B21D247ACFE300AD96A4 /* MameShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B21B247ACFE300AD96A4 /* MameShaders.metal */; };
-		EFD4D14A23C0F6AB00857A76 /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = CE30090316FA47CB000EDCF1 /* Category.ini */; };
 		EFE4B6AB2453D7F80009A6F1 /* InfoDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE4B6AA2453D7F80009A6F1 /* InfoDatabase.m */; };
 		EFE4B6AC2453D7F80009A6F1 /* InfoDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE4B6AA2453D7F80009A6F1 /* InfoDatabase.m */; };
 		EFF9F809246356B300DDA88C /* CGScreenView.m in Sources */ = {isa = PBXBuildFile; fileRef = EFF9F807246356B200DDA88C /* CGScreenView.m */; };
 		EFF9F80A246356B300DDA88C /* CGScreenView.m in Sources */ = {isa = PBXBuildFile; fileRef = EFF9F807246356B200DDA88C /* CGScreenView.m */; };
-		EFF9F80E2464864600DDA88C /* border-light.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F80B2464864600DDA88C /* border-light.png */; };
-		EFF9F80F2464864600DDA88C /* border-light.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F80B2464864600DDA88C /* border-light.png */; };
-		EFF9F8102464864600DDA88C /* border-dark.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F80C2464864600DDA88C /* border-dark.png */; };
-		EFF9F8112464864600DDA88C /* border-dark.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F80C2464864600DDA88C /* border-dark.png */; };
-		EFF9F8122464864600DDA88C /* border-test.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F80D2464864600DDA88C /* border-test.png */; };
-		EFF9F8132464864600DDA88C /* border-test.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F80D2464864600DDA88C /* border-test.png */; };
-		EFF9F8152465DFB200DDA88C /* effect-dot.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F8142465DFB100DDA88C /* effect-dot.png */; };
-		EFF9F8162465DFB200DDA88C /* effect-dot.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F8142465DFB100DDA88C /* effect-dot.png */; };
-		EFF9F81B2466BE8500DDA88C /* effect-scanline.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F81A2466BE8500DDA88C /* effect-scanline.png */; };
-		EFF9F81C2466BE8500DDA88C /* effect-scanline.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F81A2466BE8500DDA88C /* effect-scanline.png */; };
-		EFF9F81E2466BEE100DDA88C /* effect-crt.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F81D2466BEE100DDA88C /* effect-crt.png */; };
-		EFF9F81F2466BEE100DDA88C /* effect-crt.png in Resources */ = {isa = PBXBuildFile; fileRef = EFF9F81D2466BEE100DDA88C /* effect-crt.png */; };
 		EFF9F825246EE2F800DDA88C /* Intents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFF9F824246EE2F800DDA88C /* Intents.framework */; };
 		EFF9F827246EE30200DDA88C /* IntentsUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFF9F826246EE30200DDA88C /* IntentsUI.framework */; };
 		EFF9F82A2470755800DDA88C /* MetalScreenView.m in Sources */ = {isa = PBXBuildFile; fileRef = EFF9F8292470755800DDA88C /* MetalScreenView.m */; };
@@ -401,23 +361,14 @@
 /* End PBXBuildRule section */
 
 /* Begin PBXFileReference section */
-		920BBDED201FC29700AE7D50 /* dpad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = dpad.png; sourceTree = "<group>"; };
-		920BBDF020210C3700AE7D50 /* menu.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menu.png; sourceTree = "<group>"; };
-		921CC321216A903600A39154 /* config_iPad_pro_10_5.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = config_iPad_pro_10_5.txt; sourceTree = "<group>"; };
-		921CC324216A936800A39154 /* config_iPad_pro_12_9.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = config_iPad_pro_12_9.txt; sourceTree = "<group>"; };
+		920BBDED201FC29700AE7D50 /* dpad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = dpad.png; path = "../../iOS-res/dpad.png"; sourceTree = "<group>"; };
+		920BBDF020210C3700AE7D50 /* menu.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = menu.png; path = "../../iOS-res/menu.png"; sourceTree = "<group>"; };
 		925ABCE21E46DCC500997182 /* MAME4iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MAME4iOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		925ABCE41E46DD6E00997182 /* libmamearm64.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmamearm64.a; path = ../../libmamearm64.a; sourceTree = "<group>"; };
-		9268D84821661CA500AB0470 /* config_iPhone_xr_xs_max.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = config_iPhone_xr_xs_max.txt; sourceTree = "<group>"; };
-		9268D84B21661E3800AB0470 /* config_iPhone_x.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = config_iPhone_x.txt; sourceTree = "<group>"; };
-		9268D85121661F1700AB0470 /* config_iPhone_6_plus.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = config_iPhone_6_plus.txt; sourceTree = "<group>"; };
-		9268D85421661F8E00AB0470 /* config_iPhone_6.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = config_iPhone_6.txt; sourceTree = "<group>"; };
-		9268D8572166840F00AB0470 /* DeviceScreenResolver.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DeviceScreenResolver.h; sourceTree = "<group>"; };
-		9268D8582166840F00AB0470 /* DeviceScreenResolver.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DeviceScreenResolver.m; sourceTree = "<group>"; };
 		926C76FD21F1C87700103EDE /* TVOptionsController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVOptionsController.h; sourceTree = "<group>"; };
 		926C76FE21F1C87700103EDE /* TVOptionsController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TVOptionsController.m; sourceTree = "<group>"; };
 		926C771B21F5034100103EDE /* TVInputOptionsController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVInputOptionsController.h; sourceTree = "<group>"; };
 		926C771C21F5034100103EDE /* TVInputOptionsController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TVInputOptionsController.m; sourceTree = "<group>"; };
-		927BD1A52209E80F00ECF6C9 /* config_iPad_pro_11.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = config_iPad_pro_11.txt; sourceTree = "<group>"; };
 		92A5332021EB57F00089FBB9 /* Options.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Options.h; sourceTree = "<group>"; };
 		92A5332121EB57F00089FBB9 /* Options.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Options.m; sourceTree = "<group>"; };
 		92A5338621EBDBAD0089FBB9 /* GCDWebServerFunctions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDWebServerFunctions.h; sourceTree = "<group>"; };
@@ -475,17 +426,11 @@
 		92ECB90D21EA99A200D1E3D0 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.1.sdk/System/Library/Frameworks/CoreGraphics.framework; sourceTree = DEVELOPER_DIR; };
 		92ECB90F21EA99B600D1E3D0 /* GameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameKit.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.1.sdk/System/Library/Frameworks/GameKit.framework; sourceTree = DEVELOPER_DIR; };
 		B370F8AF1C8549010069377D /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = System/Library/Frameworks/GameController.framework; sourceTree = SDKROOT; };
-		B5FAE31621FCDE0C003F44D0 /* scanline_tvOS201901.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = scanline_tvOS201901.png; sourceTree = "<group>"; };
 		B5FAE31821FCE64D003F44D0 /* MAME_tvOS.lsr */ = {isa = PBXFileReference; lastKnownFileType = file; path = MAME_tvOS.lsr; sourceTree = "<group>"; };
-		CE30090316FA47CB000EDCF1 /* Category.ini */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Category.ini; path = "../../iOS-res/Applications/MAME4iOS.app/Category.ini"; sourceTree = "<group>"; };
-		CE30090616FA47E4000EDCF1 /* hiscore.dat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = hiscore.dat; path = "../../iOS-res/Applications/MAME4iOS.app/hiscore.dat"; sourceTree = "<group>"; };
-		CE6D6E1016D8CADF00F265B7 /* LayoutData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LayoutData.h; path = ../../iOS/LayoutData.h; sourceTree = "<group>"; };
-		CE6D6E1116D8CADF00F265B7 /* LayoutData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LayoutData.m; path = ../../iOS/LayoutData.m; sourceTree = "<group>"; };
 		CE6D6E1216D8CADF00F265B7 /* LayoutView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LayoutView.h; path = ../../iOS/LayoutView.h; sourceTree = "<group>"; };
 		CE6D6E1316D8CADF00F265B7 /* LayoutView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LayoutView.m; path = ../../iOS/LayoutView.m; sourceTree = "<group>"; };
 		CE87C2FE16F5C21A00ABE4F6 /* MAME4iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = MAME4iOS.entitlements; sourceTree = "<group>"; };
 		CE8A4192170F41FC001ADFA4 /* myosd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = myosd.h; path = "../../../src/osd/droid-ios/myosd.h"; sourceTree = "<group>"; };
-		CE8D87D7164FE4BE00685BC4 /* config_iPhone_5.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = config_iPhone_5.txt; path = "../../iOS-res/Applications/MAME4iOS.app/config_iPhone_5.txt"; sourceTree = "<group>"; };
 		CE8D87DB1653121100685BC4 /* iCadeView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = iCadeView.h; path = ../../iOS/iCadeView.h; sourceTree = "<group>"; };
 		CE8D87DC1653121200685BC4 /* iCadeView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = iCadeView.m; path = ../../iOS/iCadeView.m; sourceTree = "<group>"; };
 		CE8D87DF16541AC400685BC4 /* Globals.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Globals.h; path = ../../iOS/Globals.h; sourceTree = "<group>"; };
@@ -505,16 +450,6 @@
 		CE9454D31731DE4D00B81C32 /* NetplayGameKit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NetplayGameKit.m; path = ../../iOS/NetplayGameKit.m; sourceTree = "<group>"; };
 		CE9454D61731DF2600B81C32 /* FilterOptionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FilterOptionController.h; path = ../../iOS/FilterOptionController.h; sourceTree = "<group>"; };
 		CE9454D71731DF2700B81C32 /* FilterOptionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FilterOptionController.m; path = ../../iOS/FilterOptionController.m; sourceTree = "<group>"; };
-		CEB8E0DB16A3311500A6FEDC /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = folder; name = LICENSE; path = "../../iOS-res/Applications/MAME4iOS.app/LICENSE"; sourceTree = "<group>"; };
-		CEBFBC11163C5DA100A05CD0 /* config_iPad.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = config_iPad.txt; path = "../../iOS-res/Applications/MAME4iOS.app/config_iPad.txt"; sourceTree = "<group>"; };
-		CEBFBC12163C5DA100A05CD0 /* config_iPhone.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = config_iPhone.txt; path = "../../iOS-res/Applications/MAME4iOS.app/config_iPhone.txt"; sourceTree = "<group>"; };
-		CEBFBC13163C5DA100A05CD0 /* crt-1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "crt-1.png"; path = "../../iOS-res/Applications/MAME4iOS.app/crt-1.png"; sourceTree = "<group>"; };
-		CEBFBC14163C5DA100A05CD0 /* crt-2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "crt-2.png"; path = "../../iOS-res/Applications/MAME4iOS.app/crt-2.png"; sourceTree = "<group>"; };
-		CEBFBC1B163C5DA100A05CD0 /* scanline-1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "scanline-1.png"; path = "../../iOS-res/Applications/MAME4iOS.app/scanline-1.png"; sourceTree = "<group>"; };
-		CEBFBC1C163C5DA100A05CD0 /* scanline-2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "scanline-2.png"; path = "../../iOS-res/Applications/MAME4iOS.app/scanline-2.png"; sourceTree = "<group>"; };
-		CEBFBC1D163C5DA100A05CD0 /* SKIN_1 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SKIN_1; path = "../../iOS-res/Applications/MAME4iOS.app/SKIN_1"; sourceTree = "<group>"; };
-		CEBFBC1E163C5DA100A05CD0 /* SKIN_2 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SKIN_2; path = "../../iOS-res/Applications/MAME4iOS.app/SKIN_2"; sourceTree = "<group>"; };
-		CEBFBC1F163C5DA100A05CD0 /* SKIN_3 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SKIN_3; path = "../../iOS-res/Applications/MAME4iOS.app/SKIN_3"; sourceTree = "<group>"; };
 		CEE680891635BA7000051BC2 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		CEE6808B1635BA7000051BC2 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		CEE6808D1635BA7000051BC2 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -537,29 +472,37 @@
 		CEE680CD163B147100051BC2 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		CEE680D1163BE5C400051BC2 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		E9856CEF23C9A7C50071666D /* MultipeerConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MultipeerConnectivity.framework; path = System/Library/Frameworks/MultipeerConnectivity.framework; sourceTree = SDKROOT; };
-		EF00880E2459F4EF0058C2A1 /* cheat0139.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = cheat0139.zip; path = "../../iOS-res/Applications/MAME4iOS.app/cheat0139.zip"; sourceTree = "<group>"; };
-		EF0088112459F4FC0058C2A1 /* history0139.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = history0139.zip; path = "../../iOS-res/Applications/MAME4iOS.app/history0139.zip"; sourceTree = "<group>"; };
 		EF06A576248064AC00A974B8 /* Timer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Timer.h; sourceTree = "<group>"; };
-		EF0E08AC2401840700E98F01 /* help.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = help.md; path = "../../iOS-res/Applications/MAME4iOS.app/help.md"; sourceTree = "<group>"; };
 		EF19F229235D1BDF00C8EE7F /* ChooseGameController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ChooseGameController.m; sourceTree = "<group>"; };
 		EF19F22E235D1C0300C8EE7F /* ChooseGameController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ChooseGameController.h; sourceTree = "<group>"; };
+		EF1C93E124C252C400749C69 /* SKIN_1 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SKIN_1; path = "../../iOS-res/SKIN_1"; sourceTree = "<group>"; };
+		EF1C93E224C252C400749C69 /* cheat0139.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = cheat0139.zip; path = "../../iOS-res/cheat0139.zip"; sourceTree = "<group>"; };
+		EF1C93E324C252C400749C69 /* help.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = help.md; path = "../../iOS-res/help.md"; sourceTree = "<group>"; };
+		EF1C93E424C252C400749C69 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = folder; path = LICENSE; sourceTree = "<group>"; };
+		EF1C93E524C252C500749C69 /* whatsnew.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = whatsnew.md; path = "../../iOS-res/whatsnew.md"; sourceTree = "<group>"; };
+		EF1C93E624C252C500749C69 /* skins */ = {isa = PBXFileReference; lastKnownFileType = folder; name = skins; path = "../../iOS-res/skins"; sourceTree = "<group>"; };
+		EF1C93E724C252C500749C69 /* effect-crt.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "effect-crt.png"; path = "../../iOS-res/effect-crt.png"; sourceTree = "<group>"; };
+		EF1C93E824C252C500749C69 /* Category.ini */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Category.ini; path = "../../iOS-res/Category.ini"; sourceTree = "<group>"; };
+		EF1C93EA24C252C500749C69 /* effect-dot.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "effect-dot.png"; path = "../../iOS-res/effect-dot.png"; sourceTree = "<group>"; };
+		EF1C93EB24C252C500749C69 /* hiscore.dat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = hiscore.dat; path = "../../iOS-res/hiscore.dat"; sourceTree = "<group>"; };
+		EF1C93EC24C252C500749C69 /* effect-scanline.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "effect-scanline.png"; path = "../../iOS-res/effect-scanline.png"; sourceTree = "<group>"; };
+		EF1C93ED24C252C500749C69 /* history0139.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = history0139.zip; path = "../../iOS-res/history0139.zip"; sourceTree = "<group>"; };
+		EF1C941724C254FC00749C69 /* choose-game-background.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "choose-game-background.png"; path = "../../iOS-res/choose-game-background.png"; sourceTree = "<group>"; };
+		EF1C941B24C2552800749C69 /* gitinfo.json.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = gitinfo.json.sh; sourceTree = "<group>"; };
 		EF23D32F243CB9CE006B3EE2 /* PopupSegmentedControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PopupSegmentedControl.h; sourceTree = "<group>"; };
 		EF23D330243CB9CE006B3EE2 /* PopupSegmentedControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PopupSegmentedControl.m; sourceTree = "<group>"; };
 		EF249336236264D900DD0A6C /* ImageCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageCache.m; sourceTree = "<group>"; };
 		EF249337236264DA00DD0A6C /* ImageCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageCache.h; sourceTree = "<group>"; };
-		EF26AE07241848800078FD30 /* mame_logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = mame_logo.png; sourceTree = "<group>"; };
+		EF26AE07241848800078FD30 /* mame_logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = mame_logo.png; path = "../../iOS-res/mame_logo.png"; sourceTree = "<group>"; };
 		EF26AE0A241AA6900078FD30 /* FileItemProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FileItemProvider.h; sourceTree = "<group>"; };
 		EF26AE0B241AA6900078FD30 /* FileItemProvider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FileItemProvider.m; sourceTree = "<group>"; };
 		EF27F36323F73CD400B1E50A /* ZipFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZipFile.m; sourceTree = "<group>"; };
 		EF27F36423F73CD400B1E50A /* ZipFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZipFile.h; sourceTree = "<group>"; };
 		EF27F36923F7475100B1E50A /* libcompression.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcompression.tbd; path = usr/lib/libcompression.tbd; sourceTree = SDKROOT; };
 		EF29C8802401C73900AFFA4E /* Launch Screen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
-		EF29C8832402E51100AFFA4E /* config_iPad_gen_7.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = config_iPad_gen_7.txt; path = "../../iOS-res/Applications/MAME4iOS.app/config_iPad_gen_7.txt"; sourceTree = "<group>"; };
 		EF301CEF240460C5000510FD /* Alert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Alert.h; sourceTree = "<group>"; };
 		EF301CF0240460C5000510FD /* Alert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Alert.m; sourceTree = "<group>"; };
-		EF63E1C024424D2300CFE85D /* whatsnew.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = whatsnew.md; path = "../../iOS-res/Applications/MAME4iOS.app/whatsnew.md"; sourceTree = "<group>"; };
 		EF67E11524B8972100AFF489 /* MacMenu.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MacMenu.m; sourceTree = "<group>"; };
-		EF79BDD424B7C0DA00824BFD /* gitinfo.json.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = gitinfo.json.sh; sourceTree = "<group>"; };
 		EF8E427C249348220049C84C /* megaTron.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = megaTron.metal; sourceTree = "<group>"; };
 		EF8E4282249915F20049C84C /* lineTron.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = lineTron.metal; sourceTree = "<group>"; };
 		EF8E428A249FE5410049C84C /* ulTron.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = ulTron.metal; sourceTree = "<group>"; };
@@ -573,6 +516,8 @@
 		EF8EAA85244F7F5D00DA02BB /* SteamControllerManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SteamControllerManager.h; sourceTree = "<group>"; };
 		EF8EAA8E244F822C00DA02BB /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		EF8EAA8F244F822C00DA02BB /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
+		EF926C9924BA36980048392B /* SkinManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SkinManager.h; sourceTree = "<group>"; };
+		EF926C9A24BA36980048392B /* SkinManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SkinManager.m; sourceTree = "<group>"; };
 		EF941EFE24427D1200D58F7F /* OptionsTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OptionsTableViewController.h; path = ../../iOS/OptionsTableViewController.h; sourceTree = "<group>"; };
 		EF941EFF24427D1200D58F7F /* OptionsTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OptionsTableViewController.m; path = ../../iOS/OptionsTableViewController.m; sourceTree = "<group>"; };
 		EF950BA824B1211F00DC9A47 /* ColorSpace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ColorSpace.h; sourceTree = "<group>"; };
@@ -580,13 +525,13 @@
 		EF950BAC24B1239F00DC9A47 /* MetalPerformanceShaders.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalPerformanceShaders.framework; path = System/Library/Frameworks/MetalPerformanceShaders.framework; sourceTree = SDKROOT; };
 		EF950BAE24B123A900DC9A47 /* MetalPerformanceShaders.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalPerformanceShaders.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS14.0.sdk/System/Library/Frameworks/MetalPerformanceShaders.framework; sourceTree = DEVELOPER_DIR; };
 		EF9F9C9E240070E700352554 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../../README.md; sourceTree = "<group>"; };
-		EFA756FE2405585D00A02AAB /* mameui.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = mameui.png; sourceTree = "<group>"; };
-		EFA7570424057FD800A02AAB /* default_game_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = default_game_icon.png; sourceTree = "<group>"; };
+		EFA756FE2405585D00A02AAB /* mameui.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = mameui.png; path = "../../iOS-res/mameui.png"; sourceTree = "<group>"; };
+		EFA7570424057FD800A02AAB /* default_game_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = default_game_icon.png; path = "../../iOS-res/default_game_icon.png"; sourceTree = "<group>"; };
 		EFA757072405B9EA00A02AAB /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS13.2.sdk/System/Library/Frameworks/AVFoundation.framework; sourceTree = DEVELOPER_DIR; };
 		EFA757092405BA0200A02AAB /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		EFA7570B2406D64600A02AAB /* SystemImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SystemImage.m; sourceTree = "<group>"; };
 		EFA7570C2406D64600A02AAB /* SystemImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SystemImage.h; sourceTree = "<group>"; };
-		EFA757212408488D00A02AAB /* iCadeControls.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = iCadeControls.png; sourceTree = "<group>"; };
+		EFA757212408488D00A02AAB /* iCadeControls.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = iCadeControls.png; path = "../../iOS-res/iCadeControls.png"; sourceTree = "<group>"; };
 		EFA7A0DC24B61E6C0009CF88 /* libmamearm64-mac.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libmamearm64-mac.a"; path = "../../libmamearm64-mac.a"; sourceTree = "<group>"; };
 		EFA7A15E24B65C020009CF88 /* MAME4mac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MAME4mac.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EFA7A16124B65FCC0009CF88 /* MAME4mac-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "MAME4mac-Info.plist"; sourceTree = "<group>"; };
@@ -611,12 +556,6 @@
 		EFE4B6AA2453D7F80009A6F1 /* InfoDatabase.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = InfoDatabase.m; sourceTree = "<group>"; };
 		EFF9F807246356B200DDA88C /* CGScreenView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CGScreenView.m; path = ../../iOS/CGScreenView.m; sourceTree = "<group>"; };
 		EFF9F808246356B300DDA88C /* CGScreenView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CGScreenView.h; path = ../../iOS/CGScreenView.h; sourceTree = "<group>"; };
-		EFF9F80B2464864600DDA88C /* border-light.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "border-light.png"; path = "../../iOS-res/Applications/MAME4iOS.app/border-light.png"; sourceTree = "<group>"; };
-		EFF9F80C2464864600DDA88C /* border-dark.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "border-dark.png"; path = "../../iOS-res/Applications/MAME4iOS.app/border-dark.png"; sourceTree = "<group>"; };
-		EFF9F80D2464864600DDA88C /* border-test.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "border-test.png"; path = "../../iOS-res/Applications/MAME4iOS.app/border-test.png"; sourceTree = "<group>"; };
-		EFF9F8142465DFB100DDA88C /* effect-dot.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "effect-dot.png"; path = "../../iOS-res/Applications/MAME4iOS.app/effect-dot.png"; sourceTree = "<group>"; };
-		EFF9F81A2466BE8500DDA88C /* effect-scanline.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "effect-scanline.png"; path = "../../iOS-res/Applications/MAME4iOS.app/effect-scanline.png"; sourceTree = "<group>"; };
-		EFF9F81D2466BEE100DDA88C /* effect-crt.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "effect-crt.png"; path = "../../iOS-res/Applications/MAME4iOS.app/effect-crt.png"; sourceTree = "<group>"; };
 		EFF9F824246EE2F800DDA88C /* Intents.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Intents.framework; path = System/Library/Frameworks/Intents.framework; sourceTree = SDKROOT; };
 		EFF9F826246EE30200DDA88C /* IntentsUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IntentsUI.framework; path = System/Library/Frameworks/IntentsUI.framework; sourceTree = SDKROOT; };
 		EFF9F8282470755800DDA88C /* MetalScreenView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MetalScreenView.h; path = ../../iOS/MetalScreenView.h; sourceTree = "<group>"; };
@@ -801,17 +740,15 @@
 				EF67E11524B8972100AFF489 /* MacMenu.m */,
 				EF19F22E235D1C0300C8EE7F /* ChooseGameController.h */,
 				EF19F229235D1BDF00C8EE7F /* ChooseGameController.m */,
-				9268D8572166840F00AB0470 /* DeviceScreenResolver.h */,
-				9268D8582166840F00AB0470 /* DeviceScreenResolver.m */,
 				CEE680B41635BB4900051BC2 /* EmulatorController.h */,
 				CEE680B51635BB4900051BC2 /* EmulatorController.m */,
 				CE8D87DF16541AC400685BC4 /* Globals.h */,
 				CE8D87DB1653121100685BC4 /* iCadeView.h */,
 				CE8D87DC1653121200685BC4 /* iCadeView.m */,
-				CE6D6E1016D8CADF00F265B7 /* LayoutData.h */,
-				CE6D6E1116D8CADF00F265B7 /* LayoutData.m */,
 				CE6D6E1216D8CADF00F265B7 /* LayoutView.h */,
 				CE6D6E1316D8CADF00F265B7 /* LayoutView.m */,
+				EF926C9924BA36980048392B /* SkinManager.h */,
+				EF926C9A24BA36980048392B /* SkinManager.m */,
 				CE9454D21731DE4D00B81C32 /* NetplayGameKit.h */,
 				CE9454D31731DE4D00B81C32 /* NetplayGameKit.m */,
 				EFE4B6A92453D7F80009A6F1 /* InfoDatabase.h */,
@@ -826,45 +763,13 @@
 		CEBFBC0E163C5BD300A05CD0 /* resources */ = {
 			isa = PBXGroup;
 			children = (
-				EF79BDD424B7C0DA00824BFD /* gitinfo.json.sh */,
-				EFF9F80C2464864600DDA88C /* border-dark.png */,
-				EFF9F80B2464864600DDA88C /* border-light.png */,
-				EFF9F80D2464864600DDA88C /* border-test.png */,
-				EFF9F8142465DFB100DDA88C /* effect-dot.png */,
-				EFF9F81A2466BE8500DDA88C /* effect-scanline.png */,
-				EFF9F81D2466BEE100DDA88C /* effect-crt.png */,
-				EFA7570424057FD800A02AAB /* default_game_icon.png */,
-				EF26AE07241848800078FD30 /* mame_logo.png */,
-				EFA756FE2405585D00A02AAB /* mameui.png */,
-				B5FAE31621FCDE0C003F44D0 /* scanline_tvOS201901.png */,
-				920BBDED201FC29700AE7D50 /* dpad.png */,
-				920BBDF020210C3700AE7D50 /* menu.png */,
-				CE30090616FA47E4000EDCF1 /* hiscore.dat */,
-				CE30090316FA47CB000EDCF1 /* Category.ini */,
-				EF00880E2459F4EF0058C2A1 /* cheat0139.zip */,
-				EF0088112459F4FC0058C2A1 /* history0139.zip */,
-				EF0E08AC2401840700E98F01 /* help.md */,
-				EF63E1C024424D2300CFE85D /* whatsnew.md */,
-				EFA7571E2408308000A02AAB /* help images */,
-				9268D84821661CA500AB0470 /* config_iPhone_xr_xs_max.txt */,
-				9268D84B21661E3800AB0470 /* config_iPhone_x.txt */,
-				9268D85121661F1700AB0470 /* config_iPhone_6_plus.txt */,
-				9268D85421661F8E00AB0470 /* config_iPhone_6.txt */,
-				CE8D87D7164FE4BE00685BC4 /* config_iPhone_5.txt */,
-				CEBFBC12163C5DA100A05CD0 /* config_iPhone.txt */,
-				CEBFBC11163C5DA100A05CD0 /* config_iPad.txt */,
-				921CC321216A903600A39154 /* config_iPad_pro_10_5.txt */,
-				927BD1A52209E80F00ECF6C9 /* config_iPad_pro_11.txt */,
-				921CC324216A936800A39154 /* config_iPad_pro_12_9.txt */,
-				EF29C8832402E51100AFFA4E /* config_iPad_gen_7.txt */,
-				CEBFBC13163C5DA100A05CD0 /* crt-1.png */,
-				CEBFBC14163C5DA100A05CD0 /* crt-2.png */,
-				CEBFBC1B163C5DA100A05CD0 /* scanline-1.png */,
-				CEBFBC1C163C5DA100A05CD0 /* scanline-2.png */,
-				CEBFBC1D163C5DA100A05CD0 /* SKIN_1 */,
-				CEBFBC1E163C5DA100A05CD0 /* SKIN_2 */,
-				CEBFBC1F163C5DA100A05CD0 /* SKIN_3 */,
-				CEB8E0DB16A3311500A6FEDC /* LICENSE */,
+				EF1C941B24C2552800749C69 /* gitinfo.json.sh */,
+				EF1C941624C2544A00749C69 /* content */,
+				EF1C941524C253EE00749C69 /* images */,
+				EFA7571E2408308000A02AAB /* help */,
+				EF1C93E624C252C500749C69 /* skins */,
+				EF1C93E124C252C400749C69 /* SKIN_1 */,
+				EF1C93E424C252C400749C69 /* LICENSE */,
 			);
 			name = resources;
 			sourceTree = "<group>";
@@ -972,6 +877,33 @@
 			path = MAME4iOS;
 			sourceTree = "<group>";
 		};
+		EF1C941524C253EE00749C69 /* images */ = {
+			isa = PBXGroup;
+			children = (
+				EF1C941724C254FC00749C69 /* choose-game-background.png */,
+				920BBDF020210C3700AE7D50 /* menu.png */,
+				920BBDED201FC29700AE7D50 /* dpad.png */,
+				EFA756FE2405585D00A02AAB /* mameui.png */,
+				EF26AE07241848800078FD30 /* mame_logo.png */,
+				EFA7570424057FD800A02AAB /* default_game_icon.png */,
+				EF1C93E724C252C500749C69 /* effect-crt.png */,
+				EF1C93EA24C252C500749C69 /* effect-dot.png */,
+				EF1C93EC24C252C500749C69 /* effect-scanline.png */,
+			);
+			name = images;
+			sourceTree = "<group>";
+		};
+		EF1C941624C2544A00749C69 /* content */ = {
+			isa = PBXGroup;
+			children = (
+				EF1C93ED24C252C500749C69 /* history0139.zip */,
+				EF1C93EB24C252C500749C69 /* hiscore.dat */,
+				EF1C93E824C252C500749C69 /* Category.ini */,
+				EF1C93E224C252C400749C69 /* cheat0139.zip */,
+			);
+			name = content;
+			sourceTree = "<group>";
+		};
 		EF1EC8A82441074400CC743D /* Options */ = {
 			isa = PBXGroup;
 			children = (
@@ -1048,12 +980,14 @@
 			path = SteamController;
 			sourceTree = "<group>";
 		};
-		EFA7571E2408308000A02AAB /* help images */ = {
+		EFA7571E2408308000A02AAB /* help */ = {
 			isa = PBXGroup;
 			children = (
+				EF1C93E524C252C500749C69 /* whatsnew.md */,
+				EF1C93E324C252C400749C69 /* help.md */,
 				EFA757212408488D00A02AAB /* iCadeControls.png */,
 			);
-			name = "help images";
+			name = help;
 			sourceTree = "<group>";
 		};
 		EFA7A16024B65E7F0009CF88 /* MAME4mac */ = {
@@ -1188,45 +1122,29 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9268D84D21661E3800AB0470 /* config_iPhone_x.txt in Resources */,
-				921CC326216A936800A39154 /* config_iPad_pro_12_9.txt in Resources */,
-				9268D85321661F1700AB0470 /* config_iPhone_6_plus.txt in Resources */,
-				9268D84A21661CA500AB0470 /* config_iPhone_xr_xs_max.txt in Resources */,
+				EF1C940C24C252C600749C69 /* hiscore.dat in Resources */,
 				EF26AE08241848800078FD30 /* mame_logo.png in Resources */,
-				EF0088122459F4FC0058C2A1 /* history0139.zip in Resources */,
-				925ABCCC1E46DCC500997182 /* config_iPad.txt in Resources */,
+				EF1C93FD24C252C600749C69 /* skins in Resources */,
+				EF1C940924C252C600749C69 /* effect-dot.png in Resources */,
+				EF1C940F24C252C600749C69 /* effect-scanline.png in Resources */,
+				EF1C93F724C252C600749C69 /* LICENSE in Resources */,
 				EFA7570524057FD800A02AAB /* default_game_icon.png in Resources */,
-				925ABCCD1E46DCC500997182 /* config_iPhone.txt in Resources */,
-				925ABCCE1E46DCC500997182 /* crt-1.png in Resources */,
-				EFF9F80E2464864600DDA88C /* border-light.png in Resources */,
-				925ABCCF1E46DCC500997182 /* crt-2.png in Resources */,
-				EF0E08AE2401840700E98F01 /* help.md in Resources */,
-				EFF9F81E2466BEE100DDA88C /* effect-crt.png in Resources */,
-				925ABCD01E46DCC500997182 /* scanline-1.png in Resources */,
+				EF1C940324C252C600749C69 /* Category.ini in Resources */,
+				EF1C941C24C2552900749C69 /* gitinfo.json.sh in Resources */,
+				EF1C941224C252C600749C69 /* history0139.zip in Resources */,
 				EFA7A16B24B7A38E0009CF88 /* Assets.xcassets in Resources */,
-				EF00880F2459F4EF0058C2A1 /* cheat0139.zip in Resources */,
-				EF29C8852402E51200AFFA4E /* config_iPad_gen_7.txt in Resources */,
-				927BD1A62209E80F00ECF6C9 /* config_iPad_pro_11.txt in Resources */,
-				925ABCD11E46DCC500997182 /* scanline-2.png in Resources */,
 				920BBDEF201FC29700AE7D50 /* dpad.png in Resources */,
 				EF29C8822401C73A00AFFA4E /* Launch Screen.storyboard in Resources */,
-				925ABCD21E46DCC500997182 /* SKIN_1 in Resources */,
-				9268D85621661F8E00AB0470 /* config_iPhone_6.txt in Resources */,
-				EFF9F8102464864600DDA88C /* border-dark.png in Resources */,
-				925ABCD51E46DCC500997182 /* config_iPhone_5.txt in Resources */,
 				920BBDF220210C3800AE7D50 /* menu.png in Resources */,
-				EFF9F8122464864600DDA88C /* border-test.png in Resources */,
-				EF63E1C124424D2300CFE85D /* whatsnew.md in Resources */,
-				EFF9F8152465DFB200DDA88C /* effect-dot.png in Resources */,
-				925ABCD71E46DCC500997182 /* LICENSE in Resources */,
 				92A533D021EBDDF20089FBB9 /* GCDWebUploader.bundle in Resources */,
-				EF79BDD524B7C0DA00824BFD /* gitinfo.json.sh in Resources */,
+				EF1C940024C252C600749C69 /* effect-crt.png in Resources */,
+				EF1C93F124C252C600749C69 /* cheat0139.zip in Resources */,
 				EFA756FF2405585D00A02AAB /* mameui.png in Resources */,
+				EF1C941824C254FC00749C69 /* choose-game-background.png in Resources */,
+				EF1C93EE24C252C600749C69 /* SKIN_1 in Resources */,
 				EFA757222408488D00A02AAB /* iCadeControls.png in Resources */,
-				EFF9F81B2466BE8500DDA88C /* effect-scanline.png in Resources */,
-				921CC323216A903600A39154 /* config_iPad_pro_10_5.txt in Resources */,
-				925ABCDD1E46DCC500997182 /* Category.ini in Resources */,
-				925ABCDE1E46DCC500997182 /* hiscore.dat in Resources */,
+				EF1C93FA24C252C600749C69 /* whatsnew.md in Resources */,
+				EF1C93F424C252C600749C69 /* help.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1234,27 +1152,21 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EFF9F8112464864600DDA88C /* border-dark.png in Resources */,
-				EFF9F81C2466BE8500DDA88C /* effect-scanline.png in Resources */,
-				EF0088102459F4EF0058C2A1 /* cheat0139.zip in Resources */,
-				EFF9F81F2466BEE100DDA88C /* effect-crt.png in Resources */,
-				EFD4D14A23C0F6AB00857A76 /* Category.ini in Resources */,
-				926C770721F26DFA00103EDE /* crt-2.png in Resources */,
+				EF1C93F224C252C600749C69 /* cheat0139.zip in Resources */,
+				EF1C940124C252C600749C69 /* effect-crt.png in Resources */,
+				EF1C941924C254FC00749C69 /* choose-game-background.png in Resources */,
 				EF26AE09241848800078FD30 /* mame_logo.png in Resources */,
-				926C770921F26E0000103EDE /* scanline-2.png in Resources */,
-				EF79BDD624B7C0DA00824BFD /* gitinfo.json.sh in Resources */,
+				EF1C940424C252C600749C69 /* Category.ini in Resources */,
+				EF1C93F824C252C600749C69 /* LICENSE in Resources */,
 				EFA757002405585D00A02AAB /* mameui.png in Resources */,
-				EFF9F80F2464864600DDA88C /* border-light.png in Resources */,
-				EF0088132459F4FC0058C2A1 /* history0139.zip in Resources */,
 				EFA7570624057FD800A02AAB /* default_game_icon.png in Resources */,
-				926C770621F26DEA00103EDE /* crt-1.png in Resources */,
-				EFF9F8132464864600DDA88C /* border-test.png in Resources */,
 				92ECB8F721EA985000D1E3D0 /* Assets.xcassets in Resources */,
-				B5FAE31721FCDE0C003F44D0 /* scanline_tvOS201901.png in Resources */,
-				926C770821F26DFD00103EDE /* scanline-1.png in Resources */,
+				EF1C940D24C252C600749C69 /* hiscore.dat in Resources */,
 				92A533D121EBDDF20089FBB9 /* GCDWebUploader.bundle in Resources */,
-				EFF9F8162465DFB200DDA88C /* effect-dot.png in Resources */,
-				926C771321F39D2F00103EDE /* hiscore.dat in Resources */,
+				EF1C940A24C252C600749C69 /* effect-dot.png in Resources */,
+				EF1C941D24C2552900749C69 /* gitinfo.json.sh in Resources */,
+				EF1C941024C252C600749C69 /* effect-scanline.png in Resources */,
+				EF1C941324C252C600749C69 /* history0139.zip in Resources */,
 				B5FAE31921FCE64D003F44D0 /* MAME_tvOS.lsr in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1263,45 +1175,29 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EFA7A13024B65C020009CF88 /* config_iPhone_x.txt in Resources */,
-				EFA7A13124B65C020009CF88 /* config_iPad_pro_12_9.txt in Resources */,
-				EFA7A13224B65C020009CF88 /* config_iPhone_6_plus.txt in Resources */,
-				EFA7A13324B65C020009CF88 /* config_iPhone_xr_xs_max.txt in Resources */,
+				EF1C940E24C252C600749C69 /* hiscore.dat in Resources */,
 				EFA7A13424B65C020009CF88 /* mame_logo.png in Resources */,
-				EFA7A13524B65C020009CF88 /* history0139.zip in Resources */,
-				EFA7A13624B65C020009CF88 /* config_iPad.txt in Resources */,
+				EF1C93FF24C252C600749C69 /* skins in Resources */,
+				EF1C940B24C252C600749C69 /* effect-dot.png in Resources */,
+				EF1C941124C252C600749C69 /* effect-scanline.png in Resources */,
+				EF1C93F924C252C600749C69 /* LICENSE in Resources */,
 				EFA7A13724B65C020009CF88 /* default_game_icon.png in Resources */,
-				EFA7A13824B65C020009CF88 /* config_iPhone.txt in Resources */,
-				EFA7A13924B65C020009CF88 /* crt-1.png in Resources */,
-				EFA7A13A24B65C020009CF88 /* border-light.png in Resources */,
-				EFA7A13B24B65C020009CF88 /* crt-2.png in Resources */,
-				EFA7A13C24B65C020009CF88 /* help.md in Resources */,
-				EFA7A13D24B65C020009CF88 /* effect-crt.png in Resources */,
-				EFA7A13E24B65C020009CF88 /* scanline-1.png in Resources */,
-				EFA7A13F24B65C020009CF88 /* cheat0139.zip in Resources */,
-				EFA7A14024B65C020009CF88 /* config_iPad_gen_7.txt in Resources */,
-				EFA7A14124B65C020009CF88 /* config_iPad_pro_11.txt in Resources */,
-				EFA7A14224B65C020009CF88 /* scanline-2.png in Resources */,
+				EF1C940524C252C600749C69 /* Category.ini in Resources */,
+				EF1C941E24C2552900749C69 /* gitinfo.json.sh in Resources */,
+				EF1C941424C252C600749C69 /* history0139.zip in Resources */,
 				EFA7A16D24B7A40F0009CF88 /* Assets.xcassets in Resources */,
 				EFA7A14324B65C020009CF88 /* dpad.png in Resources */,
 				EFA7A14424B65C020009CF88 /* Launch Screen.storyboard in Resources */,
-				EFA7A14524B65C020009CF88 /* SKIN_1 in Resources */,
-				EFA7A14624B65C020009CF88 /* config_iPhone_6.txt in Resources */,
-				EFA7A14724B65C020009CF88 /* border-dark.png in Resources */,
-				EFA7A14824B65C020009CF88 /* config_iPhone_5.txt in Resources */,
 				EFA7A14924B65C020009CF88 /* menu.png in Resources */,
-				EFA7A14A24B65C020009CF88 /* border-test.png in Resources */,
-				EFA7A14B24B65C020009CF88 /* whatsnew.md in Resources */,
-				EFA7A14C24B65C020009CF88 /* effect-dot.png in Resources */,
-				EFA7A14D24B65C020009CF88 /* LICENSE in Resources */,
 				EFA7A14E24B65C020009CF88 /* GCDWebUploader.bundle in Resources */,
-				EF79BDD724B7C0DA00824BFD /* gitinfo.json.sh in Resources */,
+				EF1C940224C252C600749C69 /* effect-crt.png in Resources */,
+				EF1C93F324C252C600749C69 /* cheat0139.zip in Resources */,
 				EFA7A15024B65C020009CF88 /* mameui.png in Resources */,
+				EF1C941A24C254FC00749C69 /* choose-game-background.png in Resources */,
+				EF1C93F024C252C600749C69 /* SKIN_1 in Resources */,
 				EFA7A15124B65C020009CF88 /* iCadeControls.png in Resources */,
-				EFA7A15524B65C020009CF88 /* effect-scanline.png in Resources */,
-				EFA7A15624B65C020009CF88 /* config_iPad_pro_10_5.txt in Resources */,
-				EFA7A15724B65C020009CF88 /* Category.ini in Resources */,
-				EFA7A15824B65C020009CF88 /* hiscore.dat in Resources */,
+				EF1C93FC24C252C600749C69 /* whatsnew.md in Resources */,
+				EF1C93F624C252C600749C69 /* help.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1394,12 +1290,10 @@
 				925ABCAE1E46DCC500997182 /* HelpController.m in Sources */,
 				925ABCAF1E46DCC500997182 /* AnalogStick.m in Sources */,
 				925ABCB01E46DCC500997182 /* Bootstrapper.m in Sources */,
-				925ABCB11E46DCC500997182 /* LayoutData.m in Sources */,
 				EFA7570D2406D64600A02AAB /* SystemImage.m in Sources */,
 				92A533AB21EBDBAD0089FBB9 /* GCDWebServerFunctions.m in Sources */,
 				92A533BD21EBDBAD0089FBB9 /* GCDWebServerStreamedResponse.m in Sources */,
 				EFB7B2172479FBD900AD96A4 /* MetalView.m in Sources */,
-				9268D85A2166841000AB0470 /* DeviceScreenResolver.m in Sources */,
 				925ABCB21E46DCC500997182 /* LayoutView.m in Sources */,
 				EF8EAA86244F7F5D00DA02BB /* SteamControllerManager.m in Sources */,
 				92A533A521EBDBAD0089FBB9 /* GCDWebServerResponse.m in Sources */,
@@ -1418,6 +1312,7 @@
 				EF23D331243CB9CF006B3EE2 /* PopupSegmentedControl.m in Sources */,
 				EFF9F82A2470755800DDA88C /* MetalScreenView.m in Sources */,
 				EF19F22C235D1BDF00C8EE7F /* ChooseGameController.m in Sources */,
+				EF926C9B24BA36980048392B /* SkinManager.m in Sources */,
 				EF8EAA88244F7F5D00DA02BB /* SteamController.m in Sources */,
 				EFB3C6DD248C33DF00F44780 /* InfoHUD.m in Sources */,
 				92A533AE21EBDBAD0089FBB9 /* GCDWebServer.m in Sources */,
@@ -1513,12 +1408,10 @@
 				EFA7A0F924B65C020009CF88 /* HelpController.m in Sources */,
 				EFA7A0FA24B65C020009CF88 /* AnalogStick.m in Sources */,
 				EFA7A0FB24B65C020009CF88 /* Bootstrapper.m in Sources */,
-				EFA7A0FC24B65C020009CF88 /* LayoutData.m in Sources */,
 				EFA7A0FD24B65C020009CF88 /* SystemImage.m in Sources */,
 				EFA7A0FE24B65C020009CF88 /* GCDWebServerFunctions.m in Sources */,
 				EFA7A0FF24B65C020009CF88 /* GCDWebServerStreamedResponse.m in Sources */,
 				EFA7A10024B65C020009CF88 /* MetalView.m in Sources */,
-				EFA7A10124B65C020009CF88 /* DeviceScreenResolver.m in Sources */,
 				EFA7A10224B65C020009CF88 /* LayoutView.m in Sources */,
 				EFA7A10324B65C020009CF88 /* SteamControllerManager.m in Sources */,
 				EFA7A10424B65C020009CF88 /* GCDWebServerResponse.m in Sources */,
@@ -1527,6 +1420,7 @@
 				EFA7A10724B65C020009CF88 /* InfoDatabase.m in Sources */,
 				EF67E11624B8972100AFF489 /* MacMenu.m in Sources */,
 				EFA7A10824B65C020009CF88 /* FilterOptionController.m in Sources */,
+				EF926C9C24BA36980048392B /* SkinManager.m in Sources */,
 				EFA7A10924B65C020009CF88 /* InputOptionController.m in Sources */,
 				EFA7A10A24B65C020009CF88 /* GCDWebServerMultiPartFormRequest.m in Sources */,
 				EFA7A10B24B65C020009CF88 /* FileItemProvider.m in Sources */,
@@ -1559,7 +1453,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CURRENT_PROJECT_VERSION = 2020.11;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 8RUN83V8CA;
 				ENABLE_BITCODE = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MAME4iOS/MAME4iOS-Prefix.pch";
@@ -1579,7 +1473,7 @@
 				MARKETING_VERSION = 2020.11;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4ios;
+				PRODUCT_BUNDLE_IDENTIFIER = com.toddla.mame4ios;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.toddla.mame4mac;
 				PRODUCT_NAME = MAME4iOS;
 				PROVISIONING_PROFILE = "";
@@ -1600,7 +1494,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CURRENT_PROJECT_VERSION = 2020.11;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 8RUN83V8CA;
 				ENABLE_BITCODE = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MAME4iOS/MAME4iOS-Prefix.pch";
@@ -1616,7 +1510,7 @@
 				MARKETING_VERSION = 2020.11;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4ios;
+				PRODUCT_BUNDLE_IDENTIFIER = com.toddla.mame4ios;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.toddla.mame4mac;
 				PRODUCT_NAME = MAME4iOS;
 				PROVISIONING_PROFILE = "";
@@ -1661,7 +1555,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2020.11;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 8RUN83V8CA;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -1686,7 +1580,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4tvos;
+				PRODUCT_BUNDLE_IDENTIFIER = com.toddla.mame4tvos;
 				PRODUCT_NAME = MAME4tvOS;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;
@@ -1731,7 +1625,7 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 2020.11;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 8RUN83V8CA;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -1755,7 +1649,7 @@
 				MARKETING_VERSION = 2020.11;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4tvos;
+				PRODUCT_BUNDLE_IDENTIFIER = com.toddla.mame4tvos;
 				PRODUCT_NAME = MAME4tvOS;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;
@@ -1880,7 +1774,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CURRENT_PROJECT_VERSION = 2020.11;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 8RUN83V8CA;
 				ENABLE_BITCODE = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MAME4iOS/MAME4iOS-Prefix.pch";
@@ -1900,7 +1794,7 @@
 				MARKETING_VERSION = 2020.11;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4mac;
+				PRODUCT_BUNDLE_IDENTIFIER = com.toddla.mame4mac;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1921,7 +1815,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CURRENT_PROJECT_VERSION = 2020.11;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 8RUN83V8CA;
 				ENABLE_BITCODE = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MAME4iOS/MAME4iOS-Prefix.pch";
@@ -1937,7 +1831,7 @@
 				MARKETING_VERSION = 2020.11;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4mac;
+				PRODUCT_BUNDLE_IDENTIFIER = com.toddla.mame4mac;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";

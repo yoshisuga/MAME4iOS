@@ -55,6 +55,8 @@ Building MAME4iOS requires a prebuilt MAME binary (it has not been included in t
         <sup>AppleTV (4/4k and above)</sup><br>
         - simulator: `./make-sim.sh`<br>
         <sup>iOS/tvOS (version 12.0 and above)</sup><br>
+        - macOS: `./make-mac.sh`<br>
+        <sup>macOS(version 10.15 Catalina and above)</sup><br>
 
 4. Choose the appropriate build target in Xcode:
     - `MAME4iOS 64-bit Release` (iPhone/iPad)

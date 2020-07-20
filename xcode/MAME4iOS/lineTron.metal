@@ -30,14 +30,14 @@ struct Push
 };
 
 fragment float4
-lineTron(VertexOutput v[[stage_in]], constant Push& params [[buffer(0)]])
+__lineTron(VertexOutput v[[stage_in]], constant Push& params [[buffer(0)]])
 {
     float a = exp(-pow(v.tex.y * params.falloff, 2));
     return float4((v.color.rgb*params.strength), a);
 }
 
 fragment float4
-fadeTron(VertexOutput v [[stage_in]], constant Push& params [[buffer(0)]])
+lineTron(VertexOutput v [[stage_in]], constant Push& params [[buffer(0)]])
 {
     float t = params.line_time;
     float4 color = v.color;

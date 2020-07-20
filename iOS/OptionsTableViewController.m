@@ -80,6 +80,12 @@
     version = [NSString stringWithFormat:@"%@ • DEBUG", version];
 #endif
     
+    // TODO: get the mame version from MYOSD
+    NSString* mame_version = @"139u1";
+    
+    if (mame_version != nil)
+        version = [NSString stringWithFormat:@"%@ • %@", version, mame_version];
+
     // this is the last date Info.plist was modifed, if you do a clean build, or change the version, it is the build date.
 #if TARGET_OS_MACCATALYST
     NSString *path = [[NSBundle mainBundle] pathForResource: @"../Info" ofType: @"plist"];
@@ -104,7 +110,7 @@
         }
     }
 
-    if ([git_branch isEqualToString:@"master"])
+    if ([git_branch isEqualToString:@"master"] || [git_branch isEqualToString:@"main"])
         git_branch = nil;
     
     if ([git_commit length] > 7)

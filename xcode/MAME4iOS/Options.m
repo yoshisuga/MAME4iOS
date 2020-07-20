@@ -9,7 +9,7 @@
 #include "myosd.h"
 #import "Options.h"
 #import "Globals.h"
-#import "EmulatorController.h"  // for borderList
+#import "SkinManager.h"         // for skinList
 #import "MetalScreenView.h"     // for shader and filter list
 #import "CGScreenView.h"        // for shader and filter list
 
@@ -37,8 +37,8 @@
     return @[@"Keyboard",@"iCade or compatible",@"iCP, Gametel",@"iMpulse", @"8BitDo Zero"];
 }
 
-+ (NSArray*)arrayBorder {
-    return [EmulatorController borderList];
++ (NSArray*)arraySkin {
+    return [SkinManager getSkinNames];
 }
 + (NSArray*)arrayFilter {
     Options* op = [[Options alloc] init];
@@ -68,6 +68,15 @@
     else
         return [CGScreenView colorSpaceList];
 }
+
+#pragma mark - utility funciton to set a single option and save it.
+
++ (void)setOption:(id)value forKey:(NSString*)key {
+    Options* op = [[Options alloc] init];
+    [op setValue:value forKey:key];
+    [op saveOptions];
+}
+
 
 #pragma mark - instance code
 
@@ -115,7 +124,7 @@
         _keepAspectRatio=1;
         
         _filter = @"";
-        _border = @"";
+        _skin = @"";
         _screenShader = @"";
         _lineShader = @"";
 
@@ -227,7 +236,7 @@
         _keepAspectRatio = [([optionsDict objectForKey:@"KeepAspect"] ?: @(1)) intValue];
         
         _filter = [optionsDict objectForKey:@"filter"] ?: @"";
-        _border = [optionsDict objectForKey:@"border"] ?: @"";
+        _skin = [optionsDict objectForKey:@"skin"] ?: @"";
         _screenShader = [optionsDict objectForKey:@"screen-shader"] ?: [optionsDict objectForKey:@"effect"] ?: @"";
         _lineShader = [optionsDict objectForKey:@"line-shader"] ?: @"";
 
@@ -344,7 +353,7 @@
                              [NSString stringWithFormat:@"%d", _keepAspectRatio], @"KeepAspect",
                               
                              _filter, @"filter",
-                             _border, @"border",
+                             _skin, @"skin",
                              _screenShader, @"screen-shader",
                              _lineShader, @"line-shader",
 
