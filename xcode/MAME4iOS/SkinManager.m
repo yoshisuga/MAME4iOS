@@ -83,31 +83,24 @@ static NSArray* g_skin_list;
     if ([_skin_name isEqualToString:name])
         return;
     
-    NSArray* names = [name componentsSeparatedByString:@","];
-    
-    NSLog(@"LOADING SKIN: %@", names);
+    NSLog(@"LOADING SKIN: %@", name);
     
     _skin_name = name;
-    _skin_paths = nil;
+    _skin_paths = [[NSMutableArray alloc] init];
     _skin_infos = [[NSMutableArray alloc] init];
     _image_cache = nil;
     
-    // add any custom button layout (<Name>.json, if found)
-    // NOTE Custom layout *overrides* json in the Skin, so we add it first
-    NSString* path = [NSString stringWithFormat:@"%s/%@.json", get_documents_path("skins"), names.lastObject];
-    [self addInfo:[NSData dataWithContentsOfFile:path]];
-    
-    for (NSString* name in names) {
+    for (NSString* skin in [name componentsSeparatedByString:@","]) {
         
         // if skin name is empty ignore it (a rom parent can be "0", so ignore that too)
-        if (name.length == 0 || [name isEqualToString:@"0"])
+        if (skin.length == 0 || [skin isEqualToString:@"0"])
             continue;
 
         // look for the Skin first in the user directory, then as a resource, else fail to default.
-        NSString* path = [NSString stringWithFormat:@"%s/%@.zip", get_documents_path("skins"), name];
+        NSString* path = [NSString stringWithFormat:@"%s/%@.zip", get_documents_path("skins"), skin];
         
         if (![NSFileManager.defaultManager fileExistsAtPath:path])
-            path = [NSString stringWithFormat:@"%s/%@.zip", get_resource_path("skins"), name];
+            path = [NSString stringWithFormat:@"%s/%@.zip", get_resource_path("skins"), skin];
         
         if (![NSFileManager.defaultManager fileExistsAtPath:path])
             continue;
@@ -115,14 +108,31 @@ static NSArray* g_skin_list;
         if ([_skin_paths containsObject:path])
             continue;
         
-        _skin_paths = _skin_paths ?: [[NSMutableArray alloc] init];
         [_skin_paths addObject:path];
 
-        // load skin.json if present.
-        [self addInfo:[self loadData:@"skin.json" from:path]];
+        // add any custom button layout (<Name>.json, if found)
+        // NOTE use the skin.info in the zip first if the zip is newer than the customization.
+        NSString* custom_path = [NSString stringWithFormat:@"%s/%@.json", get_documents_path("skins"), skin];
+
+        NSDate* custom_date = [[NSFileManager.defaultManager attributesOfItemAtPath:custom_path error:nil] fileModificationDate];
+        NSDate* skin_date = [[NSFileManager.defaultManager attributesOfItemAtPath:path error:nil] fileModificationDate];
+        assert(skin_date != nil);
+
+        if (custom_date != nil && [skin_date compare:custom_date] == NSOrderedDescending) {
+            [self addInfo:[self loadData:@"skin.json" from:path]];
+            [self addInfo:[NSData dataWithContentsOfFile:custom_path]];
+        }
+        else {
+            [self addInfo:[NSData dataWithContentsOfFile:custom_path]];
+            [self addInfo:[self loadData:@"skin.json" from:path]];
+        }
     }
     
-    // add our Default layout file in SKIN_1
+    // add any Default button layout
+    NSString* path = [NSString stringWithFormat:@"%s/Default.json", get_documents_path("skins")];
+    [self addInfo:[NSData dataWithContentsOfFile:path]];
+    
+    // add our Default layout file in SKIN_1 last
     NSData* info = [NSData dataWithContentsOfFile:[NSString stringWithUTF8String:get_resource_path("SKIN_1/skin.json")]];
     assert(info != nil);
     [self addInfo:info];
