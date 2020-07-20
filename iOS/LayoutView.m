@@ -186,8 +186,10 @@ static CGRect CGRectScale(CGRect rect, CGFloat scale) {
         
         if ((floor(pinch_scale * 1000.0) / 1000.0) != 1.0) {
             CGRect rButtons = CGRectNull;
-            for (int i=BTN_A; i<=BTN_R1; i++)
-                rButtons = CGRectUnion(rButtons, rLayout[i]);
+            for (int i=BTN_A; i<=BTN_R1; i++) {
+                if (!CGRectIsEmpty(rLayout[i]))
+                    rButtons = CGRectUnion(rButtons, rLayout[i]);
+            }
 
             if (MyCGRectContainsPoint(rLayout[BTN_STICK], c)) {
                 rLayout[BTN_STICK] = CGRectScale(rLayout[BTN_STICK], pinch_scale);
