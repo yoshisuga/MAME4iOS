@@ -3214,18 +3214,18 @@ void myosd_handle_turbo() {
     // set the background and view rects.
     if (g_device_is_landscape) {
         // try to fit a 4:3 game screen with space on each side.
-        CGFloat w = MIN(windowSize.height * 4 / 3, windowSize.width * 0.75);
-        CGFloat h = w * 3 / 4;
+        CGFloat w = floor(MIN(windowSize.height * 4 / 3, windowSize.width * 0.75));
+        CGFloat h = floor(w * 3 / 4);
 
         rFrames[LANDSCAPE_VIEW_FULL] = CGRectMake(0, 0, windowSize.width, windowSize.height);
         rFrames[LANDSCAPE_IMAGE_BACK] = CGRectMake(0, 0, windowSize.width, windowSize.height);
-        rFrames[LANDSCAPE_VIEW_NOT_FULL] = CGRectMake((windowSize.width-w)/2, 0, w, h);
+        rFrames[LANDSCAPE_VIEW_NOT_FULL] = CGRectMake(floor((windowSize.width-w)/2), 0, w, h);
     }
     else {
         // split the window, keeping the aspect ratio of the background image, on the bottom.
         UIImage* image = [self loadImage:isPhone ? @"background_portrait_tall" : @"background_portrait"];
-        CGFloat aspect = image ? (image.size.width / image.size.height) : 1.333;
-        CGFloat h = windowSize.width / aspect;
+        CGFloat aspect = image ? (image.size.width / image.size.height) : (4.0 / 3.0);
+        CGFloat h = floor(windowSize.width / aspect);
 
         rFrames[PORTRAIT_VIEW_FULL] = CGRectMake(0, 0, windowSize.width, windowSize.height);
         rFrames[PORTRAIT_VIEW_NOT_FULL] = CGRectMake(0, 0, windowSize.width, windowSize.height - h);
@@ -3287,11 +3287,11 @@ void myosd_handle_turbo() {
     CGFloat scale_y = back.size.height / 1000.0;
     CGFloat scale = (scale_x + scale_y) / 2;
 
-    CGFloat x = floor(back.origin.x + [arr[0] intValue] * scale_x);
-    CGFloat y = floor(back.origin.y + [arr[1] intValue] * scale_y);
+    CGFloat x = round(back.origin.x + [arr[0] intValue] * scale_x);
+    CGFloat y = round(back.origin.y + [arr[1] intValue] * scale_y);
     CGFloat r = (arr.count > 2) ? [arr[2] intValue] : (g_device_is_landscape ? 120 : 180);
 
-    CGFloat w = floor(r * scale);
+    CGFloat w = round(r * scale);
     CGFloat h = w;
     return CGRectMake(floor(x - w/2), floor(y - h/2), w, h);
 }
@@ -3352,21 +3352,28 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 
     for (int i=0; i<NUM_BUTTONS; i++) {
         CGRect rect = [self getButtonRect:i];
+        CGRect rectLay = [self getLayoutRect:i];
         
-        if (CGRectEqualToRect(rect, [self getLayoutRect:i]))
+        if (CGRectEqualToRect(rect, rectLay))
             continue;
         
-        // TODO: make sure this is an exact inverse of getLayoutRect
         CGRect back = g_device_is_landscape ? rFrames[LANDSCAPE_IMAGE_BACK] : rFrames[PORTRAIT_IMAGE_BACK];
-        CGFloat scale_x = 1000.0 / back.size.width;
-        CGFloat scale_y = 1000.0 / back.size.height;
+        CGFloat scale_x = back.size.width / 1000.0;
+        CGFloat scale_y = back.size.height / 1000.0;
         CGFloat scale = (scale_x + scale_y) / 2;
-        CGFloat x = floor((CGRectGetMidX(rect) - back.origin.x) * scale_x);
-        CGFloat y = floor((CGRectGetMidY(rect) - back.origin.y) * scale_y);
-        CGFloat w = floor(rect.size.width * scale);
+        CGFloat x = round((CGRectGetMidX(rect) - back.origin.x) / scale_x);
+        CGFloat y = round((CGRectGetMidY(rect) - back.origin.y) / scale_y);
+        CGFloat w = round(rect.size.width / scale);
+
+        NSString* keyPath = [NSString stringWithFormat:@"%@.%@", layout_name, [self getButtonName:i]];
+
+        // if the size of the button did not change dont update w to prevent rounding creep
+        if (rect.size.width == rectLay.size.width) {
+            NSString* str = [skinManager valueForKeyPath:keyPath];
+            w = [[str componentsSeparatedByString:@","].lastObject intValue];
+        }
         
         NSString* value = [NSString stringWithFormat:@"%.0f,%.0f,%.0f", x, y, w];
-        NSString* keyPath = [NSString stringWithFormat:@"%@.%@", layout_name, [self getButtonName:i]];
         [dict setValue:value forKeyPath:keyPath];
     }
     
