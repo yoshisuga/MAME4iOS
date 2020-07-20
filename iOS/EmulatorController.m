@@ -3493,7 +3493,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
             
             // only UNZIP files to specific directories, send a ZIP file with a unspecifed directory to roms/
             if ([info.name hasPrefix:@"roms/"] || [info.name hasPrefix:@"artwork/"] || [info.name hasPrefix:@"titles/"] || [info.name hasPrefix:@"samples/"] ||
-                [info.name hasPrefix:@"cfg/"] || [info.name hasPrefix:@"ini/"] || [info.name hasPrefix:@"sta/"] || [info.name hasPrefix:@"hi/"])
+                [info.name hasPrefix:@"cfg/"] || [info.name hasPrefix:@"ini/"] || [info.name hasPrefix:@"sta/"] || [info.name hasPrefix:@"hi/"] || [info.name hasPrefix:@"skins/"])
                 toPath = [rootPath stringByAppendingPathComponent:info.name];
             else if ([name.uppercaseString isEqualToString:@"CHEAT.ZIP"])
                 toPath = [rootPath stringByAppendingPathComponent:name];
