@@ -2220,8 +2220,9 @@ void myosd_handle_turbo() {
 #ifdef __IPHONE_13_4
         if (@available(iOS 13.4, *)) {
             if (i == BTN_SELECT || i == BTN_START || i == BTN_EXIT || i == BTN_OPTION) {
-                [buttonViews[i] addInteraction:[[UIPointerInteraction alloc] initWithDelegate:(id)self]];
-                [buttonViews[i] setUserInteractionEnabled:TRUE];
+// this hilights the whole square button, not the AspectFit part!
+//                [buttonViews[i] addInteraction:[[UIPointerInteraction alloc] initWithDelegate:(id)self]];
+//                [buttonViews[i] setUserInteractionEnabled:TRUE];
             }
         }
 #endif
