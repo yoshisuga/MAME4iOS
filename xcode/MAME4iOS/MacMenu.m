@@ -64,7 +64,7 @@
 
     [builder insertSiblingMenu:[UIMenu menuWithTitle:@"FILE" image:nil identifier:nil options:UIMenuOptionsDisplayInline children:@[
         [UIKeyCommand commandWithTitle:@"Play"     image:[UIImage systemImageNamed:@"play.circle"] action:@selector(filePlay) input:@" " modifierFlags:0 propertyList:nil],
-        [UIKeyCommand commandWithTitle:@"Favorite" image:[UIImage systemImageNamed:@"star.circle"] action:@selector(fileFavorite) input:@"f" modifierFlags:UIKeyModifierCommand propertyList:nil],
+        [UIKeyCommand commandWithTitle:@"Favorite" image:[UIImage systemImageNamed:@"star.circle"] action:@selector(fileFavorite) input:@"y" modifierFlags:UIKeyModifierCommand propertyList:nil],
         [UIKeyCommand commandWithTitle:@"Get Info" image:[UIImage systemImageNamed:@"info.circle"] action:@selector(fileInfo) input:@"i" modifierFlags:UIKeyModifierCommand propertyList:nil],
     ]] beforeMenuForIdentifier:UIMenuClose];
 
