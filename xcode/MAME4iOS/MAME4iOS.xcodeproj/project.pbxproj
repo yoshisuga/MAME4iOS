@@ -136,6 +136,9 @@
 		EF23D332243CB9CF006B3EE2 /* PopupSegmentedControl.m in Sources */ = {isa = PBXBuildFile; fileRef = EF23D330243CB9CE006B3EE2 /* PopupSegmentedControl.m */; };
 		EF24933A236264DA00DD0A6C /* ImageCache.m in Sources */ = {isa = PBXBuildFile; fileRef = EF249336236264D900DD0A6C /* ImageCache.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		EF24933B236264DA00DD0A6C /* ImageCache.m in Sources */ = {isa = PBXBuildFile; fileRef = EF249336236264D900DD0A6C /* ImageCache.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		EF24BAFD24C786A900D9C55A /* SkinManager.m in Sources */ = {isa = PBXBuildFile; fileRef = EF926C9A24BA36980048392B /* SkinManager.m */; };
+		EF24BB0024C7894700D9C55A /* skins_tvOS in Resources */ = {isa = PBXBuildFile; fileRef = EF24BAFF24C7894700D9C55A /* skins_tvOS */; };
+		EF24BB0124C78E5400D9C55A /* MetalPerformanceShaders.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF950BAC24B1239F00DC9A47 /* MetalPerformanceShaders.framework */; };
 		EF26AE08241848800078FD30 /* mame_logo.png in Resources */ = {isa = PBXBuildFile; fileRef = EF26AE07241848800078FD30 /* mame_logo.png */; };
 		EF26AE09241848800078FD30 /* mame_logo.png in Resources */ = {isa = PBXBuildFile; fileRef = EF26AE07241848800078FD30 /* mame_logo.png */; };
 		EF26AE0C241AA6900078FD30 /* FileItemProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = EF26AE0B241AA6900078FD30 /* FileItemProvider.m */; };
@@ -168,8 +171,6 @@
 		EF941F0124427D1200D58F7F /* OptionsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF941EFF24427D1200D58F7F /* OptionsTableViewController.m */; };
 		EF950BAA24B1211F00DC9A47 /* ColorSpace.m in Sources */ = {isa = PBXBuildFile; fileRef = EF950BA924B1211F00DC9A47 /* ColorSpace.m */; };
 		EF950BAB24B1211F00DC9A47 /* ColorSpace.m in Sources */ = {isa = PBXBuildFile; fileRef = EF950BA924B1211F00DC9A47 /* ColorSpace.m */; };
-		EF950BAD24B1239F00DC9A47 /* MetalPerformanceShaders.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF950BAC24B1239F00DC9A47 /* MetalPerformanceShaders.framework */; };
-		EF950BAF24B123A900DC9A47 /* MetalPerformanceShaders.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF950BAE24B123A900DC9A47 /* MetalPerformanceShaders.framework */; };
 		EFA756FF2405585D00A02AAB /* mameui.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA756FE2405585D00A02AAB /* mameui.png */; };
 		EFA757002405585D00A02AAB /* mameui.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA756FE2405585D00A02AAB /* mameui.png */; };
 		EFA7570524057FD800A02AAB /* default_game_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA7570424057FD800A02AAB /* default_game_icon.png */; };
@@ -493,6 +494,7 @@
 		EF23D330243CB9CE006B3EE2 /* PopupSegmentedControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PopupSegmentedControl.m; sourceTree = "<group>"; };
 		EF249336236264D900DD0A6C /* ImageCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageCache.m; sourceTree = "<group>"; };
 		EF249337236264DA00DD0A6C /* ImageCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageCache.h; sourceTree = "<group>"; };
+		EF24BAFF24C7894700D9C55A /* skins_tvOS */ = {isa = PBXFileReference; lastKnownFileType = folder; name = skins_tvOS; path = "../../iOS-res/skins_tvOS"; sourceTree = "<group>"; };
 		EF26AE07241848800078FD30 /* mame_logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = mame_logo.png; path = "../../iOS-res/mame_logo.png"; sourceTree = "<group>"; };
 		EF26AE0A241AA6900078FD30 /* FileItemProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FileItemProvider.h; sourceTree = "<group>"; };
 		EF26AE0B241AA6900078FD30 /* FileItemProvider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FileItemProvider.m; sourceTree = "<group>"; };
@@ -588,9 +590,9 @@
 				EFA7570A2405BA0200A02AAB /* AVFoundation.framework in Frameworks */,
 				925ABCBE1E46DCC500997182 /* UIKit.framework in Frameworks */,
 				925ABCC01E46DCC500997182 /* Foundation.framework in Frameworks */,
+				EF24BB0124C78E5400D9C55A /* MetalPerformanceShaders.framework in Frameworks */,
 				925ABCC11E46DCC500997182 /* CoreGraphics.framework in Frameworks */,
 				925ABCC21E46DCC500997182 /* GameKit.framework in Frameworks */,
-				EF950BAD24B1239F00DC9A47 /* MetalPerformanceShaders.framework in Frameworks */,
 				925ABCC41E46DCC500997182 /* libz.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -609,7 +611,6 @@
 				92ECB90621EA998000D1E3D0 /* CoreFoundation.framework in Frameworks */,
 				EFA757082405B9EA00A02AAB /* AVFoundation.framework in Frameworks */,
 				92ECB90421EA997A00D1E3D0 /* GameController.framework in Frameworks */,
-				EF950BAF24B123A900DC9A47 /* MetalPerformanceShaders.framework in Frameworks */,
 				92ECB90121EA993E00D1E3D0 /* libc++.tbd in Frameworks */,
 				EFA98FB324A4E2D5007B6689 /* CoreServices.framework in Frameworks */,
 				92ECB8FF21EA992100D1E3D0 /* libmamearm64-tvos.a in Frameworks */,
@@ -767,6 +768,7 @@
 				EF1C941624C2544A00749C69 /* content */,
 				EF1C941524C253EE00749C69 /* images */,
 				EFA7571E2408308000A02AAB /* help */,
+				EF24BAFF24C7894700D9C55A /* skins_tvOS */,
 				EF1C93E624C252C500749C69 /* skins */,
 				EF1C93E124C252C400749C69 /* SKIN_1 */,
 				EF1C93E424C252C400749C69 /* LICENSE */,
@@ -1153,6 +1155,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				EF1C93F224C252C600749C69 /* cheat0139.zip in Resources */,
+				EF24BB0024C7894700D9C55A /* skins_tvOS in Resources */,
 				EF1C940124C252C600749C69 /* effect-crt.png in Resources */,
 				EF1C941924C254FC00749C69 /* choose-game-background.png in Resources */,
 				EF26AE09241848800078FD30 /* mame_logo.png in Resources */,
@@ -1354,6 +1357,7 @@
 				92ECB91221EAA1B700D1E3D0 /* EmulatorController.m in Sources */,
 				EF8EAA87244F7F5D00DA02BB /* SteamControllerManager.m in Sources */,
 				926C771A21F4F78300103EDE /* DefaultOptionController.m in Sources */,
+				EF24BAFD24C786A900D9C55A /* SkinManager.m in Sources */,
 				92A533AC21EBDBAD0089FBB9 /* GCDWebServerFunctions.m in Sources */,
 				EF7B232D23FD0469001FF51D /* (null) in Sources */,
 				92A533AF21EBDBAD0089FBB9 /* GCDWebServer.m in Sources */,

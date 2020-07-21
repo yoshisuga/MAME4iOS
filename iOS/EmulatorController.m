@@ -187,9 +187,7 @@ int prev_myosd_mouse = 0;
 static pthread_t main_tid;
 
 static int ways_auto = 0;
-#if TARGET_OS_IOS
 static int change_layout=0;
-#endif
 
 #define kHUDPositionKey  @"hud_rect"
 #define kHUDScaleKey     @"hud_scale"
@@ -1381,11 +1379,13 @@ void mame_state(int load_save, int slot)
     else
         alpha = 0.0;
     
+#if TARGET_OS_IOS
     if (change_layout) {
         alpha = 0.0;
         [self.view bringSubviewToFront:layoutView];
     }
-
+#endif
+    
     if (screenView.alpha != alpha) {
         if (alpha == 0.0)
             NSLog(@"**** HIDING ScreenView ****");
@@ -2248,7 +2248,6 @@ void myosd_handle_turbo() {
 
 #pragma mark - background and overlay image
 
-#if TARGET_OS_IOS
 - (void)buildBackgroundImage {
     
     // set a tiled image as our background
@@ -2259,25 +2258,25 @@ void myosd_handle_turbo() {
     else
         self.view.backgroundColor = [UIColor blackColor];
 
+#if TARGET_OS_IOS
     if (g_device_is_fullscreen)
         return;
-
-    NSString* imageName;
-    if (g_device_is_landscape)
-        imageName = [self isPad] ? @"background_landscape.png" : @"background_landscape_wide.png";
-    else
-        imageName = [self isPad] ? @"background_portrait.png" : @"background_portrait_tall.png";
     
-    image = [self loadImage:imageName];
-    
-    if (image == nil)
-        return;
-
-    imageBack = [[UIImageView alloc] initWithImage:image];
+    imageBack = [[UIImageView alloc] init];
     imageBack.frame = rFrames[g_device_is_landscape ? LANDSCAPE_IMAGE_BACK : PORTRAIT_IMAGE_BACK];
     [self.view addSubview: imageBack];
-}
+    
+    image = [self loadImage:g_device_is_landscape ? @"background_landscape_tile.png" : @"background_portrait_tile.png"];
+
+    if (image != nil)
+        imageBack.backgroundColor = [UIColor colorWithPatternImage:image];
+
+    if (g_device_is_landscape)
+        imageBack.image = [self loadImage:[self isPad] ? @"background_landscape.png" : @"background_landscape_wide.png"];
+    else
+        imageBack.image = [self loadImage:[self isPad] ? @"background_portrait.png" : @"background_portrait_tall.png"];
 #endif
+}
 
 // load any border image and return the size needed to inset the game rect
 - (void)getOverlayImage:(UIImage**)pImage andSize:(CGSize*)pSize {
@@ -2410,6 +2409,7 @@ void myosd_handle_turbo() {
         r = CGRectIntersection(r, UIEdgeInsetsInsetRect(self.view.bounds, safeArea));
     }
 #elif TARGET_OS_TV
+    [self buildBackgroundImage];
     r = [[UIScreen mainScreen] bounds];
 #endif
     // get the output device scale (mainSreen or external display)
@@ -3209,10 +3209,12 @@ void myosd_handle_turbo() {
 #endif
 
 #pragma mark - BUTTON LAYOUT
-        
+
 - (UIImage *)loadImage:(NSString *)name {
     return [skinManager loadImage:name];
 }
+
+#if TARGET_OS_IOS
 
 - (BOOL)isPhone {
     CGSize windowSize = self.view.bounds.size;
@@ -3398,6 +3400,8 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     data = [NSJSONSerialization dataWithJSONObject:dict options:NSJSONWritingPrettyPrinted error:nil];
     [data writeToFile:path atomically:NO];
 }
+
+#endif
 
 #pragma MOVE ROMs
 

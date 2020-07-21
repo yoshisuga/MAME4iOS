@@ -107,8 +107,10 @@ Name                        | Description
 --------------------------- | -------------------------------------
 background_landscape        | background image, landscape iPad
 background_landscape_wide   | background image, landscape iPhone
+background_landscape_tile   | background tiled image, landscape
 background_portrait         | background image, portrait iPad
 background_portrait_tall    | background image, portrait iPhone
+background_portrait_tile    | background tiled image, portrait
 
 ### Joystick and DPAD
 Name                        | Description
@@ -132,7 +134,7 @@ The following files are used if present, there is no default.
 
 Name                    | Description
 ----------------------- | -------------------------------------
-background              | background of the whole app, tiled image
+background              | background of the whole app, tiled image, fullscreen portrait or landscape
 border                  | border image, drawn around the game screen.
 stick-U                 | image of the joystick ball UP
 stick-D                 | image of the joystick ball DOWN
@@ -142,7 +144,3 @@ stick-UL                | image of the joystick ball UP LEFT
 stick-DL                | image of the joystick ball DOWN LEFT
 stick-DR                | image of the joystick ball DOWN RIGHT
 stick-UR                | image of the joystick ball UP RIGHT
-
-
-
-
