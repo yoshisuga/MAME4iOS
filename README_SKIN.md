@@ -5,7 +5,6 @@ A `Skin` is just a `zip` file with images, and a single file `skin.json` used to
 
 ## Skin names
 The file name of the Skin is used as the display name in the select UI.
-Skins named with the `ROMNAME`, `PARENT`, or `DRIVER` of the currenly running game will be automaticaly selected.
 
 ## Skin location
 Custom Skins are stored in the `skins` folder.
@@ -31,6 +30,9 @@ You can remove all Skins by selecting `Reset to Defaults` from `Settings`
     - Rezip the directory and give it a new name, if you want.
 3. Import modified Skin zip into MAME4iOS.
 
+## Automatic selection of a Skin
+Skins named with the `romname.zip`, `parent.zip`, or `driver.zip` of the currenly running game will be automaticaly selected.  They also will not be shown in the UI.  If you want to use the built-in layout editor (found in `Settings` > `Input Options` > `Change Current Layout`)  you should re-name your Skin file to not be the name of a rom, parent, or driver, for example name your Skin `My PacMan Skin.zip`
+
 ## Format of `skin.json`
 
 ```
@@ -49,7 +51,6 @@ Key                     | Description
 version                 | `integer` version number, should be 1
 author                  | `string` name of the author
 description             | `string` long description of the `Skin`, not currently shown.
-base                    | `string` Skin name that this `Skin` was based on.
 
 ## `skin.json` button locations
 The following are all the button names, the value in the dictionary is a `string` with 3 numbers separated by commas. The first two numbers are the X,Y of the center point of the button.  The third number is the size of the button, a zero size will hide the button. All positions are specifed as 0...1000 releative to the top left of the background image. For example `"A": "500,500,250"` will put the `A button` in the center of the background, and `"L1": "0,0,0"` will hide the `L1 button`
@@ -66,6 +67,7 @@ The following are all the button names, the value in the dictionary is a `string
 |A+X    |                 
 |B+Y    |
 |B+X    |
+|A+B    |
 |SELECT |
 |START  |
 |EXIT   |
