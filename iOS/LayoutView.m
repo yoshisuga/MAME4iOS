@@ -113,7 +113,9 @@ static CGRect CGRectScale(CGRect rect, CGFloat scale) {
     CGRect rect = rLayout[i];
 
     if (CGRectIsEmpty(rect)) {
-        if (i <= BTN_R1)
+        if (rect.origin.x == 0 && rect.origin.y == 0)
+            rect.origin = CGPointMake(self.bounds.size.width/2, self.bounds.size.height/2);
+        if (i < BTN_SELECT)
             rect = CGRectInset(rect, -buttonSize/2, -buttonSize/2);
         else if (i <= BTN_OPTION)
             rect = CGRectInset(rect, -commandSize/2, -commandSize/2);

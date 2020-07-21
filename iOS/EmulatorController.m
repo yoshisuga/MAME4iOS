@@ -416,8 +416,8 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
 
 #if TARGET_OS_IOS
 - (NSString*)getButtonName:(int)i {
-    static NSString* button_name[NUM_BUTTONS] = {@"A",@"B",@"Y",@"X",@"L1",@"R1",@"A+Y",@"A+X",@"B+Y",@"B+X",@"SELECT",@"START",@"EXIT",@"OPTION",@"STICK"};
-    _Static_assert(NUM_BUTTONS == 15, "enum size change");
+    static NSString* button_name[NUM_BUTTONS] = {@"A",@"B",@"Y",@"X",@"L1",@"R1",@"A+Y",@"A+X",@"B+Y",@"B+X",@"A+B",@"SELECT",@"START",@"EXIT",@"OPTION",@"STICK"};
+    _Static_assert(NUM_BUTTONS == 16, "enum size change");
     assert(i < NUM_BUTTONS);
     return button_name[i];
 }
@@ -3013,6 +3013,14 @@ void myosd_handle_turbo() {
                     [handledTouches addObject:touch];
                 }
                 //NSLog(@"MYOSD_X | MYOSD_B");
+            }
+            else if (!buttonViews[BTN_B].hidden &&
+                     !buttonViews[BTN_A].hidden &&
+                     MyCGRectContainsPoint(rInput[BTN_A_B], point) &&
+                     !touch_buttons_disabled) {
+                    pad_status |= MYOSD_A | MYOSD_B;
+                    [handledTouches addObject:touch];
+                //NSLog(@"MYOSD_A | MYOSD_B");
             }
             else if (MyCGRectContainsPoint(rInput[BTN_SELECT], point)) {
                 //NSLog(@"MYOSD_SELECT");
