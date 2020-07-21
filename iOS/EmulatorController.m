@@ -589,7 +589,7 @@ void mame_state(int load_save, int slot)
         }
     }
 #endif
-    [self presentViewController:viewController animated:YES completion:nil];
+    [self presentViewController:viewController animated:flag completion:completion];
 }
 
 // player is zero based 0=P1, 1=P2, etc
@@ -3692,19 +3692,32 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 #pragma mark - IMPORT and EXPORT
 
 #if TARGET_OS_IOS
+
 - (void)documentPickerWasCancelled:(UIDocumentPickerViewController *)controller {
-    NSLog(@"IMPORT CANCELED");
-    [self performSelectorOnMainThread:@selector(playGame:) withObject:nil waitUntilDone:NO];
+    if (controller.documentPickerMode == UIDocumentPickerModeImport) {
+        NSLog(@"IMPORT CANCELED");
+        [self performSelectorOnMainThread:@selector(playGame:) withObject:nil waitUntilDone:NO];
+    }
+    else {
+        NSLog(@"EXPORT CANCELED");
+    }
 }
 - (void)documentPicker:(UIDocumentPickerViewController *)controller didPickDocumentsAtURLs:(NSArray <NSURL *>*)urls {
-    UIApplication* application = UIApplication.sharedApplication;
-    for (NSURL* url in urls) {
-        NSLog(@"IMPORT: %@", url);
-        // call our own openURL handler (in Bootstrapper)
-        [application.delegate application:application openURL:url options:@{UIApplicationOpenURLOptionsOpenInPlaceKey:@(NO)}];
-        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(moveROMS) object:nil];
+    
+    if (controller.documentPickerMode == UIDocumentPickerModeImport) {
+        UIApplication* application = UIApplication.sharedApplication;
+        for (NSURL* url in urls) {
+            NSLog(@"IMPORT: %@", url);
+            // call our own openURL handler (in Bootstrapper)
+            [application.delegate application:application openURL:url options:@{UIApplicationOpenURLOptionsOpenInPlaceKey:@(NO)}];
+            [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(moveROMS) object:nil];
+        }
+        [self performSelectorOnMainThread:@selector(moveROMS) withObject:nil waitUntilDone:NO];
     }
-    [self performSelectorOnMainThread:@selector(moveROMS) withObject:nil waitUntilDone:NO];
+    else {
+        assert(urls.count == 1);
+        NSLog(@"EXPORT: %@", urls.firstObject);
+    }
 }
 
 - (void)runImport {
@@ -3715,9 +3728,26 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     [self.topViewController presentViewController:documentPicker animated:YES completion:nil];
 }
 
+- (NSURL*)createTempFile:(NSString*)name {
+    NSString* temp = [NSTemporaryDirectory() stringByAppendingPathComponent:name];
+    NSURL* url = [NSURL fileURLWithPath:temp];
+    [[NSFileManager defaultManager] createFileAtPath:temp contents:nil attributes:nil];
+    return url;
+}
+
 - (void)runExport {
+    NSString* name = @PRODUCT_NAME " (export)";
     
-    FileItemProvider* item = [[FileItemProvider alloc] initWithTitle:@PRODUCT_NAME " (export)" typeIdentifier:@"public.zip-archive" saveHandler:^BOOL(NSURL* url, FileItemProviderProgressHandler progressHandler) {
+#if TARGET_OS_MACCATALYST
+    NSURL *url = [self createTempFile:[name stringByAppendingPathExtension:@"zip"]];
+    [self saveROMS:url progressBlock:nil];
+    UIDocumentPickerViewController* documentPicker = [[UIDocumentPickerViewController alloc] initWithURLs:@[url] inMode:UIDocumentPickerModeMoveToService];
+    documentPicker.modalPresentationStyle = UIModalPresentationFormSheet;
+    documentPicker.delegate = self;
+    documentPicker.allowsMultipleSelection = YES;
+    [self.topViewController presentViewController:documentPicker animated:YES completion:nil];
+#else
+    FileItemProvider* item = [[FileItemProvider alloc] initWithTitle:name typeIdentifier:@"public.zip-archive" saveHandler:^BOOL(NSURL* url, FileItemProviderProgressHandler progressHandler) {
         return [self saveROMS:url progressBlock:progressHandler];
     }];
     
@@ -3733,6 +3763,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     }
     
     [top presentViewController:activity animated:YES completion:nil];
+#endif
 }
 - (void)runExportSkin {
     
@@ -3744,6 +3775,15 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     else
         skin_export_name = g_pref_skin;
     
+#if TARGET_OS_MACCATALYST
+    NSURL *url = [self createTempFile:[skin_export_name stringByAppendingPathExtension:@"zip"]];
+    [skinManager exportTo:url.path progressBlock:nil];
+    UIDocumentPickerViewController* documentPicker = [[UIDocumentPickerViewController alloc] initWithURLs:@[url] inMode:UIDocumentPickerModeMoveToService];
+    documentPicker.modalPresentationStyle = UIModalPresentationFormSheet;
+    documentPicker.delegate = self;
+    documentPicker.allowsMultipleSelection = YES;
+    [self.topViewController presentViewController:documentPicker animated:YES completion:nil];
+#else
     FileItemProvider* item = [[FileItemProvider alloc] initWithTitle:skin_export_name typeIdentifier:@"public.zip-archive" saveHandler:^BOOL(NSURL* url, FileItemProviderProgressHandler progressHandler) {
         return [self->skinManager exportTo:url.path progressBlock:progressHandler];
     }];
@@ -3760,6 +3800,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     }
     
     [top presentViewController:activity animated:YES completion:nil];
+#endif
 }
 #endif
 
