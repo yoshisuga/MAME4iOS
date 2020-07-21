@@ -139,6 +139,7 @@
 		EF24BAFD24C786A900D9C55A /* SkinManager.m in Sources */ = {isa = PBXBuildFile; fileRef = EF926C9A24BA36980048392B /* SkinManager.m */; };
 		EF24BB0024C7894700D9C55A /* skins_tvOS in Resources */ = {isa = PBXBuildFile; fileRef = EF24BAFF24C7894700D9C55A /* skins_tvOS */; };
 		EF24BB0124C78E5400D9C55A /* MetalPerformanceShaders.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF950BAC24B1239F00DC9A47 /* MetalPerformanceShaders.framework */; };
+		EF24BB0324C78F6200D9C55A /* MetalPerformanceShaders.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF24BB0224C78F6200D9C55A /* MetalPerformanceShaders.framework */; };
 		EF26AE08241848800078FD30 /* mame_logo.png in Resources */ = {isa = PBXBuildFile; fileRef = EF26AE07241848800078FD30 /* mame_logo.png */; };
 		EF26AE09241848800078FD30 /* mame_logo.png in Resources */ = {isa = PBXBuildFile; fileRef = EF26AE07241848800078FD30 /* mame_logo.png */; };
 		EF26AE0C241AA6900078FD30 /* FileItemProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = EF26AE0B241AA6900078FD30 /* FileItemProvider.m */; };
@@ -495,6 +496,7 @@
 		EF249336236264D900DD0A6C /* ImageCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageCache.m; sourceTree = "<group>"; };
 		EF249337236264DA00DD0A6C /* ImageCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageCache.h; sourceTree = "<group>"; };
 		EF24BAFF24C7894700D9C55A /* skins_tvOS */ = {isa = PBXFileReference; lastKnownFileType = folder; name = skins_tvOS; path = "../../iOS-res/skins_tvOS"; sourceTree = "<group>"; };
+		EF24BB0224C78F6200D9C55A /* MetalPerformanceShaders.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalPerformanceShaders.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS13.4.sdk/System/Library/Frameworks/MetalPerformanceShaders.framework; sourceTree = DEVELOPER_DIR; };
 		EF26AE07241848800078FD30 /* mame_logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = mame_logo.png; path = "../../iOS-res/mame_logo.png"; sourceTree = "<group>"; };
 		EF26AE0A241AA6900078FD30 /* FileItemProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FileItemProvider.h; sourceTree = "<group>"; };
 		EF26AE0B241AA6900078FD30 /* FileItemProvider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FileItemProvider.m; sourceTree = "<group>"; };
@@ -611,6 +613,7 @@
 				92ECB90621EA998000D1E3D0 /* CoreFoundation.framework in Frameworks */,
 				EFA757082405B9EA00A02AAB /* AVFoundation.framework in Frameworks */,
 				92ECB90421EA997A00D1E3D0 /* GameController.framework in Frameworks */,
+				EF24BB0324C78F6200D9C55A /* MetalPerformanceShaders.framework in Frameworks */,
 				92ECB90121EA993E00D1E3D0 /* libc++.tbd in Frameworks */,
 				EFA98FB324A4E2D5007B6689 /* CoreServices.framework in Frameworks */,
 				92ECB8FF21EA992100D1E3D0 /* libmamearm64-tvos.a in Frameworks */,
@@ -810,6 +813,7 @@
 				EF950BAC24B1239F00DC9A47 /* MetalPerformanceShaders.framework */,
 				EF950BAE24B123A900DC9A47 /* MetalPerformanceShaders.framework */,
 				EFA7A16524B792CE0009CF88 /* MetalPerformanceShaders.framework */,
+				EF24BB0224C78F6200D9C55A /* MetalPerformanceShaders.framework */,
 				EFA98FB424A4F810007B6689 /* WebKit.framework */,
 				EFA98FAE24A4CC49007B6689 /* CoreServices.framework */,
 				EFA98FB224A4E2D5007B6689 /* CoreServices.framework */,
