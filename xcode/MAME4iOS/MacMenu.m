@@ -25,6 +25,8 @@
 
 - (void)mameSelect;
 - (void)mameStart;
+- (void)mameStartP1;
+- (void)mameStartP2;
 - (void)mamePause;
 - (void)mameSettings;
 - (void)mameConfigure;
@@ -72,7 +74,8 @@
     // TODO: find out why some keys are handled by iCadeView.m and some are handled by UIKeyCommand, weird responder chain magic??
     UIMenu* mame = [UIMenu menuWithTitle:@"MAME" image:nil identifier:nil options:0 children:@[
         [UIKeyCommand commandWithTitle:@"Coin"      image:[UIImage systemImageNamed:@"centsign.circle"]     action:@selector(mameSelect)    input:@"5" modifierFlags:0 propertyList:nil],
-        [UIKeyCommand commandWithTitle:@"Start"     image:[UIImage systemImageNamed:@"person"]              action:@selector(mameStart)     input:@"1" modifierFlags:0 propertyList:nil],
+        [UIKeyCommand commandWithTitle:@"Start"     image:[UIImage systemImageNamed:@"play.circle"]         action:@selector(mameStart)     input:@"1" modifierFlags:0 propertyList:nil],
+        [UIKeyCommand commandWithTitle:@"Coin+Start"image:[UIImage systemImageNamed:@"person.circle"]       action:@selector(mameStartP1)   input:@"1" modifierFlags:UIKeyModifierCommand propertyList:nil],
         [UIKeyCommand commandWithTitle:@"Fullscreen"image:[UIImage systemImageNamed:@"rectangle.and.arrow.up.right.and.arrow.down.left"]
                                 action:@selector(mameFullscreen) input:@"\r" modifierFlags:UIKeyModifierCommand propertyList:nil],
         [UIKeyCommand commandWithTitle:@"Settings"  image:[UIImage systemImageNamed:@"gear"]                action:@selector(mameSettings)  input:@"," modifierFlags:UIKeyModifierCommand propertyList:nil],

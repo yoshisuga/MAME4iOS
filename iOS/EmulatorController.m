@@ -2623,6 +2623,7 @@ void myosd_handle_turbo() {
 -(BOOL)canPerformAction:(SEL)action withSender:(id)sender {
     if (action == @selector(mameSelect) ||
         action == @selector(mameStart) ||
+        action == @selector(mameStartP1) ||
         action == @selector(mameConfigure) ||
         action == @selector(mameSettings) ||
         action == @selector(mameFullscreen) ||
@@ -2641,6 +2642,9 @@ void myosd_handle_turbo() {
 }
 -(void)mameStart {
     push_mame_button(0, MYOSD_START);
+}
+-(void)mameStartP1 {
+    [self startPlayer:0];
 }
 -(void)mameConfigure {
     myosd_configure = 1;
@@ -2692,6 +2696,10 @@ void myosd_handle_turbo() {
                 [self changeUI];
                 break;
             }
+            break;
+        case '1':
+        case '2':
+            [self startPlayer:(key - '1')];
             break;
         case 'I':
             g_pref_integer_scale_only = !g_pref_integer_scale_only;
