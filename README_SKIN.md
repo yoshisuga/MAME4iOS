@@ -33,6 +33,10 @@ You can remove all Skins by selecting `Reset to Defaults` from `Settings`
 ## Automatic selection of a Skin
 Skins named with the `romname.zip`, `parent.zip`, or `driver.zip` of the currenly running game will be automaticaly selected.  They also will not be shown in the UI.  If you want to use the built-in layout editor (found in `Settings` > `Input Options` > `Change Current Layout`)  you should re-name your Skin file to not be the name of a rom, parent, or driver, for example name your Skin `My PacMan Skin.zip`
 
+## Skins on tvOS
+Only `border` and `background` images are used on tvOS.
+
+
 ## Format of `skin.json`
 
 ```
@@ -144,7 +148,3 @@ stick-UL                | image of the joystick ball UP LEFT
 stick-DL                | image of the joystick ball DOWN LEFT
 stick-DR                | image of the joystick ball DOWN RIGHT
 stick-UR                | image of the joystick ball UP RIGHT
-
-
-
-
