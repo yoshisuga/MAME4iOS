@@ -203,6 +203,27 @@ static NSArray* g_skin_list;
     return nil;
 }
 
+// detect if image is 0x0 or 1x1 transparent
+BOOL UIImageIsBlank(UIImage* image) {
+    if (image.size.width == 0 || image.size.height == 0)
+        return YES;
+    if (image.size.width != 1 || image.size.height != 1 || image.CGImage == nil)
+        return NO;
+    
+    CFDataRef data = CGDataProviderCopyData(CGImageGetDataProvider(image.CGImage));
+    const uint8_t* bytes = CFDataGetBytePtr(data);
+
+    uint8_t a = 0xFF;   // assume kCGImageAlphaNone
+    CGImageAlphaInfo info = CGImageGetAlphaInfo(image.CGImage);
+    if (info == kCGImageAlphaLast || info == kCGImageAlphaPremultipliedLast)
+        a = bytes[3];
+    else if (info == kCGImageAlphaFirst || info == kCGImageAlphaPremultipliedFirst || info == kCGImageAlphaOnly)
+        a = bytes[0];
+    
+    CFRelease(data);
+    return a == 0;
+}
+
 - (nullable UIImage *)loadImage:(NSString *)name {
     
     if (_image_cache == nil)
@@ -234,7 +255,7 @@ static NSArray* g_skin_list;
     if (image == nil)
         NSLog(@"SKIN IMAGE NOT FOUND: %@", name);
     
-    if (image.size.width == 0 && image.size.height == 0)
+    if (UIImageIsBlank(image))
         image = nil;
 
     [_image_cache setObject:(image ?: [NSNull null]) forKey:name];
