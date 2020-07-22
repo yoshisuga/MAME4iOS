@@ -3242,8 +3242,13 @@ void myosd_handle_turbo() {
     }
     else {
         // split the window, keeping the aspect ratio of the background image, on the bottom.
+        CGFloat aspect;
         UIImage* image = [self loadImage:isPhone ? @"background_portrait_tall" : @"background_portrait"];
-        CGFloat aspect = image ? (image.size.width / image.size.height) : (4.0 / 3.0);
+        if ([self loadImage:@"background_portrait_tile"] != nil || image == nil || image.size.width <= image.size.height)
+            aspect = isPhone ? 1.333 : 1.714;
+        else
+            aspect = image.size.width / image.size.height;
+            
         CGFloat h = floor(windowSize.width / aspect);
 
         rFrames[PORTRAIT_VIEW_FULL] = CGRectMake(0, 0, windowSize.width, windowSize.height);
