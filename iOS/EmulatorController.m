@@ -2253,13 +2253,10 @@ void myosd_handle_turbo() {
     self.view.backgroundColor = [UIColor blackColor];
 
     // set a tiled image as our background
-    UIImage* image = [self loadImage:@"background.png"];
+    UIImage* image = [self loadTileImage:@"background.png"];
     
-    if (image != nil) {
-        // set the image scale to be same as the display scale, we want to work in pixels.
-        image = [[UIImage alloc] initWithCGImage:image.CGImage scale:self.view.window.screen.scale orientation:image.imageOrientation];
+    if (image != nil)
         self.view.backgroundColor = [UIColor colorWithPatternImage:image];
-    }
 
 #if TARGET_OS_IOS
     if (g_device_is_fullscreen)
@@ -2269,13 +2266,10 @@ void myosd_handle_turbo() {
     imageBack.frame = rFrames[g_device_is_landscape ? LANDSCAPE_IMAGE_BACK : PORTRAIT_IMAGE_BACK];
     [self.view addSubview: imageBack];
     
-    image = [self loadImage:g_device_is_landscape ? @"background_landscape_tile.png" : @"background_portrait_tile.png"];
+    image = [self loadTileImage:g_device_is_landscape ? @"background_landscape_tile.png" : @"background_portrait_tile.png"];
 
-    if (image != nil) {
-        // set the image scale to be same as the display scale, we want to work in pixels.
-        image = [[UIImage alloc] initWithCGImage:image.CGImage scale:self.view.window.screen.scale orientation:image.imageOrientation];
+    if (image != nil)
         imageBack.backgroundColor = [UIColor colorWithPatternImage:image];
-    }
 
     if (g_device_is_landscape)
         imageBack.image = [self loadImage:[self isPad] ? @"background_landscape.png" : @"background_landscape_wide.png"];
@@ -2289,7 +2283,7 @@ void myosd_handle_turbo() {
     
     NSString* border_name = @"border";
     CGFloat   border_size = 0.25;
-    UIImage*  image = [self loadImage:border_name];
+    UIImage*  image = [self loadTileImage:border_name];
     
     if (image == nil) {
         *pImage = nil;
@@ -2298,9 +2292,6 @@ void myosd_handle_turbo() {
     }
     
     CGFloat scale = externalView ? externalView.window.screen.scale : UIScreen.mainScreen.scale;
-    
-    // set the image scale to be same as the display scale, we want to work in pixels.
-    image = [[UIImage alloc] initWithCGImage:image.CGImage scale:scale orientation:image.imageOrientation];
     
     CGFloat cap_x = floor((image.size.width * image.scale  - 1.0) / 2.0) / image.scale;
     CGFloat cap_y = floor((image.size.height * image.scale - 1.0) / 2.0) / image.scale;
@@ -3219,6 +3210,20 @@ void myosd_handle_turbo() {
 - (UIImage *)loadImage:(NSString *)name {
     return [skinManager loadImage:name];
 }
+- (UIImage *)loadTileImage:(NSString *)name {
+    UIImage* image = [skinManager loadImage:name];
+    
+    // if the image does not have a scale, use a default
+    // we can use the screen scale, or assume @2x or @3x.
+    //
+    // @1x devices dont exist, so assuming @3x will be pixel perfect on hi-res devices
+    // ...and scaled down a tad on @2x devices.
+    if (image != nil && image.scale == 1.0)
+        image = [[UIImage alloc] initWithCGImage:image.CGImage scale:3.0 orientation:image.imageOrientation];
+    
+    return image;
+}
+
 
 #if TARGET_OS_IOS
 
