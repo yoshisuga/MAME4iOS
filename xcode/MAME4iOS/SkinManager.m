@@ -207,7 +207,7 @@ static NSArray* g_skin_list;
 BOOL UIImageIsBlank(UIImage* image) {
     if (image.size.width == 0 || image.size.height == 0)
         return YES;
-    if (image.size.width != 1 || image.size.height != 1 || image.CGImage == nil)
+    if (image.size.width != 1 || image.size.height != 1 || image.CGImage == nil || CGImageGetBitsPerPixel(image.CGImage) != 8)
         return NO;
     
     CFDataRef data = CGDataProviderCopyData(CGImageGetDataProvider(image.CGImage));

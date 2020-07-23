@@ -2249,14 +2249,17 @@ void myosd_handle_turbo() {
 #pragma mark - background and overlay image
 
 - (void)buildBackgroundImage {
-    
+
+    self.view.backgroundColor = [UIColor blackColor];
+
     // set a tiled image as our background
     UIImage* image = [self loadImage:@"background.png"];
     
-    if (image != nil)
+    if (image != nil) {
+        // set the image scale to be same as the display scale, we want to work in pixels.
+        image = [[UIImage alloc] initWithCGImage:image.CGImage scale:self.view.window.screen.scale orientation:image.imageOrientation];
         self.view.backgroundColor = [UIColor colorWithPatternImage:image];
-    else
-        self.view.backgroundColor = [UIColor blackColor];
+    }
 
 #if TARGET_OS_IOS
     if (g_device_is_fullscreen)
@@ -2268,8 +2271,11 @@ void myosd_handle_turbo() {
     
     image = [self loadImage:g_device_is_landscape ? @"background_landscape_tile.png" : @"background_portrait_tile.png"];
 
-    if (image != nil)
+    if (image != nil) {
+        // set the image scale to be same as the display scale, we want to work in pixels.
+        image = [[UIImage alloc] initWithCGImage:image.CGImage scale:self.view.window.screen.scale orientation:image.imageOrientation];
         imageBack.backgroundColor = [UIColor colorWithPatternImage:image];
+    }
 
     if (g_device_is_landscape)
         imageBack.image = [self loadImage:[self isPad] ? @"background_landscape.png" : @"background_landscape_wide.png"];
