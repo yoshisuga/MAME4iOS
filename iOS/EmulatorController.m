@@ -2336,21 +2336,19 @@ void myosd_handle_turbo() {
         CGSize screenSize = self.view.window.screen.bounds.size;
         
         // on Catalina the screenSize is a lie, so go to the NSScreen to get it!
-        // TODO: test for Big Sur?
-        screenSize = [(id)([NSClassFromString(@"NSScreen") mainScreen]) frame].size;
-
+        // on BigSur the screen size is correct, so check for the 960x540 "lie" value.
+        // UIUserInterfaceIdiomMac (5) does not do this scaling.
         // To ensure that your text and interface elements are consistent with the macOS display environment, iOS views automatically scale down to 77%.
         // https://developer.apple.com/design/human-interface-guidelines/ios/overview/mac-catalyst/
-        
-        // TODO: what happens on Big Sur?
-        assert(self.traitCollection.userInterfaceIdiom != 5); // UIUserInterfaceIdiomMac does not do this scaling.
-        screenSize.width = floor(screenSize.width / 0.77);
-        screenSize.height = floor(screenSize.height / 0.77);
+        if (screenSize.width == 960 && screenSize.height == 540 && self.traitCollection.userInterfaceIdiom == UIUserInterfaceIdiomPad) {
+            screenSize = [(id)([NSClassFromString(@"NSScreen") mainScreen]) frame].size;
+            screenSize.width = floor(screenSize.width / 0.77);
+            screenSize.height = floor(screenSize.height / 0.77);
+        }
 
         NSLog(@"screenSize: %@", NSStringFromSize(screenSize));
         NSLog(@"windowSize: %@", NSStringFromSize(windowSize));
 
-        // TODO: what about toolbars or other Chrome?
         if (windowSize.width >= screenSize.width && windowSize.height >= screenSize.height) {
             NSLog(@"CATALYST FULLSCREEN");
             g_device_is_fullscreen = TRUE;
