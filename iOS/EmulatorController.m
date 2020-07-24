@@ -2337,11 +2337,13 @@ void myosd_handle_turbo() {
         
         // on Catalina the screenSize is a lie, so go to the NSScreen to get it!
         // on BigSur the screen size is correct, so check for the 960x540 "lie" value.
-        // UIUserInterfaceIdiomMac (5) does not do this scaling.
-        // To ensure that your text and interface elements are consistent with the macOS display environment, iOS views automatically scale down to 77%.
-        // https://developer.apple.com/design/human-interface-guidelines/ios/overview/mac-catalyst/
-        if (screenSize.width == 960 && screenSize.height == 540 && self.traitCollection.userInterfaceIdiom == UIUserInterfaceIdiomPad) {
+        if (screenSize.width == 960 && screenSize.height == 540)
             screenSize = [(id)([NSClassFromString(@"NSScreen") mainScreen]) frame].size;
+
+        // To ensure that your text and interface elements are consistent with the macOS display environment, iOS views automatically scale down to 77%.
+        // ...UIUserInterfaceIdiomMac (5) does not do this scaling.
+        // https://developer.apple.com/design/human-interface-guidelines/ios/overview/mac-catalyst/
+        if (self.traitCollection.userInterfaceIdiom == UIUserInterfaceIdiomPad) {
             screenSize.width = floor(screenSize.width / 0.77);
             screenSize.height = floor(screenSize.height / 0.77);
         }
