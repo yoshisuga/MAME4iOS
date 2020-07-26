@@ -92,7 +92,7 @@ static CGRect CGRectScale(CGRect rect, CGFloat scale) {
     if (maxSize != 0)
         buttonSize = maxSize;
     else if (buttonSize == 0)
-        buttonSize = floor(MIN(self.bounds.size.width, self.bounds.size.height) / 4.0);
+        buttonSize = floor(MIN(self.bounds.size.width, self.bounds.size.height) / 8.0);
     
     maxSize = 0.0;
     for (int i = BTN_SELECT; i < BTN_STICK; i++)
@@ -113,7 +113,7 @@ static CGRect CGRectScale(CGRect rect, CGFloat scale) {
     CGRect rect = rLayout[i];
 
     if (CGRectIsEmpty(rect)) {
-        if (rect.origin.x == 0 && rect.origin.y == 0)
+        if (rect.origin.x == 0)
             rect.origin = CGPointMake(self.bounds.size.width/2, self.bounds.size.height/2);
         if (i < BTN_SELECT)
             rect = CGRectInset(rect, -buttonSize/2, -buttonSize/2);
