@@ -575,7 +575,7 @@ void mame_state(int load_save, int slot)
 #if TARGET_OS_IOS // UIPopoverPresentationController does not exist on tvOS.
     UIPopoverPresentationController *popoverController = viewController.popoverPresentationController;
     if ( popoverController != nil ) {
-        if (view == nil) {
+        if (view == nil || view.hidden || CGRectIsEmpty(view.bounds) ) {
             popoverController.sourceView = self.view;
             popoverController.sourceRect = CGRectMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds), 0.0f, 0.0f);
             popoverController.permittedArrowDirections = 0; /*UIPopoverArrowDirectionNone*/
@@ -1158,6 +1158,13 @@ void mame_state(int load_save, int slot)
             [self handle_MENU:@(pad_status)];
         
         return;
+    }
+    
+    // touch screen START button, when no COIN button
+    if (CGRectIsEmpty(rInput[BTN_SELECT]) && (buttonState & MYOSD_START) && !(pad_status & MYOSD_START))
+    {
+        // TODO: handle 2P START?
+        [self startPlayer:0];
     }
 
     // touch screen EXIT button
@@ -3058,18 +3065,14 @@ void myosd_handle_turbo() {
                  pad_status |= MYOSD_OPTION;
                  [handledTouches addObject:touch];
             }
-            /*
-            else if (MyCGRectContainsPoint(rInput[BTN_MENU], point)) {
-                 myosd_pad_status |= MYOSD_SELECT;
-                 btnStates[BTN_SELECT] = BUTTON_PRESS;
-                 myosd_pad_status |= MYOSD_START;
-                 btnStates[BTN_START] = BUTTON_PRESS;
-            }
-            */
             else if ( myosd_light_gun == 1 && g_pref_lightgun_enabled ) {
                 [self handleLightgunTouchesBegan:touches];
             }
-            
+            // if the OPTION button is hidden (zero size) by the current Skin, support a tap on the game area.
+            else if (CGRectIsEmpty(rInput[BTN_OPTION]) && CGRectContainsPoint(screenView.frame, point) ) {
+                 pad_status |= MYOSD_OPTION;
+                 [handledTouches addObject:touch];
+            }
         }
         else
         {
@@ -3253,13 +3256,13 @@ void myosd_handle_turbo() {
     }
     else {
         // split the window, keeping the aspect ratio of the background image, on the bottom.
-        CGFloat aspect;
         UIImage* image = [self loadImage:isPhone ? @"background_portrait_tall" : @"background_portrait"];
-        if ([self loadImage:@"background_portrait_tile"] != nil || image == nil || image.size.width <= image.size.height)
+        CGFloat aspect = image.size.height != 0 ? (image.size.width / image.size.height) : 1.0;
+        
+        // use a default aspect if the image is nil or square.
+        if (aspect <= 1.0)
             aspect = isPhone ? 1.333 : 1.714;
-        else
-            aspect = image.size.width / image.size.height;
-            
+        
         CGFloat h = floor(windowSize.width / aspect);
 
         rFrames[PORTRAIT_VIEW_FULL] = CGRectMake(0, 0, windowSize.width, windowSize.height);
@@ -3272,11 +3275,12 @@ void myosd_handle_turbo() {
     
     // if we are fullscreen portrait, we need to move the command buttons to the top of screen
     if (g_device_is_fullscreen && !g_device_is_landscape) {
-        CGFloat w = rButton[BTN_SELECT].size.width;
-        rInput[BTN_SELECT].origin =  rButton[BTN_SELECT].origin = CGPointMake(w*0, 0);
-        rInput[BTN_EXIT].origin   =  rButton[BTN_EXIT].origin   = CGPointMake(w*1, 0);
-        rInput[BTN_OPTION].origin =  rButton[BTN_OPTION].origin = CGPointMake(self.view.bounds.size.width - w*1, 0);
-        rInput[BTN_START].origin  =  rButton[BTN_START].origin  = CGPointMake(self.view.bounds.size.width - w*2, 0);
+        CGFloat x = 0, y = 0;
+        rInput[BTN_SELECT].origin = rButton[BTN_SELECT].origin = CGPointMake(x, y);
+        rInput[BTN_EXIT].origin   = rButton[BTN_EXIT].origin   = CGPointMake(x + rButton[BTN_SELECT].size.width, y);
+        x = self.view.bounds.size.width - rButton[BTN_OPTION].size.width;
+        rInput[BTN_START].origin  = rButton[BTN_START].origin = CGPointMake(x, y);
+        rInput[BTN_OPTION].origin = rButton[BTN_OPTION].origin  = CGPointMake(x - rButton[BTN_START].size.width, y);
     }
     
     // set the default "radio" (percent size of the AnalogStick)
