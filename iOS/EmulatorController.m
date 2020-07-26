@@ -3278,9 +3278,9 @@ void myosd_handle_turbo() {
         CGFloat x = 0, y = 0;
         rInput[BTN_SELECT].origin = rButton[BTN_SELECT].origin = CGPointMake(x, y);
         rInput[BTN_EXIT].origin   = rButton[BTN_EXIT].origin   = CGPointMake(x + rButton[BTN_SELECT].size.width, y);
-        x = self.view.bounds.size.width - rButton[BTN_OPTION].size.width;
+        x = self.view.bounds.size.width - rButton[BTN_START].size.width;
         rInput[BTN_START].origin  = rButton[BTN_START].origin = CGPointMake(x, y);
-        rInput[BTN_OPTION].origin = rButton[BTN_OPTION].origin  = CGPointMake(x - rButton[BTN_START].size.width, y);
+        rInput[BTN_OPTION].origin = rButton[BTN_OPTION].origin  = CGPointMake(x - rButton[BTN_OPTION].size.width, y);
     }
     
     // set the default "radio" (percent size of the AnalogStick)
