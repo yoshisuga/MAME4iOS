@@ -62,9 +62,7 @@
     
     UISwitch *switchP1aspx;
     
-    UISwitch *switchTouchDeadZone;
     NSArray *arrayAnalogDZValue;
-    NSArray *arrayBTDZValue;
     
     UISwitch *switchLightgunEnabled;
     UISwitch *switchLightgunBottomScreenReload;

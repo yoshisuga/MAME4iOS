@@ -204,7 +204,7 @@ UIColor* getBackgroundColor(UIView* view) {
     _popup = popup;
     [self update];
 
-    UIViewController* vc = UIApplication.sharedApplication.keyWindow.rootViewController;
+    UIViewController* vc = self.window.rootViewController;
     while (vc.presentedViewController != nil)
         vc = vc.presentedViewController;
     if (@available(iOS 13.0, *)) {

@@ -46,17 +46,9 @@
 #import "Globals.h"
 #import "EmulatorController.h"
 
-@class LayoutData;
-
-@interface LayoutView : UIView  {
-    EmulatorController      *emuController;
-    NSMutableArray          *layoutDataArray;
-    CGRect                  rFinish;
-}
+@interface LayoutView : UIView
 
 - (id)initWithFrame:(CGRect)frame withEmuController:(EmulatorController*)emulatorController;
 - (void)handleTouches:(NSSet *)touches withEvent:(UIEvent *)event;
-- (void) drawString: (NSString*) s withFont: (UIFont*) font inRect: (CGRect) contextRect;
-- (void)updateRelated:(LayoutData *)moved x:(int)ax y:(int)ay;
 
 @end

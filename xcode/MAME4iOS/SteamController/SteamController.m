@@ -157,6 +157,8 @@ static CBUUID *SteamControllerReportCharacteristicUUID;
     return nil;
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
 - (void (^)(GCController * _Nonnull))controllerPausedHandler {
     return controllerPausedHandler;
 }
@@ -164,6 +166,7 @@ static CBUUID *SteamControllerReportCharacteristicUUID;
 - (void)setControllerPausedHandler:(void (^)(GCController * _Nonnull))newHandler {
     controllerPausedHandler = newHandler;
 }
+#pragma clang diagnostic pop
 
 - (void)setSteamControllerMode:(SteamControllerMode)steamControllerMode {
     _steamControllerMode = steamControllerMode;
@@ -327,7 +330,8 @@ static CBUUID *SteamControllerReportCharacteristicUUID;
     snapshot.rightThumbstickButton = (state.buttons & SteamControllerButtonRightGrip);
     snapshot.steamBackButton = (state.buttons & SteamControllerButtonBack);
     snapshot.steamForwardButton = (state.buttons & SteamControllerButtonForward);
-    
+    snapshot.steamSteamButton = (state.buttons & SteamControllerButtonSteam);
+
     BOOL hasUpdatedPads[] = {
         [SteamControllerMappingDPad] = NO,
         [SteamControllerMappingLeftThumbstick] = NO,
@@ -372,7 +376,11 @@ static CBUUID *SteamControllerReportCharacteristicUUID;
     GSEventResetIdleTimer();
 #endif
     
-    if (hasButtons && (state.buttons & SteamControllerButtonSteam)) {
+    if (_steamButtonCombinationHandler == nil) {
+        // Update client
+        extendedGamepad.state = snapshot;
+    }
+    else if (hasButtons && (state.buttons & SteamControllerButtonSteam)) {
         // Handle steam button combos
         handledSteamCombos |= [self handleSteamButtonCombos:(state.buttons & ~SteamControllerButtonSteam)];
     } else if (hasButtons && (previousButtons & SteamControllerButtonSteam)) {
@@ -495,6 +503,10 @@ NSString* NSStringFromSteamControllerButton(SteamControllerButton button) {
 }
 
 - (GCControllerButtonInput *)steamForwardButton {
+    return nil;
+}
+
+- (GCControllerButtonInput *)steamSteamButton {
     return nil;
 }
 

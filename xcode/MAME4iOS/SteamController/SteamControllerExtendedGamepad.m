@@ -17,7 +17,7 @@
     SteamControllerButtonInput *leftThumbstickButton, *rightThumbstickButton;
     SteamControllerButtonInput *leftTrigger, *rightTrigger;
     SteamControllerButtonInput *buttonA, *buttonB, *buttonX, *buttonY;
-    SteamControllerButtonInput *steamBackButton, *steamForwardButton;
+    SteamControllerButtonInput *steamBackButton, *steamForwardButton, *steamSteamButton;
     __weak SteamController *steamController;
     SteamControllerExtendedGamepadSnapshotData state;
     GCExtendedGamepadValueChangedHandler valueChangedHandler;
@@ -28,7 +28,7 @@
 @synthesize leftTrigger, rightTrigger;
 @synthesize buttonA, buttonB, buttonX, buttonY;
 @synthesize leftThumbstickButton, rightThumbstickButton;
-@synthesize steamBackButton, steamForwardButton;
+@synthesize steamBackButton, steamForwardButton, steamSteamButton;
 @synthesize state;
 
 - (instancetype)initWithController:(SteamController *)controller {
@@ -62,6 +62,7 @@
         }
         steamBackButton = [[SteamControllerButtonInput alloc] initWithController:controller analog:NO];
         steamForwardButton = [[SteamControllerButtonInput alloc] initWithController:controller analog:NO];
+        steamSteamButton = [[SteamControllerButtonInput alloc] initWithController:controller analog:NO];
     }
     return self;
 }
@@ -78,10 +79,13 @@
     valueChangedHandler = newHandler;
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
 - (GCExtendedGamepadSnapshot *)saveSnapshot {
     NSData *snapshotData = [NSData dataWithBytes:&state length:state.size];
     return [[GCExtendedGamepadSnapshot alloc] initWithController:self.controller snapshotData:snapshotData];
 }
+#pragma clang diagnostic pop
 
 - (void)setState:(SteamControllerExtendedGamepadSnapshotData)newState {
     SteamControllerExtendedGamepadSnapshotData oldState = state;
@@ -105,6 +109,7 @@
     UpdateStateBool(rightThumbstickButton);
     UpdateStateBool(steamBackButton);
     UpdateStateBool(steamForwardButton);
+    UpdateStateBool(steamSteamButton);
 }
 
 - (void)didChangeValueForElement:(GCControllerElement*)element {
@@ -119,6 +124,10 @@
 
 - (SteamControllerButtonInput *)buttonMenu {
     return steamForwardButton;
+}
+
+- (SteamControllerButtonInput *)buttonHome {
+    return steamSteamButton;
 }
 
 - (void)setStateFromExtendedGamepad:(GCExtendedGamepad *)extendedGamepad {

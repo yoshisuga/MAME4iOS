@@ -51,6 +51,13 @@
 #import "GCDWebUploader.h"
 #import <GameController/GameController.h>
 
+enum {PORTRAIT_VIEW_FULL=0, PORTRAIT_VIEW_NOT_FULL, PORTRAIT_IMAGE_BACK,
+      LANDSCAPE_VIEW_FULL, LANDSCAPE_VIEW_NOT_FULL, LANDSCAPE_IMAGE_BACK,
+      NUM_FRAME_RECT};
+
+// button index
+enum {BTN_A=0,BTN_B,BTN_Y,BTN_X,BTN_L1,BTN_R1,BTN_A_Y,BTN_A_X,BTN_B_Y,BTN_B_X,BTN_SELECT,BTN_START,BTN_EXIT,BTN_OPTION,BTN_STICK,NUM_BUTTONS};
+
 @interface UINavigationController (KeyboardDismiss)
 
 - (BOOL)disablesAutomaticKeyboardDismissal;
@@ -92,38 +99,37 @@
   iCadeView         *icadeView;
     
 
-  //input rects
-  CGRect rInput[INPUT_LAST_VALUE];
-    
   //views frames
-  CGRect rFrames[FRAME_RECT_LAST_VALUE];
-
-  CGRect rButtonImages[NUM_BUTTONS];
+  CGRect rFrames[NUM_FRAME_RECT];
+    
+  //input rects
+  CGRect rInput[NUM_BUTTONS];
+    
+  //button rects (will mostly be identical to rInput)
+  CGRect rButton[NUM_BUTTONS];
 
   NSString *nameImgButton_Press[NUM_BUTTONS];
   NSString *nameImgButton_NotPress[NUM_BUTTONS];
     
   //analog stick stuff
   int stick_radio;
-  CGRect rStickWindow;
     
   UIButton *hideShowControlsForLightgun;
   BOOL areControlsHidden;
 
 }
 
++ (NSArray<NSString*>*)romList;
+
 #if TARGET_OS_IOS
-- (CGRect *)getInputRects;
-- (CGRect *)getButtonRects;
-- (UIView *)getButtonView:(int)i;
-- (UIView *)getDPADView;
-- (UIView *)getStickView;
-- (void)getControllerCoords:(int)orientation;
+// editing interface used by LayoutView
+- (NSString*)getButtonName:(int)i;
+- (CGRect) getButtonRect:(int)i;
+- (void)setButtonRect:(int)i rect:(CGRect)rect;
 #endif
 
-- (void)getConf;
-
 - (void)startEmulation;
+- (void)stopEmulation;
 
 - (void)done:(id)sender;
 
@@ -138,6 +144,7 @@
 #if TARGET_OS_IOS
 - (void)runImport;
 - (void)runExport;
+- (void)runExportSkin;
 #endif
 
 - (void)handle_INPUT;
@@ -146,7 +153,6 @@
 - (void)updateOptions;
 
 - (UIImage *)loadImage:(NSString *)name;
-- (FILE *)loadFile:(NSString *)name;
 
 - (void)moveROMS;
 - (void)playGame:(NSDictionary*)game;
@@ -156,18 +162,16 @@
 - (NSSet*)touchesController:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void)beginCustomizeCurrentLayout;
 - (void)finishCustomizeCurrentLayout;
+- (void)saveCurrentLayout;
 - (void)resetCurrentLayout;
 - (void)adjustSizes;
 #endif
 
 @property (readwrite,strong)  UIView *externalView;
 @property (readonly,assign) int stick_radio;
-@property (assign) CGRect rStickWindow;
 #if TARGET_OS_IOS
 @property (strong, nonatomic) UIImpactFeedbackGenerator* impactFeedback;
 @property (strong, nonatomic) UISelectionFeedbackGenerator* selectionFeedback;
 #endif
-
-+ (NSArray<NSString*>*)borderList;
 
 @end

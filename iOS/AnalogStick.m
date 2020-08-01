@@ -205,26 +205,29 @@
 
 // get the image to use for the stick based on the position.
 - (UIImage*)getStickImage {
+    NSString* base = @"stick-";
+    NSString* zero = @"inner.png";
 
-    if (g_pref_input_touch_type != TOUCH_INPUT_DPAD)
-        return [emuController loadImage:@"stick-inner.png"];
+    if (g_pref_input_touch_type == TOUCH_INPUT_DPAD) {
+        base = @"DPad_";
+        zero = @"NotPressed.png";
+    }
     
-    NSString* name = @"DPad_NotPressed.png";
-    
+    NSString* ext = zero;
     switch ((myosd_pad_status | myosd_joy_status[0]) & (MYOSD_UP|MYOSD_DOWN|MYOSD_LEFT|MYOSD_RIGHT))
     {
-        case MYOSD_UP:    name = @"DPad_U.png"; break;
-        case MYOSD_DOWN:  name = @"DPad_D.png"; break;
-        case MYOSD_LEFT:  name = @"DPad_L.png"; break;
-        case MYOSD_RIGHT: name = @"DPad_R.png"; break;
+        case MYOSD_UP:    ext = @"U.png"; break;
+        case MYOSD_DOWN:  ext = @"D.png"; break;
+        case MYOSD_LEFT:  ext = @"L.png"; break;
+        case MYOSD_RIGHT: ext = @"R.png"; break;
             
-        case MYOSD_UP | MYOSD_LEFT:  name = @"DPad_UL.png"; break;
-        case MYOSD_UP | MYOSD_RIGHT: name = @"DPad_UR.png"; break;
-        case MYOSD_DOWN | MYOSD_LEFT:  name = @"DPad_DL.png"; break;
-        case MYOSD_DOWN | MYOSD_RIGHT: name = @"DPad_DR.png"; break;
+        case MYOSD_UP | MYOSD_LEFT:  ext = @"UL.png"; break;
+        case MYOSD_UP | MYOSD_RIGHT: ext = @"UR.png"; break;
+        case MYOSD_DOWN | MYOSD_LEFT:  ext = @"DL.png"; break;
+        case MYOSD_DOWN | MYOSD_RIGHT: ext = @"DR.png"; break;
     }
                          
-    return [emuController loadImage:name];
+    return [emuController loadImage:[base stringByAppendingString:ext]] ?: [emuController loadImage:[base stringByAppendingString:zero]];
 }
 
 - (id)initWithFrame:(CGRect)frame withEmuController:(EmulatorController*)emulatorController{
@@ -234,39 +237,38 @@
         
         emuController = emulatorController;
         
-        CGRect rect = self.bounds;
-        ptMin = CGPointMake(CGRectGetMinX(rect), CGRectGetMinY(rect));
-        ptMax = CGPointMake(CGRectGetMaxX(rect), CGRectGetMaxY(rect));
-        ptCenter = CGPointMake(CGRectGetMidX(rect), CGRectGetMidY(rect));
+        innerView = [ [ UIImageView alloc ] initWithImage:[self getStickImage]];
+        [self addSubview: innerView];
         
         if (g_device_is_fullscreen)
         {
             outerView = [ [ UIImageView alloc ] initWithImage:[emuController loadImage:@"stick-outer.png"]];
-            outerView.frame = rect;
-            
+            [self insertSubview:outerView belowSubview:innerView];
+
             [outerView setAlpha:((float)g_controller_opacity / 100.0f)];
-            
-            [self addSubview: outerView];
+            [innerView setAlpha:((float)g_controller_opacity / 100.0f)];
         }
         
-        int stick_radio = emuController.stick_radio;
-        
-        stickWidth =  rect.size.width * (stick_radio/100.0f);//0.60;
-        stickHeight = rect.size.height * (stick_radio/100.0f);//0.60;
-        innerView = [ [ UIImageView alloc ] initWithImage:[self getStickImage]];
-        innerView.frame = CGRectMake(ptCenter.x - stickWidth/2, ptCenter.y - stickHeight/2, stickWidth, stickHeight);
-        
-        if(g_device_is_fullscreen)
-            [innerView setAlpha:((float)g_controller_opacity / 100.0f)];
-        
-        [self addSubview: innerView];
-        
-        //self.exclusiveTouch = YES;
-        self.multipleTouchEnabled = YES;//NO;
-        //self.userInteractionEnabled = NO;
+        self.multipleTouchEnabled = YES;
     }
     
     return self;    
+}
+
+- (void)layoutSubviews {
+    [super layoutSubviews];
+
+    CGRect rect = self.bounds;
+    ptMin = CGPointMake(CGRectGetMinX(rect), CGRectGetMinY(rect));
+    ptMax = CGPointMake(CGRectGetMaxX(rect), CGRectGetMaxY(rect));
+    ptCenter = CGPointMake(CGRectGetMidX(rect), CGRectGetMidY(rect));
+    
+    int stick_radio = emuController.stick_radio;
+    stickWidth =  rect.size.width * (stick_radio/100.0f);//0.60;
+    stickHeight = rect.size.height * (stick_radio/100.0f);//0.60;
+
+    innerView.frame = CGRectMake(ptCenter.x - stickWidth/2, ptCenter.y - stickHeight/2, stickWidth, stickHeight);
+    outerView.frame = rect;
 }
 
 - (void)calculateStickState:(CGPoint)pt min:(CGPoint)min max:(CGPoint)max center:(CGPoint)center{
@@ -358,7 +360,7 @@
         y = (pad_status & MYOSD_UP)    ? +1.0 : (pad_status & MYOSD_DOWN) ? -1.0 : 0.0;
     }
 
-    // update the stick position, or the dpad image 
+    // update the stick position, and the dpad/stick image 
     if (g_pref_input_touch_type != TOUCH_INPUT_DPAD)
     {
         //NSLog(@"AnalogStick UPDATE: [%f,%f]", x, y);
@@ -369,10 +371,7 @@
         stickPos.size.height = stickHeight;
         innerView.frame = stickPos;
     }
-    else
-    {
-        innerView.image = [self getStickImage];
-    }
+    innerView.image = [self getStickImage];
 }
 
 @end

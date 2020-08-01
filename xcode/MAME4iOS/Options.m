@@ -9,7 +9,7 @@
 #include "myosd.h"
 #import "Options.h"
 #import "Globals.h"
-#import "EmulatorController.h"  // for borderList
+#import "SkinManager.h"         // for skinList
 #import "MetalScreenView.h"     // for shader and filter list
 #import "CGScreenView.h"        // for shader and filter list
 
@@ -34,11 +34,11 @@
                      nil];
 }
 + (NSArray*)arrayControlType {
-    return @[@"Keyboard or 8BitDo",@"iCade or compatible",@"iCP, Gametel",@"iMpulse"];
+    return @[@"Keyboard",@"iCade or compatible",@"iCP, Gametel",@"iMpulse", @"8BitDo Zero"];
 }
 
-+ (NSArray*)arrayBorder {
-    return [EmulatorController borderList];
++ (NSArray*)arraySkin {
+    return [SkinManager getSkinNames];
 }
 + (NSArray*)arrayFilter {
     Options* op = [[Options alloc] init];
@@ -68,6 +68,15 @@
     else
         return [CGScreenView colorSpaceList];
 }
+
+#pragma mark - utility funciton to set a single option and save it.
+
++ (void)setOption:(id)value forKey:(NSString*)key {
+    Options* op = [[Options alloc] init];
+    [op setValue:value forKey:key];
+    [op saveOptions];
+}
+
 
 #pragma mark - instance code
 
@@ -115,7 +124,7 @@
         _keepAspectRatio=1;
         
         _filter = @"";
-        _border = @"";
+        _skin = @"";
         _screenShader = @"";
         _lineShader = @"";
 
@@ -129,12 +138,15 @@
         _showINFO = 0;
         _animatedButtons = 1;
         
+#if TARGET_OS_MACCATALYST
+        _fullscreenLandscape= 0;
+        _fullscreenPortrait = 0;
+        _fullscreenJoystick = 0;
+#else
         _fullscreenLandscape= 1;
         _fullscreenPortrait = 0;
         _fullscreenJoystick = 1;
-        
-        _btDeadZoneValue = 2;
-        _touchDeadZone = 1;
+#endif
         
         _overscanValue = 0;
         _tvoutNative = 1;
@@ -224,7 +236,7 @@
         _keepAspectRatio = [([optionsDict objectForKey:@"KeepAspect"] ?: @(1)) intValue];
         
         _filter = [optionsDict objectForKey:@"filter"] ?: @"";
-        _border = [optionsDict objectForKey:@"border"] ?: @"";
+        _skin = [optionsDict objectForKey:@"skin"] ?: @"";
         _screenShader = [optionsDict objectForKey:@"screen-shader"] ?: [optionsDict objectForKey:@"effect"] ?: @"";
         _lineShader = [optionsDict objectForKey:@"line-shader"] ?: @"";
 
@@ -262,9 +274,6 @@
         _turboREnabled = [[optionsDict objectForKey:@"turboREnabled"] intValue];
         
         _touchDirectionalEnabled = [[optionsDict objectForKey:@"touchDirectionalEnabled"] intValue];
-        
-        _btDeadZoneValue =  [[optionsDict objectForKey:@"btDeadZoneValue"] intValue];
-        _touchDeadZone =  [[optionsDict objectForKey:@"touchDeadZone"] intValue];
         
         _overscanValue =  [[optionsDict objectForKey:@"overscanValue"] intValue];
         _tvoutNative =  [[optionsDict objectForKey:@"tvoutNative"] intValue];
@@ -344,7 +353,7 @@
                              [NSString stringWithFormat:@"%d", _keepAspectRatio], @"KeepAspect",
                               
                              _filter, @"filter",
-                             _border, @"border",
+                             _skin, @"skin",
                              _screenShader, @"screen-shader",
                              _lineShader, @"line-shader",
 
@@ -379,9 +388,6 @@
                              [NSString stringWithFormat:@"%d", _fullscreenPortrait], @"fullPort",
                              [NSString stringWithFormat:@"%d", _fullscreenJoystick], @"fullJoy",
 
-                             [NSString stringWithFormat:@"%d", _btDeadZoneValue], @"btDeadZoneValue",
-                             [NSString stringWithFormat:@"%d", _touchDeadZone], @"touchDeadZone",
-                             
                              [NSString stringWithFormat:@"%d", _overscanValue], @"overscanValue",
                              [NSString stringWithFormat:@"%d", _tvoutNative], @"tvoutNative",
                              

@@ -147,7 +147,11 @@ code {background-color:lightgray; width:100%; overflow-x:scroll}\n\
     HTMLData = [HTMLData stringByReplacingOccurrencesOfString:@"$(APP_VERSION)" withString:version];
 
     // this last date Info.plist was modifed, if you do a clean build, or change the version, it is the build date.
+#if TARGET_OS_MACCATALYST
+    NSString *path = [[NSBundle mainBundle] pathForResource: @"../Info" ofType: @"plist"];
+#else
     NSString *path = [[NSBundle mainBundle] pathForResource: @"Info" ofType: @"plist"];
+#endif
     NSDate* date = [[[NSFileManager defaultManager] attributesOfItemAtPath:path error:nil] fileModificationDate];
     NSString* app_date = [NSDateFormatter localizedStringFromDate:date dateStyle:NSDateFormatterMediumStyle timeStyle:NSDateFormatterNoStyle];
     HTMLData = [HTMLData stringByReplacingOccurrencesOfString:@"$(APP_DATE)" withString:app_date];

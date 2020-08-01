@@ -81,7 +81,7 @@ static void netplay_warn_callback(char *msg)
 @implementation NetplayController
 
 + (void)showAlert:(NSString *)msg {
-    UIViewController* root = UIApplication.sharedApplication.keyWindow.rootViewController;
+    UIViewController* root = UIApplication.sharedApplication.windows.firstObject.rootViewController;
     [root showAlertWithTitle:@"Netplay" message:msg /*timeout:1.5*/];
 }
 

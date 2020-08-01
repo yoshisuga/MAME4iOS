@@ -1,4 +1,4 @@
-MAME4iOS for Xcode
+MAME4iOS, MAME4tvOS, and MAME4mac for Xcode
 
 How to build MAME4iOS for your iOS or tvOS device.
 
@@ -11,7 +11,10 @@ Building the core MAME library.
 ./make-ios.sh
 or
 ./make-tvos.sh 
-to build it for the iOS or tvOS platform respectively.
+to build it for the tvOS platform.
+or
+./make-mac.sh 
+to build it for macOS.
 
 Compiling and installing the app bundle.
 4. Xcode will open automatically upon completion.
@@ -19,4 +22,4 @@ Compiling and installing the app bundle.
 6. Change the Code Signing Identity and Product Bundle Identifier accordingly. 
 7. Build and install to your device.
 
-Use the built-in webserver to load up the Rom Sets (NOT INCLUDED).
+Use the built-in WebServer or AirDrop to load up the Rom Sets (NOT INCLUDED).

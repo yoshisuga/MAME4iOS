@@ -117,25 +117,19 @@
 }
 
 - (void)insertText:(NSString *)text {
-    
-    if (g_pref_ext_control_type < EXT_CONTROL_ICADE)
-        return;
-
-#if TARGET_OS_IOS
-    [self iCadeKey:text];
-#endif
-    
-#if 0  // TODO: is this really nessesarry???
-    static int cycleResponder = 0;
-    if (++cycleResponder > 20) {
-        // necessary to clear a buffer that accumulates internally
-        cycleResponder = 0;
-        [self resignFirstResponder];
-        [self becomeFirstResponder];
-    }
-#endif
 }
 
+- (void)deleteBackward {
+}
+
+
+#pragma mark handle iCade key
+
+// iCade keys
+//        we      yt uf im og
+//      aq  dc    hr jn kp lv
+//        xz
+//
 - (void)iCadeKey:(NSString *)text {
     
     static int up = 0;
@@ -155,7 +149,7 @@
         return;
 #endif
     
-    NSLog(@"%s: %@ (%d)", __FUNCTION__, text.debugDescription, [text characterAtIndex:0]);
+    //NSLog(@"%s: %@ (%d)", __FUNCTION__, text.debugDescription, [text characterAtIndex:0]);
 
     int joy1 = 0;
     int joy2 = 0;
@@ -390,15 +384,11 @@
             
             //L1(iCade) or START (iCP) or 2P LEFT(iMpulse)
         case 'u':   //button down
-            if(g_pref_ext_control_type <= EXT_CONTROL_ICADE) {
-                myosd_joy_status[0] |= MYOSD_L1;
-                joy1 = 1;
-            }
-            else if(g_pref_ext_control_type == EXT_CONTROL_ICP){
+            if (g_pref_ext_control_type == EXT_CONTROL_ICP) {
                 myosd_joy_status[0] |= MYOSD_START;
                 joy1 = 1;
             }
-            else {
+            else if (g_pref_ext_control_type == EXT_CONTROL_IMPULSE) {
                 if(STICK4WAY)
                 {
                     myosd_joy_status[1] &= ~MYOSD_UP;
@@ -408,18 +398,18 @@
                 left2 = 1;
                 joy2 = 1;
             }
-           
-            break;
-        case 'f':   //button up
-            if(g_pref_ext_control_type <= EXT_CONTROL_ICADE) {
-                myosd_joy_status[0] &= ~MYOSD_L1;
+            else {
+                myosd_joy_status[0] |= MYOSD_L1;
                 joy1 = 1;
             }
-            else if(g_pref_ext_control_type == EXT_CONTROL_ICP){
+
+            break;
+        case 'f':   //button up
+            if (g_pref_ext_control_type == EXT_CONTROL_ICP) {
                 myosd_joy_status[0] &= ~MYOSD_START;
                 joy1 = 1;
             }
-            else{
+            else if (g_pref_ext_control_type == EXT_CONTROL_IMPULSE) {
                 if(STICK4WAY)
                 {
                     if(up2)myosd_joy_status[1] |= MYOSD_UP;
@@ -429,33 +419,37 @@
                 left2 = 0;
                 joy2 = 1;
             }
-            
+            else {
+                myosd_joy_status[0] &= ~MYOSD_L1;
+                joy1 = 1;
+            }
+
             break;
             
             //Start(iCade) or L1(iCP) or Coin / Select(iMpulse)
         case 'h':   //button down
-            if(g_pref_ext_control_type <= EXT_CONTROL_ICADE) {
-                myosd_joy_status[0] |= MYOSD_START;
-            }
-            else if(g_pref_ext_control_type == EXT_CONTROL_ICP){
+            if(g_pref_ext_control_type == EXT_CONTROL_ICP) {
                 myosd_joy_status[0] |= MYOSD_L1;
             }
-            else
+            else if (g_pref_ext_control_type == EXT_CONTROL_IMPULSE)
             {
                 myosd_joy_status[0] |= MYOSD_SELECT;
+            }
+            else {
+                myosd_joy_status[0] |= MYOSD_START;
             }
             joy1 = 1;
             break;
         case 'r':   //button up
-            if(g_pref_ext_control_type <= EXT_CONTROL_ICADE) {
-                myosd_joy_status[0] &= ~MYOSD_START;
-            }
-            else if(g_pref_ext_control_type == EXT_CONTROL_ICP){
+            if (g_pref_ext_control_type == EXT_CONTROL_ICP) {
                 myosd_joy_status[0] &= ~MYOSD_L1;
             }
-            else
+            else if (g_pref_ext_control_type == EXT_CONTROL_IMPULSE)
             {
                 myosd_joy_status[0] &= ~MYOSD_SELECT;
+            }
+            else {
+                myosd_joy_status[0] &= ~MYOSD_START;
             }
             joy1 = 1;
             break;
@@ -596,15 +590,19 @@
             
     }
     
-    // only treat iCade (or keyboard) as a controler when the dpad is used for first time.
-    if(g_iCade_used == 0 && (myosd_joy_status[0] & (MYOSD_DOWN|MYOSD_UP|MYOSD_RIGHT|MYOSD_LEFT)))
+    // using just a keyboard in non-fullscreen should not be counted as a controller
+    if (g_device_is_fullscreen || g_pref_ext_control_type != EXT_CONTROL_NONE)
     {
-        g_iCade_used = 1;
-        g_joy_used = 1;
-        myosd_num_of_joys = 1;
-        [emuController changeUI];
+        // only treat iCade as a controler when DPAD used for first time.
+        if(g_iCade_used == 0 && (myosd_joy_status[0] & (MYOSD_DOWN|MYOSD_UP|MYOSD_RIGHT|MYOSD_LEFT)))
+        {
+            g_iCade_used = 1;
+            g_joy_used = 1;
+            myosd_num_of_joys = 1;
+            [emuController changeUI];
+        }
     }
-        
+    
     if(joy2 && myosd_num_of_joys<2)
     {
         myosd_num_of_joys = 2;
@@ -619,10 +617,6 @@
     myosd_pad_status = myosd_joy_status[0];
 
     [emuController handle_INPUT];
-}
-
-- (void)deleteBackward {
-    // This space intentionally left blank to complete protocol
 }
 
 #pragma mark Hardare Keyboard
@@ -674,6 +668,7 @@
 //    d    n o    j
 //
 
+// NOTE you can find these constants now-a-days in UIKeyConstants.h
 #define KEY_RARROW   79
 #define KEY_LARROW   80
 #define KEY_DARROW   81
@@ -736,28 +731,23 @@
 
 #define KEY_DOWN     0x8000
 
-// Overloaded _keyCommandForEvent (UIResponder.h) // Only exists in iOS 9+
--(UIKeyCommand *)_keyCommandForEvent:(UIEvent *)event { // UIPhysicalKeyboardEvent
+-(void)hardwareKey:(NSString*)key keyCode:(int)keyCode isKeyDown:(BOOL)isKeyDown modifierFlags:(UIKeyModifierFlags)modifierFlags {
     
-    static BOOL g_keyboard_state[256];
+    NSLog(@"hardwareKey: %s%s%s%s%@ (%d) %s",
+          (modifierFlags & UIKeyModifierShift)     ? "SHIFT+" : "",
+          (modifierFlags & UIKeyModifierAlternate) ? "ALT+" : "",
+          (modifierFlags & UIKeyModifierControl)   ? "CONTROL+" : "",
+          (modifierFlags & UIKeyModifierCommand)   ? "CMD+" : "",
+          [key.debugDescription stringByReplacingOccurrencesOfString:@"\r" withString:@"⏎"],
+          keyCode, isKeyDown ? "DOWN" : "UP");
     
-    int keyCode = [[event valueForKey:@"_keyCode"] intValue];
-    BOOL isKeyDown = [[event valueForKey:@"_isKeyDown"] boolValue];
-
-    if (keyCode <= 0 || keyCode > 255 || g_keyboard_state[keyCode] == isKeyDown)
-        return nil;
-    
-    g_keyboard_state[keyCode] = isKeyDown;
-
-    NSLog(@"_keyCommandForEvent:'%@' '%@' keyCode:%@ isKeyDown:%@ time:%f", [event valueForKey:@"_unmodifiedInput"], [event valueForKey:@"_modifiedInput"], [event valueForKey:@"_keyCode"], [event valueForKey:@"_isKeyDown"], [event timestamp]);
-
-    if (g_pref_ext_control_type != EXT_CONTROL_NONE)
+    // iCade (or compatible...)
+    if (!(g_pref_ext_control_type == EXT_CONTROL_NONE || g_pref_ext_control_type == EXT_CONTROL_8BITDO))
     {
-#if TARGET_OS_TV
-        if (isKeyDown)
-            [self iCadeKey:[event valueForKey:@"_unmodifiedInput"]];
-#endif
-        return nil;
+        if (isKeyDown && modifierFlags == 0)
+            [self iCadeKey:key];
+
+        return;
     }
     
     NSString* iCadeKey = nil;
@@ -824,9 +814,34 @@
         case KEY_BQUOTE+KEY_DOWN:   break;
     }
     
+    // Plain Keyboard support A,B,X,Y,L,R as buttons (in addition to CTRL, ALT, SPACE, SHIFT, LCMD, RCMD)
+    if (g_pref_ext_control_type == EXT_CONTROL_NONE && modifierFlags == 0) {
+        switch (keyCode + (isKeyDown ? KEY_DOWN : 0)) {
+            // A/B/Y/X
+            case KEY_A:          iCadeKey = @"p"; break;
+            case KEY_A+KEY_DOWN: iCadeKey = @"k"; break;
+            case KEY_B:          iCadeKey = @"g"; break;
+            case KEY_B+KEY_DOWN: iCadeKey = @"o"; break;
+            case KEY_Y:          iCadeKey = @"m"; break;
+            case KEY_Y+KEY_DOWN: iCadeKey = @"i"; break;
+            case KEY_X:          iCadeKey = @"v"; break;
+            case KEY_X+KEY_DOWN: iCadeKey = @"l"; break;
+                
+            // L1/R1
+            case KEY_L:          iCadeKey = @"f"; break;
+            case KEY_L+KEY_DOWN: iCadeKey = @"u"; break;
+            case KEY_R:          iCadeKey = @"n"; break;
+            case KEY_R+KEY_DOWN: iCadeKey = @"j"; break;
+                
+            // PAUSE
+            case KEY_P:          myosd_mame_pause = 1; break;
+            case KEY_P+KEY_DOWN: break;
+        }
+    }
+    
+    
     // command keys (ALT+ works in the simulator CMD+ does not)
-    if (g_keyboard_state[KEY_LCMD] || g_keyboard_state[KEY_RCMD] ||
-        g_keyboard_state[KEY_LALT] || g_keyboard_state[KEY_RALT])
+    if (modifierFlags & (TARGET_OS_SIMULATOR ? UIKeyModifierAlternate : UIKeyModifierCommand))
     {
         if (isKeyDown && keyCode == KEY_RETURN)
             [emuController commandKey:'\r'];
@@ -835,8 +850,10 @@
         if (isKeyDown && keyCode >= KEY_0 && keyCode <= KEY_9)
             [emuController commandKey:'0' + (keyCode - KEY_0)];
     }
+    
     // 8BitDo
-    else switch (keyCode + (isKeyDown ? KEY_DOWN : 0)) {
+    if (g_pref_ext_control_type == EXT_CONTROL_8BITDO && modifierFlags == 0) {
+        switch (keyCode + (isKeyDown ? KEY_DOWN : 0)) {
             
         // DPAD
         case KEY_F:            iCadeKey = @"c"; break;
@@ -869,13 +886,56 @@
         case KEY_O+KEY_DOWN:    iCadeKey = @"h"; break;
         case KEY_N:             iCadeKey = @"t"; break;
         case KEY_N+KEY_DOWN:    iCadeKey = @"y"; break;
+        }
     }
 
     if (iCadeKey != nil) {
         [self iCadeKey:iCadeKey];
     }
+}
 
+// get keyboad input on macOS or iOS 13.4+
+#if __IPHONE_OS_VERSION_MIN_REQUIRED >= 130400 || TARGET_OS_MACCATALYST
+
+- (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
+    for (UIPress* press in presses) {
+        if (press.key != nil) {
+            [self hardwareKey:press.key.charactersIgnoringModifiers keyCode:(int)press.key.keyCode isKeyDown:TRUE modifierFlags:press.key.modifierFlags];
+        }
+    }
+}
+
+- (void)pressesEnded:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
+    for (UIPress* press in presses) {
+        if (press.key != nil) {
+            [self hardwareKey:press.key.charactersIgnoringModifiers keyCode:(int)press.key.keyCode isKeyDown:FALSE modifierFlags:press.key.modifierFlags];
+        }
+    }
+}
+
+#else
+
+// Overloaded _keyCommandForEvent (UIResponder.h) // Only exists in iOS 9+
+-(UIKeyCommand *)_keyCommandForEvent:(UIEvent *)event { // UIPhysicalKeyboardEvent
+    
+    static BOOL g_keyboard_state[256];
+    
+    int keyCode = [[event valueForKey:@"_keyCode"] intValue];
+    BOOL isKeyDown = [[event valueForKey:@"_isKeyDown"] boolValue];
+    int modifierFlags = [[event valueForKey:@"_modifierFlags"] intValue];
+    NSString* key = [event valueForKey:@"_unmodifiedInput"];
+
+    if (keyCode <= 0 || keyCode > 255 || g_keyboard_state[keyCode] == isKeyDown)
+        return nil;
+    
+    g_keyboard_state[keyCode] = isKeyDown;
+
+    [self hardwareKey:key keyCode:keyCode isKeyDown:isKeyDown modifierFlags:modifierFlags];
     return nil;
 }
+
+#endif
+
+
 
 @end

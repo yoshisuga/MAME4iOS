@@ -57,7 +57,7 @@
 //     NSLog(@"%@ %ld", info.name, info.uncompressed_size);
 // }];
 // ```
-+ (BOOL)enumerate:(NSString*)path withOptions:(ZipFileEnumOptions)options usingBlock:(void (^)(ZipFileInfo* info))block
++ (BOOL)enumerate:(NSString*)path withOptions:(ZipFileEnumOptions)options usingBlock:(void (NS_NOESCAPE ^)(ZipFileInfo* info))block
 { @autoreleasepool {
     
     NSFileHandle* file = [NSFileHandle fileHandleForReadingAtPath:path];
@@ -299,7 +299,7 @@
 #pragma mark - ZipFile writing
 
 // create a ZipFile from any user supplied data, callback is required to convert item in array to a ZipFileInfo
-+ (BOOL)exportTo:(NSString*)path fromItems:(NSArray*)items withOptions:(ZipFileWriteOptions)options usingBlock:(ZipFileInfo* (^)(id item))loadHandler
++ (BOOL)exportTo:(NSString*)path fromItems:(NSArray*)items withOptions:(ZipFileWriteOptions)options usingBlock:(ZipFileInfo* (NS_NOESCAPE ^)(id item))loadHandler
 {
     if (options & ZipFileWriteAtomic) {
         NSError* error = nil;
@@ -493,7 +493,7 @@
 }
 
 // create a ZipFile from files in a directory.
-+ (BOOL)exportTo:(NSString*)path fromDirectory:(NSString*)root withFiles:(nullable NSArray<NSString*>*)files withOptions:(ZipFileWriteOptions)options progressBlock:(nullable BOOL (^)(double progress))block
++ (BOOL)exportTo:(NSString*)path fromDirectory:(NSString*)root withFiles:(nullable NSArray<NSString*>*)files withOptions:(ZipFileWriteOptions)options progressBlock:(nullable BOOL (NS_NOESCAPE ^)(double progress))block
 {
     BOOL isDirectory;
     if (!([NSFileManager.defaultManager fileExistsAtPath:root isDirectory:&isDirectory] && isDirectory))

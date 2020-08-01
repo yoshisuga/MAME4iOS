@@ -45,6 +45,22 @@
 #ifndef MAME4iOS_Globals_h
 #define MAME4iOS_Globals_h
 
+/* define PRODUCT_NAME */
+
+#if TARGET_OS_MACCATALYST
+    #define PRODUCT_NAME        "MAME4mac"
+    #define PRODUCT_NAME_LONG   "MAME for macOS"
+#elif TARGET_OS_TV
+    #define PRODUCT_NAME        "MAME4tvOS"
+    #define PRODUCT_NAME_LONG   "MAME for AppleTV"
+#elif TARGET_OS_SIMULATOR
+    #define PRODUCT_NAME        "MAME4sim"
+    #define PRODUCT_NAME_LONG   "MAME for Simulator"
+#else
+    #define PRODUCT_NAME        "MAME4iOS"
+    #define PRODUCT_NAME_LONG   "MAME for iOS"
+#endif
+
 /* Convert between radians and degrees */
 #ifndef RAD_TO_DEGREE
 #define RAD_TO_DEGREE(r)	((r * 180.0f) / M_PI)
@@ -85,7 +101,6 @@ extern unsigned long myosd_joy_status[NUM_JOY];
 extern float joy_analog_x[NUM_JOY][4];
 extern float joy_analog_y[NUM_JOY][2];
 
-extern int g_isIpad;
 extern int g_isMetalSupported;
 
 extern int g_emulation_initiated;
@@ -93,7 +108,6 @@ extern int g_emulation_paused;
 
 extern int g_joy_used;
 extern int g_iCade_used;
-extern int g_btjoy_available;
 
 extern int g_controller_opacity;
 extern int g_enable_debug_view;
@@ -110,10 +124,6 @@ extern int g_pref_animated_DPad;
 extern int g_pref_hide_LR;
 extern int g_pref_BplusX;
 extern int g_pref_full_num_buttons;
-extern int g_pref_skin;
-extern int g_skin_data;
-extern int g_pref_BT_DZ_value;
-extern int g_pref_touch_DZ;
 extern int g_pref_analog_DZ_value;
 extern int g_pref_input_touch_type;
 extern int g_pref_ext_control_type;
@@ -124,51 +134,9 @@ extern int g_pref_overscanTVOUT;
 extern float g_buttons_size;
 extern float g_stick_size;
 
-enum { PORTRAIT_VIEW_FULL=0,
-    PORTRAIT_VIEW_NOT_FULL=1,
-    PORTRAIT_IMAGE_BACK=2,
-    PORTRAIT_IMAGE_OVERLAY=3,
-    LANDSCAPE_VIEW_FULL=4,
-    LANDSCAPE_VIEW_NOT_FULL=5,
-    LANDSCAPE_IMAGE_BACK=6,
-    LANDSCAPE_IMAGE_OVERLAY=7,
-    FRAME_RECT_LAST_VALUE=8
-};
-
-enum {
-    BTN_Y_RECT=0,
-    BTN_A_RECT=1,
-    BTN_X_RECT=2,
-    BTN_B_RECT=3,
-    BTN_A_Y_RECT=4,
-    BTN_X_A_RECT=5,
-    BTN_B_Y_RECT=6,
-    BTN_B_X_RECT=7,
-    DPAD_UP_RECT=8,
-    DPAD_LEFT_RECT=9,
-    DPAD_DOWN_RECT=10,
-    DPAD_RIGHT_RECT=11,
-    DPAD_UP_LEFT_RECT=12,
-    DPAD_DOWN_LEFT_RECT=13,
-    DPAD_UP_RIGHT_RECT=14,
-    DPAD_DOWN_RIGHT_RECT=15,
-    BTN_SELECT_RECT=16,
-    BTN_START_RECT=17,
-    BTN_L1_RECT=18,
-    BTN_R1_RECT=19,
-    BTN_L2_RECT=20, BTN_EXIT_RECT=20,
-    BTN_R2_RECT=21, BTN_OPTION_RECT=21,
-    BTN_MENU_RECT=22,
-    INPUT_LAST_VALUE=23
-};
-
-enum { BTN_B=0,BTN_X,BTN_A,BTN_Y,BTN_SELECT,BTN_START,BTN_L1,BTN_R1,BTN_EXIT,BTN_OPTION,NUM_BUTTONS};
-#define BTN_L2 BTN_EXIT
-#define BTN_R2 BTN_OPTION
-
 enum { TOUCH_INPUT_DPAD=0,TOUCH_INPUT_DSTICK=1, TOUCH_INPUT_ANALOG=2};
 
-enum { EXT_CONTROL_NONE=0,EXT_CONTROL_ICADE=1,EXT_CONTROL_ICP = 2,EXT_CONTROL_IMPULSE = 3};
+enum { EXT_CONTROL_NONE=0,EXT_CONTROL_ICADE=1,EXT_CONTROL_ICP=2,EXT_CONTROL_IMPULSE=3,EXT_CONTROL_8BITDO=4};
 
 extern const char* get_resource_path(const char* file);
 extern const char* get_documents_path(const char* file);

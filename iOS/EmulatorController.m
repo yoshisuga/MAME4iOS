@@ -54,7 +54,6 @@
 #import "AnalogStick.h"
 #import "AnalogStick.h"
 #import "LayoutView.h"
-#import "LayoutData.h"
 #import "NetplayGameKit.h"
 #import "FileItemProvider.h"
 #import "InfoHUD.h"
@@ -68,12 +67,8 @@
 #endif
 
 #import "iCadeView.h"
-#ifdef BTJOY
-#import "BTJoyHelper.h"
-#endif
 #import <pthread.h>
 #import "UIView+Toast.h"
-#import "DeviceScreenResolver.h"
 #import "Bootstrapper.h"
 #import "Options.h"
 #import "WebServer.h"
@@ -81,8 +76,16 @@
 #import "ZipFile.h"
 #import "SystemImage.h"
 #import "SteamController.h"
+#import "SkinManager.h"
 
-#define DebugLog 0
+// declare these selectors, so we can use them, and ARC wont complain
+#ifndef __IPHONE_14_0
+@interface NSObject()
+-(GCControllerButtonInput*)buttonHome;
+@end
+#endif
+
+#define DebugLog 1
 #if DebugLog == 0
 #define NSLog(...) (void)0
 #endif
@@ -104,7 +107,6 @@ int buttonMask[NUM_BUTTONS];    // map a button index to a button MYOSD_* mask
 // Touch Directional Input tracking
 int touchDirectionalCyclesAfterMoved = 0;
 
-int g_isIpad = 0;
 int g_isMetalSupported = 0;
 
 int g_emulation_paused = 0;
@@ -112,11 +114,6 @@ int g_emulation_initiated=0;
 
 int g_joy_used = 0;
 int g_iCade_used = 0;
-#ifdef BTJOY
-int g_btjoy_available = 1;
-#else
-int g_btjoy_available = 0;
-#endif
 
 int g_enable_debug_view = 0;
 int g_controller_opacity = 50;
@@ -127,7 +124,7 @@ int g_device_is_fullscreen = 0;
 NSString* g_pref_screen_shader;
 NSString* g_pref_line_shader;
 NSString* g_pref_filter;
-NSString* g_pref_border;
+NSString* g_pref_skin;
 NSString* g_pref_colorspace;
 
 int g_pref_metal = 0;
@@ -153,9 +150,6 @@ int g_pref_full_screen_joy = 1;
 
 int g_pref_BplusX=0;
 int g_pref_full_num_buttons=4;
-int g_pref_skin = 1;
-int g_pref_BT_DZ_value = 2;
-int g_pref_touch_DZ = 1;
 
 int g_pref_input_touch_type = TOUCH_INPUT_DSTICK;
 int g_pref_analog_DZ_value = 2;
@@ -199,7 +193,8 @@ static int change_layout=0;
 
 #define kHUDPositionKey  @"hud_rect"
 #define kHUDScaleKey     @"hud_scale"
-#define kSelectedGameKey @"selected_game"
+#define kSelectedGameInfoKey @"selected_game_info"
+static NSDictionary* g_mame_game_info;
 static BOOL g_mame_reset = FALSE;           // do a full reset (delete cfg files) before running MAME
 static char g_mame_game[MAX_GAME_NAME];     // game MAME should run (or empty is menu)
 static char g_mame_game_error[MAX_GAME_NAME];
@@ -298,7 +293,7 @@ void* app_Thread_Start(void* args)
 {
     g_emulation_initiated = 1;
     
-    while (1) {
+    while (g_emulation_initiated) {
         prev_myosd_mouse = myosd_mouse = 0;
         prev_myosd_light_gun = myosd_light_gun = 0;
         
@@ -322,43 +317,50 @@ void* app_Thread_Start(void* args)
             g_mame_game[0] = 0;
         }
     }
+    NSLog(@"thread exit");
+    g_emulation_initiated = -1;
+    return NULL;
 }
 
-// make this public so DEBUG code in InfoDatabase can use it to get list of all ROMs
-NSDictionary* g_category_dict = nil;
+// load Category.ini (a copy of a similar function from uimenu.c)
+NSDictionary* load_category_ini()
+{
+    FILE* file = fopen(get_documents_path("Category.ini"), "r");
+    assert(file != NULL);
+    
+    if (file == NULL)
+        return nil;
 
-// find the category for a game/rom using Category.ini (a copy of a similar function from uimenu.c)
+    NSMutableDictionary* category_dict = [[NSMutableDictionary alloc] init];
+    char line[256];
+    NSString* curcat = @"";
+
+    while (fgets(line, sizeof(line), file) != NULL)
+    {
+        if (line[strlen(line) - 1] == '\n') line[strlen(line) - 1] = '\0';
+        if (line[strlen(line) - 1] == '\r') line[strlen(line) - 1] = '\0';
+        
+        if (line[0] == '\0')
+            continue;
+        
+        if (line[0] == '[')
+        {
+            line[strlen(line) - 1] = '\0';
+            curcat = [NSString stringWithUTF8String:line+1];
+            continue;
+        }
+        
+        [category_dict setObject:curcat forKey:[NSString stringWithUTF8String:line]];
+    }
+    fclose(file);
+    return category_dict;
+}
+
+// find the category for a game/rom using Category.ini
 NSString* find_category(NSString* name)
 {
-    if (g_category_dict == nil)
-    {
-        g_category_dict = [[NSMutableDictionary alloc] init];
-        FILE* file = fopen(get_documents_path("Category.ini"), "r");
-        if (file != NULL)
-        {
-            char line[256];
-            NSString* curcat = @"";
-
-            while (fgets(line, sizeof(line), file) != NULL)
-            {
-                if (line[strlen(line) - 1] == '\n') line[strlen(line) - 1] = '\0';
-                if (line[strlen(line) - 1] == '\r') line[strlen(line) - 1] = '\0';
-                
-                if (line[0] == '\0')
-                    continue;
-                
-                if (line[0] == '[')
-                {
-                    line[strlen(line) - 1] = '\0';
-                    curcat = [NSString stringWithUTF8String:line+1];
-                    continue;
-                }
-                
-                [(NSMutableDictionary*)g_category_dict setObject:curcat forKey:[NSString stringWithUTF8String:line]];
-            }
-            fclose(file);
-        }
-    }
+    static NSDictionary* g_category_dict = nil;
+    g_category_dict = g_category_dict ?: load_category_ini();
     return g_category_dict[name] ?: @"Unkown";
 }
 
@@ -403,6 +405,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     CGPoint touchDirectionalMoveStartLocation;
     CGPoint touchDirectionalMoveInitialLocation;
     CGSize  layoutSize;
+    SkinManager* skinManager;
 }
 @end
 
@@ -410,42 +413,69 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
 
 @synthesize externalView;
 @synthesize stick_radio;
-@synthesize rStickWindow;
 
 #if TARGET_OS_IOS
-- (CGRect *)getInputRects{
-    return rInput;
+- (NSString*)getButtonName:(int)i {
+    static NSString* button_name[NUM_BUTTONS] = {@"A",@"B",@"Y",@"X",@"L1",@"R1",@"A+Y",@"A+X",@"B+Y",@"B+X",@"SELECT",@"START",@"EXIT",@"OPTION",@"STICK"};
+    _Static_assert(NUM_BUTTONS == 15, "enum size change");
+    assert(i < NUM_BUTTONS);
+    return button_name[i];
 }
+- (CGRect)getButtonRect:(int)i {
+    assert(i < NUM_BUTTONS);
+    return rButton[i];
+}
+// called by the LayoutView editor (and internaly)
+- (void)setButtonRect:(int)i rect:(CGRect)rect {
+    assert(i < NUM_BUTTONS);
+    rInput[i] = rButton[i] = rect;
+    
+    _Static_assert(BTN_A==0 && BTN_R1== 5, "enum order change");
+    if (i <= BTN_R1)
+        rInput[i] = scale_rect(rButton[i], 0.80);
+    
+    if (buttonViews[i])
+        buttonViews[i].frame = rect;
 
-- (CGRect *)getButtonRects{
-    return rButtonImages;
-}
-
-- (UIView *)getButtonView:(int)i {
-    return buttonViews[i];
-}
-- (UIView *)getDPADView{
-    return analogStickView;
-}
-
-- (UIView *)getStickView{
-    return analogStickView;
+    // fix the aspect ratio of the input rect, if the image is not square.
+    if (buttonViews[i].image != nil && buttonViews[i].image.size.width != buttonViews[i].image.size.height) {
+        CGFloat h = floor(rect.size.width * buttonViews[i].image.size.height / buttonViews[i].image.size.width);
+        rInput[i].origin.y += (rect.size.height-h)/2;
+        rInput[i].size.height = h;
+    }
+    
+    // move the analog stick (and maybe the stick background image)
+    if (i == BTN_STICK && analogStickView != nil) {
+        analogStickView.frame = rect;
+        UIView* back = imageBack.subviews.firstObject;
+        rect = scale_rect(rect, g_device_is_landscape ? 1.0 : 1.2);
+        back.frame = [inputView convertRect:rect toView:imageBack];
+    }
 }
 
 #endif
 
++ (NSArray*)romList {
+    // NOTE we cant just use g_category_dict, because that is accessed on the MAME background thread.
+    return [load_category_ini() allKeys];
+}
+
 - (void)startEmulation {
-    NSParameterAssert(g_emulation_initiated == 0);
+    if (g_emulation_initiated == 1)
+        return;
     [self updateOptions];
     
     sharedInstance = self;
     
-    NSString* name = [[NSUserDefaults standardUserDefaults] stringForKey:kSelectedGameKey] ?: @"";
+    g_mame_game_info = [[NSUserDefaults standardUserDefaults] objectForKey:kSelectedGameInfoKey];
+    NSString* name = g_mame_game_info[kGameInfoName] ?: @"";
     if ([name isEqualToString:kGameInfoNameMameMenu])
         name = @" ";
     strncpy(g_mame_game, [name cStringUsingEncoding:NSUTF8StringEncoding], sizeof(g_mame_game));
     g_mame_game_error[0] = 0;
-    [[NSUserDefaults standardUserDefaults] removeObjectForKey:kSelectedGameKey];
+    
+    // delete the UserDefaults, this way if we crash we wont try this game next boot
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:kSelectedGameInfoKey];
     [[NSUserDefaults standardUserDefaults] synchronize];
 	     		    				
     pthread_create(&main_tid, NULL, app_Thread_Start, NULL);
@@ -471,12 +501,31 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
 #endif
 }
 
+// called durring app exit to cleanly shutdown MAME thread
+- (void)stopEmulation {
+    if (g_emulation_initiated == 0)
+        return;
+    
+    NSLog(@"stopEmulation: START");
+    
+    if (g_emulation_paused)
+        change_pause(g_emulation_paused = 0);
+    
+    g_emulation_initiated = 0;
+    while (g_emulation_initiated == 0) {
+        NSLog(@"stopEmulation: EXIT");
+        myosd_exitGame = 1;
+        [NSThread sleepForTimeInterval:0.100];
+    }
+    NSLog(@"stopEmulation: DONE");
+    g_emulation_initiated = 0;
+}
+
 - (void)startMenu
 {
-    [UIApplication sharedApplication].idleTimerDisabled = NO;
-
     g_emulation_paused = 1;
     change_pause(1);
+    [UIApplication sharedApplication].idleTimerDisabled = NO;
 }
 
 
@@ -674,9 +723,12 @@ void mame_state(int load_save, int slot)
     {
         NSString* yes = (controllers.count > 0 && TARGET_OS_IOS) ? @"Ⓐ Yes" : @"Yes";
         NSString* no  = (controllers.count > 0 && TARGET_OS_IOS) ? @"Ⓑ No" : @"No";
+        UIAlertControllerStyle style = UIAlertControllerStyleAlert;
+        
+        if (view != nil && self.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular && self.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassRegular)
+            style = UIAlertControllerStyleActionSheet;
 
-        UIAlertController *exitAlertController = [UIAlertController alertControllerWithTitle:@"Are you sure you want to exit?" message:nil
-                                                                              preferredStyle:(view != nil && g_isIpad) ? UIAlertControllerStyleActionSheet : UIAlertControllerStyleAlert];
+        UIAlertController *exitAlertController = [UIAlertController alertControllerWithTitle:@"Are you sure you want to exit?" message:nil preferredStyle:style];
 
         [self startMenu];
         [exitAlertController addAction:[UIAlertAction actionWithTitle:yes style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
@@ -692,8 +744,10 @@ void mame_state(int load_save, int slot)
     }
     else if (myosd_inGame && myosd_in_menu == 0)
     {
-        if (g_mame_game[0] != ' ')
+        if (g_mame_game[0] != ' ') {
             g_mame_game[0] = 0;
+            g_mame_game_info = nil;
+        }
         myosd_exitGame = 1;
     }
     else if (myosd_inGame && myosd_in_menu != 0)
@@ -703,6 +757,7 @@ void mame_state(int load_save, int slot)
     else
     {
         g_mame_game[0] = 0;
+        g_mame_game_info = nil;
         myosd_exitGame = 1;
     }
 }
@@ -719,8 +774,7 @@ void mame_state(int load_save, int slot)
 - (void)runPause
 {
     // this is called from bootstrapper when app is going into the background, save the current game we are playing so we can restore next time.
-    NSString* name = [NSString stringWithUTF8String:g_mame_game];
-    [[NSUserDefaults standardUserDefaults] setObject:name forKey:kSelectedGameKey];
+    [[NSUserDefaults standardUserDefaults] setObject:g_mame_game_info forKey:kSelectedGameInfoKey];
     
 #if TARGET_OS_IOS
     // also save the position of the HUD
@@ -740,7 +794,7 @@ void mame_state(int load_save, int slot)
         return;
 
     [self startMenu];
-    [self showAlertWithTitle:@"MAME4iOS" message:@"Game is PAUSED" buttons:@[@"Continue"] handler:^(NSUInteger button) {
+    [self showAlertWithTitle:@PRODUCT_NAME message:@"Game is PAUSED" buttons:@[@"Continue"] handler:^(NSUInteger button) {
         [self endMenu];
     }];
 }
@@ -820,9 +874,10 @@ void mame_state(int load_save, int slot)
     g_pref_filter = [Options.arrayFilter optionData:op.filter];
     g_pref_screen_shader = [Options.arrayScreenShader optionData:op.screenShader];
     g_pref_line_shader = [Options.arrayLineShader optionData:op.lineShader];
-    g_pref_border = [Options.arrayBorder optionData:op.border];
-    
     g_pref_colorspace = [Options.arrayColorSpace optionData:op.colorSpace];
+
+    g_pref_skin = [Options.arraySkin optionData:op.skin];
+    [skinManager setCurrentSkin:g_pref_skin];
 
     g_pref_integer_scale_only = op.integerScalingOnly;
     g_pref_metal = op.useMetal;
@@ -836,13 +891,6 @@ void mame_state(int load_save, int slot)
     g_pref_full_screen_joy   = [op fullscreenJoystick];
 
     myosd_pxasp1 = [op p1aspx];
-    
-    // always use skin 1
-    g_pref_skin = 1;
-    g_skin_data = g_pref_skin;
-    
-    g_pref_BT_DZ_value = [op btDeadZoneValue];
-    g_pref_touch_DZ = [op touchDeadZone];
     
     g_pref_nativeTVOUT = [op tvoutNative];
     g_pref_overscanTVOUT = [op overscanValue];
@@ -1012,6 +1060,7 @@ void mame_state(int load_save, int slot)
     // we present settings two ways, from in-game menu (we are parent) and from ChooseGameUI (it is the parent)
     UIViewController* parent = self.topViewController.presentingViewController;
     [(parent ?: self) dismissViewControllerAnimated:YES completion:^{
+        
         if(global_low_latency_sound != [op lowlsound])
         {
             if(myosd_sound_value!=-1)
@@ -1027,8 +1076,7 @@ void mame_state(int load_save, int slot)
             myosd_exitGame = 1;
 
         [self updateOptions];
-        
-        [self performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:YES];
+        [self changeUI];
         
         NSInteger file_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:[NSString stringWithUTF8String:get_documents_path("")] error:nil] count];
         NSInteger roms_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:[NSString stringWithUTF8String:get_documents_path("roms")] error:nil] count];
@@ -1049,25 +1097,16 @@ void mame_state(int load_save, int slot)
     }];
 }
 
-
-- (void)handle_MENU
-{
-    unsigned long pad_status = myosd_pad_status | myosd_joy_status[0] | myosd_joy_status[1] | myosd_joy_status[2] | myosd_joy_status[3];
+- (void)handle_MENU:(NSNumber*)status {
     
-#if TARGET_OS_IOS   // NOT needed on tvOS it handles it with the focus engine
-    UIViewController* viewController = [self presentedViewController];
-    
-    if ([viewController isKindOfClass:[UINavigationController class]])
-        viewController = [(UINavigationController*)viewController topViewController];
-
     // if we are showing an alert map controller input to the alert
-    if ([viewController isKindOfClass:[UIAlertController class]])
+    UIAlertController* alert = (UIAlertController*)[self presentedViewController];
+
+    if ([alert isKindOfClass:[UIAlertController class]])
     {
-        UIAlertController* alert = (UIAlertController*)viewController;
+        unsigned long pad_status = [status longValue];
 
-        unsigned long pad_status = myosd_pad_status | myosd_joy_status[0] | myosd_joy_status[1];
-
-        if (pad_status & MYOSD_A)
+        if (pad_status & (MYOSD_A|MYOSD_SELECT))
             [alert dismissWithDefault];
         if (pad_status & MYOSD_B)
             [alert dismissWithCancel];
@@ -1079,16 +1118,49 @@ void mame_state(int load_save, int slot)
             [alert moveDefaultAction:-1];
         if (pad_status & MYOSD_DOWN)
             [alert moveDefaultAction:+1];
+    }
+}
+
+- (void)handle_MENU
+{
+    // get input from all DPADs
+    unsigned long pad_status = myosd_pad_status | myosd_joy_status[0] | myosd_joy_status[1] | myosd_joy_status[2] | myosd_joy_status[3];
+
+#if TARGET_OS_IOS   // NOT needed on tvOS it handles it with the focus engine
+    UIViewController* viewController = [self presentedViewController];
+
+    // if a viewController is up send the input to it.
+    if (viewController != nil) {
+
+        if ([viewController isKindOfClass:[UINavigationController class]])
+            viewController = [(UINavigationController*)viewController topViewController];
+
+        // get input from left and right joystick of any player
+        static NSTimeInterval g_last_input_time;
+        NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
+        if ((now - g_last_input_time) > 0.250 && (pad_status & (MYOSD_UP|MYOSD_DOWN|MYOSD_LEFT|MYOSD_RIGHT)) == 0) {
+            for (int i=0; i<NUM_JOY; i++) {
+                if (round(joy_analog_y[i][0] * 1000.0) / 1000.0 == +1.0 || round(joy_analog_y[i][1] * 1000.0) / 1000.0 == +1.0)
+                    pad_status |= MYOSD_UP;
+                if (round(joy_analog_y[i][0] * 1000.0) / 1000.0 == -1.0 || round(joy_analog_y[i][1] * 1000.0) / 1000.0 == -1.0)
+                    pad_status |= MYOSD_DOWN;
+                if (round(joy_analog_x[i][0] * 1000.0) / 1000.0 == +1.0 || round(joy_analog_x[i][1] * 1000.0) / 1000.0 == +1.0)
+                    pad_status |= MYOSD_RIGHT;
+                if (round(joy_analog_x[i][0] * 1000.0) / 1000.0 == -1.0 || round(joy_analog_x[i][1] * 1000.0) / 1000.0 == -1.0)
+                    pad_status |= MYOSD_LEFT;
+            }
+            if  (pad_status & (MYOSD_UP|MYOSD_DOWN|MYOSD_LEFT|MYOSD_RIGHT))
+                g_last_input_time = now;
+        }
+
+        // if we are showing some other UI, give it a chance to handle input.
+        if ([viewController respondsToSelector:@selector(handle_MENU:)])
+            [viewController performSelector:@selector(handle_MENU:) withObject:@(pad_status)];
+        else
+            [self handle_MENU:@(pad_status)];
+        
         return;
     }
-    
-    // if we are showing some other UI, give it a chance to handle input.
-    if ([viewController respondsToSelector:@selector(handle_MENU)])
-        [viewController performSelector:@selector(handle_MENU)];
-    
-    // if we are showing something else, just ignore.
-    if (viewController != nil)
-        return;
 
     // touch screen EXIT button
     if ((buttonState & MYOSD_EXIT) && !(pad_status & MYOSD_EXIT))
@@ -1119,32 +1191,34 @@ void mame_state(int load_save, int slot)
 }
 
 -(void)viewDidLoad{
-
+    
    self.view.backgroundColor = [UIColor blackColor];
 
    controllers = [[NSMutableArray alloc] initWithCapacity:4];
+    
+   skinManager = [[SkinManager alloc] init];
     
    nameImgButton_NotPress[BTN_B] = @"button_NotPress_B.png";
    nameImgButton_NotPress[BTN_X] = @"button_NotPress_X.png";
    nameImgButton_NotPress[BTN_A] = @"button_NotPress_A.png";
    nameImgButton_NotPress[BTN_Y] = @"button_NotPress_Y.png";
+   nameImgButton_NotPress[BTN_L1] = @"button_NotPress_L1.png";
+   nameImgButton_NotPress[BTN_R1] = @"button_NotPress_R1.png";
    nameImgButton_NotPress[BTN_START] = @"button_NotPress_start.png";
    nameImgButton_NotPress[BTN_SELECT] = @"button_NotPress_select.png";
-   nameImgButton_NotPress[BTN_L1] = @"button_NotPress_R_L1.png";
-   nameImgButton_NotPress[BTN_R1] = @"button_NotPress_R_R1.png";
-   nameImgButton_NotPress[BTN_L2] = @"button_NotPress_R_L2.png";
-   nameImgButton_NotPress[BTN_R2] = @"button_NotPress_R_R2.png";
+   nameImgButton_NotPress[BTN_EXIT] = @"button_NotPress_exit.png";
+   nameImgButton_NotPress[BTN_OPTION] = @"button_NotPress_option.png";
    
    nameImgButton_Press[BTN_B] = @"button_Press_B.png";
    nameImgButton_Press[BTN_X] = @"button_Press_X.png";
    nameImgButton_Press[BTN_A] = @"button_Press_A.png";
    nameImgButton_Press[BTN_Y] = @"button_Press_Y.png";
+   nameImgButton_Press[BTN_L1] = @"button_Press_L1.png";
+   nameImgButton_Press[BTN_R1] = @"button_Press_R1.png";
    nameImgButton_Press[BTN_START] = @"button_Press_start.png";
    nameImgButton_Press[BTN_SELECT] = @"button_Press_select.png";
-   nameImgButton_Press[BTN_L1] = @"button_Press_R_L1.png";
-   nameImgButton_Press[BTN_R1] = @"button_Press_R_R1.png";
-   nameImgButton_Press[BTN_L2] = @"button_Press_R_L2.png";
-   nameImgButton_Press[BTN_R2] = @"button_Press_R_R2.png";
+   nameImgButton_Press[BTN_EXIT] = @"button_Press_exit.png";
+   nameImgButton_Press[BTN_OPTION] = @"button_Press_option.png";
     
     // map a button index to a MYOSD button mask
     buttonMask[BTN_A] = MYOSD_A;
@@ -1158,8 +1232,6 @@ void mame_state(int load_save, int slot)
     buttonMask[BTN_SELECT] = MYOSD_SELECT;
     buttonMask[BTN_START] = MYOSD_START;
          
-    [self getConf];
-
 	self.view.userInteractionEnabled = YES;
 
 #if TARGET_OS_IOS
@@ -1230,18 +1302,7 @@ void mame_state(int load_save, int slot)
     mouseTouchStartLocation = mouseInitialLocation;
 
     if (g_mame_game[0] && g_mame_game[0] != ' ')
-        [self updateUserActivity:@{kGameInfoName:[NSString stringWithUTF8String:g_mame_game]}];
-    
-#ifdef DEBUG
-    // create all color spaces, to test for validness.
-    for (NSString* string in Options.arrayColorSpace) {
-        NSString* color_space_data = [[string componentsSeparatedByString:@":"].lastObject stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
-        CGColorSpaceRef colorSpace = [CGScreenView createColorSpaceFromString:color_space_data];
-        NSLog(@"COLORSPACE DATA: %@", string);
-        NSLog(@"     COLORSPACE: %@", colorSpace);
-        CGColorSpaceRelease(colorSpace);
-    }
-#endif
+        [self updateUserActivity:g_mame_game_info];
 }
 
 -(void)viewWillAppear:(BOOL)animated {
@@ -1319,6 +1380,11 @@ void mame_state(int load_save, int slot)
         alpha = 1.0;
     else
         alpha = 0.0;
+    
+    if (change_layout) {
+        alpha = 0.0;
+        [self.view bringSubviewToFront:layoutView];
+    }
 
     if (screenView.alpha != alpha) {
         if (alpha == 0.0)
@@ -1359,7 +1425,7 @@ void mame_state(int load_save, int slot)
         imageLogo.frame = self.view.bounds;
     else
         imageLogo.frame = g_device_is_landscape ? rFrames[LANDSCAPE_VIEW_NOT_FULL] : rFrames[PORTRAIT_VIEW_NOT_FULL];
-    [screenView.superview addSubview:imageLogo];
+    [screenView.superview insertSubview:imageLogo aboveSubview:screenView];
 }
 
 -(void)buildFrameRateView {
@@ -1386,9 +1452,9 @@ void mame_state(int load_save, int slot)
     fpsView.shadowColor = UIColor.blackColor;
     fpsView.shadowOffset = CGSizeMake(1.0,1.0);
 #if UPDATE_FPS_EVERY == 1
-    fpsView.text = @"000:00:00🅼\n0000.00fps 000.0ms";
+    fpsView.text = @"000:00:00🅼🆆\n0000.00fps 0.0ms";
 #else
-    fpsView.text = @"0000.00fps 000.0ms 🅼";
+    fpsView.text = @"000.00fps 0.0ms 🅼🆆";
 #endif
     
     CGPoint pos = screenView.frame.origin;
@@ -1402,12 +1468,12 @@ void mame_state(int load_save, int slot)
     // put label in upper-left of screenView, or just above if room...
     CGSize size = [fpsView sizeThatFits:CGSizeZero];
     
-    if (pos.y - size.height > screenView.superview.safeAreaInsets.top)
-        pos.y -= size.height + 4.0;
-    if (pos.x - size.width > screenView.superview.safeAreaInsets.left)
-        pos.x -= size.width + 4.0;
+    if (pos.y - (size.height+4) >= screenView.superview.safeAreaInsets.top)
+        pos.y -= size.height+4;
+    else if (pos.x - (size.width+4) >= screenView.superview.safeAreaInsets.left)
+        pos.x -= size.width+4;
     else {
-        pos.x += 4.0; pos.y += 4.0;
+        pos.x += 4; pos.y += 4;
     }
     
     fpsView.frame = (CGRect){pos, size};
@@ -1438,13 +1504,15 @@ static int gcd(int a, int b) {
     NSUInteger sec = (frame_count / 60) % 60;
     NSUInteger min = (frame_count / 3600);
     
-    NSString* fps = [NSString stringWithFormat:@"%03d:%02d:%02d%@ %.2ffps %.1fms", (int)min, (int)sec, (int)frame,
+    NSString* fps = [NSString stringWithFormat:@"%03d:%02d:%02d%@%@ %.2ffps %.1fms", (int)min, (int)sec, (int)frame,
                     [screenView isKindOfClass:[MetalScreenView class]] ? @"🅼" : @"",
+                    [screenView isKindOfClass:[MetalScreenView class]] && [(MetalScreenView*)screenView pixelFormat] == MTLPixelFormatBGR10_XR ? @"🆆" : @"",
                     screenView.frameRateAverage, screenView.renderTimeAverage * 1000.0];
 #else
-    NSString* fps = [NSString stringWithFormat:@"%.2ffps %.1fms %@",
+    NSString* fps = [NSString stringWithFormat:@"%.2ffps %.1fms %@%@",
                      screenView.frameRateAverage, screenView.renderTimeAverage * 1000.0,
-                     [screenView isKindOfClass:[MetalScreenView class]] ? @"🅼" : @""];
+                     [screenView isKindOfClass:[MetalScreenView class]] ? @"🅼" : @"",
+                     [screenView isKindOfClass:[MetalScreenView class]] && [(MetalScreenView*)screenView pixelFormat] != MTLPixelFormatBGRA8Unorm ? @"🆆" : @""];
 #endif
     
     fpsView.text = fps;
@@ -1486,7 +1554,7 @@ static int gcd(int a, int b) {
             op.filter = str;
             break;
         case 1:
-            op.border = str;
+            op.skin = str;
             break;
         case 2:
             if (is_vector_game)
@@ -1669,16 +1737,16 @@ static NSArray* list_trim(NSArray* _list) {
     }
 
     if (g_pref_showHUD == HudSizeLarge || g_pref_showHUD == HudSizeEditor) {
-        // add set of buttons to select the Filter, Border, and Effect/Shader
+        // add set of buttons to select the Filter, Skin, and Effect/Shader
         NSArray* items = @[
             [[PopupSegmentedControl alloc] initWithItems:list_trim(Options.arrayFilter)],
-            [[PopupSegmentedControl alloc] initWithItems:list_trim(Options.arrayBorder)],
+            [[PopupSegmentedControl alloc] initWithItems:list_trim(Options.arraySkin)],
             [[PopupSegmentedControl alloc] initWithItems:list_trim(is_vector_game ? Options.arrayLineShader : Options.arrayScreenShader)],
         ];
 
         Options *op = [[Options alloc] init];
         [items[0] setSelectedSegmentIndex:[Options.arrayFilter indexOfOption:op.filter]];
-        [items[1] setSelectedSegmentIndex:[Options.arrayBorder indexOfOption:op.border]];
+        [items[1] setSelectedSegmentIndex:[Options.arraySkin indexOfOption:op.skin]];
         [items[2] setTag:is_vector_game];
 
         if (is_vector_game)
@@ -1687,7 +1755,7 @@ static NSArray* list_trim(NSArray* _list) {
             [items[2] setSelectedSegmentIndex:[Options.arrayScreenShader indexOfOption:op.screenShader]];
 
         [items[0] setTitle:@"Filter" forSegmentAtIndex:UISegmentedControlNoSegment];
-        [items[1] setTitle:@"Border" forSegmentAtIndex:UISegmentedControlNoSegment];
+        [items[1] setTitle:@"Skin" forSegmentAtIndex:UISegmentedControlNoSegment];
         [items[2] setTitle:@"Shader" forSegmentAtIndex:UISegmentedControlNoSegment];
 
         for (PopupSegmentedControl* seg in items) {
@@ -1807,12 +1875,6 @@ static NSArray* list_trim(NSArray* _list) {
 
 - (void)resetUI {
     NSLog(@"RESET UI (MAME VIDEO MODE CHANGE)");
-    
-    // shrink the HUD back to Normal on a game reset.
-    // ...we do this because buttons in the expanded HUD depend on game info (num players, etc)
-    if (g_pref_showHUD > HudSizeTiny)
-        g_pref_showHUD = HudSizeNormal;
-        
     [self changeUI];
 }
 
@@ -1824,8 +1886,6 @@ static NSArray* list_trim(NSArray* _list) {
         g_emulation_paused = 1;
         change_pause(1);
     }
-    
-    [self getConf];
     
     // reset the frame count when you first turn on/off
     if (g_pref_showFPS != (fpsView != nil))
@@ -1849,6 +1909,12 @@ static NSArray* list_trim(NSArray* _list) {
 
     [imageExternalDisplay removeFromSuperview];
     imageExternalDisplay = nil;
+    
+    // load the skin based on <ROMNAME>,<PARENT>,<MACHINE>,<USER PREF>
+    if (g_mame_game[0] && g_mame_game[0] != ' ' && g_mame_game_info != nil)
+        [skinManager setCurrentSkin:[NSString stringWithFormat:@"%s,%@,%@,%@", g_mame_game, g_mame_game_info[kGameInfoParent], g_mame_game_info[kGameInfoDriver], g_pref_skin]];
+    else if (g_mame_game[0])
+        [skinManager setCurrentSkin:g_pref_skin];
 
     [self buildScreenView];
     [self buildLogoView];
@@ -2056,14 +2122,19 @@ void myosd_handle_turbo() {
         for (UIView* view in @[screenView, analogStickView ?: null, imageOverlay ?: null])
             [self showDebugRect:view.frame color:UIColor.systemYellowColor title:NSStringFromClass([view class])];
         
-        for (int i=0; i<INPUT_LAST_VALUE; i++)
+        for (int i=0; i<NUM_BUTTONS; i++)
         {
             CGRect rect = rInput[i];
-            if (CGRectIsEmpty(rect))
-                continue;
-            if (i>=DPAD_UP_RECT && i<=DPAD_DOWN_RIGHT_RECT)
+            if (CGRectIsEmpty(rect) || CGRectEqualToRect(rect, rButton[i]))
                 continue;
             [self showDebugRect:rect color:UIColor.systemBlueColor title:[NSString stringWithFormat:@"%d", i]];
+        }
+        for (int i=0; i<NUM_BUTTONS; i++)
+        {
+            CGRect rect = rButton[i];
+            if (CGRectIsEmpty(rect))
+                continue;
+            [self showDebugRect:rect color:UIColor.systemPurpleColor title:[NSString stringWithFormat:@"%d", i]];
         }
     }
 #endif
@@ -2098,8 +2169,15 @@ void myosd_handle_turbo() {
                                (g_pref_touch_directional_enabled && g_pref_touch_analog_hide_dpad);
     if ( !touch_dpad_disabled || !myosd_inGame ) {
         //analogStickView
-        analogStickView = [[AnalogStickView alloc] initWithFrame:rStickWindow withEmuController:self];
+        analogStickView = [[AnalogStickView alloc] initWithFrame:rButton[BTN_STICK] withEmuController:self];
         [inputView addSubview:analogStickView];
+        // stick background
+        if (imageBack != nil) {
+            NSString* back = g_device_is_landscape ? @"stick-background-landscape" : @"stick-background";
+            UIImageView* image = [[UIImageView alloc] initWithImage:[self loadImage:back]];
+            [imageBack addSubview:image];
+            [self setButtonRect:BTN_STICK rect:rButton[BTN_STICK]];
+        }
     }
     
     // get the number of fullscreen buttons to display, handle the auto case.
@@ -2111,6 +2189,9 @@ void myosd_handle_turbo() {
     buttonState = 0;
     for (int i=0; i<NUM_BUTTONS; i++)
     {
+        if (nameImgButton_Press[i] == nil)
+            continue;
+        
         // hide buttons that are not used in fullscreen mode (and not laying out)
         if (g_device_is_fullscreen && !change_layout && !g_enable_debug_view)
         {
@@ -2127,11 +2208,23 @@ void myosd_handle_turbo() {
             if ((g_pref_showHUD > 0) && (i == BTN_SELECT || i == BTN_START || i == BTN_EXIT || i == BTN_OPTION)) continue;
         }
         
-        NSString *name_up = nameImgButton_NotPress[i];
-        NSString *name_down = nameImgButton_Press[i];
-        buttonViews[i] = [ [ UIImageView alloc ] initWithImage:[self loadImage:name_up] highlightedImage:[self loadImage:name_down]];
-        buttonViews[i].frame = rButtonImages[i];
+        UIImage* image_up = [self loadImage:nameImgButton_NotPress[i]];
+        UIImage* image_down = [self loadImage:nameImgButton_Press[i]];
+        if (image_up == nil)
+            continue;
+        buttonViews[i] = [ [ UIImageView alloc ] initWithImage:image_up highlightedImage:image_down];
+        buttonViews[i].contentMode = UIViewContentModeScaleAspectFit;
         
+        [self setButtonRect:i rect:rButton[i]];
+
+#ifdef __IPHONE_13_4
+        if (@available(iOS 13.4, *)) {
+            if (i == BTN_SELECT || i == BTN_START || i == BTN_EXIT || i == BTN_OPTION) {
+                [buttonViews[i] addInteraction:[[UIPointerInteraction alloc] initWithDelegate:(id)self]];
+                [buttonViews[i] setUserInteractionEnabled:TRUE];
+            }
+        }
+#endif
         if (g_device_is_fullscreen)
             [buttonViews[i] setAlpha:((float)g_controller_opacity / 100.0f)];
         
@@ -2140,77 +2233,63 @@ void myosd_handle_turbo() {
 
     [self showDebugRects];
 }
+
+#pragma mark - UIPointerInteractionDelegate
+
+#ifdef __IPHONE_13_4
+- (UIPointerStyle *)pointerInteraction:(UIPointerInteraction *)interaction styleForRegion:(UIPointerRegion *)region API_AVAILABLE(ios(13.4)) {
+    UITargetedPreview* preview = [[UITargetedPreview alloc] initWithView:interaction.view];
+    return [UIPointerStyle styleWithEffect:[UIPointerEffect effectWithPreview:preview] shape:nil];
+}
 #endif
+
+#endif  // TARGET_OS_IOS
+
+#pragma mark - background and overlay image
 
 #if TARGET_OS_IOS
 - (void)buildBackgroundImage {
+    
+    // set a tiled image as our background
+    UIImage* image = [self loadImage:@"background.png"];
+    
+    if (image != nil)
+        self.view.backgroundColor = [UIColor colorWithPatternImage:image];
+    else
+        self.view.backgroundColor = [UIColor blackColor];
 
     if (g_device_is_fullscreen)
         return;
 
     NSString* imageName;
+    if (g_device_is_landscape)
+        imageName = [self isPad] ? @"background_landscape.png" : @"background_landscape_wide.png";
+    else
+        imageName = [self isPad] ? @"background_portrait.png" : @"background_portrait_tall.png";
     
-    if (g_device_is_landscape) {
-        imageName = (UIScreen.mainScreen.nativeBounds.size.width <= 640.0) ? @"back_landscape_iPhone_5.png" : @"back_landscape_iPhone_6.png";
-        imageName = g_isIpad ? @"back_landscape_iPad.png" : imageName;
-    }
-    else {
-        imageName = g_isIpad ? @"back_portrait_iPad.png" : @"back_portrait_iPhone.png";
-    }
-       
-    imageBack = [[UIImageView alloc] initWithImage:[self loadImage:imageName]];
+    image = [self loadImage:imageName];
+    
+    if (image == nil)
+        return;
+
+    imageBack = [[UIImageView alloc] initWithImage:image];
     imageBack.frame = rFrames[g_device_is_landscape ? LANDSCAPE_IMAGE_BACK : PORTRAIT_IMAGE_BACK];
-       
-    imageBack.userInteractionEnabled = NO;
-    imageBack.multipleTouchEnabled = NO;
-    imageBack.clearsContextBeforeDrawing = NO;
-    
     [self.view addSubview: imageBack];
 }
 #endif
 
-// border string is of the form:
-//        <Friendly Name> : <resource image name>
-//        <Friendly Name> : <resource image name>, <fraction of border that is opaque>
-//        <Friendly Name> : #RRGGBB
-//        <Friendly Name> : #RRGGBBAA, <border width>
-//        <Friendly Name> : #RRGGBBAA, <border width>, <corner radius>
-+ (NSArray*)borderList {
-    return @[@"None",
-             @"Dark : border-dark",
-             @"Light : border-light",
-             @"Solid : #007AFFaa, 2.0, 8.0",
-#ifdef DEBUG
-             @"Test : border-test",
-             @"Test 1: border-test, 0.5",
-             @"Test 2: border-test, 1.0",
-             @"Red : #ff0000, 2.0",
-             @"Blue : #0000FF",
-             @"Green : #00FF00ee, 4.0, 16.0",
-             @"Purple : #80008080, 4.0, 16.0",
-             @"Tint : #007Aff, 2.0, 8.0",
-#endif
-    ];
-}
-
 // load any border image and return the size needed to inset the game rect
-// border can be <resource name> , <fraction of border that is opaque>
-//               #<hex color>, <border width>, <corner radius>
 - (void)getOverlayImage:(UIImage**)pImage andSize:(CGSize*)pSize {
     
-    NSString* border_info = g_pref_border;
+    NSString* border_name = @"border";
+    CGFloat   border_size = 0.25;
+    UIImage*  image = [self loadImage:border_name];
     
-    if ([border_info length] == 0 || [border_info isEqualToString:@"None"] || [border_info hasPrefix:@"#"]) {
+    if (image == nil) {
         *pImage = nil;
         *pSize = CGSizeZero;
         return;
     }
-
-    NSString* border_name = [border_info componentsSeparatedByString:@","].firstObject;
-    CGFloat   border_size = [border_info componentsSeparatedByString:@","].lastObject.doubleValue ?: 0.25;
-
-    UIImage* image = [self loadImage:border_name];
-    NSAssert(image != nil, @"unable to load border image");
     
     CGFloat scale = externalView ? externalView.window.screen.scale : UIScreen.mainScreen.scale;
     
@@ -2229,47 +2308,7 @@ void myosd_handle_turbo() {
     *pSize = size;
 }
 
-// parse a hex color string, #RRGGBB or #RRGGBBAA, and return a UIColor
-UIColor* colorWithHexString(NSString* string) {
-
-    unsigned int rgba = 0;
-    NSScanner* scanner = [[NSScanner alloc] initWithString:string];
-    [scanner scanString:@"#" intoString:nil];
-    [scanner scanHexInt:&rgba];
-
-    if (scanner.scanLocation <= 7)   // #RRGGBB (not #RRGGBBAA)
-        rgba = (rgba << 8) | 0xFF;
-
-    return [UIColor colorWithRed:((rgba >> 24) & 0xFF) / 255.0
-                           green:((rgba >> 16) & 0xFF) / 255.0
-                            blue:((rgba >>  8) & 0xFF) / 255.0
-                           alpha:((rgba >>  0) & 0xFF) / 255.0];
-}
-
 - (void)buildOverlayImage:(UIImage*)image rect:(CGRect)rect {
-    
-    NSString* border_info = g_pref_border;
-
-    // handle a solid color: #RRGGBBAA, <border width>, <corner radius>
-    if (image == nil && [border_info hasPrefix:@"#"]) {
-        NSArray* info = [border_info componentsSeparatedByString:@","];
-        
-        UIColor* color = colorWithHexString(info.firstObject);
-        CGFloat width = [[info objectAtIndex:1 withDefault:@(1)] doubleValue];
-        CGFloat radius = [[info objectAtIndex:2 withDefault:nil] doubleValue];
-        
-        NSLog(@"BORDER: %@, %f, %f", info.firstObject, width, radius);
-        screenView.layer.borderColor = color.CGColor;
-        screenView.layer.borderWidth = width;
-        screenView.layer.cornerRadius = radius;
-        screenView.layer.masksToBounds = (radius != 0.0);
-    }
-    else {
-        screenView.layer.borderWidth = 0.0;
-        screenView.layer.cornerRadius = 0.0;
-        screenView.layer.masksToBounds = NO;
-    }
-    
     if (image != nil) {
         imageOverlay = [[UIImageView alloc] initWithImage:image];
         imageOverlay.frame = rect;
@@ -2277,26 +2316,60 @@ UIColor* colorWithHexString(NSString* string) {
     }
 }
 
+#pragma mark - SCREEN VIEW SETUP
+
 - (void)buildScreenView {
     
-    g_device_is_landscape = (self.view.bounds.size.width >= self.view.bounds.size.height * 1.333);
+    g_device_is_landscape = (self.view.bounds.size.width >= self.view.bounds.size.height * 1.00);
 
-    if (externalView != nil)
-        g_device_is_fullscreen = FALSE;
-    else if (g_joy_used)
-         g_device_is_fullscreen = g_pref_full_screen_joy;
-    else if (g_device_is_landscape)
+    if (g_device_is_landscape)
         g_device_is_fullscreen = g_pref_full_screen_land;
     else
         g_device_is_fullscreen = g_pref_full_screen_port;
 
+    if (g_joy_used && g_pref_full_screen_joy)
+         g_device_is_fullscreen = TRUE;
+
+    if (externalView != nil)
+        g_device_is_fullscreen = FALSE;
+    
+#if TARGET_OS_MACCATALYST
+    if (self.view.window != nil) {
+        CGSize windowSize = self.view.window.bounds.size;
+        CGSize screenSize = self.view.window.screen.bounds.size;
+        
+        // on Catalina the screenSize is a lie, so go to the NSScreen to get it!
+        // TODO: test for Big Sur?
+        screenSize = [(id)([NSClassFromString(@"NSScreen") mainScreen]) frame].size;
+
+        // To ensure that your text and interface elements are consistent with the macOS display environment, iOS views automatically scale down to 77%.
+        // https://developer.apple.com/design/human-interface-guidelines/ios/overview/mac-catalyst/
+        
+        // TODO: what happens on Big Sur?
+        assert(self.traitCollection.userInterfaceIdiom != 5); // UIUserInterfaceIdiomMac does not do this scaling.
+        screenSize.width = floor(screenSize.width / 0.77);
+        screenSize.height = floor(screenSize.height / 0.77);
+
+        NSLog(@"screenSize: %@", NSStringFromSize(screenSize));
+        NSLog(@"windowSize: %@", NSStringFromSize(windowSize));
+
+        // TODO: what about toolbars or other Chrome?
+        if (windowSize.width >= screenSize.width && windowSize.height >= screenSize.height) {
+            NSLog(@"CATALYST FULLSCREEN");
+            g_device_is_fullscreen = TRUE;
+        }
+    }
+#endif
+    
+    if (change_layout)
+        g_device_is_fullscreen = FALSE;
+
     CGRect r;
 
 #if TARGET_OS_IOS
-    [self getControllerCoords:g_device_is_landscape];
-    [self adjustSizes];
-    [LayoutData loadLayoutData:self];
-   
+    [self loadLayout];      // load layout from skinManager
+    [self adjustSizes];     // size buttons based on Settings
+
     [self buildBackgroundImage];
     
     [self setNeedsUpdateOfHomeIndicatorAutoHidden];
@@ -2322,10 +2395,17 @@ UIColor* colorWithHexString(NSString* string) {
 
     // Handle Safe Area (iPhone X and above) adjust the view down away from the notch, before adjusting for aspect
     if ( externalView == nil ) {
-        // in fullscreen mode, we dont want to correct for the bottom inset, because we hide the home indicator.
         UIEdgeInsets safeArea = self.view.safeAreaInsets;
+
+        // in fullscreen mode, we dont want to correct for the bottom inset, because we hide the home indicator.
         if (g_device_is_fullscreen)
             safeArea.bottom = 0.0;
+
+#if TARGET_OS_MACCATALYST
+        // in macApp, we dont want to correct for the top inset, if we have hidden the titlebar and want to go edge to edge.
+        if (self.view.window.windowScene.titlebar.titleVisibility == UITitlebarTitleVisibilityHidden && self.view.window.windowScene.titlebar.toolbar == nil)
+            safeArea.top = 0.0;
+#endif
         r = CGRectIntersection(r, UIEdgeInsetsInsetRect(self.view.bounds, safeArea));
     }
 #elif TARGET_OS_TV
@@ -2538,6 +2618,51 @@ UIColor* colorWithHexString(NSString* string) {
 }
 #endif
 
+#pragma mark - MENU
+
+-(BOOL)canPerformAction:(SEL)action withSender:(id)sender {
+    if (action == @selector(mameSelect) ||
+        action == @selector(mameStart) ||
+        action == @selector(mameConfigure) ||
+        action == @selector(mameSettings) ||
+        action == @selector(mameFullscreen) ||
+        action == @selector(mamePause) ||
+        action == @selector(mameExit) ||
+        action == @selector(mameReset)) {
+
+        NSLog(@"canPerformAction: %@: %d", NSStringFromSelector(action), !g_emulation_paused && [self presentedViewController] == nil);
+        
+        return !g_emulation_paused && [self presentedViewController] == nil;
+    }
+    return [super canPerformAction:action withSender:sender];
+}
+-(void)mameSelect {
+    push_mame_button(0, MYOSD_SELECT);
+}
+-(void)mameStart {
+    push_mame_button(0, MYOSD_START);
+}
+-(void)mameConfigure {
+    myosd_configure = 1;
+}
+-(void)mameSettings {
+    [self runSettings];
+}
+-(void)mamePause {
+    myosd_mame_pause = 1;
+}
+-(void)mameReset {
+    myosd_reset = 1;
+}
+-(void)mameFullscreen {
+    [self commandKey:'\r'];
+}
+-(void)mameExit {
+    [self runExit];
+}
+
+
+
 #pragma mark - KEYBOARD INPUT
 
 // called from keyboard handler on any CMD+key (or OPTION+key) used for DEBUG stuff.
@@ -2547,12 +2672,22 @@ UIColor* colorWithHexString(NSString* string) {
         case '\r':
             {
                 Options* op = [[Options alloc] init];
-                if (g_joy_used)
-                    op.fullscreenJoystick = g_pref_full_screen_joy = !g_device_is_fullscreen;
-                else if (g_device_is_landscape)
+
+                if (g_device_is_landscape)
                     op.fullscreenLandscape = g_pref_full_screen_land = !g_device_is_fullscreen;
                 else
                     op.fullscreenPortrait = g_pref_full_screen_port = !g_device_is_fullscreen;
+
+                // if user is manualy controling fullscreen, then turn off fullscreen joy.
+                op.fullscreenJoystick = g_pref_full_screen_joy = FALSE;
+                
+#if TARGET_OS_MACCATALYST
+                // in macApp we really only want one flag for "fullscreen"
+                // NOTE: macApp has two concepts of fullsceen g_device_is_fullscreen is if
+                // the game SCREEN fills our window, and a macApp's window can be fullscreen
+                op.fullscreenLandscape = g_pref_full_screen_land = !g_device_is_fullscreen;
+                op.fullscreenPortrait = g_pref_full_screen_port = !g_device_is_fullscreen;
+#endif
                 [op saveOptions];
                 [self changeUI];
                 break;
@@ -2570,7 +2705,8 @@ UIColor* colorWithHexString(NSString* string) {
             g_pref_filter = [g_pref_filter isEqualToString:kScreenViewFilterNearest] ? kScreenViewFilterLinear : kScreenViewFilterNearest;
             [self changeUI];
             break;
-        case 'H':
+        case 'H':   /* CMD+H is hide on macOS, so CMD+U will also show/hide the HUD */
+        case 'U':
         {
             Options* op = [[Options alloc] init];
 
@@ -2633,7 +2769,9 @@ UIColor* colorWithHexString(NSString* string) {
 
 
 #if TARGET_OS_IOS
+
 #pragma mark Touch Handling
+
 -(NSSet*)touchHandler:(NSSet *)touches withEvent:(UIEvent *)event {
     if(change_layout)
     {
@@ -2805,21 +2943,21 @@ UIColor* colorWithHexString(NSString* string) {
             BOOL touch_buttons_disabled = myosd_mouse == 1 && g_pref_touch_analog_enabled && g_pref_touch_analog_hide_buttons;
             
             if (buttonViews[BTN_Y] != nil &&
-                !buttonViews[BTN_Y].hidden && MyCGRectContainsPoint(rInput[BTN_Y_RECT], point) &&
+                !buttonViews[BTN_Y].hidden && MyCGRectContainsPoint(rInput[BTN_Y], point) &&
                 !touch_buttons_disabled) {
                 pad_status |= MYOSD_Y;
                 //NSLog(@"MYOSD_Y");
                 [handledTouches addObject:touch];
             }
             else if (buttonViews[BTN_X] != nil &&
-                     !buttonViews[BTN_X].hidden && MyCGRectContainsPoint(rInput[BTN_X_RECT], point) &&
+                     !buttonViews[BTN_X].hidden && MyCGRectContainsPoint(rInput[BTN_X], point) &&
                      !touch_buttons_disabled) {
                 pad_status |= MYOSD_X;
                 //NSLog(@"MYOSD_X");
                 [handledTouches addObject:touch];
             }
             else if (buttonViews[BTN_A] != nil &&
-                     !buttonViews[BTN_A].hidden && MyCGRectContainsPoint(rInput[BTN_A_RECT], point) &&
+                     !buttonViews[BTN_A].hidden && MyCGRectContainsPoint(rInput[BTN_A], point) &&
                      !touch_buttons_disabled) {
                 if(g_pref_BplusX)
                     pad_status |= MYOSD_X | MYOSD_B;
@@ -2828,7 +2966,7 @@ UIColor* colorWithHexString(NSString* string) {
                 //NSLog(@"MYOSD_A");
                 [handledTouches addObject:touch];
             }
-            else if (buttonViews[BTN_B] != nil && !buttonViews[BTN_B].hidden && MyCGRectContainsPoint(rInput[BTN_B_RECT], point) &&
+            else if (buttonViews[BTN_B] != nil && !buttonViews[BTN_B].hidden && MyCGRectContainsPoint(rInput[BTN_B], point) &&
                      !touch_buttons_disabled) {
                 pad_status |= MYOSD_B;
                 [handledTouches addObject:touch];
@@ -2838,7 +2976,7 @@ UIColor* colorWithHexString(NSString* string) {
                      buttonViews[BTN_Y] != nil &&
                      !buttonViews[BTN_A].hidden &&
                      !buttonViews[BTN_Y].hidden &&
-                     MyCGRectContainsPoint(rInput[BTN_A_Y_RECT], point) &&
+                     MyCGRectContainsPoint(rInput[BTN_A_Y], point) &&
                      !touch_buttons_disabled) {
                 pad_status |= MYOSD_Y | MYOSD_A;
                 [handledTouches addObject:touch];
@@ -2848,7 +2986,7 @@ UIColor* colorWithHexString(NSString* string) {
                      buttonViews[BTN_A] != nil &&
                      !buttonViews[BTN_X].hidden &&
                      !buttonViews[BTN_A].hidden &&
-                     MyCGRectContainsPoint(rInput[BTN_X_A_RECT], point) &&
+                     MyCGRectContainsPoint(rInput[BTN_A_X], point) &&
                      !touch_buttons_disabled) {
                 
                 pad_status |= MYOSD_X | MYOSD_A;
@@ -2859,7 +2997,7 @@ UIColor* colorWithHexString(NSString* string) {
                      buttonViews[BTN_B] != nil &&
                      !buttonViews[BTN_Y].hidden &&
                      !buttonViews[BTN_B].hidden &&
-                     MyCGRectContainsPoint(rInput[BTN_B_Y_RECT], point) &&
+                     MyCGRectContainsPoint(rInput[BTN_B_Y], point) &&
                      !touch_buttons_disabled) {
                 pad_status |= MYOSD_Y | MYOSD_B;
                 [handledTouches addObject:touch];
@@ -2867,7 +3005,7 @@ UIColor* colorWithHexString(NSString* string) {
             }
             else if (!buttonViews[BTN_B].hidden &&
                      !buttonViews[BTN_X].hidden &&
-                     MyCGRectContainsPoint(rInput[BTN_B_X_RECT], point) &&
+                     MyCGRectContainsPoint(rInput[BTN_B_X], point) &&
                      !touch_buttons_disabled) {
                 if(!g_pref_BplusX /*&& g_pref_land_num_buttons>=3*/)
                 {
@@ -2876,44 +3014,45 @@ UIColor* colorWithHexString(NSString* string) {
                 }
                 //NSLog(@"MYOSD_X | MYOSD_B");
             }
-            else if (MyCGRectContainsPoint(rInput[BTN_SELECT_RECT], point)) {
+            else if (MyCGRectContainsPoint(rInput[BTN_SELECT], point)) {
                 //NSLog(@"MYOSD_SELECT");
                 pad_status |= MYOSD_SELECT;
                 [handledTouches addObject:touch];
             }
-            else if (MyCGRectContainsPoint(rInput[BTN_START_RECT], point)) {
+            else if (MyCGRectContainsPoint(rInput[BTN_START], point)) {
                 //NSLog(@"MYOSD_START");
                 pad_status |= MYOSD_START;
                 [handledTouches addObject:touch];
             }
-            else if (buttonViews[BTN_L1] != nil && !buttonViews[BTN_L1].hidden && MyCGRectContainsPoint(rInput[BTN_L1_RECT], point) && !touch_buttons_disabled) {
+            else if (buttonViews[BTN_L1] != nil && !buttonViews[BTN_L1].hidden && MyCGRectContainsPoint(rInput[BTN_L1], point) && !touch_buttons_disabled) {
                 //NSLog(@"MYOSD_L");
                 pad_status |= MYOSD_L1;
                 [handledTouches addObject:touch];
             }
-            else if (buttonViews[BTN_R1] != nil && !buttonViews[BTN_R1].hidden && MyCGRectContainsPoint(rInput[BTN_R1_RECT], point) && !touch_buttons_disabled ) {
+            else if (buttonViews[BTN_R1] != nil && !buttonViews[BTN_R1].hidden && MyCGRectContainsPoint(rInput[BTN_R1], point) && !touch_buttons_disabled ) {
                 //NSLog(@"MYOSD_R");
                 pad_status |= MYOSD_R1;
                 [handledTouches addObject:touch];
             }
-            else if (buttonViews[BTN_EXIT] != nil && !buttonViews[BTN_EXIT].hidden && MyCGRectContainsPoint(rInput[BTN_EXIT_RECT], point)) {
+            else if (buttonViews[BTN_EXIT] != nil && !buttonViews[BTN_EXIT].hidden && MyCGRectContainsPoint(rInput[BTN_EXIT], point)) {
                 //NSLog(@"MYOSD_EXIT");
                 pad_status |= MYOSD_EXIT;
                 [handledTouches addObject:touch];
             }
-            else if (buttonViews[BTN_OPTION] != nil && !buttonViews[BTN_OPTION].hidden && MyCGRectContainsPoint(rInput[BTN_OPTION_RECT], point) ) {
+            else if (buttonViews[BTN_OPTION] != nil && !buttonViews[BTN_OPTION].hidden && MyCGRectContainsPoint(rInput[BTN_OPTION], point) ) {
                  //NSLog(@"MYOSD_OPTION");
                  pad_status |= MYOSD_OPTION;
                  [handledTouches addObject:touch];
             }
-            else if (MyCGRectContainsPoint(rInput[BTN_MENU_RECT], point)) {
-                /*
+            /*
+            else if (MyCGRectContainsPoint(rInput[BTN_MENU], point)) {
                  myosd_pad_status |= MYOSD_SELECT;
                  btnStates[BTN_SELECT] = BUTTON_PRESS;
                  myosd_pad_status |= MYOSD_START;
                  btnStates[BTN_START] = BUTTON_PRESS;
-                 */
-            } else if ( myosd_light_gun == 1 && g_pref_lightgun_enabled ) {
+            }
+            */
+            else if ( myosd_light_gun == 1 && g_pref_lightgun_enabled ) {
                 [self handleLightgunTouchesBegan:touches];
             }
             
@@ -3050,306 +3189,193 @@ UIColor* colorWithHexString(NSString* string) {
     }
 }
 
+#endif
 
-- (void)getControllerCoords:(int)orientation {
-    char string[256];
-    FILE *fp;
-    
-    DeviceScreenType screenType = [DeviceScreenResolver resolve];
-    NSString *deviceName = nil;
-	
-    if ( screenType == IPHONE_XR_XS_MAX ) {
-        deviceName = @"iPhone_xr_xs_max";
-    } else if ( screenType == IPHONE_X_XS ) {
-        deviceName = @"iPhone_x";
-    } else if ( screenType == IPHONE_6_7_8_PLUS ) {
-        deviceName = @"iPhone_6_plus";
-    } else if ( screenType == IPHONE_6_7_8 ) {
-        deviceName = @"iPhone_6";
-    } else if ( screenType == IPHONE_5 ) {
-        deviceName = @"iPhone_5";
-    } else if ( screenType == IPHONE_4_OR_LESS ) {
-        deviceName = @"iPhone";
-    } else if ( g_isIpad ) {
-        if ( screenType == IPAD_PRO_12_9 ) {
-            deviceName = @"iPad_pro_12_9";
-        } else if ( screenType == IPAD_PRO_10_5 ) {
-            deviceName = @"iPad_pro_10_5";
-        } else if ( screenType == IPAD_PRO_11 ) {
-            deviceName = @"iPad_pro_11";
-        } else if ( screenType == IPAD ) {
-            deviceName = @"iPad";
-        } else if ( screenType == IPAD_GEN_7 ) {
-            deviceName = @"iPad_gen_7";
-        } else {
-            deviceName = @"iPad_pro_12_9";
-        }
-    } else {
-        // default to the largest iPhone if unknown
-        deviceName = @"iPhone_xr_xs_max";
-    }
-    
-    NSLog(@"DEVICE: %@", deviceName);
-    
-	if(!orientation)
-	{
-        if (g_device_is_fullscreen)
-            fp = [self loadFile:[NSString stringWithFormat:@"controller_portrait_full_%@.txt", deviceName]];
-        else
-            fp = [self loadFile:[NSString stringWithFormat:@"controller_portrait_%@.txt", deviceName]];
-    }
-	else
-	{
-        if (g_device_is_fullscreen)
-            fp = [self loadFile:[NSString stringWithFormat:@"controller_landscape_full_%@.txt",deviceName]];
-        else
-            fp = [self loadFile:[NSString stringWithFormat:@"controller_landscape_%@.txt", deviceName]];
-	}
-	
-	if (fp) 
-	{
-
-		int i = 0;
-        while(fgets(string, 256, fp) != NULL && i < 39) 
-       {
-			char* result = strtok(string, ",");
-			int coords[4];
-			int i2 = 1;
-			while( result != NULL && i2 < 5 )
-			{
-				coords[i2 - 1] = atoi(result);
-				result = strtok(NULL, ",");
-				i2++;
-			}
-						
-			switch(i)
-			{
-    		case 0:    rInput[DPAD_DOWN_LEFT_RECT]   	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 1:    rInput[DPAD_DOWN_RECT]   	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 2:    rInput[DPAD_DOWN_RIGHT_RECT]    = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 3:    rInput[DPAD_LEFT_RECT]  	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 4:    rInput[DPAD_RIGHT_RECT]  	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 5:    rInput[DPAD_UP_LEFT_RECT]     	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 6:    rInput[DPAD_UP_RECT]     	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 7:    rInput[DPAD_UP_RIGHT_RECT]  	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 8:    rInput[BTN_SELECT_RECT] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 9:    rInput[BTN_START_RECT]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 10:   rInput[BTN_L1_RECT]   = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 11:   rInput[BTN_R1_RECT]   = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 12:   rInput[BTN_MENU_RECT]   = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 13:   rInput[BTN_X_A_RECT]   	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 14:   rInput[BTN_X_RECT]   	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 15:   rInput[BTN_B_X_RECT]    	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 16:   rInput[BTN_A_RECT]  		= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 17:   rInput[BTN_B_RECT]  	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 18:   rInput[BTN_A_Y_RECT]     	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 19:   rInput[BTN_Y_RECT]     	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 20:   rInput[BTN_B_Y_RECT]  	= CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 21:   rInput[BTN_L2_RECT]   = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 22:   rInput[BTN_R2_RECT]   = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-    		case 23:    break;
-    		
-    		case 24:   rButtonImages[BTN_B] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 25:   rButtonImages[BTN_X]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 26:   rButtonImages[BTN_A]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 27:   rButtonImages[BTN_Y]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 28:   /*rDPadImage  = CGRectMake( coords[0], coords[1], coords[2], coords[3] );*/ break;
-            case 29:   rButtonImages[BTN_SELECT]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 30:   rButtonImages[BTN_START]  = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 31:   rButtonImages[BTN_L1] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 32:   rButtonImages[BTN_R1] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 33:   rButtonImages[BTN_L2] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 34:   rButtonImages[BTN_R2] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            
-            case 35:   rStickWindow = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 36:   rStickWindow = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-            case 37:   stick_radio =coords[0]; break;            
-//            case 38:   g_controller_opacity= coords[0]; break;
-			}
-      i++;
-    }
-    fclose(fp);
+#pragma mark - BUTTON LAYOUT
         
-#define SWAPRECT(a,b) {CGRect t = a; a = b; b = t;}
+- (UIImage *)loadImage:(NSString *)name {
+    return [skinManager loadImage:name];
+}
+
+- (BOOL)isPhone {
+    CGSize windowSize = self.view.bounds.size;
+    return MAX(windowSize.width, windowSize.height) >= MIN(windowSize.width, windowSize.height) * 1.5;
+}
+- (BOOL)isPad {
+    return ![self isPhone];
+}
+
+- (void)loadLayout {
+    
+    CGSize windowSize = self.view.bounds.size;
+    assert(windowSize.width != 0.0 && windowSize.height != 0.0);
+    BOOL isPhone = [self isPhone];
+
+    // set the background and view rects.
+    if (g_device_is_landscape) {
+        // try to fit a 4:3 game screen with space on each side.
+        CGFloat w = MIN(windowSize.height * 4 / 3, windowSize.width * 0.75);
+        CGFloat h = w * 3 / 4;
+
+        rFrames[LANDSCAPE_VIEW_FULL] = CGRectMake(0, 0, windowSize.width, windowSize.height);
+        rFrames[LANDSCAPE_IMAGE_BACK] = CGRectMake(0, 0, windowSize.width, windowSize.height);
+        rFrames[LANDSCAPE_VIEW_NOT_FULL] = CGRectMake((windowSize.width-w)/2, 0, w, h);
+    }
+    else {
+        // split the window, keeping the aspect ratio of the background image, on the bottom.
+        UIImage* image = [self loadImage:isPhone ? @"background_portrait_tall" : @"background_portrait"];
+        CGFloat aspect = image ? (image.size.width / image.size.height) : 1.333;
+        CGFloat h = windowSize.width / aspect;
+
+        rFrames[PORTRAIT_VIEW_FULL] = CGRectMake(0, 0, windowSize.width, windowSize.height);
+        rFrames[PORTRAIT_VIEW_NOT_FULL] = CGRectMake(0, 0, windowSize.width, windowSize.height - h);
+        rFrames[PORTRAIT_IMAGE_BACK] = CGRectMake(0, windowSize.height - h, windowSize.width, h);
+    }
+    
+    for (int button=0; button<NUM_BUTTONS; button++)
+        rInput[button] = rButton[button] = [self getLayoutRect:button];
+    
+    // if we are fullscreen portrait, we need to move the command buttons to the top of screen
+    if (g_device_is_fullscreen && !g_device_is_landscape) {
+        CGFloat w = rButton[BTN_SELECT].size.width;
+        rInput[BTN_SELECT].origin =  rButton[BTN_SELECT].origin = CGPointMake(w*0, 0);
+        rInput[BTN_EXIT].origin   =  rButton[BTN_EXIT].origin   = CGPointMake(w*1, 0);
+        rInput[BTN_OPTION].origin =  rButton[BTN_OPTION].origin = CGPointMake(self.view.bounds.size.width - w*1, 0);
+        rInput[BTN_START].origin  =  rButton[BTN_START].origin  = CGPointMake(self.view.bounds.size.width - w*2, 0);
+    }
+    
+    // set the default "radio" (percent size of the AnalogStick)
+    stick_radio = 60;
+
+    #define SWAPRECT(a,b) {CGRect t = a; a = b; b = t;}
         
     // swap A and B, swap X and Y
     if(g_pref_nintendoBAYX)
     {
-        SWAPRECT(rButtonImages[BTN_A], rButtonImages[BTN_B]);
-        SWAPRECT(rButtonImages[BTN_X], rButtonImages[BTN_Y]);
+        SWAPRECT(rButton[BTN_A], rButton[BTN_B]);
+        SWAPRECT(rButton[BTN_X], rButton[BTN_Y]);
 
-        SWAPRECT(rInput[BTN_A_RECT], rInput[BTN_B_RECT]);
-        SWAPRECT(rInput[BTN_X_RECT], rInput[BTN_Y_RECT]);
+        SWAPRECT(rInput[BTN_A], rInput[BTN_B]);
+        SWAPRECT(rInput[BTN_X], rInput[BTN_Y]);
 
-        SWAPRECT(rInput[BTN_X_A_RECT], rInput[BTN_B_Y_RECT]);
-        SWAPRECT(rInput[BTN_A_Y_RECT], rInput[BTN_B_X_RECT]);
+        SWAPRECT(rInput[BTN_A_X], rInput[BTN_B_Y]);
+        SWAPRECT(rInput[BTN_A_Y], rInput[BTN_B_X]);
     }
+}
+
+- (NSString*)getLayoutName {
+    if ([self isPad])
+        return g_device_is_landscape ? @"landscape" : @"portrait";
+    else
+        return g_device_is_landscape ? @"landscape_wide" : @"portrait_tall";
+}
+
+- (CGRect)getLayoutRect:(int)button {
+    NSString* name = [self getLayoutName];
+    CGRect back = g_device_is_landscape ? rFrames[LANDSCAPE_IMAGE_BACK] : rFrames[PORTRAIT_IMAGE_BACK];
+
+    NSString* keyPath = [NSString stringWithFormat:@"%@.%@", name, [self getButtonName:button]];
+    NSString* str = [skinManager valueForKeyPath:keyPath];
+    if (![str isKindOfClass:[NSString class]])
+        return CGRectZero;
+    NSArray* arr = [str componentsSeparatedByString:@","];
+    if (arr.count < 2)
+        return CGRectZero;
     
-    if(g_pref_touch_DZ)
+
+    CGFloat scale_x = back.size.width / 1000.0;
+    CGFloat scale_y = back.size.height / 1000.0;
+    CGFloat scale = (scale_x + scale_y) / 2;
+
+    CGFloat x = floor(back.origin.x + [arr[0] intValue] * scale_x);
+    CGFloat y = floor(back.origin.y + [arr[1] intValue] * scale_y);
+    CGFloat r = (arr.count > 2) ? [arr[2] intValue] : (g_device_is_landscape ? 120 : 180);
+
+    CGFloat w = floor(r * scale);
+    CGFloat h = w;
+    return CGRectMake(floor(x - w/2), floor(y - h/2), w, h);
+}
+
+// scale a CGRect but dont move the center
+CGRect scale_rect(CGRect rect, CGFloat scale) {
+    return CGRectInset(rect, -0.5 * rect.size.width * (scale - 1.0), -0.5 * rect.size.height * (scale - 1.0));
+}
+
+-(void)adjustSizes{
+    
+    if (change_layout)
+        return;
+    
+    for(int i=0;i<NUM_BUTTONS;i++)
     {
-        //ajustamos
-        if(!g_isIpad)
+        if(i==BTN_A || i==BTN_B || i==BTN_X || i==BTN_Y || i==BTN_R1 || i==BTN_L1)
         {
-           if(!orientation)
-           {
-             rInput[DPAD_LEFT_RECT].size.width -= 17;//Left.size.width * 0.2;
-             rInput[DPAD_RIGHT_RECT].origin.x += 17;//Right.size.width * 0.2;
-             rInput[DPAD_RIGHT_RECT].size.width -= 17;//Right.size.width * 0.2;
-           }
-           else
-           {
-             rInput[DPAD_LEFT_RECT].size.width -= 14;
-             rInput[DPAD_RIGHT_RECT].origin.x += 20;
-             rInput[DPAD_RIGHT_RECT].size.width -= 20;
-           }
+            rButton[i] = scale_rect(rButton[i], g_buttons_size);
+            rInput[i] = scale_rect(rInput[i], g_buttons_size);
         }
-        else
-        {
-           if(!orientation)
-           {
-             rInput[DPAD_LEFT_RECT].size.width -= 22;//Left.size.width * 0.2;
-             rInput[DPAD_RIGHT_RECT].origin.x += 22;//Right.size.width * 0.2;
-             rInput[DPAD_RIGHT_RECT].size.width -= 22;//Right.size.width * 0.2;
-           }
-           else
-           {
-             rInput[DPAD_LEFT_RECT].size.width -= 22;
-             rInput[DPAD_RIGHT_RECT].origin.x += 22;
-             rInput[DPAD_RIGHT_RECT].size.width -= 22;
-           }
-        }    
-    }
-  }
-}
-
-#endif
-
-- (void)getConf{
-#if TARGET_OS_IOS
-    char string[256];
-    
-    DeviceScreenType screenType = [DeviceScreenResolver resolve];
-    char* config = "";
-    
-    if ( screenType == IPHONE_XR_XS_MAX ) {
-        config = "config_iPhone_xr_xs_max.txt";
-    } else if ( screenType == IPHONE_X_XS ) {
-        config = "config_iPhone_x.txt";
-    } else if ( screenType == IPHONE_6_7_8_PLUS ) {
-        config = "config_iPhone_6_plus.txt";
-    } else if ( screenType == IPHONE_6_7_8 ) {
-        config = "config_iPhone_6.txt";
-    } else if ( screenType == IPHONE_5 ) {
-        config = "config_iPhone_5.txt";
-    } else if ( screenType == IPHONE_4_OR_LESS ) {
-        config = "config_iPhone.txt";
-    } else if ( g_isIpad ) {
-        if ( screenType == IPAD_PRO_12_9 ) {
-            config = "config_iPad_pro_12_9.txt";
-        } else if ( screenType == IPAD_PRO_10_5 ) {
-            config = "config_iPad_pro_10_5.txt";
-        } else if ( screenType == IPAD_PRO_11 ) {
-            config = "config_iPad_pro_11.txt";
-        } else if ( screenType == IPAD ) {
-            config = "config_iPad.txt";
-        } else if ( screenType == IPAD_GEN_7 ) {
-            config = "config_iPad_gen_7.txt";
-        } else {
-            config = "config_iPad_pro_12_9.txt";
-        }
-    } else {
-        // default to the largest iPhone if unknown
-        config = "config_iPhone_xr_xs_max.txt";
     }
     
-    NSLog(@"USING CONFIG: %s", config);
-    
-    FILE *fp = [self loadFile:[NSString stringWithUTF8String:config]];
-
-    if (fp)
+    if (g_device_is_fullscreen)
     {
-        int i = 0;
-        while(fgets(string, 256, fp) != NULL && i < 14)
-        {
-            char* result = strtok(string, ",");
-            int coords[4];
-            int i2 = 1;
-            while( result != NULL && i2 < 5 )
-            {
-                coords[i2 - 1] = atoi(result);
-                result = strtok(NULL, ",");
-                i2++;
-            }
-            
-            switch(i)
-            {
-                case 0:    rFrames[PORTRAIT_VIEW_FULL]         = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-                case 1:    rFrames[PORTRAIT_VIEW_NOT_FULL] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-                case 2:    rFrames[PORTRAIT_IMAGE_BACK]         = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-                case 3:    rFrames[PORTRAIT_IMAGE_OVERLAY]         = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-                    
-                case 4:    rFrames[LANDSCAPE_VIEW_FULL] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-                case 5:    rFrames[LANDSCAPE_VIEW_NOT_FULL] = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-                case 6:    rFrames[LANDSCAPE_IMAGE_BACK]      = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-                case 7:    rFrames[LANDSCAPE_IMAGE_OVERLAY]         = CGRectMake( coords[0], coords[1], coords[2], coords[3] ); break;
-                    
-                    //case 8:    g_enable_debug_view = coords[0]; break;
-                    //case 9:    main_thread_priority_type = coords[0]; break;
-                    //case 10:   video_thread_priority_type = coords[0]; break;
-            }
-            i++;
-        }
-        fclose(fp);
+        rButton[BTN_STICK] = scale_rect(rButton[BTN_STICK], g_stick_size);
+        rInput[BTN_STICK] = scale_rect(rInput[BTN_STICK], g_stick_size);
     }
-#endif
 }
 
-- (UIImage *)loadImage:(NSString *)name {
-    
-    NSString *path = nil;
-    UIImage *img = nil;
-    
-    static NSCache* g_image_cache = nil;
-    
-    if (g_image_cache == nil)
-        g_image_cache = [[NSCache alloc] init];
-    
-    img = [g_image_cache objectForKey:name];
-    
-    if ([img isKindOfClass:[UIImage class]])
-        return img;
-    if (img != nil)
-        return nil;
-    
-    path = [NSString stringWithUTF8String:get_resource_path("")];
-    img = [UIImage imageWithContentsOfFile:[path stringByAppendingPathComponent:name]];
-    
-    if (img == nil)
-    {
-        NSString* skin_name = [NSString stringWithFormat:@"SKIN_%d/%@", g_pref_skin, name];
-        img = [UIImage imageWithContentsOfFile:[path stringByAppendingPathComponent:skin_name]];
-    }
+#pragma mark - BUTTON LAYOUT (save)
 
-    [g_image_cache setObject:(img ?: [NSNull null]) forKey:name];
-    return img;
+// json file with custom layout with same name as current skin
+- (NSString*)getLayoutPath {
+    NSString* skin_name = g_pref_skin;
+    return [NSString stringWithFormat:@"%s/%@.json", get_documents_path("skins"), skin_name];
 }
 
-
--(FILE *)loadFile:(NSString*)name {
-    NSString *path = nil;
-    FILE *fp;
+- (void)saveLayout {
     
-    path = [NSString stringWithUTF8String:get_resource_path("")];
-    fp = fopen([path stringByAppendingPathComponent:name].UTF8String, "r");
+    NSString* skin_name = g_pref_skin;
+    NSString* layout_name = [self getLayoutName];
 
-    if(!fp)
-    {
-        name = [NSString stringWithFormat:@"SKIN_%d/%@", g_pref_skin, name];
-        fp = fopen([path stringByAppendingPathComponent:name].UTF8String, "r");
+    // load json file with custom layout with same name as current skin
+    NSString* path = [self getLayoutPath];
+    NSData* data = [NSData dataWithContentsOfFile:path];
+    NSMutableDictionary* dict = [(data ? [NSJSONSerialization JSONObjectWithData:data options:0 error:nil] : @{}) mutableCopy];
+
+    dict[layout_name] = [(dict[layout_name] ?: @{}) mutableCopy];
+    dict[@"info"] = [(dict[@"info"] ?: @{}) mutableCopy];
+    
+    NSString* desc = [NSString stringWithFormat:@"Custom Button Layout for %@", skin_name];
+    [dict setValue:@(1) forKeyPath:@"info.version"];
+    [dict setValue:@PRODUCT_NAME_LONG forKeyPath:@"info.author"];
+    [dict setValue:desc forKeyPath:@"info.description"];
+
+    NSLog(@"SAVE LAYOUT: %@\n%@", layout_name, dict);
+
+    for (int i=0; i<NUM_BUTTONS; i++) {
+        CGRect rect = [self getButtonRect:i];
+        
+        if (CGRectEqualToRect(rect, [self getLayoutRect:i]))
+            continue;
+        
+        // TODO: make sure this is an exact inverse of getLayoutRect
+        CGRect back = g_device_is_landscape ? rFrames[LANDSCAPE_IMAGE_BACK] : rFrames[PORTRAIT_IMAGE_BACK];
+        CGFloat scale_x = 1000.0 / back.size.width;
+        CGFloat scale_y = 1000.0 / back.size.height;
+        CGFloat scale = (scale_x + scale_y) / 2;
+        CGFloat x = floor((CGRectGetMidX(rect) - back.origin.x) * scale_x);
+        CGFloat y = floor((CGRectGetMidY(rect) - back.origin.y) * scale_y);
+        CGFloat w = floor(rect.size.width * scale);
+        
+        NSString* value = [NSString stringWithFormat:@"%.0f,%.0f,%.0f", x, y, w];
+        NSString* keyPath = [NSString stringWithFormat:@"%@.%@", layout_name, [self getButtonName:i]];
+        [dict setValue:value forKeyPath:keyPath];
     }
     
-    return fp;
+    NSLog(@"SAVE LAYOUT: %@\n%@", layout_name, dict);
+    data = [NSJSONSerialization dataWithJSONObject:dict options:NSJSONWritingPrettyPrinted error:nil];
+    [data writeToFile:path atomically:NO];
 }
+
+#pragma MOVE ROMs
 
 // move a single ZIP file from the document root into where it belongs.
 //
@@ -3380,6 +3406,7 @@ UIColor* colorWithHexString(NSString* string) {
     NSString *artwPath = [NSString stringWithUTF8String:get_documents_path("artwork")];
     NSString *sampPath = [NSString stringWithUTF8String:get_documents_path("samples")];
     NSString *datsPath = [NSString stringWithUTF8String:get_documents_path("dats")];
+    NSString *skinPath = [NSString stringWithUTF8String:get_documents_path("skins")];
 
     NSString *romPath = [rootPath stringByAppendingPathComponent:romName];
     
@@ -3399,12 +3426,19 @@ UIColor* colorWithHexString(NSString* string) {
     //  * datset, if the ZIP has DATs in it. *NOTE* many ROMSETs have .DAT files, so we only check a whitelist of files.
     //  * artwork, if the ZIP contains a .LAY file, then it is artwork
     //  * samples, if the ZIP contains a .WAV file, then it is samples
+    //  * skin, if the ZIP contains certain .PNG files that we use to draw buttons/etc
     //  * romset, if the ZIP has "normal" files in it assume it is a romset.
     //
+    
+    // list of files that mark a zip as a SKIN
+    NSArray* skin_files = @[@"skin.json", @"border.png", @"background.png",
+                            @"background_landscape.png", @"background_landscape_wide.png",
+                            @"background_portrait.png", @"back_portrait_tall.png"];
 
     // whitelist of valid .DAT files we will copy to the dats folder
     NSArray* dat_files = @[@"HISTORY.DAT", @"MAMEINFO.DAT"];
     
+    int __block numSKIN = 0;
     int __block numLAY = 0;
     int __block numZIP = 0;
     int __block numCHD = 0;
@@ -3424,6 +3458,10 @@ UIColor* colorWithHexString(NSString* string) {
             numCHD++;
         if ([dat_files containsObject:info.name.lastPathComponent.uppercaseString])
             numDAT++;
+        for (int i=0; i<NUM_BUTTONS; i++)
+            numSKIN += [info.name.lastPathComponent isEqualToString:nameImgButton_Press[i]];
+        if ([skin_files containsObject:info.name.lastPathComponent])
+            numSKIN++;
     }];
 
     NSString* toPath = nil;
@@ -3496,6 +3534,11 @@ UIColor* colorWithHexString(NSString* string) {
         NSLog(@"%@ is a SAMPLES file", romName);
         toPath = [sampPath stringByAppendingPathComponent:romName];
     }
+    else if (numSKIN != 0)
+    {
+        NSLog(@"%@ is a SKIN file", romName);
+        toPath = [skinPath stringByAppendingPathComponent:romName];
+    }
     else if ([romName length] <= 20 && ![romName containsString:@" "])
     {
         NSLog(@"%@ is a ROMSET", romName);
@@ -3518,6 +3561,7 @@ UIColor* colorWithHexString(NSString* string) {
         if(error!=nil)
         {
             NSLog(@"Unable to move rom: %@", [error localizedDescription]);
+            [[NSFileManager defaultManager] removeItemAtPath:romPath error:nil];
             result = FALSE;
         }
     }
@@ -3585,13 +3629,14 @@ UIColor* colorWithHexString(NSString* string) {
                     g_move_roms = 0;
                 [progressAlert.presentingViewController dismissViewControllerAnimated:YES completion:^{
                     
+                    // tell the SkinManager new files have arived.
+                    [self->skinManager reload];
+                    
                     // reset MAME last game selected...
-                    if (result)
-                       myosd_last_game_selected = 0;
+                    myosd_last_game_selected = 0;
                     
                     // reload the MAME menu....
-                    if (result)
-                        [self performSelectorOnMainThread:@selector(playGame:) withObject:nil waitUntilDone:NO];
+                    [self performSelectorOnMainThread:@selector(playGame:) withObject:nil waitUntilDone:NO];
                     
                     g_move_roms = 0;
                 }];
@@ -3601,12 +3646,14 @@ UIColor* colorWithHexString(NSString* string) {
 }
 
 // ZIP up all the important files in our documents directory
+// this is more than just "ROMs" it saves *all* important files, kind of like an archive or backup.
 // TODO: maybe we should also export the settings.bin or the UserDefaults plist
 // NOTE we specificaly *dont* export CHDs because they are too big, we support importing CHDs just not exporting
 -(BOOL)saveROMS:(NSURL*)url progressBlock:(BOOL (^)(double progress))block {
 
     NSString *rootPath = [NSString stringWithUTF8String:get_documents_path("")];
     NSString *romsPath = [NSString stringWithUTF8String:get_documents_path("roms")];
+    NSString *skinPath = [NSString stringWithUTF8String:get_documents_path("skins")];
 
     NSMutableArray* files = [[NSMutableArray alloc] init];
 
@@ -3621,6 +3668,12 @@ UIColor* colorWithHexString(NSString* string) {
         for (NSString* path in paths) {
             [files addObject:[NSString stringWithFormat:path, [rom stringByDeletingPathExtension]]];
         }
+    }
+    
+    // save everything in the `skins` directory too
+    for (NSString* skin in [NSFileManager.defaultManager contentsOfDirectoryAtPath:skinPath error:nil]) {
+        if ([skin.pathExtension.uppercaseString isEqualToString:@"ZIP"])
+            [files addObject:[NSString stringWithFormat:@"skins/%@", skin]];
     }
     
     NSLog(@"saveROMS: ROMS: %@", roms);
@@ -3657,8 +3710,35 @@ UIColor* colorWithHexString(NSString* string) {
 
 - (void)runExport {
     
-    FileItemProvider* item = [[FileItemProvider alloc] initWithTitle:@"MAME4iOS (export)" typeIdentifier:@"public.zip-archive" saveHandler:^BOOL(NSURL* url, FileItemProviderProgressHandler progressHandler) {
+    FileItemProvider* item = [[FileItemProvider alloc] initWithTitle:@PRODUCT_NAME " (export)" typeIdentifier:@"public.zip-archive" saveHandler:^BOOL(NSURL* url, FileItemProviderProgressHandler progressHandler) {
         return [self saveROMS:url progressBlock:progressHandler];
+    }];
+    
+    // NOTE UIActivityViewController is kind of broken in the Simulator, if you find a crash or problem verify it on a real device.
+    UIActivityViewController* activity = [[UIActivityViewController alloc] initWithActivityItems:@[item] applicationActivities:nil];
+    
+    UIViewController* top = self.topViewController;
+
+    if (activity.popoverPresentationController != nil) {
+        activity.popoverPresentationController.sourceView = top.view;
+        activity.popoverPresentationController.sourceRect = CGRectMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds), 0.0f, 0.0f);
+        activity.popoverPresentationController.permittedArrowDirections = 0;
+    }
+    
+    [top presentViewController:activity animated:YES completion:nil];
+}
+- (void)runExportSkin {
+    
+    BOOL isDefault = [g_pref_skin isEqualToString:kSkinNameDefault];
+
+    NSString* skin_export_name;
+    if (isDefault)
+        skin_export_name = @PRODUCT_NAME " Default Skin";
+    else
+        skin_export_name = g_pref_skin;
+    
+    FileItemProvider* item = [[FileItemProvider alloc] initWithTitle:skin_export_name typeIdentifier:@"public.zip-archive" saveHandler:^BOOL(NSURL* url, FileItemProviderProgressHandler progressHandler) {
+        return [self->skinManager exportTo:url.path progressBlock:progressHandler];
     }];
     
     // NOTE UIActivityViewController is kind of broken in the Simulator, if you find a crash or problem verify it on a real device.
@@ -3686,15 +3766,16 @@ UIColor* colorWithHexString(NSString* string) {
 - (void)runReset {
     NSLog(@"RESET: %s", g_mame_game);
     
-    NSString* msg = [NSString stringWithFormat:@"Reset %@ back to factory defaults?",
-            TARGET_OS_IOS ? @"MAME4iOS" : @"MAME4tvOS"];
+    NSString* msg = @"Reset " PRODUCT_NAME " back to factory defaults?";
 
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:nil message:msg preferredStyle:UIAlertControllerStyleAlert];
     [alert addAction:[UIAlertAction actionWithTitle:@"Reset" style:UIAlertActionStyleDestructive handler:^(UIAlertAction* action) {
         [NSUserDefaults.standardUserDefaults removeObjectForKey:kHUDPositionKey];
         [NSUserDefaults.standardUserDefaults removeObjectForKey:kHUDScaleKey];
+        [NSUserDefaults.standardUserDefaults removeObjectForKey:kSelectedGameInfoKey];
         [Options resetOptions];
         [ChooseGameController reset];
+        [SkinManager reset];
         g_mame_reset = TRUE;
         [self done:self];
     }]];
@@ -3707,103 +3788,44 @@ UIColor* colorWithHexString(NSString* string) {
 #if TARGET_OS_IOS
 -(void)beginCustomizeCurrentLayout{
     
-    if (g_joy_used && g_device_is_fullscreen)
-    {
-        [self showAlertWithTitle:nil message:@"You cannot customize current layout when using a external controller!"];
-    }
-    else
-    {
-        [self dismissViewControllerAnimated:YES completion:nil];
-        
-        if (g_pref_input_touch_type == TOUCH_INPUT_DPAD)
-            g_pref_input_touch_type = TOUCH_INPUT_DSTICK;
-
-        [self changeUI]; //ensure GUI
-        
-        //dont free the screenView, see buildScreenView
-        //[screenView removeFromSuperview];
-        //screenView = nil;
-        screenView.alpha = 0;
-        
-        layoutView = [[LayoutView alloc] initWithFrame:self.view.bounds withEmuController:self];
-        
-        change_layout = 1;
-        
-        [self removeTouchControllerViews];
-        
-        [self buildTouchControllerViews];
-        
-        [self.view addSubview:layoutView];
-    }
+    [self dismissViewControllerAnimated:YES completion:nil];
     
+    layoutView = [[LayoutView alloc] initWithFrame:self.view.bounds withEmuController:self];
+    layoutView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [self.view addSubview:layoutView];
+
+    change_layout = 1;
+    [self changeUI];
 }
 
 -(void)finishCustomizeCurrentLayout{
     
     [layoutView removeFromSuperview];
+    layoutView = nil;
     
     change_layout = 0;
-    screenView.alpha = 1;
+    [self changeUI]; //ensure GUI
 
     [self done:self];
 }
 
 -(void)resetCurrentLayout{
     
-    if (g_joy_used && g_device_is_fullscreen)
-    {
-        [self showAlertWithTitle:nil message:@"You cannot reset current layout when using a external controller!"];
-        return;
-    }
-    
     [self showAlertWithTitle:nil message:@"Do you want to reset current layout to default?" buttons:@[@"Yes", @"No"] handler:^(NSUInteger buttonIndex) {
         if (buttonIndex == 0)
         {
-            [LayoutData removeLayoutData];
+            [NSFileManager.defaultManager removeItemAtPath:[self getLayoutPath] error:nil];
+            [self->skinManager reload];
             [self done:self];
         }
     }];
 }
 
-// scale a CGRect but dont move the center
-CGRect scale_rect(CGRect rect, CGFloat scale) {
-    return CGRectInset(rect, -0.5 * rect.size.width * (scale - 1.0), -0.5 * rect.size.height * (scale - 1.0));
+-(void)saveCurrentLayout {
+    [self saveLayout];
+    [skinManager reload];
 }
 
--(void)adjustSizes{
-    
-    int i= 0;
-    
-    for(i=0;i<INPUT_LAST_VALUE;i++)
-    {
-        if(i==BTN_Y_RECT ||
-           i==BTN_A_RECT ||
-           i==BTN_X_RECT ||
-           i==BTN_B_RECT ||
-           i==BTN_A_Y_RECT ||
-           i==BTN_B_X_RECT ||
-           i==BTN_B_Y_RECT ||
-           i==BTN_X_A_RECT ||
-           i==BTN_L1_RECT ||
-           i==BTN_R1_RECT
-           ){
-           rInput[i] = scale_rect(rInput[i], g_buttons_size);
-        }
-    }
-    
-    for(i=0;i<NUM_BUTTONS;i++)
-    {
-        if(i==BTN_A || i==BTN_B || i==BTN_X || i==BTN_Y || i==BTN_R1 || i==BTN_L1)
-        {
-            rButtonImages[i] = scale_rect(rButtonImages[i], g_buttons_size);
-        }
-    }
-    
-    if (g_device_is_fullscreen)
-    {
-       rStickWindow = scale_rect(rStickWindow, g_stick_size);
-    }
-}
 #endif
 
 #pragma mark - MFI Controller
@@ -3929,8 +3951,6 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         //      MENU+A  = LOAD STATE
         //      MENU+Y  = SAVE STATE
         //
-        //      OPTION   = COIN + START
-        //
         BOOL (^menuButtonHandler)(BOOL) = ^BOOL(BOOL pressed){
             static int g_menu_modifier_button_pressed[NUM_JOY];
             int player = (isSiriRemote || index >= myosd_num_inputs) ? 0 : index; // siri remote is always player 1
@@ -4016,9 +4036,10 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 #endif
             #pragma clang diagnostic push
             #pragma clang diagnostic ignored "-Wpartial-availability"
+            GCControllerButtonInput *buttonHome = [gamepad respondsToSelector:@selector(buttonHome)] ? [gamepad buttonHome] : nil;
             GCControllerButtonInput *buttonMenu = [gamepad respondsToSelector:@selector(buttonMenu)] ? [gamepad buttonMenu] : nil;
-            GCControllerButtonInput *buttonOptions = [gamepad respondsToSelector:@selector(buttonOptions)] ? [gamepad buttonOptions] : nil;
-            if ((element != buttonMenu && buttonMenu.pressed) || (element != buttonOptions && buttonOptions.pressed)) {
+            GCControllerButtonInput *buttonMeta = buttonHome ?: buttonMenu;
+            if (element != buttonMeta && buttonMeta.pressed) {
                 menuButtonHandler(TRUE);
                 return;
             }
@@ -4225,37 +4246,80 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         
         #pragma clang diagnostic push
         #pragma clang diagnostic ignored "-Wpartial-availability"
+        GCControllerButtonInput *buttonHome = [gamepad respondsToSelector:@selector(buttonHome)] ? [gamepad buttonHome] : nil;
         GCControllerButtonInput *buttonMenu = [gamepad respondsToSelector:@selector(buttonMenu)] ? [gamepad buttonMenu] : nil;
         GCControllerButtonInput *buttonOptions = [gamepad respondsToSelector:@selector(buttonOptions)] ? [gamepad buttonOptions] : nil;
         #pragma clang diagnostic pop
-
-        // MENU BUTTON
-        buttonMenu.pressedChangedHandler = ^(GCControllerButtonInput* button, float value, BOOL pressed) {
-            int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
-            if (menuButtonHandler(pressed))
-                [self toggleMenu:player];
-        };
         
-        // OPTION BUTTON
-        buttonOptions.pressedChangedHandler = ^(GCControllerButtonInput* button, float value, BOOL pressed) {
-            int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
-            if (menuButtonHandler(pressed)) {
-                NSLog(@"%d: OPTION", index);
-                if (player < 2)    // add a extra coin for luck, for games that default to two credits.
-                    push_mame_button(0, MYOSD_SELECT);  // Player 1 coin
-                push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X COIN
-                push_mame_button(player, MYOSD_START); // Player X START
-            }
-        };
-        
-        // old skoool PAUSE button
-        if (buttonMenu == nil && buttonOptions == nil) {
-            MFIController.controllerPausedHandler = ^(GCController *controller) {
+        // iOS 14+ we have three buttons: OPTION(left) HOME(center), MENU(right)
+        //      HOME   => MAME4iOS MENU
+        //      OPTION => SELECT/COIN
+        //      MENU   => START
+        if (buttonHome != nil && buttonMenu != nil && buttonOptions != nil) {
+            // HOME BUTTON => MAME4iOS MENU
+            buttonHome.pressedChangedHandler = ^(GCControllerButtonInput* button, float value, BOOL pressed) {
+                NSLog(@"%d: MENU/HOME %s", index, (pressed ? "DOWN" : "UP"));
                 int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
-                menuButtonHandler(TRUE);
-                if (menuButtonHandler(FALSE))
+                if (menuButtonHandler(pressed))
                     [self toggleMenu:player];
             };
+            // OPTION BUTTON => SELECT
+            buttonOptions.pressedChangedHandler = ^(GCControllerButtonInput* button, float value, BOOL pressed) {
+                NSLog(@"%d: SELECT %s", index, (pressed ? "DOWN" : "UP"));
+                int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
+                if (pressed)
+                    myosd_joy_status[player] |= MYOSD_SELECT;
+                else
+                    myosd_joy_status[player] &= ~MYOSD_SELECT;
+                [self handle_INPUT];
+            };
+            // MENU BUTTON => START
+            buttonMenu.pressedChangedHandler = ^(GCControllerButtonInput* button, float value, BOOL pressed) {
+                NSLog(@"%d: START %s", index, (pressed ? "DOWN" : "UP"));
+                int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
+                if (pressed)
+                    myosd_joy_status[player] |= MYOSD_START;
+                else
+                    myosd_joy_status[player] &= ~MYOSD_START;
+                [self handle_INPUT];
+            };
+        }
+        // iOS 13+ we have (up to) two buttons MENU(right), and OPTION(left)
+        //      MENU   => MAME4iOS MENU
+        //      OPTION => do a SELECT + START (Px START)
+        else {
+            // MENU BUTTON
+            buttonMenu.pressedChangedHandler = ^(GCControllerButtonInput* button, float value, BOOL pressed) {
+                NSLog(@"%d: MENU %s", index, (pressed ? "DOWN" : "UP"));
+                int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
+                if (menuButtonHandler(pressed))
+                    [self toggleMenu:player];
+            };
+            // OPTION BUTTON => Px START
+            buttonOptions.pressedChangedHandler = ^(GCControllerButtonInput* button, float value, BOOL pressed) {
+                NSLog(@"%d: OPTION %s", index, (pressed ? "DOWN" : "UP"));
+                int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
+                if (pressed && !g_emulation_paused) {
+                    if (player < 2)    // add a extra coin for luck, for games that default to two credits.
+                        push_mame_button(0, MYOSD_SELECT);  // Player 1 coin
+                    push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X COIN
+                    push_mame_button(player, MYOSD_START); // Player X START
+                }
+            };
+            // < iOS 13 we only have a PAUSE handler, and we only get a single event on button up
+            // PASUE => MAME4iOS MENU
+            #pragma clang diagnostic push
+            #pragma clang diagnostic ignored "-Wdeprecated"
+            if (buttonMenu == nil && buttonOptions == nil) {
+                NSLog(@"%d: PAUSE", index);
+                MFIController.controllerPausedHandler = ^(GCController *controller) {
+                    int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
+                    menuButtonHandler(TRUE);
+                    if (menuButtonHandler(FALSE))
+                        [self toggleMenu:player];
+                };
+            }
+            #pragma clang diagnostic pop
         }
     }
 }
@@ -4314,11 +4378,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     if ( server.bonjourServerURL != nil ) {
         [servers appendString:[NSString stringWithFormat:@"%@",server.bonjourServerURL]];
     }
-#if TARGET_OS_TV
-    NSString* welcome = @"Welcome to MAME for AppleTV";
-#else
-    NSString* welcome = @"Welcome to MAME4iOS";
-#endif
+    NSString* welcome = @"Welcome to " PRODUCT_NAME_LONG;
     NSString* message = [NSString stringWithFormat:@"\nTo transfer ROMs from your computer go to one of these addresses in your web browser:\n\n%@",servers];
     NSString* title = g_no_roms_found ? welcome : @"Web Server Started";
     NSString* done  = g_no_roms_found ? @"Reload ROMs" : @"Stop Server";
@@ -4406,6 +4466,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         NSLog(@"CANT RUN GAME! (%@ is active)", viewController);
         return;
     }
+
     
     NSString* name = game[kGameInfoName];
     
@@ -4413,10 +4474,12 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         name = @" ";
 
     if (name != nil) {
+        g_mame_game_info = game;
         strncpy(g_mame_game, [name cStringUsingEncoding:NSUTF8StringEncoding], sizeof(g_mame_game));
         [self updateUserActivity:game];
     }
     else {
+        g_mame_game_info = nil;
         g_mame_game[0] = 0;     // run the MENU
     }
 
@@ -4438,11 +4501,12 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         return;
     }
     g_no_roms_found = [games count] == 0;
+#ifndef DEBUG
     if (g_no_roms_found) {
 #if TARGET_OS_IOS
         NSLog(@"NO GAMES, ASK USER WHAT TO DO....");
 
-        NSString* title = @"Welcome to MAME4iOS";
+        NSString* title = @"Welcome to " PRODUCT_NAME_LONG;
         NSString* message = @"\nTo transfer ROMs from your computer, Start Server, Import ROMs, or use AirDrop.";
         
         UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
@@ -4462,14 +4526,16 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 #endif
         return;
     }
+#endif
     if (g_mame_game_error[0] != 0) {
         NSLog(@"ERROR RUNNING GAME %s", g_mame_game_error);
         
         NSString* msg = [NSString stringWithFormat:@"ERROR RUNNING GAME %s", g_mame_game_error];
         g_mame_game_error[0] = 0;
         g_mame_game[0] = 0;
+        g_mame_game_info = nil;
         
-        [self showAlertWithTitle:@"MAME4iOS" message:msg buttons:@[@"Ok"] handler:^(NSUInteger button) {
+        [self showAlertWithTitle:@PRODUCT_NAME message:msg buttons:@[@"Ok"] handler:^(NSUInteger button) {
             [self performSelectorOnMainThread:@selector(chooseGame:) withObject:games waitUntilDone:FALSE];
         }];
         return;

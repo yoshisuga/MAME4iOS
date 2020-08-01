@@ -195,6 +195,8 @@ will be sent as soon as it's touched. Defaults to `YES`. */
 @property (nonatomic, readonly, nullable) GCControllerButtonInput *steamBackButton;
 /// The right pointing button to the right of the Steam button.
 @property (nonatomic, readonly, nullable) GCControllerButtonInput *steamForwardButton;
+/// The Steam button.
+@property (nonatomic, readonly, nullable) GCControllerButtonInput *steamSteamButton;
 @end
 
 NS_ASSUME_NONNULL_END

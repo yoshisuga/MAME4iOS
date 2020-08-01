@@ -46,13 +46,13 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ZipFile : NSObject
 
 // enumerate all files in a ZipFile, and if requested also load the data.
-+ (BOOL)enumerate:(NSString*)path withOptions:(ZipFileEnumOptions)options usingBlock:(nullable void (^)(ZipFileInfo* info))block;
++ (BOOL)enumerate:(NSString*)path withOptions:(ZipFileEnumOptions)options usingBlock:(nullable void (NS_NOESCAPE ^)(ZipFileInfo* info))block;
 
 // create a ZipFile from any user supplied data
-+ (BOOL)exportTo:(NSString*)path fromItems:(NSArray*)items withOptions:(ZipFileWriteOptions)options usingBlock:(ZipFileInfo* (^)(id item))loadHandler;
++ (BOOL)exportTo:(NSString*)path fromItems:(NSArray*)items withOptions:(ZipFileWriteOptions)options usingBlock:(ZipFileInfo* (NS_NOESCAPE ^)(id item))loadHandler;
 
 // create a ZipFile from files in a directory.
-+ (BOOL)exportTo:(NSString*)path fromDirectory:(NSString*)root withFiles:(nullable NSArray<NSString*>*)files withOptions:(ZipFileWriteOptions)options progressBlock:(nullable BOOL (^)(double progress))block;
++ (BOOL)exportTo:(NSString*)path fromDirectory:(NSString*)root withFiles:(nullable NSArray<NSString*>*)files withOptions:(ZipFileWriteOptions)options progressBlock:(nullable BOOL (NS_NOESCAPE ^)(double progress))block;
 
 @end
 

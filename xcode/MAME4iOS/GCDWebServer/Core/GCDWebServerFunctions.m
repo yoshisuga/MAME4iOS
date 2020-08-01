@@ -279,6 +279,9 @@ NSString* GCDWebServerGetPrimaryIPAddress(BOOL useIPv6) {
   return address;
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated"
+// CC_MD5 is deprecated because is not not secure, DUH!
 NSString* GCDWebServerComputeMD5Digest(NSString* format, ...) {
   va_list arguments;
   va_start(arguments, format);
@@ -297,3 +300,5 @@ NSString* GCDWebServerComputeMD5Digest(NSString* format, ...) {
   buffer[2 * CC_MD5_DIGEST_LENGTH] = 0;
   return [NSString stringWithUTF8String:buffer];
 }
+#pragma clang diagnostic pop
+

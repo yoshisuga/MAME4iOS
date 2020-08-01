@@ -54,8 +54,10 @@
 #define BACKGROUND_COLOR        [UIColor blackColor]
 #define TITLE_COLOR             [UIColor whiteColor]
 #define HEADER_TEXT_COLOR       [UIColor whiteColor]
-#define CELL_BACKGROUND_COLOR   [UIColor colorWithWhite:0.222 alpha:1.0]
-#define CELL_SELECTED_COLOR     self.tintColor
+#define HEADER_BACKGROUND_COLOR [UIColor clearColor]
+#define HEADER_PINNED_COLOR     [BACKGROUND_COLOR colorWithAlphaComponent:0.8]
+#define CELL_BACKGROUND_COLOR   [UIColor colorWithWhite:0.222 alpha:0.8]
+#define CELL_SELECTED_COLOR     [self.tintColor colorWithAlphaComponent:0.8]
 
 #define CELL_TITLE_FONT         [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
 #define CELL_TITLE_COLOR        [UIColor whiteColor]
@@ -108,6 +110,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 -(void)setImageAspect:(CGFloat)aspect;
 -(void)setBorderWidth:(CGFloat)width;
 -(void)setCornerRadius:(CGFloat)radius;
+-(void)addBlur:(UIBlurEffectStyle)style;
 -(void)startWait;
 -(void)stopWait;
 
@@ -194,7 +197,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 #else
     UILabel* title = [[UILabel alloc] init];
     CGFloat height = TARGET_OS_IOS ? (44.0 * 0.6) : (44.0 * 1.5);
-    title.text = TARGET_OS_IOS ? @"MAME4iOS" : @"MAME4tvOS";
+    title.text = @PRODUCT_NAME;
     title.font = [UIFont boldSystemFontOfSize:height];
     title.textColor = TITLE_COLOR;
     [title sizeToFit];
@@ -210,6 +213,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     
     if (@available(iOS 13.0, tvOS 13.0, *)) {
         self.navigationController.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
+        self.navigationController.navigationBar.shadowImage = [[UIImage alloc] init];
     }
     else {
         self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
@@ -307,7 +311,13 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     self.collectionView.allowsSelection = YES;
     self.collectionView.alwaysBounceVertical = YES;
     
-#if TARGET_OS_TV
+    UIImage* background = [UIImage imageNamed:@"choose-game-background"];
+    if (background) {
+        self.collectionView.backgroundView = [[UIView alloc] init];
+        self.collectionView.backgroundView.backgroundColor = [UIColor colorWithPatternImage:background];
+    }
+    
+ #if TARGET_OS_TV
     UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(menuPress)];
     tap.allowedPressTypes = @[[NSNumber numberWithInteger:UIPressTypeMenu]];
     [self.navigationController.view addGestureRecognizer:tap];
@@ -327,6 +337,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     [self.collectionView setContentOffset:CGPointMake(0, (self.collectionView.adjustedContentInset.top - _searchController.searchBar.bounds.size.height) * -1.0) animated:TRUE];
 #endif
 }
+
 -(void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
@@ -787,6 +798,24 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     [self reloadData];
 }
 
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    CGFloat yTop = scrollView.contentOffset.y + scrollView.adjustedContentInset.top;
+    for (GameCell* cell in [self.collectionView visibleSupplementaryViewsOfKind:UICollectionElementKindSectionHeader]) {
+        if (yTop > 0.5 && fabs(yTop - cell.frame.origin.y) <= cell.frame.size.height) {
+            if (@available(iOS 13.0, *))
+                [cell addBlur:UIBlurEffectStyleDark];
+            else
+                cell.contentView.backgroundColor = HEADER_PINNED_COLOR;
+        }
+        else {
+            if (@available(iOS 13.0, *))
+                cell.backgroundView = nil;
+            else
+                cell.contentView.backgroundColor = HEADER_BACKGROUND_COLOR;
+        }
+    }
+}
+
 #pragma mark System
 
 - (BOOL)isSystem:(NSDictionary*)game
@@ -1224,7 +1253,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     cell.text.text = _gameSectionTitles[indexPath.section];
     cell.text.font = [UIFont systemFontOfSize:cell.bounds.size.height * 0.8 weight:UIFontWeightHeavy];
     cell.text.textColor = HEADER_TEXT_COLOR;
-    cell.contentView.backgroundColor = [self.collectionView.backgroundColor colorWithAlphaComponent:0.5];
+    cell.contentView.backgroundColor = HEADER_BACKGROUND_COLOR;
     [cell setTextInsets:UIEdgeInsetsMake(2.0, self.view.safeAreaInsets.left + 2.0, 2.0, self.view.safeAreaInsets.right + 2.0)];
     [cell setCornerRadius:0.0];
     [cell setBorderWidth:0.0];
@@ -1550,7 +1579,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         ]];
     }
     
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     if (@available(iOS 12.0, *)) {
         NSUserActivity* activity = [ChooseGameController userActivityForGame:game];
         INVoiceShortcut* shortcut = [self getVoiceShortcut:activity];
@@ -1690,6 +1719,33 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     [self runMenu:indexPath];
 }
 
+#pragma mark MENU
+
+#if TARGET_OS_IOS
+-(BOOL)canPerformAction:(SEL)action withSender:(id)sender {
+    NSIndexPath* indexPath = self.collectionView.indexPathsForSelectedItems.firstObject;
+
+    if (action == @selector(filePlay) || action == @selector(fileInfo) || action == @selector(fileFavorite))
+        return indexPath != nil;
+    else
+        return [super canPerformAction:action withSender:sender];
+}
+
+
+-(void)filePlay {
+    [self onCommandSelect];
+}
+-(void)fileFavorite {
+    NSDictionary* game = [self getGameInfo:self.collectionView.indexPathsForSelectedItems.firstObject];
+    [self setFavorite:game isFavorite:![self isFavorite:game]];
+    [self filterGameList];
+}
+-(void)fileInfo {
+    NSIndexPath* indexPath = self.collectionView.indexPathsForSelectedItems.firstObject;
+    [self info:[self getGameInfo:indexPath]];
+}
+#endif
+
 #pragma mark Keyboard and Game Controller navigation
 
 #if TARGET_OS_IOS
@@ -1748,10 +1804,13 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 // called when input happens on a gamecontroller, keyboard, or touch screen
 // check for input related to moving and selecting.
--(void)handle_MENU {
-    unsigned long pad_status = myosd_pad_status | myosd_joy_status[0] | myosd_joy_status[1];
-
-    if (pad_status & MYOSD_A)
+-(void)handle_MENU:(NSNumber*)status
+{
+    // get input from all DPADs
+    unsigned long pad_status = [status longValue];
+    
+    // get input from left and right joystick #1
+    if (pad_status & (MYOSD_A|MYOSD_SELECT|MYOSD_START))
         [self onCommandSelect];
     if (pad_status & MYOSD_UP)
         [self onCommandUp];
@@ -1773,6 +1832,16 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     
     if (_key_commands == nil || g_pref_ext_control_type != _key_commands_type) {
         
+#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_13_0
+        // standard keyboard
+        _key_commands = @[
+            [UIKeyCommand commandWithTitle:@"SELECT" image:nil action:@selector(onCommandSelect) input:@"\r"                modifierFlags:0 propertyList:nil],
+            [UIKeyCommand commandWithTitle:@"UP"     image:nil action:@selector(onCommandUp)     input:UIKeyInputUpArrow    modifierFlags:0 propertyList:nil],
+            [UIKeyCommand commandWithTitle:@"DOWN"   image:nil action:@selector(onCommandDown)   input:UIKeyInputDownArrow  modifierFlags:0 propertyList:nil],
+            [UIKeyCommand commandWithTitle:@"LEFT"   image:nil action:@selector(onCommandLeft)   input:UIKeyInputLeftArrow  modifierFlags:0 propertyList:nil],
+            [UIKeyCommand commandWithTitle:@"RIGHT"  image:nil action:@selector(onCommandRight)  input:UIKeyInputRightArrow modifierFlags:0 propertyList:nil],
+        ];
+#else
         // standard keyboard
         _key_commands = @[
             [UIKeyCommand keyCommandWithInput:@"\r" modifierFlags:0 action:@selector(onCommandSelect) discoverabilityTitle:@"SELECT"],
@@ -1781,25 +1850,11 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
             [UIKeyCommand keyCommandWithInput:UIKeyInputLeftArrow modifierFlags:0 action:@selector(onCommandLeft) discoverabilityTitle:@"LEFT"],
             [UIKeyCommand keyCommandWithInput:UIKeyInputRightArrow modifierFlags:0 action:@selector(onCommandRight) discoverabilityTitle:@"RIGHT"]
         ];
+#endif
 
         _key_commands_type = g_pref_ext_control_type;
 
-        if (g_pref_ext_control_type >= EXT_CONTROL_ICADE) {
-            // iCade
-            _key_commands = [_key_commands arrayByAddingObjectsFromArray:@[
-                [UIKeyCommand keyCommandWithInput:@"y" modifierFlags:0 action:@selector(onCommandSelect)], // SELECT
-                [UIKeyCommand keyCommandWithInput:@"h" modifierFlags:0 action:@selector(onCommandSelect)], // START
-                [UIKeyCommand keyCommandWithInput:@"k" modifierFlags:0 action:@selector(onCommandSelect)], // A
-                [UIKeyCommand keyCommandWithInput:@"o" modifierFlags:0 action:@selector(onCommandSelect)], // B
-                [UIKeyCommand keyCommandWithInput:@"i" modifierFlags:0 action:@selector(onCommandSelect)], // Y
-                [UIKeyCommand keyCommandWithInput:@"l" modifierFlags:0 action:@selector(onCommandSelect)], // X
-                [UIKeyCommand keyCommandWithInput:@"w" modifierFlags:0 action:@selector(onCommandUp)],
-                [UIKeyCommand keyCommandWithInput:@"x" modifierFlags:0 action:@selector(onCommandDown)],
-                [UIKeyCommand keyCommandWithInput:@"a" modifierFlags:0 action:@selector(onCommandLeft)],
-                [UIKeyCommand keyCommandWithInput:@"d" modifierFlags:0 action:@selector(onCommandRight)],
-            ]];
-        }
-        else {
+        if (g_pref_ext_control_type == EXT_CONTROL_8BITDO) {
             // 8BitDo
             _key_commands = [_key_commands arrayByAddingObjectsFromArray:@[
                 [UIKeyCommand keyCommandWithInput:@"n" modifierFlags:0 action:@selector(onCommandSelect)], // SELECT
@@ -1809,6 +1864,18 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
                 [UIKeyCommand keyCommandWithInput:@"d" modifierFlags:0 action:@selector(onCommandDown)],
                 [UIKeyCommand keyCommandWithInput:@"e" modifierFlags:0 action:@selector(onCommandLeft)],
                 [UIKeyCommand keyCommandWithInput:@"f" modifierFlags:0 action:@selector(onCommandRight)],
+            ]];
+        }
+        else if (g_pref_ext_control_type >= EXT_CONTROL_ICADE) {
+            // iCade
+            _key_commands = [_key_commands arrayByAddingObjectsFromArray:@[
+                [UIKeyCommand keyCommandWithInput:@"y" modifierFlags:0 action:@selector(onCommandSelect)], // SELECT
+                [UIKeyCommand keyCommandWithInput:@"h" modifierFlags:0 action:@selector(onCommandSelect)], // START
+                [UIKeyCommand keyCommandWithInput:@"k" modifierFlags:0 action:@selector(onCommandSelect)], // A
+                [UIKeyCommand keyCommandWithInput:@"w" modifierFlags:0 action:@selector(onCommandUp)],
+                [UIKeyCommand keyCommandWithInput:@"x" modifierFlags:0 action:@selector(onCommandDown)],
+                [UIKeyCommand keyCommandWithInput:@"a" modifierFlags:0 action:@selector(onCommandLeft)],
+                [UIKeyCommand keyCommandWithInput:@"d" modifierFlags:0 action:@selector(onCommandRight)],
             ]];
         }
     }
@@ -1934,6 +2001,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     [self setNeedsUpdateConstraints];
     
     self.backgroundColor = [UIColor clearColor];
+    self.backgroundView = nil;
+
     self.contentView.backgroundColor = CELL_BACKGROUND_COLOR;
 
     self.layer.cornerRadius = 8.0;
@@ -1942,7 +2011,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
     self.contentView.layer.borderWidth = 2.0;
     self.contentView.layer.borderColor = self.contentView.backgroundColor.CGColor;
-
+    
     self.layer.shadowColor = UIColor.clearColor.CGColor;
     self.layer.shadowOffset = CGSizeMake(0.0, 0.0f);
     self.layer.shadowRadius = 8.0;
@@ -2048,13 +2117,28 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     self.contentView.layer.cornerRadius = radius;
     self.contentView.clipsToBounds = radius != 0.0;
 }
+-(void)addBlur:(UIBlurEffectStyle)style {
+    if (self.backgroundView != nil)
+        return;
+    UIBlurEffect* blur = [UIBlurEffect effectWithStyle:style];
+    UIVisualEffectView* effectView = [[UIVisualEffectView alloc] initWithEffect:blur];
+    effectView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    effectView.frame = self.bounds;
+    self.backgroundView = effectView;
+}
+
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0
+#define UIActivityIndicatorViewStyleMedium UIActivityIndicatorViewStyleWhite
+#define UIActivityIndicatorViewStyleLarge UIActivityIndicatorViewStyleWhiteLarge
+#endif
+
 -(void)startWait
 {
     UIActivityIndicatorView* wait = _image.subviews.lastObject;
     if (![wait isKindOfClass:[UIActivityIndicatorView class]])
     {
         wait = [[UIActivityIndicatorView alloc] initWithFrame:CGRectZero];
-        wait.activityIndicatorViewStyle = self.bounds.size.width <= 100.0 ? UIActivityIndicatorViewStyleWhite : UIActivityIndicatorViewStyleWhiteLarge;
+        wait.activityIndicatorViewStyle = self.bounds.size.width <= 100.0 ? UIActivityIndicatorViewStyleMedium : UIActivityIndicatorViewStyleLarge;
         [wait sizeToFit];
         
         wait.color = self.tintColor;
