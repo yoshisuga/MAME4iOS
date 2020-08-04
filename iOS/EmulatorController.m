@@ -580,6 +580,11 @@ void mame_state(int load_save, int slot)
             popoverController.sourceRect = CGRectMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds), 0.0f, 0.0f);
             popoverController.permittedArrowDirections = 0; /*UIPopoverArrowDirectionNone*/
         }
+        else if ([view isKindOfClass:[UIImageView class]] && view.contentMode == UIViewContentModeScaleAspectFit) {
+            popoverController.sourceView = view;
+            popoverController.sourceRect = AVMakeRectWithAspectRatioInsideRect([(UIImageView*)view image].size, view.bounds);
+            popoverController.permittedArrowDirections = UIPopoverArrowDirectionAny;
+        }
         else {
             popoverController.sourceView = view;
             popoverController.sourceRect = view.bounds;
