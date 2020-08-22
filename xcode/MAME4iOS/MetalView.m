@@ -7,9 +7,12 @@
 //
 #import <UIKit/UIKit.h>
 #import <Metal/Metal.h>
-#import <MetalPerformanceShaders/MetalPerformanceShaders.h>
 #import "MetalView.h"
 #import "MetalViewShaders.h"
+
+#if !(TARGET_OS_SIMULATOR && TARGET_OS_TV)
+#import <MetalPerformanceShaders/MetalPerformanceShaders.h>
+#endif
 
 #define DebugLog 0
 #if DebugLog == 0
@@ -1148,6 +1151,10 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     assert(_encoder != nil);
     assert(texture_load != nil);
     
+#if (TARGET_OS_SIMULATOR && TARGET_OS_TV)
+    // no MetalPerformanceShaders in tvOS simulator!!!
+    return [self setTexture:index texture:identifier hash:hash width:width height:height format:format texture_load:texture_load];
+#else
     // filter out noop colorspaces
     if (colorspace != NULL) {
         if (colorspace == _colorSpaceDevice || CFEqual(colorspace, _colorSpaceDevice))
@@ -1185,6 +1192,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
         [conv encodeToCommandBuffer:self->_compute sourceTexture:src_texture destinationTexture:dst_texture];
     }];
+#endif
 }
 
 #pragma mark - UIImage textures

@@ -104,9 +104,9 @@
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
             cell.detailTextLabel.text = [Options.arrayFilter optionName:op.filter];
         } else if ( indexPath.row == 1 ) {
-            cell.textLabel.text   = @"Border";
+            cell.textLabel.text   = @"Skin";
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-            cell.detailTextLabel.text = [Options.arrayBorder optionName:op.border];
+            cell.detailTextLabel.text = [Options.arraySkin optionName:op.skin];
         } else if ( indexPath.row == 2 ) {
             cell.textLabel.text   = @"Screen Shader";
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
@@ -190,7 +190,7 @@
             ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"filter" list:Options.arrayFilter title:cell.textLabel.text];
             [[self navigationController] pushViewController:listController animated:YES];
         } else if ( indexPath.row == 1 ) {
-            ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"border" list:Options.arrayBorder title:cell.textLabel.text];
+            ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"skin" list:Options.arraySkin title:cell.textLabel.text];
             [[self navigationController] pushViewController:listController animated:YES];
         } else if ( indexPath.row == 2 ) {
             ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"screenShader" list:Options.arrayScreenShader title:cell.textLabel.text];

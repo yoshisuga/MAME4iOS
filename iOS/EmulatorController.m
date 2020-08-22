@@ -85,7 +85,7 @@
 @end
 #endif
 
-#define DebugLog 1
+#define DebugLog 0
 #if DebugLog == 0
 #define NSLog(...) (void)0
 #endif
@@ -187,9 +187,7 @@ int prev_myosd_mouse = 0;
 static pthread_t main_tid;
 
 static int ways_auto = 0;
-#if TARGET_OS_IOS
 static int change_layout=0;
-#endif
 
 #define kHUDPositionKey  @"hud_rect"
 #define kHUDScaleKey     @"hud_scale"
@@ -416,8 +414,8 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
 
 #if TARGET_OS_IOS
 - (NSString*)getButtonName:(int)i {
-    static NSString* button_name[NUM_BUTTONS] = {@"A",@"B",@"Y",@"X",@"L1",@"R1",@"A+Y",@"A+X",@"B+Y",@"B+X",@"SELECT",@"START",@"EXIT",@"OPTION",@"STICK"};
-    _Static_assert(NUM_BUTTONS == 15, "enum size change");
+    static NSString* button_name[NUM_BUTTONS] = {@"A",@"B",@"Y",@"X",@"L1",@"R1",@"A+Y",@"A+X",@"B+Y",@"B+X",@"A+B",@"SELECT",@"START",@"EXIT",@"OPTION",@"STICK"};
+    _Static_assert(NUM_BUTTONS == 16, "enum size change");
     assert(i < NUM_BUTTONS);
     return button_name[i];
 }
@@ -577,10 +575,15 @@ void mame_state(int load_save, int slot)
 #if TARGET_OS_IOS // UIPopoverPresentationController does not exist on tvOS.
     UIPopoverPresentationController *popoverController = viewController.popoverPresentationController;
     if ( popoverController != nil ) {
-        if (view == nil) {
+        if (view == nil || view.hidden || CGRectIsEmpty(view.bounds) ) {
             popoverController.sourceView = self.view;
             popoverController.sourceRect = CGRectMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds), 0.0f, 0.0f);
             popoverController.permittedArrowDirections = 0; /*UIPopoverArrowDirectionNone*/
+        }
+        else if ([view isKindOfClass:[UIImageView class]] && view.contentMode == UIViewContentModeScaleAspectFit) {
+            popoverController.sourceView = view;
+            popoverController.sourceRect = AVMakeRectWithAspectRatioInsideRect([(UIImageView*)view image].size, view.bounds);
+            popoverController.permittedArrowDirections = UIPopoverArrowDirectionAny;
         }
         else {
             popoverController.sourceView = view;
@@ -589,7 +592,7 @@ void mame_state(int load_save, int slot)
         }
     }
 #endif
-    [self presentViewController:viewController animated:YES completion:nil];
+    [self presentViewController:viewController animated:flag completion:completion];
 }
 
 // player is zero based 0=P1, 1=P2, etc
@@ -1161,6 +1164,13 @@ void mame_state(int load_save, int slot)
         
         return;
     }
+    
+    // touch screen START button, when no COIN button
+    if (CGRectIsEmpty(rInput[BTN_SELECT]) && (buttonState & MYOSD_START) && !(pad_status & MYOSD_START))
+    {
+        // TODO: handle 2P START?
+        [self startPlayer:0];
+    }
 
     // touch screen EXIT button
     if ((buttonState & MYOSD_EXIT) && !(pad_status & MYOSD_EXIT))
@@ -1381,11 +1391,13 @@ void mame_state(int load_save, int slot)
     else
         alpha = 0.0;
     
+#if TARGET_OS_IOS
     if (change_layout) {
         alpha = 0.0;
         [self.view bringSubviewToFront:layoutView];
     }
-
+#endif
+    
     if (screenView.alpha != alpha) {
         if (alpha == 0.0)
             NSLog(@"**** HIDING ScreenView ****");
@@ -2220,8 +2232,9 @@ void myosd_handle_turbo() {
 #ifdef __IPHONE_13_4
         if (@available(iOS 13.4, *)) {
             if (i == BTN_SELECT || i == BTN_START || i == BTN_EXIT || i == BTN_OPTION) {
-                [buttonViews[i] addInteraction:[[UIPointerInteraction alloc] initWithDelegate:(id)self]];
-                [buttonViews[i] setUserInteractionEnabled:TRUE];
+// this hilights the whole square button, not the AspectFit part!
+//                [buttonViews[i] addInteraction:[[UIPointerInteraction alloc] initWithDelegate:(id)self]];
+//                [buttonViews[i] setUserInteractionEnabled:TRUE];
             }
         }
 #endif
@@ -2247,43 +2260,42 @@ void myosd_handle_turbo() {
 
 #pragma mark - background and overlay image
 
-#if TARGET_OS_IOS
 - (void)buildBackgroundImage {
-    
+
+    self.view.backgroundColor = [UIColor blackColor];
+
     // set a tiled image as our background
-    UIImage* image = [self loadImage:@"background.png"];
+    UIImage* image = [self loadTileImage:@"background.png"];
     
     if (image != nil)
         self.view.backgroundColor = [UIColor colorWithPatternImage:image];
-    else
-        self.view.backgroundColor = [UIColor blackColor];
 
+#if TARGET_OS_IOS
     if (g_device_is_fullscreen)
         return;
-
-    NSString* imageName;
-    if (g_device_is_landscape)
-        imageName = [self isPad] ? @"background_landscape.png" : @"background_landscape_wide.png";
-    else
-        imageName = [self isPad] ? @"background_portrait.png" : @"background_portrait_tall.png";
     
-    image = [self loadImage:imageName];
-    
-    if (image == nil)
-        return;
-
-    imageBack = [[UIImageView alloc] initWithImage:image];
+    imageBack = [[UIImageView alloc] init];
     imageBack.frame = rFrames[g_device_is_landscape ? LANDSCAPE_IMAGE_BACK : PORTRAIT_IMAGE_BACK];
     [self.view addSubview: imageBack];
-}
+    
+    image = [self loadTileImage:g_device_is_landscape ? @"background_landscape_tile.png" : @"background_portrait_tile.png"];
+
+    if (image != nil)
+        imageBack.backgroundColor = [UIColor colorWithPatternImage:image];
+
+    if (g_device_is_landscape)
+        imageBack.image = [self loadImage:[self isPad] ? @"background_landscape.png" : @"background_landscape_wide.png"];
+    else
+        imageBack.image = [self loadImage:[self isPad] ? @"background_portrait.png" : @"background_portrait_tall.png"];
 #endif
+}
 
 // load any border image and return the size needed to inset the game rect
 - (void)getOverlayImage:(UIImage**)pImage andSize:(CGSize*)pSize {
     
     NSString* border_name = @"border";
     CGFloat   border_size = 0.25;
-    UIImage*  image = [self loadImage:border_name];
+    UIImage*  image = [self loadTileImage:border_name];
     
     if (image == nil) {
         *pImage = nil;
@@ -2292,9 +2304,6 @@ void myosd_handle_turbo() {
     }
     
     CGFloat scale = externalView ? externalView.window.screen.scale : UIScreen.mainScreen.scale;
-    
-    // set the image scale to be same as the display scale, we want to work in pixels.
-    image = [[UIImage alloc] initWithCGImage:image.CGImage scale:scale orientation:image.imageOrientation];
     
     CGFloat cap_x = floor((image.size.width * image.scale  - 1.0) / 2.0) / image.scale;
     CGFloat cap_y = floor((image.size.height * image.scale - 1.0) / 2.0) / image.scale;
@@ -2339,21 +2348,21 @@ void myosd_handle_turbo() {
         CGSize screenSize = self.view.window.screen.bounds.size;
         
         // on Catalina the screenSize is a lie, so go to the NSScreen to get it!
-        // TODO: test for Big Sur?
-        screenSize = [(id)([NSClassFromString(@"NSScreen") mainScreen]) frame].size;
+        // on BigSur the screen size is correct, so check for the 960x540 "lie" value.
+        if (screenSize.width == 960 && screenSize.height == 540)
+            screenSize = [(id)([NSClassFromString(@"NSScreen") mainScreen]) frame].size;
 
         // To ensure that your text and interface elements are consistent with the macOS display environment, iOS views automatically scale down to 77%.
+        // ...UIUserInterfaceIdiomMac (5) does not do this scaling.
         // https://developer.apple.com/design/human-interface-guidelines/ios/overview/mac-catalyst/
-        
-        // TODO: what happens on Big Sur?
-        assert(self.traitCollection.userInterfaceIdiom != 5); // UIUserInterfaceIdiomMac does not do this scaling.
-        screenSize.width = floor(screenSize.width / 0.77);
-        screenSize.height = floor(screenSize.height / 0.77);
+        if (self.traitCollection.userInterfaceIdiom == UIUserInterfaceIdiomPad) {
+            screenSize.width = floor(screenSize.width / 0.77);
+            screenSize.height = floor(screenSize.height / 0.77);
+        }
 
         NSLog(@"screenSize: %@", NSStringFromSize(screenSize));
         NSLog(@"windowSize: %@", NSStringFromSize(windowSize));
 
-        // TODO: what about toolbars or other Chrome?
         if (windowSize.width >= screenSize.width && windowSize.height >= screenSize.height) {
             NSLog(@"CATALYST FULLSCREEN");
             g_device_is_fullscreen = TRUE;
@@ -2409,6 +2418,7 @@ void myosd_handle_turbo() {
         r = CGRectIntersection(r, UIEdgeInsetsInsetRect(self.view.bounds, safeArea));
     }
 #elif TARGET_OS_TV
+    [self buildBackgroundImage];
     r = [[UIScreen mainScreen] bounds];
 #endif
     // get the output device scale (mainSreen or external display)
@@ -2623,6 +2633,7 @@ void myosd_handle_turbo() {
 -(BOOL)canPerformAction:(SEL)action withSender:(id)sender {
     if (action == @selector(mameSelect) ||
         action == @selector(mameStart) ||
+        action == @selector(mameStartP1) ||
         action == @selector(mameConfigure) ||
         action == @selector(mameSettings) ||
         action == @selector(mameFullscreen) ||
@@ -2641,6 +2652,9 @@ void myosd_handle_turbo() {
 }
 -(void)mameStart {
     push_mame_button(0, MYOSD_START);
+}
+-(void)mameStartP1 {
+    [self startPlayer:0];
 }
 -(void)mameConfigure {
     myosd_configure = 1;
@@ -2692,6 +2706,10 @@ void myosd_handle_turbo() {
                 [self changeUI];
                 break;
             }
+            break;
+        case '1':
+        case '2':
+            [self startPlayer:(key - '1')];
             break;
         case 'I':
             g_pref_integer_scale_only = !g_pref_integer_scale_only;
@@ -3014,6 +3032,14 @@ void myosd_handle_turbo() {
                 }
                 //NSLog(@"MYOSD_X | MYOSD_B");
             }
+            else if (!buttonViews[BTN_B].hidden &&
+                     !buttonViews[BTN_A].hidden &&
+                     MyCGRectContainsPoint(rInput[BTN_A_B], point) &&
+                     !touch_buttons_disabled) {
+                    pad_status |= MYOSD_A | MYOSD_B;
+                    [handledTouches addObject:touch];
+                //NSLog(@"MYOSD_A | MYOSD_B");
+            }
             else if (MyCGRectContainsPoint(rInput[BTN_SELECT], point)) {
                 //NSLog(@"MYOSD_SELECT");
                 pad_status |= MYOSD_SELECT;
@@ -3044,18 +3070,14 @@ void myosd_handle_turbo() {
                  pad_status |= MYOSD_OPTION;
                  [handledTouches addObject:touch];
             }
-            /*
-            else if (MyCGRectContainsPoint(rInput[BTN_MENU], point)) {
-                 myosd_pad_status |= MYOSD_SELECT;
-                 btnStates[BTN_SELECT] = BUTTON_PRESS;
-                 myosd_pad_status |= MYOSD_START;
-                 btnStates[BTN_START] = BUTTON_PRESS;
-            }
-            */
             else if ( myosd_light_gun == 1 && g_pref_lightgun_enabled ) {
                 [self handleLightgunTouchesBegan:touches];
             }
-            
+            // if the OPTION button is hidden (zero size) by the current Skin, support a tap on the game area.
+            else if (CGRectIsEmpty(rInput[BTN_OPTION]) && CGRectContainsPoint(screenView.frame, point) ) {
+                 pad_status |= MYOSD_OPTION;
+                 [handledTouches addObject:touch];
+            }
         }
         else
         {
@@ -3192,10 +3214,26 @@ void myosd_handle_turbo() {
 #endif
 
 #pragma mark - BUTTON LAYOUT
-        
+
 - (UIImage *)loadImage:(NSString *)name {
     return [skinManager loadImage:name];
 }
+- (UIImage *)loadTileImage:(NSString *)name {
+    UIImage* image = [skinManager loadImage:name];
+    
+    // if the image does not have a scale, use a default
+    // we can use the screen scale, or assume @2x or @3x.
+    //
+    // @1x devices dont exist, so assuming @3x will be pixel perfect on hi-res devices
+    // ...and scaled down a tad on @2x devices.
+    if (image != nil && image.scale == 1.0)
+        image = [[UIImage alloc] initWithCGImage:image.CGImage scale:3.0 orientation:image.imageOrientation];
+    
+    return image;
+}
+
+
+#if TARGET_OS_IOS
 
 - (BOOL)isPhone {
     CGSize windowSize = self.view.bounds.size;
@@ -3214,18 +3252,23 @@ void myosd_handle_turbo() {
     // set the background and view rects.
     if (g_device_is_landscape) {
         // try to fit a 4:3 game screen with space on each side.
-        CGFloat w = MIN(windowSize.height * 4 / 3, windowSize.width * 0.75);
-        CGFloat h = w * 3 / 4;
+        CGFloat w = floor(MIN(windowSize.height * 4 / 3, windowSize.width * 0.75));
+        CGFloat h = floor(w * 3 / 4);
 
         rFrames[LANDSCAPE_VIEW_FULL] = CGRectMake(0, 0, windowSize.width, windowSize.height);
         rFrames[LANDSCAPE_IMAGE_BACK] = CGRectMake(0, 0, windowSize.width, windowSize.height);
-        rFrames[LANDSCAPE_VIEW_NOT_FULL] = CGRectMake((windowSize.width-w)/2, 0, w, h);
+        rFrames[LANDSCAPE_VIEW_NOT_FULL] = CGRectMake(floor((windowSize.width-w)/2), 0, w, h);
     }
     else {
         // split the window, keeping the aspect ratio of the background image, on the bottom.
         UIImage* image = [self loadImage:isPhone ? @"background_portrait_tall" : @"background_portrait"];
-        CGFloat aspect = image ? (image.size.width / image.size.height) : 1.333;
-        CGFloat h = windowSize.width / aspect;
+        CGFloat aspect = image.size.height != 0 ? (image.size.width / image.size.height) : 1.0;
+        
+        // use a default aspect if the image is nil or square.
+        if (aspect <= 1.0)
+            aspect = isPhone ? 1.333 : 1.714;
+        
+        CGFloat h = floor(windowSize.width / aspect);
 
         rFrames[PORTRAIT_VIEW_FULL] = CGRectMake(0, 0, windowSize.width, windowSize.height);
         rFrames[PORTRAIT_VIEW_NOT_FULL] = CGRectMake(0, 0, windowSize.width, windowSize.height - h);
@@ -3237,11 +3280,12 @@ void myosd_handle_turbo() {
     
     // if we are fullscreen portrait, we need to move the command buttons to the top of screen
     if (g_device_is_fullscreen && !g_device_is_landscape) {
-        CGFloat w = rButton[BTN_SELECT].size.width;
-        rInput[BTN_SELECT].origin =  rButton[BTN_SELECT].origin = CGPointMake(w*0, 0);
-        rInput[BTN_EXIT].origin   =  rButton[BTN_EXIT].origin   = CGPointMake(w*1, 0);
-        rInput[BTN_OPTION].origin =  rButton[BTN_OPTION].origin = CGPointMake(self.view.bounds.size.width - w*1, 0);
-        rInput[BTN_START].origin  =  rButton[BTN_START].origin  = CGPointMake(self.view.bounds.size.width - w*2, 0);
+        CGFloat x = 0, y = 0;
+        rInput[BTN_SELECT].origin = rButton[BTN_SELECT].origin = CGPointMake(x, y);
+        rInput[BTN_EXIT].origin   = rButton[BTN_EXIT].origin   = CGPointMake(x + rButton[BTN_SELECT].size.width, y);
+        x = self.view.bounds.size.width - rButton[BTN_START].size.width;
+        rInput[BTN_START].origin  = rButton[BTN_START].origin = CGPointMake(x, y);
+        rInput[BTN_OPTION].origin = rButton[BTN_OPTION].origin  = CGPointMake(x - rButton[BTN_OPTION].size.width, y);
     }
     
     // set the default "radio" (percent size of the AnalogStick)
@@ -3287,11 +3331,11 @@ void myosd_handle_turbo() {
     CGFloat scale_y = back.size.height / 1000.0;
     CGFloat scale = (scale_x + scale_y) / 2;
 
-    CGFloat x = floor(back.origin.x + [arr[0] intValue] * scale_x);
-    CGFloat y = floor(back.origin.y + [arr[1] intValue] * scale_y);
+    CGFloat x = round(back.origin.x + [arr[0] intValue] * scale_x);
+    CGFloat y = round(back.origin.y + [arr[1] intValue] * scale_y);
     CGFloat r = (arr.count > 2) ? [arr[2] intValue] : (g_device_is_landscape ? 120 : 180);
 
-    CGFloat w = floor(r * scale);
+    CGFloat w = round(r * scale);
     CGFloat h = w;
     return CGRectMake(floor(x - w/2), floor(y - h/2), w, h);
 }
@@ -3352,21 +3396,28 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 
     for (int i=0; i<NUM_BUTTONS; i++) {
         CGRect rect = [self getButtonRect:i];
+        CGRect rectLay = [self getLayoutRect:i];
         
-        if (CGRectEqualToRect(rect, [self getLayoutRect:i]))
+        if (CGRectEqualToRect(rect, rectLay))
             continue;
         
-        // TODO: make sure this is an exact inverse of getLayoutRect
         CGRect back = g_device_is_landscape ? rFrames[LANDSCAPE_IMAGE_BACK] : rFrames[PORTRAIT_IMAGE_BACK];
-        CGFloat scale_x = 1000.0 / back.size.width;
-        CGFloat scale_y = 1000.0 / back.size.height;
+        CGFloat scale_x = back.size.width / 1000.0;
+        CGFloat scale_y = back.size.height / 1000.0;
         CGFloat scale = (scale_x + scale_y) / 2;
-        CGFloat x = floor((CGRectGetMidX(rect) - back.origin.x) * scale_x);
-        CGFloat y = floor((CGRectGetMidY(rect) - back.origin.y) * scale_y);
-        CGFloat w = floor(rect.size.width * scale);
+        CGFloat x = round((CGRectGetMidX(rect) - back.origin.x) / scale_x);
+        CGFloat y = round((CGRectGetMidY(rect) - back.origin.y) / scale_y);
+        CGFloat w = round(rect.size.width / scale);
+
+        NSString* keyPath = [NSString stringWithFormat:@"%@.%@", layout_name, [self getButtonName:i]];
+
+        // if the size of the button did not change dont update w to prevent rounding creep
+        if (rect.size.width == rectLay.size.width) {
+            NSString* str = [skinManager valueForKeyPath:keyPath];
+            w = [[str componentsSeparatedByString:@","].lastObject intValue];
+        }
         
         NSString* value = [NSString stringWithFormat:@"%.0f,%.0f,%.0f", x, y, w];
-        NSString* keyPath = [NSString stringWithFormat:@"%@.%@", layout_name, [self getButtonName:i]];
         [dict setValue:value forKeyPath:keyPath];
     }
     
@@ -3374,6 +3425,8 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     data = [NSJSONSerialization dataWithJSONObject:dict options:NSJSONWritingPrettyPrinted error:nil];
     [data writeToFile:path atomically:NO];
 }
+
+#endif
 
 #pragma MOVE ROMs
 
@@ -3486,7 +3539,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
             
             // only UNZIP files to specific directories, send a ZIP file with a unspecifed directory to roms/
             if ([info.name hasPrefix:@"roms/"] || [info.name hasPrefix:@"artwork/"] || [info.name hasPrefix:@"titles/"] || [info.name hasPrefix:@"samples/"] ||
-                [info.name hasPrefix:@"cfg/"] || [info.name hasPrefix:@"ini/"] || [info.name hasPrefix:@"sta/"] || [info.name hasPrefix:@"hi/"])
+                [info.name hasPrefix:@"cfg/"] || [info.name hasPrefix:@"ini/"] || [info.name hasPrefix:@"sta/"] || [info.name hasPrefix:@"hi/"] || [info.name hasPrefix:@"skins/"])
                 toPath = [rootPath stringByAppendingPathComponent:info.name];
             else if ([name.uppercaseString isEqualToString:@"CHEAT.ZIP"])
                 toPath = [rootPath stringByAppendingPathComponent:name];
@@ -3685,19 +3738,32 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 #pragma mark - IMPORT and EXPORT
 
 #if TARGET_OS_IOS
+
 - (void)documentPickerWasCancelled:(UIDocumentPickerViewController *)controller {
-    NSLog(@"IMPORT CANCELED");
-    [self performSelectorOnMainThread:@selector(playGame:) withObject:nil waitUntilDone:NO];
+    if (controller.documentPickerMode == UIDocumentPickerModeImport) {
+        NSLog(@"IMPORT CANCELED");
+        [self performSelectorOnMainThread:@selector(playGame:) withObject:nil waitUntilDone:NO];
+    }
+    else {
+        NSLog(@"EXPORT CANCELED");
+    }
 }
 - (void)documentPicker:(UIDocumentPickerViewController *)controller didPickDocumentsAtURLs:(NSArray <NSURL *>*)urls {
-    UIApplication* application = UIApplication.sharedApplication;
-    for (NSURL* url in urls) {
-        NSLog(@"IMPORT: %@", url);
-        // call our own openURL handler (in Bootstrapper)
-        [application.delegate application:application openURL:url options:@{UIApplicationOpenURLOptionsOpenInPlaceKey:@(NO)}];
-        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(moveROMS) object:nil];
+    
+    if (controller.documentPickerMode == UIDocumentPickerModeImport) {
+        UIApplication* application = UIApplication.sharedApplication;
+        for (NSURL* url in urls) {
+            NSLog(@"IMPORT: %@", url);
+            // call our own openURL handler (in Bootstrapper)
+            [application.delegate application:application openURL:url options:@{UIApplicationOpenURLOptionsOpenInPlaceKey:@(NO)}];
+            [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(moveROMS) object:nil];
+        }
+        [self performSelectorOnMainThread:@selector(moveROMS) withObject:nil waitUntilDone:NO];
     }
-    [self performSelectorOnMainThread:@selector(moveROMS) withObject:nil waitUntilDone:NO];
+    else {
+        assert(urls.count == 1);
+        NSLog(@"EXPORT: %@", urls.firstObject);
+    }
 }
 
 - (void)runImport {
@@ -3708,9 +3774,26 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     [self.topViewController presentViewController:documentPicker animated:YES completion:nil];
 }
 
+- (NSURL*)createTempFile:(NSString*)name {
+    NSString* temp = [NSTemporaryDirectory() stringByAppendingPathComponent:name];
+    NSURL* url = [NSURL fileURLWithPath:temp];
+    [[NSFileManager defaultManager] createFileAtPath:temp contents:nil attributes:nil];
+    return url;
+}
+
 - (void)runExport {
+    NSString* name = @PRODUCT_NAME " (export)";
     
-    FileItemProvider* item = [[FileItemProvider alloc] initWithTitle:@PRODUCT_NAME " (export)" typeIdentifier:@"public.zip-archive" saveHandler:^BOOL(NSURL* url, FileItemProviderProgressHandler progressHandler) {
+#if TARGET_OS_MACCATALYST
+    NSURL *url = [self createTempFile:[name stringByAppendingPathExtension:@"zip"]];
+    [self saveROMS:url progressBlock:nil];
+    UIDocumentPickerViewController* documentPicker = [[UIDocumentPickerViewController alloc] initWithURLs:@[url] inMode:UIDocumentPickerModeMoveToService];
+    documentPicker.modalPresentationStyle = UIModalPresentationFormSheet;
+    documentPicker.delegate = self;
+    documentPicker.allowsMultipleSelection = YES;
+    [self.topViewController presentViewController:documentPicker animated:YES completion:nil];
+#else
+    FileItemProvider* item = [[FileItemProvider alloc] initWithTitle:name typeIdentifier:@"public.zip-archive" saveHandler:^BOOL(NSURL* url, FileItemProviderProgressHandler progressHandler) {
         return [self saveROMS:url progressBlock:progressHandler];
     }];
     
@@ -3726,6 +3809,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     }
     
     [top presentViewController:activity animated:YES completion:nil];
+#endif
 }
 - (void)runExportSkin {
     
@@ -3737,6 +3821,15 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     else
         skin_export_name = g_pref_skin;
     
+#if TARGET_OS_MACCATALYST
+    NSURL *url = [self createTempFile:[skin_export_name stringByAppendingPathExtension:@"zip"]];
+    [skinManager exportTo:url.path progressBlock:nil];
+    UIDocumentPickerViewController* documentPicker = [[UIDocumentPickerViewController alloc] initWithURLs:@[url] inMode:UIDocumentPickerModeMoveToService];
+    documentPicker.modalPresentationStyle = UIModalPresentationFormSheet;
+    documentPicker.delegate = self;
+    documentPicker.allowsMultipleSelection = YES;
+    [self.topViewController presentViewController:documentPicker animated:YES completion:nil];
+#else
     FileItemProvider* item = [[FileItemProvider alloc] initWithTitle:skin_export_name typeIdentifier:@"public.zip-archive" saveHandler:^BOOL(NSURL* url, FileItemProviderProgressHandler progressHandler) {
         return [self->skinManager exportTo:url.path progressBlock:progressHandler];
     }];
@@ -3753,6 +3846,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     }
     
     [top presentViewController:activity animated:YES completion:nil];
+#endif
 }
 #endif
 

@@ -788,35 +788,35 @@
         // DELETE -> B
         case KEY_DELETE:            iCadeKey = @"g"; break;
         case KEY_DELETE+KEY_DOWN:   iCadeKey = @"o"; break;
-            
-        // START and SELECT/COIN (Player 1)
-        case KEY_1:                 iCadeKey = @"r"; break;
-        case KEY_1+KEY_DOWN:        iCadeKey = @"h"; break;
-        case KEY_5:                 iCadeKey = @"t"; break;
-        case KEY_5+KEY_DOWN:        iCadeKey = @"y"; break;
-            
-        // START and SELECT/COIN (Player 2)
-        case KEY_2:                 myosd_pad_status &= ~(MYOSD_START|MYOSD_UP); break;
-        case KEY_2+KEY_DOWN:        myosd_pad_status |=  (MYOSD_START|MYOSD_UP); break;
-        case KEY_6:                 myosd_pad_status &= ~(MYOSD_SELECT|MYOSD_UP); break;
-        case KEY_6+KEY_DOWN:        myosd_pad_status |=  (MYOSD_SELECT|MYOSD_UP); break;
-
-        // MAME MENU
-        case KEY_TAB:               myosd_configure = 1; break;
-        case KEY_TAB+KEY_DOWN:      break;
-            
-        // EXIT
-        case KEY_ESCAPE:            [emuController runExit]; break;
-        case KEY_ESCAPE+KEY_DOWN:   break;
-            
-        // MAME4iOS MENU
-        case KEY_BQUOTE:            [emuController runMenu]; break;
-        case KEY_BQUOTE+KEY_DOWN:   break;
     }
     
     // Plain Keyboard support A,B,X,Y,L,R as buttons (in addition to CTRL, ALT, SPACE, SHIFT, LCMD, RCMD)
     if (g_pref_ext_control_type == EXT_CONTROL_NONE && modifierFlags == 0) {
         switch (keyCode + (isKeyDown ? KEY_DOWN : 0)) {
+            // START and SELECT/COIN (Player 1)
+            case KEY_1:                 iCadeKey = @"r"; break;
+            case KEY_1+KEY_DOWN:        iCadeKey = @"h"; break;
+            case KEY_5:                 iCadeKey = @"t"; break;
+            case KEY_5+KEY_DOWN:        iCadeKey = @"y"; break;
+                
+            // START and SELECT/COIN (Player 2)
+            case KEY_2:                 myosd_pad_status &= ~(MYOSD_START|MYOSD_UP); break;
+            case KEY_2+KEY_DOWN:        myosd_pad_status |=  (MYOSD_START|MYOSD_UP); break;
+            case KEY_6:                 myosd_pad_status &= ~(MYOSD_SELECT|MYOSD_UP); break;
+            case KEY_6+KEY_DOWN:        myosd_pad_status |=  (MYOSD_SELECT|MYOSD_UP); break;
+
+            // MAME MENU
+            case KEY_TAB:               myosd_configure = 1; break;
+            case KEY_TAB+KEY_DOWN:      break;
+                
+            // EXIT
+            case KEY_ESCAPE:            [emuController runExit]; break;
+            case KEY_ESCAPE+KEY_DOWN:   break;
+                
+            // MAME4iOS MENU
+            case KEY_BQUOTE:            [emuController runMenu]; break;
+            case KEY_BQUOTE+KEY_DOWN:   break;
+                
             // A/B/Y/X
             case KEY_A:          iCadeKey = @"p"; break;
             case KEY_A+KEY_DOWN: iCadeKey = @"k"; break;
@@ -847,8 +847,8 @@
             [emuController commandKey:'\r'];
         if (isKeyDown && keyCode >= KEY_A && keyCode <= KEY_Z)
             [emuController commandKey:'A' + (keyCode - KEY_A)];
-        if (isKeyDown && keyCode >= KEY_0 && keyCode <= KEY_9)
-            [emuController commandKey:'0' + (keyCode - KEY_0)];
+        if (isKeyDown && keyCode >= KEY_1 && keyCode <= KEY_9)
+            [emuController commandKey:'1' + (keyCode - KEY_1)];
     }
     
     // 8BitDo
