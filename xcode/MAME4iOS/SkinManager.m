@@ -11,10 +11,13 @@
 #import "ZipFile.h"
 #import "Globals.h"
 
-#define DebugLog 1
+#define DebugLog 0
 #if DebugLog == 0
 #define NSLog(...) (void)0
 #endif
+
+#define USER_SKINS "skins"
+#define BUILTIN_SKINS (TARGET_OS_IOS ? "skins" : "skins_tvOS")
 
 @implementation SkinManager {
     NSString* _skin_name;
@@ -39,11 +42,11 @@ static NSArray* g_skin_list;
     [skins addObject:kSkinNameDefault];
     
     // get built-in skins
-    NSString* path = [NSString stringWithUTF8String:get_resource_path("skins")];
+    NSString* path = [NSString stringWithUTF8String:get_resource_path(BUILTIN_SKINS)];
     NSArray* files = [[NSFileManager.defaultManager enumeratorAtPath:path] allObjects];
     
     // add any custom skins
-    path = [NSString stringWithUTF8String:get_documents_path("skins")];
+    path = [NSString stringWithUTF8String:get_documents_path(USER_SKINS)];
     files = [files arrayByAddingObjectsFromArray:[[NSFileManager.defaultManager enumeratorAtPath:path] allObjects]];
     
     NSArray* roms = [EmulatorController romList];
@@ -63,7 +66,7 @@ static NSArray* g_skin_list;
 // factory reset, delete all Skins
 + (void)reset {
     // delete all files in Skin dir.
-    NSString* skins_path = [NSString stringWithUTF8String:get_documents_path("skins")];
+    NSString* skins_path = [NSString stringWithUTF8String:get_documents_path(USER_SKINS)];
     [[NSFileManager defaultManager] removeItemAtPath:skins_path error:nil];
     [[NSFileManager defaultManager] createDirectoryAtPath:skins_path withIntermediateDirectories:NO attributes:nil error:nil];
     g_skin_list = nil;
@@ -83,31 +86,24 @@ static NSArray* g_skin_list;
     if ([_skin_name isEqualToString:name])
         return;
     
-    NSArray* names = [name componentsSeparatedByString:@","];
-    
-    NSLog(@"LOADING SKIN: %@", names);
+    NSLog(@"LOADING SKIN: %@", name);
     
     _skin_name = name;
-    _skin_paths = nil;
+    _skin_paths = [[NSMutableArray alloc] init];
     _skin_infos = [[NSMutableArray alloc] init];
     _image_cache = nil;
     
-    // add any custom button layout (<Name>.json, if found)
-    // NOTE Custom layout *overrides* json in the Skin, so we add it first
-    NSString* path = [NSString stringWithFormat:@"%s/%@.json", get_documents_path("skins"), names.lastObject];
-    [self addInfo:[NSData dataWithContentsOfFile:path]];
-    
-    for (NSString* name in names) {
+    for (NSString* skin in [name componentsSeparatedByString:@","]) {
         
         // if skin name is empty ignore it (a rom parent can be "0", so ignore that too)
-        if (name.length == 0 || [name isEqualToString:@"0"])
+        if (skin.length == 0 || [skin isEqualToString:@"0"])
             continue;
 
         // look for the Skin first in the user directory, then as a resource, else fail to default.
-        NSString* path = [NSString stringWithFormat:@"%s/%@.zip", get_documents_path("skins"), name];
+        NSString* path = [NSString stringWithFormat:@"%s/%@.zip", get_documents_path(USER_SKINS), skin];
         
         if (![NSFileManager.defaultManager fileExistsAtPath:path])
-            path = [NSString stringWithFormat:@"%s/%@.zip", get_resource_path("skins"), name];
+            path = [NSString stringWithFormat:@"%s/%@.zip", get_resource_path(BUILTIN_SKINS), skin];
         
         if (![NSFileManager.defaultManager fileExistsAtPath:path])
             continue;
@@ -115,16 +111,33 @@ static NSArray* g_skin_list;
         if ([_skin_paths containsObject:path])
             continue;
         
-        _skin_paths = _skin_paths ?: [[NSMutableArray alloc] init];
         [_skin_paths addObject:path];
 
-        // load skin.json if present.
-        [self addInfo:[self loadData:@"skin.json" from:path]];
+        // add any custom button layout (<Name>.json, if found)
+        // NOTE use the skin.info in the zip first if the zip is newer than the customization.
+        NSString* custom_path = [NSString stringWithFormat:@"%s/%@.json", get_documents_path(USER_SKINS), skin];
+
+        NSDate* custom_date = [[NSFileManager.defaultManager attributesOfItemAtPath:custom_path error:nil] fileModificationDate];
+        NSDate* skin_date = [[NSFileManager.defaultManager attributesOfItemAtPath:path error:nil] fileModificationDate];
+        assert(skin_date != nil);
+
+        if (custom_date != nil && [skin_date compare:custom_date] == NSOrderedDescending) {
+            [self addInfo:[self loadData:@"skin.json" from:path]];
+            [self addInfo:[NSData dataWithContentsOfFile:custom_path]];
+        }
+        else {
+            [self addInfo:[NSData dataWithContentsOfFile:custom_path]];
+            [self addInfo:[self loadData:@"skin.json" from:path]];
+        }
     }
     
-    // add our Default layout file in SKIN_1
+    // add any Default button layout
+    NSString* path = [NSString stringWithFormat:@"%s/Default.json", get_documents_path(USER_SKINS)];
+    [self addInfo:[NSData dataWithContentsOfFile:path]];
+    
+    // add our Default layout file in SKIN_1 last
     NSData* info = [NSData dataWithContentsOfFile:[NSString stringWithUTF8String:get_resource_path("SKIN_1/skin.json")]];
-    assert(info != nil);
+    assert(info != nil || TARGET_OS_TV);
     [self addInfo:info];
     
     NSLog(@"SKIN: %@\n%@\n%@", name, _skin_paths, _skin_infos);
@@ -190,6 +203,27 @@ static NSArray* g_skin_list;
     return nil;
 }
 
+// detect if image is 0x0 or 1x1 transparent
+BOOL UIImageIsBlank(UIImage* image) {
+    if (image.size.width == 0 || image.size.height == 0)
+        return YES;
+    if (image.size.width != 1 || image.size.height != 1 || image.CGImage == nil || CGImageGetBitsPerPixel(image.CGImage) != 8)
+        return NO;
+    
+    CFDataRef data = CGDataProviderCopyData(CGImageGetDataProvider(image.CGImage));
+    const uint8_t* bytes = CFDataGetBytePtr(data);
+
+    uint8_t a = 0xFF;   // assume kCGImageAlphaNone
+    CGImageAlphaInfo info = CGImageGetAlphaInfo(image.CGImage);
+    if (info == kCGImageAlphaLast || info == kCGImageAlphaPremultipliedLast)
+        a = bytes[3];
+    else if (info == kCGImageAlphaFirst || info == kCGImageAlphaPremultipliedFirst || info == kCGImageAlphaOnly)
+        a = bytes[0];
+    
+    CFRelease(data);
+    return a == 0;
+}
+
 - (nullable UIImage *)loadImage:(NSString *)name {
     
     if (_image_cache == nil)
@@ -220,6 +254,9 @@ static NSArray* g_skin_list;
     
     if (image == nil)
         NSLog(@"SKIN IMAGE NOT FOUND: %@", name);
+    
+    if (UIImageIsBlank(image))
+        image = nil;
 
     [_image_cache setObject:(image ?: [NSNull null]) forKey:name];
     return image;
@@ -307,7 +344,7 @@ static NSArray* g_skin_list;
         if ([name isEqualToString:@"skin.json"])
             data = [NSJSONSerialization dataWithJSONObject:[self getSkinInfo:isDefault] options:NSJSONWritingPrettyPrinted error:nil];
         else if ([name isEqualToString:@"README.md"])
-            data = [NSData dataWithContentsOfFile:[NSBundle.mainBundle pathForResource:[NSString stringWithFormat:@"skins/%@", name] ofType:nil]];
+            data = [NSData dataWithContentsOfFile:[NSBundle.mainBundle pathForResource:[NSString stringWithFormat:@"%s/%@", BUILTIN_SKINS, name] ofType:nil]];
         else if (isDefault)
             data = UIImagePNGRepresentation([self loadImage:name]);
         else {

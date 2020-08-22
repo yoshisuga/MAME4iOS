@@ -56,14 +56,15 @@
 #define HEADER_TEXT_COLOR       [UIColor whiteColor]
 #define HEADER_BACKGROUND_COLOR [UIColor clearColor]
 #define HEADER_PINNED_COLOR     [BACKGROUND_COLOR colorWithAlphaComponent:0.8]
-#define CELL_BACKGROUND_COLOR   [UIColor colorWithWhite:0.222 alpha:0.8]
-#define CELL_SELECTED_COLOR     [self.tintColor colorWithAlphaComponent:0.8]
+#define CELL_BACKGROUND_COLOR   [UIColor colorWithWhite:0.222 alpha:1.0]
+#define CELL_SELECTED_COLOR     [self.tintColor colorWithAlphaComponent:1.0]
 
 #define CELL_TITLE_FONT         [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
 #define CELL_TITLE_COLOR        [UIColor whiteColor]
 #define CELL_DETAIL_FONT        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote]
 #define CELL_DETAIL_COLOR       [UIColor lightGrayColor]
 
+#define INFO_BACKGROUND_COLOR   [UIColor colorWithWhite:0.111 alpha:1.0]
 #define INFO_IMAGE_WIDTH        (TARGET_OS_IOS ? 260.0 : 580.0)
 #define INFO_INSET_X            8.0
 #define INFO_INSET_Y            8.0
@@ -2307,7 +2308,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 - (void)viewDidLoad {
     [self.collectionView registerClass:[GameCell class] forCellWithReuseIdentifier:CELL_IDENTIFIER];
     
-    self.collectionView.backgroundColor = BACKGROUND_COLOR;
+    self.collectionView.backgroundColor = INFO_BACKGROUND_COLOR;
     self.collectionView.allowsSelection = TARGET_OS_IOS ? NO : YES;
     
 #if TARGET_OS_IOS
@@ -2517,8 +2518,12 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
     NSAttributedString* text = [self getText:indexPath];
 
-    if (indexPath.item == 0)
+    if (indexPath.item == 0) {
         cell.image.image = _image;
+        cell.contentView.backgroundColor = self.collectionView.backgroundColor;
+        [cell setBorderWidth:0.0];
+        [cell setCornerRadius:0.0];
+    }
     
     if ([text length] != 0)
         [cell setTextInsets:UIEdgeInsetsMake(INFO_INSET_Y, INFO_INSET_X, INFO_INSET_Y, INFO_INSET_X)];

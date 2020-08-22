@@ -2,7 +2,7 @@
 
 Original Author: David Valdeita (Seleuco)<br/>
 
-This is a port of MAME 0.139u1 for iOS, iPadOS, and tvOS.
+This is a port of MAME 0.139u1 for iOS, iPadOS, tvOS and macOS Catalina & Big Sur using Mac Catalyst.
 
 [Download IPAs for iOS and tvOS here](https://github.com/yoshisuga/MAME4iOS/releases)
 

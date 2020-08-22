@@ -5,7 +5,6 @@ A `Skin` is just a `zip` file with images, and a single file `skin.json` used to
 
 ## Skin names
 The file name of the Skin is used as the display name in the select UI.
-Skins named with the `ROMNAME`, `PARENT`, or `DRIVER` of the currenly running game will be automaticaly selected.
 
 ## Skin location
 Custom Skins are stored in the `skins` folder.
@@ -31,6 +30,13 @@ You can remove all Skins by selecting `Reset to Defaults` from `Settings`
     - Rezip the directory and give it a new name, if you want.
 3. Import modified Skin zip into MAME4iOS.
 
+## Automatic selection of a Skin
+Skins named with the `romname.zip`, `parent.zip`, or `driver.zip` of the currenly running game will be automaticaly selected.  They also will not be shown in the UI.  If you want to use the built-in layout editor (found in `Settings` > `Input Options` > `Change Current Layout`)  you should re-name your Skin file to not be the name of a rom, parent, or driver, for example name your Skin `My PacMan Skin.zip`
+
+## Skins on tvOS
+Only `border` and `background` images are used on tvOS.
+
+
 ## Format of `skin.json`
 
 ```
@@ -49,7 +55,6 @@ Key                     | Description
 version                 | `integer` version number, should be 1
 author                  | `string` name of the author
 description             | `string` long description of the `Skin`, not currently shown.
-base                    | `string` Skin name that this `Skin` was based on.
 
 ## `skin.json` button locations
 The following are all the button names, the value in the dictionary is a `string` with 3 numbers separated by commas. The first two numbers are the X,Y of the center point of the button.  The third number is the size of the button, a zero size will hide the button. All positions are specifed as 0...1000 releative to the top left of the background image. For example `"A": "500,500,250"` will put the `A button` in the center of the background, and `"L1": "0,0,0"` will hide the `L1 button`
@@ -66,6 +71,7 @@ The following are all the button names, the value in the dictionary is a `string
 |A+X    |                 
 |B+Y    |
 |B+X    |
+|A+B    |
 |SELECT |
 |START  |
 |EXIT   |
@@ -105,8 +111,10 @@ Name                        | Description
 --------------------------- | -------------------------------------
 background_landscape        | background image, landscape iPad
 background_landscape_wide   | background image, landscape iPhone
+background_landscape_tile   | background tiled image, landscape
 background_portrait         | background image, portrait iPad
 background_portrait_tall    | background image, portrait iPhone
+background_portrait_tile    | background tiled image, portrait
 
 ### Joystick and DPAD
 Name                        | Description
@@ -130,7 +138,7 @@ The following files are used if present, there is no default.
 
 Name                    | Description
 ----------------------- | -------------------------------------
-background              | background of the whole app, tiled image
+background              | background of the whole app, tiled image, fullscreen portrait or landscape
 border                  | border image, drawn around the game screen.
 stick-U                 | image of the joystick ball UP
 stick-D                 | image of the joystick ball DOWN
@@ -140,7 +148,3 @@ stick-UL                | image of the joystick ball UP LEFT
 stick-DL                | image of the joystick ball DOWN LEFT
 stick-DR                | image of the joystick ball DOWN RIGHT
 stick-UR                | image of the joystick ball UP RIGHT
-
-
-
-
