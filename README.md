@@ -7,6 +7,7 @@ This is a port of MAME 0.139u1 for iOS, iPadOS, tvOS and macOS Catalina & Big Su
 [Download IPAs for iOS and tvOS here](https://github.com/yoshisuga/MAME4iOS/releases)
 
 [Chat on Discord!](https://discord.gg/ZC6wkmU)
+
 [See what's new](WHATSNEW.md)
 
 ![iPhone Screenshot](README.images/screenshot-iphone-small.jpg)
