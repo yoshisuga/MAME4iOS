@@ -559,7 +559,7 @@ LDFLAGS += -arch $(ARCH)
 
 ifdef tvOS
 #tvOS build command goes here
-CCOMFLAGS += -isysroot $(TVOSSDK) -mtvos-version-min=$(OSVERSION) -fPIC -fembed-bitcode
+CCOMFLAGS += -isysroot $(TVOSSDK) -mtvos-version-min=$(OSVERSION) -fPIC
 LDFLAGS += -lz -isysroot $(TVOSSDK) -mtvos-version-min=$(OSVERSION) -fPIC -dynamiclib
 else ifdef macCatalyst
 #macCatalyst goes here
