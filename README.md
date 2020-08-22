@@ -1,6 +1,6 @@
 # MAME4iOS
 
-Original Author: David Valdeita (Seleuco)<br/>
+Original Author: David Valdeita (Seleuco)  
 
 This is a port of MAME 0.139u1 for iOS, iPadOS, tvOS and macOS Catalina & Big Sur using Mac Catalyst.
 
@@ -8,8 +8,15 @@ This is a port of MAME 0.139u1 for iOS, iPadOS, tvOS and macOS Catalina & Big Su
 
 [Chat on Discord!](https://discord.gg/ZC6wkmU)
 
+[See what's new](WHATSNEW.md)
+
+## Screenshots
+
 ![iPhone Screenshot](README.images/screenshot-iphone-small.jpg)
 ![AppleTV Screenshot](README.images/screenshot-atv-small.png)
+![macOS Screenshot](README.images/screenshot-mac.png)
+
+## Summary
 
 MAME stands for Multi Arcade Machine Emulator, and lets you play arcade games from the past 30+ years on a device that fits in your pocket! My teenage self from decades ago would be replaying that ["mind blown GIF"](https://media0.giphy.com/media/xT0xeJpnrWC4XWblEk/giphy.gif) over and over again, but that GIF did not exist back then.
 
