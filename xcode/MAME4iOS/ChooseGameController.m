@@ -56,8 +56,8 @@
 #define HEADER_TEXT_COLOR       [UIColor whiteColor]
 #define HEADER_BACKGROUND_COLOR [UIColor clearColor]
 #define HEADER_PINNED_COLOR     [BACKGROUND_COLOR colorWithAlphaComponent:0.8]
-#define CELL_BACKGROUND_COLOR   [UIColor colorWithWhite:0.222 alpha:0.8]
-#define CELL_SELECTED_COLOR     [self.tintColor colorWithAlphaComponent:0.8]
+#define CELL_BACKGROUND_COLOR   [UIColor colorWithWhite:0.222 alpha:1.0]
+#define CELL_SELECTED_COLOR     [self.tintColor colorWithAlphaComponent:1.0]
 
 #define CELL_TITLE_FONT         [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
 #define CELL_TITLE_COLOR        [UIColor whiteColor]
