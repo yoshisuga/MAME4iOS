@@ -445,7 +445,7 @@
                 [[self navigationController] pushViewController:controller animated:YES];
             }
             if (row==1){
-                HelpController *controller = [[HelpController alloc] initWithName:@"whatsnew.html" title:@"What's New"];
+                HelpController *controller = [[HelpController alloc] initWithName:@"WHATSNEW.html" title:@"What's New"];
                 [[self navigationController] pushViewController:controller animated:YES];
             }
             break;

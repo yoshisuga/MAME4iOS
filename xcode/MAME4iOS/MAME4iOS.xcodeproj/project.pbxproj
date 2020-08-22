@@ -104,8 +104,6 @@
 		EF1C93F724C252C600749C69 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E424C252C400749C69 /* LICENSE */; };
 		EF1C93F824C252C600749C69 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E424C252C400749C69 /* LICENSE */; };
 		EF1C93F924C252C600749C69 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E424C252C400749C69 /* LICENSE */; };
-		EF1C93FA24C252C600749C69 /* whatsnew.md in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E524C252C500749C69 /* whatsnew.md */; };
-		EF1C93FC24C252C600749C69 /* whatsnew.md in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E524C252C500749C69 /* whatsnew.md */; };
 		EF1C93FD24C252C600749C69 /* skins in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E624C252C500749C69 /* skins */; };
 		EF1C93FF24C252C600749C69 /* skins in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E624C252C500749C69 /* skins */; };
 		EF1C940024C252C600749C69 /* effect-crt.png in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E724C252C500749C69 /* effect-crt.png */; };
@@ -292,6 +290,9 @@
 		EFF9F82B2470755800DDA88C /* MetalScreenView.m in Sources */ = {isa = PBXBuildFile; fileRef = EFF9F8292470755800DDA88C /* MetalScreenView.m */; };
 		EFF9F82D24707EEA00DDA88C /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFF9F82C24707EE900DDA88C /* Metal.framework */; };
 		EFF9F82F24707EF700DDA88C /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFF9F82E24707EF700DDA88C /* Metal.framework */; };
+		EFFBA6FE24F1C91200F8666B /* WHATSNEW.md in Resources */ = {isa = PBXBuildFile; fileRef = EFFBA6FD24F1C91200F8666B /* WHATSNEW.md */; };
+		EFFBA6FF24F1C91200F8666B /* WHATSNEW.md in Resources */ = {isa = PBXBuildFile; fileRef = EFFBA6FD24F1C91200F8666B /* WHATSNEW.md */; };
+		EFFBA70024F1C91200F8666B /* WHATSNEW.md in Resources */ = {isa = PBXBuildFile; fileRef = EFFBA6FD24F1C91200F8666B /* WHATSNEW.md */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -481,7 +482,6 @@
 		EF1C93E224C252C400749C69 /* cheat0139.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = cheat0139.zip; path = "../../iOS-res/cheat0139.zip"; sourceTree = "<group>"; };
 		EF1C93E324C252C400749C69 /* help.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = help.md; path = "../../iOS-res/help.md"; sourceTree = "<group>"; };
 		EF1C93E424C252C400749C69 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = folder; path = LICENSE; sourceTree = "<group>"; };
-		EF1C93E524C252C500749C69 /* whatsnew.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = whatsnew.md; path = "../../iOS-res/whatsnew.md"; sourceTree = "<group>"; };
 		EF1C93E624C252C500749C69 /* skins */ = {isa = PBXFileReference; lastKnownFileType = folder; name = skins; path = "../../iOS-res/skins"; sourceTree = "<group>"; };
 		EF1C93E724C252C500749C69 /* effect-crt.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "effect-crt.png"; path = "../../iOS-res/effect-crt.png"; sourceTree = "<group>"; };
 		EF1C93E824C252C500749C69 /* Category.ini */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Category.ini; path = "../../iOS-res/Category.ini"; sourceTree = "<group>"; };
@@ -566,6 +566,7 @@
 		EFF9F8292470755800DDA88C /* MetalScreenView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MetalScreenView.m; path = ../../iOS/MetalScreenView.m; sourceTree = "<group>"; };
 		EFF9F82C24707EE900DDA88C /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		EFF9F82E24707EF700DDA88C /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS13.2.sdk/System/Library/Frameworks/Metal.framework; sourceTree = DEVELOPER_DIR; };
+		EFFBA6FD24F1C91200F8666B /* WHATSNEW.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = WHATSNEW.md; path = ../../WHATSNEW.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -783,6 +784,7 @@
 			isa = PBXGroup;
 			children = (
 				EF9F9C9E240070E700352554 /* README.md */,
+				EFFBA6FD24F1C91200F8666B /* WHATSNEW.md */,
 				CEAC6C2716AAA73900AF3275 /* RELOADED */,
 				EF8E427B24900FE40049C84C /* UIKit Classes */,
 				92A5338421EBDBAD0089FBB9 /* GCDWebServer */,
@@ -989,7 +991,6 @@
 		EFA7571E2408308000A02AAB /* help */ = {
 			isa = PBXGroup;
 			children = (
-				EF1C93E524C252C500749C69 /* whatsnew.md */,
 				EF1C93E324C252C400749C69 /* help.md */,
 				EFA757212408488D00A02AAB /* iCadeControls.png */,
 			);
@@ -1141,6 +1142,7 @@
 				EFA7A16B24B7A38E0009CF88 /* Assets.xcassets in Resources */,
 				920BBDEF201FC29700AE7D50 /* dpad.png in Resources */,
 				EF29C8822401C73A00AFFA4E /* Launch Screen.storyboard in Resources */,
+				EFFBA6FE24F1C91200F8666B /* WHATSNEW.md in Resources */,
 				920BBDF220210C3800AE7D50 /* menu.png in Resources */,
 				92A533D021EBDDF20089FBB9 /* GCDWebUploader.bundle in Resources */,
 				EF1C940024C252C600749C69 /* effect-crt.png in Resources */,
@@ -1149,7 +1151,6 @@
 				EF1C941824C254FC00749C69 /* choose-game-background.png in Resources */,
 				EF1C93EE24C252C600749C69 /* SKIN_1 in Resources */,
 				EFA757222408488D00A02AAB /* iCadeControls.png in Resources */,
-				EF1C93FA24C252C600749C69 /* whatsnew.md in Resources */,
 				EF1C93F424C252C600749C69 /* help.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1173,6 +1174,7 @@
 				EF1C940A24C252C600749C69 /* effect-dot.png in Resources */,
 				EF1C941D24C2552900749C69 /* gitinfo.json.sh in Resources */,
 				EF1C941024C252C600749C69 /* effect-scanline.png in Resources */,
+				EFFBA6FF24F1C91200F8666B /* WHATSNEW.md in Resources */,
 				EF1C941324C252C600749C69 /* history0139.zip in Resources */,
 				B5FAE31921FCE64D003F44D0 /* MAME_tvOS.lsr in Resources */,
 			);
@@ -1195,6 +1197,7 @@
 				EFA7A16D24B7A40F0009CF88 /* Assets.xcassets in Resources */,
 				EFA7A14324B65C020009CF88 /* dpad.png in Resources */,
 				EFA7A14424B65C020009CF88 /* Launch Screen.storyboard in Resources */,
+				EFFBA70024F1C91200F8666B /* WHATSNEW.md in Resources */,
 				EFA7A14924B65C020009CF88 /* menu.png in Resources */,
 				EFA7A14E24B65C020009CF88 /* GCDWebUploader.bundle in Resources */,
 				EF1C940224C252C600749C69 /* effect-crt.png in Resources */,
@@ -1203,7 +1206,6 @@
 				EF1C941A24C254FC00749C69 /* choose-game-background.png in Resources */,
 				EF1C93F024C252C600749C69 /* SKIN_1 in Resources */,
 				EFA7A15124B65C020009CF88 /* iCadeControls.png in Resources */,
-				EF1C93FC24C252C600749C69 /* whatsnew.md in Resources */,
 				EF1C93F624C252C600749C69 /* help.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
