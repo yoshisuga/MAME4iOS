@@ -97,6 +97,12 @@
     self.title = html_title;
 }
 
+#if TARGET_OS_MACCATALYST
+-(void)viewDidAppear:(BOOL)animated {
+    [aWebView.scrollView setContentOffset:CGPointMake(0, -aWebView.scrollView.adjustedContentInset.top) animated:animated];
+}
+#endif
+
 -(void)viewWillDisappear:(BOOL)animated
 {
     [aWebView stopLoading];
