@@ -1,4 +1,5 @@
-<img src="mame_logo.png" width="60%">
+# Version 2020.13
+* New default artwork.
 
 # Version 2020.12
 * `Metal` frame-skip updates and fixes.
