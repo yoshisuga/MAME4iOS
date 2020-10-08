@@ -309,22 +309,22 @@
             {
                 case 0:
                 {
-                    cell.textLabel.text = @"Peer-to-peer Netplay";
-                    cell.imageView.image = [UIImage systemImageNamed:@"antenna.radiowaves.left.and.right"];
-                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                    break;
-                }
-                case 1:
-                {
                     cell.textLabel.text = @"Game Input";
                     cell.imageView.image = [UIImage systemImageNamed:@"gamecontroller"];
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                     break;
                 }
-                case 2:
+                case 1:
                 {
                     cell.textLabel.text = @"Defaults";
                     cell.imageView.image = [UIImage systemImageNamed:@"slider.horizontal.3"];
+                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                    break;
+                }
+                case 2:
+                {
+                    cell.textLabel.text = @"Peer-to-peer Netplay";
+                    cell.imageView.image = [UIImage systemImageNamed:@"antenna.radiowaves.left.and.right"];
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                     break;
                 }
@@ -420,7 +420,8 @@
       {
           case kSupportSection: return 2;
           case kFullscreenSection: return 3;
-          case kOtherSection: return 3;
+          // only show the netplay option if we are being prestenting from main game, not from choose game ui
+          case kOtherSection: return (self.presentingViewController == self.emuController) ? 3 : 2;
           case kVideoSection: return 10;
           case kMiscSection: return 9;
           case kFilterSection: return 2;
@@ -452,20 +453,20 @@
         }
         case kOtherSection:
         {
-            if(row==0)
-            {
-                NetplayController *netplayOptController = [[NetplayController alloc]  initWithEmuController:self.emuController];
-                [[self navigationController] pushViewController:netplayOptController animated:YES];
-                [tableView reloadData];
-            }
-            if (row==1){
+            if (row==0){
                 InputOptionController *inputOptController = [[InputOptionController alloc] initWithEmuController:self.emuController];
                 [[self navigationController] pushViewController:inputOptController animated:YES];
                 [tableView reloadData];
             }
-            if (row==2){
+            if (row==1){
                 DefaultOptionController *defaultOptController = [[DefaultOptionController alloc] initWithEmuController:self.emuController];
                 [[self navigationController] pushViewController:defaultOptController animated:YES];
+                [tableView reloadData];
+            }
+            if(row==2)
+            {
+                NetplayController *netplayOptController = [[NetplayController alloc]  initWithEmuController:self.emuController];
+                [[self navigationController] pushViewController:netplayOptController animated:YES];
                 [tableView reloadData];
             }
             break;
