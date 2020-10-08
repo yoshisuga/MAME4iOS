@@ -124,9 +124,6 @@
 		EF1C941224C252C600749C69 /* history0139.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93ED24C252C500749C69 /* history0139.zip */; };
 		EF1C941324C252C600749C69 /* history0139.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93ED24C252C500749C69 /* history0139.zip */; };
 		EF1C941424C252C600749C69 /* history0139.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93ED24C252C500749C69 /* history0139.zip */; };
-		EF1C941824C254FC00749C69 /* choose-game-background.png in Resources */ = {isa = PBXBuildFile; fileRef = EF1C941724C254FC00749C69 /* choose-game-background.png */; };
-		EF1C941924C254FC00749C69 /* choose-game-background.png in Resources */ = {isa = PBXBuildFile; fileRef = EF1C941724C254FC00749C69 /* choose-game-background.png */; };
-		EF1C941A24C254FC00749C69 /* choose-game-background.png in Resources */ = {isa = PBXBuildFile; fileRef = EF1C941724C254FC00749C69 /* choose-game-background.png */; };
 		EF1C941C24C2552900749C69 /* gitinfo.json.sh in Resources */ = {isa = PBXBuildFile; fileRef = EF1C941B24C2552800749C69 /* gitinfo.json.sh */; };
 		EF1C941D24C2552900749C69 /* gitinfo.json.sh in Resources */ = {isa = PBXBuildFile; fileRef = EF1C941B24C2552800749C69 /* gitinfo.json.sh */; };
 		EF1C941E24C2552900749C69 /* gitinfo.json.sh in Resources */ = {isa = PBXBuildFile; fileRef = EF1C941B24C2552800749C69 /* gitinfo.json.sh */; };
@@ -489,7 +486,6 @@
 		EF1C93EB24C252C500749C69 /* hiscore.dat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = hiscore.dat; path = "../../iOS-res/hiscore.dat"; sourceTree = "<group>"; };
 		EF1C93EC24C252C500749C69 /* effect-scanline.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "effect-scanline.png"; path = "../../iOS-res/effect-scanline.png"; sourceTree = "<group>"; };
 		EF1C93ED24C252C500749C69 /* history0139.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = history0139.zip; path = "../../iOS-res/history0139.zip"; sourceTree = "<group>"; };
-		EF1C941724C254FC00749C69 /* choose-game-background.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "choose-game-background.png"; path = "../../iOS-res/choose-game-background.png"; sourceTree = "<group>"; };
 		EF1C941B24C2552800749C69 /* gitinfo.json.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = gitinfo.json.sh; sourceTree = "<group>"; };
 		EF23D32F243CB9CE006B3EE2 /* PopupSegmentedControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PopupSegmentedControl.h; sourceTree = "<group>"; };
 		EF23D330243CB9CE006B3EE2 /* PopupSegmentedControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PopupSegmentedControl.m; sourceTree = "<group>"; };
@@ -888,7 +884,6 @@
 		EF1C941524C253EE00749C69 /* images */ = {
 			isa = PBXGroup;
 			children = (
-				EF1C941724C254FC00749C69 /* choose-game-background.png */,
 				920BBDF020210C3700AE7D50 /* menu.png */,
 				920BBDED201FC29700AE7D50 /* dpad.png */,
 				EFA756FE2405585D00A02AAB /* mameui.png */,
@@ -1148,7 +1143,6 @@
 				EF1C940024C252C600749C69 /* effect-crt.png in Resources */,
 				EF1C93F124C252C600749C69 /* cheat0139.zip in Resources */,
 				EFA756FF2405585D00A02AAB /* mameui.png in Resources */,
-				EF1C941824C254FC00749C69 /* choose-game-background.png in Resources */,
 				EF1C93EE24C252C600749C69 /* SKIN_1 in Resources */,
 				EFA757222408488D00A02AAB /* iCadeControls.png in Resources */,
 				EF1C93F424C252C600749C69 /* help.md in Resources */,
@@ -1162,7 +1156,6 @@
 				EF1C93F224C252C600749C69 /* cheat0139.zip in Resources */,
 				EF24BB0024C7894700D9C55A /* skins_tvOS in Resources */,
 				EF1C940124C252C600749C69 /* effect-crt.png in Resources */,
-				EF1C941924C254FC00749C69 /* choose-game-background.png in Resources */,
 				EF26AE09241848800078FD30 /* mame_logo.png in Resources */,
 				EF1C940424C252C600749C69 /* Category.ini in Resources */,
 				EF1C93F824C252C600749C69 /* LICENSE in Resources */,
@@ -1203,7 +1196,6 @@
 				EF1C940224C252C600749C69 /* effect-crt.png in Resources */,
 				EF1C93F324C252C600749C69 /* cheat0139.zip in Resources */,
 				EFA7A15024B65C020009CF88 /* mameui.png in Resources */,
-				EF1C941A24C254FC00749C69 /* choose-game-background.png in Resources */,
 				EF1C93F024C252C600749C69 /* SKIN_1 in Resources */,
 				EFA7A15124B65C020009CF88 /* iCadeControls.png in Resources */,
 				EF1C93F624C252C600749C69 /* help.md in Resources */,
@@ -1804,7 +1796,7 @@
 					"$(PROJECT_DIR)",
 				);
 				MARKETING_VERSION = 2020.12;
-				ONLY_ACTIVE_ARCH = NO;
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4mac;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1841,7 +1833,7 @@
 					"$(PROJECT_DIR)",
 				);
 				MARKETING_VERSION = 2020.12;
-				ONLY_ACTIVE_ARCH = NO;
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4mac;
 				PRODUCT_NAME = "$(TARGET_NAME)";

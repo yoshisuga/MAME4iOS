@@ -4655,6 +4655,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 
     ChooseGameController* choose = [[ChooseGameController alloc] init];
     [choose setGameList:games];
+    choose.backgroundImage = [self loadTileImage:@"ui-background.png"];
     g_emulation_paused = 1;
     change_pause(g_emulation_paused);
     choose.selectGameCallback = ^(NSDictionary* game) {

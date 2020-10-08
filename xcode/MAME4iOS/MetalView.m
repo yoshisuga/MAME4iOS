@@ -908,7 +908,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
             val = _shader_variables[param];
             if (val == nil) {
                 NSLog(@"UNKNOWN SHADER VARIABLE '%@' for shader \"%@\"", param, _shader_current);
-                assert(FALSE);
+                //assert(FALSE);
                 val = @(0);
             }
         }
