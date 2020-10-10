@@ -189,8 +189,10 @@ static pthread_t main_tid;
 static int ways_auto = 0;
 static int change_layout=0;
 
-#define kHUDPositionKey  @"hud_rect"
-#define kHUDScaleKey     @"hud_scale"
+#define kHUDPositionLandKey  @"hud_rect_land"
+#define kHUDScaleLandKey     @"hud_scale_land"
+#define kHUDPositionPortKey  @"hud_rect_port"
+#define kHUDScalePortKey     @"hud_scale_port"
 #define kSelectedGameInfoKey @"selected_game_info"
 static NSDictionary* g_mame_game_info;
 static BOOL g_mame_reset = FALSE;           // do a full reset (delete cfg files) before running MAME
@@ -783,13 +785,8 @@ void mame_state(int load_save, int slot)
     // this is called from bootstrapper when app is going into the background, save the current game we are playing so we can restore next time.
     [[NSUserDefaults standardUserDefaults] setObject:g_mame_game_info forKey:kSelectedGameInfoKey];
     
-#if TARGET_OS_IOS
     // also save the position of the HUD
-    if (hudView) {
-        [NSUserDefaults.standardUserDefaults setObject:NSStringFromCGRect(hudView.frame) forKey:kHUDPositionKey];
-        [NSUserDefaults.standardUserDefaults setFloat:hudView.transform.a forKey:kHUDScaleKey];
-    }
-#endif
+    [self saveHUD];
     
     [[NSUserDefaults standardUserDefaults] synchronize];
     
@@ -1356,8 +1353,13 @@ void mame_state(int load_save, int slot)
     [super viewWillLayoutSubviews];
     if (!CGSizeEqualToSize(layoutSize, self.view.bounds.size)) {
         layoutSize = self.view.bounds.size;
+        [self loadHUD];
         [self changeUI];
     }
+}
+
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
+    [self saveHUD];
 }
 
 #endif
@@ -1622,33 +1624,48 @@ static NSArray* list_trim(NSArray* _list) {
 }
 #endif
 
--(void)buildHUD {
-
-    if (g_pref_showHUD == HudSizeZero) {
-        if (hudView) {
-            [NSUserDefaults.standardUserDefaults setObject:NSStringFromCGRect(hudView.frame) forKey:kHUDPositionKey];
-            [NSUserDefaults.standardUserDefaults setFloat:hudView.transform.a forKey:kHUDScaleKey];
-        }
-        [hudView removeFromSuperview];
-        hudView = nil;
-        return;
+-(void)saveHUD {
+    if (hudView) {
+        BOOL wide = self.view.bounds.size.width > self.view.bounds.size.height;
+        [NSUserDefaults.standardUserDefaults setObject:NSStringFromCGRect(hudView.frame) forKey:wide ? kHUDPositionLandKey : kHUDPositionPortKey];
+        [NSUserDefaults.standardUserDefaults setFloat:hudView.transform.a forKey:wide ? kHUDScaleLandKey : kHUDScalePortKey];
     }
+}
+
+-(void)loadHUD {
     
-    if (hudView == nil) {
-        CGRect rect = CGRectFromString([NSUserDefaults.standardUserDefaults stringForKey:kHUDPositionKey] ?: @"");
-        CGFloat scale = [NSUserDefaults.standardUserDefaults floatForKey:kHUDScaleKey] ?: 1.0;
+    if (hudView) {
+        BOOL wide = self.view.bounds.size.width > self.view.bounds.size.height;
+
+        CGRect rect = CGRectFromString([NSUserDefaults.standardUserDefaults stringForKey:wide ? kHUDPositionLandKey : kHUDPositionPortKey] ?: @"");
+        CGFloat scale = [NSUserDefaults.standardUserDefaults floatForKey:wide ? kHUDScaleLandKey : kHUDScalePortKey] ?: 1.0;
 
         if (CGRectIsEmpty(rect)) {
             rect = CGRectMake(self.view.bounds.size.width/2, self.view.safeAreaInsets.top + 16, 0, 0);
             scale = 1.0;
         }
 
+        hudView.transform = CGAffineTransformMakeScale(scale, scale);
+        hudView.frame = rect;
+    }
+}
+
+
+-(void)buildHUD {
+
+    if (g_pref_showHUD == HudSizeZero) {
+        [self saveHUD];
+        [hudView removeFromSuperview];
+        hudView = nil;
+        return;
+    }
+    
+    if (hudView == nil) {
         hudView = [[InfoHUD alloc] init];
         hudView.font = [UIFont monospacedDigitSystemFontOfSize:hudView.font.pointSize weight:UIFontWeightRegular];
         hudView.layoutMargins = UIEdgeInsetsMake(8, 8, 8, 8);
         [hudView addTarget:self action:@selector(hudChange:) forControlEvents:UIControlEventValueChanged];
-        hudView.transform = CGAffineTransformMakeScale(scale, scale);
-        hudView.frame = rect;
+        [self loadHUD];
         [self.view addSubview:hudView];
     }
     else {
@@ -1872,8 +1889,7 @@ static NSArray* list_trim(NSArray* _list) {
 
     rect.origin.x = MAX(self.view.safeAreaInsets.left + 8, MIN(self.view.bounds.size.width  - self.view.safeAreaInsets.right  - w - 8, rect.origin.x));
     rect.origin.y = MAX(self.view.safeAreaInsets.top + 8,  MIN(self.view.bounds.size.height - self.view.safeAreaInsets.bottom - h - 8, rect.origin.y));
-    [NSUserDefaults.standardUserDefaults setValue:NSStringFromCGRect(rect) forKey:kHUDPositionKey];
-    [NSUserDefaults.standardUserDefaults setFloat:hudView.transform.a forKey:kHUDScaleKey];
+    [self saveHUD];
 
     [UIView animateWithDuration:0.250 animations:^{
         self->hudView.frame = rect;
@@ -1884,8 +1900,10 @@ static NSArray* list_trim(NSArray* _list) {
     }];
 }
 #else
+// TODO: HUD on tvOS
+-(void)saveHUD {
+}
 -(void)buildHUD {
-    // TODO: HUD on tvOS
 }
 #endif
 
@@ -3868,9 +3886,8 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:nil message:msg preferredStyle:UIAlertControllerStyleAlert];
     [alert addAction:[UIAlertAction actionWithTitle:@"Reset" style:UIAlertActionStyleDestructive handler:^(UIAlertAction* action) {
-        [NSUserDefaults.standardUserDefaults removeObjectForKey:kHUDPositionKey];
-        [NSUserDefaults.standardUserDefaults removeObjectForKey:kHUDScaleKey];
-        [NSUserDefaults.standardUserDefaults removeObjectForKey:kSelectedGameInfoKey];
+        for (NSString* key in @[kSelectedGameInfoKey, kHUDPositionLandKey, kHUDScaleLandKey, kHUDPositionPortKey, kHUDScalePortKey])
+            [NSUserDefaults.standardUserDefaults removeObjectForKey:key];
         [Options resetOptions];
         [ChooseGameController reset];
         [SkinManager reset];
