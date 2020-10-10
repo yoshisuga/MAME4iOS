@@ -39,6 +39,7 @@
 #endif
 
 @property(nonatomic, strong) void (^selectGameCallback)(NSDictionary* info);
+@property(nonatomic, strong) UIImage* backgroundImage;
 
 @end
 

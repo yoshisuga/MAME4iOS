@@ -310,6 +310,10 @@ void* app_Thread_Start(void* args)
             g_mame_reset = FALSE;
         }
         
+        // set this myosd global so the netplay code knows what the current game is.
+        if (g_mame_game[0] != 0 && g_mame_game[0] != ' ')
+            strcpy(myosd_selected_game, g_mame_game);
+        
         if (run_mame(g_mame_game) != 0 && g_mame_game[0]) {
             strncpy(g_mame_game_error, g_mame_game, sizeof(g_mame_game_error));
             g_mame_game[0] = 0;
@@ -4655,6 +4659,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 
     ChooseGameController* choose = [[ChooseGameController alloc] init];
     [choose setGameList:games];
+    choose.backgroundImage = [self loadTileImage:@"ui-background.png"];
     g_emulation_paused = 1;
     change_pause(g_emulation_paused);
     choose.selectGameCallback = ^(NSDictionary* game) {
