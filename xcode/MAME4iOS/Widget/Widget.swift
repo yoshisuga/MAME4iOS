@@ -109,6 +109,7 @@ struct GameView : View {
                 Image(uiImage:game.displayImage)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
+                Spacer()
                 Text(game.displayName)
                     .font(Font.footnote.bold())
                     .lineLimit(2)
@@ -141,7 +142,7 @@ struct WidgetEntryView : View {
                     .unredacted()
             }
             else {
-                HStack {
+                HStack(alignment: .top) {
                     ForEach(0..<min(3, entry.games.count)) {
                         GameView(game:entry.games[$0])
                     }
