@@ -1,0 +1,15 @@
+//
+//  MAME4iOS.xcconfig
+//  MAME4iOS
+//
+//  Created by Todd Laney on 10/10/20.
+//  Copyright © 2020 Seleuco. All rights reserved.
+//
+
+// Configuration settings file format documentation can be found at:
+// https://help.apple.com/xcode/#/dev745c5c974
+
+ORG_IDENTIFIER = com.example    // CHANGE this to your Organization Identifier.
+ORG_TEAM       = ABC8675309     // CHANGE this to your Team ID.
+APP_VERSION    = 2020.13        // Version of all Targets.
+APP_BUILD      = 2020.13        // Build of all Targets.
