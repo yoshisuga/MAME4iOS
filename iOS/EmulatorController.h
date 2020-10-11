@@ -124,6 +124,8 @@ enum {BTN_A,BTN_B,BTN_Y,BTN_X,BTN_L1,BTN_R1,
 }
 
 + (NSArray<NSString*>*)romList;
++ (NSDictionary*)getCurrentGame;
++ (void)setCurrentGame:(NSDictionary*)game;
 
 #if TARGET_OS_IOS
 // editing interface used by LayoutView

@@ -134,6 +134,18 @@ unsigned long read_mfi_controller(unsigned long res){
     [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation : UIStatusBarAnimationNone];
 #endif
 #endif
+    
+    BOOL result = TRUE;
+    
+    // check UIApplicationLaunchOptionsURLKey to see if we were launched with a game URL, and set that as the game to restore.
+    NSURL* url = launchOptions[UIApplicationLaunchOptionsURLKey];
+    if ([url isKindOfClass:[NSURL class]]) {
+        // handle our own scheme mame4ios://name
+        if ([url.scheme isEqualToString:@"mame4ios"] && [url.host length] != 0 && [url.path length] == 0 && [url.query length] == 0) {
+            [EmulatorController setCurrentGame:@{@"name":url.host}];
+            result = FALSE;
+        }
+    }
 
 	hrViewController = [[EmulatorController alloc] init];
 	
@@ -169,7 +181,7 @@ unsigned long read_mfi_controller(unsigned long res){
         NSLog(@"Could not set audio session category: %@",audioSessionError.localizedDescription);
     }
 
-    return TRUE;
+    return result;
 }
 
 - (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options

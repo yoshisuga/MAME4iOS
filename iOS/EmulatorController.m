@@ -458,6 +458,14 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     return [load_category_ini() allKeys];
 }
 
++ (void)setCurrentGame:(NSDictionary*)game {
+    [[NSUserDefaults standardUserDefaults] setObject:game forKey:kSelectedGameInfoKey];
+}
++ (NSDictionary*)getCurrentGame {
+    return [[NSUserDefaults standardUserDefaults] objectForKey:kSelectedGameInfoKey];
+}
+
+
 - (void)startEmulation {
     if (g_emulation_initiated == 1)
         return;
@@ -465,7 +473,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     
     sharedInstance = self;
     
-    g_mame_game_info = [[NSUserDefaults standardUserDefaults] objectForKey:kSelectedGameInfoKey];
+    g_mame_game_info = [EmulatorController getCurrentGame];
     NSString* name = g_mame_game_info[kGameInfoName] ?: @"";
     if ([name isEqualToString:kGameInfoNameMameMenu])
         name = @" ";
@@ -777,7 +785,7 @@ void mame_state(int load_save, int slot)
 - (void)runPause
 {
     // this is called from bootstrapper when app is going into the background, save the current game we are playing so we can restore next time.
-    [[NSUserDefaults standardUserDefaults] setObject:g_mame_game_info forKey:kSelectedGameInfoKey];
+    [EmulatorController setCurrentGame:g_mame_game_info];
     
 #if TARGET_OS_IOS
     // also save the position of the HUD
@@ -4595,9 +4603,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         return;
     }
     g_no_roms_found = [games count] == 0;
-#ifndef DEBUG
     if (g_no_roms_found) {
-#if TARGET_OS_IOS
         NSLog(@"NO GAMES, ASK USER WHAT TO DO....");
 
         NSString* title = @"Welcome to " PRODUCT_NAME_LONG;
@@ -4607,20 +4613,17 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         [alert addAction:[UIAlertAction actionWithTitle:@"Start Server" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"arrow.up.arrow.down.circle"] handler:^(UIAlertAction * _Nonnull action) {
             [self runServer];
         }]];
+#if TARGET_OS_IOS
         [alert addAction:[UIAlertAction actionWithTitle:@"Import ROMs" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"square.and.arrow.down"] handler:^(UIAlertAction * _Nonnull action) {
             [self runImport];
         }]];
+#endif
         [alert addAction:[UIAlertAction actionWithTitle:@"Reload ROMs" style:UIAlertActionStyleCancel image:[UIImage systemImageNamed:@"arrow.2.circlepath.circle"] handler:^(UIAlertAction * _Nonnull action) {
             myosd_exitGame = 1;     /* exit mame menu and re-scan ROMs*/
         }]];
         [self.topViewController presentViewController:alert animated:YES completion:nil];
-#else
-        NSLog(@"NO GAMES, START SERVER....");
-        [self runServer];
-#endif
         return;
     }
-#endif
     if (g_mame_game_error[0] != 0) {
         NSLog(@"ERROR RUNNING GAME %s", g_mame_game_error);
         
