@@ -43,14 +43,16 @@ This repo adds additional support for:
 
 ### Xcode
 
-Requirements: Mac 10.13.6 with Xcode 10 or above
+Requirements: iOS 12.2 or higher, tvOS 12.4 or higher, or Mac 10.15 (Catalina) or higher to run.
+
+Requirements: Mac 10.13.6 with Xcode 10 or above to bulid.
 
 Building MAME4iOS requires a prebuilt MAME binary (it has not been included in this repo due to its large size):
 
-1. _Make sure you have the latest version of the Xcode commandline tools installed:_<br>
+1. Make sure you have the latest version of the Xcode commandline tools installed:  
 `xcode-select --install`
 
-2. In Terminal: `cd [path to MAME4iOS root]`<br>
+2. In Terminal: `cd [path to MAME4iOS root]`  
   <sup>(alternatively, you can drag & drop a folder on Terminal after `cd` if don't know how to get the directory path)</sup><br>
 
 3. Create the needed MAME binary by building it yourself from scratch: <br>
@@ -61,13 +63,22 @@ Building MAME4iOS requires a prebuilt MAME binary (it has not been included in t
         - tvOS: `./make-tvos.sh`<br>
         <sup>AppleTV (4/4k and above)</sup><br>
         - simulator: `./make-sim.sh`<br>
-        <sup>iOS/tvOS (version 12.0 and above)</sup><br>
+        <sup>iOS/tvOS (version 12.4 and above)</sup><br>
         - macOS: `./make-mac.sh`<br>
         <sup>macOS(version 10.15 Catalina and above)</sup><br>
+        
+4. Set the Organization and Team Identifer in `MAME4iOS.xcconfig`
+```
+ORG_IDENTIFIER = com.example    // CHANGE this to your Organization Identifier.
+ORG_TEAM       = ABC8675309     // CHANGE this to your Team ID.
+APP_VERSION    = 2020.13        // Version of all Targets.
+APP_BUILD      = 2020.13        // Build of all Targets.
+```
 
-4. Choose the appropriate build target in Xcode:
-    - `MAME4iOS 64-bit Release` (iPhone/iPad)
-    - `MAME tvOS Release` (AppleTV)
+5. Choose the appropriate build target in Xcode:
+    - `MAME4iOS` (iPhone/iPad)
+    - `MAME4tvOS` (AppleTV)
+    - `MAME4mac` (Mac Catalyst)
 
 Even if you are not in the paid Apple Developer Program, you can sideload the app using a Mac with Xcode.
 

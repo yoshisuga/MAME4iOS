@@ -1,5 +1,7 @@
 # Version 2020.13
 * New default artwork.
+* Netplay bugfix, must be running a game to join or host.
+* Save independant HUD position for landscape/portrait.
 
 # Version 2020.12
 * `Metal` frame-skip updates and fixes.
