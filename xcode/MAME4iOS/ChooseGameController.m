@@ -15,13 +15,17 @@
 #import "Alert.h"
 #import "Globals.h"
 #import "myosd.h"
-#import <MAME4iOS-Swift.h>
 
 #if TARGET_OS_IOS
+#import <MAME4iOS-Swift.h>
 #import <Intents/Intents.h>
 #import <IntentsUI/IntentsUI.h>
 #import "FileItemProvider.h"
 #import "ZipFile.h"
+#endif
+
+#if TARGET_OS_TV
+#import <TVServices/TVServices.h>
 #endif
 
 #if !__has_feature(objc_arc)
@@ -139,7 +143,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     // on iOS shared container must start with group.
     NSArray* parts = [NSBundle.mainBundle.bundleIdentifier componentsSeparatedByString:@"."];
     if ([parts count] < 3) return nil;
-    NSString* name = [NSString stringWithFormat:@"group.%@.%@.%@", parts[0], parts[1], parts[2]];
+    NSString* name = [NSString stringWithFormat:@"group.%@.%@.%@", parts[0], parts[1], @"mame4ios" /*parts[2]*/];
     return [[NSUserDefaults alloc] initWithSuiteName:name];
 #endif
 }
@@ -174,16 +178,15 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 @implementation ChooseGameController
 
 + (NSArray<NSString*>*) allSettingsKeys {
-    return @[LAYOUT_MODE_KEY, SCOPE_MODE_KEY, RECENT_GAMES_KEY, FAVORITE_GAMES_KEY];
+    return @[LAYOUT_MODE_KEY, SCOPE_MODE_KEY, RECENT_GAMES_KEY, FAVORITE_GAMES_KEY, QUICK_GAMES_KEY];
 }
 
 + (void)load {
-    // make sure this key exists, so the Widget knows if the shared container is setup right.
-    if ([NSUserDefaults.sharedUserDefaults objectForKey:QUICK_GAMES_KEY] == nil)
-        [NSUserDefaults.sharedUserDefaults setObject:@[] forKey:QUICK_GAMES_KEY];
+    // make sure this key exists, so the Widget/TopShelf knows if the shared container is setup right.
+    [NSUserDefaults.sharedUserDefaults setObject:@(42) forKey:APP_GROUP_VALID_KEY];
     
 #if DEBUG
-    if ([NSUserDefaults.sharedUserDefaults objectForKey:QUICK_GAMES_KEY] == nil)
+    if ([NSUserDefaults.sharedUserDefaults objectForKey:APP_GROUP_VALID_KEY] == nil)
         NSLog(@"APP GROUP (aka SHARED CONTAINER) is NOT configured.");
 #endif
 }
@@ -443,12 +446,11 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 + (void)reset
 {
     // delete the recent and favorite game list(s)
-    for (NSString* key in [self allSettingsKeys])
+    for (NSString* key in [self allSettingsKeys]) {
         [NSUserDefaults.standardUserDefaults removeObjectForKey:key];
+        [NSUserDefaults.sharedUserDefaults removeObjectForKey:key];
+    }
     
-    // set the quick game list, that the Widget shows, to empty
-    [NSUserDefaults.sharedUserDefaults setObject:@[] forKey:QUICK_GAMES_KEY];
-
     // delete all the cached TITLE images.
     NSString* titles_path = [NSString stringWithUTF8String:get_documents_path("titles")];
     [[NSFileManager defaultManager] removeItemAtPath:titles_path error:nil];
@@ -872,7 +874,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         [favoriteGames insertObject:game atIndex:0];
     
     [NSUserDefaults.standardUserDefaults setObject:favoriteGames forKey:FAVORITE_GAMES_KEY];
-    [self updateApplicationShortcutItems];
+    [NSUserDefaults.sharedUserDefaults setObject:favoriteGames forKey:FAVORITE_GAMES_KEY];
+    [self updateExternal];
 }
 
 #pragma mark Recent Games
@@ -891,15 +894,31 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         [recentGames removeObjectsInRange:NSMakeRange(RECENT_GAMES_MAX,[recentGames count] - RECENT_GAMES_MAX)];
 
     [NSUserDefaults.standardUserDefaults setObject:recentGames forKey:RECENT_GAMES_KEY];
+    [NSUserDefaults.sharedUserDefaults setObject:recentGames forKey:RECENT_GAMES_KEY];
+    [self updateExternal];
+}
+
+#pragma mark Update External
+
+- (void) updateExternal {
+#if TARGET_OS_IOS
     [self updateApplicationShortcutItems];
+    #ifdef __IPHONE_14_0
+    [UIApplication reloadAllWidgets];
+    #endif
+#elif TARGET_OS_TV
+    if (@available(tvOS 13.0, *)) {
+        [TVTopShelfContentProvider topShelfContentDidChange];
+    }
+#endif
 }
 
 #pragma mark Application Shortcut Items
 
 #define MAX_SHORTCUT_ITEMS 4
 
-- (void) updateApplicationShortcutItems {
 #if TARGET_OS_IOS
+- (void) updateApplicationShortcutItems {
     NSArray* recentGames = [NSUserDefaults.standardUserDefaults objectForKey:RECENT_GAMES_KEY] ?: @[];
     NSArray* favoriteGames = [NSUserDefaults.standardUserDefaults objectForKey:FAVORITE_GAMES_KEY] ?: @[];
 
@@ -918,9 +937,6 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     
     NSArray* games = [favoriteGames arrayByAddingObjectsFromArray:recentGames];
     [NSUserDefaults.sharedUserDefaults setObject:games forKey:QUICK_GAMES_KEY];
-#ifdef __IPHONE_14_0
-    [UIApplication reloadAllWidgets];
-#endif
     
     NSMutableArray* shortcutItems = [[NSMutableArray alloc] init];
     
@@ -940,8 +956,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     }
 
     [UIApplication sharedApplication].shortcutItems = shortcutItems;
-#endif
 }
+#endif
 
 #pragma mark Update Images
 

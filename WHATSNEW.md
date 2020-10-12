@@ -1,6 +1,7 @@
 # Version 2020.13
 * New default artwork.
 * iOS 14 Widget.
+* tvOS TopShelf
 
 # Version 2020.12
 * `Metal` frame-skip updates and fixes.

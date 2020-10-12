@@ -29,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface UIAlertController(setProgress)
+- (void)setProgress:(double)value text:(NSString* __nullable)text;
 - (void)setProgress:(double)value;
 @end
 
