@@ -3873,8 +3873,8 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 #endif
 
 - (void)runServer {
-    [[WebServer sharedInstance] startUploader];
     [WebServer sharedInstance].webUploader.delegate = self;
+    [[WebServer sharedInstance] startUploader];
 }
 
 #pragma mark - RESET
@@ -4475,7 +4475,17 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 }
 
 #pragma mark GCDWebServerDelegate
+
+- (void)webServerDidStart:(GCDWebServer *)server {
+    // give Bonjour some time to register, else go ahead
+    [self performSelector:@selector(webServerShowAlert:) withObject:server afterDelay:2.0];
+}
+
 - (void)webServerDidCompleteBonjourRegistration:(GCDWebServer*)server {
+    [self webServerShowAlert:server];
+}
+
+- (void)webServerShowAlert:(GCDWebServer*)server {
     // dont bring up this WebServer alert multiple times, for example the server will stop and restart when app goes into background.
     static BOOL g_web_server_alert = FALSE;
     
@@ -4616,9 +4626,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         return;
     }
     g_no_roms_found = [games count] == 0;
-#ifndef DEBUG
     if (g_no_roms_found) {
-#if TARGET_OS_IOS
         NSLog(@"NO GAMES, ASK USER WHAT TO DO....");
 
         NSString* title = @"Welcome to " PRODUCT_NAME_LONG;
@@ -4628,20 +4636,17 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         [alert addAction:[UIAlertAction actionWithTitle:@"Start Server" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"arrow.up.arrow.down.circle"] handler:^(UIAlertAction * _Nonnull action) {
             [self runServer];
         }]];
+#if TARGET_OS_IOS
         [alert addAction:[UIAlertAction actionWithTitle:@"Import ROMs" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"square.and.arrow.down"] handler:^(UIAlertAction * _Nonnull action) {
             [self runImport];
         }]];
+#endif
         [alert addAction:[UIAlertAction actionWithTitle:@"Reload ROMs" style:UIAlertActionStyleCancel image:[UIImage systemImageNamed:@"arrow.2.circlepath.circle"] handler:^(UIAlertAction * _Nonnull action) {
             myosd_exitGame = 1;     /* exit mame menu and re-scan ROMs*/
         }]];
         [self.topViewController presentViewController:alert animated:YES completion:nil];
-#else
-        NSLog(@"NO GAMES, START SERVER....");
-        [self runServer];
-#endif
         return;
     }
-#endif
     if (g_mame_game_error[0] != 0) {
         NSLog(@"ERROR RUNNING GAME %s", g_mame_game_error);
         
