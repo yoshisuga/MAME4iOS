@@ -465,7 +465,8 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
 }
 
 + (void)setCurrentGame:(NSDictionary*)game {
-    [[NSUserDefaults standardUserDefaults] setObject:game forKey:kSelectedGameInfoKey];
+    [[NSUserDefaults standardUserDefaults] setObject:(game ?: @{}) forKey:kSelectedGameInfoKey];
+    [[NSUserDefaults standardUserDefaults] synchronize];
 }
 + (NSDictionary*)getCurrentGame {
     return [[NSUserDefaults standardUserDefaults] objectForKey:kSelectedGameInfoKey];
@@ -487,8 +488,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     g_mame_game_error[0] = 0;
     
     // delete the UserDefaults, this way if we crash we wont try this game next boot
-    [[NSUserDefaults standardUserDefaults] removeObjectForKey:kSelectedGameInfoKey];
-    [[NSUserDefaults standardUserDefaults] synchronize];
+    [EmulatorController setCurrentGame:nil];
 	     		    				
     pthread_create(&main_tid, NULL, app_Thread_Start, NULL);
 		
