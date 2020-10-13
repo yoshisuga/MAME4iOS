@@ -17,11 +17,14 @@
 #import "myosd.h"
 
 #if TARGET_OS_IOS
-#import <MAME4iOS-Swift.h>
 #import <Intents/Intents.h>
 #import <IntentsUI/IntentsUI.h>
 #import "FileItemProvider.h"
 #import "ZipFile.h"
+#endif
+
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+#import <MAME4iOS-Swift.h>
 #endif
 
 #if TARGET_OS_TV
@@ -874,7 +877,6 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         [favoriteGames insertObject:game atIndex:0];
     
     [NSUserDefaults.standardUserDefaults setObject:favoriteGames forKey:FAVORITE_GAMES_KEY];
-    [NSUserDefaults.sharedUserDefaults setObject:favoriteGames forKey:FAVORITE_GAMES_KEY];
     [self updateExternal];
 }
 
@@ -894,13 +896,15 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         [recentGames removeObjectsInRange:NSMakeRange(RECENT_GAMES_MAX,[recentGames count] - RECENT_GAMES_MAX)];
 
     [NSUserDefaults.standardUserDefaults setObject:recentGames forKey:RECENT_GAMES_KEY];
-    [NSUserDefaults.sharedUserDefaults setObject:recentGames forKey:RECENT_GAMES_KEY];
     [self updateExternal];
 }
 
 #pragma mark Update External
 
 - (void) updateExternal {
+    for (NSString* key in @[RECENT_GAMES_KEY, FAVORITE_GAMES_KEY])
+        [NSUserDefaults.sharedUserDefaults setObject:([NSUserDefaults.standardUserDefaults objectForKey:key] ?: @[]) forKey:key];
+
 #if TARGET_OS_IOS
     [self updateApplicationShortcutItems];
     #ifdef __IPHONE_14_0

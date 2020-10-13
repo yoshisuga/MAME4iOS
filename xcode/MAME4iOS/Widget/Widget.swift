@@ -47,14 +47,13 @@ struct GameView : View {
                 Image(uiImage:game.displayImage)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                /*
                 Spacer()
                 Text(game.displayName)
                     //.font(Font.footnote.bold())
                     .font(Font.caption2)
                     .lineLimit(1)
                     .minimumScaleFactor(0.25)
-                    .foregroundColor(Color("AccentColor")) */
+                    .foregroundColor(Color("AccentColor"))
             }
         }
     }
