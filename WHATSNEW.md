@@ -1,5 +1,7 @@
 # Version 2020.13
 * New default artwork.
+* Netplay bugfix, must be running a game to join or host.
+* Save independant HUD position for landscape/portrait.
 * iOS 14 Widget.
 * tvOS TopShelf
 

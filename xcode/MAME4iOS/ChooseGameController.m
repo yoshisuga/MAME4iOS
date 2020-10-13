@@ -344,10 +344,9 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     self.collectionView.allowsSelection = YES;
     self.collectionView.alwaysBounceVertical = YES;
     
-    UIImage* background = [UIImage imageNamed:@"choose-game-background"];
-    if (background) {
+    if (_backgroundImage) {
         self.collectionView.backgroundView = [[UIView alloc] init];
-        self.collectionView.backgroundView.backgroundColor = [UIColor colorWithPatternImage:background];
+        self.collectionView.backgroundView.backgroundColor = [UIColor colorWithPatternImage:_backgroundImage];
     }
     
  #if TARGET_OS_TV

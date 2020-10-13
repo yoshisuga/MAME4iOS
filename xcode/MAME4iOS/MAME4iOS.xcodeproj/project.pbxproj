@@ -124,9 +124,6 @@
 		EF1C941224C252C600749C69 /* history0139.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93ED24C252C500749C69 /* history0139.zip */; };
 		EF1C941324C252C600749C69 /* history0139.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93ED24C252C500749C69 /* history0139.zip */; };
 		EF1C941424C252C600749C69 /* history0139.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93ED24C252C500749C69 /* history0139.zip */; };
-		EF1C941824C254FC00749C69 /* choose-game-background.png in Resources */ = {isa = PBXBuildFile; fileRef = EF1C941724C254FC00749C69 /* choose-game-background.png */; };
-		EF1C941924C254FC00749C69 /* choose-game-background.png in Resources */ = {isa = PBXBuildFile; fileRef = EF1C941724C254FC00749C69 /* choose-game-background.png */; };
-		EF1C941A24C254FC00749C69 /* choose-game-background.png in Resources */ = {isa = PBXBuildFile; fileRef = EF1C941724C254FC00749C69 /* choose-game-background.png */; };
 		EF1C941C24C2552900749C69 /* gitinfo.json.sh in Resources */ = {isa = PBXBuildFile; fileRef = EF1C941B24C2552800749C69 /* gitinfo.json.sh */; };
 		EF1C941D24C2552900749C69 /* gitinfo.json.sh in Resources */ = {isa = PBXBuildFile; fileRef = EF1C941B24C2552800749C69 /* gitinfo.json.sh */; };
 		EF1C941E24C2552900749C69 /* gitinfo.json.sh in Resources */ = {isa = PBXBuildFile; fileRef = EF1C941B24C2552800749C69 /* gitinfo.json.sh */; };
@@ -531,7 +528,6 @@
 		CEE680D1163BE5C400051BC2 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		E9856CEF23C9A7C50071666D /* MultipeerConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MultipeerConnectivity.framework; path = System/Library/Frameworks/MultipeerConnectivity.framework; sourceTree = SDKROOT; };
 		EF06A576248064AC00A974B8 /* Timer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Timer.h; sourceTree = "<group>"; };
-		EF164A48253240380040B947 /* MAME4iOS.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = MAME4iOS.xcconfig; sourceTree = "<group>"; };
 		EF19F229235D1BDF00C8EE7F /* ChooseGameController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ChooseGameController.m; sourceTree = "<group>"; };
 		EF19F22E235D1C0300C8EE7F /* ChooseGameController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ChooseGameController.h; sourceTree = "<group>"; };
 		EF1C93E124C252C400749C69 /* SKIN_1 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SKIN_1; path = "../../iOS-res/SKIN_1"; sourceTree = "<group>"; };
@@ -545,7 +541,6 @@
 		EF1C93EB24C252C500749C69 /* hiscore.dat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = hiscore.dat; path = "../../iOS-res/hiscore.dat"; sourceTree = "<group>"; };
 		EF1C93EC24C252C500749C69 /* effect-scanline.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "effect-scanline.png"; path = "../../iOS-res/effect-scanline.png"; sourceTree = "<group>"; };
 		EF1C93ED24C252C500749C69 /* history0139.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = history0139.zip; path = "../../iOS-res/history0139.zip"; sourceTree = "<group>"; };
-		EF1C941724C254FC00749C69 /* choose-game-background.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "choose-game-background.png"; path = "../../iOS-res/choose-game-background.png"; sourceTree = "<group>"; };
 		EF1C941B24C2552800749C69 /* gitinfo.json.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = gitinfo.json.sh; sourceTree = "<group>"; };
 		EF23D32F243CB9CE006B3EE2 /* PopupSegmentedControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PopupSegmentedControl.h; sourceTree = "<group>"; };
 		EF23D330243CB9CE006B3EE2 /* PopupSegmentedControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PopupSegmentedControl.m; sourceTree = "<group>"; };
@@ -569,6 +564,7 @@
 		EF55DE6C2534C37B004E37EF /* TopShelf.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TopShelf.entitlements; sourceTree = "<group>"; };
 		EF55DE722534C3AB004E37EF /* MAME4tvOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MAME4tvOS.entitlements; sourceTree = "<group>"; };
 		EF55DE8725350507004E37EF /* MameGameInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MameGameInfo.swift; sourceTree = "<group>"; };
+		EF55DE312533C21E004E37EF /* MAME4iOS.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = MAME4iOS.xcconfig; sourceTree = "<group>"; };
 		EF67E11524B8972100AFF489 /* MacMenu.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MacMenu.m; sourceTree = "<group>"; };
 		EF8E427C249348220049C84C /* megaTron.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = megaTron.metal; sourceTree = "<group>"; };
 		EF8E4282249915F20049C84C /* lineTron.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = lineTron.metal; sourceTree = "<group>"; };
@@ -873,9 +869,9 @@
 			isa = PBXGroup;
 			children = (
 				EF55DE722534C3AB004E37EF /* MAME4tvOS.entitlements */,
-				EF164A48253240380040B947 /* MAME4iOS.xcconfig */,
 				EF9F9C9E240070E700352554 /* README.md */,
 				EFFBA6FD24F1C91200F8666B /* WHATSNEW.md */,
+				EF55DE312533C21E004E37EF /* MAME4iOS.xcconfig */,
 				CEAC6C2716AAA73900AF3275 /* RELOADED */,
 				EF8E427B24900FE40049C84C /* UIKit Classes */,
 				92A5338421EBDBAD0089FBB9 /* GCDWebServer */,
@@ -986,7 +982,6 @@
 		EF1C941524C253EE00749C69 /* images */ = {
 			isa = PBXGroup;
 			children = (
-				EF1C941724C254FC00749C69 /* choose-game-background.png */,
 				920BBDF020210C3700AE7D50 /* menu.png */,
 				920BBDED201FC29700AE7D50 /* dpad.png */,
 				EFA756FE2405585D00A02AAB /* mameui.png */,
@@ -1315,7 +1310,6 @@
 				EF1C940024C252C600749C69 /* effect-crt.png in Resources */,
 				EF1C93F124C252C600749C69 /* cheat0139.zip in Resources */,
 				EFA756FF2405585D00A02AAB /* mameui.png in Resources */,
-				EF1C941824C254FC00749C69 /* choose-game-background.png in Resources */,
 				EF1C93EE24C252C600749C69 /* SKIN_1 in Resources */,
 				EFA757222408488D00A02AAB /* iCadeControls.png in Resources */,
 				EF1C93F424C252C600749C69 /* help.md in Resources */,
@@ -1329,7 +1323,6 @@
 				EF1C93F224C252C600749C69 /* cheat0139.zip in Resources */,
 				EF24BB0024C7894700D9C55A /* skins_tvOS in Resources */,
 				EF1C940124C252C600749C69 /* effect-crt.png in Resources */,
-				EF1C941924C254FC00749C69 /* choose-game-background.png in Resources */,
 				EF26AE09241848800078FD30 /* mame_logo.png in Resources */,
 				EF1C940424C252C600749C69 /* Category.ini in Resources */,
 				EF1C93F824C252C600749C69 /* LICENSE in Resources */,
@@ -1377,7 +1370,6 @@
 				EF1C940224C252C600749C69 /* effect-crt.png in Resources */,
 				EF1C93F324C252C600749C69 /* cheat0139.zip in Resources */,
 				EFA7A15024B65C020009CF88 /* mameui.png in Resources */,
-				EF1C941A24C254FC00749C69 /* choose-game-background.png in Resources */,
 				EF1C93F024C252C600749C69 /* SKIN_1 in Resources */,
 				EFA7A15124B65C020009CF88 /* iCadeControls.png in Resources */,
 				EF1C93F624C252C600749C69 /* help.md in Resources */,
@@ -1705,7 +1697,6 @@
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "$(ORG_IDENTIFIER).$(TARGET_NAME:lower)";
-				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = "$(ORG_IDENTIFIER).$(TARGET_NAME:lower)";
 				PRODUCT_NAME = MAME4iOS;
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1906,7 +1897,7 @@
 		};
 		CEE680A11635BA7000051BC2 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = EF164A48253240380040B947 /* MAME4iOS.xcconfig */;
+			baseConfigurationReference = EF55DE312533C21E004E37EF /* MAME4iOS.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
@@ -1929,7 +1920,7 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				COPY_PHASE_STRIP = NO;
 				ENABLE_BITCODE = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -1963,7 +1954,7 @@
 		};
 		CEE680A21635BA7000051BC2 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = EF164A48253240380040B947 /* MAME4iOS.xcconfig */;
+			baseConfigurationReference = EF55DE312533C21E004E37EF /* MAME4iOS.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
@@ -1986,7 +1977,7 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				COPY_PHASE_STRIP = YES;
 				ENABLE_BITCODE = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -2102,8 +2093,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = MacIcon;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_ENTITLEMENTS = MAME4mac/MAME4mac.entitlements;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = "$(APP_BUILD)";
 				DEVELOPMENT_TEAM = "$(ORG_TEAM)";
 				ENABLE_BITCODE = NO;
@@ -2123,7 +2113,7 @@
 					"$(PROJECT_DIR)",
 				);
 				MARKETING_VERSION = "$(APP_VERSION)";
-				ONLY_ACTIVE_ARCH = NO;
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "$(ORG_IDENTIFIER).$(TARGET_NAME:lower)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2159,7 +2149,7 @@
 					"$(PROJECT_DIR)",
 				);
 				MARKETING_VERSION = "$(APP_VERSION)";
-				ONLY_ACTIVE_ARCH = NO;
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "$(ORG_IDENTIFIER).$(TARGET_NAME:lower)";
 				PRODUCT_NAME = "$(TARGET_NAME)";

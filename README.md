@@ -2,7 +2,7 @@
 
 Original Author: David Valdeita (Seleuco)  
 
-This is a port of MAME 0.139u1 for iOS, iPadOS, tvOS and macOS Catalina & Big Sur using Mac Catalyst.
+This is a port of MAME 0.139u1 for iOS 12+, iPadOS 12+, tvOS 12+ and on both macOS Catalina & Big Sur using Mac Catalyst.
 
 [Download IPAs for iOS and tvOS here](https://github.com/yoshisuga/MAME4iOS/releases)
 
@@ -49,7 +49,7 @@ Requirements: Mac 10.13.6 with Xcode 10 or above to bulid.
 
 Building MAME4iOS requires a prebuilt MAME binary (it has not been included in this repo due to its large size):
 
-1. _Make sure you have the latest version of the Xcode commandline tools installed:  
+1. Make sure you have the latest version of the Xcode commandline tools installed:  
 `xcode-select --install`
 
 2. In Terminal: `cd [path to MAME4iOS root]`  

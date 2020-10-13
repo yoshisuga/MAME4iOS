@@ -208,6 +208,10 @@ int main(int argc, char **argv)
         {
             if(!handle->has_begun_game)
             {
+                // ignore passed cmdline and force run the netplay game.
+                n = 0;
+                args[n]= (char *)"mame4x";n++;
+                args[n]= (char *)"-nocoinlock"; n++;
                 args[n]= (char *)handle->game_name; n++;
             }
             else
