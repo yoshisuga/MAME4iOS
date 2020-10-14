@@ -67,7 +67,7 @@ Building MAME4iOS requires a prebuilt MAME binary (it has not been included in t
         - macOS: `./make-mac.sh`<br>
         <sup>macOS(version 10.15 Catalina and above)</sup><br>
         
-4. Set the Organization and Team Identifer in `MAME4iOS.xcconfig`
+4. Set the Organization and Team Identifer in `MAME4iOS.xcconfig` located at /xcode/MAME4iOS/MAME4iOS.xcconfig .
 ```
 ORG_IDENTIFIER = com.example    // CHANGE this to your Organization Identifier.
 ORG_TEAM       = ABC8675309     // CHANGE this to your Team ID.
