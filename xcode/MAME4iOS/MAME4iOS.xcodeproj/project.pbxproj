@@ -282,7 +282,6 @@
 		EFB7B21A2479FBD900AD96A4 /* MetalViewShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B2152479FBD900AD96A4 /* MetalViewShaders.metal */; };
 		EFB7B21C247ACFE300AD96A4 /* MameShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B21B247ACFE300AD96A4 /* MameShaders.metal */; };
 		EFB7B21D247ACFE300AD96A4 /* MameShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B21B247ACFE300AD96A4 /* MameShaders.metal */; };
-		EFD2DC3C252FC1BB00E7CE89 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFD2DC3B252FC1BB00E7CE89 /* WidgetKit.framework */; };
 		EFD2DC3E252FC1BB00E7CE89 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFD2DC3D252FC1BB00E7CE89 /* SwiftUI.framework */; };
 		EFD2DC41252FC1BB00E7CE89 /* Widget.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFD2DC40252FC1BB00E7CE89 /* Widget.swift */; };
 		EFD2DC43252FC1BC00E7CE89 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EFD2DC42252FC1BC00E7CE89 /* Assets.xcassets */; };
@@ -731,7 +730,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				EFD2DC3E252FC1BB00E7CE89 /* SwiftUI.framework in Frameworks */,
-				EFD2DC3C252FC1BB00E7CE89 /* WidgetKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
