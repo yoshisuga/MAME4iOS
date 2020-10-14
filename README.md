@@ -69,14 +69,15 @@ Building MAME4iOS requires a prebuilt MAME binary (it has not been included in t
         
 4. Set the Organization and Team Identifer in `xcode/MAME4iOS/MAME4iOS.xcconfig`
 ```
-ORG_IDENTIFIER = com.example    // CHANGE this to your Organization Identifier.
-ORG_TEAM       = ABC8675309     // CHANGE this to your Team ID.
-APP_VERSION    = 2020.13        // Version of all Targets.
-APP_BUILD      = 2020.13        // Build of all Targets.
+ORG_IDENTIFIER              = com.example    // CHANGE this to your Organization Identifier.
+DEVELOPMENT_TEAM            = ABC8675309     // CHANGE this to your Team ID. (or select in Xcode project editor)
 ```
+**NOTE** you can also set the Development Team in the Xcode project editor
+    - Select the Project (not one of the targets)
+    - Select the `Build Settings` tab.
+    - Search for "Development Team" and select your team from the drop down.  
 **NOTE** your `ORG_IDENTIFIER` must  of the form `XXXXX.YYYYY` and be unique, if you get the error `Failed to register bundle identifier` try a different one.  
 **NOTE** you can find your TeamID [here](https://developer.apple.com/account/#/membership)  
-**NOTE** you still can set the Team and Bundle Identifier in the Xcode project editor `Signing & Capabilities` page, just make sure you update all Targets.  
 
 5. Choose the appropriate build target in Xcode:
     - `MAME4iOS` (iPhone/iPad)

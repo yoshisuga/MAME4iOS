@@ -9,7 +9,11 @@
 // Configuration settings file format documentation can be found at:
 // https://help.apple.com/xcode/#/dev745c5c974
 
-ORG_IDENTIFIER = com.example    // CHANGE this to your Organization Identifier.
-ORG_TEAM       = ABC8675309     // CHANGE this to your Team ID.
-APP_VERSION    = 2020.13        // Version of all Targets.
-APP_BUILD      = 2020.13        // Build of all Targets.
+
+ORG_IDENTIFIER              = com.example    // CHANGE this to your Organization Identifier.
+DEVELOPMENT_TEAM            = ABC8675309     // CHANGE this to your Team ID. (or select in Xcode project editor)
+CURRENT_PROJECT_VERSION     = 2020.13
+MARKETING_VERSION           = 2020.13
+
+PRODUCT_BUNDLE_IDENTIFIER   = $(ORG_IDENTIFIER).$(PROJECT_NAME:lower)
+APP_GROUP_IDENTIFIER        = group.$(ORG_IDENTIFIER).$(PROJECT_NAME:lower)
