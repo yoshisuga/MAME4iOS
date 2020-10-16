@@ -150,6 +150,7 @@
 		EF55DE8825350507004E37EF /* MameGameInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF55DE8725350507004E37EF /* MameGameInfo.swift */; };
 		EF55DE8925350507004E37EF /* MameGameInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF55DE8725350507004E37EF /* MameGameInfo.swift */; };
 		EF67E11624B8972100AFF489 /* MacMenu.m in Sources */ = {isa = PBXBuildFile; fileRef = EF67E11524B8972100AFF489 /* MacMenu.m */; };
+		EF6CEBEC253A096400DA8210 /* default_game_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA7570424057FD800A02AAB /* default_game_icon.png */; };
 		EF7B232C23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
 		EF7B232D23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
 		EF8E427D249348220049C84C /* megaTron.metal in Sources */ = {isa = PBXBuildFile; fileRef = EF8E427C249348220049C84C /* megaTron.metal */; };
@@ -1342,6 +1343,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EF6CEBEC253A096400DA8210 /* default_game_icon.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -64,7 +64,12 @@ struct MameGameInfo {
             return image
         }
         
-        return UIImage(named:"default_game_icon") ?? UIImage()
+        let image = UIImage(named:"default_game_icon")
+        
+        if let data = image?.pngData() {
+            try? data.write(to:self.localURL)
+        }
+        return image ?? UIImage()
     }
 }
 
