@@ -16,7 +16,7 @@ extension MameGameInfo {
     var topShelfItem:TVTopShelfSectionedItem {
 
         let item = TVTopShelfSectionedItem(identifier:self.name)
-        item.title = self.displayName.replacingOccurrences(of:": ", with:"\n")
+        item.title = self.displayName
         
         if alwaysShowPoster {
             _ = self.getImage(aspect:0.6666, mode:.scaleAspectFit)

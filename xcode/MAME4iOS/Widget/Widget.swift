@@ -42,12 +42,19 @@ struct GameView : View {
     let game:MameGameInfo
     
     var body: some View {
+        let image = game.displayImage
+        let px = 1.0 / UIScreen.main.scale
         Link(destination:game.playURL) {
-            VStack(spacing:0) {
-                Image(uiImage:game.displayImage)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                Spacer()
+            VStack(spacing:2) {
+                ZStack {
+                    Image(uiImage:image.resize(width:px, height:px))
+                        .resizable(resizingMode: .tile)
+                    Image(uiImage:image)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(maxHeight: .infinity, alignment: .center)
+                }
+                .clipShape(ContainerRelativeShape())
                 Text(game.displayName)
                     //.font(Font.footnote.bold())
                     .font(Font.caption2)

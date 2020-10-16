@@ -192,6 +192,9 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if ([NSUserDefaults.sharedUserDefaults objectForKey:APP_GROUP_VALID_KEY] == nil)
         NSLog(@"APP GROUP (aka SHARED CONTAINER) is NOT configured.");
 #endif
+#if DEBUG && TARGET_OS_IOS
+    [UIApplication reloadAllWidgets];
+#endif
 }
 
 - (instancetype)init

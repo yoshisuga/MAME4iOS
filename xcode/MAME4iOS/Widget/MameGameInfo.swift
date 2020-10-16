@@ -18,7 +18,7 @@ struct MameGameInfo {
     }
     
     var displayName: String {
-        return description.components(separatedBy: " (").first!
+        return description.components(separatedBy: " (")[0].replacingOccurrences(of:": ", with:"\n")
     }
     
     var localURL:URL {
@@ -72,9 +72,7 @@ struct MameGameInfo {
         // then aspect fit
         if aspect != 0.0 {
             let h = max(image.size.width, image.size.height)
-            let px = 1.0 / UIScreen.main.scale
-            let color = UIColor(patternImage:image.resize(width:px, height:px))
-            image = image.resize(width:floor(h * aspect), height:h, mode:mode, color:color)
+            image = image.resize(width:floor(h * aspect), height:h, mode:mode, color:image.color)
         }
         
         if let data = image.pngData() {
@@ -130,7 +128,7 @@ extension UserDefaults {
 
 // MARK: UIImage resize
 
-private extension UIImage {
+extension UIImage {
     func resize(width:CGFloat, height:CGFloat, mode:UIView.ContentMode = .scaleToFill, color:UIColor? = nil) -> UIImage {
         assert(mode == .scaleAspectFit || mode == .scaleAspectFill || mode == .scaleToFill)
         let size = CGSize(width:width, height:height)
@@ -160,6 +158,11 @@ private extension UIImage {
             }
             self.draw(in:rect)
         }
+    }
+    // return a single color representing whole image
+    var color:UIColor {
+        let px = 1.0 / UIScreen.main.scale
+        return UIColor(patternImage:self.resize(width:px, height:px))
     }
 }
 
