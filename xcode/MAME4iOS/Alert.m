@@ -78,7 +78,7 @@
 
 // a simple hack to have a progress bar in a Alert
 // you must call setProgress at least once before presenting Alert
-- (void)setProgress:(double)value text:(NSString*)text
+- (void)setProgress:(double)value
 {
     if (![NSThread isMainThread]) {
         return dispatch_async(dispatch_get_main_queue(), ^{
@@ -94,11 +94,6 @@
             textField.font = [UIFont fontWithName:@"Menlo" size:[UIFont preferredFontForTextStyle:UIFontTextStyleFootnote].pointSize];
             textField.textColor = tintColor;
         }];
-        if (text != nil) {
-            [self addTextFieldWithConfigurationHandler:^(UITextField* textField) {
-                textField.enabled = NO;
-            }];
-        }
     }
     UITextField* textField = self.textFields.firstObject;
 
@@ -108,15 +103,6 @@
     CGFloat charw = [blocks[8] sizeWithAttributes:@{NSFontAttributeName:textField.font}].width;
     int n = (int)round(8.0 * MIN(value,1.0) * floor(width / charw));
     textField.text = [[@"" stringByPaddingToLength:n/8 withString:blocks[8] startingAtIndex:0] stringByAppendingString:blocks[n % 8]];
-    
-    if (text != nil && self.textFields.count == 2) {
-        UITextField* textField = self.textFields.lastObject;
-        textField.text = text;
-    }
-}
-- (void)setProgress:(double)value
-{
-    [self setProgress:value text:nil];
 }
 @end
 
