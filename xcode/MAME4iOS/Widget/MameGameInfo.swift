@@ -45,32 +45,42 @@ struct MameGameInfo {
     }
 
     var displayImage: UIImage {
+        return getImage()
+    }
+    
+    func getImage(aspect:CGFloat = 0.0, mode:UIView.ContentMode = .scaleAspectFit, color:UIColor? = nil) -> UIImage {
 
         if let data = try? Data(contentsOf:self.localURL), let image = UIImage(data:data) {
             return image
         }
         
-        if let data = try? Data(contentsOf:self.remoteURL), var image = UIImage(data:data) {
+        var image:UIImage
+        
+        if let data = try? Data(contentsOf:self.remoteURL), let img = UIImage(data:data) {
             // make the aspect ratio exactly 4:3 or 3:4
-            if image.size.width > image.size.height {
-                image = image.resize(floor(image.size.height * (4.0/3.0)), image.size.height)
+            if img.size.width > img.size.height {
+                image = img.resize(width:floor(img.size.height * (4.0/3.0)), height:img.size.height)
             }
             else {
-                image = image.resize(image.size.width, floor(image.size.width * (4.0/3.0)))
+                image = img.resize(width:img.size.width, height:floor(img.size.width * (4.0/3.0)))
             }
-            if let data = image.pngData() {
-                try? data.write(to:self.localURL)
-            }
-            return image
+        }
+        else {
+            image = UIImage(named:"default_game_icon") ?? UIImage()
         }
         
-        let image = UIImage(named:"default_game_icon")
+        // then aspect fit
+        if aspect != 0.0 {
+            let h = max(image.size.width, image.size.height)
+            image = image.resize(width:floor(h * aspect), height:h, mode:mode, color:color)
+        }
         
-        if let data = image?.pngData() {
+        if let data = image.pngData() {
             try? data.write(to:self.localURL)
         }
-        return image ?? UIImage()
+        return image
     }
+
 }
 
 extension MameGameInfo {
@@ -119,12 +129,36 @@ extension UserDefaults {
 // MARK: UIImage resize
 
 private extension UIImage {
-    func resize(_ width:CGFloat, _ height:CGFloat) -> UIImage {
-        return UIGraphicsImageRenderer(size:CGSize(width:width, height:height)).image { context in
-            self.draw(in:CGRect(x:0, y:0, width: width, height:height))
+    func resize(width:CGFloat, height:CGFloat, mode:UIView.ContentMode = .scaleToFill, color:UIColor? = nil) -> UIImage {
+        assert(mode == .scaleAspectFit || mode == .scaleAspectFill || mode == .scaleToFill)
+        let size = CGSize(width:width, height:height)
+        var rect = CGRect(origin:.zero, size:size)
+        
+        switch mode {
+        case .scaleAspectFill:
+            let scale = max(size.width / self.size.width, size.height / self.size.height)
+            let w = floor(self.size.width*scale)
+            let h = floor(self.size.height*scale)
+            rect = CGRect(x:(size.width - w)/2, y:(size.height-h)/2, width:w, height:h)
+        case .scaleAspectFit:
+            let scale = min(size.width / self.size.width, size.height / self.size.height)
+            let w = floor(self.size.width*scale)
+            let h = floor(self.size.height*scale)
+            rect = CGRect(x:(size.width - w)/2, y:(size.height-h)/2, width:w, height:h)
+        case .scaleToFill:
+            break;
+        default:
+            return self
+        }
+        
+        return UIGraphicsImageRenderer(size:size).image { context in
+            if let color = color {
+                color.setFill()
+                context.fill(CGRect(origin:.zero, size:size))
+            }
+            self.draw(in:rect)
         }
     }
 }
-
 
 

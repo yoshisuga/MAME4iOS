@@ -8,7 +8,7 @@
 import UIKit
 import TVServices
 
-let alwaysShowPoster = false
+let alwaysShowPoster = true
 
 @available(tvOSApplicationExtension 13.0, *)
 extension MameGameInfo {
@@ -18,17 +18,17 @@ extension MameGameInfo {
         let item = TVTopShelfSectionedItem(identifier:self.name)
         item.title = self.displayName.replacingOccurrences(of:": ", with:"\n")
         
-        // load image to localURL
-        let image = self.displayImage
-        item.setImageURL(self.localURL, for:.screenScale1x)
-
         if alwaysShowPoster {
+            _ = self.getImage(aspect:0.6666, mode:.scaleAspectFit, color:.black)
             item.imageShape = .poster
         }
         else {
+            // show a square or poster based on if game is vertical or horizontal
+            let image = self.displayImage
             item.imageShape = (image.size.width >= image.size.height) ? .square : .poster
         }
-        
+        item.setImageURL(self.localURL, for:.screenScale1x)
+
         item.displayAction = TVTopShelfAction(url:self.playURL)
         item.playAction = item.displayAction
 
