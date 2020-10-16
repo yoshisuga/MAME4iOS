@@ -19,7 +19,7 @@ extension MameGameInfo {
         item.title = self.displayName.replacingOccurrences(of:": ", with:"\n")
         
         if alwaysShowPoster {
-            _ = self.getImage(aspect:0.6666, mode:.scaleAspectFit, color:.black)
+            _ = self.getImage(aspect:0.6666, mode:.scaleAspectFit)
             item.imageShape = .poster
         }
         else {

@@ -48,7 +48,7 @@ struct MameGameInfo {
         return getImage()
     }
     
-    func getImage(aspect:CGFloat = 0.0, mode:UIView.ContentMode = .scaleAspectFit, color:UIColor? = nil) -> UIImage {
+    func getImage(aspect:CGFloat = 0.0, mode:UIView.ContentMode = .scaleAspectFit) -> UIImage {
 
         if let data = try? Data(contentsOf:self.localURL), let image = UIImage(data:data) {
             return image
@@ -72,6 +72,8 @@ struct MameGameInfo {
         // then aspect fit
         if aspect != 0.0 {
             let h = max(image.size.width, image.size.height)
+            let px = 1.0 / UIScreen.main.scale
+            let color = UIColor(patternImage:image.resize(width:px, height:px))
             image = image.resize(width:floor(h * aspect), height:h, mode:mode, color:color)
         }
         
