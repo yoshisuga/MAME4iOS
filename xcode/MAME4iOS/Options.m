@@ -92,15 +92,19 @@
     return self;
 }
 
++ (NSString*)optionsFile
+{
+    return [NSString stringWithUTF8String:get_documents_path("iOS/options_v23.bin")];
+}
+
 + (void)resetOptions
 {
-    NSString *path=[NSString stringWithUTF8String:get_documents_path("iOS/options_v23.bin")];
-    [[NSFileManager defaultManager] removeItemAtPath:path error:nil];
+    [[NSFileManager defaultManager] removeItemAtPath:Options.optionsFile error:nil];
 }
 
 - (void)loadOptions
 {
-    NSString *path=[NSString stringWithUTF8String:get_documents_path("iOS/options_v23.bin")];
+    NSString *path = Options.optionsFile;
     
     NSData *plistData;
     id plist = nil;
@@ -315,6 +319,7 @@
         _vsync  =  [[optionsDict objectForKey:@"vsync"] intValue];
         
 #if 0   // leave these values set to the defaults, there is no UI anymore to change them.
+        // ...and they only apply to CoreGraphics not Metal
         _threaded  =  [[optionsDict objectForKey:@"threaded"] intValue];
         _dblbuff  =  [[optionsDict objectForKey:@"dblbuff"] intValue];
         _mainPriority  =  [[optionsDict objectForKey:@"mainPriority"] intValue];
