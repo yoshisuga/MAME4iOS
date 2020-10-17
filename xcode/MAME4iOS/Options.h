@@ -29,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (class, readonly, strong) NSArray* arrayScreenShader;
 @property (class, readonly, strong) NSArray* arrayLineShader;
 @property (class, readonly, strong) NSArray* arrayColorSpace;
+@property (class, readonly, strong) NSArray* arraySoundValue;
 
 @property (readwrite,assign) int keepAspectRatio;
 

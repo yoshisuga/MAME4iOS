@@ -19,9 +19,7 @@
 		925ABCB21E46DCC500997182 /* LayoutView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE6D6E1316D8CADF00F265B7 /* LayoutView.m */; };
 		925ABCB31E46DCC500997182 /* NetplayController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE9454CB173160A300B81C32 /* NetplayController.m */; };
 		925ABCB41E46DCC500997182 /* NetplayGameKit.m in Sources */ = {isa = PBXBuildFile; fileRef = CE9454D31731DE4D00B81C32 /* NetplayGameKit.m */; };
-		925ABCB51E46DCC500997182 /* FilterOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE9454D71731DF2700B81C32 /* FilterOptionController.m */; };
 		925ABCB61E46DCC500997182 /* InputOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8F08831741580100E2D5FB /* InputOptionController.m */; };
-		925ABCB71E46DCC500997182 /* DefaultOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8F088717435C3A00E2D5FB /* DefaultOptionController.m */; };
 		925ABCB91E46DCC500997182 /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B370F8AF1C8549010069377D /* GameController.framework */; };
 		925ABCBA1E46DCC500997182 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE8F1C5F1735199400D3F527 /* CoreBluetooth.framework */; };
 		925ABCBB1E46DCC500997182 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE680D1163BE5C400051BC2 /* CoreFoundation.framework */; };
@@ -35,8 +33,6 @@
 		925ABCE51E46DD6E00997182 /* libmamearm64.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 925ABCE41E46DD6E00997182 /* libmamearm64.a */; platformFilter = ios; };
 		926C76FF21F1C87700103EDE /* TVOptionsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 926C76FE21F1C87700103EDE /* TVOptionsController.m */; };
 		926C770A21F271A700103EDE /* ListOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE90575B166A89D000653872 /* ListOptionController.m */; };
-		926C770B21F31B1400103EDE /* FilterOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE9454D71731DF2700B81C32 /* FilterOptionController.m */; };
-		926C771A21F4F78300103EDE /* DefaultOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8F088717435C3A00E2D5FB /* DefaultOptionController.m */; };
 		926C771D21F5034100103EDE /* TVInputOptionsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 926C771C21F5034100103EDE /* TVInputOptionsController.m */; };
 		92A5332321EB57F00089FBB9 /* Options.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5332121EB57F00089FBB9 /* Options.m */; };
 		92A5332421EB57F00089FBB9 /* Options.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5332121EB57F00089FBB9 /* Options.m */; };
@@ -221,11 +217,9 @@
 		EFA7A10524B65C020009CF88 /* NetplayController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE9454CB173160A300B81C32 /* NetplayController.m */; };
 		EFA7A10624B65C020009CF88 /* NetplayGameKit.m in Sources */ = {isa = PBXBuildFile; fileRef = CE9454D31731DE4D00B81C32 /* NetplayGameKit.m */; };
 		EFA7A10724B65C020009CF88 /* InfoDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE4B6AA2453D7F80009A6F1 /* InfoDatabase.m */; };
-		EFA7A10824B65C020009CF88 /* FilterOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE9454D71731DF2700B81C32 /* FilterOptionController.m */; };
 		EFA7A10924B65C020009CF88 /* InputOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8F08831741580100E2D5FB /* InputOptionController.m */; };
 		EFA7A10A24B65C020009CF88 /* GCDWebServerMultiPartFormRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A533A021EBDBAD0089FBB9 /* GCDWebServerMultiPartFormRequest.m */; };
 		EFA7A10B24B65C020009CF88 /* FileItemProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = EF26AE0B241AA6900078FD30 /* FileItemProvider.m */; };
-		EFA7A10C24B65C020009CF88 /* DefaultOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8F088717435C3A00E2D5FB /* DefaultOptionController.m */; };
 		EFA7A10D24B65C020009CF88 /* (null) in Sources */ = {isa = PBXBuildFile; };
 		EFA7A10E24B65C020009CF88 /* megaTron.metal in Sources */ = {isa = PBXBuildFile; fileRef = EF8E427C249348220049C84C /* megaTron.metal */; };
 		EFA7A10F24B65C020009CF88 /* GCDWebServerErrorResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5339521EBDBAD0089FBB9 /* GCDWebServerErrorResponse.m */; };
@@ -493,8 +487,6 @@
 		CE8F0881174066DC00E2D5FB /* netplay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = netplay.h; path = "../../../src/osd/droid-ios/netplay.h"; sourceTree = "<group>"; };
 		CE8F08821741580100E2D5FB /* InputOptionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = InputOptionController.h; path = ../../iOS/InputOptionController.h; sourceTree = "<group>"; };
 		CE8F08831741580100E2D5FB /* InputOptionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = InputOptionController.m; path = ../../iOS/InputOptionController.m; sourceTree = "<group>"; };
-		CE8F088617435C3A00E2D5FB /* DefaultOptionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DefaultOptionController.h; path = ../../iOS/DefaultOptionController.h; sourceTree = "<group>"; };
-		CE8F088717435C3A00E2D5FB /* DefaultOptionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DefaultOptionController.m; path = ../../iOS/DefaultOptionController.m; sourceTree = "<group>"; };
 		CE8F1C5F1735199400D3F527 /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
 		CE90575A166A89D000653872 /* ListOptionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ListOptionController.h; path = ../../iOS/ListOptionController.h; sourceTree = "<group>"; };
 		CE90575B166A89D000653872 /* ListOptionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ListOptionController.m; path = ../../iOS/ListOptionController.m; sourceTree = "<group>"; };
@@ -503,8 +495,6 @@
 		CE9454CB173160A300B81C32 /* NetplayController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NetplayController.m; path = ../../iOS/NetplayController.m; sourceTree = "<group>"; };
 		CE9454D21731DE4D00B81C32 /* NetplayGameKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NetplayGameKit.h; path = ../../iOS/NetplayGameKit.h; sourceTree = "<group>"; };
 		CE9454D31731DE4D00B81C32 /* NetplayGameKit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NetplayGameKit.m; path = ../../iOS/NetplayGameKit.m; sourceTree = "<group>"; };
-		CE9454D61731DF2600B81C32 /* FilterOptionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FilterOptionController.h; path = ../../iOS/FilterOptionController.h; sourceTree = "<group>"; };
-		CE9454D71731DF2700B81C32 /* FilterOptionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FilterOptionController.m; path = ../../iOS/FilterOptionController.m; sourceTree = "<group>"; };
 		CEE680891635BA7000051BC2 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		CEE6808B1635BA7000051BC2 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		CEE6808D1635BA7000051BC2 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -1013,10 +1003,6 @@
 				EF941EFF24427D1200D58F7F /* OptionsTableViewController.m */,
 				CEE680BF1635BB6100051BC2 /* OptionsController.h */,
 				CEE680C01635BB6100051BC2 /* OptionsController.m */,
-				CE8F088617435C3A00E2D5FB /* DefaultOptionController.h */,
-				CE8F088717435C3A00E2D5FB /* DefaultOptionController.m */,
-				CE9454D61731DF2600B81C32 /* FilterOptionController.h */,
-				CE9454D71731DF2700B81C32 /* FilterOptionController.m */,
 				CEE680B61635BB4900051BC2 /* HelpController.h */,
 				CEE680B71635BB4900051BC2 /* HelpController.m */,
 				CE8F08821741580100E2D5FB /* InputOptionController.h */,
@@ -1485,13 +1471,11 @@
 				925ABCB31E46DCC500997182 /* NetplayController.m in Sources */,
 				925ABCB41E46DCC500997182 /* NetplayGameKit.m in Sources */,
 				EFE4B6AB2453D7F80009A6F1 /* InfoDatabase.m in Sources */,
-				925ABCB51E46DCC500997182 /* FilterOptionController.m in Sources */,
 				925ABCB61E46DCC500997182 /* InputOptionController.m in Sources */,
 				92A533C321EBDBAD0089FBB9 /* GCDWebServerMultiPartFormRequest.m in Sources */,
 				EFD2DCA42530C0F900E7CE89 /* ChooseGameController.swift in Sources */,
 				EF26AE0C241AA6900078FD30 /* FileItemProvider.m in Sources */,
 				EF950BAA24B1211F00DC9A47 /* ColorSpace.m in Sources */,
-				925ABCB71E46DCC500997182 /* DefaultOptionController.m in Sources */,
 				EF7B232C23FD0469001FF51D /* (null) in Sources */,
 				EF8E427D249348220049C84C /* megaTron.metal in Sources */,
 				92A533B421EBDBAD0089FBB9 /* GCDWebServerErrorResponse.m in Sources */,
@@ -1539,7 +1523,6 @@
 				92A533D421EBDDF20089FBB9 /* GCDWebUploader.m in Sources */,
 				92ECB91221EAA1B700D1E3D0 /* EmulatorController.m in Sources */,
 				EF8EAA87244F7F5D00DA02BB /* SteamControllerManager.m in Sources */,
-				926C771A21F4F78300103EDE /* DefaultOptionController.m in Sources */,
 				EF24BAFD24C786A900D9C55A /* SkinManager.m in Sources */,
 				92A533AC21EBDBAD0089FBB9 /* GCDWebServerFunctions.m in Sources */,
 				EF7B232D23FD0469001FF51D /* (null) in Sources */,
@@ -1547,7 +1530,6 @@
 				EF8EAA8D244F7F5D00DA02BB /* SteamControllerInput.m in Sources */,
 				EFA7570E2406D64600A02AAB /* SystemImage.m in Sources */,
 				92A533B521EBDBAD0089FBB9 /* GCDWebServerErrorResponse.m in Sources */,
-				926C770B21F31B1400103EDE /* FilterOptionController.m in Sources */,
 				EFE4B6AC2453D7F80009A6F1 /* InfoDatabase.m in Sources */,
 				EF24933B236264DA00DD0A6C /* ImageCache.m in Sources */,
 				92A5332421EB57F00089FBB9 /* Options.m in Sources */,
@@ -1615,13 +1597,11 @@
 				EFA7A10624B65C020009CF88 /* NetplayGameKit.m in Sources */,
 				EFA7A10724B65C020009CF88 /* InfoDatabase.m in Sources */,
 				EF67E11624B8972100AFF489 /* MacMenu.m in Sources */,
-				EFA7A10824B65C020009CF88 /* FilterOptionController.m in Sources */,
 				EF926C9C24BA36980048392B /* SkinManager.m in Sources */,
 				EFA7A10924B65C020009CF88 /* InputOptionController.m in Sources */,
 				EFA7A10A24B65C020009CF88 /* GCDWebServerMultiPartFormRequest.m in Sources */,
 				EFA7A10B24B65C020009CF88 /* FileItemProvider.m in Sources */,
 				EFA7A16424B792B50009CF88 /* ColorSpace.m in Sources */,
-				EFA7A10C24B65C020009CF88 /* DefaultOptionController.m in Sources */,
 				EFA7A10D24B65C020009CF88 /* (null) in Sources */,
 				EFA7A10E24B65C020009CF88 /* megaTron.metal in Sources */,
 				EFA7A10F24B65C020009CF88 /* GCDWebServerErrorResponse.m in Sources */,

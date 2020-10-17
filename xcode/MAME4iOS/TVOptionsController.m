@@ -8,8 +8,6 @@
 
 #import "TVOptionsController.h"
 #import "ListOptionController.h"
-#import "FilterOptionController.h"
-#import "DefaultOptionController.h"
 #import "TVInputOptionsController.h"
 #import "SystemImage.h"
 
@@ -44,10 +42,10 @@
         return 2;
     } else if ( section == kScreenSection ) {
         return 9;
+    } else if ( section == kVectorSection ) {
+        return 3;
     } else if ( section == kMiscSection ) {
-        return 7;
-    } else if ( section == kDefaultsSection ) {
-        return 1;
+        return 11;
     } else if ( section == kInputSection ) {
         return 1;
     } else if ( section == kImportSection ) {
@@ -61,6 +59,12 @@
 -(NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
     if ( section == kScreenSection ) {
         return @"Display Options";
+    }
+    if ( section == kVectorSection ) {
+        return @"Vector Options";
+    }
+    if ( section == kMiscSection ) {
+        return @"Options";
     }
     if ( section == kFilterSection ) {
         return @"ROM Options";
@@ -154,6 +158,17 @@
             cell.textLabel.text   = @"Force Pixel Aspect";
             cell.accessoryView = [self optionSwitchForKey:@"forcepxa"];
         }
+    } else if ( indexPath.section == kVectorSection ) {
+        if ( indexPath.row == 0 ) {
+            cell.textLabel.text = @"Beam 2x";
+            cell.accessoryView = [self optionSwitchForKey:@"vbean2x"];
+        } else if ( indexPath.row == 1 ) {
+            cell.textLabel.text = @"Antialias";
+            cell.accessoryView = [self optionSwitchForKey:@"vantialias"];
+        } else if ( indexPath.row == 2 ) {
+            cell.textLabel.text = @"Flicker";
+            cell.accessoryView = [self optionSwitchForKey:@"vflicker"];
+        }
     } else if ( indexPath.section == kMiscSection ) {
         if ( indexPath.row == 0 ) {
             cell.textLabel.text   = @"Show FPS";
@@ -179,11 +194,20 @@
         } else if ( indexPath.row == 6 ) {
             cell.textLabel.text = @"Low Latency Audio";
             cell.accessoryView = [self optionSwitchForKey:@"lowlsound"];
+        } else if ( indexPath.row == 7 ) {
+            cell.textLabel.text   = @"Sound";
+            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+            cell.detailTextLabel.text = [Options.arraySoundValue optionAtIndex:op.soundValue];
+        } else if ( indexPath.row == 8 ) {
+            cell.textLabel.text = @"Cheats";
+            cell.accessoryView = [self optionSwitchForKey:@"cheats"];
+        } else if ( indexPath.row == 9 ) {
+            cell.textLabel.text   = @"Force 60Hz Sync";
+            cell.accessoryView = [self optionSwitchForKey:@"vsync"];
+        } else if ( indexPath.row == 10 ) {
+            cell.textLabel.text   = @"Save Hiscores";
+            cell.accessoryView = [self optionSwitchForKey:@"hiscore"];
         }
-    } else if ( indexPath.section == kDefaultsSection ) {
-        cell.textLabel.text = @"Defaults";
-        cell.imageView.image = [UIImage systemImageNamed:@"slider.horizontal.3" withPointSize:size];
-        cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     } else if ( indexPath.section == kInputSection ) {
         cell.textLabel.text = @"Game Input";
         cell.imageView.image = [UIImage systemImageNamed:@"gamecontroller" withPointSize:size];
@@ -245,10 +269,10 @@
         } else if ( indexPath.row == 5 ) {
             ListOptionController *listController = [[ListOptionController alloc] initWithType:kTypeFSValue list:Options.arrayFSValue];
             [[self navigationController] pushViewController:listController animated:YES];
+        } else if ( indexPath.row == 7 ) {
+            ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"soundValue" list:Options.arraySoundValue title:cell.textLabel.text];
+            [[self navigationController] pushViewController:listController animated:YES];
         }
-    } else if ( indexPath.section == kDefaultsSection ) {
-        DefaultOptionController *defaultOptController = [[DefaultOptionController alloc] initWithEmuController:self.emuController];
-        [[self navigationController] pushViewController:defaultOptController animated:YES];
     } else if ( indexPath.section == kInputSection ) {
         TVInputOptionsController *inputController = [[TVInputOptionsController alloc] initWithEmuController:self.emuController];
         [self.navigationController pushViewController:inputController animated:YES];

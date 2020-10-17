@@ -52,6 +52,7 @@ enum OptionSections
     kImportSection,
     kCloudImportSection,
     kVideoSection,
+    kVectorSection,
     kFullscreenSection,
     kMiscSection,
     kFilterSection,

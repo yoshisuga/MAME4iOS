@@ -49,9 +49,7 @@
 #import "Globals.h"
 #import "ListOptionController.h"
 #import "NetplayController.h"
-#import "FilterOptionController.h"
 #import "InputOptionController.h"
-#import "DefaultOptionController.h"
 #import "HelpController.h"
 #import "EmulatorController.h"
 #import "SystemImage.h"
@@ -192,7 +190,31 @@
             }
             break;
         }
-           
+       case kVectorSection:
+       {
+           switch (indexPath.row)
+           {
+               case 0:
+                {
+                    cell.textLabel.text = @"Beam 2x";
+                    cell.accessoryView = [self optionSwitchForKey:@"vbean2x"];
+                    break;
+                }
+                case 1:
+                {
+                    cell.textLabel.text = @"Antialias";
+                    cell.accessoryView = [self optionSwitchForKey:@"vantialias"];
+                    break;
+                }
+                case 2:
+                {
+                    cell.textLabel.text = @"Flicker";
+                    cell.accessoryView = [self optionSwitchForKey:@"vflicker"];
+                    break;
+                }
+           }
+           break;
+       }
        case kFullscreenSection:
         {
            switch (indexPath.row)
@@ -281,6 +303,37 @@
                     cell.accessoryView = [self optionSwitchForKey:@"lowlsound"];
                     break;
                }
+               case 9:
+               {
+                    cell.textLabel.text   = @"Sound";
+                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                    cell.detailTextLabel.text = [Options.arraySoundValue optionAtIndex:op.soundValue];
+                    break;
+               }
+               case 10:
+               {
+                    cell.textLabel.text = @"Cheats";
+                    cell.accessoryView = [self optionSwitchForKey:@"cheats"];
+                    break;
+               }
+               case 11:
+               {
+                    cell.textLabel.text   = @"Force 60Hz Sync";
+                    cell.accessoryView = [self optionSwitchForKey:@"vsync"];
+                    break;
+               }
+               case 12:
+               {
+                    cell.textLabel.text   = @"Save Hiscores";
+                    cell.accessoryView = [self optionSwitchForKey:@"hiscore"];
+                    break;
+               }
+                case 13:
+                {
+                    cell.textLabel.text   = @"Native TV-OUT";
+                    cell.accessoryView = [self optionSwitchForKey:@"tvoutNative"];
+                    break;
+                }
             }
             break;   
         }
@@ -315,13 +368,6 @@
                     break;
                 }
                 case 1:
-                {
-                    cell.textLabel.text = @"Defaults";
-                    cell.imageView.image = [UIImage systemImageNamed:@"slider.horizontal.3"];
-                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                    break;
-                }
-                case 2:
                 {
                     cell.textLabel.text = @"Peer-to-peer Netplay";
                     cell.imageView.image = [UIImage systemImageNamed:@"antenna.radiowaves.left.and.right"];
@@ -432,6 +478,7 @@
         case kSupportSection: return nil;
         case kFullscreenSection: return @"Fullscreen";
         case kVideoSection: return @"Video Options";
+        case kVectorSection: return @"Vector Options";
         case kMiscSection: return @"Options";
         case kFilterSection: return @"Game Filter";
         case kOtherSection: return @""; // @"Other";
@@ -450,9 +497,10 @@
           case kSupportSection: return 2;
           case kFullscreenSection: return 3;
           // only show the netplay option if we are being prestenting from main game, not from choose game ui
-          case kOtherSection: return (self.presentingViewController == self.emuController) ? 3 : 2;
+          case kOtherSection: return (self.presentingViewController == self.emuController) ? 2 : 1;
           case kVideoSection: return 10;
-          case kMiscSection: return 9;
+          case kVectorSection: return 3;
+          case kMiscSection: return 14;
           case kFilterSection: return 2;
           case kImportSection: return 4;
           case kCloudImportSection: return 3;
@@ -488,12 +536,7 @@
                 [[self navigationController] pushViewController:inputOptController animated:YES];
                 [tableView reloadData];
             }
-            if (row==1){
-                DefaultOptionController *defaultOptController = [[DefaultOptionController alloc] initWithEmuController:self.emuController];
-                [[self navigationController] pushViewController:defaultOptController animated:YES];
-                [tableView reloadData];
-            }
-            if(row==2)
+            if(row==1)
             {
                 NetplayController *netplayOptController = [[NetplayController alloc]  initWithEmuController:self.emuController];
                 [[self navigationController] pushViewController:netplayOptController animated:YES];
@@ -541,6 +584,10 @@
             }
             if (row==6) {
                 ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"emuspeed" list:Options.arrayEmuSpeed title:cell.textLabel.text];
+                [[self navigationController] pushViewController:listController animated:YES];
+            }
+            if (row==9) {
+                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"soundValue" list:Options.arraySoundValue title:cell.textLabel.text];
                 [[self navigationController] pushViewController:listController animated:YES];
             }
             break;

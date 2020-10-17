@@ -36,6 +36,9 @@
 + (NSArray*)arrayControlType {
     return @[@"Keyboard",@"iCade or compatible",@"iCP, Gametel",@"iMpulse", @"8BitDo Zero"];
 }
++ (NSArray*)arraySoundValue {
+    return @[@"Off", @"On (11 KHz)", @"On (22 KHz)",@"On (33 KHz)", @"On (44 KHz)", @"On (48 KHz)"];
+}
 
 + (NSArray*)arraySkin {
     return [SkinManager getSkinNames];
@@ -310,11 +313,15 @@
         
         _lowlsound  =  [[optionsDict objectForKey:@"lowlsound"] intValue];
         _vsync  =  [[optionsDict objectForKey:@"vsync"] intValue];
+        
+#if 0   // leave these values set to the defaults, there is no UI anymore to change them.
         _threaded  =  [[optionsDict objectForKey:@"threaded"] intValue];
         _dblbuff  =  [[optionsDict objectForKey:@"dblbuff"] intValue];
-        
         _mainPriority  =  [[optionsDict objectForKey:@"mainPriority"] intValue];
         _videoPriority  =  [[optionsDict objectForKey:@"videoPriority"] intValue];
+        _mainThreadType  =  [[optionsDict objectForKey:@"mainThreadType"] intValue];
+        _videoThreadType  =  [[optionsDict objectForKey:@"videoThreadType"] intValue];
+#endif
         
         _autofire =  [[optionsDict objectForKey:@"autofire"] intValue];
         
@@ -340,9 +347,6 @@
         _vflicker  =  [[optionsDict objectForKey:@"vflicker"] intValue];
         
         _emuspeed  =  [[optionsDict objectForKey:@"emuspeed"] intValue];
-        
-        _mainThreadType  =  [[optionsDict objectForKey:@"mainThreadType"] intValue];
-        _videoThreadType  =  [[optionsDict objectForKey:@"videoThreadType"] intValue];
     }
     
 }
