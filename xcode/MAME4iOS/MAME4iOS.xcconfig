@@ -16,4 +16,8 @@ CURRENT_PROJECT_VERSION     = 2020.13
 MARKETING_VERSION           = 2020.13
 
 PRODUCT_BUNDLE_IDENTIFIER   = $(ORG_IDENTIFIER).$(PROJECT_NAME:lower)
-APP_GROUP_IDENTIFIER        = group.$(ORG_IDENTIFIER).$(PROJECT_NAME:lower)
+
+// tvOS TopShelf and iOS 14 Widget require a App Group Entitlement
+// COMMENT THIS LINE OUT if you DONT want, or CANT register an entitlement
+APP_GROUP_IDENTIFIER = group.$(ORG_IDENTIFIER).$(PROJECT_NAME:lower)
+

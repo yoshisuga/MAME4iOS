@@ -11,6 +11,7 @@
 #import "FilterOptionController.h"
 #import "DefaultOptionController.h"
 #import "TVInputOptionsController.h"
+#import "SystemImage.h"
 
 @implementation TVOptionsController
 
@@ -49,8 +50,8 @@
         return 1;
     } else if ( section == kInputSection ) {
         return 1;
-    } else if ( section == kServerSection ) {
-        return 1;
+    } else if ( section == kImportSection ) {
+        return TRUE ? 4 : 1;
     } else if ( section == kResetSection ) {
         return 1;
     }
@@ -66,6 +67,9 @@
     }
     if ( section == kResetSection ) {
         return @"Reset";
+    }
+    if ( section == kImportSection ) {
+        return @"Import / Export";
     }
 
     return @"";
@@ -84,6 +88,8 @@
     cell.contentView.backgroundColor = nil;
     
     Options* op = [[Options alloc] init];
+    
+    CGFloat size = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].pointSize;
 
     if ( indexPath.section == kFilterSection ) {
         if ( indexPath.row == 0 ) {
@@ -93,9 +99,25 @@
             cell.textLabel.text   = @"Hide Not Working";
             cell.accessoryView = [self optionSwitchForKey:@"filterNotWorking"];
         }
-    } else if ( indexPath.section == kServerSection ) {
+    } else if ( indexPath.section == kImportSection ) {
         if ( indexPath.row == 0 ) {
             cell.textLabel.text = @"Start Server";
+            cell.imageView.image = [UIImage systemImageNamed:@"arrow.up.arrow.down.circle" withPointSize:size];
+            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+        }
+        if ( indexPath.row == 1 ) {
+            cell.textLabel.text = @"Import from iCloud";
+            cell.imageView.image = [UIImage systemImageNamed:@"icloud.and.arrow.down" withPointSize:size];
+            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+        }
+        if ( indexPath.row == 2 ) {
+            cell.textLabel.text = @"Export to iCloud";
+            cell.imageView.image = [UIImage systemImageNamed:@"icloud.and.arrow.up" withPointSize:size];
+            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+        }
+        if ( indexPath.row == 3 ) {
+            cell.textLabel.text = @"Sync with iCloud";
+            cell.imageView.image = [UIImage systemImageNamed:@"arrow.clockwise.icloud" withPointSize:size];
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
         }
     } else if ( indexPath.section == kScreenSection ) {
@@ -160,9 +182,11 @@
         }
     } else if ( indexPath.section == kDefaultsSection ) {
         cell.textLabel.text = @"Defaults";
+        cell.imageView.image = [UIImage systemImageNamed:@"slider.horizontal.3" withPointSize:size];
         cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     } else if ( indexPath.section == kInputSection ) {
         cell.textLabel.text = @"Game Input";
+        cell.imageView.image = [UIImage systemImageNamed:@"gamecontroller" withPointSize:size];
         cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     } else if ( indexPath.section == kResetSection ) {
         cell.textLabel.text = @"Reset to Defaults";
@@ -181,8 +205,17 @@
     
     if ( indexPath.section == kFilterSection ) {
 
-    } else if ( indexPath.section == kServerSection ) {
+    } else if ( indexPath.section == kImportSection ) {
         if ( indexPath.row == 0 ) {
+            [self.emuController runServer];
+        }
+        if ( indexPath.row == 1 ) {
+            [self.emuController runServer];
+        }
+        if ( indexPath.row == 2 ) {
+            [self.emuController runServer];
+        }
+        if ( indexPath.row == 3 ) {
             [self.emuController runServer];
         }
     } else if ( indexPath.section == kScreenSection ) {

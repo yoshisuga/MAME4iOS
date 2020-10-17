@@ -367,6 +367,34 @@
            }
            break;
         }
+        case kCloudImportSection:
+        {
+            switch (indexPath.row)
+            {
+                case 0:
+                {
+                    cell.textLabel.text = @"Import from iCloud";
+                    cell.imageView.image = [UIImage systemImageNamed:@"icloud.and.arrow.down"];
+                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                    break;
+                }
+                case 1:
+                {
+                    cell.textLabel.text = @"Export to iCloud";
+                    cell.imageView.image = [UIImage systemImageNamed:@"icloud.and.arrow.up"];
+                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                    break;
+                }
+                case 2:
+                {
+                    cell.textLabel.text = @"Sync with iCloud";
+                    cell.imageView.image = [UIImage systemImageNamed:@"arrow.clockwise.icloud"];
+                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                    break;
+                }
+            }
+            break;
+        }
         case kResetSection:
         {
             switch (indexPath.row)
@@ -401,13 +429,14 @@
 		
     switch (section)
     {
-        case kSupportSection: return @"";
+        case kSupportSection: return nil;
         case kFullscreenSection: return @"Fullscreen";
         case kVideoSection: return @"Video Options";
         case kMiscSection: return @"Options";
         case kFilterSection: return @"Game Filter";
         case kOtherSection: return @""; // @"Other";
         case kImportSection: return @"Import and Export";
+        case kCloudImportSection: return @"iCloud";
         case kResetSection: return @"";
     }
     return @"Error!";
@@ -426,6 +455,7 @@
           case kMiscSection: return 9;
           case kFilterSection: return 2;
           case kImportSection: return 4;
+          case kCloudImportSection: return 3;
           case kResetSection: return 1;
       }
     return -1;
@@ -478,7 +508,6 @@
                 [[self navigationController] pushViewController:listController animated:YES];
             }
             if (row==1){
-                // TODO: do we want to filter out the Skins that have names that match ROMNAME, PARENT, or MACHINE? and only show "User Skins"?
                 ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"skin" list:Options.arraySkin title:cell.textLabel.text];
                 [[self navigationController] pushViewController:listController animated:YES];
             }
@@ -529,6 +558,16 @@
             }
             if (row==3) {
                 [self.emuController runServer];
+            }
+            break;
+        }
+        case kCloudImportSection:
+        {
+            if (row==0) {
+            }
+            if (row==1) {
+            }
+            if (row==2) {
             }
             break;
         }

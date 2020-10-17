@@ -146,7 +146,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     // on iOS shared container must start with group.
     NSArray* parts = [NSBundle.mainBundle.bundleIdentifier componentsSeparatedByString:@"."];
     if ([parts count] < 3) return nil;
-    NSString* name = [NSString stringWithFormat:@"group.%@.%@.%@", parts[0], parts[1], @"mame4ios" /*parts[2]*/];
+    NSString* name = [NSString stringWithFormat:@"group.%@.%@.%@", parts[0], parts[1], parts[2]];
     return [[NSUserDefaults alloc] initWithSuiteName:name];
 #endif
 }
