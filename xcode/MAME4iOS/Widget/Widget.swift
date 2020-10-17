@@ -44,6 +44,7 @@ struct GameView : View {
     var body: some View {
         let image = game.displayImage
         let px = 1.0 / UIScreen.main.scale
+        let title = game.displayName.replacingOccurrences(of:": ", with:"\n")
         Link(destination:game.playURL) {
             VStack(spacing:2) {
                 ZStack {
@@ -55,7 +56,7 @@ struct GameView : View {
                         .frame(maxHeight: .infinity, alignment: .center)
                 }
                 .clipShape(ContainerRelativeShape())
-                Text(game.displayName)
+                Text(title)
                     //.font(Font.footnote.bold())
                     .font(Font.caption2)
                     .lineLimit(1)

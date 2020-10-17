@@ -18,7 +18,7 @@ struct MameGameInfo {
     }
     
     var displayName: String {
-        return description.components(separatedBy: " (")[0].replacingOccurrences(of:": ", with:"\n")
+        return description.components(separatedBy: " (")[0]
     }
     
     var localURL:URL {
