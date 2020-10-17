@@ -67,13 +67,18 @@ Building MAME4iOS requires a prebuilt MAME binary (it has not been included in t
         - macOS: `./make-mac.sh`<br>
         <sup>macOS(version 10.15 Catalina and above)</sup><br>
         
-4. Set the Organization and Team Identifer in `MAME4iOS.xcconfig` located at /xcode/MAME4iOS/MAME4iOS.xcconfig or in the Project root inside of the Xcode project.
+4. Set the Organization and Team Identifer in `xcode/MAME4iOS/MAME4iOS.xcconfig`
 ```
-ORG_IDENTIFIER = com.example    // CHANGE this to your Organization Identifier.
-ORG_TEAM       = ABC8675309     // CHANGE this to your Team ID.
-APP_VERSION    = 2020.13        // Version of all Targets.
-APP_BUILD      = 2020.13        // Build of all Targets.
+ORG_IDENTIFIER              = com.example    // CHANGE this to your Organization Identifier.
+DEVELOPMENT_TEAM            = ABC8675309     // CHANGE this to your Team ID. (or select in Xcode project editor)
 ```
+**NOTE** if you dont want a build with entitlements, comment out the `CODE_SIGN_ENTITLEMENTS` line in `MAME4iOS.xcconfig`
+**NOTE** you can also set the Development Team in the Xcode project editor
+    - Select the Project (not one of the targets)
+    - Select the `Build Settings` tab.
+    - Search for "Development Team" and select your team from the drop down.  
+**NOTE** your `ORG_IDENTIFIER` must  of the form `XXXXX.YYYYY` and be unique, if you get the error `Failed to register bundle identifier` try a different one.  
+**NOTE** you can find your TeamID [here](https://developer.apple.com/account/#/membership)  
 
 5. Choose the appropriate build target in Xcode:
     - `MAME4iOS` (iPhone/iPad)
@@ -90,6 +95,13 @@ Even if you are not in the paid Apple Developer Program, you can sideload the ap
         1. `File` → `Preferences` add your Apple ID, select your Personal Team, and create an iOS Development Profile.
         2. Select the project name on the left pane and make sure your personal team is selected
         3. Hit the `▶︎` Run button to install on your device. _Done._
+        
+### iOS Widget and tvOS TopShelf.
+To enable the iOS 14 Widget and the tvOS TopShelf extension, you must enable a [App Group Entitlement](https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_application-groups)
+
+Make sure the name of the App Group is `group.<ORG_IDENTIFIER>.mame4ios` 
+
+If your `ORG_IDENTIFIER` is `com.example` you should register a AppGroup named `group.com.example.mame4ios`
 
 ## tvOS
 

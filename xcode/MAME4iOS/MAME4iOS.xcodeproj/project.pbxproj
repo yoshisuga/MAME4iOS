@@ -144,7 +144,13 @@
 		EF301CF1240460C5000510FD /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF301CF0240460C5000510FD /* Alert.m */; };
 		EF301CF2240460C5000510FD /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF301CF0240460C5000510FD /* Alert.m */; };
 		EF301CF3240460F3000510FD /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF27F36323F73CD400B1E50A /* ZipFile.m */; };
+		EF55DE5B2534C304004E37EF /* TVServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF55DE5A2534C304004E37EF /* TVServices.framework */; };
+		EF55DE5E2534C304004E37EF /* ContentProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF55DE5D2534C304004E37EF /* ContentProvider.swift */; };
+		EF55DE622534C304004E37EF /* TopShelf.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = EF55DE592534C304004E37EF /* TopShelf.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		EF55DE8825350507004E37EF /* MameGameInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF55DE8725350507004E37EF /* MameGameInfo.swift */; };
+		EF55DE8925350507004E37EF /* MameGameInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF55DE8725350507004E37EF /* MameGameInfo.swift */; };
 		EF67E11624B8972100AFF489 /* MacMenu.m in Sources */ = {isa = PBXBuildFile; fileRef = EF67E11524B8972100AFF489 /* MacMenu.m */; };
+		EF6CEBEC253A096400DA8210 /* default_game_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA7570424057FD800A02AAB /* default_game_icon.png */; };
 		EF7B232C23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
 		EF7B232D23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
 		EF8E427D249348220049C84C /* megaTron.metal in Sources */ = {isa = PBXBuildFile; fileRef = EF8E427C249348220049C84C /* megaTron.metal */; };
@@ -277,6 +283,13 @@
 		EFB7B21A2479FBD900AD96A4 /* MetalViewShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B2152479FBD900AD96A4 /* MetalViewShaders.metal */; };
 		EFB7B21C247ACFE300AD96A4 /* MameShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B21B247ACFE300AD96A4 /* MameShaders.metal */; };
 		EFB7B21D247ACFE300AD96A4 /* MameShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B21B247ACFE300AD96A4 /* MameShaders.metal */; };
+		EFD2DC3E252FC1BB00E7CE89 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFD2DC3D252FC1BB00E7CE89 /* SwiftUI.framework */; };
+		EFD2DC41252FC1BB00E7CE89 /* Widget.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFD2DC40252FC1BB00E7CE89 /* Widget.swift */; };
+		EFD2DC43252FC1BC00E7CE89 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EFD2DC42252FC1BC00E7CE89 /* Assets.xcassets */; };
+		EFD2DC47252FC1BC00E7CE89 /* Widget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = EFD2DC3A252FC1BB00E7CE89 /* Widget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		EFD2DC54252FC36C00E7CE89 /* mame_logo.png in Resources */ = {isa = PBXBuildFile; fileRef = EF26AE07241848800078FD30 /* mame_logo.png */; };
+		EFD2DCA42530C0F900E7CE89 /* ChooseGameController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFD2DCA32530C0F900E7CE89 /* ChooseGameController.swift */; };
+		EFD2DCB625310E2300E7CE89 /* default_game_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA7570424057FD800A02AAB /* default_game_icon.png */; };
 		EFE4B6AB2453D7F80009A6F1 /* InfoDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE4B6AA2453D7F80009A6F1 /* InfoDatabase.m */; };
 		EFE4B6AC2453D7F80009A6F1 /* InfoDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE4B6AA2453D7F80009A6F1 /* InfoDatabase.m */; };
 		EFF9F809246356B300DDA88C /* CGScreenView.m in Sources */ = {isa = PBXBuildFile; fileRef = EFF9F807246356B200DDA88C /* CGScreenView.m */; };
@@ -359,6 +372,48 @@
 			script = "\"$PROJECT_DIR/../../Markdown_1.1.9/Markdown.pl\" --stub \"$INPUT_FILE_PATH\" > \"$DERIVED_FILE_DIR/$INPUT_FILE_BASE.html\"\n";
 		};
 /* End PBXBuildRule section */
+
+/* Begin PBXContainerItemProxy section */
+		EF55DE602534C304004E37EF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CEE6807C1635BA6F00051BC2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = EF55DE582534C304004E37EF;
+			remoteInfo = TopShelf;
+		};
+		EFD2DC45252FC1BC00E7CE89 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CEE6807C1635BA6F00051BC2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = EFD2DC39252FC1BB00E7CE89;
+			remoteInfo = WidgetExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		EF55DE662534C304004E37EF /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				EF55DE622534C304004E37EF /* TopShelf.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EFD2DC4B252FC1BC00E7CE89 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				EFD2DC47252FC1BC00E7CE89 /* Widget.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		920BBDED201FC29700AE7D50 /* dpad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = dpad.png; path = "../../iOS-res/dpad.png"; sourceTree = "<group>"; };
@@ -503,6 +558,13 @@
 		EF301CEF240460C5000510FD /* Alert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Alert.h; sourceTree = "<group>"; };
 		EF301CF0240460C5000510FD /* Alert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Alert.m; sourceTree = "<group>"; };
 		EF55DE312533C21E004E37EF /* MAME4iOS.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = MAME4iOS.xcconfig; sourceTree = "<group>"; };
+		EF55DE592534C304004E37EF /* TopShelf.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TopShelf.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		EF55DE5A2534C304004E37EF /* TVServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = TVServices.framework; path = Library/Frameworks/TVServices.framework; sourceTree = DEVELOPER_DIR; };
+		EF55DE5D2534C304004E37EF /* ContentProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentProvider.swift; sourceTree = "<group>"; };
+		EF55DE5F2534C304004E37EF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		EF55DE6C2534C37B004E37EF /* TopShelf.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TopShelf.entitlements; sourceTree = "<group>"; };
+		EF55DE722534C3AB004E37EF /* MAME4tvOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MAME4tvOS.entitlements; sourceTree = "<group>"; };
+		EF55DE8725350507004E37EF /* MameGameInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MameGameInfo.swift; sourceTree = "<group>"; };
 		EF67E11524B8972100AFF489 /* MacMenu.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MacMenu.m; sourceTree = "<group>"; };
 		EF8E427C249348220049C84C /* megaTron.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = megaTron.metal; sourceTree = "<group>"; };
 		EF8E4282249915F20049C84C /* lineTron.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = lineTron.metal; sourceTree = "<group>"; };
@@ -551,6 +613,14 @@
 		EFB7B2152479FBD900AD96A4 /* MetalViewShaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = MetalViewShaders.metal; sourceTree = "<group>"; };
 		EFB7B2162479FBD900AD96A4 /* MetalView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MetalView.h; sourceTree = "<group>"; };
 		EFB7B21B247ACFE300AD96A4 /* MameShaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = MameShaders.metal; sourceTree = "<group>"; };
+		EFD2DC3A252FC1BB00E7CE89 /* Widget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = Widget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		EFD2DC3B252FC1BB00E7CE89 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		EFD2DC3D252FC1BB00E7CE89 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		EFD2DC40252FC1BB00E7CE89 /* Widget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Widget.swift; sourceTree = "<group>"; };
+		EFD2DC42252FC1BC00E7CE89 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		EFD2DC44252FC1BC00E7CE89 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		EFD2DC71252FCEC300E7CE89 /* Widget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Widget.entitlements; sourceTree = "<group>"; };
+		EFD2DCA32530C0F900E7CE89 /* ChooseGameController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChooseGameController.swift; sourceTree = "<group>"; };
 		EFE1D707242C05CE0081EEC6 /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = System/Library/Frameworks/CoreImage.framework; sourceTree = SDKROOT; };
 		EFE1D709242C1D840081EEC6 /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS13.2.sdk/System/Library/Frameworks/CoreImage.framework; sourceTree = DEVELOPER_DIR; };
 		EFE4B6A92453D7F80009A6F1 /* InfoDatabase.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InfoDatabase.h; sourceTree = "<group>"; };
@@ -618,6 +688,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		EF55DE562534C304004E37EF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EF55DE5B2534C304004E37EF /* TVServices.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		EFA7A11824B65C020009CF88 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -645,6 +723,14 @@
 				EFA7A12C24B65C020009CF88 /* CoreGraphics.framework in Frameworks */,
 				EFA7A12D24B65C020009CF88 /* GameKit.framework in Frameworks */,
 				EFA7A12E24B65C020009CF88 /* libz.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EFD2DC37252FC1BB00E7CE89 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EFD2DC3E252FC1BB00E7CE89 /* SwiftUI.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -720,14 +806,15 @@
 			path = GCDWebUploader;
 			sourceTree = "<group>";
 		};
-		92ECB8EC21EA984E00D1E3D0 /* MAME tvOS */ = {
+		92ECB8EC21EA984E00D1E3D0 /* MAME4tvOS */ = {
 			isa = PBXGroup;
 			children = (
 				92ECB8F621EA985000D1E3D0 /* Assets.xcassets */,
+				EF55DE722534C3AB004E37EF /* MAME4tvOS.entitlements */,
 				B5FAE31821FCE64D003F44D0 /* MAME_tvOS.lsr */,
 				92ECB8F821EA985000D1E3D0 /* Info.plist */,
 			);
-			path = "MAME tvOS";
+			path = MAME4tvOS;
 			sourceTree = "<group>";
 		};
 		CEAC6C2716AAA73900AF3275 /* RELOADED */ = {
@@ -742,6 +829,7 @@
 				EF67E11524B8972100AFF489 /* MacMenu.m */,
 				EF19F22E235D1C0300C8EE7F /* ChooseGameController.h */,
 				EF19F229235D1BDF00C8EE7F /* ChooseGameController.m */,
+				EFD2DCA32530C0F900E7CE89 /* ChooseGameController.swift */,
 				CEE680B41635BB4900051BC2 /* EmulatorController.h */,
 				CEE680B51635BB4900051BC2 /* EmulatorController.m */,
 				CE8D87DF16541AC400685BC4 /* Globals.h */,
@@ -780,9 +868,9 @@
 		CEE6807A1635BA6F00051BC2 = {
 			isa = PBXGroup;
 			children = (
+				EF55DE312533C21E004E37EF /* MAME4iOS.xcconfig */,
 				EF9F9C9E240070E700352554 /* README.md */,
 				EFFBA6FD24F1C91200F8666B /* WHATSNEW.md */,
-				EF55DE312533C21E004E37EF /* MAME4iOS.xcconfig */,
 				CEAC6C2716AAA73900AF3275 /* RELOADED */,
 				EF8E427B24900FE40049C84C /* UIKit Classes */,
 				92A5338421EBDBAD0089FBB9 /* GCDWebServer */,
@@ -790,8 +878,10 @@
 				EF8EAA7D244F7F5D00DA02BB /* SteamController */,
 				CEE6808F1635BA7000051BC2 /* MAME4iOS */,
 				EFA7A16024B65E7F0009CF88 /* MAME4mac */,
-				92ECB8EC21EA984E00D1E3D0 /* MAME tvOS */,
+				92ECB8EC21EA984E00D1E3D0 /* MAME4tvOS */,
 				CEE680C51635BB8500051BC2 /* Includes */,
+				EFD2DC3F252FC1BB00E7CE89 /* Widget */,
+				EF55DE5C2534C304004E37EF /* TopShelf */,
 				CEE680881635BA7000051BC2 /* Frameworks */,
 				CEE680861635BA7000051BC2 /* Products */,
 			);
@@ -803,6 +893,8 @@
 				925ABCE21E46DCC500997182 /* MAME4iOS.app */,
 				92ECB8EB21EA984D00D1E3D0 /* MAME4tvOS.app */,
 				EFA7A15E24B65C020009CF88 /* MAME4mac.app */,
+				EFD2DC3A252FC1BB00E7CE89 /* Widget.appex */,
+				EF55DE592534C304004E37EF /* TopShelf.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -856,6 +948,9 @@
 				CEE680891635BA7000051BC2 /* UIKit.framework */,
 				CEE6808B1635BA7000051BC2 /* Foundation.framework */,
 				CEE6808D1635BA7000051BC2 /* CoreGraphics.framework */,
+				EFD2DC3B252FC1BB00E7CE89 /* WidgetKit.framework */,
+				EFD2DC3D252FC1BB00E7CE89 /* SwiftUI.framework */,
+				EF55DE5A2534C304004E37EF /* TVServices.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -936,6 +1031,16 @@
 				926C771C21F5034100103EDE /* TVInputOptionsController.m */,
 			);
 			name = Options;
+			sourceTree = "<group>";
+		};
+		EF55DE5C2534C304004E37EF /* TopShelf */ = {
+			isa = PBXGroup;
+			children = (
+				EF55DE6C2534C37B004E37EF /* TopShelf.entitlements */,
+				EF55DE5D2534C304004E37EF /* ContentProvider.swift */,
+				EF55DE5F2534C304004E37EF /* Info.plist */,
+			);
+			path = TopShelf;
 			sourceTree = "<group>";
 		};
 		EF8E427B24900FE40049C84C /* UIKit Classes */ = {
@@ -1021,6 +1126,18 @@
 			name = ScreenView;
 			sourceTree = "<group>";
 		};
+		EFD2DC3F252FC1BB00E7CE89 /* Widget */ = {
+			isa = PBXGroup;
+			children = (
+				EFD2DC71252FCEC300E7CE89 /* Widget.entitlements */,
+				EFD2DC40252FC1BB00E7CE89 /* Widget.swift */,
+				EF55DE8725350507004E37EF /* MameGameInfo.swift */,
+				EFD2DC42252FC1BC00E7CE89 /* Assets.xcassets */,
+				EFD2DC44252FC1BC00E7CE89 /* Info.plist */,
+			);
+			path = Widget;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -1032,12 +1149,14 @@
 				925ABCA51E46DCC500997182 /* Sources */,
 				925ABCB81E46DCC500997182 /* Frameworks */,
 				925ABCC61E46DCC500997182 /* Resources */,
+				EFD2DC4B252FC1BC00E7CE89 /* Embed App Extensions */,
 			);
 			buildRules = (
 				EF79BDDC24B7D77400824BFD /* PBXBuildRule */,
 				EF0E08AF2401853D00E98F01 /* PBXBuildRule */,
 			);
 			dependencies = (
+				EFD2DC46252FC1BC00E7CE89 /* PBXTargetDependency */,
 			);
 			name = MAME4iOS;
 			productName = MAME4iOS;
@@ -1052,16 +1171,35 @@
 				92ECB8E721EA984D00D1E3D0 /* Sources */,
 				92ECB8E821EA984D00D1E3D0 /* Frameworks */,
 				92ECB8E921EA984D00D1E3D0 /* Resources */,
+				EF55DE662534C304004E37EF /* Embed App Extensions */,
 			);
 			buildRules = (
 				EF79BDDB24B7D75000824BFD /* PBXBuildRule */,
 			);
 			dependencies = (
+				EF55DE612534C304004E37EF /* PBXTargetDependency */,
 			);
 			name = MAME4tvOS;
 			productName = "MAME tvOS";
 			productReference = 92ECB8EB21EA984D00D1E3D0 /* MAME4tvOS.app */;
 			productType = "com.apple.product-type.application";
+		};
+		EF55DE582534C304004E37EF /* TopShelf */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EF55DE632534C304004E37EF /* Build configuration list for PBXNativeTarget "TopShelf" */;
+			buildPhases = (
+				EF55DE552534C304004E37EF /* Sources */,
+				EF55DE562534C304004E37EF /* Frameworks */,
+				EF55DE572534C304004E37EF /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TopShelf;
+			productName = TopShelf;
+			productReference = EF55DE592534C304004E37EF /* TopShelf.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 		EFA7A0DE24B65C020009CF88 /* MAME4mac */ = {
 			isa = PBXNativeTarget;
@@ -1083,21 +1221,45 @@
 			productReference = EFA7A15E24B65C020009CF88 /* MAME4mac.app */;
 			productType = "com.apple.product-type.application";
 		};
+		EFD2DC39252FC1BB00E7CE89 /* Widget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EFD2DC48252FC1BC00E7CE89 /* Build configuration list for PBXNativeTarget "Widget" */;
+			buildPhases = (
+				EFD2DC36252FC1BB00E7CE89 /* Sources */,
+				EFD2DC37252FC1BB00E7CE89 /* Frameworks */,
+				EFD2DC38252FC1BB00E7CE89 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Widget;
+			productName = WidgetExtension;
+			productReference = EFD2DC3A252FC1BB00E7CE89 /* Widget.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		CEE6807C1635BA6F00051BC2 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 1200;
 				LastUpgradeCheck = 1200;
 				ORGANIZATIONNAME = Seleuco;
 				TargetAttributes = {
 					925ABCA41E46DCC500997182 = {
-						ProvisioningStyle = Automatic;
+						LastSwiftMigration = 1200;
 					};
 					92ECB8EA21EA984D00D1E3D0 = {
 						CreatedOnToolsVersion = 10.1;
 						ProvisioningStyle = Automatic;
+					};
+					EF55DE582534C304004E37EF = {
+						CreatedOnToolsVersion = 12.0.1;
+					};
+					EFD2DC39252FC1BB00E7CE89 = {
+						CreatedOnToolsVersion = 12.0.1;
 					};
 				};
 			};
@@ -1117,6 +1279,8 @@
 				925ABCA41E46DCC500997182 /* MAME4iOS */,
 				92ECB8EA21EA984D00D1E3D0 /* MAME4tvOS */,
 				EFA7A0DE24B65C020009CF88 /* MAME4mac */,
+				EFD2DC39252FC1BB00E7CE89 /* Widget */,
+				EF55DE582534C304004E37EF /* TopShelf */,
 			);
 		};
 /* End PBXProject section */
@@ -1175,6 +1339,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		EF55DE572534C304004E37EF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EF6CEBEC253A096400DA8210 /* default_game_icon.png in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		EFA7A12F24B65C020009CF88 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1201,6 +1373,16 @@
 				EF1C93F024C252C600749C69 /* SKIN_1 in Resources */,
 				EFA7A15124B65C020009CF88 /* iCadeControls.png in Resources */,
 				EF1C93F624C252C600749C69 /* help.md in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EFD2DC38252FC1BB00E7CE89 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EFD2DC54252FC36C00E7CE89 /* mame_logo.png in Resources */,
+				EFD2DC43252FC1BC00E7CE89 /* Assets.xcassets in Resources */,
+				EFD2DCB625310E2300E7CE89 /* default_game_icon.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1306,6 +1488,7 @@
 				925ABCB51E46DCC500997182 /* FilterOptionController.m in Sources */,
 				925ABCB61E46DCC500997182 /* InputOptionController.m in Sources */,
 				92A533C321EBDBAD0089FBB9 /* GCDWebServerMultiPartFormRequest.m in Sources */,
+				EFD2DCA42530C0F900E7CE89 /* ChooseGameController.swift in Sources */,
 				EF26AE0C241AA6900078FD30 /* FileItemProvider.m in Sources */,
 				EF950BAA24B1211F00DC9A47 /* ColorSpace.m in Sources */,
 				925ABCB71E46DCC500997182 /* DefaultOptionController.m in Sources */,
@@ -1380,6 +1563,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		EF55DE552534C304004E37EF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EF55DE5E2534C304004E37EF /* ContentProvider.swift in Sources */,
+				EF55DE8925350507004E37EF /* MameGameInfo.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		EFA7A0DF24B65C020009CF88 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1444,18 +1636,40 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		EFD2DC36252FC1BB00E7CE89 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EFD2DC41252FC1BB00E7CE89 /* Widget.swift in Sources */,
+				EF55DE8825350507004E37EF /* MameGameInfo.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		EF55DE612534C304004E37EF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = EF55DE582534C304004E37EF /* TopShelf */;
+			targetProxy = EF55DE602534C304004E37EF /* PBXContainerItemProxy */;
+		};
+		EFD2DC46252FC1BC00E7CE89 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = EFD2DC39252FC1BB00E7CE89 /* Widget */;
+			targetProxy = EFD2DC45252FC1BC00E7CE89 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		925ABCE01E46DCC500997182 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
-				CODE_SIGN_ENTITLEMENTS = MAME4iOS/MAME4iOS.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = "$(APP_BUILD)";
-				DEVELOPMENT_TEAM = "$(ORG_TEAM)";
+				CODE_SIGN_STYLE = Automatic;
 				ENABLE_BITCODE = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MAME4iOS/MAME4iOS-Prefix.pch";
@@ -1465,21 +1679,26 @@
 				);
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = "MAME4iOS/MAME4iOS-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../..",
 					"$(PROJECT_DIR)/MAME4iOS",
 					"$(PROJECT_DIR)",
 				);
-				MARKETING_VERSION = "$(APP_VERSION)";
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = "$(ORG_IDENTIFIER).$(TARGET_NAME:lower)";
 				PRODUCT_NAME = MAME4iOS;
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTS_MACCATALYST = NO;
+				SWIFT_OBJC_BRIDGING_HEADER = "";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 				VALID_ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -1488,32 +1707,36 @@
 		925ABCE11E46DCC500997182 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
-				CODE_SIGN_ENTITLEMENTS = MAME4iOS/MAME4iOS.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = "$(APP_BUILD)";
-				DEVELOPMENT_TEAM = "$(ORG_TEAM)";
+				CODE_SIGN_STYLE = Automatic;
 				ENABLE_BITCODE = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MAME4iOS/MAME4iOS-Prefix.pch";
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = "MAME4iOS/MAME4iOS-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../..",
 					"$(PROJECT_DIR)/MAME4iOS",
 					"$(PROJECT_DIR)",
 				);
-				MARKETING_VERSION = "$(APP_VERSION)";
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = "$(ORG_IDENTIFIER).$(TARGET_NAME:lower)";
 				PRODUCT_NAME = MAME4iOS;
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTS_MACCATALYST = NO;
+				SWIFT_OBJC_BRIDGING_HEADER = "";
+				SWIFT_VERSION = 5.0;
 				VALID_ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -1522,6 +1745,7 @@
 		92ECB8FB21EA985000D1E3D0 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "Launch Image";
 				CLANG_ANALYZER_NONNULL = YES;
@@ -1551,9 +1775,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = "$(APP_BUILD)";
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = "$(ORG_TEAM)";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -1563,7 +1785,7 @@
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
-				INFOPLIST_FILE = "MAME tvOS/Info.plist";
+				INFOPLIST_FILE = MAME4tvOS/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1574,11 +1796,9 @@
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/MAME4iOS",
 				);
-				MARKETING_VERSION = "$(APP_VERSION)";
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = "$(ORG_IDENTIFIER).$(TARGET_NAME:lower)";
 				PRODUCT_NAME = MAME4tvOS;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;
@@ -1591,6 +1811,7 @@
 		92ECB8FC21EA985000D1E3D0 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "Launch Image";
 				CLANG_ANALYZER_NONNULL = YES;
@@ -1621,9 +1842,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = "$(APP_BUILD)";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = "$(ORG_TEAM)";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -1633,7 +1852,7 @@
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
-				INFOPLIST_FILE = "MAME tvOS/Info.plist";
+				INFOPLIST_FILE = MAME4tvOS/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1644,11 +1863,9 @@
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/MAME4iOS",
 				);
-				MARKETING_VERSION = "$(APP_VERSION)";
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = "$(ORG_IDENTIFIER).$(TARGET_NAME:lower)";
 				PRODUCT_NAME = MAME4tvOS;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;
@@ -1703,7 +1920,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				MTL_LANGUAGE_REVISION = UseDeploymentTarget;
@@ -1752,16 +1969,94 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				MTL_LANGUAGE_REVISION = UseDeploymentTarget;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
 				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 				VALID_ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+			};
+			name = Release;
+		};
+		EF55DE642534C304004E37EF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				INFOPLIST_FILE = TopShelf/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(inherited).$(TARGET_NAME:lower)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 12.4;
+			};
+			name = Debug;
+		};
+		EF55DE652534C304004E37EF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				INFOPLIST_FILE = TopShelf/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(inherited).$(TARGET_NAME:lower)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				SKIP_INSTALL = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 12.4;
 			};
 			name = Release;
 		};
@@ -1770,10 +2065,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = MacIcon;
 				CLANG_ENABLE_OBJC_ARC = YES;
-				CODE_SIGN_ENTITLEMENTS = MAME4mac/MAME4mac.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = "$(APP_BUILD)";
-				DEVELOPMENT_TEAM = "$(ORG_TEAM)";
 				ENABLE_BITCODE = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MAME4iOS/MAME4iOS-Prefix.pch";
@@ -1783,17 +2075,15 @@
 				);
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = "MAME4mac/MAME4mac-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.6;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../..",
 					"$(PROJECT_DIR)/MAME4iOS",
 					"$(PROJECT_DIR)",
 				);
-				MARKETING_VERSION = "$(APP_VERSION)";
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = "$(ORG_IDENTIFIER).$(TARGET_NAME:lower)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1809,27 +2099,22 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = MacIcon;
 				CLANG_ENABLE_OBJC_ARC = YES;
-				CODE_SIGN_ENTITLEMENTS = MAME4mac/MAME4mac.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
-				CURRENT_PROJECT_VERSION = "$(APP_BUILD)";
-				DEVELOPMENT_TEAM = "$(ORG_TEAM)";
 				ENABLE_BITCODE = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MAME4iOS/MAME4iOS-Prefix.pch";
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = "MAME4mac/MAME4mac-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.6;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../..",
 					"$(PROJECT_DIR)/MAME4iOS",
 					"$(PROJECT_DIR)",
 				);
-				MARKETING_VERSION = "$(APP_VERSION)";
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = "$(ORG_IDENTIFIER).$(TARGET_NAME:lower)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1837,6 +2122,87 @@
 				TARGETED_DEVICE_FAMILY = 2;
 				VALID_ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+		EFD2DC49252FC1BC00E7CE89 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				INFOPLIST_FILE = Widget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(inherited).$(TARGET_NAME:lower)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		EFD2DC4A252FC1BC00E7CE89 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				INFOPLIST_FILE = Widget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(inherited).$(TARGET_NAME:lower)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -1870,11 +2236,29 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		EF55DE632534C304004E37EF /* Build configuration list for PBXNativeTarget "TopShelf" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EF55DE642534C304004E37EF /* Debug */,
+				EF55DE652534C304004E37EF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		EFA7A15B24B65C020009CF88 /* Build configuration list for PBXNativeTarget "MAME4mac" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				EFA7A15C24B65C020009CF88 /* Debug */,
 				EFA7A15D24B65C020009CF88 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		EFD2DC48252FC1BC00E7CE89 /* Build configuration list for PBXNativeTarget "Widget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EFD2DC49252FC1BC00E7CE89 /* Debug */,
+				EFD2DC4A252FC1BC00E7CE89 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

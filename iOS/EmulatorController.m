@@ -464,6 +464,15 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     return [load_category_ini() allKeys];
 }
 
++ (void)setCurrentGame:(NSDictionary*)game {
+    [[NSUserDefaults standardUserDefaults] setObject:(game ?: @{}) forKey:kSelectedGameInfoKey];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+}
++ (NSDictionary*)getCurrentGame {
+    return [[NSUserDefaults standardUserDefaults] objectForKey:kSelectedGameInfoKey];
+}
+
+
 - (void)startEmulation {
     if (g_emulation_initiated == 1)
         return;
@@ -471,7 +480,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     
     sharedInstance = self;
     
-    g_mame_game_info = [[NSUserDefaults standardUserDefaults] objectForKey:kSelectedGameInfoKey];
+    g_mame_game_info = [EmulatorController getCurrentGame];
     NSString* name = g_mame_game_info[kGameInfoName] ?: @"";
     if ([name isEqualToString:kGameInfoNameMameMenu])
         name = @" ";
@@ -479,8 +488,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     g_mame_game_error[0] = 0;
     
     // delete the UserDefaults, this way if we crash we wont try this game next boot
-    [[NSUserDefaults standardUserDefaults] removeObjectForKey:kSelectedGameInfoKey];
-    [[NSUserDefaults standardUserDefaults] synchronize];
+    [EmulatorController setCurrentGame:nil];
 	     		    				
     pthread_create(&main_tid, NULL, app_Thread_Start, NULL);
 		
@@ -783,7 +791,7 @@ void mame_state(int load_save, int slot)
 - (void)runPause
 {
     // this is called from bootstrapper when app is going into the background, save the current game we are playing so we can restore next time.
-    [[NSUserDefaults standardUserDefaults] setObject:g_mame_game_info forKey:kSelectedGameInfoKey];
+    [EmulatorController setCurrentGame:g_mame_game_info];
     
     // also save the position of the HUD
     [self saveHUD];
@@ -4632,16 +4640,18 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         NSString* title = @"Welcome to " PRODUCT_NAME_LONG;
         NSString* message = @"\nTo transfer ROMs from your computer, Start Server, Import ROMs, or use AirDrop.";
         
+        CGFloat size = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].pointSize;
+        
         UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
-        [alert addAction:[UIAlertAction actionWithTitle:@"Start Server" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"arrow.up.arrow.down.circle"] handler:^(UIAlertAction * _Nonnull action) {
+        [alert addAction:[UIAlertAction actionWithTitle:@"Start Server" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"arrow.up.arrow.down.circle" withPointSize:size] handler:^(UIAlertAction * _Nonnull action) {
             [self runServer];
         }]];
 #if TARGET_OS_IOS
-        [alert addAction:[UIAlertAction actionWithTitle:@"Import ROMs" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"square.and.arrow.down"] handler:^(UIAlertAction * _Nonnull action) {
+        [alert addAction:[UIAlertAction actionWithTitle:@"Import ROMs" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"square.and.arrow.down" withPointSize:size] handler:^(UIAlertAction * _Nonnull action) {
             [self runImport];
         }]];
 #endif
-        [alert addAction:[UIAlertAction actionWithTitle:@"Reload ROMs" style:UIAlertActionStyleCancel image:[UIImage systemImageNamed:@"arrow.2.circlepath.circle"] handler:^(UIAlertAction * _Nonnull action) {
+        [alert addAction:[UIAlertAction actionWithTitle:@"Reload ROMs" style:UIAlertActionStyleCancel image:[UIImage systemImageNamed:@"arrow.2.circlepath.circle" withPointSize:size] handler:^(UIAlertAction * _Nonnull action) {
             myosd_exitGame = 1;     /* exit mame menu and re-scan ROMs*/
         }]];
         [self.topViewController presentViewController:alert animated:YES completion:nil];

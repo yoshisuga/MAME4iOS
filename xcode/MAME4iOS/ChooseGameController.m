@@ -23,6 +23,14 @@
 #import "ZipFile.h"
 #endif
 
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+#import <MAME4iOS-Swift.h>
+#endif
+
+#if TARGET_OS_TV
+#import <TVServices/TVServices.h>
+#endif
+
 #if !__has_feature(objc_arc)
 #error("This file assumes ARC")
 #endif
@@ -123,6 +131,27 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 -(instancetype)initWithGame:(NSDictionary*)game;
 @end
 
+#pragma mark shared user defaults
+
+@interface NSUserDefaults(shared)
+@property (class, nonatomic, strong, readonly) NSUserDefaults* sharedUserDefaults;
+@end
+
+@implementation NSUserDefaults(shared)
++(NSUserDefaults*)sharedUserDefaults {
+#if TARGET_OS_MACCATALYST
+    // on macOS shared container id must be TEAMID.bundle
+    return nil;
+#else
+    // on iOS shared container must start with group.
+    NSArray* parts = [NSBundle.mainBundle.bundleIdentifier componentsSeparatedByString:@"."];
+    if ([parts count] < 3) return nil;
+    NSString* name = [NSString stringWithFormat:@"group.%@.%@.%@", parts[0], parts[1], parts[2]];
+    return [[NSUserDefaults alloc] initWithSuiteName:name];
+#endif
+}
+@end
+
 #pragma mark ChooseGameController
 
 @interface ChooseGameController () <UISearchResultsUpdating, UISearchBarDelegate, UISearchControllerDelegate> {
@@ -136,7 +165,6 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     LayoutMode _layoutMode;
     CGFloat _layoutWidth;
     UISearchController* _searchController;
-    NSUserDefaults* _userDefaults;
     NSArray* _key_commands;
     NSInteger _key_commands_type;
     BOOL _searchCancel;
@@ -153,30 +181,37 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 @implementation ChooseGameController
 
 + (NSArray<NSString*>*) allSettingsKeys {
-    return @[LAYOUT_MODE_KEY, SCOPE_MODE_KEY, RECENT_GAMES_KEY, FAVORITE_GAMES_KEY];
+    return @[LAYOUT_MODE_KEY, SCOPE_MODE_KEY, RECENT_GAMES_KEY, FAVORITE_GAMES_KEY, QUICK_GAMES_KEY];
 }
 
-+ (NSUserDefaults*) getUserDefaults {
-    return [NSUserDefaults standardUserDefaults];
++ (void)load {
+    // make sure this key exists, so the Widget/TopShelf knows if the shared container is setup right.
+    [NSUserDefaults.sharedUserDefaults setObject:@(42) forKey:APP_GROUP_VALID_KEY];
+    
+#if DEBUG
+    if ([NSUserDefaults.sharedUserDefaults objectForKey:APP_GROUP_VALID_KEY] == nil)
+        NSLog(@"APP GROUP (aka SHARED CONTAINER) is NOT configured.");
+#endif
+#if DEBUG && TARGET_OS_IOS && defined(__IPHONE_14_0)
+    [UIApplication reloadAllWidgets];
+#endif
 }
 
 - (instancetype)init
 {
     self = [self initWithCollectionViewLayout:[[UICollectionViewFlowLayout alloc] init]];
     
-    _userDefaults = [[self class] getUserDefaults];
-
     // filter scope
-    _gameFilterScope = [_userDefaults stringForKey:SCOPE_MODE_KEY];
+    _gameFilterScope = [NSUserDefaults.standardUserDefaults stringForKey:SCOPE_MODE_KEY];
     
     if (![ALL_SCOPES containsObject:_gameFilterScope])
         _gameFilterScope = SCOPE_MODE_DEFAULT;
     
     // layout mode
-    if ([_userDefaults objectForKey:LAYOUT_MODE_KEY] == nil)
+    if ([NSUserDefaults.standardUserDefaults objectForKey:LAYOUT_MODE_KEY] == nil)
         _layoutMode = LAYOUT_MODE_DEFAULT;
     else
-        _layoutMode = CLAMP([_userDefaults integerForKey:LAYOUT_MODE_KEY], LayoutCount);
+        _layoutMode = CLAMP([NSUserDefaults.standardUserDefaults integerForKey:LAYOUT_MODE_KEY], LayoutCount);
     
     _defaultImage = [UIImage imageNamed:@"default_game_icon"];
     _loadingImage = [UIImage imageWithColor:[UIColor clearColor] size:CGSizeMake(4, 3)];
@@ -415,10 +450,11 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 + (void)reset
 {
-    NSUserDefaults* userDefaults = [self getUserDefaults];
-    
-    for (NSString* key in [self allSettingsKeys])
-        [userDefaults removeObjectForKey:key];
+    // delete the recent and favorite game list(s)
+    for (NSString* key in [self allSettingsKeys]) {
+        [NSUserDefaults.standardUserDefaults removeObjectForKey:key];
+        [NSUserDefaults.sharedUserDefaults removeObjectForKey:key];
+    }
     
     // delete all the cached TITLE images.
     NSString* titles_path = [NSString stringWithUTF8String:get_documents_path("titles")];
@@ -431,14 +467,14 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 {
     NSLog(@"VIEW CHANGE: %d", (int)sender.selectedSegmentIndex);
     _layoutMode = sender.selectedSegmentIndex;
-    [_userDefaults setInteger:_layoutMode forKey:LAYOUT_MODE_KEY];
+    [NSUserDefaults.standardUserDefaults setInteger:_layoutMode forKey:LAYOUT_MODE_KEY];
     [self updateLayout];
 }
 -(void)scopeChange:(UISegmentedControl*)sender
 {
     NSLog(@"SCOPE CHANGE: %@", ALL_SCOPES[sender.selectedSegmentIndex]);
     _gameFilterScope = ALL_SCOPES[sender.selectedSegmentIndex];
-    [_userDefaults setValue:_gameFilterScope forKey:SCOPE_MODE_KEY];
+    [NSUserDefaults.standardUserDefaults setValue:_gameFilterScope forKey:SCOPE_MODE_KEY];
     [self filterGameList];
 }
 
@@ -632,7 +668,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     }
     
     // add favorite games
-    NSArray* favoriteGames = [[_userDefaults objectForKey:FAVORITE_GAMES_KEY]
+    NSArray* favoriteGames = [[NSUserDefaults.standardUserDefaults objectForKey:FAVORITE_GAMES_KEY]
         filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF IN %@", filteredGames]];
     
     if ([favoriteGames count] > 0) {
@@ -642,7 +678,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     }
 
     // load recent games and put them at the top
-    NSArray* recentGames = [[_userDefaults objectForKey:RECENT_GAMES_KEY]
+    NSArray* recentGames = [[NSUserDefaults.standardUserDefaults objectForKey:RECENT_GAMES_KEY]
         filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF IN %@", filteredGames]];
 
     if ([recentGames count] > RECENT_GAMES_MAX)
@@ -827,7 +863,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 - (BOOL)isFavorite:(NSDictionary*)game
 {
-    NSArray* favoriteGames = [_userDefaults objectForKey:FAVORITE_GAMES_KEY] ?: @[];
+    NSArray* favoriteGames = [NSUserDefaults.standardUserDefaults objectForKey:FAVORITE_GAMES_KEY] ?: @[];
     return [favoriteGames containsObject:game];
 }
 - (void)setFavorite:(NSDictionary*)game isFavorite:(BOOL)flag
@@ -835,15 +871,15 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if (game == nil || [game[kGameInfoName] length] == 0)
         return;
 
-    NSMutableArray* favoriteGames = [([_userDefaults objectForKey:FAVORITE_GAMES_KEY] ?: @[]) mutableCopy];
+    NSMutableArray* favoriteGames = [([NSUserDefaults.standardUserDefaults objectForKey:FAVORITE_GAMES_KEY] ?: @[]) mutableCopy];
 
     [favoriteGames removeObject:game];
 
     if (flag)
         [favoriteGames insertObject:game atIndex:0];
     
-    [_userDefaults setObject:favoriteGames forKey:FAVORITE_GAMES_KEY];
-    [self updateApplicationShortcutItems];
+    [NSUserDefaults.standardUserDefaults setObject:favoriteGames forKey:FAVORITE_GAMES_KEY];
+    [self updateExternal];
 }
 
 #pragma mark Recent Games
@@ -853,7 +889,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if (game == nil || [game[kGameInfoName] length] == 0)
         return;
     
-    NSMutableArray* recentGames = [([_userDefaults objectForKey:RECENT_GAMES_KEY] ?: @[]) mutableCopy];
+    NSMutableArray* recentGames = [([NSUserDefaults.standardUserDefaults objectForKey:RECENT_GAMES_KEY] ?: @[]) mutableCopy];
 
     [recentGames removeObject:game];
     if (flag)
@@ -861,19 +897,38 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if ([recentGames count] > RECENT_GAMES_MAX)
         [recentGames removeObjectsInRange:NSMakeRange(RECENT_GAMES_MAX,[recentGames count] - RECENT_GAMES_MAX)];
 
-    [_userDefaults setObject:recentGames forKey:RECENT_GAMES_KEY];
+    [NSUserDefaults.standardUserDefaults setObject:recentGames forKey:RECENT_GAMES_KEY];
+    [self updateExternal];
+}
+
+#pragma mark Update External
+
+- (void) updateExternal {
+    for (NSString* key in @[RECENT_GAMES_KEY, FAVORITE_GAMES_KEY])
+        [NSUserDefaults.sharedUserDefaults setObject:([NSUserDefaults.standardUserDefaults objectForKey:key] ?: @[]) forKey:key];
+
+#if TARGET_OS_IOS
     [self updateApplicationShortcutItems];
+    #ifdef __IPHONE_14_0
+    [UIApplication reloadAllWidgets];
+    #endif
+#elif TARGET_OS_TV
+    if (@available(tvOS 13.0, *)) {
+        [TVTopShelfContentProvider topShelfContentDidChange];
+    }
+#endif
 }
 
 #pragma mark Application Shortcut Items
 
 #define MAX_SHORTCUT_ITEMS 4
 
-- (void) updateApplicationShortcutItems {
 #if TARGET_OS_IOS
-    NSArray* recentGames = [_userDefaults objectForKey:RECENT_GAMES_KEY] ?: @[];
-    NSArray* favoriteGames = [([_userDefaults objectForKey:FAVORITE_GAMES_KEY] ?: @[])
-                              filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"NOT (SELF IN %@)", recentGames]];
+- (void) updateApplicationShortcutItems {
+    NSArray* recentGames = [NSUserDefaults.standardUserDefaults objectForKey:RECENT_GAMES_KEY] ?: @[];
+    NSArray* favoriteGames = [NSUserDefaults.standardUserDefaults objectForKey:FAVORITE_GAMES_KEY] ?: @[];
+
+    recentGames = [recentGames filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"NOT (SELF IN %@)", favoriteGames]];
     
     NSLog(@"updateApplicationShortcutItems");
     NSLog(@"    RECENT GAMES(%d): %@", (int)[recentGames count], recentGames);
@@ -886,16 +941,19 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     recentGames = [recentGames subarrayWithRange:NSMakeRange(0, numRecent)];
     favoriteGames = [favoriteGames subarrayWithRange:NSMakeRange(0, numFavorite)];
     
+    NSArray* games = [favoriteGames arrayByAddingObjectsFromArray:recentGames];
+    [NSUserDefaults.sharedUserDefaults setObject:games forKey:QUICK_GAMES_KEY];
+    
     NSMutableArray* shortcutItems = [[NSMutableArray alloc] init];
     
-    for (NSDictionary* game in [recentGames arrayByAddingObjectsFromArray:favoriteGames]) {
+    for (NSDictionary* game in games) {
         NSString* type = [NSString stringWithFormat:@"%@.%@", NSBundle.mainBundle.bundleIdentifier, @"play"];
         NSString* name = game[kGameInfoDescription] ?: game[kGameInfoName];
         NSString* title = [NSString stringWithFormat:@"%@", [[name componentsSeparatedByString:@" ("] firstObject]];
         UIApplicationShortcutIcon* icon = [UIApplicationShortcutIcon iconWithType:UIApplicationShortcutIconTypePlay];
         
         if (@available(iOS 13.0, *))
-            icon = [UIApplicationShortcutIcon iconWithSystemImageName:[self isFavorite:game] ? @"heart" : @"gamecontroller"];
+            icon = [UIApplicationShortcutIcon iconWithSystemImageName:[self isFavorite:game] ? @"gamecontroller.fill" : @"gamecontroller"];
         
         UIApplicationShortcutItem* item = [[UIApplicationShortcutItem alloc] initWithType:type
                                            localizedTitle:title localizedSubtitle:nil
@@ -904,8 +962,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     }
 
     [UIApplication sharedApplication].shortcutItems = shortcutItems;
-#endif
 }
+#endif
 
 #pragma mark Update Images
 
@@ -1436,9 +1494,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     
     // if we only have the ROM name, try to find full info for this game in Recents or Favorites
     if (game[kGameInfoDescription] == nil) {
-        NSUserDefaults* defaults = [self getUserDefaults];
-        NSArray* list = [[defaults objectForKey:RECENT_GAMES_KEY] arrayByAddingObjectsFromArray:
-                         [defaults objectForKey:FAVORITE_GAMES_KEY]];
+        NSArray* list = [[NSUserDefaults.standardUserDefaults objectForKey:RECENT_GAMES_KEY] arrayByAddingObjectsFromArray:
+                         [NSUserDefaults.standardUserDefaults objectForKey:FAVORITE_GAMES_KEY]];
         game = [list filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"%K = %@", kGameInfoName, game[kGameInfoName]]].firstObject;
         
         if (game == nil)
@@ -1459,9 +1516,6 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         activity.eligibleForPrediction = TRUE;
         activity.persistentIdentifier = game[kGameInfoName];
         activity.suggestedInvocationPhrase = title;
-
-        if ([title containsString:@"Donkey Kong"])
-            activity.suggestedInvocationPhrase = @"It's on like Donkey Kong!";
     }
     return activity;
 }

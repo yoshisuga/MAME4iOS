@@ -2,6 +2,8 @@
 * New default artwork.
 * Netplay bugfix, must be running a game to join or host.
 * Save independant HUD position for landscape/portrait.
+* iOS 14 Widget.
+* tvOS TopShelf
 
 # Version 2020.12
 * `Metal` frame-skip updates and fixes.
