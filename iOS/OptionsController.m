@@ -359,7 +359,7 @@
                }
                case 3:
                {
-                   cell.textLabel.text = @"Start Server";
+                   cell.textLabel.text = @"Start Web Server";
                    cell.imageView.image = [UIImage systemImageNamed:@"arrow.up.arrow.down.circle"];
                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                    break;

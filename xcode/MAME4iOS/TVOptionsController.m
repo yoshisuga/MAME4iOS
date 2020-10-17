@@ -101,7 +101,7 @@
         }
     } else if ( indexPath.section == kImportSection ) {
         if ( indexPath.row == 0 ) {
-            cell.textLabel.text = @"Start Server";
+            cell.textLabel.text = @"Start Web Server";
             cell.imageView.image = [UIImage systemImageNamed:@"arrow.up.arrow.down.circle" withPointSize:size];
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
         }

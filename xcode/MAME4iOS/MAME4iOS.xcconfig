@@ -17,8 +17,8 @@ MARKETING_VERSION           = 2020.13
 
 PRODUCT_BUNDLE_IDENTIFIER   = $(ORG_IDENTIFIER).$(PROJECT_NAME:lower)
 APP_GROUP_IDENTIFIER        = group.$(ORG_IDENTIFIER).$(PROJECT_NAME:lower)
+ICLOUD_CONTAINER_IDENTIFIER = iCloud.$(ORG_IDENTIFIER).$(PROJECT_NAME:lower)
 
-// tvOS TopShelf and iOS 14 Widget require a App Group Entitlement
+// tvOS TopShelf, iOS 14 Widget, and iCloud import/export require entitlements
 // COMMENT THIS LINE OUT if you DONT want, or CANT register an entitlement
 CODE_SIGN_ENTITLEMENTS = $(TARGET_NAME)/$(TARGET_NAME).entitlements
-

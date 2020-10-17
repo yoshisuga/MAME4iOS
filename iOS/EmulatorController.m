@@ -4638,19 +4638,28 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         NSLog(@"NO GAMES, ASK USER WHAT TO DO....");
 
         NSString* title = @"Welcome to " PRODUCT_NAME_LONG;
-        NSString* message = @"\nTo transfer ROMs from your computer, Start Server, Import ROMs, or use AirDrop.";
-        
+#if TARGET_OS_TV
+        NSString* message = @"\nTo transfer ROMs from your computer, Start Web Server or Import ROMs.";
+#else
+        NSString* message = @"\nTo transfer ROMs from your computer, Start Web Server, Import ROMs, or use AirDrop.";
+#endif
         CGFloat size = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].pointSize;
         
         UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
-        [alert addAction:[UIAlertAction actionWithTitle:@"Start Server" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"arrow.up.arrow.down.circle" withPointSize:size] handler:^(UIAlertAction * _Nonnull action) {
+        [alert addAction:[UIAlertAction actionWithTitle:@"Start Web Server" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"arrow.up.arrow.down.circle" withPointSize:size] handler:^(UIAlertAction* action) {
             [self runServer];
         }]];
 #if TARGET_OS_IOS
-        [alert addAction:[UIAlertAction actionWithTitle:@"Import ROMs" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"square.and.arrow.down" withPointSize:size] handler:^(UIAlertAction * _Nonnull action) {
+        [alert addAction:[UIAlertAction actionWithTitle:@"Import ROMs" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"square.and.arrow.down" withPointSize:size] handler:^(UIAlertAction* action) {
             [self runImport];
         }]];
 #endif
+        if (TRUE)
+        {
+            [alert addAction:[UIAlertAction actionWithTitle:@"Import from iCloud" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"icloud.and.arrow.down" withPointSize:size] handler:^(UIAlertAction* action) {
+                /* [iCloud] */
+            }]];
+        }
         [alert addAction:[UIAlertAction actionWithTitle:@"Reload ROMs" style:UIAlertActionStyleCancel image:[UIImage systemImageNamed:@"arrow.2.circlepath.circle" withPointSize:size] handler:^(UIAlertAction * _Nonnull action) {
             myosd_exitGame = 1;     /* exit mame menu and re-scan ROMs*/
         }]];
