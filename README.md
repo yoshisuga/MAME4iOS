@@ -72,6 +72,7 @@ Building MAME4iOS requires a prebuilt MAME binary (it has not been included in t
 ORG_IDENTIFIER              = com.example    // CHANGE this to your Organization Identifier.
 DEVELOPMENT_TEAM            = ABC8675309     // CHANGE this to your Team ID. (or select in Xcode project editor)
 ```
+**NOTE** if you dont want a build with entitlements, comment out the `CODE_SIGN_ENTITLEMENTS` line in `MAME4iOS.xcconfig`
 **NOTE** you can also set the Development Team in the Xcode project editor
     - Select the Project (not one of the targets)
     - Select the `Build Settings` tab.

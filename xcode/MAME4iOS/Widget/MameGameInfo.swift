@@ -116,7 +116,7 @@ extension MameGameInfo {
 
 extension Bundle {
     var groupIdentifier:String {
-        return "group." + (self.bundleIdentifier!).components(separatedBy:".").prefix(2).joined(separator:".") + ".mame4ios"
+        return "group." + (self.bundleIdentifier!).components(separatedBy:".").prefix(3).joined(separator:".")
     }
 }
 
