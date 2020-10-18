@@ -2185,20 +2185,17 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 }
 -(void)setCornerRadius:(CGFloat)radius
 {
-    if (self.contentView.backgroundColor == UIColor.clearColor)
-    {
+    self.layer.cornerRadius = radius;
+    self.contentView.layer.cornerRadius = radius;
+    self.contentView.clipsToBounds = radius != 0.0;
+
+    if (self.contentView.backgroundColor == UIColor.clearColor) {
         _image.layer.cornerRadius = radius;
         _image.clipsToBounds = radius != 0.0;
-        self.layer.cornerRadius = 0.0;
-        self.contentView.layer.cornerRadius = 0.0;
-        self.contentView.clipsToBounds = radius != 0.0;
     }
-    else
-    {
+    else {
         _image.layer.cornerRadius = 0.0;
-        self.layer.cornerRadius = radius;
-        self.contentView.layer.cornerRadius = radius;
-        self.contentView.clipsToBounds = radius != 0.0;
+        _image.clipsToBounds = NO;
     }
 }
 -(void)setBackgroundColor:(UIColor*)color
@@ -2284,7 +2281,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 {
     BOOL selected = self.selected || self.focused;
 #if TARGET_OS_IOS || !TVOS_PARALLAX
-    if (CELL_BACKGROUND_COLOR != UIColor.clearColor)
+    if (!(CELL_BACKGROUND_COLOR == UIColor.clearColor))
         [self setBackgroundColor:selected ? CELL_SELECTED_COLOR : CELL_BACKGROUND_COLOR];
     [self setShadowColor:selected ? CELL_SELECTED_COLOR : CELL_SHADOW_COLOR];
     self.transform = selected ? CGAffineTransformMakeScale(_scale, _scale) : (self.highlighted ? CGAffineTransformMakeScale(1.0 - (_scale-1.0), 1.0 - (_scale-1.0)) : CGAffineTransformIdentity);
@@ -2328,6 +2325,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
                 [self setImageAspect:0.0];
                 [self setBorderWidth:0.0];
                 self.contentView.clipsToBounds = NO;
+                self.image.clipsToBounds = NO;
             }
         });
     }

@@ -103,6 +103,11 @@ Make sure the name of the App Group is `group.<ORG_IDENTIFIER>.mame4ios`
 
 If your `ORG_IDENTIFIER` is `com.example` you should register a AppGroup named `group.com.example.mame4ios`
 
+### iCloud Import and Export.
+* To enable syncing with iCloud, you must enable [CloudKit](https://developer.apple.com/library/archive/documentation/DataManagement/Conceptual/CloudKitQuickStart/EnablingiCloudandConfiguringCloudKit/EnablingiCloudandConfiguringCloudKit.html)
+* Use the container `iCloud.<ORG_IDENTIFIER>.mame4ios`
+* Blah, Blah, Blah
+
 ## tvOS
 
 MAME for tvOS support was added in early 2019, and it currently can run games has full native UI support and MFI controller support with most notably:
