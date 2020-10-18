@@ -58,14 +58,27 @@
 #endif
 
 #define USE_TITLE_IMAGE         TRUE
-#define TVOS_PARALLAX           TRUE
-#define BACKGROUND_COLOR        [UIColor blackColor]
+#define TVOS_PARALLAX           FALSE
 #define TITLE_COLOR             [UIColor whiteColor]
 #define HEADER_TEXT_COLOR       [UIColor whiteColor]
 #define HEADER_BACKGROUND_COLOR [UIColor clearColor]
 #define HEADER_PINNED_COLOR     [BACKGROUND_COLOR colorWithAlphaComponent:0.8]
-#define CELL_BACKGROUND_COLOR   [UIColor colorWithWhite:0.222 alpha:1.0]
+
 #define CELL_SELECTED_COLOR     [self.tintColor colorWithAlphaComponent:1.0]
+#define CELL_SHADOW_COLOR       UIColor.clearColor
+
+#define CELL_CORNER_RADIUS      16.0
+#define CELL_BORDER_WIDTH       2.0
+
+#if 0
+#define BACKGROUND_COLOR        [UIColor blackColor]
+#define CELL_BACKGROUND_COLOR   [UIColor colorWithWhite:0.222 alpha:1.0]
+#define CELL_TEXT_ALIGN         NSTextAlignmentLeft
+#else
+#define BACKGROUND_COLOR        [UIColor colorWithWhite:0.066 alpha:1.0]
+#define CELL_BACKGROUND_COLOR   UIColor.clearColor
+#define CELL_TEXT_ALIGN         NSTextAlignmentCenter
+#endif
 
 #define CELL_TITLE_FONT         [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
 #define CELL_TITLE_COLOR        [UIColor whiteColor]
@@ -119,10 +132,12 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 -(void)setImageAspect:(CGFloat)aspect;
 -(void)setBorderWidth:(CGFloat)width;
 -(void)setCornerRadius:(CGFloat)radius;
+-(void)setBackgroundColor:(UIColor *)backgroundColor;
+-(void)setShadowColor:(UIColor*)color;
+-(void)setSelectScale:(CGFloat)scale;
 -(void)addBlur:(UIBlurEffectStyle)style;
 -(void)startWait;
 -(void)stopWait;
-
 @end
 
 #pragma mark GameInfoController
@@ -1133,7 +1148,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 -(NSAttributedString*)getGameText:(NSDictionary*)game
 {
-    return [[self class] getGameText:game layoutMode:_layoutMode textAlignment:NSTextAlignmentLeft];
+    return [[self class] getGameText:game layoutMode:_layoutMode textAlignment:_layoutMode == LayoutList ? NSTextAlignmentLeft : CELL_TEXT_ALIGN];
 }
 
 // compute the size(s) of a single item. returns: (x = image_height, y = text_height)
@@ -1211,12 +1226,21 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     
     GameCell* cell = [collectionView dequeueReusableCellWithReuseIdentifier:CELL_IDENTIFIER forIndexPath:indexPath];
     
-    cell.text.attributedText = [self getGameText:info];;
+    cell.text.attributedText = [self getGameText:info];
     
     if (_layoutMode == LayoutTiny) {
         cell.text.numberOfLines = 1;
         cell.text.adjustsFontSizeToFitWidth = TRUE;
     }
+    
+    if (_layoutMode == LayoutTiny || _layoutMode == LayoutList) {
+        [cell setCornerRadius:CELL_CORNER_RADIUS / 2];
+    }
+    
+    UICollectionViewFlowLayout* layout = (UICollectionViewFlowLayout*)self.collectionView.collectionViewLayout;
+    CGFloat space = layout.minimumInteritemSpacing;
+    CGFloat scale = 1.0 + (space * 1.5 / cell.bounds.size.width);
+    [cell setSelectScale:scale];
 
     [cell setHorizontal:_layoutMode == LayoutList];
     [cell setTextInsets:UIEdgeInsetsMake(CELL_INSET_Y, CELL_INSET_X, CELL_INSET_Y, CELL_INSET_X)];
@@ -2008,6 +2032,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     UIStackView* _stackView;
     UIStackView* _stackText;
     CGFloat _height;
+    CGFloat _scale;
 }
 @end
 
@@ -2057,20 +2082,13 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     self.backgroundColor = [UIColor clearColor];
     self.backgroundView = nil;
 
-    self.contentView.backgroundColor = CELL_BACKGROUND_COLOR;
-
-    self.layer.cornerRadius = 8.0;
-    self.contentView.layer.cornerRadius = 8.0;
-    self.contentView.clipsToBounds = YES;
-
-    self.contentView.layer.borderWidth = 2.0;
-    self.contentView.layer.borderColor = self.contentView.backgroundColor.CGColor;
+    [self setBackgroundColor:CELL_BACKGROUND_COLOR];
+    [self setCornerRadius:CELL_CORNER_RADIUS];
+    [self setBorderWidth:CELL_BORDER_WIDTH];
+    [self setShadowColor:CELL_SHADOW_COLOR];
     
-    self.layer.shadowColor = UIColor.clearColor.CGColor;
-    self.layer.shadowOffset = CGSizeMake(0.0, 0.0f);
-    self.layer.shadowRadius = 8.0;
-    self.layer.shadowOpacity = 1.0;
-    
+    _scale = 1.0;
+
     _text.text = nil;
     _text.attributedText = nil;
     _text.font = nil;
@@ -2167,9 +2185,37 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 }
 -(void)setCornerRadius:(CGFloat)radius
 {
-    self.layer.cornerRadius = radius;
-    self.contentView.layer.cornerRadius = radius;
-    self.contentView.clipsToBounds = radius != 0.0;
+    if (self.contentView.backgroundColor == UIColor.clearColor)
+    {
+        _image.layer.cornerRadius = radius;
+        _image.clipsToBounds = radius != 0.0;
+        self.layer.cornerRadius = 0.0;
+        self.contentView.layer.cornerRadius = 0.0;
+        self.contentView.clipsToBounds = radius != 0.0;
+    }
+    else
+    {
+        _image.layer.cornerRadius = 0.0;
+        self.layer.cornerRadius = radius;
+        self.contentView.layer.cornerRadius = radius;
+        self.contentView.clipsToBounds = radius != 0.0;
+    }
+}
+-(void)setBackgroundColor:(UIColor*)color
+{
+    self.contentView.backgroundColor = color;
+    self.contentView.layer.borderColor = color.CGColor;
+}
+-(void)setShadowColor:(UIColor*)color
+{
+    self.layer.shadowColor = color.CGColor;
+    self.layer.shadowOffset = CGSizeMake(0.0, 0.0f);
+    self.layer.shadowRadius = 8.0;
+    self.layer.shadowOpacity = 1.0;
+}
+-(void)setSelectScale:(CGFloat)scale
+{
+    _scale = scale;
 }
 -(void)addBlur:(UIBlurEffectStyle)style {
     if (self.backgroundView != nil)
@@ -2238,11 +2284,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 {
     BOOL selected = self.selected || self.focused;
 #if TARGET_OS_IOS || !TVOS_PARALLAX
-    UIColor* color = selected ? CELL_SELECTED_COLOR : CELL_BACKGROUND_COLOR;
-    self.contentView.backgroundColor = color;
-    self.contentView.layer.borderColor = color.CGColor;
-    self.transform = selected ? CGAffineTransformMakeScale(1.02, 1.02) : (self.highlighted ? CGAffineTransformMakeScale(0.98, 0.98) : CGAffineTransformIdentity);
-    self.layer.shadowColor = selected ? color.CGColor : UIColor.clearColor.CGColor;
+    if (CELL_BACKGROUND_COLOR != UIColor.clearColor)
+        [self setBackgroundColor:selected ? CELL_SELECTED_COLOR : CELL_BACKGROUND_COLOR];
+    [self setShadowColor:selected ? CELL_SELECTED_COLOR : CELL_SHADOW_COLOR];
+    self.transform = selected ? CGAffineTransformMakeScale(_scale, _scale) : (self.highlighted ? CGAffineTransformMakeScale(1.0 - (_scale-1.0), 1.0 - (_scale-1.0)) : CGAffineTransformIdentity);
 #endif
 #if TARGET_OS_TV && TVOS_PARALLAX
     if (selected)
