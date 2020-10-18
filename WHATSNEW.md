@@ -4,6 +4,8 @@
 * Save independant HUD position for landscape/portrait.
 * iOS 14 Widget.
 * tvOS TopShelf
+* New ChooseGameUI look.
+* iCloud import, export, and sync.
 
 # Version 2020.12
 * `Metal` frame-skip updates and fixes.
