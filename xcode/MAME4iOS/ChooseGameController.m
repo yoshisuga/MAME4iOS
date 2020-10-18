@@ -155,13 +155,12 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 @implementation NSUserDefaults(shared)
 +(NSUserDefaults*)sharedUserDefaults {
 #if TARGET_OS_MACCATALYST
-    // on macOS shared container id must be TEAMID.bundle
+    // on macOS shared container id must be <TEAMID>.<BUNDLE IDENTIFIER>
     return nil;
 #else
-    // on iOS shared container must start with group.
-    NSArray* parts = [NSBundle.mainBundle.bundleIdentifier componentsSeparatedByString:@"."];
-    if ([parts count] < 3) return nil;
-    NSString* name = [NSString stringWithFormat:@"group.%@.%@.%@", parts[0], parts[1], parts[2]];
+    assert([NSBundle.mainBundle.bundleIdentifier componentsSeparatedByString:@"."].count == 3);
+    // on iOS shared container must be group.<BUNDLE IDENTIFIER>
+    NSString* name = [NSString stringWithFormat:@"group.%@", NSBundle.mainBundle.bundleIdentifier];
     return [[NSUserDefaults alloc] initWithSuiteName:name];
 #endif
 }

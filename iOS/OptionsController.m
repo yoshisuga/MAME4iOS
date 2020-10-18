@@ -505,7 +505,7 @@
           case kFilterSection: return 2;
           case kImportSection: return 4;
           case kCloudImportSection:
-              if (CloudSync.status == CloudSyncStatusOk)
+              if (CloudSync.status == CloudSyncStatusAvailable)
                   return 3;
               else if (CloudSync.status == CloudSyncStatusEmpty)
                   return 1;

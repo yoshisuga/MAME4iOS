@@ -4664,7 +4664,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
             [self runImport];
         }]];
 #endif
-        if (CloudSync.status == CloudSyncStatusOk)
+        if (CloudSync.status == CloudSyncStatusAvailable)
         {
             [alert addAction:[UIAlertAction actionWithTitle:@"Import from iCloud" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"icloud.and.arrow.down" withPointSize:size] handler:^(UIAlertAction* action) {
                 [CloudSync import];

@@ -9,10 +9,13 @@
 #import <Foundation/Foundation.h>
 
 typedef NS_ENUM(NSInteger, CloudSyncStatus) {
-    CloudSyncStatusUnknown,
-    CloudSyncStatusFailed,
-    CloudSyncStatusEmpty,
-    CloudSyncStatusOk,
+    CloudSyncStatusUnknown,     // we have not checked yet
+    CloudSyncStatusNoAccount,   // user does not have iCloud account
+    CloudSyncStatusNotEntitled, // no entitlement
+    CloudSyncStatusRestricted,  // unnable to connect to CloudKit
+    CloudSyncStatusError,       // unnable to connect to CloudKit
+    CloudSyncStatusEmpty,       // no data is in the Cloud
+    CloudSyncStatusAvailable,   // all good
 };
 
 NS_ASSUME_NONNULL_BEGIN
