@@ -22,6 +22,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface CloudSync : NSObject
 
+-(instancetype)init NS_UNAVAILABLE;
+
 @property(class,nonatomic,readonly) CloudSyncStatus status;
 
 +(void)import;

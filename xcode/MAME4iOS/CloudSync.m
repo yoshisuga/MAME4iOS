@@ -24,6 +24,15 @@ static CloudSyncStatus _status;
 static CKContainer*    _container;
 static CKDatabase*     _database;
 
+// MARK: LOAD
+
++(void)load {
+    [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(updateCloudStatus) name:CKAccountChangedNotification object:nil];
+    [self updateCloudStatus];
+}
+
+// MARK: STATUS
+
 +(CloudSyncStatus)status {
     return _status;
 }
@@ -48,7 +57,7 @@ static CKDatabase*     _database;
     [_container accountStatusWithCompletionHandler:^(CKAccountStatus accountStatus, NSError* error) {
         
         if (error != nil) {
-            NSLog(@"CLOUD STATUS: ERROR(%@)", error);
+            NSLog(@"CLOUD STATUS: %@", error);
         }
         
         switch (accountStatus) {
@@ -105,25 +114,18 @@ static CKDatabase*     _database;
     }];
 }
 
-+(void)load {
-    [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(updateCloudStatus) name:CKAccountChangedNotification object:nil];
-    [self updateCloudStatus];
-}
-
--(instancetype)init {
-    // this class is a class singleton
-    NSParameterAssert(FALSE);
-    return nil;
-}
+// MARK: IMPORT and EXPORT
 
 +(void)import {
-    
 }
+
 +(void)export {
-    
 }
+
+// currently sync is just a export and import
 +(void)sync {
-    
+    [self import];
+    [self export];
 }
 
 @end

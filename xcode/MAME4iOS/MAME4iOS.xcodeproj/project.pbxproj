@@ -139,6 +139,9 @@
 		EF286D34253CA930007DA6D3 /* CloudSync.m in Sources */ = {isa = PBXBuildFile; fileRef = EF286D33253CA930007DA6D3 /* CloudSync.m */; };
 		EF286D35253CA930007DA6D3 /* CloudSync.m in Sources */ = {isa = PBXBuildFile; fileRef = EF286D33253CA930007DA6D3 /* CloudSync.m */; };
 		EF286D36253CA930007DA6D3 /* CloudSync.m in Sources */ = {isa = PBXBuildFile; fileRef = EF286D33253CA930007DA6D3 /* CloudSync.m */; };
+		EF286D59253CF171007DA6D3 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF286D58253CF171007DA6D3 /* CloudKit.framework */; };
+		EF286D5B253CF18D007DA6D3 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF286D5A253CF18D007DA6D3 /* CloudKit.framework */; };
+		EF286D5C253CF1A1007DA6D3 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF286D58253CF171007DA6D3 /* CloudKit.framework */; };
 		EF29C8822401C73A00AFFA4E /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EF29C8802401C73900AFFA4E /* Launch Screen.storyboard */; };
 		EF301CF1240460C5000510FD /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF301CF0240460C5000510FD /* Alert.m */; };
 		EF301CF2240460C5000510FD /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF301CF0240460C5000510FD /* Alert.m */; };
@@ -549,6 +552,8 @@
 		EF27F36923F7475100B1E50A /* libcompression.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcompression.tbd; path = usr/lib/libcompression.tbd; sourceTree = SDKROOT; };
 		EF286D32253CA930007DA6D3 /* CloudSync.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CloudSync.h; sourceTree = "<group>"; };
 		EF286D33253CA930007DA6D3 /* CloudSync.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CloudSync.m; sourceTree = "<group>"; };
+		EF286D58253CF171007DA6D3 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
+		EF286D5A253CF18D007DA6D3 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS14.0.sdk/System/Library/Frameworks/CloudKit.framework; sourceTree = DEVELOPER_DIR; };
 		EF29C8802401C73900AFFA4E /* Launch Screen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		EF301CEF240460C5000510FD /* Alert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Alert.h; sourceTree = "<group>"; };
 		EF301CF0240460C5000510FD /* Alert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Alert.m; sourceTree = "<group>"; };
@@ -657,6 +662,7 @@
 				925ABCC01E46DCC500997182 /* Foundation.framework in Frameworks */,
 				EF24BB0124C78E5400D9C55A /* MetalPerformanceShaders.framework in Frameworks */,
 				925ABCC11E46DCC500997182 /* CoreGraphics.framework in Frameworks */,
+				EF286D59253CF171007DA6D3 /* CloudKit.framework in Frameworks */,
 				925ABCC21E46DCC500997182 /* GameKit.framework in Frameworks */,
 				925ABCC41E46DCC500997182 /* libz.dylib in Frameworks */,
 			);
@@ -666,6 +672,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EF286D5B253CF18D007DA6D3 /* CloudKit.framework in Frameworks */,
 				92A533DF21EEFE520089FBB9 /* CFNetwork.framework in Frameworks */,
 				92ECB91021EA99B600D1E3D0 /* GameKit.framework in Frameworks */,
 				92ECB90E21EA99A200D1E3D0 /* CoreGraphics.framework in Frameworks */,
@@ -716,6 +723,7 @@
 				EFA7A12B24B65C020009CF88 /* Foundation.framework in Frameworks */,
 				EFA7A16624B792CE0009CF88 /* MetalPerformanceShaders.framework in Frameworks */,
 				EFA7A12C24B65C020009CF88 /* CoreGraphics.framework in Frameworks */,
+				EF286D5C253CF1A1007DA6D3 /* CloudKit.framework in Frameworks */,
 				EFA7A12D24B65C020009CF88 /* GameKit.framework in Frameworks */,
 				EFA7A12E24B65C020009CF88 /* libz.dylib in Frameworks */,
 			);
@@ -899,6 +907,8 @@
 		CEE680881635BA7000051BC2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				EF286D5A253CF18D007DA6D3 /* CloudKit.framework */,
+				EF286D58253CF171007DA6D3 /* CloudKit.framework */,
 				EF950BAC24B1239F00DC9A47 /* MetalPerformanceShaders.framework */,
 				EF950BAE24B123A900DC9A47 /* MetalPerformanceShaders.framework */,
 				EFA7A16524B792CE0009CF88 /* MetalPerformanceShaders.framework */,
