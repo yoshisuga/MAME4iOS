@@ -136,6 +136,9 @@
 		EF26AE0C241AA6900078FD30 /* FileItemProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = EF26AE0B241AA6900078FD30 /* FileItemProvider.m */; };
 		EF27F36823F73CD400B1E50A /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF27F36323F73CD400B1E50A /* ZipFile.m */; };
 		EF27F36A23F7475100B1E50A /* libcompression.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = EF27F36923F7475100B1E50A /* libcompression.tbd */; };
+		EF286D34253CA930007DA6D3 /* CloudSync.m in Sources */ = {isa = PBXBuildFile; fileRef = EF286D33253CA930007DA6D3 /* CloudSync.m */; };
+		EF286D35253CA930007DA6D3 /* CloudSync.m in Sources */ = {isa = PBXBuildFile; fileRef = EF286D33253CA930007DA6D3 /* CloudSync.m */; };
+		EF286D36253CA930007DA6D3 /* CloudSync.m in Sources */ = {isa = PBXBuildFile; fileRef = EF286D33253CA930007DA6D3 /* CloudSync.m */; };
 		EF29C8822401C73A00AFFA4E /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EF29C8802401C73900AFFA4E /* Launch Screen.storyboard */; };
 		EF301CF1240460C5000510FD /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF301CF0240460C5000510FD /* Alert.m */; };
 		EF301CF2240460C5000510FD /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF301CF0240460C5000510FD /* Alert.m */; };
@@ -544,6 +547,8 @@
 		EF27F36323F73CD400B1E50A /* ZipFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZipFile.m; sourceTree = "<group>"; };
 		EF27F36423F73CD400B1E50A /* ZipFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZipFile.h; sourceTree = "<group>"; };
 		EF27F36923F7475100B1E50A /* libcompression.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcompression.tbd; path = usr/lib/libcompression.tbd; sourceTree = SDKROOT; };
+		EF286D32253CA930007DA6D3 /* CloudSync.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CloudSync.h; sourceTree = "<group>"; };
+		EF286D33253CA930007DA6D3 /* CloudSync.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CloudSync.m; sourceTree = "<group>"; };
 		EF29C8802401C73900AFFA4E /* Launch Screen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		EF301CEF240460C5000510FD /* Alert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Alert.h; sourceTree = "<group>"; };
 		EF301CF0240460C5000510FD /* Alert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Alert.m; sourceTree = "<group>"; };
@@ -835,6 +840,8 @@
 				EFE4B6AA2453D7F80009A6F1 /* InfoDatabase.m */,
 				92A533D521EE601D0089FBB9 /* WebServer.h */,
 				92A533D621EE601D0089FBB9 /* WebServer.m */,
+				EF286D32253CA930007DA6D3 /* CloudSync.h */,
+				EF286D33253CA930007DA6D3 /* CloudSync.m */,
 				CEBFBC0E163C5BD300A05CD0 /* resources */,
 			);
 			name = RELOADED;
@@ -1459,6 +1466,7 @@
 				92B99F0F2022706600CC44E3 /* UIView+Toast.m in Sources */,
 				925ABCAD1E46DCC500997182 /* EmulatorController.m in Sources */,
 				925ABCAE1E46DCC500997182 /* HelpController.m in Sources */,
+				EF286D34253CA930007DA6D3 /* CloudSync.m in Sources */,
 				925ABCAF1E46DCC500997182 /* AnalogStick.m in Sources */,
 				925ABCB01E46DCC500997182 /* Bootstrapper.m in Sources */,
 				EFA7570D2406D64600A02AAB /* SystemImage.m in Sources */,
@@ -1505,6 +1513,7 @@
 				926C770A21F271A700103EDE /* ListOptionController.m in Sources */,
 				92A533C721EBDBAD0089FBB9 /* GCDWebServerDataRequest.m in Sources */,
 				926C76FF21F1C87700103EDE /* TVOptionsController.m in Sources */,
+				EF286D35253CA930007DA6D3 /* CloudSync.m in Sources */,
 				EFF9F80A246356B300DDA88C /* CGScreenView.m in Sources */,
 				EF8E427E249348220049C84C /* megaTron.metal in Sources */,
 				92A5332621EBC8D00089FBB9 /* Bootstrapper.m in Sources */,
@@ -1584,6 +1593,7 @@
 				EFA7A0F724B65C020009CF88 /* UIView+Toast.m in Sources */,
 				EFA7A0F824B65C020009CF88 /* EmulatorController.m in Sources */,
 				EFA7A0F924B65C020009CF88 /* HelpController.m in Sources */,
+				EF286D36253CA930007DA6D3 /* CloudSync.m in Sources */,
 				EFA7A0FA24B65C020009CF88 /* AnalogStick.m in Sources */,
 				EFA7A0FB24B65C020009CF88 /* Bootstrapper.m in Sources */,
 				EFA7A0FD24B65C020009CF88 /* SystemImage.m in Sources */,

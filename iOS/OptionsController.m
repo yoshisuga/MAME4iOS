@@ -54,6 +54,7 @@
 #import "EmulatorController.h"
 #import "SystemImage.h"
 #import "ImageCache.h"
+#import "CloudSync.h"
 
 @implementation OptionsController
 
@@ -419,15 +420,15 @@
             {
                 case 0:
                 {
-                    cell.textLabel.text = @"Import from iCloud";
-                    cell.imageView.image = [UIImage systemImageNamed:@"icloud.and.arrow.down"];
+                    cell.textLabel.text = @"Export to iCloud";
+                    cell.imageView.image = [UIImage systemImageNamed:@"icloud.and.arrow.up"];
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                     break;
                 }
                 case 1:
                 {
-                    cell.textLabel.text = @"Export to iCloud";
-                    cell.imageView.image = [UIImage systemImageNamed:@"icloud.and.arrow.up"];
+                    cell.textLabel.text = @"Import from iCloud";
+                    cell.imageView.image = [UIImage systemImageNamed:@"icloud.and.arrow.down"];
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                     break;
                 }
@@ -503,7 +504,13 @@
           case kMiscSection: return 14;
           case kFilterSection: return 2;
           case kImportSection: return 4;
-          case kCloudImportSection: return 3;
+          case kCloudImportSection:
+              if (CloudSync.status == CloudSyncStatusOk)
+                  return 3;
+              else if (CloudSync.status == CloudSyncStatusEmpty)
+                  return 1;
+              else
+                  return 0;
           case kResetSection: return 1;
       }
     return -1;
@@ -611,10 +618,13 @@
         case kCloudImportSection:
         {
             if (row==0) {
+                [CloudSync export];
             }
             if (row==1) {
+                [CloudSync import];
             }
             if (row==2) {
+                [CloudSync sync];
             }
             break;
         }

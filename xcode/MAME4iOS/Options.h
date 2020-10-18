@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)resetOptions;
 + (void)setOption:(id)value forKey:(NSString*)key;
 
+@property (class, readonly, strong) NSString* optionsFile;
 
 @property (class, readonly, strong) NSArray* arrayEmuRes;
 @property (class, readonly, strong) NSArray* arrayFSValue;

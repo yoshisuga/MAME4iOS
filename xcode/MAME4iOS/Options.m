@@ -94,17 +94,22 @@
 
 + (NSString*)optionsFile
 {
-    return [NSString stringWithUTF8String:get_documents_path("iOS/options_v23.bin")];
+    return @"iOS/options_v23.bin";
+}
+
++ (NSString*)optionsPath
+{
+    return [NSString stringWithUTF8String:get_documents_path(self.optionsFile.UTF8String)];
 }
 
 + (void)resetOptions
 {
-    [[NSFileManager defaultManager] removeItemAtPath:Options.optionsFile error:nil];
+    [[NSFileManager defaultManager] removeItemAtPath:Options.optionsPath error:nil];
 }
 
 - (void)loadOptions
 {
-    NSString *path = Options.optionsFile;
+    NSString *path = Options.optionsPath;
     
     NSData *plistData;
     id plist = nil;

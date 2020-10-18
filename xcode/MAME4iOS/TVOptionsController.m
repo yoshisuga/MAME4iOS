@@ -10,6 +10,7 @@
 #import "ListOptionController.h"
 #import "TVInputOptionsController.h"
 #import "SystemImage.h"
+#import "CloudSync.h"
 
 @implementation TVOptionsController
 
@@ -49,7 +50,12 @@
     } else if ( section == kInputSection ) {
         return 1;
     } else if ( section == kImportSection ) {
-        return TRUE ? 4 : 1;
+        if (CloudSync.status == CloudSyncStatusOk)
+            return 4;
+        else if (CloudSync.status == CloudSyncStatusEmpty)
+            return 2;
+        else
+            return 1;
     } else if ( section == kResetSection ) {
         return 1;
     }
@@ -110,13 +116,13 @@
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
         }
         if ( indexPath.row == 1 ) {
-            cell.textLabel.text = @"Import from iCloud";
-            cell.imageView.image = [UIImage systemImageNamed:@"icloud.and.arrow.down" withPointSize:size];
+            cell.textLabel.text = @"Export to iCloud";
+            cell.imageView.image = [UIImage systemImageNamed:@"icloud.and.arrow.up" withPointSize:size];
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
         }
         if ( indexPath.row == 2 ) {
-            cell.textLabel.text = @"Export to iCloud";
-            cell.imageView.image = [UIImage systemImageNamed:@"icloud.and.arrow.up" withPointSize:size];
+            cell.textLabel.text = @"Import from iCloud";
+            cell.imageView.image = [UIImage systemImageNamed:@"icloud.and.arrow.down" withPointSize:size];
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
         }
         if ( indexPath.row == 3 ) {
@@ -234,13 +240,13 @@
             [self.emuController runServer];
         }
         if ( indexPath.row == 1 ) {
-            [self.emuController runServer];
+            [CloudSync export];
         }
         if ( indexPath.row == 2 ) {
-            [self.emuController runServer];
+            [CloudSync import];
         }
         if ( indexPath.row == 3 ) {
-            [self.emuController runServer];
+            [CloudSync sync];
         }
     } else if ( indexPath.section == kScreenSection ) {
         if ( indexPath.row == 0 ) {

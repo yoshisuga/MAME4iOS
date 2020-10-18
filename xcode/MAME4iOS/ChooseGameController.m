@@ -2185,15 +2185,14 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 }
 -(void)setCornerRadius:(CGFloat)radius
 {
-    self.layer.cornerRadius = radius;
-    self.contentView.layer.cornerRadius = radius;
-    self.contentView.clipsToBounds = radius != 0.0;
-
     if (self.contentView.backgroundColor == UIColor.clearColor) {
         _image.layer.cornerRadius = radius;
         _image.clipsToBounds = radius != 0.0;
     }
     else {
+        self.layer.cornerRadius = radius;
+        self.contentView.layer.cornerRadius = radius;
+        self.contentView.clipsToBounds = radius != 0.0;
         _image.layer.cornerRadius = 0.0;
         _image.clipsToBounds = NO;
     }
@@ -2281,10 +2280,12 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 {
     BOOL selected = self.selected || self.focused;
 #if TARGET_OS_IOS || !TVOS_PARALLAX
+    if (_image.image == nil)
+        return;
     if (!(CELL_BACKGROUND_COLOR == UIColor.clearColor))
         [self setBackgroundColor:selected ? CELL_SELECTED_COLOR : CELL_BACKGROUND_COLOR];
     [self setShadowColor:selected ? CELL_SELECTED_COLOR : CELL_SHADOW_COLOR];
-    self.transform = selected ? CGAffineTransformMakeScale(_scale, _scale) : (self.highlighted ? CGAffineTransformMakeScale(1.0 - (_scale-1.0), 1.0 - (_scale-1.0)) : CGAffineTransformIdentity);
+    self.transform = selected ? CGAffineTransformMakeScale(_scale, _scale) : (self.highlighted ? CGAffineTransformMakeScale(2.0 - _scale, 2.0 - _scale) : CGAffineTransformIdentity);
 #endif
 #if TARGET_OS_TV && TVOS_PARALLAX
     if (selected)
@@ -2295,13 +2296,13 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 }
 - (void)setHighlighted:(BOOL)highlighted
 {
-    //NSLog(@"setHighlighted(%@): %@", self.text.text, highlighted ? @"YES" : @"NO");
+    NSLog(@"setHighlighted(%@): %@", self.text.text, highlighted ? @"YES" : @"NO");
     [super setHighlighted:highlighted];
     [self updateSelected];
 }
 - (void)setSelected:(BOOL)selected
 {
-    //NSLog(@"setSelected(%@): %@", self.text.text, selected ? @"YES" : @"NO");
+    NSLog(@"setSelected(%@): %@", self.text.text, selected ? @"YES" : @"NO");
     [super setSelected:selected];
     [self updateSelected];
 }
@@ -2457,7 +2458,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 #endif
 - (void)viewWillLayoutSubviews {
     [super viewWillLayoutSubviews];
-    
+
     if (_layoutWidth == self.view.bounds.size.width)
         return;
     

@@ -77,6 +77,7 @@
 #import "SystemImage.h"
 #import "SteamController.h"
 #import "SkinManager.h"
+#import "CloudSync.h"
 
 // declare these selectors, so we can use them, and ARC wont complain
 #ifndef __IPHONE_14_0
@@ -3728,11 +3729,9 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     }
 }
 
-// ZIP up all the important files in our documents directory
+// get a list of all the important files in our documents directory
 // this is more than just "ROMs" it saves *all* important files, kind of like an archive or backup.
-// TODO: maybe we should also export the settings.bin or the UserDefaults plist
-// NOTE we specificaly *dont* export CHDs because they are too big, we support importing CHDs just not exporting
--(BOOL)saveROMS:(NSURL*)url progressBlock:(BOOL (^)(double progress))block {
+-(NSArray<NSString*>*)getROMS {
 
     NSString *rootPath = [NSString stringWithUTF8String:get_documents_path("")];
     NSString *romsPath = [NSString stringWithUTF8String:get_documents_path("roms")];
@@ -3742,16 +3741,19 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 
     NSArray* roms = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:romsPath error:nil];
     for (NSString* rom in roms) {
-        NSString* ext = [rom.pathExtension uppercaseString];
-        
-        if (![ext isEqualToString:@"ZIP"])
+        if (![rom.pathExtension.uppercaseString isEqualToString:@"ZIP"])
             continue;
         
         NSArray* paths = @[@"roms/%@.zip", @"artwork/%@.zip", @"titles/%@.png", @"samples/%@.zip", @"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@/1.sta", @"sta/%@/2.sta", @"hi/%@.hi"];
         for (NSString* path in paths) {
-            [files addObject:[NSString stringWithFormat:path, [rom stringByDeletingPathExtension]]];
+            NSString* file = [NSString stringWithFormat:path, rom.stringByDeletingPathExtension];
+            if ([NSFileManager.defaultManager fileExistsAtPath:[rootPath stringByAppendingPathComponent:file]])
+                [files addObject:file];
         }
     }
+    
+    // add in options data file too.
+    [files addObject:Options.optionsFile];
     
     // save everything in the `skins` directory too
     for (NSString* skin in [NSFileManager.defaultManager contentsOfDirectoryAtPath:skinPath error:nil]) {
@@ -3759,9 +3761,17 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
             [files addObject:[NSString stringWithFormat:@"skins/%@", skin]];
     }
     
-    NSLog(@"saveROMS: ROMS: %@", roms);
-    NSLog(@"saveROMS: FILES: %@", files);
-    
+    NSLog(@"getROMS: %@", files);
+    return files;
+}
+
+// ZIP up all the important files in our documents directory
+// NOTE we specificaly *dont* export CHDs because they are too big, we support importing CHDs just not exporting
+-(BOOL)saveROMS:(NSURL*)url progressBlock:(BOOL (^)(double progress))block {
+
+    NSString *rootPath = [NSString stringWithUTF8String:get_documents_path("")];
+    NSArray* files = [self getROMS];
+
     return [ZipFile exportTo:url.path fromDirectory:rootPath withFiles:files withOptions:(ZipFileWriteFiles | ZipFileWriteAtomic | ZipFileWriteNoCompress) progressBlock:block];
 }
 
@@ -4654,10 +4664,10 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
             [self runImport];
         }]];
 #endif
-        if (TRUE)
+        if (CloudSync.status == CloudSyncStatusOk)
         {
             [alert addAction:[UIAlertAction actionWithTitle:@"Import from iCloud" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"icloud.and.arrow.down" withPointSize:size] handler:^(UIAlertAction* action) {
-                /* [iCloud] */
+                [CloudSync import];
             }]];
         }
         [alert addAction:[UIAlertAction actionWithTitle:@"Reload ROMs" style:UIAlertActionStyleCancel image:[UIImage systemImageNamed:@"arrow.2.circlepath.circle" withPointSize:size] handler:^(UIAlertAction * _Nonnull action) {
