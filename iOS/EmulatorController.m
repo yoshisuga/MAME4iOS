@@ -3731,13 +3731,17 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 
 // get a list of all the important files in our documents directory
 // this is more than just "ROMs" it saves *all* important files, kind of like an archive or backup.
--(NSArray<NSString*>*)getROMS {
++(NSArray<NSString*>*)getROMS {
 
     NSString *rootPath = [NSString stringWithUTF8String:get_documents_path("")];
     NSString *romsPath = [NSString stringWithUTF8String:get_documents_path("roms")];
     NSString *skinPath = [NSString stringWithUTF8String:get_documents_path("skins")];
 
     NSMutableArray* files = [[NSMutableArray alloc] init];
+
+    // add in options data file.
+    if ([NSFileManager.defaultManager fileExistsAtPath:[rootPath stringByAppendingPathComponent:Options.optionsFile]])
+        [files addObject:Options.optionsFile];
 
     NSArray* roms = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:romsPath error:nil];
     for (NSString* rom in roms) {
@@ -3751,9 +3755,6 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
                 [files addObject:file];
         }
     }
-    
-    // add in options data file too.
-    [files addObject:Options.optionsFile];
     
     // save everything in the `skins` directory too
     for (NSString* skin in [NSFileManager.defaultManager contentsOfDirectoryAtPath:skinPath error:nil]) {
@@ -3770,7 +3771,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 -(BOOL)saveROMS:(NSURL*)url progressBlock:(BOOL (^)(double progress))block {
 
     NSString *rootPath = [NSString stringWithUTF8String:get_documents_path("")];
-    NSArray* files = [self getROMS];
+    NSArray* files = [EmulatorController getROMS];
 
     return [ZipFile exportTo:url.path fromDirectory:rootPath withFiles:files withOptions:(ZipFileWriteFiles | ZipFileWriteAtomic | ZipFileWriteNoCompress) progressBlock:block];
 }
