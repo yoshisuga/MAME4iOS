@@ -158,34 +158,21 @@ static CKDatabase*     _database;
     [self runQuery:op keys:desiredKeys limit:resultsLimit records:nil handler:handler];
 }
 
-// MARK: IMPORT and EXPORT
-
-// get list of ROMs in the cloud
-+(NSArray*)getCloudFiles {
-    assert(!NSThread.isMainThread);
-    NSMutableArray* records = [[NSMutableArray alloc] init];
-    
-    dispatch_group_t group = dispatch_group_create();
-    dispatch_group_enter(group);
-    [self query:kRecordType predicate:nil keys:@[] limit:0 handler:^(NSArray* _records) {
-        [records addObjectsFromArray:_records];
-        dispatch_group_leave(group);
-    }];
-    dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
-    return records;
-}
+// MARK: SYNC
 
 static int inSync = 0;
 static UIAlertController *progressAlert = nil;
 
 +(BOOL)startSync:(NSString*)title block:(dispatch_block_t)block {
     assert(NSThread.isMainThread);
-
-    EmulatorController* emuController = (EmulatorController*)UIApplication.sharedApplication.keyWindow.rootViewController;
+    assert(_container != nil && _database != nil);
     
+    EmulatorController* emuController = (EmulatorController*)UIApplication.sharedApplication.keyWindow.rootViewController;
+
     assert([emuController isKindOfClass:[EmulatorController class]]);
     if (![emuController isKindOfClass:[EmulatorController class]])
         return FALSE;
+
     if (inSync != 0)
         return FALSE;
     inSync = 1;
@@ -233,6 +220,23 @@ static UIAlertController *progressAlert = nil;
     [self stopSync:nil];
 }
 
+// MARK: IMPORT and EXPORT
+
+// get list of ROMs in the cloud
++(NSArray*)getCloudFiles {
+    assert(!NSThread.isMainThread);
+    NSMutableArray* records = [[NSMutableArray alloc] init];
+    
+    dispatch_group_t group = dispatch_group_create();
+    dispatch_group_enter(group);
+    [self query:kRecordType predicate:nil keys:@[] limit:0 handler:^(NSArray* _records) {
+        [records addObjectsFromArray:_records ?: @[]];
+        dispatch_group_leave(group);
+    }];
+    dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
+    return records;
+}
+
 // MARK: IMPORT
 
 +(void)import:(NSArray*)files index:(NSUInteger)index {
@@ -267,6 +271,7 @@ static UIAlertController *progressAlert = nil;
         }
 
         if ([NSFileManager.defaultManager fileExistsAtPath:path]) {
+            // we dont want to re-download a large zip file if we already have it localy
             assert(![path.pathExtension.uppercaseString isEqualToString:@"ZIP"]);
             [NSFileManager.defaultManager removeItemAtPath:path error:&error];
         }
@@ -367,11 +372,13 @@ static UIAlertController *progressAlert = nil;
 
 // MARK: SYNC
 
-// currently sync is just a export then import
+// sync is just a export then import
 +(void)sync {
     NSLog(@"CLOUD SYNC");
     [self startSync:@"iCloud Sync" block:^{
         NSArray* cloud = [self getCloudFiles];
+        
+        // build a list with <export files> * <import files>
         NSArray* files = [self getExportFiles:cloud];
         files = [files arrayByAddingObject:@"*"];
         files = [files arrayByAddingObjectsFromArray:[self getImportFiles:cloud]];
