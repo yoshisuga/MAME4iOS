@@ -318,6 +318,9 @@ static UIAlertController *progressAlert = nil;
 
 +(void)export:(NSArray*)files index:(NSUInteger)index {
     
+    if (_status == CloudSyncStatusEmpty && index != 0)
+        _status = CloudSyncStatusAvailable;
+
     if (index >= files.count || [self cancelSync])
         return [self stopSync];
     
@@ -405,7 +408,7 @@ static UIAlertController *progressAlert = nil;
 
 +(void)delete:(NSArray*)files index:(NSUInteger)index {
     
-    if (index == files.count)
+    if (_status == CloudSyncStatusAvailable && index == files.count)
         _status = CloudSyncStatusEmpty;
 
     if (index >= files.count || [self cancelSync])
