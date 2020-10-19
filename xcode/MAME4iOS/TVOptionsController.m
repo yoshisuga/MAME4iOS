@@ -51,7 +51,7 @@
         return 1;
     } else if ( section == kImportSection ) {
         if (CloudSync.status == CloudSyncStatusOk)
-            return 4;
+            return 5;
         else if (CloudSync.status == CloudSyncStatusEmpty)
             return 2;
         else
@@ -128,6 +128,11 @@
         if ( indexPath.row == 3 ) {
             cell.textLabel.text = @"Sync with iCloud";
             cell.imageView.image = [UIImage systemImageNamed:@"arrow.clockwise.icloud" withPointSize:size];
+            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+        }
+        if ( indexPath.row == 4 ) {
+            cell.textLabel.text = @"Delete all iCloud";
+            cell.imageView.image = [UIImage systemImageNamed:@"xmark.icloud"];
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
         }
     } else if ( indexPath.section == kScreenSection ) {
@@ -247,6 +252,9 @@
         }
         if ( indexPath.row == 3 ) {
             [CloudSync sync];
+        }
+        if ( indexPath.row == 4 ) {
+            [CloudSync delete];
         }
     } else if ( indexPath.section == kScreenSection ) {
         if ( indexPath.row == 0 ) {

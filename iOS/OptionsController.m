@@ -439,6 +439,13 @@
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                     break;
                 }
+                case 3:
+                {
+                    cell.textLabel.text = @"Delete all iCloud";
+                    cell.imageView.image = [UIImage systemImageNamed:@"xmark.icloud"];
+                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                    break;
+                }
             }
             break;
         }
@@ -506,7 +513,7 @@
           case kImportSection: return 4;
           case kCloudImportSection:
               if (CloudSync.status == CloudSyncStatusAvailable)
-                  return 3;
+                  return 4;
               else if (CloudSync.status == CloudSyncStatusEmpty)
                   return 1;
               else
@@ -625,6 +632,9 @@
             }
             if (row==2) {
                 [CloudSync sync];
+            }
+            if (row==3) {
+                [CloudSync delete];
             }
             break;
         }

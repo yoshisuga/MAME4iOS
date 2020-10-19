@@ -213,6 +213,10 @@ static UIAlertController *progressAlert = nil;
         [progressAlert.presentingViewController dismissViewControllerAnimated:YES completion:nil];
         inSync = 0;
         progressAlert = nil;
+        
+        EmulatorController* emuController = (EmulatorController*)UIApplication.sharedApplication.keyWindow.rootViewController;
+        assert([emuController isKindOfClass:[EmulatorController class]]);
+
     });
 }
 
@@ -384,6 +388,44 @@ static UIAlertController *progressAlert = nil;
         files = [files arrayByAddingObjectsFromArray:[self getImportFiles:cloud]];
         
         [self export:files index:0];
+    }];
+}
+
+// MARK: DELETE
+
+// "I say we take off and nuke the entire site from orbit. It's the only way to be sure."
++(void)delete {
+    NSLog(@"CLOUD DELETE");
+    [self startSync:@"iCloud Delete" block:^{
+        NSArray* cloud = [self getCloudFiles];
+        NSArray* files = [cloud valueForKeyPath:@"@unionOfObjects.recordID.recordName"];
+        [self delete:files index:0];
+    }];
+}
+
++(void)delete:(NSArray*)files index:(NSUInteger)index {
+    
+    if (index == files.count)
+        _status = CloudSyncStatusEmpty;
+
+    if (index >= files.count || [self cancelSync])
+        return [self stopSync];
+    
+    NSString* file = [files objectAtIndex:index];
+
+    [self updateSync:((double)index / files.count) text:file];
+    
+    NSTimeInterval time = NSDate.timeIntervalSinceReferenceDate;
+    [_database deleteRecordWithID:[[CKRecordID alloc] initWithRecordName:file] completionHandler:^(CKRecordID* recordID, NSError* error) {
+        NSLog(@"DELETE RECORD TOOK: %f", NSDate.timeIntervalSinceReferenceDate - time);
+
+        if (error != nil) {
+            NSLog(@"DELETE RECORD ERROR: %@", error);
+            [self stopSync:error];
+        }
+        else {
+            [self delete:files index:index+1];
+        }
     }];
 }
 

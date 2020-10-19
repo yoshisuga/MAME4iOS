@@ -29,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 +(void)import;
 +(void)export;
 +(void)sync;
++(void)delete;
 
 @end
 
