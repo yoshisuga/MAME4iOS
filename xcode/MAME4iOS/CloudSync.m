@@ -210,13 +210,14 @@ static UIAlertController *progressAlert = nil;
             NSLog(@"STOP SYNC CANCEL");
         }
         [progressAlert setProgress:1.0];
-        [progressAlert.presentingViewController dismissViewControllerAnimated:YES completion:nil];
-        inSync = 0;
-        progressAlert = nil;
-        
-        EmulatorController* emuController = (EmulatorController*)UIApplication.sharedApplication.keyWindow.rootViewController;
-        assert([emuController isKindOfClass:[EmulatorController class]]);
-
+        [progressAlert.presentingViewController dismissViewControllerAnimated:YES completion:^{
+            inSync = 0;
+            progressAlert = nil;
+            
+            // see if we need to refresh ROMs
+            EmulatorController* emuController = (EmulatorController*)UIApplication.sharedApplication.keyWindow.rootViewController;
+            assert([emuController isKindOfClass:[EmulatorController class]]);
+        }];
     });
 }
 
@@ -255,10 +256,8 @@ static UIAlertController *progressAlert = nil;
     
     [self updateSync:((double)index / files.count) text:file];
     
-    NSTimeInterval time = NSDate.timeIntervalSinceReferenceDate;
     [_database fetchRecordWithID:[[CKRecordID alloc] initWithRecordName:file] completionHandler:^(CKRecord* record, NSError* error) {
-        NSLog(@"FETCH TOOK: %f", NSDate.timeIntervalSinceReferenceDate - time);
-        
+
         if (error != nil) {
             NSLog(@"FETCH ERROR: %@", error);
             return [self stopSync:error];
@@ -338,10 +337,7 @@ static UIAlertController *progressAlert = nil;
     CKRecord* record = [[CKRecord alloc] initWithRecordType:kRecordType recordID:[[CKRecordID alloc] initWithRecordName:file]];
     record[kData] = [[CKAsset alloc] initWithFileURL:[NSURL fileURLWithPath:path]];
     
-    NSTimeInterval time = NSDate.timeIntervalSinceReferenceDate;
     [_database saveRecord:record completionHandler:^(CKRecord* record, NSError* error) {
-        NSLog(@"SAVE RECORD TOOK: %f", NSDate.timeIntervalSinceReferenceDate - time);
-
         if (error != nil) {
             NSLog(@"SAVE RECORD ERROR: %@", error);
             [self stopSync:error];
@@ -418,10 +414,7 @@ static UIAlertController *progressAlert = nil;
 
     [self updateSync:((double)index / files.count) text:file];
     
-    NSTimeInterval time = NSDate.timeIntervalSinceReferenceDate;
     [_database deleteRecordWithID:[[CKRecordID alloc] initWithRecordName:file] completionHandler:^(CKRecordID* recordID, NSError* error) {
-        NSLog(@"DELETE RECORD TOOK: %f", NSDate.timeIntervalSinceReferenceDate - time);
-
         if (error != nil) {
             NSLog(@"DELETE RECORD ERROR: %@", error);
             [self stopSync:error];
