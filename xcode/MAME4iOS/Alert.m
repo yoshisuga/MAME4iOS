@@ -82,12 +82,10 @@
 {
     if (![NSThread isMainThread]) {
         return dispatch_async(dispatch_get_main_queue(), ^{
-            [self setProgress:value];
+            [self setProgress:value text:text];
         });
     }
     
-    NSLog(@"PROGRESS: %3d%% %@", (int)(value * 100.0), text ?: @"");
-
     if (self.textFields.count == 0)
     {
         UIColor* tintColor = self.view.tintColor;
