@@ -5,6 +5,11 @@
 //  Created by Todd Laney on 10/18/20.
 //  Copyright © 2020 Seleuco. All rights reserved.
 //
+// TODO: need to create a initial CKRecord so "just-in-time" schema kicks in.
+//       https://developer.apple.com/library/archive/documentation/DataManagement/Conceptual/CloudKitQuickStart/CreatingaSchemabySavingRecords/CreatingaSchemabySavingRecords.html
+//
+// TODO: need to handle iCloud retry errors
+//       https://developer.apple.com/documentation/cloudkit/ckerrorretryafterkey
 
 #import "CloudSync.h"
 #import <CloudKit/CloudKit.h>
@@ -43,7 +48,7 @@ static CKDatabase*     _database;
         assert([NSBundle.mainBundle.bundleIdentifier componentsSeparatedByString:@"."].count == 3);
         NSString* identifier = [NSString stringWithFormat:@"iCloud.%@", NSBundle.mainBundle.bundleIdentifier];
         @try {
-            // NOTE CKContainer.defaultContainer will throw a uncatchable exception, dont use it.
+            // **NOTE** CKContainer.defaultContainer will throw a uncatchable exception, dont use it.
             //_container = CKContainer.defaultContainer;
             _container = [CKContainer containerWithIdentifier:identifier];
         }
