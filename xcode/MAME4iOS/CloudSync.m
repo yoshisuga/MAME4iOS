@@ -208,14 +208,11 @@ static UIAlertController *progressAlert = nil;
     [progressAlert setProgress:progress text:text];
 }
 
-+(void)stopSync:(NSError*)error {
++(void)stopSync {
     assert(inSync != 0);
     if (inSync == 0)
         return;
     dispatch_async(dispatch_get_main_queue(), ^{
-        if (error != nil) {
-            NSLog(@"STOP SYNC ERROR: %@", error);
-        }
         if (inSync == -1) {
             NSLog(@"STOP SYNC CANCEL");
         }
@@ -233,8 +230,18 @@ static UIAlertController *progressAlert = nil;
     });
 }
 
-+(void)stopSync {
-    [self stopSync:nil];
++(void)stopSync:(NSError*)error {
+    if (error == nil)
+        return [self stopSync];
+
+    NSLog(@"STOP SYNC ERROR: %@", error);
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        // show error to the user, then call stopSync
+        [progressAlert showAlertWithTitle:@"iCloud Sync Error" message:error.localizedDescription buttons:@[@"Ok"] handler:^(NSUInteger button) {
+            [self stopSync];
+        }];
+    });
 }
 
 // MARK: IMPORT and EXPORT
