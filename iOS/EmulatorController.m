@@ -468,6 +468,10 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     return [[NSUserDefaults standardUserDefaults] objectForKey:kSelectedGameInfoKey];
 }
 
++ (EmulatorController*)sharedInstance {
+    assert(sharedInstance != nil);
+    return sharedInstance;
+}
 
 - (void)startEmulation {
     if (g_emulation_initiated == 1)

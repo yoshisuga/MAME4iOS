@@ -177,17 +177,13 @@ static UIAlertController *progressAlert = nil;
     assert(NSThread.isMainThread);
     assert(_container != nil && _database != nil);
     
-    EmulatorController* emuController = (EmulatorController*)UIApplication.sharedApplication.keyWindow.rootViewController;
-
-    assert([emuController isKindOfClass:[EmulatorController class]]);
-    if (![emuController isKindOfClass:[EmulatorController class]])
-        return FALSE;
-
     assert(inSync == 0);
     if (inSync != 0)
         return FALSE;
     inSync = 1;
-    
+
+    EmulatorController* emuController = EmulatorController.sharedInstance;
+
     progressAlert = [UIAlertController alertControllerWithTitle:title message:nil preferredStyle:UIAlertControllerStyleAlert];
     [progressAlert setProgress:0.0 text:@""];
     [progressAlert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
@@ -214,8 +210,7 @@ static UIAlertController *progressAlert = nil;
     if (inSync == 0)
         return;
     dispatch_async(dispatch_get_main_queue(), ^{
-        EmulatorController* emuController = (EmulatorController*)UIApplication.sharedApplication.keyWindow.rootViewController;
-        assert([emuController isKindOfClass:[EmulatorController class]]);
+        EmulatorController* emuController = EmulatorController.sharedInstance;
         
         if (inSync == -1) {
             NSLog(@"STOP SYNC CANCEL");
@@ -266,6 +261,17 @@ static UIAlertController *progressAlert = nil;
 }
 
 // MARK: IMPORT
+
++(void)import {
+    NSLog(@"CLOUD IMPORT");
+    [self startSync:@"iCloud Import" block:^{
+        
+        NSArray* cloud = [self getCloudFiles];
+        NSArray* files = [self getImportFiles:cloud];
+        
+        [self import:files index:0];
+    }];
+}
 
 +(void)import:(NSArray*)files index:(NSUInteger)index {
     
@@ -326,18 +332,18 @@ static UIAlertController *progressAlert = nil;
     return files;
 }
 
-+(void)import {
-    NSLog(@"CLOUD IMPORT");
-    [self startSync:@"iCloud Import" block:^{
+// MARK: EXPORT
+
++(void)export {
+    NSLog(@"CLOUD EXPORT");
+    [self startSync:@"iCloud Export" block:^{
         
         NSArray* cloud = [self getCloudFiles];
-        NSArray* files = [self getImportFiles:cloud];
+        NSArray* files = [self getExportFiles:cloud];
         
-        [self import:files index:0];
+        [self export:files index:0];
     }];
 }
-
-// MARK: EXPORT
 
 +(void)export:(NSArray*)files index:(NSUInteger)index {
     
@@ -386,20 +392,9 @@ static UIAlertController *progressAlert = nil;
     return files;
 }
 
-+(void)export {
-    NSLog(@"CLOUD EXPORT");
-    [self startSync:@"iCloud Export" block:^{
-        
-        NSArray* cloud = [self getCloudFiles];
-        NSArray* files = [self getExportFiles:cloud];
-        
-        [self export:files index:0];
-    }];
-}
-
 // MARK: SYNC
 
-// sync is just a export then import
+// sync is just a export and import at the same time.
 +(void)sync {
     NSLog(@"CLOUD SYNC");
     [self startSync:@"iCloud Sync" block:^{

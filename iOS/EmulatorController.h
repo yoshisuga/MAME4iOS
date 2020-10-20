@@ -123,6 +123,8 @@ enum {BTN_A,BTN_B,BTN_Y,BTN_X,BTN_L1,BTN_R1,
 
 }
 
+@property (class,readonly,nonatomic,strong) EmulatorController* sharedInstance;
+
 + (NSArray<NSString*>*)romList;
 + (NSDictionary*)getCurrentGame;
 + (void)setCurrentGame:(NSDictionary*)game;
