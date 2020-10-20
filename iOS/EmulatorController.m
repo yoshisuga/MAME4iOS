@@ -4660,6 +4660,12 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     g_no_roms_found = [games count] == 0;
     if (g_no_roms_found) {
         NSLog(@"NO GAMES, ASK USER WHAT TO DO....");
+        
+        // if iCloud is still initializing give it a litte time.
+        if ([CloudSync status] == CloudSyncStatusUnknown) {
+            NSLog(@"....WAITING FOR iCloud");
+            [self performSelector:_cmd withObject:games afterDelay:1.0];
+        }
 
         NSString* title = @"Welcome to " PRODUCT_NAME_LONG;
 #if TARGET_OS_TV

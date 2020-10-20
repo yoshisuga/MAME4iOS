@@ -10,7 +10,7 @@
 //
 // TODO: compare dates when deciding what files to sync, but dont re-copy ZIP files.
 //
-// TODO: explain in README.md how to setup CloudKit and our recordType, SIGH!
+// TODO: explain in README.md how to setup CloudKit
 //
 
 #import "CloudSync.h"
@@ -23,10 +23,12 @@
 #define NSLog(...) (void)0
 #endif
 
+// Schema
 #define kRecordType     @"MameFile"
-#define kRecordName     @"name"
+#define kRecordName     @"name"         // recordID.recordName *must* be equal to kRecordName
 #define kRecordData     @"data"
 
+// name of an initial record we create for just-in-time-schema
 #define kTestRecordName @"Wombat.test"
 
 @implementation CloudSync
@@ -90,8 +92,8 @@ static CKDatabase*     _database;
                 _status = CloudSyncStatusNoAccount;
                 break;
             default: // CKAccountStatusCouldNotDetermine
-                NSLog(@"CLOUD STATUS: Unknown");
-                _status = CloudSyncStatusUnknown;
+                NSLog(@"CLOUD STATUS: CouldNotDetermine");
+                _status = CloudSyncStatusError;
                 break;
         }
 
@@ -102,6 +104,7 @@ static CKDatabase*     _database;
                 if (error != nil) {
                     NSLog(@"CLOUD STATUS ERROR: %@", error);
                     _status = CloudSyncStatusError;
+
                     // if the type does not exist, go create it
                     if ([error.domain isEqualToString:CKErrorDomain] && error.code == CKErrorUnknownItem)
                         [self createTestRecord];
@@ -133,7 +136,7 @@ static CKDatabase*     _database;
     NSString* path = [NSTemporaryDirectory() stringByAppendingPathComponent:kTestRecordName];
     [NSFileManager.defaultManager createFileAtPath:path contents:nil attributes:nil];
     
-    // make a test record with a empty name
+    // make a test record with empty data, recordID.recordName *must* be equal to kRecordName
     CKRecord* record = [[CKRecord alloc] initWithRecordType:kRecordType recordID:[[CKRecordID alloc] initWithRecordName:kTestRecordName]];
     record[kRecordName] = kTestRecordName;
     record[kRecordData] = [[CKAsset alloc] initWithFileURL:[NSURL fileURLWithPath:path]];
@@ -304,6 +307,7 @@ static UIAlertController *progressAlert = nil;
     
     dispatch_group_t group = dispatch_group_create();
     dispatch_group_enter(group);
+    // we use "name != ''" instead of TRUEPREDICATE because TRUEPREDICATE requires recordName to be initialized in the Dashboard as QUERYABLE, we want to not require the Dashboard to run.
     [self query:kRecordType predicate:[NSPredicate predicateWithFormat:@"%K != ''", kRecordName] keys:@[] limit:0 handler:^(NSArray* _records, NSError* error) {
         [records addObjectsFromArray:_records ?: @[]];
         dispatch_group_leave(group);
@@ -423,6 +427,7 @@ static UIAlertController *progressAlert = nil;
     NSString* path = [rootPath stringByAppendingPathComponent:file];
     assert([NSFileManager.defaultManager fileExistsAtPath:path]);
 
+    // make new record with file data, recordID.recordName *must* be equal to kRecordName
     CKRecord* record = [[CKRecord alloc] initWithRecordType:kRecordType recordID:[[CKRecordID alloc] initWithRecordName:file]];
     record[kRecordName] = file;
     record[kRecordData] = [[CKAsset alloc] initWithFileURL:[NSURL fileURLWithPath:path]];
