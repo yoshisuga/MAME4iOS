@@ -13,8 +13,6 @@
 //
 // TODO: compare dates when deciding what files to sync, but dont re-copy ZIP files.
 //
-// TODO: add a `delete all ROMs` option to the big red reset button.
-//
 // TODO: explain in README.md how to setup CloudKit and our recordType, SIGH!
 //
 
