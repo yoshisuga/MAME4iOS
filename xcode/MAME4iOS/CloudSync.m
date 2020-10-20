@@ -15,6 +15,8 @@
 //
 // TODO: add a `delete all ROMs` option to the big red reset button.
 //
+// TODO: explain in README.md how to setup CloudKit and our recordType, SIGH!
+//
 
 #import "CloudSync.h"
 #import <CloudKit/CloudKit.h>
@@ -224,7 +226,7 @@ static UIAlertController *progressAlert = nil;
             inSync = 0;
             progressAlert = nil;
             
-            // see if we need to refresh ROMs
+            // TODO: see if we need to refresh ROMs
             EmulatorController* emuController = (EmulatorController*)UIApplication.sharedApplication.keyWindow.rootViewController;
             assert([emuController isKindOfClass:[EmulatorController class]]);
         }];
