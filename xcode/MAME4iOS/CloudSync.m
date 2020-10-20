@@ -183,6 +183,7 @@ static UIAlertController *progressAlert = nil;
     if (![emuController isKindOfClass:[EmulatorController class]])
         return FALSE;
 
+    assert(inSync == 0);
     if (inSync != 0)
         return FALSE;
     inSync = 1;
@@ -213,20 +214,23 @@ static UIAlertController *progressAlert = nil;
     if (inSync == 0)
         return;
     dispatch_async(dispatch_get_main_queue(), ^{
+        EmulatorController* emuController = (EmulatorController*)UIApplication.sharedApplication.keyWindow.rootViewController;
+        assert([emuController isKindOfClass:[EmulatorController class]]);
+        
         if (inSync == -1) {
             NSLog(@"STOP SYNC CANCEL");
-        }
-        [progressAlert setProgress:1.0];
-        [progressAlert.presentingViewController dismissViewControllerAnimated:YES completion:^{
-            inSync = 0;
-            progressAlert = nil;
-            
-            EmulatorController* emuController = (EmulatorController*)UIApplication.sharedApplication.keyWindow.rootViewController;
-            assert([emuController isKindOfClass:[EmulatorController class]]);
-            
-            // reload the MAME menu....
+            // reload the MAME menu, now
             [emuController performSelectorOnMainThread:@selector(playGame:) withObject:nil waitUntilDone:NO];
-        }];
+        }
+        else {
+            [progressAlert setProgress:1.0];
+            [progressAlert.presentingViewController dismissViewControllerAnimated:YES completion:^{
+                // reload the MAME menu, after the alert is down
+                [emuController performSelectorOnMainThread:@selector(playGame:) withObject:nil waitUntilDone:NO];
+            }];
+        }
+        inSync = 0;
+        progressAlert = nil;
     });
 }
 
