@@ -10,6 +10,11 @@
 //
 // TODO: need to handle iCloud retry errors
 //       https://developer.apple.com/documentation/cloudkit/ckerrorretryafterkey
+//
+// TODO: compare dates when deciding what files to sync, but dont re-copy ZIP files.
+//
+// TODO: add a `delete all ROMs` option to the big red reset button.
+//
 
 #import "CloudSync.h"
 #import <CloudKit/CloudKit.h>
