@@ -5,9 +5,6 @@
 //  Created by Todd Laney on 10/18/20.
 //  Copyright © 2020 Seleuco. All rights reserved.
 //
-// TODO: need to create a initial CKRecord so "just-in-time" schema kicks in.
-//       https://developer.apple.com/library/archive/documentation/DataManagement/Conceptual/CloudKitQuickStart/CreatingaSchemabySavingRecords/CreatingaSchemabySavingRecords.html
-//
 // TODO: need to handle iCloud retry errors
 //       https://developer.apple.com/documentation/cloudkit/ckerrorretryafterkey
 //
@@ -26,8 +23,11 @@
 #define NSLog(...) (void)0
 #endif
 
-#define kRecordType     @"Data"
-#define kData           @"data"
+#define kRecordType     @"MameFile"
+#define kRecordName     @"name"
+#define kRecordData     @"data"
+
+#define kTestRecordName @"Wombat.test"
 
 @implementation CloudSync
 
@@ -98,18 +98,16 @@ static CKDatabase*     _database;
         // if CloudKit is avail, try to read a record to see if anyone is home.
         if (_status == CloudSyncStatusAvailable) {
             _status = CloudSyncStatusUnknown;
-            [self query:kRecordType predicate:nil keys:@[] limit:10 handler:^(NSArray* records) {
-                if (records == nil) {
-                    NSLog(@"CLOUD STATUS: Error");
+            [self query:kRecordType predicate:[NSPredicate predicateWithFormat:@"%K != ''", kRecordName] keys:@[] limit:10 handler:^(NSArray* records, NSError* error) {
+                if (error != nil) {
+                    NSLog(@"CLOUD STATUS ERROR: %@", error);
                     _status = CloudSyncStatusError;
-                    // TODO: add a test record
+                    // if the type does not exist, go create it
+                    if ([error.domain isEqualToString:CKErrorDomain] && error.code == CKErrorUnknownItem)
+                        [self createTestRecord];
                 }
-                else if (records.count == 0) {
+                else if (records.count <= 1) {
                     NSLog(@"CLOUD STATUS: EMPTY");
-                    _status = CloudSyncStatusEmpty;
-                }
-                else if (records.count == 1) {
-                    NSLog(@"CLOUD STATUS: EMPTY (ONE RECORD)");
                     _status = CloudSyncStatusEmpty;
                 }
                 else {
@@ -121,13 +119,40 @@ static CKDatabase*     _database;
     }];
 }
 
+// Create a initial CKRecord so "just-in-time" schema kicks in.
+// https://developer.apple.com/library/archive/documentation/DataManagement/Conceptual/CloudKitQuickStart/CreatingaSchemabySavingRecords/CreatingaSchemabySavingRecords.html
+//
++ (void)createTestRecord {
+    static int create_flag = FALSE;
+    NSLog(@"CLOUD STATUS: CREATE TEST RECORD");
+    
+    // only try this once....
+    if (create_flag++ != 0)
+        return;
+    
+    NSString* path = [NSTemporaryDirectory() stringByAppendingPathComponent:kTestRecordName];
+    [NSFileManager.defaultManager createFileAtPath:path contents:nil attributes:nil];
+    
+    // make a test record with a empty name
+    CKRecord* record = [[CKRecord alloc] initWithRecordType:kRecordType recordID:[[CKRecordID alloc] initWithRecordName:kTestRecordName]];
+    record[kRecordName] = kTestRecordName;
+    record[kRecordData] = [[CKAsset alloc] initWithFileURL:[NSURL fileURLWithPath:path]];
+
+    [_database saveRecord:record completionHandler:^(CKRecord* record, NSError* error) {
+        if (error != nil)
+            [self handleError:error];
+        else
+            [self updateCloudStatus];
+    }];
+}
+
 // MARK: QUERY
 
 +(void)runQuery:(CKQueryOperation*)op
            keys:(NSArray<CKRecordFieldKey>*)desiredKeys
           limit:(NSUInteger)resultsLimit
         records:(NSMutableArray<CKRecord*>*)records
-    handler:(void (^)(NSArray<CKRecord*>* records))handler {
+    handler:(void (^)(NSArray<CKRecord*>* records, NSError* error))handler {
     
     records = records ?: [[NSMutableArray alloc] init];
     
@@ -145,7 +170,7 @@ static CKDatabase*     _database;
             NSLog(@"CLOUD QUERY ERROR: %@", error);
             // TODO: handle retry
             [self handleError:error];
-            handler(nil);
+            handler(nil, error);
         }
         else if (cursor != nil && (resultsLimit == 0 || records.count < resultsLimit)) {
             NSLog(@"CLOUD CURSOR: %@", cursor);
@@ -153,7 +178,7 @@ static CKDatabase*     _database;
             [self runQuery:op keys:desiredKeys limit:resultsLimit records:records handler:handler];
         }
         else {
-            handler(records);
+            handler(records, nil);
         }
     };
     
@@ -164,7 +189,7 @@ static CKDatabase*     _database;
    predicate:(NSPredicate*)predicate
         keys:(NSArray<CKRecordFieldKey>*)desiredKeys
        limit:(NSUInteger)resultsLimit
-     handler:(void (^)(NSArray<CKRecord*>* records))handler {
+     handler:(void (^)(NSArray<CKRecord*>* records, NSError* error))handler {
     
     CKQuery* query = [[CKQuery alloc] initWithRecordType:recordType predicate:predicate ?: [NSPredicate predicateWithValue:TRUE]];
     CKQueryOperation* op = [[CKQueryOperation alloc] initWithQuery:query];
@@ -279,7 +304,7 @@ static UIAlertController *progressAlert = nil;
     
     dispatch_group_t group = dispatch_group_create();
     dispatch_group_enter(group);
-    [self query:kRecordType predicate:nil keys:@[] limit:0 handler:^(NSArray* _records) {
+    [self query:kRecordType predicate:[NSPredicate predicateWithFormat:@"%K != ''", kRecordName] keys:@[] limit:0 handler:^(NSArray* _records, NSError* error) {
         [records addObjectsFromArray:_records ?: @[]];
         dispatch_group_leave(group);
     }];
@@ -324,7 +349,7 @@ static UIAlertController *progressAlert = nil;
 
         NSString *rootPath = [NSString stringWithUTF8String:get_documents_path("")];
         NSString* path = [rootPath stringByAppendingPathComponent:file];
-        CKAsset* asset = record[kData];
+        CKAsset* asset = record[kRecordData];
         
         if (![asset isKindOfClass:[CKAsset class]] || asset.fileURL == nil) {
             error = [NSError errorWithDomain:CKErrorDomain code:CKErrorAssetFileNotFound userInfo:nil];
@@ -360,7 +385,7 @@ static UIAlertController *progressAlert = nil;
         // TODO: compare dates??
         // TODO: dont re-import large ZIP files
         NSString* rom = record.recordID.recordName;
-        if (![roms containsObject:rom])
+        if (![roms containsObject:rom] && ![rom isEqualToString:kTestRecordName])
             [files addObject:rom];
     }
     return files;
@@ -399,12 +424,21 @@ static UIAlertController *progressAlert = nil;
     assert([NSFileManager.defaultManager fileExistsAtPath:path]);
 
     CKRecord* record = [[CKRecord alloc] initWithRecordType:kRecordType recordID:[[CKRecordID alloc] initWithRecordName:file]];
-    record[kData] = [[CKAsset alloc] initWithFileURL:[NSURL fileURLWithPath:path]];
-    
-    // TODO: saveRecord will not replace, need to do that special!
+    record[kRecordName] = file;
+    record[kRecordData] = [[CKAsset alloc] initWithFileURL:[NSURL fileURLWithPath:path]];
+
     [_database saveRecord:record completionHandler:^(CKRecord* record, NSError* error) {
 
         if (error != nil) {
+            
+            // TODO: *****************************************************
+            // TODO: saveRecord will not replace, need to do that special!
+            // TODO: *****************************************************
+            if ([error.domain isEqualToString:CKErrorDomain] && error.code == CKErrorServerRecordChanged) {
+                NSLog(@"IGNORING ERROR: %@", error);
+                return [self export:files index:index+1];
+            }
+
             [self handleSyncError:error retry:^{
                 [self export:files index:index];
             }];
