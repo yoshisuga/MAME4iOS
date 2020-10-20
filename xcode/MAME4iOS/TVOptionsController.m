@@ -50,7 +50,7 @@
     } else if ( section == kInputSection ) {
         return 1;
     } else if ( section == kImportSection ) {
-        if (CloudSync.status == CloudSyncStatusOk)
+        if (CloudSync.status == CloudSyncStatusAvailable)
             return 5;
         else if (CloudSync.status == CloudSyncStatusEmpty)
             return 2;
