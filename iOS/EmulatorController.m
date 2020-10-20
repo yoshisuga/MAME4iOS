@@ -305,11 +305,6 @@ void* app_Thread_Start(void* args)
             // NOTE we need to delete the default.cfg file here because MAME saves cfg files on exit.
             [[NSFileManager defaultManager] removeItemAtPath: [cfg_path stringByAppendingPathComponent:@"default.cfg"] error:nil];
 
-#if 0 // should we use this big of hammer? the user can always delete settings on a game by game basis via context menu in ChooseGameController.
-            // delete *all* the cfg files, not just default.cfg so we reset settings for all games.
-            [[NSFileManager defaultManager] removeItemAtPath:cfg_path error:nil];
-            [[NSFileManager defaultManager] createDirectoryAtPath:cfg_path withIntermediateDirectories:NO attributes:nil error:nil];
-#endif
             g_mame_reset = FALSE;
         }
         
@@ -3569,7 +3564,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
             NSString* name = info.name.lastPathComponent;
             
             // only UNZIP files to specific directories, send a ZIP file with a unspecifed directory to roms/
-            if ([info.name hasPrefix:@"roms/"] || [info.name hasPrefix:@"artwork/"] || [info.name hasPrefix:@"titles/"] || [info.name hasPrefix:@"samples/"] ||
+            if ([info.name hasPrefix:@"roms/"] || [info.name hasPrefix:@"artwork/"] || [info.name hasPrefix:@"titles/"] || [info.name hasPrefix:@"samples/"] || [info.name hasPrefix:@"iOS/"] ||
                 [info.name hasPrefix:@"cfg/"] || [info.name hasPrefix:@"ini/"] || [info.name hasPrefix:@"sta/"] || [info.name hasPrefix:@"hi/"] || [info.name hasPrefix:@"skins/"])
                 toPath = [rootPath stringByAppendingPathComponent:info.name];
             else if ([name.uppercaseString isEqualToString:@"CHEAT.ZIP"])
@@ -3901,20 +3896,34 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 - (void)runReset {
     NSLog(@"RESET: %s", g_mame_game);
     
-    NSString* msg = @"Reset " PRODUCT_NAME " back to factory defaults?";
+    NSString* msg = @"Reset " PRODUCT_NAME;
 
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:nil message:msg preferredStyle:UIAlertControllerStyleAlert];
-    [alert addAction:[UIAlertAction actionWithTitle:@"Reset" style:UIAlertActionStyleDestructive handler:^(UIAlertAction* action) {
-        for (NSString* key in @[kSelectedGameInfoKey, kHUDPositionLandKey, kHUDScaleLandKey, kHUDPositionPortKey, kHUDScalePortKey])
-            [NSUserDefaults.standardUserDefaults removeObjectForKey:key];
-        [Options resetOptions];
-        [ChooseGameController reset];
-        [SkinManager reset];
-        g_mame_reset = TRUE;
+    [alert addAction:[UIAlertAction actionWithTitle:@"Reset Settings" style:UIAlertActionStyleDestructive handler:^(UIAlertAction* action) {
+        [self reset];
         [self done:self];
     }]];
+    [alert addAction:[UIAlertAction actionWithTitle:@"Delete All ROMs" style:UIAlertActionStyleDestructive handler:^(UIAlertAction* action) {
+        NSString *rootPath = [NSString stringWithUTF8String:get_documents_path("")];
+        for (NSString* file in [EmulatorController getROMS]) {
+            NSString* path = [rootPath stringByAppendingPathComponent:file];
+            [NSFileManager.defaultManager removeItemAtPath:path error:nil];
+        }
+        [self reset];
+        [self done:self];
+    }]];
+    
     [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
     [self.topViewController presentViewController:alert animated:YES completion:nil];
+}
+
+- (void)reset {
+    for (NSString* key in @[kSelectedGameInfoKey, kHUDPositionLandKey, kHUDScaleLandKey, kHUDPositionPortKey, kHUDScalePortKey])
+        [NSUserDefaults.standardUserDefaults removeObjectForKey:key];
+    [Options resetOptions];
+    [ChooseGameController reset];
+    [SkinManager reset];
+    g_mame_reset = TRUE;
 }
 
 #pragma mark - CUSTOM LAYOUT

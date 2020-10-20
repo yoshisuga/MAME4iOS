@@ -226,9 +226,11 @@ static UIAlertController *progressAlert = nil;
             inSync = 0;
             progressAlert = nil;
             
-            // TODO: see if we need to refresh ROMs
             EmulatorController* emuController = (EmulatorController*)UIApplication.sharedApplication.keyWindow.rootViewController;
             assert([emuController isKindOfClass:[EmulatorController class]]);
+            
+            // reload the MAME menu....
+            [emuController performSelectorOnMainThread:@selector(playGame:) withObject:nil waitUntilDone:NO];
         }];
     });
 }
