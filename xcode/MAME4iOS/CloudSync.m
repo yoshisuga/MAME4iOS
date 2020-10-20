@@ -73,6 +73,7 @@ static CKDatabase*     _database;
         
         if (error != nil) {
             NSLog(@"CLOUD STATUS: %@", error);
+            [self handleError:error];
         }
         
         switch (accountStatus) {
@@ -142,13 +143,15 @@ static CKDatabase*     _database;
     op.queryCompletionBlock = ^(CKQueryCursor* cursor, NSError* error) {
         if (error != nil) {
             NSLog(@"CLOUD QUERY ERROR: %@", error);
+            // TODO: handle retry
+            [self handleError:error];
             handler(nil);
         }
-        if (cursor != nil && (resultsLimit == 0 || records.count < resultsLimit)) {
+        else if (cursor != nil && (resultsLimit == 0 || records.count < resultsLimit)) {
             NSLog(@"CLOUD CURSOR: %@", cursor);
             CKQueryOperation* op = [[CKQueryOperation alloc] initWithCursor:cursor];
             [self runQuery:op keys:desiredKeys limit:resultsLimit records:records handler:handler];
-         }
+        }
         else {
             handler(records);
         }
@@ -168,7 +171,7 @@ static CKDatabase*     _database;
     [self runQuery:op keys:desiredKeys limit:resultsLimit records:nil handler:handler];
 }
 
-// MARK: SYNC
+// MARK: SYNC UI
 
 static int inSync = 0;
 static UIAlertController *progressAlert = nil;
@@ -176,7 +179,6 @@ static UIAlertController *progressAlert = nil;
 +(BOOL)startSync:(NSString*)title block:(dispatch_block_t)block {
     assert(NSThread.isMainThread);
     assert(_container != nil && _database != nil);
-    
     assert(inSync == 0);
     if (inSync != 0)
         return FALSE;
@@ -207,8 +209,6 @@ static UIAlertController *progressAlert = nil;
 
 +(void)stopSync {
     assert(inSync != 0);
-    if (inSync == 0)
-        return;
     dispatch_async(dispatch_get_main_queue(), ^{
         EmulatorController* emuController = EmulatorController.sharedInstance;
         
@@ -229,6 +229,7 @@ static UIAlertController *progressAlert = nil;
     });
 }
 
+// show error to the user, then call stopSync
 +(void)stopSync:(NSError*)error {
     if (error == nil || inSync == -1)
         return [self stopSync];
@@ -236,11 +237,37 @@ static UIAlertController *progressAlert = nil;
     NSLog(@"STOP SYNC ERROR: %@", error);
 
     dispatch_async(dispatch_get_main_queue(), ^{
-        // show error to the user, then call stopSync
+        // TODO: dont show raw error details to the user in all cases, error.localizedDescription can be ugly
+        // TODO: ...for example might want to show a custom error when we are out of local disk space
         [progressAlert showAlertWithTitle:@"iCloud Sync Error" message:error.localizedDescription buttons:@[@"Ok"] handler:^(NSUInteger button) {
             [self stopSync];
         }];
     });
+}
+
+// MARK: ERROR HANDLING
+
++ (void)handleError:(NSError*)error error:(dispatch_block_t)error_block retry:(dispatch_block_t)retry_block {
+    assert(error != nil);
+    NSLog(@"ERROR: %@", error);
+    // TODO: handle a retry error
+    if (retry_block != nil && /*should retry*/FALSE)
+        retry_block();
+    else if (error_block != nil)
+        error_block();
+}
+
++ (void)handleError:(NSError*)error {
+    return [self handleError:error error:nil retry:nil];
+}
++ (void)handleError:(NSError*)error retry:(dispatch_block_t)retry_block {
+    return [self handleError:error error:nil retry:retry_block];
+}
++ (void)handleSyncError:(NSError*)error retry:(dispatch_block_t)retry_block {
+    return [self handleError:error error:^{[self stopSync:error];} retry:retry_block];
+}
++ (void)handleSyncError:(NSError*)error {
+    return [self handleError:error error:^{[self stopSync:error];} retry:nil];
 }
 
 // MARK: IMPORT and EXPORT
@@ -257,6 +284,7 @@ static UIAlertController *progressAlert = nil;
         dispatch_group_leave(group);
     }];
     dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
+    // TODO: sort records my modifed date, so we get the most recently updated files first
     return records;
 }
 
@@ -286,10 +314,12 @@ static UIAlertController *progressAlert = nil;
     [self updateSync:((double)index / files.count) text:file];
     
     [_database fetchRecordWithID:[[CKRecordID alloc] initWithRecordName:file] completionHandler:^(CKRecord* record, NSError* error) {
-
+        
         if (error != nil) {
-            NSLog(@"FETCH ERROR: %@", error);
-            return [self stopSync:error];
+            [self handleSyncError:error retry:^{
+                [self import:files index:index];
+            }];
+            return;
         }
 
         NSString *rootPath = [NSString stringWithUTF8String:get_documents_path("")];
@@ -297,22 +327,25 @@ static UIAlertController *progressAlert = nil;
         CKAsset* asset = record[kData];
         
         if (![asset isKindOfClass:[CKAsset class]] || asset.fileURL == nil) {
-            error = [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorUnknown userInfo:nil];
-            NSLog(@"FETCH ERROR: %@", error);
-            return [self stopSync:error];
+            error = [NSError errorWithDomain:CKErrorDomain code:CKErrorAssetFileNotFound userInfo:nil];
+            return [self handleSyncError:error];
         }
 
+        // remove any local file and overwrite
         if ([NSFileManager.defaultManager fileExistsAtPath:path]) {
-            // we dont want to re-download a large zip file if we already have it localy
-            assert(![path.pathExtension.uppercaseString isEqualToString:@"ZIP"]);
-            [NSFileManager.defaultManager removeItemAtPath:path error:&error];
+            [NSFileManager.defaultManager removeItemAtPath:path error:nil];
         }
 
-        // TODO: we might need to create the destination directory
         [NSFileManager.defaultManager copyItemAtPath:asset.fileURL.path toPath:path error:&error];
         if (error != nil) {
-            NSLog(@"COPY ERROR: %@", error);
-            return [self stopSync:error];
+            error = nil;
+            // error copying file, create directory and try again
+            [NSFileManager.defaultManager createDirectoryAtPath:[path stringByDeletingLastPathComponent] withIntermediateDirectories:TRUE attributes:nil error:&error];
+            if (error == nil)
+                [NSFileManager.defaultManager copyItemAtPath:asset.fileURL.path toPath:path error:&error];
+            if (error != nil) {
+                return [self handleSyncError:error];
+            }
         }
         [self import:files index:(index+1)];
     }];
@@ -325,6 +358,7 @@ static UIAlertController *progressAlert = nil;
     for (CKRecord* record in cloud) {
         assert([record isKindOfClass:[CKRecord class]]);
         // TODO: compare dates??
+        // TODO: dont re-import large ZIP files
         NSString* rom = record.recordID.recordName;
         if (![roms containsObject:rom])
             [files addObject:rom];
@@ -367,14 +401,17 @@ static UIAlertController *progressAlert = nil;
     CKRecord* record = [[CKRecord alloc] initWithRecordType:kRecordType recordID:[[CKRecordID alloc] initWithRecordName:file]];
     record[kData] = [[CKAsset alloc] initWithFileURL:[NSURL fileURLWithPath:path]];
     
+    // TODO: saveRecord will not replace, need to do that special!
     [_database saveRecord:record completionHandler:^(CKRecord* record, NSError* error) {
+
         if (error != nil) {
-            NSLog(@"SAVE RECORD ERROR: %@", error);
-            [self stopSync:error];
+            [self handleSyncError:error retry:^{
+                [self export:files index:index];
+            }];
+            return;
         }
-        else {
-            [self export:files index:index+1];
-        }
+        
+        [self export:files index:index+1];
     }];
 }
 
@@ -385,6 +422,7 @@ static UIAlertController *progressAlert = nil;
         assert([record isKindOfClass:[CKRecord class]]);
         NSString* file = record.recordID.recordName;
         // TODO: compare dates??
+        // TODO: dont re-export large ZIP files
         if ([files containsObject:file])
             [files removeObject:file];
     }
@@ -434,13 +472,15 @@ static UIAlertController *progressAlert = nil;
     [self updateSync:((double)index / files.count) text:file];
     
     [_database deleteRecordWithID:[[CKRecordID alloc] initWithRecordName:file] completionHandler:^(CKRecordID* recordID, NSError* error) {
+        
         if (error != nil) {
-            NSLog(@"DELETE RECORD ERROR: %@", error);
-            [self stopSync:error];
+            [self handleSyncError:error retry:^{
+                [self delete:files index:index];
+            }];
+            return;
         }
-        else {
-            [self delete:files index:index+1];
-        }
+        
+        [self delete:files index:index+1];
     }];
 }
 
