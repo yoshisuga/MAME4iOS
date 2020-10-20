@@ -235,7 +235,7 @@ static UIAlertController *progressAlert = nil;
 }
 
 +(void)stopSync:(NSError*)error {
-    if (error == nil)
+    if (error == nil || inSync == -1)
         return [self stopSync];
 
     NSLog(@"STOP SYNC ERROR: %@", error);
@@ -302,6 +302,7 @@ static UIAlertController *progressAlert = nil;
             [NSFileManager.defaultManager removeItemAtPath:path error:&error];
         }
 
+        // TODO: we might need to create the destination directory
         [NSFileManager.defaultManager copyItemAtPath:asset.fileURL.path toPath:path error:&error];
         if (error != nil) {
             NSLog(@"COPY ERROR: %@", error);
