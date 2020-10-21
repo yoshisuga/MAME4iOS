@@ -51,10 +51,6 @@ static CloudSyncStatus _status;
 static CKContainer*    _container;
 static CKDatabase*     _database;
 
-+(NSString*) getFilePath:(NSString*)file {
-    return [NSString stringWithUTF8String:get_documents_path(file.UTF8String)];
-}
-
 // MARK: LOAD
 
 +(void)load {
@@ -376,7 +372,7 @@ static UIAlertController *progressAlert = nil;
             return;
         }
 
-        NSString* path = [self getFilePath:file];
+        NSString* path = [NSString stringWithUTF8String:get_documents_path(file.UTF8String)];
         CKAsset* asset = record[kRecordData];
         
         if (![asset isKindOfClass:[CKAsset class]] || asset.fileURL == nil) {
@@ -448,7 +444,7 @@ static UIAlertController *progressAlert = nil;
 
     [self updateSync:((double)index / files.count) text:file];
     
-    NSString* path = [self getFilePath:file];
+    NSString* path = [NSString stringWithUTF8String:get_documents_path(file.UTF8String)];
     assert([NSFileManager.defaultManager fileExistsAtPath:path]);
 
     // make new record with file data, recordID.recordName *must* be equal to kRecordName
