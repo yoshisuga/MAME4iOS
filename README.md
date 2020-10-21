@@ -106,7 +106,6 @@ If your `ORG_IDENTIFIER` is `com.example` you should register a AppGroup named `
 ### iCloud Import and Export.
 * To enable syncing with iCloud, you must enable [CloudKit](https://developer.apple.com/library/archive/documentation/DataManagement/Conceptual/CloudKitQuickStart/EnablingiCloudandConfiguringCloudKit/EnablingiCloudandConfiguringCloudKit.html)
 * Use the container `iCloud.<ORG_IDENTIFIER>.mame4ios`
-* Blah, Blah, Blah
 
 ## tvOS
 
