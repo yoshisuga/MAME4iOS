@@ -131,8 +131,8 @@
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
         }
         if ( indexPath.row == 4 ) {
-            cell.textLabel.text = @"Delete all iCloud";
-            cell.imageView.image = [UIImage systemImageNamed:@"xmark.icloud"];
+            cell.textLabel.text = @"Erase iCloud";
+            cell.imageView.image = [UIImage systemImageNamed:@"xmark.icloud" withPointSize:size];
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
         }
     } else if ( indexPath.section == kScreenSection ) {

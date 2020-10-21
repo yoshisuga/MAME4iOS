@@ -21,12 +21,12 @@
 //      |modificationDate   |Date     |     system modificationDate
 //      +-------------------+---------+
 //      |name               |String   |     name of the ROM or file, ie "roms/pacman.zip"
-//      |data               |Asset    |     a CKAsset (aka BLOB) holding the file contents
+//      |data               |Asset    |     CKAsset (aka BLOB) holding the file contents
 //      +-------------------+---------+
 //
 //      **NOTE** the reason recordID == name, instead of just recordID and no name, is that CloudKit
-//      just-in-time schema will automaticly add QUERYABLE, SORTABLE, and INDEXABLE to name for us
-//      but not for recordID. this way the code will run without *needing* to enable things in the Dashboard.
+//      just-in-time-schema will automaticly add QUERYABLE, SORTABLE, and INDEXABLE to name for us
+//      but not for recordID. This way the code will run without *needing* a visit to the Dashboard.
 //
 
 #import "CloudSync.h"
@@ -116,7 +116,7 @@ static CKDatabase*     _database;
         // if CloudKit is avail, try to read a record to see if anyone is home.
         if (_status == CloudSyncStatusAvailable) {
             _status = CloudSyncStatusUnknown;
-            [self query:kRecordType predicate:[NSPredicate predicateWithFormat:@"%K != ''", kRecordName] sort:nil keys:@[] limit:10 handler:^(NSArray* records, NSError* error) {
+            [self query:kRecordType predicate:[NSPredicate predicateWithFormat:@"%K != ''", kRecordName] sort:nil keys:@[] limit:2 handler:^(NSArray* records, NSError* error) {
                 if (error != nil) {
                     NSLog(@"CLOUD STATUS ERROR: %@", error);
                     _status = CloudSyncStatusError;
@@ -138,11 +138,11 @@ static CKDatabase*     _database;
     }];
 }
 
-// Create a initial CKRecord so "just-in-time" schema kicks in.
+// Create a initial CKRecord so just-in-time-schema kicks in.
 // https://developer.apple.com/library/archive/documentation/DataManagement/Conceptual/CloudKitQuickStart/CreatingaSchemabySavingRecords/CreatingaSchemabySavingRecords.html
 //
 + (void)createTestRecord {
-    static int create_flag = FALSE;
+    static int create_flag = 0;
     NSLog(@"CLOUD STATUS: CREATE TEST RECORD");
     
     // only try this once....
@@ -152,7 +152,7 @@ static CKDatabase*     _database;
     NSString* path = [NSTemporaryDirectory() stringByAppendingPathComponent:kTestRecordName];
     [NSFileManager.defaultManager createFileAtPath:path contents:nil attributes:nil];
     
-    // make a test record with empty data, recordID.recordName *must* be equal to kRecordName
+    // make a test record with empty data
     CKRecord* record = [[CKRecord alloc] initWithRecordType:kRecordType recordID:[[CKRecordID alloc] initWithRecordName:kTestRecordName]];
     record[kRecordName] = kTestRecordName;
     record[kRecordData] = [[CKAsset alloc] initWithFileURL:[NSURL fileURLWithPath:path]];
@@ -263,13 +263,13 @@ static UIAlertController *progressAlert = nil;
         if (inSync == -1) {
             NSLog(@"STOP SYNC CANCEL");
             // reload the MAME menu, now
-            [emuController performSelectorOnMainThread:@selector(playGame:) withObject:nil waitUntilDone:NO];
+            [emuController reload];
         }
         else {
             [progressAlert setProgress:1.0];
             [progressAlert.presentingViewController dismissViewControllerAnimated:YES completion:^{
                 // reload the MAME menu, after the alert is down
-                [emuController performSelectorOnMainThread:@selector(playGame:) withObject:nil waitUntilDone:NO];
+                [emuController reload];
             }];
         }
         inSync = 0;

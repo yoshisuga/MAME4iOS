@@ -166,6 +166,7 @@ enum {BTN_A,BTN_B,BTN_Y,BTN_X,BTN_L1,BTN_R1,
 - (void)moveROMS;
 - (void)playGame:(NSDictionary*)game;
 - (void)chooseGame:(NSArray*)games;
+- (void)reload;
 
 #if TARGET_OS_IOS
 - (NSSet*)touchesController:(NSSet *)touches withEvent:(UIEvent *)event;

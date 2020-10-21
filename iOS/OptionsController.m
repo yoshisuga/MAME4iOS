@@ -441,7 +441,7 @@
                 }
                 case 3:
                 {
-                    cell.textLabel.text = @"Delete all iCloud";
+                    cell.textLabel.text = @"Erase iCloud";
                     cell.imageView.image = [UIImage systemImageNamed:@"xmark.icloud"];
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                     break;

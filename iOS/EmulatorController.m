@@ -1101,7 +1101,7 @@ void mame_state(int load_save, int slot)
         if (g_settings_file_count != file_count)
             [self performSelector:@selector(moveROMS) withObject:nil afterDelay:0.0];
         else if (g_settings_roms_count != roms_count || (g_mame_reset && myosd_inGame == 0))
-            [self performSelector:@selector(playGame:) withObject:nil afterDelay:0.0];
+            [self reload];
         
         // dont call endMenu (and unpause MAME) if we still have a dialog up.
         if (self.presentedViewController == nil)
@@ -3719,7 +3719,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
                     myosd_last_game_selected = 0;
                     
                     // reload the MAME menu....
-                    [self performSelectorOnMainThread:@selector(playGame:) withObject:nil waitUntilDone:NO];
+                    [self reload];
                     
                     g_move_roms = 0;
                 }];
@@ -3782,7 +3782,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 - (void)documentPickerWasCancelled:(UIDocumentPickerViewController *)controller {
     if (controller.documentPickerMode == UIDocumentPickerModeImport) {
         NSLog(@"IMPORT CANCELED");
-        [self performSelectorOnMainThread:@selector(playGame:) withObject:nil waitUntilDone:NO];
+        [self reload];
     }
     else {
         NSLog(@"EXPORT CANCELED");
@@ -4643,6 +4643,10 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     g_emulation_paused = 0;
     change_pause(g_emulation_paused);
     myosd_exitGame = 1; // exit menu mode and start game or menu.
+}
+
+-(void)reload {
+    [self performSelectorOnMainThread:@selector(playGame:) withObject:nil waitUntilDone:NO];
 }
 
 #pragma mark choose game UI
