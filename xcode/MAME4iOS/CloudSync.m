@@ -13,14 +13,14 @@
 // Files are stored in the CloudKit private database in the `MameFile` recordType (aka table)
 //
 //      MameFile schema
-//      +-------------------+---------+
-//      |recordID           |String   |     system recordID, must match name
-//      |creationDate       |Date     |     system creationDate
-//      |modificationDate   |Date     |     system modificationDate
-//      +-------------------+---------+
-//      |name               |String   |     name of the ROM or file, ie "roms/pacman.zip"
-//      |data               |Asset    |     CKAsset (aka BLOB) holding the file contents
-//      +-------------------+---------+
+//      +-----------+---------+
+//      |recordID   |String   |     system recordID, must match name
+//      |createdAt  |Date     |     system creationDate
+//      |modifiedAt |Date     |     system modificationDate
+//      +-----------+---------+
+//      |name       |String   |     name of the ROM or file, ie "roms/pacman.zip"
+//      |data       |Asset    |     CKAsset (aka BLOB) holding the file contents
+//      +-----------+---------+
 //
 //      **NOTE** the reason recordID == name, instead of just recordID and no name, is that CloudKit
 //      just-in-time-schema will automaticly add QUERYABLE, SORTABLE, and INDEXABLE to name for us
@@ -33,7 +33,7 @@
 #import "Alert.h"
 
 #define DebugLog 1
-#if DebugLog == 0 || !defined(DEBUG)
+#if DebugLog == 0 || DEBUG == 0
 #define NSLog(...) (void)0
 #endif
 
