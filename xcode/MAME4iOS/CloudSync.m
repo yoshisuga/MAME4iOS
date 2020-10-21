@@ -53,6 +53,10 @@ static CloudSyncStatus _status;
 static CKContainer*    _container;
 static CKDatabase*     _database;
 
++(NSString*) getFilePath:(NSString*)file {
+    return [NSString stringWithUTF8String:get_documents_path(file.UTF8String)];
+}
+
 // MARK: LOAD
 
 +(void)load {
@@ -164,6 +168,26 @@ static CKDatabase*     _database;
             [self updateCloudStatus];
     }];
 }
+
+// MARK: TEST FILES
+
+#ifdef DEBUG
+#define NUM_TEST_FILES 500
+
+// create a bunch of test ROMs to verify import/export of many files works.
++ (void)createTestFiles {
+    
+    uint8_t random[1024 * 4];
+    arc4random_buf(random, sizeof(random));
+    NSData* data = [NSData dataWithBytes:random length:sizeof(random)];
+    
+    for (int i=0; i<NUM_TEST_FILES; i++) {
+        NSString* file = [NSString stringWithFormat:@"roms/TEST_ROM_%04d.zip", i];
+        NSString* path = [self getFilePath:file];
+        [NSFileManager.defaultManager createFileAtPath:path contents:data attributes:nil];
+    }
+}
+#endif
 
 // MARK: QUERY
 
@@ -376,8 +400,7 @@ static UIAlertController *progressAlert = nil;
             return;
         }
 
-        NSString *rootPath = [NSString stringWithUTF8String:get_documents_path("")];
-        NSString* path = [rootPath stringByAppendingPathComponent:file];
+        NSString* path = [self getFilePath:file];
         CKAsset* asset = record[kRecordData];
         
         if (![asset isKindOfClass:[CKAsset class]] || asset.fileURL == nil) {
@@ -424,6 +447,11 @@ static UIAlertController *progressAlert = nil;
 
 +(void)export {
     NSLog(@"CLOUD EXPORT");
+    
+#ifdef DEBUG
+    [self createTestFiles];
+#endif
+    
     [self startSync:@"iCloud Export" block:^{
         
         NSArray* cloud = [self getCloudFiles];
@@ -448,8 +476,7 @@ static UIAlertController *progressAlert = nil;
 
     [self updateSync:((double)index / files.count) text:file];
     
-    NSString *rootPath = [NSString stringWithUTF8String:get_documents_path("")];
-    NSString* path = [rootPath stringByAppendingPathComponent:file];
+    NSString* path = [self getFilePath:file];
     assert([NSFileManager.defaultManager fileExistsAtPath:path]);
 
     // make new record with file data, recordID.recordName *must* be equal to kRecordName
