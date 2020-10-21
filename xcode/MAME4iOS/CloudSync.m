@@ -8,8 +8,6 @@
 // TODO: need to handle iCloud retry errors
 //       https://developer.apple.com/documentation/cloudkit/ckerrorretryafterkey
 //
-// TODO: compare dates when deciding what files to sync, but dont re-copy ZIP files.
-//
 // Files are stored in the CloudKit private database in the `MameFile` recordType (aka table)
 //
 //      MameFile schema
@@ -355,9 +353,13 @@ static UIAlertController *progressAlert = nil;
     NSString* file = record.recordID.recordName;
     NSString* path = [NSString stringWithUTF8String:get_documents_path(file.UTF8String)];
     
+    // ignore test record
+    if ([file isEqualToString:kTestRecordName])
+        return NSOrderedDescending;
+    
     // no file on device, cloud is greater
     if (![NSFileManager.defaultManager fileExistsAtPath:path])
-        return NSOrderedAscending;
+        return NSOrderedSame;
     
     // dont re-copy ZIP files.
     // TODO: should this only apply to the ROMs directory?
@@ -441,15 +443,10 @@ static UIAlertController *progressAlert = nil;
 
 +(NSArray*)getImportFiles:(NSArray*)cloud {
     NSMutableArray* files = [[NSMutableArray alloc] init];
-    NSArray* roms = [EmulatorController getROMS];   // local ROMs and files
     
     for (CKRecord* record in cloud) {
-        assert([record isKindOfClass:[CKRecord class]]);
-        // TODO: compare dates??
-        // TODO: dont re-import large ZIP files
-        NSString* rom = record.recordID.recordName;
-        if (![roms containsObject:rom] && ![rom isEqualToString:kTestRecordName])
-            [files addObject:rom];
+        if ([self compareCloudFile:record] == NSOrderedAscending)
+            [files addObject:record.recordID.recordName];
     }
     return files;
 }
@@ -491,18 +488,9 @@ static UIAlertController *progressAlert = nil;
     record[kRecordName] = file;
     record[kRecordData] = [[CKAsset alloc] initWithFileURL:[NSURL fileURLWithPath:path]];
 
-    [_database saveRecord:record completionHandler:^(CKRecord* record, NSError* error) {
+    [self saveRecord:record completionHandler:^(CKRecord* record, NSError* error) {
 
         if (error != nil) {
-            
-            // TODO: *****************************************************
-            // TODO: saveRecord will not replace, need to do that special!
-            // TODO: *****************************************************
-            if ([error.domain isEqualToString:CKErrorDomain] && error.code == CKErrorServerRecordChanged) {
-                NSLog(@"IGNORING ERROR: %@", error);
-                return [self export:files index:index+1];
-            }
-
             [self handleSyncError:error retry:^{
                 [self export:files index:index];
             }];
@@ -522,15 +510,23 @@ static UIAlertController *progressAlert = nil;
     NSMutableArray* files = [[EmulatorController getROMS] mutableCopy];
 
     for (CKRecord* record in cloud) {
-        assert([record isKindOfClass:[CKRecord class]]);
-        NSString* file = record.recordID.recordName;
-        // TODO: compare dates??
-        // TODO: dont re-export large ZIP files
-        if ([files containsObject:file])
-            [files removeObject:file];
+        if ([self compareCloudFile:record] != NSOrderedDescending)
+            [files removeObject:record.recordID.recordName];
     }
 
     return files;
+}
+
+// MARK: SAVE RECORD
+
+// a version of saveRecord that will overwrite the copy on the server.
++ (void)saveRecord:(CKRecord *)record completionHandler:(void (^)(CKRecord* record, NSError* error))completionHandler {
+    CKModifyRecordsOperation* op = [[CKModifyRecordsOperation alloc] initWithRecordsToSave:@[record] recordIDsToDelete:nil];
+    op.savePolicy = CKRecordSaveAllKeys;
+    op.modifyRecordsCompletionBlock = ^(NSArray* saved, NSArray* deleted, NSError* error) {
+        completionHandler(saved.firstObject, error);
+    };
+    [_database addOperation:op];
 }
 
 // MARK: SYNC

@@ -115,7 +115,6 @@
             cell.imageView.image = [UIImage systemImageNamed:@"arrow.up.arrow.down.circle" withPointSize:size];
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
         }
-        // TODO: we really only need two options, Sync and Erase, would that be less confusing?
         if ( indexPath.row == 1 ) {
             cell.textLabel.text = @"Export to iCloud";
             cell.imageView.image = [UIImage systemImageNamed:@"icloud.and.arrow.up" withPointSize:size];
