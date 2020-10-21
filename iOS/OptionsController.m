@@ -414,6 +414,7 @@
            }
            break;
         }
+        // TODO: we really only need two options, Sync and Erase, would that be less confusing?
         case kCloudImportSection:
         {
             switch (indexPath.row)
