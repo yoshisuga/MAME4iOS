@@ -12,6 +12,22 @@
 //
 // TODO: explain in README.md how to setup CloudKit
 //
+//      Files are stored in the CloudKit private database in the `MameFile` recordType (aka table)
+//
+//      MameFile schema
+//      +-------------------+---------+
+//      |recordID           |String   |     system recordID, must match name
+//      |creationDate       |Date     |     system creationDate
+//      |modificationDate   |Date     |     system modificationDate
+//      +-------------------+---------+
+//      |name               |String   |     name of the ROM or file, ie "roms/pacman.zip"
+//      |data               |Asset    |     a CKAsset (aka BLOB) holding the file contents
+//      +-------------------+---------+
+//
+//      **NOTE** the reason recordID == name, instead of just recordID and no name, is that CloudKit
+//      just-in-time schema will automaticly add QUERYABLE, SORTABLE, and INDEXABLE to name for us
+//      but not for recordID. this way the code will run without *needing* to enable things in the Dashboard.
+//
 
 #import "CloudSync.h"
 #import <CloudKit/CloudKit.h>
@@ -100,7 +116,7 @@ static CKDatabase*     _database;
         // if CloudKit is avail, try to read a record to see if anyone is home.
         if (_status == CloudSyncStatusAvailable) {
             _status = CloudSyncStatusUnknown;
-            [self query:kRecordType predicate:[NSPredicate predicateWithFormat:@"%K != ''", kRecordName] keys:@[] limit:10 handler:^(NSArray* records, NSError* error) {
+            [self query:kRecordType predicate:[NSPredicate predicateWithFormat:@"%K != ''", kRecordName] sort:nil keys:@[] limit:10 handler:^(NSArray* records, NSError* error) {
                 if (error != nil) {
                     NSLog(@"CLOUD STATUS ERROR: %@", error);
                     _status = CloudSyncStatusError;
@@ -159,6 +175,7 @@ static CKDatabase*     _database;
     
     records = records ?: [[NSMutableArray alloc] init];
     
+    op.qualityOfService = NSQualityOfServiceUserInitiated;
     op.desiredKeys = desiredKeys;
     
     if (resultsLimit != 0)
@@ -190,11 +207,14 @@ static CKDatabase*     _database;
 
 +(void)query:(CKRecordType)recordType
    predicate:(NSPredicate*)predicate
+        sort:(NSSortDescriptor*)sortDescriptor
         keys:(NSArray<CKRecordFieldKey>*)desiredKeys
        limit:(NSUInteger)resultsLimit
      handler:(void (^)(NSArray<CKRecord*>* records, NSError* error))handler {
     
     CKQuery* query = [[CKQuery alloc] initWithRecordType:recordType predicate:predicate ?: [NSPredicate predicateWithValue:TRUE]];
+    if (sortDescriptor != nil)
+        query.sortDescriptors = @[sortDescriptor];
     CKQueryOperation* op = [[CKQueryOperation alloc] initWithQuery:query];
     [self runQuery:op keys:desiredKeys limit:resultsLimit records:nil handler:handler];
 }
@@ -305,10 +325,15 @@ static UIAlertController *progressAlert = nil;
     assert(!NSThread.isMainThread);
     NSMutableArray* records = [[NSMutableArray alloc] init];
     
+    // TODO: this might be limited to max 400 query items??? do a large test
+
     dispatch_group_t group = dispatch_group_create();
     dispatch_group_enter(group);
     // we use "name != ''" instead of TRUEPREDICATE because TRUEPREDICATE requires recordName to be initialized in the Dashboard as QUERYABLE, we want to not require the Dashboard to run.
-    [self query:kRecordType predicate:[NSPredicate predicateWithFormat:@"%K != ''", kRecordName] keys:@[] limit:0 handler:^(NSArray* _records, NSError* error) {
+    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"%K != ''", kRecordName];
+    [self query:kRecordType predicate:predicate sort:nil keys:@[] limit:0 handler:^(NSArray* _records, NSError* error) {
+        if (error != nil)
+            [self handleError:error];
         [records addObjectsFromArray:_records ?: @[]];
         dispatch_group_leave(group);
     }];
