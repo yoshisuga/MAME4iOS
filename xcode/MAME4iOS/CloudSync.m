@@ -169,26 +169,6 @@ static CKDatabase*     _database;
     }];
 }
 
-// MARK: TEST FILES
-
-#ifdef DEBUG
-#define NUM_TEST_FILES 500
-
-// create a bunch of test ROMs to verify import/export of many files works.
-+ (void)createTestFiles {
-    
-    uint8_t random[1024 * 4];
-    arc4random_buf(random, sizeof(random));
-    NSData* data = [NSData dataWithBytes:random length:sizeof(random)];
-    
-    for (int i=0; i<NUM_TEST_FILES; i++) {
-        NSString* file = [NSString stringWithFormat:@"roms/TEST_ROM_%04d.zip", i];
-        NSString* path = [self getFilePath:file];
-        [NSFileManager.defaultManager createFileAtPath:path contents:data attributes:nil];
-    }
-}
-#endif
-
 // MARK: QUERY
 
 +(void)runQuery:(CKQueryOperation*)op
@@ -349,8 +329,6 @@ static UIAlertController *progressAlert = nil;
     assert(!NSThread.isMainThread);
     NSMutableArray* records = [[NSMutableArray alloc] init];
     
-    // TODO: this might be limited to max 400 query items??? do a large test
-
     dispatch_group_t group = dispatch_group_create();
     dispatch_group_enter(group);
     // we use "name != ''" instead of TRUEPREDICATE because TRUEPREDICATE requires recordName to be initialized in the Dashboard as QUERYABLE, we want to not require the Dashboard to run.
@@ -448,10 +426,6 @@ static UIAlertController *progressAlert = nil;
 +(void)export {
     NSLog(@"CLOUD EXPORT");
     
-#ifdef DEBUG
-    [self createTestFiles];
-#endif
-    
     [self startSync:@"iCloud Export" block:^{
         
         NSArray* cloud = [self getCloudFiles];
@@ -543,7 +517,7 @@ static UIAlertController *progressAlert = nil;
 // "I say we take off and nuke the entire site from orbit. It's the only way to be sure."
 +(void)delete {
     NSLog(@"CLOUD DELETE");
-    [self startSync:@"iCloud Delete" block:^{
+    [self startSync:@"iCloud Erase" block:^{
         NSArray* cloud = [self getCloudFiles];
         NSArray* files = [cloud valueForKeyPath:@"@unionOfObjects.recordID.recordName"];
         [self delete:files index:0];
