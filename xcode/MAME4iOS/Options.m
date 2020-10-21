@@ -331,6 +331,13 @@
         _videoPriority  =  [[optionsDict objectForKey:@"videoPriority"] intValue];
         _mainThreadType  =  [[optionsDict objectForKey:@"mainThreadType"] intValue];
         _videoThreadType  =  [[optionsDict objectForKey:@"videoThreadType"] intValue];
+#else
+        _threaded = 1;
+        _dblbuff = 1;
+        _mainPriority = 5;
+        _videoPriority = 5;
+        _mainThreadType = 0;
+        _videoThreadType = 0;
 #endif
         
         _autofire =  [[optionsDict objectForKey:@"autofire"] intValue];
