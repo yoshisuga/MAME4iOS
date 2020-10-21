@@ -12,6 +12,8 @@
 //
 // TODO: explain in README.md how to setup CloudKit
 //
+// TODO: explain in help.md Cloud options
+//
 //      Files are stored in the CloudKit private database in the `MameFile` recordType (aka table)
 //
 //      MameFile schema

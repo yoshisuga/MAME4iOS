@@ -3908,10 +3908,10 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         [self done:self];
     }]];
     [alert addAction:[UIAlertAction actionWithTitle:@"Delete All ROMs" style:UIAlertActionStyleDestructive handler:^(UIAlertAction* action) {
-        NSString *rootPath = [NSString stringWithUTF8String:get_documents_path("")];
         for (NSString* file in [EmulatorController getROMS]) {
-            NSString* path = [rootPath stringByAppendingPathComponent:file];
-            [NSFileManager.defaultManager removeItemAtPath:path error:nil];
+            NSString* path = [NSString stringWithUTF8String:get_documents_path(file.UTF8String)];
+            if (![NSFileManager.defaultManager removeItemAtPath:path error:nil])
+                NSLog(@"ERROR DELETING ROM: %@", file);
         }
         [self reset];
         [self done:self];
