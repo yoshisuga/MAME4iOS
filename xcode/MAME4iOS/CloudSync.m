@@ -334,8 +334,41 @@ static UIAlertController *progressAlert = nil;
         dispatch_group_leave(group);
     }];
     dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
-    // TODO: sort records my modifed date, so we get the most recently updated files first
-    return records;
+    
+    // sort records by modifed date, so we get the most recently updated files first
+    // in case the device runs out of space the most recent ROMs will get copied first.
+    return [records sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"modificationDate" ascending:FALSE]]];
+}
+
+// compare local file on device to file in iCloud.
+//
+// if no file exists on device ==> NSOrderedAscending
+//
+// if the file is a ZIP file it is considered `equal` because we dont want to download
+// a large ROM multiple times, but we do want to re-copy high scores, settigns, game states.
+//
+//      NSOrderedAscending.  The file on device is older than the cloud.
+//      NSOrderedDescending. The file on device is newer than the cloud.
+//      NSOrderedSame.       The files are equal.
+//
++(NSComparisonResult)compareCloudFile:(CKRecord*)record {
+    NSString* file = record.recordID.recordName;
+    NSString* path = [NSString stringWithUTF8String:get_documents_path(file.UTF8String)];
+    
+    // no file on device, cloud is greater
+    if (![NSFileManager.defaultManager fileExistsAtPath:path])
+        return NSOrderedAscending;
+    
+    // dont re-copy ZIP files.
+    // TODO: should this only apply to the ROMs directory?
+    if ([file.pathExtension.uppercaseString isEqualToString:@"ZIP"])
+        return NSOrderedSame;
+    
+    NSDate* date = [NSFileManager.defaultManager attributesOfItemAtPath:path error:nil].fileModificationDate;
+    if (date == nil || record.modificationDate == nil)
+        return NSOrderedSame;
+    
+    return [date compare:record.modificationDate];
 }
 
 // MARK: IMPORT
@@ -396,6 +429,12 @@ static UIAlertController *progressAlert = nil;
                 return [self handleSyncError:error];
             }
         }
+        
+        // set the local file modification date to match the server.
+        NSDate* date = record.modificationDate;
+        if (date != nil)
+            [NSFileManager.defaultManager setAttributes:@{NSFileModificationDate:date} ofItemAtPath:path error:nil];
+        
         [self import:files index:(index+1)];
     }];
 }
@@ -469,6 +508,11 @@ static UIAlertController *progressAlert = nil;
             }];
             return;
         }
+        
+        // set the local file modification date to match the server.
+        NSDate* date = record.modificationDate;
+        if (date != nil)
+            [NSFileManager.defaultManager setAttributes:@{NSFileModificationDate:date} ofItemAtPath:path error:nil];
         
         [self export:files index:index+1];
     }];
