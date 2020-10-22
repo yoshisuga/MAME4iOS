@@ -55,6 +55,7 @@
 #import "SystemImage.h"
 #import "ImageCache.h"
 #import "CloudSync.h"
+#import "Alert.h"
 
 @implementation OptionsController
 
@@ -634,7 +635,10 @@
                 [CloudSync sync];
             }
             if (row==3) {
-                [CloudSync delete];
+                [self showAlertWithTitle:@"Erase iCloud?" message:nil buttons:@[@"Erase", @"Cancel"] handler:^(NSUInteger button) {
+                    if (button == 0)
+                        [CloudSync delete];
+                }];
             }
             break;
         }

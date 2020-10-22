@@ -11,6 +11,7 @@
 #import "TVInputOptionsController.h"
 #import "SystemImage.h"
 #import "CloudSync.h"
+#import "Alert.h"
 
 @implementation TVOptionsController
 
@@ -254,7 +255,10 @@
             [CloudSync sync];
         }
         if ( indexPath.row == 4 ) {
-            [CloudSync delete];
+            [self showAlertWithTitle:@"Erase iCloud?" message:nil buttons:@[@"Erase", @"Cancel"] handler:^(NSUInteger button) {
+                if (button == 0)
+                    [CloudSync delete];
+            }];
         }
     } else if ( indexPath.section == kScreenSection ) {
         if ( indexPath.row == 0 ) {
