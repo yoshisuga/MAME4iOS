@@ -379,6 +379,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     [[NSFileManager defaultManager] createDirectoryAtPath:titles_path withIntermediateDirectories:NO attributes:nil error:nil];
     [[ImageCache sharedInstance] flush];
 #endif
+    [self updateExternal];
 }
 -(void)scrollToTop
 {
@@ -918,9 +919,26 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 #pragma mark Update External
 
 - (void) updateExternal {
-    for (NSString* key in @[RECENT_GAMES_KEY, FAVORITE_GAMES_KEY])
-        [NSUserDefaults.sharedUserDefaults setObject:([NSUserDefaults.standardUserDefaults objectForKey:key] ?: @[]) forKey:key];
 
+    // copy data to shared container for Widget and TopShelf
+    NSURL* sharedContainer = [NSFileManager.defaultManager containerURLForSecurityApplicationGroupIdentifier:[NSString stringWithFormat:@"group.%@", NSBundle.mainBundle.bundleIdentifier]];
+    if (sharedContainer != nil) {
+        for (NSString* key in @[RECENT_GAMES_KEY, FAVORITE_GAMES_KEY]) {
+            NSArray* games = ([NSUserDefaults.standardUserDefaults objectForKey:key] ?: @[]);
+            
+            // copy standardUserDefaults to sharedUserDefaults
+            [NSUserDefaults.sharedUserDefaults setObject:games forKey:key];
+
+            // copy needed Title images
+            for (NSDictionary* game in games) {
+                NSURL* local  = [self getGameImageLocalURL:game];
+                NSURL* shared = [sharedContainer URLByAppendingPathComponent:[NSString stringWithFormat:@"Library/Caches/%@.png", game[kGameInfoName]]];
+                if (![NSFileManager.defaultManager fileExistsAtPath:shared.path])
+                    [NSFileManager.defaultManager copyItemAtURL:local toURL:shared error:nil];
+            }
+        }
+    }
+    
 #if TARGET_OS_IOS
     [self updateApplicationShortcutItems];
     #ifdef __IPHONE_14_0

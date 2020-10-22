@@ -40,6 +40,11 @@ struct MameGameInfo {
         return url.appendingPathComponent(file).appendingPathExtension("png")
     }
     
+    var sharedURL:URL? {
+        let url = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier:Bundle.main.groupIdentifier)
+        return url?.appendingPathComponent("Library/Caches").appendingPathComponent(self.name).appendingPathExtension("png")
+    }
+    
     var playURL:URL {
         return URL(string:"mame4ios://\(name)")!
     }
@@ -56,7 +61,7 @@ struct MameGameInfo {
         
         var image:UIImage
         
-        if let data = try? Data(contentsOf:self.remoteURL), let img = UIImage(data:data) {
+        if let url = self.sharedURL, let data = try? Data(contentsOf:url), let img = UIImage(data:data) {
             // make the aspect ratio exactly 4:3 or 3:4
             if img.size.width > img.size.height {
                 image = img.resize(width:floor(img.size.height * (4.0/3.0)), height:img.size.height)

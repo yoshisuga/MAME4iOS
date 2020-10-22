@@ -19,15 +19,17 @@ extension MameGameInfo {
         item.title = self.displayName
         
         if alwaysShowPoster {
-            _ = self.getImage(aspect:0.6666, mode:.scaleAspectFill)
             item.imageShape = .poster
+            //_ = self.getImage(aspect:0.6666, mode:.scaleAspectFill)
+            //item.setImageURL(self.localURL, for:.screenScale1x)
+            item.setImageURL(self.remoteURL, for:.screenScale1x)
         }
         else {
             // show a square or poster based on if game is vertical or horizontal
             let image = self.displayImage
             item.imageShape = (image.size.width >= image.size.height) ? .square : .poster
+            item.setImageURL(self.localURL, for:.screenScale1x)
         }
-        item.setImageURL(self.localURL, for:.screenScale1x)
 
         item.displayAction = TVTopShelfAction(url:self.playURL)
         item.playAction = item.displayAction
