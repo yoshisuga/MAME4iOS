@@ -10,8 +10,8 @@
 // https://help.apple.com/xcode/#/dev745c5c974
 
 
-ORG_IDENTIFIER              = com.example    // CHANGE this to your Organization Identifier.
-DEVELOPMENT_TEAM            = ABC8675309     // CHANGE this to your Team ID. (or select in Xcode project editor)
+ORG_IDENTIFIER              = app.toddla     // CHANGE this to your Organization Identifier.
+DEVELOPMENT_TEAM            = 8RUN83V8CA     // CHANGE this to your Team ID. (or select in Xcode project editor)
 CURRENT_PROJECT_VERSION     = 2020.13
 MARKETING_VERSION           = 2020.13
 

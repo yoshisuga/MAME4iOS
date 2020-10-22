@@ -5,9 +5,6 @@
 //  Created by Todd Laney on 10/18/20.
 //  Copyright © 2020 Seleuco. All rights reserved.
 //
-// TODO: need to handle iCloud retry errors
-//       https://developer.apple.com/documentation/cloudkit/ckerrorretryafterkey
-//
 // Files are stored in the CloudKit private database in the `MameFile` recordType (aka table)
 //
 //      MameFile schema
@@ -294,10 +291,16 @@ static UIAlertController *progressAlert = nil;
 + (void)handleError:(NSError*)error error:(dispatch_block_t)error_block retry:(dispatch_block_t)retry_block {
     assert(error != nil);
     NSLog(@"ERROR: %@", error);
-    // TODO: handle a retry error
-    if (retry_block != nil && /*should retry*/FALSE)
-        retry_block();
-    else if (error_block != nil)
+    // handle a iCloud [retry](https://developer.apple.com/documentation/cloudkit/ckerrorretryafterkey)
+    if (retry_block != nil && [error.domain isEqualToString:CKErrorDomain]) {
+        NSNumber* num = error.userInfo[CKErrorRetryAfterKey];
+        if ([num isKindOfClass:[NSNumber class]]) {
+            dispatch_time_t time = dispatch_time(DISPATCH_TIME_NOW, (int64_t)([num doubleValue] * NSEC_PER_SEC));
+            dispatch_after(time, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), retry_block);
+            return;
+        }
+    }
+    if (error_block != nil)
         error_block();
 }
 
@@ -355,11 +358,11 @@ static UIAlertController *progressAlert = nil;
     
     // ignore test record
     if ([file isEqualToString:kTestRecordName])
-        return NSOrderedDescending;
+        return NSOrderedSame;
     
     // no file on device, cloud is greater
     if (![NSFileManager.defaultManager fileExistsAtPath:path])
-        return NSOrderedSame;
+        return NSOrderedAscending;
     
     // dont re-copy ZIP files.
     // TODO: should this only apply to the ROMs directory?
