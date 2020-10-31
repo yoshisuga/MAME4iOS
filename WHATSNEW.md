@@ -6,6 +6,7 @@
 * tvOS TopShelf
 * New ChooseGameUI look.
 * iCloud import, export, and sync.
+* Mame Warning messages now have their own Mame Menu entry.
 
 # Version 2020.12
 * `Metal` frame-skip updates and fixes.
