@@ -151,6 +151,24 @@ extern const char *myosd_array_years[];
 extern const char *myosd_array_main_driver_source[];
 extern const char *myosd_array_categories[];
 
+// myosd output
+enum myosd_output_channel
+{
+    MYOSD_OUTPUT_ERROR,
+    MYOSD_OUTPUT_WARNING,
+    MYOSD_OUTPUT_INFO,
+    MYOSD_OUTPUT_DEBUG,
+    MYOSD_OUTPUT_VERBOSE,
+};
+extern void myosd_output(int channel, const char* text);
+#ifdef __MACHINE_H__
+_Static_assert(MYOSD_OUTPUT_ERROR == OUTPUT_CHANNEL_ERROR);
+_Static_assert(MYOSD_OUTPUT_WARNING == OUTPUT_CHANNEL_WARNING);
+_Static_assert(MYOSD_OUTPUT_INFO == OUTPUT_CHANNEL_INFO);
+_Static_assert(MYOSD_OUTPUT_DEBUG == OUTPUT_CHANNEL_DEBUG);
+_Static_assert(MYOSD_OUTPUT_VERBOSE == OUTPUT_CHANNEL_VERBOSE);
+#endif
+
 // subset of a internal game_driver structure we pass up to the UI/OSD layer
 typedef struct
 {

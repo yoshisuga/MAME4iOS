@@ -9,7 +9,7 @@
 //
 //============================================================
 
-
+#include "emu.h"
 #include "myosd.h"
 
 #include "bt_joy.h"
@@ -101,8 +101,6 @@ int  myosd_speed = 100;
 
 char myosd_selected_game[MAX_GAME_NAME] = {'\0'};
 
-extern "C" unsigned long read_mfi_controller(unsigned long res);
-
 /*extern */float joy_analog_x[NUM_JOY][4];
 /*extern */float joy_analog_y[NUM_JOY][2];
 
@@ -178,7 +176,7 @@ void myosd_video_flip(void)
 
 void myosd_set_video_mode(int width,int height,int vis_width,int vis_height)
 {
-     printf("myosd_set_video_mode: %dx%d [%dx%d]\n",width,height,vis_width,vis_height);
+     mame_printf_debug("myosd_set_video_mode: %dx%d [%dx%d]\n",width,height,vis_width,vis_height);
 
      myosd_video_width = width;
      myosd_video_height = height;
@@ -259,18 +257,30 @@ float myosd_joystick_read_analog(int n, char axis)
     return res;
 }
 
+// output channel callback, send output "up" to the app via myosd_output
+static void mame_output(void *param, const char *format, va_list argptr)
+{
+    char buffer[1204];
+    vsnprintf(buffer, sizeof(buffer)-1, format, argptr);
+    myosd_output((int)(intptr_t)param, buffer);
+}
+
 void myosd_init(void)
 {
 	int res = 0;
 	struct sched_param param;
+    
+    // capture all MAME output so we can send it to the app.
+    for (int n=0; n<OUTPUT_CHANNEL_COUNT; n++)
+        mame_set_output_channel((output_channel)n, mame_output, (void*)n, NULL, NULL);
 
 	if (!lib_inited )
     {
-	   printf("myosd_init\n");
+       mame_printf_debug("myosd_init\n");
 
 	   //myosd_set_video_mode(320,240,320,240);
         
-       printf("myosd_dbl_buffer %d\n",myosd_dbl_buffer);
+       mame_printf_debug("myosd_dbl_buffer %d\n",myosd_dbl_buffer);
        myosd_curr_screen = myosd_screen;
        myosd_prev_screen = myosd_screen;
 
@@ -284,7 +294,7 @@ void myosd_init(void)
 		   //param.sched_priority = 46;
 		   //param.sched_priority = 100;
            
-            printf("video priority %d\n",video_thread_priority);
+            mame_printf_debug("video priority %d\n",video_thread_priority);
 		    param.sched_priority = video_thread_priority;
 		    int policy;
 		    if(video_thread_priority_type == 1)
@@ -295,7 +305,7 @@ void myosd_init(void)
 		      policy = SCHED_FIFO;
 
 		   if(pthread_setschedparam(main_tid, policy, &param) != 0)
-			  printf("Error setting pthread priority\n");
+               mame_printf_debug("Error setting pthread priority\n");
 		   videot_running = 1;
 	   }
 
@@ -307,7 +317,7 @@ void myosd_deinit(void)
 {
     if (lib_inited )
     {
-		printf("myosd_deinit\n");
+        mame_printf_debug("myosd_deinit\n");
 
     	lib_inited = 0;
     }
@@ -316,7 +326,7 @@ void myosd_deinit(void)
 void myosd_closeSound(void) {
 	if( soundInit == 1 )
 	{
-		printf("myosd_closeSound\n");
+        mame_printf_debug("myosd_closeSound\n");
 
 		
         if(global_low_latency_sound)
@@ -333,12 +343,12 @@ void myosd_openSound(int rate,int stereo) {
 	{
         if(global_low_latency_sound)
         {
-            printf("myosd_openSound LOW LATENCY rate:%d stereo:%d \n",rate,stereo);
+            mame_printf_debug("myosd_openSound LOW LATENCY rate:%d stereo:%d \n",rate,stereo);
             sound_open_AudioUnit(rate, 16, stereo);
         }
         else
         {
-		    printf("myosd_openSound NORMAL rate:%d stereo:%d \n",rate,stereo);
+            mame_printf_debug("myosd_openSound NORMAL rate:%d stereo:%d \n",rate,stereo);
             sound_open_AudioQueue(rate, 16, stereo);
         }
        
