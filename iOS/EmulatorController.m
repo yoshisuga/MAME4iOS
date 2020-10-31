@@ -77,6 +77,7 @@
 #import "SystemImage.h"
 #import "SteamController.h"
 #import "SkinManager.h"
+#import "CloudSync.h"
 
 // declare these selectors, so we can use them, and ARC wont complain
 #ifndef __IPHONE_14_0
@@ -304,11 +305,6 @@ void* app_Thread_Start(void* args)
             // NOTE we need to delete the default.cfg file here because MAME saves cfg files on exit.
             [[NSFileManager defaultManager] removeItemAtPath: [cfg_path stringByAppendingPathComponent:@"default.cfg"] error:nil];
 
-#if 0 // should we use this big of hammer? the user can always delete settings on a game by game basis via context menu in ChooseGameController.
-            // delete *all* the cfg files, not just default.cfg so we reset settings for all games.
-            [[NSFileManager defaultManager] removeItemAtPath:cfg_path error:nil];
-            [[NSFileManager defaultManager] createDirectoryAtPath:cfg_path withIntermediateDirectories:NO attributes:nil error:nil];
-#endif
             g_mame_reset = FALSE;
         }
         
@@ -472,6 +468,10 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     return [[NSUserDefaults standardUserDefaults] objectForKey:kSelectedGameInfoKey];
 }
 
++ (EmulatorController*)sharedInstance {
+    assert(sharedInstance != nil);
+    return sharedInstance;
+}
 
 - (void)startEmulation {
     if (g_emulation_initiated == 1)
@@ -1101,7 +1101,7 @@ void mame_state(int load_save, int slot)
         if (g_settings_file_count != file_count)
             [self performSelector:@selector(moveROMS) withObject:nil afterDelay:0.0];
         else if (g_settings_roms_count != roms_count || (g_mame_reset && myosd_inGame == 0))
-            [self performSelector:@selector(playGame:) withObject:nil afterDelay:0.0];
+            [self reload];
         
         // dont call endMenu (and unpause MAME) if we still have a dialog up.
         if (self.presentedViewController == nil)
@@ -3568,7 +3568,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
             NSString* name = info.name.lastPathComponent;
             
             // only UNZIP files to specific directories, send a ZIP file with a unspecifed directory to roms/
-            if ([info.name hasPrefix:@"roms/"] || [info.name hasPrefix:@"artwork/"] || [info.name hasPrefix:@"titles/"] || [info.name hasPrefix:@"samples/"] ||
+            if ([info.name hasPrefix:@"roms/"] || [info.name hasPrefix:@"artwork/"] || [info.name hasPrefix:@"titles/"] || [info.name hasPrefix:@"samples/"] || [info.name hasPrefix:@"iOS/"] ||
                 [info.name hasPrefix:@"cfg/"] || [info.name hasPrefix:@"ini/"] || [info.name hasPrefix:@"sta/"] || [info.name hasPrefix:@"hi/"] || [info.name hasPrefix:@"skins/"])
                 toPath = [rootPath stringByAppendingPathComponent:info.name];
             else if ([name.uppercaseString isEqualToString:@"CHEAT.ZIP"])
@@ -3719,7 +3719,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
                     myosd_last_game_selected = 0;
                     
                     // reload the MAME menu....
-                    [self performSelectorOnMainThread:@selector(playGame:) withObject:nil waitUntilDone:NO];
+                    [self reload];
                     
                     g_move_roms = 0;
                 }];
@@ -3728,11 +3728,9 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     }
 }
 
-// ZIP up all the important files in our documents directory
+// get a list of all the important files in our documents directory
 // this is more than just "ROMs" it saves *all* important files, kind of like an archive or backup.
-// TODO: maybe we should also export the settings.bin or the UserDefaults plist
-// NOTE we specificaly *dont* export CHDs because they are too big, we support importing CHDs just not exporting
--(BOOL)saveROMS:(NSURL*)url progressBlock:(BOOL (^)(double progress))block {
++(NSArray<NSString*>*)getROMS {
 
     NSString *rootPath = [NSString stringWithUTF8String:get_documents_path("")];
     NSString *romsPath = [NSString stringWithUTF8String:get_documents_path("roms")];
@@ -3740,16 +3738,20 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 
     NSMutableArray* files = [[NSMutableArray alloc] init];
 
+    // add in options data file.
+    if ([NSFileManager.defaultManager fileExistsAtPath:[rootPath stringByAppendingPathComponent:Options.optionsFile]])
+        [files addObject:Options.optionsFile];
+
     NSArray* roms = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:romsPath error:nil];
     for (NSString* rom in roms) {
-        NSString* ext = [rom.pathExtension uppercaseString];
-        
-        if (![ext isEqualToString:@"ZIP"])
+        if (![rom.pathExtension.uppercaseString isEqualToString:@"ZIP"])
             continue;
         
         NSArray* paths = @[@"roms/%@.zip", @"artwork/%@.zip", @"titles/%@.png", @"samples/%@.zip", @"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@/1.sta", @"sta/%@/2.sta", @"hi/%@.hi"];
         for (NSString* path in paths) {
-            [files addObject:[NSString stringWithFormat:path, [rom stringByDeletingPathExtension]]];
+            NSString* file = [NSString stringWithFormat:path, rom.stringByDeletingPathExtension];
+            if ([NSFileManager.defaultManager fileExistsAtPath:[rootPath stringByAppendingPathComponent:file]])
+                [files addObject:file];
         }
     }
     
@@ -3759,9 +3761,17 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
             [files addObject:[NSString stringWithFormat:@"skins/%@", skin]];
     }
     
-    NSLog(@"saveROMS: ROMS: %@", roms);
-    NSLog(@"saveROMS: FILES: %@", files);
-    
+    NSLog(@"getROMS: %@", files);
+    return files;
+}
+
+// ZIP up all the important files in our documents directory
+// NOTE we specificaly *dont* export CHDs because they are too big, we support importing CHDs just not exporting
+-(BOOL)saveROMS:(NSURL*)url progressBlock:(BOOL (^)(double progress))block {
+
+    NSString *rootPath = [NSString stringWithUTF8String:get_documents_path("")];
+    NSArray* files = [EmulatorController getROMS];
+
     return [ZipFile exportTo:url.path fromDirectory:rootPath withFiles:files withOptions:(ZipFileWriteFiles | ZipFileWriteAtomic | ZipFileWriteNoCompress) progressBlock:block];
 }
 
@@ -3772,7 +3782,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 - (void)documentPickerWasCancelled:(UIDocumentPickerViewController *)controller {
     if (controller.documentPickerMode == UIDocumentPickerModeImport) {
         NSLog(@"IMPORT CANCELED");
-        [self performSelectorOnMainThread:@selector(playGame:) withObject:nil waitUntilDone:NO];
+        [self reload];
     }
     else {
         NSLog(@"EXPORT CANCELED");
@@ -3890,20 +3900,34 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 - (void)runReset {
     NSLog(@"RESET: %s", g_mame_game);
     
-    NSString* msg = @"Reset " PRODUCT_NAME " back to factory defaults?";
+    NSString* msg = @"Reset " PRODUCT_NAME;
 
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:nil message:msg preferredStyle:UIAlertControllerStyleAlert];
-    [alert addAction:[UIAlertAction actionWithTitle:@"Reset" style:UIAlertActionStyleDestructive handler:^(UIAlertAction* action) {
-        for (NSString* key in @[kSelectedGameInfoKey, kHUDPositionLandKey, kHUDScaleLandKey, kHUDPositionPortKey, kHUDScalePortKey])
-            [NSUserDefaults.standardUserDefaults removeObjectForKey:key];
-        [Options resetOptions];
-        [ChooseGameController reset];
-        [SkinManager reset];
-        g_mame_reset = TRUE;
+    [alert addAction:[UIAlertAction actionWithTitle:@"Reset Settings" style:UIAlertActionStyleDestructive handler:^(UIAlertAction* action) {
+        [self reset];
         [self done:self];
     }]];
+    [alert addAction:[UIAlertAction actionWithTitle:@"Delete All ROMs" style:UIAlertActionStyleDestructive handler:^(UIAlertAction* action) {
+        for (NSString* file in [EmulatorController getROMS]) {
+            NSString* path = [NSString stringWithUTF8String:get_documents_path(file.UTF8String)];
+            if (![NSFileManager.defaultManager removeItemAtPath:path error:nil])
+                NSLog(@"ERROR DELETING ROM: %@", file);
+        }
+        [self reset];
+        [self done:self];
+    }]];
+    
     [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
     [self.topViewController presentViewController:alert animated:YES completion:nil];
+}
+
+- (void)reset {
+    for (NSString* key in @[kSelectedGameInfoKey, kHUDPositionLandKey, kHUDScaleLandKey, kHUDPositionPortKey, kHUDScalePortKey])
+        [NSUserDefaults.standardUserDefaults removeObjectForKey:key];
+    [Options resetOptions];
+    [ChooseGameController reset];
+    [SkinManager reset];
+    g_mame_reset = TRUE;
 }
 
 #pragma mark - CUSTOM LAYOUT
@@ -4621,6 +4645,10 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     myosd_exitGame = 1; // exit menu mode and start game or menu.
 }
 
+-(void)reload {
+    [self performSelectorOnMainThread:@selector(playGame:) withObject:nil waitUntilDone:NO];
+}
+
 #pragma mark choose game UI
 
 -(void)chooseGame:(NSArray*)games {
@@ -4636,21 +4664,36 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     g_no_roms_found = [games count] == 0;
     if (g_no_roms_found) {
         NSLog(@"NO GAMES, ASK USER WHAT TO DO....");
+        
+        // if iCloud is still initializing give it a litte time.
+        if ([CloudSync status] == CloudSyncStatusUnknown) {
+            NSLog(@"....WAITING FOR iCloud");
+            [self performSelector:_cmd withObject:games afterDelay:1.0];
+        }
 
         NSString* title = @"Welcome to " PRODUCT_NAME_LONG;
-        NSString* message = @"\nTo transfer ROMs from your computer, Start Server, Import ROMs, or use AirDrop.";
-        
+#if TARGET_OS_TV
+        NSString* message = @"\nTo transfer ROMs from your computer, Start Web Server or Import ROMs.";
+#else
+        NSString* message = @"\nTo transfer ROMs from your computer, Start Web Server, Import ROMs, or use AirDrop.";
+#endif
         CGFloat size = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].pointSize;
         
         UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
-        [alert addAction:[UIAlertAction actionWithTitle:@"Start Server" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"arrow.up.arrow.down.circle" withPointSize:size] handler:^(UIAlertAction * _Nonnull action) {
+        [alert addAction:[UIAlertAction actionWithTitle:@"Start Web Server" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"arrow.up.arrow.down.circle" withPointSize:size] handler:^(UIAlertAction* action) {
             [self runServer];
         }]];
 #if TARGET_OS_IOS
-        [alert addAction:[UIAlertAction actionWithTitle:@"Import ROMs" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"square.and.arrow.down" withPointSize:size] handler:^(UIAlertAction * _Nonnull action) {
+        [alert addAction:[UIAlertAction actionWithTitle:@"Import ROMs" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"square.and.arrow.down" withPointSize:size] handler:^(UIAlertAction* action) {
             [self runImport];
         }]];
 #endif
+        if (CloudSync.status == CloudSyncStatusAvailable)
+        {
+            [alert addAction:[UIAlertAction actionWithTitle:@"Import from iCloud" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"icloud.and.arrow.down" withPointSize:size] handler:^(UIAlertAction* action) {
+                [CloudSync import];
+            }]];
+        }
         [alert addAction:[UIAlertAction actionWithTitle:@"Reload ROMs" style:UIAlertActionStyleCancel image:[UIImage systemImageNamed:@"arrow.2.circlepath.circle" withPointSize:size] handler:^(UIAlertAction * _Nonnull action) {
             myosd_exitGame = 1;     /* exit mame menu and re-scan ROMs*/
         }]];

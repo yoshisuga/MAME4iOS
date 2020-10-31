@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)resetOptions;
 + (void)setOption:(id)value forKey:(NSString*)key;
 
+@property (class, readonly, strong) NSString* optionsFile;
 
 @property (class, readonly, strong) NSArray* arrayEmuRes;
 @property (class, readonly, strong) NSArray* arrayFSValue;
@@ -29,6 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (class, readonly, strong) NSArray* arrayScreenShader;
 @property (class, readonly, strong) NSArray* arrayLineShader;
 @property (class, readonly, strong) NSArray* arrayColorSpace;
+@property (class, readonly, strong) NSArray* arraySoundValue;
 
 @property (readwrite,assign) int keepAspectRatio;
 

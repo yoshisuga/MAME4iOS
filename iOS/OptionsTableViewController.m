@@ -188,6 +188,46 @@
     [self.tableView reloadData];
 }
 
+#pragma mark Table view delegate
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+{
+    if (section == 0)
+        return UITableViewAutomaticDimension;
+    if ([self tableView:tableView titleForHeaderInSection:section] == nil || [self tableView:tableView numberOfRowsInSection:section] == 0)
+        return 0.00001;
+    else
+        return UITableViewAutomaticDimension;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section
+{
+    if (section == [tableView numberOfSections]-1)
+        return UITableViewAutomaticDimension;
+    if ([self tableView:tableView titleForFooterInSection:section] == nil || [self tableView:tableView numberOfRowsInSection:section] == 0)
+        return 0.00001;
+    else
+        return UITableViewAutomaticDimension;
+}
+
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
+{
+    if (section == 0)
+        return nil;
+    if ([self tableView:tableView titleForHeaderInSection:section] == nil || [self tableView:tableView numberOfRowsInSection:section] == 0)
+        return [[UIView alloc] init];
+    return nil;
+}
+
+- (UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section
+{
+    if (section == [tableView numberOfSections]-1)
+        return nil;
+    if ([self tableView:tableView titleForFooterInSection:section] == nil || [self tableView:tableView numberOfRowsInSection:section] == 0)
+        return [[UIView alloc] init];
+    return nil;
+}
+
 #pragma mark - switchs on iOS and tvOS
 
 #if TARGET_OS_IOS

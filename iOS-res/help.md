@@ -41,6 +41,7 @@ To see [MAME license](#MAME4iOS-LICENSE), go to the end of this document.
 *   Peer to Peer Netplay Multiplayer
 *   MiFI, Xbox, and DualShock [Game Controlers](#game-controlers)
 *   [TV-OUT](#tv-out)
+*   [iCloud Import, Export, and Sync.](#iCloud)
 
 ... and more.
 
@@ -179,6 +180,7 @@ when you make a mistake and need to undo
 * delete Recent and Favorite games.
 * delete all cached Title Images. 
 * delete all MAME key mappings or settings. 
+* select `Delete all ROMs` to also remove all data.
 
 ### Per Game Settings Reset
 context menu, select `Delete`, then choose `Delete Settings`. 
@@ -189,6 +191,16 @@ context menu, select `Delete`, then choose `Delete Settings`.
 
 ### Delete Game 
 You can also remove a game totally, context menu `Delete`, choose `Delete All Files`
+
+## iCloud
+Store your favorite games in the cloud.
+
+When MAME4iOS is built with a CloudKit entitlement you will see a new iCloud section in Settings
+* **Export to iCloud** will copy all local ROM, Artwork, State files up to the *Cloud*. (Only files not already uploaded or have changed are copied)
+* **Import from iCloud** will copy down files from the Cloudkit database that dont exist on device, or have been updated.
+* **Sync with iCloud** will do both a Import and Export. 
+* **Erase iCloud** can be used to remove all files in **iCloud**. 
+**NOTE** files are *never* deleted, only ever copied. (execept for `Erase iCloud`)
 
 ## Hardware keyboard
 

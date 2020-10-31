@@ -8,9 +8,10 @@
 
 #import "TVOptionsController.h"
 #import "ListOptionController.h"
-#import "FilterOptionController.h"
-#import "DefaultOptionController.h"
 #import "TVInputOptionsController.h"
+#import "SystemImage.h"
+#import "CloudSync.h"
+#import "Alert.h"
 
 @implementation TVOptionsController
 
@@ -43,14 +44,19 @@
         return 2;
     } else if ( section == kScreenSection ) {
         return 9;
+    } else if ( section == kVectorSection ) {
+        return 3;
     } else if ( section == kMiscSection ) {
-        return 7;
-    } else if ( section == kDefaultsSection ) {
-        return 1;
+        return 11;
     } else if ( section == kInputSection ) {
         return 1;
-    } else if ( section == kServerSection ) {
-        return 1;
+    } else if ( section == kImportSection ) {
+        if (CloudSync.status == CloudSyncStatusAvailable)
+            return 5;
+        else if (CloudSync.status == CloudSyncStatusEmpty)
+            return 2;
+        else
+            return 1;
     } else if ( section == kResetSection ) {
         return 1;
     }
@@ -61,11 +67,20 @@
     if ( section == kScreenSection ) {
         return @"Display Options";
     }
+    if ( section == kVectorSection ) {
+        return @"Vector Options";
+    }
+    if ( section == kMiscSection ) {
+        return @"Options";
+    }
     if ( section == kFilterSection ) {
         return @"ROM Options";
     }
     if ( section == kResetSection ) {
         return @"Reset";
+    }
+    if ( section == kImportSection ) {
+        return @"Import / Export";
     }
 
     return @"";
@@ -84,6 +99,8 @@
     cell.contentView.backgroundColor = nil;
     
     Options* op = [[Options alloc] init];
+    
+    CGFloat size = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].pointSize;
 
     if ( indexPath.section == kFilterSection ) {
         if ( indexPath.row == 0 ) {
@@ -93,9 +110,30 @@
             cell.textLabel.text   = @"Hide Not Working";
             cell.accessoryView = [self optionSwitchForKey:@"filterNotWorking"];
         }
-    } else if ( indexPath.section == kServerSection ) {
+    } else if ( indexPath.section == kImportSection ) {
         if ( indexPath.row == 0 ) {
-            cell.textLabel.text = @"Start Server";
+            cell.textLabel.text = @"Start Web Server";
+            cell.imageView.image = [UIImage systemImageNamed:@"arrow.up.arrow.down.circle" withPointSize:size];
+            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+        }
+        if ( indexPath.row == 1 ) {
+            cell.textLabel.text = @"Export to iCloud";
+            cell.imageView.image = [UIImage systemImageNamed:@"icloud.and.arrow.up" withPointSize:size];
+            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+        }
+        if ( indexPath.row == 2 ) {
+            cell.textLabel.text = @"Import from iCloud";
+            cell.imageView.image = [UIImage systemImageNamed:@"icloud.and.arrow.down" withPointSize:size];
+            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+        }
+        if ( indexPath.row == 3 ) {
+            cell.textLabel.text = @"Sync with iCloud";
+            cell.imageView.image = [UIImage systemImageNamed:@"arrow.clockwise.icloud" withPointSize:size];
+            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+        }
+        if ( indexPath.row == 4 ) {
+            cell.textLabel.text = @"Erase iCloud";
+            cell.imageView.image = [UIImage systemImageNamed:@"xmark.icloud" withPointSize:size];
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
         }
     } else if ( indexPath.section == kScreenSection ) {
@@ -132,6 +170,17 @@
             cell.textLabel.text   = @"Force Pixel Aspect";
             cell.accessoryView = [self optionSwitchForKey:@"forcepxa"];
         }
+    } else if ( indexPath.section == kVectorSection ) {
+        if ( indexPath.row == 0 ) {
+            cell.textLabel.text = @"Beam 2x";
+            cell.accessoryView = [self optionSwitchForKey:@"vbean2x"];
+        } else if ( indexPath.row == 1 ) {
+            cell.textLabel.text = @"Antialias";
+            cell.accessoryView = [self optionSwitchForKey:@"vantialias"];
+        } else if ( indexPath.row == 2 ) {
+            cell.textLabel.text = @"Flicker";
+            cell.accessoryView = [self optionSwitchForKey:@"vflicker"];
+        }
     } else if ( indexPath.section == kMiscSection ) {
         if ( indexPath.row == 0 ) {
             cell.textLabel.text   = @"Show FPS";
@@ -157,12 +206,23 @@
         } else if ( indexPath.row == 6 ) {
             cell.textLabel.text = @"Low Latency Audio";
             cell.accessoryView = [self optionSwitchForKey:@"lowlsound"];
+        } else if ( indexPath.row == 7 ) {
+            cell.textLabel.text   = @"Sound";
+            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+            cell.detailTextLabel.text = [Options.arraySoundValue optionAtIndex:op.soundValue];
+        } else if ( indexPath.row == 8 ) {
+            cell.textLabel.text = @"Cheats";
+            cell.accessoryView = [self optionSwitchForKey:@"cheats"];
+        } else if ( indexPath.row == 9 ) {
+            cell.textLabel.text   = @"Force 60Hz Sync";
+            cell.accessoryView = [self optionSwitchForKey:@"vsync"];
+        } else if ( indexPath.row == 10 ) {
+            cell.textLabel.text   = @"Save Hiscores";
+            cell.accessoryView = [self optionSwitchForKey:@"hiscore"];
         }
-    } else if ( indexPath.section == kDefaultsSection ) {
-        cell.textLabel.text = @"Defaults";
-        cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     } else if ( indexPath.section == kInputSection ) {
         cell.textLabel.text = @"Game Input";
+        cell.imageView.image = [UIImage systemImageNamed:@"gamecontroller" withPointSize:size];
         cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     } else if ( indexPath.section == kResetSection ) {
         cell.textLabel.text = @"Reset to Defaults";
@@ -181,9 +241,24 @@
     
     if ( indexPath.section == kFilterSection ) {
 
-    } else if ( indexPath.section == kServerSection ) {
+    } else if ( indexPath.section == kImportSection ) {
         if ( indexPath.row == 0 ) {
             [self.emuController runServer];
+        }
+        if ( indexPath.row == 1 ) {
+            [CloudSync export];
+        }
+        if ( indexPath.row == 2 ) {
+            [CloudSync import];
+        }
+        if ( indexPath.row == 3 ) {
+            [CloudSync sync];
+        }
+        if ( indexPath.row == 4 ) {
+            [self showAlertWithTitle:@"Erase iCloud?" message:nil buttons:@[@"Erase", @"Cancel"] handler:^(NSUInteger button) {
+                if (button == 0)
+                    [CloudSync delete];
+            }];
         }
     } else if ( indexPath.section == kScreenSection ) {
         if ( indexPath.row == 0 ) {
@@ -212,10 +287,10 @@
         } else if ( indexPath.row == 5 ) {
             ListOptionController *listController = [[ListOptionController alloc] initWithType:kTypeFSValue list:Options.arrayFSValue];
             [[self navigationController] pushViewController:listController animated:YES];
+        } else if ( indexPath.row == 7 ) {
+            ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"soundValue" list:Options.arraySoundValue title:cell.textLabel.text];
+            [[self navigationController] pushViewController:listController animated:YES];
         }
-    } else if ( indexPath.section == kDefaultsSection ) {
-        DefaultOptionController *defaultOptController = [[DefaultOptionController alloc] initWithEmuController:self.emuController];
-        [[self navigationController] pushViewController:defaultOptController animated:YES];
     } else if ( indexPath.section == kInputSection ) {
         TVInputOptionsController *inputController = [[TVInputOptionsController alloc] initWithEmuController:self.emuController];
         [self.navigationController pushViewController:inputController animated:YES];

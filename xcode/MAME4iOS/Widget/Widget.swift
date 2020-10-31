@@ -53,7 +53,7 @@ struct GameView : View {
                     Image(uiImage:image)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .frame(maxHeight: .infinity, alignment: .center)
+                        //.frame(maxHeight: .infinity, alignment: .center)
                 }
                 .clipShape(ContainerRelativeShape())
                 Text(title)
@@ -110,12 +110,10 @@ struct Widget: SwiftUI.Widget {
     let showWidget = MameGameInfo.isSharedGroupSetup
 
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: kind, provider: Provider()) { entry in
-            WidgetEntryView(entry:entry)
-        }
-        .configurationDisplayName("MAME Widget")
-        .description("Recent and Favorite Games.")
-        .supportedFamilies(showWidget ? [.systemMedium] : [])
+        StaticConfiguration(kind:kind, provider:Provider(), content:WidgetEntryView.init(entry:))
+            .configurationDisplayName("MAME Widget")
+            .description("Recent and Favorite Games.")
+            .supportedFamilies(showWidget ? [.systemMedium] : [])
     }
 }
 
