@@ -339,6 +339,11 @@ extern const NSString * CSToastPositionBottom;
 @property (assign, nonatomic) NSTimeInterval fadeDuration;
 
 /**
+ The rect to place toast. Default is view.bounds - safeArea.
+ */
+@property (assign, nonatomic) CGRect toastRect;
+
+/**
  Creates a new instance of `CSToastStyle` with all the default values set.
  */
 - (instancetype)initWithDefaultStyle NS_DESIGNATED_INITIALIZER;

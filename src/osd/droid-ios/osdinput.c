@@ -278,11 +278,11 @@ void my_poll_ports(running_machine *machine)
             else
                 myosd_num_ways = 2;
         }
-        printf("Num Buttons %d\n",myosd_num_buttons);
-        printf("Num WAYS %d\n",myosd_num_ways);
-        printf("Num PLAYERS %d\n",myosd_num_players);
-        printf("Num COINS %d\n",myosd_num_coins);
-        printf("Num INPUTS %d\n",myosd_num_inputs);
+        mame_printf_debug("Num Buttons %d\n",myosd_num_buttons);
+        mame_printf_debug("Num WAYS %d\n",myosd_num_ways);
+        mame_printf_debug("Num PLAYERS %d\n",myosd_num_players);
+        mame_printf_debug("Num COINS %d\n",myosd_num_coins);
+        mame_printf_debug("Num INPUTS %d\n",myosd_num_inputs);
     }
     
 }

@@ -87,7 +87,7 @@
 #endif
 
 #define DebugLog 0
-#if DebugLog == 0
+#if DebugLog == 0 || DEBUG == 0
 #define NSLog(...) (void)0
 #endif
 
@@ -199,6 +199,8 @@ static NSDictionary* g_mame_game_info;
 static BOOL g_mame_reset = FALSE;           // do a full reset (delete cfg files) before running MAME
 static char g_mame_game[MAX_GAME_NAME];     // game MAME should run (or empty is menu)
 static char g_mame_game_error[MAX_GAME_NAME];
+static char g_mame_output_text[4096];
+static BOOL g_mame_warning = FALSE;
 static BOOL g_no_roms_found = FALSE;
 
 static NSInteger g_settings_roms_count;
@@ -277,6 +279,25 @@ int iphone_DrawScreen(myosd_render_primitive* prim_list) {
     }
 }
 
+// called by the OSD layer with MAME output
+// **NOTE** this is called on the MAME background thread, dont do anything stupid.
+// ...not doing something stupid includes not leaking autoreleased objects! use a autorelease pool if you need to!
+void myosd_output(int channel, const char* text)
+{
+#if DEBUG
+    // output to stderr/stdout just like normal, in a DEBUG build.
+    if (channel == MYOSD_OUTPUT_ERROR || channel == MYOSD_OUTPUT_WARNING)
+        fputs(text, stderr);
+    else
+        fputs(text, stdout);
+#endif
+    // capture any error/warning output for later use.
+    if (channel == MYOSD_OUTPUT_ERROR || channel == MYOSD_OUTPUT_WARNING) {
+        strncpy(g_mame_output_text + strlen(g_mame_output_text), text, sizeof(g_mame_output_text) - strlen(g_mame_output_text) - 1);
+        g_video_reset = TRUE;   // force UI reset if we get a error or warning message.
+    }
+}
+
 // run MAME (or pass NULL for main menu)
 int run_mame(char* game)
 {
@@ -297,6 +318,7 @@ void* app_Thread_Start(void* args)
     while (g_emulation_initiated) {
         prev_myosd_mouse = myosd_mouse = 0;
         prev_myosd_light_gun = myosd_light_gun = 0;
+        g_mame_warning = 0;
         
         // reset MAME by deleteing CFG file cfg/default.cfg
         if (g_mame_reset) @autoreleasepool {
@@ -311,6 +333,10 @@ void* app_Thread_Start(void* args)
         // set this myosd global so the netplay code knows what the current game is.
         if (g_mame_game[0] != 0 && g_mame_game[0] != ' ')
             strcpy(myosd_selected_game, g_mame_game);
+        
+        // reset g_mame_output_text if we are running a game, but not if we are just running menu.
+        if (g_mame_game[0] != 0)
+            g_mame_output_text[0] = 0;
         
         if (run_mame(g_mame_game) != 0 && g_mame_game[0]) {
             strncpy(g_mame_game_error, g_mame_game, sizeof(g_mame_game_error));
@@ -640,8 +666,6 @@ void mame_state(int load_save, int slot)
     
     [self startMenu];
 
-    int enable_menu_exit_option = TRUE; // (myosd_inGame && myosd_in_menu==0) || !myosd_inGame;
-    
     NSString* title = nil;
     NSInteger controller_count = controllers.count;
 #if TARGET_OS_TV
@@ -686,17 +710,37 @@ void mame_state(int load_save, int slot)
             myosd_configure = 1;
             [self endMenu];
         }]];
+        // show any MAME output, usually a WARNING message, we catch errors in an other place.
+        if (g_mame_output_text[0]) {
+            NSString* title = @"MAME Output";
+            NSString* symbol = @"info.circle";
+            NSString* message = [[NSString stringWithUTF8String:g_mame_output_text] stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
+
+            if ([message rangeOfString:@"WARNING"].location != NSNotFound) {
+                title = @"MAME Warning";
+                symbol = @"exclamationmark.triangle";
+            }
+            
+            if ([message rangeOfString:@"ERROR"].location != NSNotFound) {
+                title = @"MAME Error";
+                symbol = @"xmark.octagon";
+            }
+            
+            [menu addAction:[UIAlertAction actionWithTitle:title style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:symbol withPointSize:size] handler:^(UIAlertAction* action) {
+                [self showAlertWithTitle:@PRODUCT_NAME message:message buttons:@[@"Continue"] handler:^(NSUInteger button) {
+                    [self endMenu];
+                }];
+            }]];
+        }
     }
     [menu addAction:[UIAlertAction actionWithTitle:@"Settings" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"gear" withPointSize:size] handler:^(UIAlertAction* action) {
         [self runSettings];
     }]];
 
-    if(enable_menu_exit_option) {
-        [menu addAction:[UIAlertAction actionWithTitle:((myosd_inGame && myosd_in_menu==0) ? @"Exit Game" : @"Exit") style:UIAlertActionStyleDestructive image:[UIImage systemImageNamed:@"arrow.uturn.left.circle" withPointSize:size] handler:^(UIAlertAction* action) {
-            [self endMenu];
-            [self runExit:NO]; // the user just selected "Exit Game" from a menu, dont ask again
-        }]];
-    }
+    [menu addAction:[UIAlertAction actionWithTitle:((myosd_inGame && myosd_in_menu==0) ? @"Exit Game" : @"Exit") style:UIAlertActionStyleDestructive image:[UIImage systemImageNamed:@"arrow.uturn.left.circle" withPointSize:size] handler:^(UIAlertAction* action) {
+        [self endMenu];
+        [self runExit:NO]; // the user just selected "Exit Game" from a menu, dont ask again
+    }]];
     
     [menu addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction* action) {
         [self endMenu];
@@ -1313,9 +1357,10 @@ void mame_state(int load_save, int slot)
         [self performSelectorOnMainThread:@selector(setupMFIControllers) withObject:nil waitUntilDone:NO];
     }
     
-    toastStyle = [[CSToastStyle alloc] initWithDefaultStyle];
+    toastStyle = [CSToastManager sharedStyle];
     toastStyle.backgroundColor = [UIColor colorWithWhite:0.333 alpha:0.50];
     toastStyle.messageColor = [UIColor whiteColor];
+    toastStyle.imageSize = CGSizeMake(toastStyle.messageFont.lineHeight, toastStyle.messageFont.lineHeight);
     
     mouseInitialLocation = CGPointMake(9111, 9111);
     mouseTouchStartLocation = mouseInitialLocation;
@@ -1978,14 +2023,22 @@ static NSArray* list_trim(NSArray* _list) {
     [UIApplication sharedApplication].idleTimerDisabled = (myosd_inGame || g_joy_used) ? YES : NO;//so atract mode dont sleep
 
     if ( prev_myosd_light_gun == 0 && myosd_light_gun == 1 && g_pref_lightgun_enabled ) {
-        [self.view makeToast:@"Touch Lightgun Mode Enabled!" duration:2.0 position:CSToastPositionCenter style:toastStyle];
+        [self.view makeToast:@"Touch Lightgun Mode Enabled!" duration:2.0 position:CSToastPositionCenter
+                       title:nil image:[UIImage systemImageNamed:@"target"] style:toastStyle completion:nil];
     }
     prev_myosd_light_gun = myosd_light_gun;
     
     if ( prev_myosd_mouse == 0 && myosd_mouse == 1 && g_pref_touch_analog_enabled ) {
-        [self.view makeToast:@"Touch Mouse Mode Enabled!" duration:2.0 position:CSToastPositionCenter style:toastStyle];
+        [self.view makeToast:@"Touch Mouse Mode Enabled!" duration:2.0 position:CSToastPositionCenter
+                       title:nil image:[UIImage systemImageNamed:@"cursorarrow.motionlines"] style:toastStyle completion:nil];
     }
     prev_myosd_mouse = myosd_mouse;
+
+    // Show a WARNING toast, but only once, and only if MAME did not show it already
+    if (myosd_showinfo == 0 && g_mame_warning == 0 && g_mame_output_text[0] && strstr(g_mame_output_text, "WARNING") != NULL) {
+        [self.view makeToast:@"⚠️Game might not run correctly." duration:3.0 position:CSToastPositionBottom style:toastStyle];
+        g_mame_warning = 1;
+    }
 
     areControlsHidden = NO;
     
@@ -2464,6 +2517,9 @@ void myosd_handle_turbo() {
         myosd_display_width = (r.size.width * scale);
         myosd_display_height = (r.size.height * scale);
     }
+    
+    // set the rect to use for Toast
+    toastStyle.toastRect = r;
 
     // make room for a border
     UIImage* border_image = nil;
@@ -4488,7 +4544,8 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     [self setupMFIControllers];
 #if TARGET_OS_IOS
     if ([controllers containsObject:controller]) {
-        [self.view makeToast:[NSString stringWithFormat:@"%@ connected", controller.vendorName] duration:4.0 position:CSToastPositionTop style:toastStyle];
+        [self.view makeToast:[NSString stringWithFormat:@"%@ connected", controller.vendorName] duration:4.0 position:CSToastPositionTop
+                       title:nil image:[UIImage systemImageNamed:@"gamecontroller"] style:toastStyle completion:nil];
     }
 #endif
 }
@@ -4502,7 +4559,8 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     NSLog(@"Goodbye %@", controller.vendorName);
     [self setupMFIControllers];
 #if TARGET_OS_IOS
-    [self.view makeToast:[NSString stringWithFormat:@"%@ disconnected", controller.vendorName] duration:4.0 position:CSToastPositionTop style:toastStyle];
+    [self.view makeToast:[NSString stringWithFormat:@"%@ disconnected", controller.vendorName] duration:4.0 position:CSToastPositionTop
+                   title:nil image:[UIImage systemImageNamed:@"gamecontroller"] style:toastStyle completion:nil];
 #endif
 }
 
@@ -4703,7 +4761,9 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     if (g_mame_game_error[0] != 0) {
         NSLog(@"ERROR RUNNING GAME %s", g_mame_game_error);
         
-        NSString* msg = [NSString stringWithFormat:@"ERROR RUNNING GAME %s", g_mame_game_error];
+        NSString* msg = [[NSString stringWithUTF8String:g_mame_output_text] stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
+        if ([msg length] == 0)
+            msg = [NSString stringWithFormat:@"ERROR RUNNING GAME %s", g_mame_game_error];
         g_mame_game_error[0] = 0;
         g_mame_game[0] = 0;
         g_mame_game_info = nil;
