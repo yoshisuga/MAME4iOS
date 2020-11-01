@@ -92,7 +92,7 @@ Even if you are not in the paid Apple Developer Program, you can sideload the ap
 2. Build:
     1. If you are a developer: Build and `▶︎` Run on your device. _Done._
     2. If you are not a developer…
-        1. `File` → `Preferences` add your Apple ID, select your Personal Team, and create an iOS Development Profile.
+        1. `Xcode` → `Preferences` add your Apple ID, select your Personal Team, and create an iOS Development Profile.
         2. Select the project name on the left pane and make sure your personal team is selected
         3. Hit the `▶︎` Run button to install on your device. _Done._
         
