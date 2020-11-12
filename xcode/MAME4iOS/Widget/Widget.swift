@@ -104,7 +104,7 @@ struct WidgetEntryView : View {
 
 @main
 struct Widget: SwiftUI.Widget {
-    let kind: String = Bundle.main.bundleIdentifier!
+    let kind = "QuickPlay"
     
     // we only want to allow a widget in the widget gallery if a shared group is properly configured.
     let showWidget = MameGameInfo.isSharedGroupSetup
