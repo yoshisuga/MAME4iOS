@@ -119,7 +119,7 @@ static NSArray* g_skin_list;
 
         NSDate* custom_date = [[NSFileManager.defaultManager attributesOfItemAtPath:custom_path error:nil] fileModificationDate];
         NSDate* skin_date = [[NSFileManager.defaultManager attributesOfItemAtPath:path error:nil] fileModificationDate];
-        assert(skin_date != nil);
+        NSParameterAssert(skin_date != nil);
 
         if (custom_date != nil && [skin_date compare:custom_date] == NSOrderedDescending) {
             [self addInfo:[self loadData:@"skin.json" from:path]];
@@ -137,7 +137,7 @@ static NSArray* g_skin_list;
     
     // add our Default layout file in SKIN_1 last
     NSData* info = [NSData dataWithContentsOfFile:[NSString stringWithUTF8String:get_resource_path("SKIN_1/skin.json")]];
-    assert(info != nil || TARGET_OS_TV);
+    NSParameterAssert(info != nil || TARGET_OS_TV);
     [self addInfo:info];
     
     NSLog(@"SKIN: %@\n%@\n%@", name, _skin_paths, _skin_infos);
@@ -158,7 +158,7 @@ static NSArray* g_skin_list;
         
         if (![info isKindOfClass:[NSDictionary class]]) {
             NSLog(@"INVALID JSON: %@", error);
-            assert(FALSE);
+            NSParameterAssert(FALSE);
             return;
         }
         
@@ -310,7 +310,7 @@ BOOL UIImageIsBlank(UIImage* image) {
         for (NSString* key in [defaults[section] allKeys]) {
             NSString* keyPath = [NSString stringWithFormat:@"%@.%@", section, key];
             id value = [self valueForKeyPath:keyPath];
-            assert(value != nil);
+            NSParameterAssert(value != nil);
             if (isDefault || [section isEqualToString:@"info"] || ![value isEqual:[defaults valueForKeyPath:keyPath]])
                 [dict setValue:value forKeyPath:keyPath];
         }

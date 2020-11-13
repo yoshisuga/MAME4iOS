@@ -354,10 +354,10 @@ static BOOL g_render_dump = 0;
     
     for (myosd_render_primitive* prim = prim_list; prim != NULL; prim = prim->next) {
         
-        assert(prim->type == RENDER_PRIMITIVE_LINE || prim->type == RENDER_PRIMITIVE_QUAD);
-        assert(prim->blendmode <= BLENDMODE_ADD);
-        assert(prim->texformat <= TEXFORMAT_YUY16);
-        assert(prim->unused == 0);
+        NSParameterAssert(prim->type == RENDER_PRIMITIVE_LINE || prim->type == RENDER_PRIMITIVE_QUAD);
+        NSParameterAssert(prim->blendmode <= BLENDMODE_ADD);
+        NSParameterAssert(prim->texformat <= TEXFORMAT_YUY16);
+        NSParameterAssert(prim->unused == 0);
 
         int blend = prim->blendmode;
         int fmt = prim->texformat;

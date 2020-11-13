@@ -158,7 +158,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     // on macOS shared container id must be <TEAMID>.<BUNDLE IDENTIFIER>
     return nil;
 #else
-    assert([NSBundle.mainBundle.bundleIdentifier componentsSeparatedByString:@"."].count >= 3);
+    NSParameterAssert([NSBundle.mainBundle.bundleIdentifier componentsSeparatedByString:@"."].count >= 3);
     NSArray* items = [NSBundle.mainBundle.bundleIdentifier componentsSeparatedByString:@"."];
     // on iOS shared container must be group.<BUNDLE IDENTIFIER>
     NSString* name = [NSString stringWithFormat:@"group.%@.%@.%@", items[0], items[1], items[2]];
@@ -922,7 +922,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 - (void) updateExternal {
 
     // copy data to shared container for Widget and TopShelf
-    assert([NSBundle.mainBundle.bundleIdentifier componentsSeparatedByString:@"."].count >= 3);
+    NSParameterAssert([NSBundle.mainBundle.bundleIdentifier componentsSeparatedByString:@"."].count >= 3);
     NSArray* items = [NSBundle.mainBundle.bundleIdentifier componentsSeparatedByString:@"."];
     NSURL* sharedContainer = [NSFileManager.defaultManager containerURLForSecurityApplicationGroupIdentifier:[NSString stringWithFormat:@"group.%@.%@.%@", items[0], items[1], items[2]]];
     if (sharedContainer != nil) {

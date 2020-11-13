@@ -47,7 +47,7 @@
 #import "ColorSpace.h"
 
 #define DebugLog 0
-#if DebugLog == 0
+#if DebugLog == 0 || !defined(DEBUG)
 #define NSLog(...) (void)0
 #endif
 
@@ -277,9 +277,9 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     // get the shader to use when drawing the SCREEN, default to the 3 entry in the list (simpleTron).
     NSString* screen_shader = _options[kScreenViewScreenShader] ?: kScreenViewShaderDefault;
 
-    assert([MetalScreenView.screenShaderList[0] isEqualToString:kScreenViewShaderDefault]);
-    assert([MetalScreenView.screenShaderList[1] isEqualToString:kScreenViewShaderNone]);
-    assert(MetalScreenView.screenShaderList.count > 2);
+    NSParameterAssert([MetalScreenView.screenShaderList[0] isEqualToString:kScreenViewShaderDefault]);
+    NSParameterAssert([MetalScreenView.screenShaderList[1] isEqualToString:kScreenViewShaderNone]);
+    NSParameterAssert(MetalScreenView.screenShaderList.count > 2);
     if ([screen_shader length] == 0 || [screen_shader isEqualToString:kScreenViewShaderDefault])
         screen_shader = split(MetalScreenView.screenShaderList[2], @":").lastObject;
 
@@ -291,9 +291,9 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     // get the shader to use when drawing VECTOR lines, default to lineTron
     NSString* line_shader = _options[kScreenViewLineShader] ?: kScreenViewShaderDefault;
     
-    assert([MetalScreenView.lineShaderList[0] isEqualToString:kScreenViewShaderDefault]);
-    assert([MetalScreenView.lineShaderList[1] isEqualToString:kScreenViewShaderNone]);
-    assert(MetalScreenView.lineShaderList.count > 2);
+    NSParameterAssert([MetalScreenView.lineShaderList[0] isEqualToString:kScreenViewShaderDefault]);
+    NSParameterAssert([MetalScreenView.lineShaderList[1] isEqualToString:kScreenViewShaderNone]);
+    NSParameterAssert(MetalScreenView.lineShaderList.count > 2);
     if ([line_shader length] == 0 || [line_shader isEqualToString:kScreenViewShaderDefault])
         line_shader = split(MetalScreenView.lineShaderList[2], @":").lastObject;
 
@@ -342,7 +342,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 #pragma mark - LINE BUFFER
 
 - (void)saveLine:(myosd_render_primitive*) line {
-    assert(line->type == RENDER_PRIMITIVE_LINE);
+    NSParameterAssert(line->type == RENDER_PRIMITIVE_LINE);
     
     if (_line_buffer == NULL)
         _line_buffer = malloc(LINE_BUFFER_SIZE * sizeof(_line_buffer[0]));
@@ -390,9 +390,9 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
     NSUInteger width = texture.width;
     NSUInteger height = texture.height;
     
-    assert(texture.pixelFormat == MTLPixelFormatBGRA8Unorm);
-    assert(texture.width == prim->texture_width);
-    assert(texture.height == prim->texture_height);
+    NSCParameterAssert(texture.pixelFormat == MTLPixelFormatBGRA8Unorm);
+    NSCParameterAssert(texture.width == prim->texture_width);
+    NSCParameterAssert(texture.height == prim->texture_height);
 
     static char* texture_format_name[] = {"UNDEFINED", "PAL16", "PALA16", "555", "RGB", "ARGB", "YUV16"};
     texture.label = [NSString stringWithFormat:@"MAME %08lX:%d %dx%d %s", (NSUInteger)prim->texture_base, prim->texture_seqid, prim->texture_width, prim->texture_height, texture_format_name[prim->texformat]];
@@ -481,11 +481,11 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
         case TEXFORMAT_YUY16:
         {
             // this texture format is only used for AVI files and LaserDisc player!
-            assert(FALSE);
+            NSCParameterAssert(FALSE);
             break;
         }
         default:
-            assert(FALSE);
+            NSCParameterAssert(FALSE);
             break;
     }
     TIMER_STOP(texture_load);
@@ -658,7 +658,7 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
         }
         else {
             NSLog(@"Unknown RENDER_PRIMITIVE!");
-            assert(FALSE);  // bad primitive
+            NSParameterAssert(FALSE);  // bad primitive
         }
         
         if (prim->type == RENDER_PRIMITIVE_QUAD)

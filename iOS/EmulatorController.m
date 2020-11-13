@@ -352,7 +352,7 @@ void* app_Thread_Start(void* args)
 NSDictionary* load_category_ini()
 {
     FILE* file = fopen(get_documents_path("Category.ini"), "r");
-    assert(file != NULL);
+    NSCParameterAssert(file != NULL);
     
     if (file == NULL)
         return nil;
@@ -444,16 +444,16 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
 - (NSString*)getButtonName:(int)i {
     static NSString* button_name[NUM_BUTTONS] = {@"A",@"B",@"Y",@"X",@"L1",@"R1",@"A+Y",@"A+X",@"B+Y",@"B+X",@"A+B",@"SELECT",@"START",@"EXIT",@"OPTION",@"STICK"};
     _Static_assert(NUM_BUTTONS == 16, "enum size change");
-    assert(i < NUM_BUTTONS);
+    NSParameterAssert(i < NUM_BUTTONS);
     return button_name[i];
 }
 - (CGRect)getButtonRect:(int)i {
-    assert(i < NUM_BUTTONS);
+    NSParameterAssert(i < NUM_BUTTONS);
     return rButton[i];
 }
 // called by the LayoutView editor (and internaly)
 - (void)setButtonRect:(int)i rect:(CGRect)rect {
-    assert(i < NUM_BUTTONS);
+    NSParameterAssert(i < NUM_BUTTONS);
     rInput[i] = rButton[i] = rect;
     
     _Static_assert(BTN_A==0 && BTN_R1== 5, "enum order change");
@@ -495,7 +495,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
 }
 
 + (EmulatorController*)sharedInstance {
-    assert(sharedInstance != nil);
+    NSParameterAssert(sharedInstance != nil);
     return sharedInstance;
 }
 
@@ -1562,7 +1562,7 @@ static int gcd(int a, int b) {
 #endif
 
 -(void)updateFrameRate {
-    assert([NSThread isMainThread]);
+    NSParameterAssert([NSThread isMainThread]);
 
     NSUInteger frame_count = screenView.frameCount;
 
@@ -2053,7 +2053,7 @@ NSInteger g_mame_buttons_tick;              // ticks until we send next one
         
 static void push_mame_button(int player, int button)
 {
-    assert([NSThread isMainThread]);     // only add buttons from main thread
+    NSCParameterAssert([NSThread isMainThread]);     // only add buttons from main thread
     if (g_mame_buttons == nil) {
         g_mame_buttons = [[NSMutableArray alloc] init];
         g_mame_buttons_lock = [[NSLock alloc] init];
@@ -3332,7 +3332,7 @@ void myosd_handle_turbo() {
 - (void)loadLayout {
     
     CGSize windowSize = self.view.bounds.size;
-    assert(windowSize.width != 0.0 && windowSize.height != 0.0);
+    NSParameterAssert(windowSize.width != 0.0 && windowSize.height != 0.0);
     BOOL isPhone = [self isPhone];
 
     // set the background and view rects.
@@ -3857,7 +3857,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         [self performSelectorOnMainThread:@selector(moveROMS) withObject:nil waitUntilDone:NO];
     }
     else {
-        assert(urls.count == 1);
+        NSParameterAssert(urls.count == 1);
         NSLog(@"EXPORT: %@", urls.firstObject);
     }
 }
