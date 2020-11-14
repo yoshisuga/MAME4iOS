@@ -15,7 +15,7 @@
 #endif
 
 #define DebugLog 0
-#if DebugLog == 0
+#if DebugLog == 0 || !defined(DEBUG)
 #define NSLog(...) (void)0
 #endif
 
@@ -263,7 +263,7 @@ __attribute__((objc_direct_members))
 -(BOOL)drawBegin {
     
     // nested drawBegin, very BAD!
-    assert(_encoder == nil);
+    NSParameterAssert(_encoder == nil);
     if (_encoder != nil)
         return FALSE;
     
@@ -352,7 +352,7 @@ __attribute__((objc_direct_members))
 }
 
 -(void)drawEnd {
-    assert(_drawable != nil);
+    NSParameterAssert(_drawable != nil);
     NSArray* buffers = _vertex_buffer_list;
     __weak typeof(self) _self = self;
     BOOL externalDisplay = _externalDisplay;
@@ -401,7 +401,7 @@ __attribute__((objc_direct_members))
 #pragma mark - draw primitives
 
 -(void)drawPrim:(MTLPrimitiveType)type vertices:(Vertex2D*)vertices count:(NSUInteger)count {
-    assert(_encoder != nil);
+    NSParameterAssert(_encoder != nil);
 
     // if our buffer is full, get a new one.
     if (_vertex_buffer_base + count >= NUM_VERTEX) {
@@ -611,7 +611,7 @@ __attribute__((objc_direct_members))
         case UIImageOrientationDownMirrored:
         case UIImageOrientationLeftMirrored:
         case UIImageOrientationRightMirrored:
-            assert(FALSE);
+            NSParameterAssert(FALSE);
             break;
     }
 
@@ -651,7 +651,7 @@ __attribute__((objc_direct_members))
         case UIImageOrientationDownMirrored:
         case UIImageOrientationLeftMirrored:
         case UIImageOrientationRightMirrored:
-            assert(FALSE);
+            NSParameterAssert(FALSE);
             break;
     }
 
@@ -765,7 +765,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 ///                 named-variable=42.0 - a named variable with a default value.
 ///
 - (void)setShader:(Shader)shader {
-    assert(_encoder != nil);
+    NSParameterAssert(_encoder != nil);
     
     // fastest case, do nothing if we are setting the same shader again.
     if (_shader_current == shader || [_shader_current isEqualToString:shader])
@@ -808,7 +808,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         frag = [_library newFunctionWithName:[NSString stringWithFormat:@"fragment_%@", shader_name]];
     
     if (frag == nil) {
-        assert(FALSE);
+        NSParameterAssert(FALSE);
         NSLog(@"SHADER NOT FOUND: %@, using default", shader_name);
         frag = [_library newFunctionWithName:@"fragment_default"];
     }
@@ -888,7 +888,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
 // resolve nammed shader variables and send float(s) to fragment function
 - (void)setShaderParams:(NSArray*)params {
-    assert(_encoder != nil);
+    NSParameterAssert(_encoder != nil);
     
     if ([params count] == 0)
         return;
@@ -898,7 +898,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     for (id param in params) {
         
         // just ignore too many params.
-        assert(count <= sizeof(float_params)/sizeof(float) - 16);
+        NSParameterAssert(count <= sizeof(float_params)/sizeof(float) - 16);
         if (count > sizeof(float_params)/sizeof(float) - 16)
             break;
         
@@ -908,11 +908,10 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
             val = _shader_variables[param];
             if (val == nil) {
                 NSLog(@"UNKNOWN SHADER VARIABLE '%@' for shader \"%@\"", param, _shader_current);
-                //assert(FALSE);
                 val = @(0);
             }
         }
-        assert([val isKindOfClass:[NSValue class]]);
+        NSParameterAssert([val isKindOfClass:[NSValue class]]);
 
         if ([val isKindOfClass:[NSNumber class]]) {
             float_params[count++] = [(id)val floatValue];
@@ -947,7 +946,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         }
         else {
             NSLog(@"INVALID SHADER VARIABLE '%@' type=%s", param, [val objCType]);
-            assert(FALSE);
+            NSParameterAssert(FALSE);
         }
     }
     if (count & 1)
@@ -959,8 +958,8 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 - (void)setShaderVariablesInternal:(NSDictionary *)variables {
 #ifdef DEBUG
     for (NSString* key in variables.allKeys) {
-        assert([key isKindOfClass:[NSString class]]);
-        assert([variables[key] isKindOfClass:[NSValue class]]);
+        NSParameterAssert([key isKindOfClass:[NSString class]]);
+        NSParameterAssert([variables[key] isKindOfClass:[NSValue class]]);
     }
 #endif
     
@@ -1058,7 +1057,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     if (texture == nil || texture.width != width || texture.height != height) {
         texture = [self textureWithFormat:format width:width height:height];
         texture.label = [NSString stringWithFormat:@"%08lX:%ld %ldx%ld", (NSUInteger)identifier, hash, width, height];
-        assert(texture != nil);
+        NSParameterAssert(texture != nil);
     }
     
     // call handler to fill the texture.
@@ -1083,8 +1082,8 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 ///    texture_load - callback used to load image data.
 ///
 -(void)setTexture:(NSUInteger)index texture:(void*)identifier hash:(NSUInteger)hash width:(NSUInteger)width height:(NSUInteger)height format:(MTLPixelFormat)format texture_load:(void (NS_NOESCAPE ^)(id<MTLTexture> texture))texture_load {
-    assert(_encoder != nil);
-    assert(texture_load != nil);
+    NSParameterAssert(_encoder != nil);
+    NSParameterAssert(texture_load != nil);
     id<MTLTexture> texture = [self getTexture:identifier hash:hash width:width height:height format:format texture_load:texture_load];
     [_encoder setFragmentTexture:texture atIndex:index];
 }
@@ -1092,8 +1091,8 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 #pragma mark - filter and address mode
 
 -(void)updateSamplerState {
-    assert(_texture_filter == MTLSamplerMinMagFilterNearest || _texture_filter == MTLSamplerMinMagFilterLinear);
-    assert(_texture_address_mode >= MTLSamplerAddressModeClampToEdge && _texture_address_mode <= MTLSamplerAddressModeClampToZero);
+    NSParameterAssert(_texture_filter == MTLSamplerMinMagFilterNearest || _texture_filter == MTLSamplerMinMagFilterLinear);
+    NSParameterAssert(_texture_address_mode >= MTLSamplerAddressModeClampToEdge && _texture_address_mode <= MTLSamplerAddressModeClampToZero);
     _Static_assert(MTLSamplerAddressModeClampToEdge == 0 && MTLSamplerAddressModeClampToZero == 4, "MTLSamplerAddressMode bad!");
     _Static_assert(MTLSamplerMinMagFilterNearest == 0 && MTLSamplerMinMagFilterLinear == 1, "MTLSamplerMinMagFilter bad!");
     _Static_assert(sizeof(_texture_sampler) / sizeof(_texture_sampler[0]) == 5*2, "_texture_sampler wrong size!");
@@ -1120,14 +1119,14 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 }
 
 -(void)setTextureFilter:(MTLSamplerMinMagFilter)filter {
-    assert(_texture_filter == MTLSamplerMinMagFilterNearest || _texture_filter == MTLSamplerMinMagFilterLinear);
+    NSParameterAssert(_texture_filter == MTLSamplerMinMagFilterNearest || _texture_filter == MTLSamplerMinMagFilterLinear);
     if (_texture_filter != filter) {
         _texture_filter = filter;
         [self updateSamplerState];
     }
 }
 -(void)setTextureAddressMode:(MTLSamplerAddressMode)mode {
-    assert(_texture_address_mode >= MTLSamplerAddressModeClampToEdge && _texture_address_mode <= MTLSamplerAddressModeClampToZero);
+    NSParameterAssert(_texture_address_mode >= MTLSamplerAddressModeClampToEdge && _texture_address_mode <= MTLSamplerAddressModeClampToZero);
     if (_texture_address_mode != mode) {
         _texture_address_mode = mode;
         [self updateSamplerState];
@@ -1148,8 +1147,8 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 ///    texture_load - callback used to load image data.
 ///
 -(void)setTexture:(NSUInteger)index texture:(void*)identifier hash:(NSUInteger)hash width:(NSUInteger)width height:(NSUInteger)height format:(MTLPixelFormat)format colorspace:(CGColorSpaceRef)colorspace texture_load:(void (NS_NOESCAPE ^)(id<MTLTexture> texture))texture_load {
-    assert(_encoder != nil);
-    assert(texture_load != nil);
+    NSParameterAssert(_encoder != nil);
+    NSParameterAssert(texture_load != nil);
     
 #if (TARGET_OS_SIMULATOR && TARGET_OS_TV)
     // no MetalPerformanceShaders in tvOS simulator!!!
@@ -1205,7 +1204,7 @@ static void texture_load_uiimage(id<MTLTexture> texture, UIImage* image) {
     
     CGColorSpaceRef colorSpace = CGImageGetColorSpace(image.CGImage);
 
-    assert(texture.pixelFormat == MTLPixelFormatRGBA8Unorm);
+    NSCParameterAssert(texture.pixelFormat == MTLPixelFormatRGBA8Unorm);
     uint32_t bitmapInfo = kCGImageAlphaPremultipliedLast;
     
     CGContextRef bitmap = CGBitmapContextCreate(bitmap_data, width, height, 8, width*4, colorSpace, bitmapInfo);

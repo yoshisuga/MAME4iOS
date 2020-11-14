@@ -59,7 +59,7 @@ CGColorSpaceRef ColorSpaceFromString(NSString* string) {
     }
 
     NSArray* values = [string componentsSeparatedByString:@","];
-    assert(values.count == 1 || values.count == 3 || values.count == 6 || values.count == 9 || values.count == 18);
+    NSCParameterAssert(values.count == 1 || values.count == 3 || values.count == 6 || values.count == 9 || values.count == 18);
 
     if ([string length] == 0 || [string isEqualToString:@"Default"] || [string isEqualToString:@"DeviceRGB"]) {
         // Default or None

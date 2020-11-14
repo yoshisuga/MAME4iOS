@@ -347,7 +347,7 @@
 }
 
 - (void)addButton:(id)item color:(UIColor*)color handler:(void (^)(void))handler {
-    assert([item isKindOfClass:[NSString class]] || [item isKindOfClass:[UIImage class]]);
+    NSParameterAssert([item isKindOfClass:[NSString class]] || [item isKindOfClass:[UIImage class]]);
     UISegmentedControl* seg = [self makeSegmentedControl:@[item] handler:^(NSUInteger button) {
         handler();
     }];

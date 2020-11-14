@@ -28,7 +28,7 @@
 #import "Alert.h"
 
 #define DebugLog 1
-#if DebugLog == 0 || DEBUG == 0
+#if DebugLog == 0 || !defined(DEBUG)
 #define NSLog(...) (void)0
 #endif
 
@@ -58,15 +58,19 @@ static CKDatabase*     _database;
     return _status;
 }
 
++(NSString*)cloudIdentifer {
+    NSParameterAssert([NSBundle.mainBundle.bundleIdentifier componentsSeparatedByString:@"."].count >= 3);
+    NSArray* items = [NSBundle.mainBundle.bundleIdentifier componentsSeparatedByString:@"."];
+    return [NSString stringWithFormat:@"iCloud.%@.%@.%@", items[0], items[1], items[2]];
+}
+
 +(void)updateCloudStatus {
     
     if (_container == nil) {
-        assert([NSBundle.mainBundle.bundleIdentifier componentsSeparatedByString:@"."].count == 3);
-        NSString* identifier = [NSString stringWithFormat:@"iCloud.%@", NSBundle.mainBundle.bundleIdentifier];
         @try {
             // **NOTE** CKContainer.defaultContainer will throw a uncatchable exception, dont use it.
             //_container = CKContainer.defaultContainer;
-            _container = [CKContainer containerWithIdentifier:identifier];
+            _container = [CKContainer containerWithIdentifier:[self cloudIdentifer]];
         }
         @catch (id exception) {
             NSLog(@"CLOUD STATUS: %@", exception);
@@ -218,9 +222,9 @@ static int inSync = 0;
 static UIAlertController *progressAlert = nil;
 
 +(BOOL)startSync:(NSString*)title block:(dispatch_block_t)block {
-    assert(NSThread.isMainThread);
-    assert(_container != nil && _database != nil);
-    assert(inSync == 0);
+    NSParameterAssert(NSThread.isMainThread);
+    NSParameterAssert(_container != nil && _database != nil);
+    NSParameterAssert(inSync == 0);
     if (inSync != 0)
         return FALSE;
     inSync = 1;
@@ -249,7 +253,7 @@ static UIAlertController *progressAlert = nil;
 }
 
 +(void)stopSync {
-    assert(inSync != 0);
+    NSParameterAssert(inSync != 0);
     dispatch_async(dispatch_get_main_queue(), ^{
         EmulatorController* emuController = EmulatorController.sharedInstance;
         
@@ -289,7 +293,7 @@ static UIAlertController *progressAlert = nil;
 // MARK: ERROR HANDLING
 
 + (void)handleError:(NSError*)error error:(dispatch_block_t)error_block retry:(dispatch_block_t)retry_block {
-    assert(error != nil);
+    NSParameterAssert(error != nil);
     NSLog(@"ERROR: %@", error);
     // handle a iCloud [retry](https://developer.apple.com/documentation/cloudkit/ckerrorretryafterkey)
     if (retry_block != nil && [error.domain isEqualToString:CKErrorDomain]) {
@@ -321,7 +325,7 @@ static UIAlertController *progressAlert = nil;
 
 // get list of ROMs in the cloud
 +(NSArray*)getCloudFiles {
-    assert(!NSThread.isMainThread);
+    NSParameterAssert(!NSThread.isMainThread);
     NSMutableArray* records = [[NSMutableArray alloc] init];
     
     dispatch_group_t group = dispatch_group_create();
@@ -484,7 +488,7 @@ static UIAlertController *progressAlert = nil;
     [self updateSync:((double)index / files.count) text:file];
     
     NSString* path = [NSString stringWithUTF8String:get_documents_path(file.UTF8String)];
-    assert([NSFileManager.defaultManager fileExistsAtPath:path]);
+    NSParameterAssert([NSFileManager.defaultManager fileExistsAtPath:path]);
 
     // make new record with file data, recordID.recordName *must* be equal to kRecordName
     CKRecord* record = [[CKRecord alloc] initWithRecordType:kRecordType recordID:[[CKRecordID alloc] initWithRecordName:file]];

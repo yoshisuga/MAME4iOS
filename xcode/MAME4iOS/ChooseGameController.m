@@ -158,9 +158,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     // on macOS shared container id must be <TEAMID>.<BUNDLE IDENTIFIER>
     return nil;
 #else
-    assert([NSBundle.mainBundle.bundleIdentifier componentsSeparatedByString:@"."].count == 3);
+    NSParameterAssert([NSBundle.mainBundle.bundleIdentifier componentsSeparatedByString:@"."].count >= 3);
+    NSArray* items = [NSBundle.mainBundle.bundleIdentifier componentsSeparatedByString:@"."];
     // on iOS shared container must be group.<BUNDLE IDENTIFIER>
-    NSString* name = [NSString stringWithFormat:@"group.%@", NSBundle.mainBundle.bundleIdentifier];
+    NSString* name = [NSString stringWithFormat:@"group.%@.%@.%@", items[0], items[1], items[2]];
     return [[NSUserDefaults alloc] initWithSuiteName:name];
 #endif
 }
@@ -921,7 +922,9 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 - (void) updateExternal {
 
     // copy data to shared container for Widget and TopShelf
-    NSURL* sharedContainer = [NSFileManager.defaultManager containerURLForSecurityApplicationGroupIdentifier:[NSString stringWithFormat:@"group.%@", NSBundle.mainBundle.bundleIdentifier]];
+    NSParameterAssert([NSBundle.mainBundle.bundleIdentifier componentsSeparatedByString:@"."].count >= 3);
+    NSArray* items = [NSBundle.mainBundle.bundleIdentifier componentsSeparatedByString:@"."];
+    NSURL* sharedContainer = [NSFileManager.defaultManager containerURLForSecurityApplicationGroupIdentifier:[NSString stringWithFormat:@"group.%@.%@.%@", items[0], items[1], items[2]]];
     if (sharedContainer != nil) {
         for (NSString* key in @[RECENT_GAMES_KEY, FAVORITE_GAMES_KEY]) {
             NSArray* games = ([NSUserDefaults.standardUserDefaults objectForKey:key] ?: @[]);
