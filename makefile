@@ -30,8 +30,10 @@ iOSARMV7 = 0
 
 iOSARM64 = 1
 
-ifdef macCatalyst
-ARCH = x86_64
+ifdef iOSSIMULATOR
+ARCH = $(shell uname -m)	# arm64 or x86_64
+else ifdef macCatalyst
+ARCH = $(shell uname -m)	# arm64 or x86_64
 else
 ARCH = arm64
 endif
@@ -552,10 +554,10 @@ ifdef iOSSIMULATOR
 CFLAGS += -isysroot $(SIMSDK)
 endif
 
-ifndef iOSSIMULATOR
-
 CCOMFLAGS += -arch $(ARCH)
 LDFLAGS += -arch $(ARCH)
+
+ifndef iOSSIMULATOR
 
 ifdef tvOS
 #tvOS build command goes here
@@ -574,10 +576,8 @@ endif
 else
 
 #simulator build goes here
-CCOMFLAGS += -arch x86_64
-CCOMFLAGS += -D__IPHONE_OS_VERSION_MIN_REQUIRED=120000
 
-LDFLAGS += -arch x86_64
+CCOMFLAGS += -D__IPHONE_OS_VERSION_MIN_REQUIRED=120000
 
 ifndef tvOS
 CCOMFLAGS += -mios-simulator-version-min=$(OSVERSION)
