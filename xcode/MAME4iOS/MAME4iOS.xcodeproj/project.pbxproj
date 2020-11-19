@@ -605,6 +605,7 @@
 		EFA98FAE24A4CC49007B6689 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		EFA98FB224A4E2D5007B6689 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS14.0.sdk/System/Library/Frameworks/CoreServices.framework; sourceTree = DEVELOPER_DIR; };
 		EFA98FB424A4F810007B6689 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		EFAD7C1925670DB000993921 /* MAME4mac.sandbox.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MAME4mac.sandbox.entitlements; sourceTree = "<group>"; };
 		EFB3C6D524890F6200F44780 /* simpleCRT.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = simpleCRT.metal; sourceTree = "<group>"; };
 		EFB3C6DB248C33DF00F44780 /* InfoHUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = InfoHUD.m; sourceTree = "<group>"; };
 		EFB3C6DC248C33DF00F44780 /* InfoHUD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InfoHUD.h; sourceTree = "<group>"; };
@@ -1107,6 +1108,7 @@
 			children = (
 				EFA7A16C24B7A40F0009CF88 /* Assets.xcassets */,
 				EFA7A16124B65FCC0009CF88 /* MAME4mac-Info.plist */,
+				EFAD7C1925670DB000993921 /* MAME4mac.sandbox.entitlements */,
 				EFA7A16224B65FCC0009CF88 /* MAME4mac.entitlements */,
 			);
 			path = MAME4mac;
@@ -2065,6 +2067,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = MacIcon;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_ENTITLEMENTS = "$(CODE_SIGN_ENTITLEMENTS:default=MAME4mac/MAME4mac.sandbox.entitlements)";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				ENABLE_BITCODE = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -2099,6 +2102,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = MacIcon;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_ENTITLEMENTS = "$(CODE_SIGN_ENTITLEMENTS:default=MAME4mac/MAME4mac.sandbox.entitlements)";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				ENABLE_BITCODE = NO;
