@@ -1,3 +1,7 @@
+# Version 2020.14
+* Build on Xcode 12.2
+* Build Simulator and Catalyst on a Apple Silicon (M1) machine.
+
 # Version 2020.13
 * New default artwork.
 * Netplay bugfix, must be running a game to join or host.
