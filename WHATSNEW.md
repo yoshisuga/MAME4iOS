@@ -1,3 +1,6 @@
+# Version 2021.1
+* bugfixes for tvOS.
+
 # Version 2020.13
 * New default artwork.
 * Netplay bugfix, must be running a game to join or host.
