@@ -59,13 +59,7 @@
 const char* get_resource_path(const char* file)
 {
     static char resource_path[1024];
-    
-#ifdef JAILBREAK
-    sprintf(resource_path, "/Applications/MAME4iOS.app/%s", file);
-#else
-    const char *userPath = [[[NSBundle mainBundle] resourcePath] cStringUsingEncoding:NSASCIIStringEncoding];
-    sprintf(resource_path, "%s/%s", userPath, file);
-#endif
+    sprintf(resource_path, "%s/%s", NSBundle.mainBundle.resourcePath.UTF8String, file);
     return resource_path;
 }
 
@@ -73,17 +67,13 @@ const char* get_documents_path(const char* file)
 {
     static char documents_path[1024];
     
-#ifdef JAILBREAK
-    sprintf(documents_path, "/var/mobile/Media/ROMs/MAME4iOS/%s", file);
-#else
 #if TARGET_OS_IOS
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *path = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).firstObject;
 #elif TARGET_OS_TV
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+    NSString *path = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES).firstObject;
 #endif
-	const char *userPath = [[paths objectAtIndex:0] cStringUsingEncoding:NSUTF8StringEncoding];
-    sprintf(documents_path, "%s/%s",userPath, file);
-#endif
+    sprintf(documents_path, "%s/%s",path.UTF8String, file);
+
     return documents_path;
 }
 
