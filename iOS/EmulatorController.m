@@ -1247,8 +1247,10 @@ void mame_state(int load_save, int slot)
     // SELECT and START at the same time (iCade, keyboard, 8bitDo, touch)
     if ((pad_status & MYOSD_SELECT) && (pad_status & MYOSD_START))
     {
-        // hide these keys from MAME
+        // hide these keys from MAME, and prevent them from sticking down.
         myosd_pad_status &= ~(MYOSD_SELECT|MYOSD_START);
+        for (int i=0; i<4; i++)
+            myosd_joy_status[i] &= ~(MYOSD_SELECT|MYOSD_START);
         [self runMenu];
     }
 }
@@ -4444,7 +4446,8 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
                 joy_analog_y[player][1] = 0.0f;
         };
         
-        // install handlers for MENU and OPTION buttons, if the controller has neither, insall a old skoool pause handler.
+        // install handlers for MENU and OPTION buttons
+        // if the controller has neither, insall a old skoool pause handler.
         id gamepad = MFIController.extendedGamepad ?: MFIController.microGamepad;
         
         #pragma clang diagnostic push
@@ -4455,8 +4458,8 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         #pragma clang diagnostic pop
         
         // iOS 14+ we have three buttons: OPTION(left) HOME(center), MENU(right)
-        //      HOME   => MAME4iOS MENU
         //      OPTION => SELECT/COIN
+        //      HOME   => MAME4iOS MENU
         //      MENU   => START
         if (buttonHome != nil && buttonMenu != nil && buttonOptions != nil) {
             // HOME BUTTON => MAME4iOS MENU
@@ -4487,10 +4490,17 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
                 [self handle_INPUT];
             };
         }
-        // iOS 13+ we have (up to) two buttons MENU(right), and OPTION(left)
+        // iOS 13+ we have a MENU(right) and maybe a OPTION(left)
         //      MENU   => MAME4iOS MENU
         //      OPTION => do a SELECT + START (Px START)
-        else {
+        else  if (buttonMenu != nil) {
+            
+            // in the simulator we may not have any controllers
+            // ...or in tvOS 14.3 this event does not fire
+            // ...so we handle the MENU button in pressesBegan
+            if (isSiriRemote)
+                buttonMenu = nil;
+
             // MENU BUTTON
             buttonMenu.pressedChangedHandler = ^(GCControllerButtonInput* button, float value, BOOL pressed) {
                 NSLog(@"%d: MENU %s", index, (pressed ? "DOWN" : "UP"));
@@ -4509,19 +4519,19 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
                     push_mame_button(player, MYOSD_START); // Player X START
                 }
             };
+        }
+        else {
             // < iOS 13 we only have a PAUSE handler, and we only get a single event on button up
             // PASUE => MAME4iOS MENU
             #pragma clang diagnostic push
             #pragma clang diagnostic ignored "-Wdeprecated"
-            if (buttonMenu == nil && buttonOptions == nil) {
-                NSLog(@"%d: PAUSE", index);
-                MFIController.controllerPausedHandler = ^(GCController *controller) {
-                    int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
-                    menuButtonHandler(TRUE);
-                    if (menuButtonHandler(FALSE))
-                        [self toggleMenu:player];
-                };
-            }
+            NSLog(@"%d: PAUSE", index);
+            MFIController.controllerPausedHandler = ^(GCController *controller) {
+                int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
+                menuButtonHandler(TRUE);
+                if (menuButtonHandler(FALSE))
+                    [self toggleMenu:player];
+            };
             #pragma clang diagnostic pop
         }
     }
@@ -4819,12 +4829,9 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 
 #if TARGET_OS_TV
 - (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event; {
-    // in the simulator we may not have any controllers
-    if (controllers.count == 0) {
-        for (UIPress *press in presses) {
-            if (press.type == UIPressTypeMenu) {
-                return [self runMenu];
-            }
+    for (UIPress *press in presses) {
+        if (press.type == UIPressTypeMenu) {
+            return [self toggleMenu:0];
         }
     }
     // not a menu press, delegate to UIKit responder handling

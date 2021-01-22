@@ -1,3 +1,6 @@
+# Version 2021.1
+* bugfixes for tvOS.
+
 # Version 2020.14
 * Build on Xcode 12.2
 * Build Simulator and Catalyst on a Apple Silicon (M1) machine.

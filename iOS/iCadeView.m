@@ -895,29 +895,39 @@
 }
 
 // get keyboad input on macOS or iOS 13.4+
-#if __IPHONE_OS_VERSION_MIN_REQUIRED >= 130400 || TARGET_OS_MACCATALYST
-
 - (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
-    for (UIPress* press in presses) {
-        if (press.key != nil) {
-            [self hardwareKey:press.key.charactersIgnoringModifiers keyCode:(int)press.key.keyCode isKeyDown:TRUE modifierFlags:press.key.modifierFlags];
+    if (@available(iOS 13.4, tvOS 13.4, *)) {
+        for (UIPress* press in presses) {
+            if (press.key != nil) {
+                return [self hardwareKey:press.key.charactersIgnoringModifiers keyCode:(int)press.key.keyCode isKeyDown:TRUE modifierFlags:press.key.modifierFlags];
+            }
         }
     }
+    [super pressesBegan:presses withEvent:event];
 }
 
 - (void)pressesEnded:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
-    for (UIPress* press in presses) {
-        if (press.key != nil) {
-            [self hardwareKey:press.key.charactersIgnoringModifiers keyCode:(int)press.key.keyCode isKeyDown:FALSE modifierFlags:press.key.modifierFlags];
+    if (@available(iOS 13.4, tvOS 13.4, *)) {
+        for (UIPress* press in presses) {
+            if (press.key != nil) {
+                return [self hardwareKey:press.key.charactersIgnoringModifiers keyCode:(int)press.key.keyCode isKeyDown:FALSE modifierFlags:press.key.modifierFlags];
+            }
         }
     }
+    [super pressesEnded:presses withEvent:event];
 }
 
-#else
+// _keyCommandForEvent is *not* needed at all for iOS 13.4 or higher
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < 130400 
 
 // Overloaded _keyCommandForEvent (UIResponder.h) // Only exists in iOS 9+
 -(UIKeyCommand *)_keyCommandForEvent:(UIEvent *)event { // UIPhysicalKeyboardEvent
     
+    // on iOS 13.4 or higher, do nothing we will handle hardware keyboards in pressesBegan/pressesEnded
+    if (@available(iOS 13.4, tvOS 13.4, *)) {
+        return nil;
+    }
+
     static BOOL g_keyboard_state[256];
     
     int keyCode = [[event valueForKey:@"_keyCode"] intValue];
