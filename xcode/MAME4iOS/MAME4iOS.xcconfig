@@ -14,8 +14,8 @@
 
 ORG_IDENTIFIER              = com.example    // CHANGE this to your Organization Identifier.
 DEVELOPMENT_TEAM            = ABC8675309     // CHANGE this to your Team ID. (or select in Xcode project editor)
-CURRENT_PROJECT_VERSION     = 2021.01
-MARKETING_VERSION           = 2021.01
+CURRENT_PROJECT_VERSION     = 2021.02
+MARKETING_VERSION           = 2021.02
 
 PRODUCT_BUNDLE_IDENTIFIER   = $(ORG_IDENTIFIER).$(PROJECT_NAME:lower)
 APP_GROUP_IDENTIFIER        = group.$(ORG_IDENTIFIER).$(PROJECT_NAME:lower)
