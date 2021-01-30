@@ -49,7 +49,7 @@ PTR64 = 1
 # uncomment to force the universal DRC to always use the C backend
 # you may need to do this if your target architecture does not have
 # a native backend
-# FORCE_DRC_C_BACKEND = 1
+FORCE_DRC_C_BACKEND = 1
 
 # setup the varios Apple SDK locations
 IOSSDK := $(shell xcodebuild -version -sdk iphoneos Path)
