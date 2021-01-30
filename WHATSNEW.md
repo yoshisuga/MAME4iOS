@@ -1,3 +1,6 @@
+# Version 2021.2
+* Fix for dynamic recompile core setting for games like Killer Instinct
+
 # Version 2021.1
 * bugfixes for tvOS.
 
