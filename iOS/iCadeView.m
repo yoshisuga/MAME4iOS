@@ -109,20 +109,6 @@
     return inputView;
 }
 
-#pragma mark -
-#pragma mark UIKeyInput Protocol Methods
-
-- (BOOL)hasText {
-    return NO;
-}
-
-- (void)insertText:(NSString *)text {
-}
-
-- (void)deleteBackward {
-}
-
-
 #pragma mark handle iCade key
 
 // iCade keys
@@ -791,7 +777,7 @@
     }
     
     // Plain Keyboard support A,B,X,Y,L,R as buttons (in addition to CTRL, ALT, SPACE, SHIFT, LCMD, RCMD)
-    if (g_pref_ext_control_type == EXT_CONTROL_NONE && modifierFlags == 0) {
+     if (g_pref_ext_control_type == EXT_CONTROL_NONE && modifierFlags == 0) {
         switch (keyCode + (isKeyDown ? KEY_DOWN : 0)) {
             // START and SELECT/COIN (Player 1)
             case KEY_1:                 iCadeKey = @"r"; break;

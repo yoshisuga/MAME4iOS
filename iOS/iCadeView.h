@@ -47,17 +47,7 @@
 #import "Globals.h"
 #import "EmulatorController.h"
 
-#ifdef IOS3
-@protocol UIKeyInput <UITextInputTraits>
-
-- (BOOL)hasText;
-- (void)insertText:(NSString *)text;
-- (void)deleteBackward;
-
-@end
-#endif
-
-@interface iCadeView : UIView<UIKeyInput>{
+@interface iCadeView : UIView {
     UIView                  *inputView;//This is to show a fake invisible keyboard
     EmulatorController      *emuController;
 }
