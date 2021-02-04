@@ -58,10 +58,8 @@ static CKDatabase*     _database;
     return _status;
 }
 
-+(NSString*)cloudIdentifer {
-    NSParameterAssert([NSBundle.mainBundle.bundleIdentifier componentsSeparatedByString:@"."].count >= 3);
-    NSArray* items = [NSBundle.mainBundle.bundleIdentifier componentsSeparatedByString:@"."];
-    return [NSString stringWithFormat:@"iCloud.%@.%@.%@", items[0], items[1], items[2]];
++(NSString*)cloudIdentifier {
+    return [NSString stringWithFormat:@"iCloud.%@", NSBundle.mainBundle.bundleIdentifier];
 }
 
 +(void)updateCloudStatus {
@@ -70,7 +68,7 @@ static CKDatabase*     _database;
         @try {
             // **NOTE** CKContainer.defaultContainer will throw a uncatchable exception, dont use it.
             //_container = CKContainer.defaultContainer;
-            _container = [CKContainer containerWithIdentifier:[self cloudIdentifer]];
+            _container = [CKContainer containerWithIdentifier:[self cloudIdentifier]];
         }
         @catch (id exception) {
             NSLog(@"CLOUD STATUS: %@", exception);
