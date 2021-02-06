@@ -1,3 +1,6 @@
+# Version 2021.3
+* This is a Mac-only release that has all the updates to 2021.2 and supports both Intel and Apple Silicon Macs.
+
 # Version 2021.2
 * Fix for dynamic recompile core setting for games like Killer Instinct
 
