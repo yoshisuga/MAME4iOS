@@ -23,10 +23,6 @@
 #import "ZipFile.h"
 #endif
 
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-#import <MAME4iOS-Swift.h>
-#endif
-
 #if TARGET_OS_TV
 #import <TVServices/TVServices.h>
 #endif
@@ -158,11 +154,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     // on macOS shared container id must be <TEAMID>.<BUNDLE IDENTIFIER>
     return nil;
 #else
-    NSParameterAssert([NSBundle.mainBundle.bundleIdentifier componentsSeparatedByString:@"."].count >= 3);
-    NSArray* items = [NSBundle.mainBundle.bundleIdentifier componentsSeparatedByString:@"."];
     // on iOS shared container must be group.<BUNDLE IDENTIFIER>
-    NSString* name = [NSString stringWithFormat:@"group.%@.%@.%@", items[0], items[1], items[2]];
-    return [[NSUserDefaults alloc] initWithSuiteName:name];
+    return [[NSUserDefaults alloc] initWithSuiteName:[NSString stringWithFormat:@"group.%@", NSBundle.mainBundle.bundleIdentifier]];
 #endif
 }
 @end
@@ -196,20 +189,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 @implementation ChooseGameController
 
 + (NSArray<NSString*>*) allSettingsKeys {
-    return @[LAYOUT_MODE_KEY, SCOPE_MODE_KEY, RECENT_GAMES_KEY, FAVORITE_GAMES_KEY, QUICK_GAMES_KEY];
-}
-
-+ (void)load {
-    // make sure this key exists, so the Widget/TopShelf knows if the shared container is setup right.
-    [NSUserDefaults.sharedUserDefaults setObject:@(42) forKey:APP_GROUP_VALID_KEY];
-    
-#if DEBUG
-    if ([NSUserDefaults.sharedUserDefaults objectForKey:APP_GROUP_VALID_KEY] == nil)
-        NSLog(@"APP GROUP (aka SHARED CONTAINER) is NOT configured.");
-#endif
-#if DEBUG && TARGET_OS_IOS && !TARGET_OS_MACCATALYST && defined(__IPHONE_14_0)
-    [UIApplication reloadAllWidgets];
-#endif
+    return @[LAYOUT_MODE_KEY, SCOPE_MODE_KEY, RECENT_GAMES_KEY, FAVORITE_GAMES_KEY];
 }
 
 - (instancetype)init
@@ -921,34 +901,17 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 - (void) updateExternal {
 
-    // copy data to shared container for Widget and TopShelf
-    NSParameterAssert([NSBundle.mainBundle.bundleIdentifier componentsSeparatedByString:@"."].count >= 3);
-    NSArray* items = [NSBundle.mainBundle.bundleIdentifier componentsSeparatedByString:@"."];
-    NSURL* sharedContainer = [NSFileManager.defaultManager containerURLForSecurityApplicationGroupIdentifier:[NSString stringWithFormat:@"group.%@.%@.%@", items[0], items[1], items[2]]];
-    if (sharedContainer != nil) {
+#if TARGET_OS_IOS
+    [self updateApplicationShortcutItems];
+#endif
+    
+#if TARGET_OS_TV
+    // copy standardUserDefaults to sharedUserDefaults for TopShelf
+    if (@available(tvOS 13.0, *)) {
         for (NSString* key in @[RECENT_GAMES_KEY, FAVORITE_GAMES_KEY]) {
             NSArray* games = ([NSUserDefaults.standardUserDefaults objectForKey:key] ?: @[]);
-            
-            // copy standardUserDefaults to sharedUserDefaults
             [NSUserDefaults.sharedUserDefaults setObject:games forKey:key];
-
-            // copy needed Title images
-            for (NSDictionary* game in games) {
-                NSURL* local  = [self getGameImageLocalURL:game];
-                NSURL* shared = [sharedContainer URLByAppendingPathComponent:[NSString stringWithFormat:@"Library/Caches/%@.png", game[kGameInfoName]]];
-                if (![NSFileManager.defaultManager fileExistsAtPath:shared.path])
-                    [NSFileManager.defaultManager copyItemAtURL:local toURL:shared error:nil];
-            }
         }
-    }
-    
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-    [self updateApplicationShortcutItems];
-    #ifdef __IPHONE_14_0
-    [UIApplication reloadAllWidgets];
-    #endif
-#elif TARGET_OS_TV
-    if (@available(tvOS 13.0, *)) {
         [TVTopShelfContentProvider topShelfContentDidChange];
     }
 #endif
@@ -977,7 +940,6 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     favoriteGames = [favoriteGames subarrayWithRange:NSMakeRange(0, numFavorite)];
     
     NSArray* games = [favoriteGames arrayByAddingObjectsFromArray:recentGames];
-    [NSUserDefaults.sharedUserDefaults setObject:games forKey:QUICK_GAMES_KEY];
     
     NSMutableArray* shortcutItems = [[NSMutableArray alloc] init];
     

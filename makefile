@@ -30,12 +30,14 @@ iOSARMV7 = 0
 
 iOSARM64 = 1
 
+ifndef ARCH
 ifdef iOSSIMULATOR
 ARCH = $(shell uname -m)	# arm64 or x86_64
 else ifdef macCatalyst
 ARCH = $(shell uname -m)	# arm64 or x86_64
 else
 ARCH = arm64
+endif
 endif
 
 OPTIMIZE = fast

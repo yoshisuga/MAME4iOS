@@ -109,20 +109,6 @@
     return inputView;
 }
 
-#pragma mark -
-#pragma mark UIKeyInput Protocol Methods
-
-- (BOOL)hasText {
-    return NO;
-}
-
-- (void)insertText:(NSString *)text {
-}
-
-- (void)deleteBackward {
-}
-
-
 #pragma mark handle iCade key
 
 // iCade keys

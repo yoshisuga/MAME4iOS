@@ -13,8 +13,6 @@
 #define FAVORITE_GAMES_TITLE    @"Favorite Games"
 #define RECENT_GAMES_KEY        @"RecentGames"
 #define RECENT_GAMES_TITLE      @"Recently Played"
-#define QUICK_GAMES_KEY         @"QuickGames"
-#define APP_GROUP_VALID_KEY     @"AppGroupValid"
 
 // keys used in a GameInfo dictionary
 #define kGameInfoDriver         @"driver"
