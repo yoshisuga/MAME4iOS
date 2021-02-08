@@ -135,7 +135,7 @@ You can upload ROMs to MAME on your AppleTV using a computer. After MAME starts,
 
 ## Game Controller Support
 
-Pair your MFI, Xbox, or Dual Shock controller with your iOS device, and it should 'just work'.
+Pair your MFi, Xbox, or Dual Shock controller with your iOS device, and it should 'just work'.
 Up to 4 controllers are supported.
 
 ### Hotkey combinations (while in-game)
@@ -145,8 +145,10 @@ The following hotkey combinations are supported:
 | | |  
 ---------------- |-------------
 MENU             |Open MAME4iOS MENU   
-MENU+L1       |Insert coin                 
-MENU+R1       |Start Game               
+MENU+L1       |Player 1 Coin                 
+MENU+R1       |Player 1 Start               
+MENU+L2       |Player 2 Coin                
+MENU+R2       |Player 2 Start               
 MENU+X          |Exit Game                 
 MENU+B          |Open MAME menu   
 MENU+A          |Load State                

@@ -113,7 +113,7 @@ The emulator controls are the following ones:
 
 **Fullscreen Stick Size** Lets you change the stick size (not DPAD) on lanscape or portrait fullscreen mode.
 
-**Nintendo Button Layout** if enabled the 🅐 🅑 and 🅧 🅨 buttons will be swapped to match a Nintendo layout.  This option has no effect on a custom layout, or a physical game controller.
+**Nintendo Button Layout** if enabled the 🅐 🅑 and 🅧 🅨 buttons will be swapped to match a Nintendo layout.  This option has no effect on a physical game controller.
 
 **External Controller** Enable external controller: iCade, iControlPad as iCade mode or iMpulse.
 
@@ -371,6 +371,10 @@ Thanks to Todd Laney for sending me patches, and Martijn Bosschaart who has supp
 ## iMpulse
 
 MAME4iOS works correctly out of the box for iMpulse, also has built-in support for local multiplayer (TwiMpulse). Anayway, if you need to redefine second player buttons, you should press coin (left shoulder button) before so MAME4iOS initializes second iMpulse controller.
+
+## XInput Controller
+
+If you have an XInput compatible controller, use `Settings` > `Accessibility` > `Switch Control` > `Switches` > `Bluetooth Devices` to pair controller, then use as normal in MAME4iOS.
 
 ## TV-OUT
 

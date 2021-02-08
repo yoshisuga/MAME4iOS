@@ -4164,6 +4164,67 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 
 #pragma mark - Game Controllers
 
+-(void)setupGameControllers {
+    
+    // build list of controlers, put any non-game controllers (like the siri remote) at the end
+    [controllers removeAllObjects];
+    
+    // add all the controllers with a extendedGamepad profile first
+    for (GCController* controler in GCController.controllers) {
+#if TARGET_IPHONE_SIMULATOR // ignore the bogus controller in the simulator
+        if (controler.vendorName == nil || [controler.vendorName isEqualToString:@"Generic Controller"])
+            continue;
+#endif
+        if (controler.extendedGamepad != nil)
+            [controllers addObject:controler];
+    }
+    
+    // now add any Steam Controllers, these should always have a extendedGamepad profile
+    if (g_bluetooth_enabled) {
+        for (GCController* controler in SteamControllerManager.sharedManager.controllers) {
+            if (controler.extendedGamepad != nil)
+                [controllers addObject:controler];
+        }
+    }
+    // only handle upto NUM_JOY (non Siri Remote) controllers
+    if (controllers.count > NUM_JOY) {
+        [controllers removeObjectsInRange:NSMakeRange(NUM_JOY,controllers.count - NUM_JOY)];
+    }
+    // add all the controllers without a extendedGamepad profile last, ie the Siri Remote.
+    for (GCController* controler in GCController.controllers) {
+        if (controler.extendedGamepad == nil && controler.microGamepad != nil)
+            [controllers addObject:controler];
+    }
+
+    if (controllers.count != myosd_num_of_joys) {
+        myosd_num_of_joys = (int)controllers.count;
+        g_joy_used = (myosd_num_of_joys != 0);
+        [self changeUI];
+    }
+
+    for (NSInteger index = 0; index < controllers.count; index++) {
+        GCController *controller = [controllers objectAtIndex:index];
+        [self setupGameController:controller index:index];
+    }
+}
+
+-(void)setupGameController:(GCController*)controller index:(NSInteger)index {
+    NSLog(@"setupGameController[%ld]: %@", index, controller.vendorName);
+    [controller setPlayerIndex:index];
+
+#if TARGET_OS_TV
+    BOOL isSiriRemote = (controller.extendedGamepad == nil && controller.microGamepad != nil);
+    if (isSiriRemote) {
+        controller.microGamepad.allowsRotation = YES;
+        controller.microGamepad.reportsAbsoluteDpadValues = NO;
+        [controller setPlayerIndex:0];  // Siri Remote is always Player 1
+    }
+#endif
+    [self installUpdateHandler:controller];
+    [self installMenuHandler:controller];
+    [self dumpGameController:controller];
+}
+
 // install handlers for MENU and OPTION buttons
 // if the controller has neither, insall a old skoool pause handler.
 // we dont bother installing a handler on the Siri Remote, we handle the MENU button in pressesBegan
@@ -4178,7 +4239,15 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     GCControllerButtonInput *buttonMenu = [gamepad respondsToSelector:@selector(buttonMenu)] ? [gamepad buttonMenu] : nil;
     GCControllerButtonInput *buttonOptions = [gamepad respondsToSelector:@selector(buttonOptions)] ? [gamepad buttonOptions] : nil;
     #pragma clang diagnostic pop
-
+    
+#ifdef __IPHONE_14_0
+    if (@available(iOS 14.0, *)) {
+        buttonHome.preferredSystemGestureState = GCSystemGestureStateDisabled;
+        buttonMenu.preferredSystemGestureState = GCSystemGestureStateDisabled;
+        buttonOptions.preferredSystemGestureState = GCSystemGestureStateDisabled;
+    }
+#endif
+    
     // iOS 14+ we can have three buttons: OPTION(left) HOME(center), MENU(right)
     //      OPTION => SELECT
     //      HOME   => MAME4iOS MENU
@@ -4192,12 +4261,10 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     //      PASUE => MAME4iOS MENU
     //
     if (buttonHome != nil || buttonMenu != nil) {
-        // HOME BUTTON => MAME4iOS MENU
+        // HOME/MENU BUTTON => MAME4iOS MENU
         (buttonHome ?: buttonMenu).pressedChangedHandler = ^(GCControllerButtonInput* button, float value, BOOL pressed) {
             NSLog(@"%d: MENU %s", index, (pressed ? "DOWN" : "UP"));
-            int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
-            if (pressed)
-                [self toggleMenu:player];
+            [self handleMenuButton:controller pressed:pressed];
         };
         
         // OPTION BUTTON => Px START
@@ -4221,8 +4288,8 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         #pragma clang diagnostic ignored "-Wdeprecated"
         controller.controllerPausedHandler = ^(GCController *controller) {
             NSLog(@"%d: PAUSE", index);
-            int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
-            [self toggleMenu:player];
+            [self handleMenuButton:controller pressed:TRUE];
+            [self handleMenuButton:controller pressed:FALSE];
         };
         #pragma clang diagnostic pop
     }
@@ -4230,20 +4297,42 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 
 // setup a valueChangedHandler to watch for input on the game controller and update the UI (via handle_INPUT)
 // **NOTE** we dont need to do this on tvOS, we dont have any on screen controlls to update, and tvOS handles UI input.
+// we also handle the MENU combo buttons here
 -(void)installUpdateHandler:(GCController*)controller {
     
-    int index = (int)controller.playerIndex;
     controller.extendedGamepad.valueChangedHandler = ^(GCExtendedGamepad* gamepad, GCControllerElement* element) {
-        NSLog(@"valueChangedHandler[%d]: %@ %s", index, element, ([element isKindOfClass:[GCControllerButtonInput class]] && [(GCControllerButtonInput*)element isPressed]) ? "PRESSED" : "");
+        NSLog(@"valueChangedHandler[%ld]: %@ %s", gamepad.controller.playerIndex, element, ([element isKindOfClass:[GCControllerButtonInput class]] && [(GCControllerButtonInput*)element isPressed]) ? "PRESSED" : "");
+        
+        #pragma clang diagnostic push
+        #pragma clang diagnostic ignored "-Wpartial-availability"
+        GCControllerButtonInput *buttonHome = [gamepad respondsToSelector:@selector(buttonHome)] ? [gamepad buttonHome] : nil;
+        GCControllerButtonInput *buttonMenu = [gamepad respondsToSelector:@selector(buttonMenu)] ? [gamepad buttonMenu] : nil;
+        #pragma clang diagnostic pop
+
+        // if the MENU button is down check for a button combo
+        // TODO: maybe check a global instead of querying the controller?
+        if ((buttonHome ?: buttonMenu).pressed) {
+            return [self handleMenuButton:gamepad.controller pressed:TRUE];
+        }
+        
+        // exit MAME MENU with B (but only if we are not mapping a input)
+        if (myosd_in_menu == 1 && element == gamepad.buttonB && gamepad.buttonB.isPressed == FALSE)
+            return [self runExit];
 
 #if TARGET_OS_IOS
+        // no need to call handle_INPUT unless onscreen controls are visible *or* we have some UI/Alert up.
+        if (g_device_is_fullscreen && self.presentedViewController == nil)
+            return;
+        
+        int index = (int)gamepad.controller.playerIndex;
         int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
+
         unsigned long status = myosd_joy_status[player];
         read_device_gamepad(player, gamepad);
         
-        if (status != myosd_joy_status[player] || (element == gamepad.leftThumbstick && (!g_device_is_fullscreen || self.presentedViewController)))
+        if (status != myosd_joy_status[player] || element == gamepad.leftThumbstick)
             [self handle_INPUT];
-#ifdef DEBUG
+#if defined(DEBUG) && DebugLog
         else if (element == gamepad.leftThumbstick || element == gamepad.rightThumbstick || element == gamepad.rightTrigger || element == gamepad.leftTrigger)
             [self handle_INPUT];
 #endif
@@ -4251,8 +4340,93 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     };
 }
 
+//
+// handle a MENU BUTTON modifier
+//
+//      MENU    = MAME4iOS MENU
+//      MENU+L1 = Pn COIN/SELECT
+//      MENU+R1 = Pn START
+//      MENU+L2 = P2 COIN/SELECT
+//      MENU+R2 = P2 START
+//      MENU+X  = EXIT
+//      MENU+B  = MAME MENU
+//      MENU+A  = LOAD STATE
+//      MENU+Y  = SAVE STATE
+//
+-(void)handleMenuButton:(GCController*)controller pressed:(BOOL)pressed {
+    static int g_menu_modifier_button_pressed[NUM_JOY];
+    
+    int index = (int)controller.playerIndex;
+    int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
+
+    NSLog(@"menuButtonHandler[%d]: %s", player, pressed ? "DOWN" : "UP");
+
+    // on MENU button up, if no modifier was pressed then show menu
+    if (!pressed) {
+        BOOL show_menu = (g_menu_modifier_button_pressed[player] == FALSE);
+        g_menu_modifier_button_pressed[player] = FALSE;  // reset for next time.
+        if (show_menu)
+            [self toggleMenu:player];
+        return;
+    }
+    
+    GCExtendedGamepad* gamepad = controller.extendedGamepad;
+
+     // Add Coin / Select
+     if (gamepad.leftShoulder.pressed) {
+         NSLog(@"%d: MENU+L1 => COIN", player);
+         myosd_joy_status[player] &= ~MYOSD_L1;
+         push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X coin
+     }
+     // Start
+     else if (gamepad.rightShoulder.pressed) {
+         NSLog(@"%d: MENU+R1 => START", player);
+         myosd_joy_status[player] &= ~MYOSD_R1;
+         push_mame_button(player, MYOSD_START);
+     }
+    // Add P2 Coin
+    else if (gamepad.leftTrigger.value == 1.0) {
+        NSLog(@"%d: MENU+L2 => P2 COIN", player);
+        myosd_joy_status[player] &= ~MYOSD_L2;
+        push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X coin
+        push_mame_button((1 < myosd_num_coins ? 1 : 0), MYOSD_SELECT);  // Player 2 coin
+    }
+    // P2 Start
+    else if (gamepad.rightTrigger.value == 1.0) {
+        NSLog(@"%d: MENU+R1 => P2 START", player);
+        myosd_joy_status[player] &= ~MYOSD_R2;
+        push_mame_button(1, MYOSD_START);
+    }
+     //Show Mame menu
+     else if (gamepad.buttonB.pressed) {
+         NSLog(@"%d: MENU+B => MAME MENU", player);
+         myosd_joy_status[player] &= ~MYOSD_B;
+         myosd_configure = 1;
+     }
+     //Exit Game
+     else if (gamepad.buttonX.pressed) {
+         NSLog(@"%d: MENU+X => EXIT", player);
+         myosd_joy_status[player] &= ~MYOSD_X;
+         [self runExit];
+     }
+     // Load State
+     else if (gamepad.buttonA.pressed ) {
+         NSLog(@"%d: MENU+A => LOAD STATE", player);
+         [self runLoadState];
+     }
+     // Save State
+     else if (gamepad.buttonY.pressed ) {
+         NSLog(@"%d: MENU+Y => SAVE STATE", player);
+         [self runSaveState];
+     }
+     else {
+         return;
+     }
+     g_menu_modifier_button_pressed[player] = TRUE;
+};
+
 -(void)dumpGameController:(GCController*)controller {
-#if DebugLog && defined(DEBUG)
+#if defined(DEBUG) && DebugLog && defined(__IPHONE_14_0)
     // print info about this controller
     if (@available(iOS 14.0, *)) {
         NSLog(@"         vendorName: %@", controller.vendorName);
@@ -4292,66 +4466,6 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         }
    }
 #endif
-}
-
--(void)setupGameController:(GCController*)controller index:(NSInteger)index {
-    NSLog(@"setupGameController[%ld]: %@", index, controller.vendorName);
-    [controller setPlayerIndex:index];
-
-#if TARGET_OS_TV
-    BOOL isSiriRemote = (controller.extendedGamepad == nil && controller.microGamepad != nil);
-    if (isSiriRemote) {
-        controller.microGamepad.allowsRotation = YES;
-        controller.microGamepad.reportsAbsoluteDpadValues = NO;
-    }
-#endif
-    [self installUpdateHandler:controller];
-    [self installMenuHandler:controller];
-    [self dumpGameController:controller];
-}
-
--(void)setupGameControllers {
-    
-    // build list of controlers, put any non-game controllers (like the siri remote) at the end
-    [controllers removeAllObjects];
-    
-    // add all the controllers with a extendedGamepad profile first
-    for (GCController* controler in GCController.controllers) {
-#if TARGET_IPHONE_SIMULATOR // ignore the bogus controller in the simulator
-        if (controler.vendorName == nil || [controler.vendorName isEqualToString:@"Generic Controller"])
-            continue;
-#endif
-        if (controler.extendedGamepad != nil)
-            [controllers addObject:controler];
-    }
-    
-    // now add any Steam Controllers, these should always have a extendedGamepad profile
-    if (g_bluetooth_enabled) {
-        for (GCController* controler in SteamControllerManager.sharedManager.controllers) {
-            if (controler.extendedGamepad != nil)
-                [controllers addObject:controler];
-        }
-    }
-    // add all the controllers without a extendedGamepad profile last, ie the Siri Remote.
-    for (GCController* controler in GCController.controllers) {
-        if (controler.extendedGamepad == nil)
-            [controllers addObject:controler];
-    }
-
-    if (controllers.count > NUM_JOY) {
-        [controllers removeObjectsInRange:NSMakeRange(NUM_JOY,controllers.count - NUM_JOY)];
-    }
-    
-    if (controllers.count != myosd_num_of_joys) {
-        myosd_num_of_joys = (int)controllers.count;
-        g_joy_used = (myosd_num_of_joys != 0);
-        [self changeUI];
-    }
-
-    for (NSInteger index = 0; index < controllers.count; index++) {
-        GCController *controller = [controllers objectAtIndex:index];
-        [self setupGameController:controller index:index];
-    }
 }
 
 -(void)scanForDevices{
