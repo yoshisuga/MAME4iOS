@@ -86,7 +86,7 @@
 @end
 #endif
 
-#define DebugLog 0
+#define DebugLog 1
 #if DebugLog == 0 || DEBUG == 0
 #define NSLog(...) (void)0
 #endif
@@ -4251,6 +4251,65 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     };
 }
 
+-(void)dumpGameController:(GCController*)controller {
+#if DebugLog && defined(DEBUG)
+    // print info about this controller
+    if (@available(iOS 14.0, *)) {
+        NSLog(@"         vendorName: %@", controller.vendorName);
+        NSLog(@"    productCategory: %@", controller.productCategory);
+        NSLog(@"        playerIndex: %ld", controller.playerIndex);
+
+
+        NSLog(@"         buttonHome: %@", controller.extendedGamepad.buttonHome ? @"YES" : @"NO");
+        NSLog(@"         buttonMenu: %@", (controller.extendedGamepad.buttonMenu ?: controller.microGamepad.buttonMenu) ? @"YES" : @"NO");
+        NSLog(@"      buttonOptions: %@", controller.extendedGamepad.buttonOptions ? @"YES" : @"NO");
+
+        if (controller.battery != nil)
+            NSLog(@"            Battery: %@", controller.battery);
+        
+        if (controller.motion != nil)
+            NSLog(@"             Motion: %@", controller.motion);
+
+        if (controller.light != nil)
+            NSLog(@"              Light: %@", controller.light);
+
+        if (controller.haptics != nil)
+            NSLog(@"            Haptics: %@", controller.haptics);
+
+        for (NSString* key in [controller.physicalInputProfile.elements.allKeys sortedArrayUsingSelector:@selector(compare:)] ?: @[]) {
+            GCDeviceElement* element = controller.physicalInputProfile.elements[key];
+            NSLog(@"            ELEMENT: %@", element);
+            
+            NSLog(@"                     Name: %@ (%@)", element.localizedName, element.unmappedLocalizedName);
+            NSLog(@"                     Symbol: %@ (%@)", element.sfSymbolsName, element.unmappedSfSymbolsName);
+            NSLog(@"                     isAnalog: %@", element.isAnalog ? @"YES" : @"NO");
+            NSLog(@"                     isBoundToSystemGesture: %@", element.isBoundToSystemGesture ? @"YES" : @"NO");
+            NSLog(@"                     preferredSystemGestureState: %@",
+                  element.preferredSystemGestureState == GCSystemGestureStateEnabled ? @"Enabled" :
+                  element.preferredSystemGestureState == GCSystemGestureStateDisabled ? @"Disabled" : @"Always");
+            if (element.aliases.count != 0)
+                NSLog(@"                     Aliases: %@", [element.aliases.allObjects componentsJoinedByString:@", "]);
+        }
+   }
+#endif
+}
+
+-(void)setupGameController:(GCController*)controller index:(NSInteger)index {
+    NSLog(@"setupGameController[%ld]: %@", index, controller.vendorName);
+    [controller setPlayerIndex:index];
+
+#if TARGET_OS_TV
+    BOOL isSiriRemote = (controller.extendedGamepad == nil && controller.microGamepad != nil);
+    if (isSiriRemote) {
+        controller.microGamepad.allowsRotation = YES;
+        controller.microGamepad.reportsAbsoluteDpadValues = NO;
+    }
+#endif
+    [self installUpdateHandler:controller];
+    [self installMenuHandler:controller];
+    [self dumpGameController:controller];
+}
+
 -(void)setupGameControllers {
     
     // build list of controlers, put any non-game controllers (like the siri remote) at the end
@@ -4289,20 +4348,9 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         [self changeUI];
     }
 
-    for (int index = 0; index < controllers.count; index++) {
+    for (NSInteger index = 0; index < controllers.count; index++) {
         GCController *controller = [controllers objectAtIndex:index];
-        [controller setPlayerIndex:index];
-        
-        NSLog(@"setupGameController[%d]: %@", index, controller.vendorName);
-#if TARGET_OS_TV
-        BOOL isSiriRemote = (controller.extendedGamepad == nil && controller.microGamepad != nil);
-        if (isSiriRemote) {
-            controller.microGamepad.allowsRotation = YES;
-            controller.microGamepad.reportsAbsoluteDpadValues = NO;
-        }
-#endif
-        [self installUpdateHandler:controller];
-        [self installMenuHandler:controller];
+        [self setupGameController:controller index:index];
     }
 }
 
