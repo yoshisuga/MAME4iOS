@@ -86,7 +86,7 @@
 @end
 #endif
 
-#define DebugLog 1
+#define DebugLog 0
 #if DebugLog == 0 || DEBUG == 0
 #define NSLog(...) (void)0
 #endif
@@ -4178,42 +4178,41 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     GCControllerButtonInput *buttonMenu = [gamepad respondsToSelector:@selector(buttonMenu)] ? [gamepad buttonMenu] : nil;
     GCControllerButtonInput *buttonOptions = [gamepad respondsToSelector:@selector(buttonOptions)] ? [gamepad buttonOptions] : nil;
     #pragma clang diagnostic pop
-    
-    // iOS 14+ we have three buttons: OPTION(left) HOME(center), MENU(right)
+
+    // iOS 14+ we can have three buttons: OPTION(left) HOME(center), MENU(right)
     //      OPTION => SELECT
     //      HOME   => MAME4iOS MENU
     //      MENU   => START
-    if (buttonHome != nil && buttonMenu != nil && buttonOptions != nil) {
-        // HOME BUTTON => MAME4iOS MENU
-        buttonHome.pressedChangedHandler = ^(GCControllerButtonInput* button, float value, BOOL pressed) {
-            NSLog(@"%d: HOME %s", index, (pressed ? "DOWN" : "UP"));
-            int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
-            if (pressed)
-                [self toggleMenu:player];
-        };
-    }
+    //
     // iOS 13+ we have a MENU(right) and *maybe* a OPTION(left)
     //      MENU   => MAME4iOS MENU
     //      OPTION => do a SELECT + START (Px START)
-    else  if (buttonMenu != nil) {
-        // MENU BUTTON
-        buttonMenu.pressedChangedHandler = ^(GCControllerButtonInput* button, float value, BOOL pressed) {
+    //
+    // < iOS 13 we only have a PAUSE handler, and we only get a single event on button up
+    //      PASUE => MAME4iOS MENU
+    //
+    if (buttonHome != nil || buttonMenu != nil) {
+        // HOME BUTTON => MAME4iOS MENU
+        (buttonHome ?: buttonMenu).pressedChangedHandler = ^(GCControllerButtonInput* button, float value, BOOL pressed) {
             NSLog(@"%d: MENU %s", index, (pressed ? "DOWN" : "UP"));
             int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
             if (pressed)
                 [self toggleMenu:player];
         };
+        
         // OPTION BUTTON => Px START
-        buttonOptions.pressedChangedHandler = ^(GCControllerButtonInput* button, float value, BOOL pressed) {
-            NSLog(@"%d: OPTION %s", index, (pressed ? "DOWN" : "UP"));
-            int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
-            if (pressed && !g_emulation_paused) {
-                if (player < 2)    // add a extra coin for luck, for games that default to two credits.
-                    push_mame_button(0, MYOSD_SELECT);  // Player 1 coin
-                push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X COIN
-                push_mame_button(player, MYOSD_START); // Player X START
-            }
-        };
+        if (buttonHome == nil && buttonOptions != nil) {
+            buttonOptions.pressedChangedHandler = ^(GCControllerButtonInput* button, float value, BOOL pressed) {
+                NSLog(@"%d: OPTION %s", index, (pressed ? "DOWN" : "UP"));
+                int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
+                if (pressed && !g_emulation_paused) {
+                    if (player < 2)    // add a extra coin for luck, for games that default to two credits.
+                        push_mame_button(0, MYOSD_SELECT);  // Player 1 coin
+                    push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X COIN
+                    push_mame_button(player, MYOSD_START); // Player X START
+                }
+            };
+        }
     }
     else {
         // < iOS 13 we only have a PAUSE handler, and we only get a single event on button up
@@ -4233,13 +4232,12 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 // **NOTE** we dont need to do this on tvOS, we dont have any on screen controlls to update, and tvOS handles UI input.
 -(void)installUpdateHandler:(GCController*)controller {
     
-#if !TARGET_OS_TV
     int index = (int)controller.playerIndex;
     controller.extendedGamepad.valueChangedHandler = ^(GCExtendedGamepad* gamepad, GCControllerElement* element) {
-        //NSLog(@"valueChangedHandler[%d]: %@ %s", index, element, ([element isKindOfClass:[GCControllerButtonInput class]] && [(GCControllerButtonInput*)element isPressed]) ? "PRESSED" : "");
-    
-        int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
+        NSLog(@"valueChangedHandler[%d]: %@ %s", index, element, ([element isKindOfClass:[GCControllerButtonInput class]] && [(GCControllerButtonInput*)element isPressed]) ? "PRESSED" : "");
 
+#if TARGET_OS_IOS
+        int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
         unsigned long status = myosd_joy_status[player];
         read_device_gamepad(player, gamepad);
         
@@ -4249,8 +4247,8 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         else if (element == gamepad.leftThumbstick || element == gamepad.rightThumbstick || element == gamepad.rightTrigger || element == gamepad.leftTrigger)
             [self handle_INPUT];
 #endif
-    };
 #endif
+    };
 }
 
 -(void)setupGameControllers {
