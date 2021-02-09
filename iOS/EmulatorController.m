@@ -2173,7 +2173,7 @@ static void handle_turbo() {
 }
 
 // handle input from a siri remote for a specific player
-static void read_device_gamepad_mini(int player, GCMicroGamepad *gamepad)
+static void read_remote(int player, GCMicroGamepad *gamepad)
 {
     GCControllerDirectionPad* dpad = gamepad.dpad;
     
@@ -2214,7 +2214,7 @@ static void read_device_gamepad_mini(int player, GCMicroGamepad *gamepad)
 }
 
 // handle input from a game controller for a specific player
-static void read_device_gamepad(int player, GCExtendedGamepad *gamepad)
+static void read_gamepad(int player, GCExtendedGamepad *gamepad)
 {
     GCControllerDirectionPad* dpad = gamepad.dpad;
     unsigned long status = 0;
@@ -2245,7 +2245,7 @@ static void read_device_gamepad(int player, GCExtendedGamepad *gamepad)
     GCControllerButtonInput *buttonOptions = [gamepad respondsToSelector:@selector(buttonOptions)] ? [gamepad buttonOptions] : nil;
     #pragma clang diagnostic pop
     
-    if (buttonHome != nil)
+    if (buttonHome != nil && buttonOptions != nil && buttonMenu != nil)
         status |= (buttonOptions.pressed ? MYOSD_SELECT : 0) | (buttonMenu.pressed ? MYOSD_START : 0);
 
     // set the button and dpad status
@@ -2263,15 +2263,23 @@ static void read_device_gamepad(int player, GCExtendedGamepad *gamepad)
 }
 
 // handle input from a game controller for a specific player
-static void read_device_controller(int player, GCController *controller)
+static void read_controller(int player, GCController *controller)
 {
     GCExtendedGamepad* gamepad = controller.extendedGamepad;
     if (gamepad)
-        return read_device_gamepad(player, gamepad);
+        return read_gamepad(player, gamepad);
     
-    GCMicroGamepad* minipad = controller.microGamepad;
-    if (minipad)
-        return read_device_gamepad_mini(0, minipad); // siri remote is always player 1
+    GCMicroGamepad* remote = controller.microGamepad;
+    if (remote)
+        return read_remote(player, remote);
+}
+
+static BOOL controller_is_zero(int player) {
+    return myosd_joy_status[player] == 0 &&
+        joy_analog_x[player][0] == 0.0 && joy_analog_y[player][0] == 0.0 &&
+        joy_analog_x[player][1] == 0.0 && joy_analog_y[player][1] == 0.0 &&
+        joy_analog_x[player][2] == 0.0 &&
+        joy_analog_x[player][3] == 0.0 ;
 }
 
 // handle any input from all game controllers
@@ -2282,8 +2290,16 @@ static void handle_device_input()
 
     // poll each controller to get state of device *right* now
     for (int i = 0; i < controllers.count; i++) {
-        int player = (i < myosd_num_inputs) ? i : 0; // act as Player 1 if MAME is not using us.
-        read_device_controller(player, controllers[i]);
+        GCController *controller = controllers[i];
+        int index = (int)controller.playerIndex;
+        int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
+        if (player < i) {
+            // dont overwrite a lower index (non zero) controller
+            // TODO: check device timestamp on iOS 14
+            if (!controller_is_zero(player))
+                continue;;
+        }
+        read_controller(player, controller);
     }
 }
 
@@ -4233,6 +4249,9 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     
     GCExtendedGamepad* gamepad = controller.extendedGamepad;
     
+    if (gamepad == nil)
+        return;
+    
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wpartial-availability"
     GCControllerButtonInput *buttonHome = [gamepad respondsToSelector:@selector(buttonHome)] ? [gamepad buttonHome] : nil;
@@ -4241,6 +4260,8 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     #pragma clang diagnostic pop
     
 #ifdef __IPHONE_14_0
+    // dont let tvOS or iOS do anything with **our** buttons!!
+    // iOS will start a screen recording if you hold or dbl click the OPTIONS button, we dont want that.
     if (@available(iOS 14.0, *)) {
         buttonHome.preferredSystemGestureState = GCSystemGestureStateDisabled;
         buttonMenu.preferredSystemGestureState = GCSystemGestureStateDisabled;
@@ -4328,7 +4349,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
 
         unsigned long status = myosd_joy_status[player];
-        read_device_gamepad(player, gamepad);
+        read_gamepad(player, gamepad);
         
         if (status != myosd_joy_status[player] || element == gamepad.leftThumbstick)
             [self handle_INPUT];
@@ -4428,7 +4449,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 -(void)dumpGameController:(GCController*)controller {
 #if defined(DEBUG) && DebugLog && defined(__IPHONE_14_0)
     // print info about this controller
-    if (@available(iOS 14.0, *)) {
+    if (@available(iOS 14.0, tvOS 14.0, *)) {
         NSLog(@"         vendorName: %@", controller.vendorName);
         NSLog(@"    productCategory: %@", controller.productCategory);
         NSLog(@"        playerIndex: %ld", controller.playerIndex);
