@@ -4392,6 +4392,10 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     }
     
     GCExtendedGamepad* gamepad = controller.extendedGamepad;
+    
+    // dont do multiple combo actions
+    if (g_menu_modifier_button_pressed[player])
+        return;
 
      // Add Coin / Select
      if (gamepad.leftShoulder.pressed) {
@@ -4430,6 +4434,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
          myosd_joy_status[player] &= ~MYOSD_X;
          [self runExit];
      }
+    
      // Load State
      else if (gamepad.buttonA.pressed ) {
          NSLog(@"%d: MENU+A => LOAD STATE", player);
