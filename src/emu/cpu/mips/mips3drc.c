@@ -543,12 +543,15 @@ static CPU_EXECUTE( mips3 )
 static CPU_EXIT( mips3 )
 {
 	mips3_state *mips3 = get_safe_token(device);
-	mips3com_exit(mips3);
+    if (mips3 != NULL)
+    {
+        mips3com_exit(mips3);
 
-	/* clean up the DRC */
-	drcfe_exit(mips3->impstate->drcfe);
-	drcuml_free(mips3->impstate->drcuml);
-	drccache_free(mips3->impstate->cache);
+        /* clean up the DRC */
+        drcfe_exit(mips3->impstate->drcfe);
+        drcuml_free(mips3->impstate->drcuml);
+        drccache_free(mips3->impstate->cache);
+    }
 }
 
 
