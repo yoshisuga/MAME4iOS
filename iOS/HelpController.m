@@ -129,11 +129,12 @@ static NSString* html_viewport =
 
 static NSString* html_custom_style =
 @"<style>\n\
-code {background-color:lightgray; width:100%; overflow-x:scroll}\n\
+body {font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji; line-height:1.5}\n\
+code {background-color:lightgray; width:100%; overflow-x:scroll; padding:.2em .4em; margin:0; border-radius:6px; font-size:85%; font-family:SFMono-Regular,monospace}\n\
 @media (prefers-color-scheme: dark) {\n\
-    html {background-color: black; color: white;}\n\
-    table tbody tr:nth-child(2n) {background-color: #333333;}\n\
-    table tbody tr:nth-child(2n-1) {background-color: #222222;}\n\
+    html {background-color: #1e1e1e; color: white;}\n\
+    table tbody tr:nth-child(2n) {background-color: #323232;}\n\
+    table tbody tr:nth-child(2n-1) {background-color: #1e1e1e;}\n\
     a:link, a:visited {color: dodgerblue;}\n\
     img {opacity: .75;}\n\
     code {background-color:#404040;}\n\
