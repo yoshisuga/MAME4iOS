@@ -2055,8 +2055,9 @@ static NSArray* list_trim(NSArray* _list) {
         g_mame_warning = 1;
     }
 
-    areControlsHidden = NO;
+    [self indexGameControllers];
     
+    areControlsHidden = NO;
     memset(cyclesAfterButtonPressed, 0, sizeof(cyclesAfterButtonPressed));
 }}
 
@@ -2310,7 +2311,6 @@ static BOOL controller_is_zero(int player) {
 // handle any input from *all* game controllers
 static void handle_device_input()
 {
-    // TODO: verify race condition with main thread
     NSArray* controllers = g_controllers;
 
     if (controllers.count == 0)
@@ -4261,6 +4261,20 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
         [self changeUI];
     }
 }
+
+// set the player index of all the game controllers, this needs to happen each time a new ROM is loaded.
+// MFi controllers have LED lights on them that shows the player number, so keep those current...
+-(void)indexGameControllers {
+    for (NSInteger index = 0; index < g_controllers.count; index++) {
+        GCController* controller = g_controllers[index];
+        // the Siri Remote, or any controller higher than MAME is looking for get mapped to Player 1
+        if (controller.extendedGamepad == nil || index >= myosd_num_inputs)
+            [controller setPlayerIndex:0];
+        else
+            [controller setPlayerIndex:index];
+    }
+}
+
 
 -(void)setupGameController:(GCController*)controller index:(NSInteger)index {
     NSLog(@"setupGameController[%ld]: %@", index, controller.vendorName);
