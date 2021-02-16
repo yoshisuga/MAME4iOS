@@ -4246,6 +4246,12 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
             [controllers addObject:controler];
     }
 
+    // cancel menu mode on all controllers, this is needed when a controller disconects in menu mode.
+    for (int i=0; i<g_controllers.count; i++) {
+        g_menuButton[i] = 0;
+        [self hideControllerHUD:g_controllers[i]];
+    }
+    
     for (NSInteger index = 0; index < controllers.count; index++) {
         GCController *controller = [controllers objectAtIndex:index];
         [self setupGameController:controller index:index];
