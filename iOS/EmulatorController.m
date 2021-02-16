@@ -762,7 +762,9 @@ void mame_state(int load_save, int slot)
         [self endMenu];
     }]];
     
-    [self presentPopup:menu from:view animated:YES completion:nil];
+    [self presentPopup:menu from:view animated:YES completion:^{
+        [self showControllerMenuHUD];
+    }];
 }
 - (void)runMenu:(int)player
 {
@@ -896,6 +898,8 @@ void mame_state(int load_save, int slot)
 }
 
 - (void)endMenu{
+    [self hideControllerMenuHUD];
+
     int old_joy_used = g_joy_used;
     g_joy_used = myosd_num_of_joys!=0;
     
@@ -4296,6 +4300,11 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
         // exit MAME MENU with B (but only if we are not mapping a input)
         if (myosd_in_menu == 1 && element == gamepad.buttonB && gamepad.buttonB.isPressed == FALSE)
             return [self runExit];
+        
+#if TARGET_OS_TV
+        if (g_menuHUD != nil && self.presentedViewController != nil)
+            return [self handleMenuButton:controller element:element];
+#endif
 
 #if TARGET_OS_IOS
         // no need to call handle_INPUT unless onscreen controls are visible *or* we have some UI/Alert up.
@@ -4640,6 +4649,108 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
             [g_menuHUD removeFromSuperview];
             g_menuHUD = nil;
         }];
+    }
+}
+
+// show a quick help HUD while the in-game menu is on screen, only for tvOS
+-(void)showControllerMenuHUD {
+
+    if (g_menuHUD != nil)
+        return;
+    
+    // see if we have any (non siri-remote) game controllers
+    GCController* controller = g_controllers.firstObject;
+    GCExtendedGamepad* gamepad = controller.extendedGamepad;
+    
+#if TARGET_OS_SIMULATOR == 0
+    if (gamepad == nil)
+        return;
+#endif
+    
+#if TARGET_OS_TV && defined(__IPHONE_14_0)
+    if (@available(iOS 14.0, *)) {
+        
+        g_menuHUD = [[InfoHUD alloc] initWithFrame:CGRectZero];
+        
+        // only show combo buttons that dont conflict with UIAlertController
+        [g_menuHUD addButtons:@[
+            [NSString stringWithFormat:@":%@:Player Select", gamepad.leftShoulder.unmappedSfSymbolsName ?: @"l1.rectangle.roundedbottom"],
+            [NSString stringWithFormat:@":%@:Exit Game", gamepad.buttonX.unmappedSfSymbolsName ?: @"x.circle"],
+            [NSString stringWithFormat:@":%@:Player Start", gamepad.rightShoulder.unmappedSfSymbolsName ?: @"r1.rectangle.roundedbottom"],
+        ] color:UIColor.clearColor handler:^(NSUInteger i){}];
+        
+        [g_menuHUD addButtons:@[
+            [NSString stringWithFormat:@":%@:Player 2 Select", gamepad.leftTrigger.unmappedSfSymbolsName ?: @"l2.rectangle.roundedtop"],
+            [NSString stringWithFormat:@":%@:Configure", gamepad.buttonY.unmappedSfSymbolsName ?: @"y.circle"],
+            [NSString stringWithFormat:@":%@:Player 2 Start", gamepad.rightTrigger.unmappedSfSymbolsName ?: @"r2.rectangle.roundedtop"],
+        ] color:UIColor.clearColor handler:^(NSUInteger i){}];
+        
+        UIWindow* window = UIApplication.sharedApplication.keyWindow;
+        [window addSubview:g_menuHUD];
+        [g_menuHUD sizeToFit];
+        g_menuHUD.center =  CGPointMake(window.center.x, window.bounds.size.height - g_menuHUD.bounds.size.height/2 - 16.0);
+    }
+#endif
+}
+-(void)hideControllerMenuHUD {
+    [g_menuHUD removeFromSuperview];
+    g_menuHUD = nil;
+}
+
+//
+// handle a controller button when the in-game menu is up, only on tvOS
+// this is called from the GameController valueChanged handler if g_menuHUD is non-nil.
+// NOTE we can only use controller buttons that will not conflict with the Alert handling done by tvOS.
+// (that means no dpad or A, B) so we only do a subset.
+//
+//      MENU+L1     = Pn COIN/SELECT
+//      MENU+R1     = Pn START
+//      MENU+L2     = P2 COIN/SELECT
+//      MENU+R2     = P2 START
+//      MENU+X      = EXIT
+//      MENU+Y      = MAME MENU
+//
+-(void)handleMenuButton:(GCController*)controller element:(GCControllerElement*)element {
+    GCExtendedGamepad* gamepad = controller.extendedGamepad;
+    UIAlertController* alert = (UIAlertController*)self.presentedViewController;
+
+    if (g_menuHUD == nil || gamepad == nil || ![alert isKindOfClass:[UIAlertController class]] || alert.isBeingDismissed)
+        return;
+    
+    int index = (int)controller.playerIndex;
+    int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
+
+    if (element == gamepad.buttonX && !gamepad.buttonX.pressed) {
+        NSLog(@"...MENU+X => EXIT");
+        [alert dismissWithAction:alert.cancelAction completion:^{
+            [self runExit:NO];
+        }];
+    }
+    else if (element == gamepad.buttonY && !gamepad.buttonY.pressed) {
+        NSLog(@"...MENU+Y => MAME MENU");
+        myosd_configure = 1;
+        [alert dismissWithCancel];
+    }
+    else if (element == gamepad.leftShoulder && !gamepad.leftShoulder.pressed) {
+        NSLog(@"...MENU+L1 => SELECT");
+        push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X coin
+        [alert dismissWithCancel];
+    }
+    else if (element == gamepad.rightShoulder && !gamepad.rightShoulder.pressed) {
+        NSLog(@"...MENU+R1 => START");
+        push_mame_button(player, MYOSD_START);
+        [alert dismissWithCancel];
+    }
+    else if (element == gamepad.leftTrigger && !gamepad.leftTrigger.pressed) {
+        NSLog(@"...MENU+L2 => P2 SELECT");
+        push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X coin
+        push_mame_button((1 < myosd_num_coins ? 1 : 0), MYOSD_SELECT);  // Player 2 coin
+        [alert dismissWithCancel];
+    }
+    else if (element == gamepad.rightTrigger && !gamepad.rightTrigger.pressed) {
+        NSLog(@"...MENU+R2 => P2 START");
+        push_mame_button(1, MYOSD_START);
+        [alert dismissWithCancel];
     }
 }
 
