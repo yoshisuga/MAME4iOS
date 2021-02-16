@@ -1,3 +1,12 @@
+# Version 2021.4
+* Better support for MFi controllers.
+* Game Controllers with more than two menu buttons (Xbox, DualShock, Xinput, Nimbus+, new MFi)
+    - Left menu button is always `SELECT`
+    - Right menu button is always `START`
+    - `SELECT` + `START` will bring up MAME4iOS menu
+    - holding down `SELECT` or `START` will show a *quick help HUD*
+* on iOS 14+ (not on tvOS) the XBox `GUIDE` button, and the DualShock `PS` button can be used instead of `SELECT`+`START`
+
 # Version 2021.3
 * This is a Mac-only release that has all the updates to 2021.2 and supports both Intel and Apple Silicon Macs.
 
