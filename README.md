@@ -100,7 +100,7 @@ Even if you are not in the paid Apple Developer Program, you can sideload the ap
 
 MAME for tvOS support was added in early 2019, and it currently can run games has full native UI support and MFI controller support with most notably:
 
-- MFI controllers, Xbox One, PS4 DualShock, and Siri Remote suppor.
+- MFI controllers, Xbox One, PS4 DualShock, and Siri Remote support.
 
 ## Using MAME
 
@@ -110,8 +110,6 @@ When you start MAME4iOS, you are now presented with an updated and native iOS/tv
 
 - Onscreen D-Pad or MFI Controller D-Pad: Move through the menu
 - A Button: Start Game
-- X Button: Open Game Sub-menu: Add to Favorites or Remove Game
-- Y Button: Open the Settings menu (Apple TV only)
 
 ### In-Game
 
@@ -135,7 +133,7 @@ You can upload ROMs to MAME on your AppleTV using a computer. After MAME starts,
 
 ## Game Controller Support
 
-Pair your MFI, Xbox, or Dual Shock controller with your iOS device, and it should 'just work'.
+Pair your MFi, Xbox, or Dual Shock controller with your iOS device, and it should 'just work'.
 Up to 4 controllers are supported.
 
 ### Hotkey combinations (while in-game)
@@ -145,13 +143,16 @@ The following hotkey combinations are supported:
 | | |  
 ---------------- |-------------
 MENU             |Open MAME4iOS MENU   
-MENU+L1       |Insert coin                 
-MENU+R1       |Start Game               
+MENU+L1       |Player 1 Coin                 
+MENU+R1       |Player 1 Start               
+MENU+L2       |Player 2 Coin                
+MENU+R2       |Player 2 Start               
 MENU+X          |Exit Game                 
-MENU+B          |Open MAME menu   
-MENU+A          |Load State                
-MENU+Y          |Save State                
-OPTION            |Insert Coin and Start   
+MENU+Y          |Open MAME menu   
+MENU+DOWN  |Save State ①               
+MENU+UP        |Load State ①                
+MENU+LEFT     |Save State ②                
+MENU+RIGHT  |Load State ②               
 
 ### Dual analog support
 
@@ -168,7 +169,7 @@ to start playing a game, hit MENU and select "Coin + Start" from the list.
 
     TRACKPAD MOVE   - emulate a dpad or joystick
     TRAKPAD CLICK   - A button
-    PLAY            - X button
+    PLAY            - B button
     MENU            - bring up the MAME4iOS menu
 
 ## Touch Screen Lightgun Support (new in 2018, iOS only)

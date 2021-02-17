@@ -146,6 +146,7 @@
 		EF301CF1240460C5000510FD /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF301CF0240460C5000510FD /* Alert.m */; };
 		EF301CF2240460C5000510FD /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF301CF0240460C5000510FD /* Alert.m */; };
 		EF301CF3240460F3000510FD /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF27F36323F73CD400B1E50A /* ZipFile.m */; };
+		EF568DB025D5D4F600092B30 /* InfoHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = EFB3C6DB248C33DF00F44780 /* InfoHUD.m */; };
 		EF67E11624B8972100AFF489 /* MacMenu.m in Sources */ = {isa = PBXBuildFile; fileRef = EF67E11524B8972100AFF489 /* MacMenu.m */; };
 		EF7B232C23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
 		EF7B232D23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
@@ -1448,6 +1449,7 @@
 				92A533C721EBDBAD0089FBB9 /* GCDWebServerDataRequest.m in Sources */,
 				926C76FF21F1C87700103EDE /* TVOptionsController.m in Sources */,
 				EF286D35253CA930007DA6D3 /* CloudSync.m in Sources */,
+				EF568DB025D5D4F600092B30 /* InfoHUD.m in Sources */,
 				EFF9F80A246356B300DDA88C /* CGScreenView.m in Sources */,
 				EF8E427E249348220049C84C /* megaTron.metal in Sources */,
 				92A5332621EBC8D00089FBB9 /* Bootstrapper.m in Sources */,

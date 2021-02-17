@@ -305,9 +305,6 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     // see if the line shader wants past lines, ie does it list `line-time` in the parameter list.x
     _line_shader_wants_past_lines = [_line_shader rangeOfString:@"line-time"].length != 0;
     
-    if (_line_shader_wants_past_lines)
-        [self setShaderVariables:@{@"line-time": @(0.0)}];
-
     // parse the first param of the line shader to get the line width scale factor.
     // NOTE the first param can be a variable or a constant, support variables for the HUD.
     _line_width_scale = 1.0;

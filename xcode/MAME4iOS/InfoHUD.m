@@ -9,7 +9,6 @@
 #import "InfoHUD.h"
 #import <objc/runtime.h> // just for Associated Objects, I promise!
 
-#define HUD_COLOR   [UIColor clearColor] /*[self.tintColor colorWithAlphaComponent:0.2]*/
 #define HUD_BLUR    TRUE
 
 @implementation InfoHUD {
@@ -42,11 +41,12 @@
     
     self.font = nil;
     
-    if (@available(iOS 13.0, *))
+    if (@available(iOS 13.0, tvOS 13.0, *))
         self.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
     
     [self addSubview:_stack];
     
+#if TARGET_OS_IOS
     UIPanGestureRecognizer* pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(pan:)];
     pan.delegate = (id<UIGestureRecognizerDelegate>)self;
     [self addGestureRecognizer:pan];
@@ -55,15 +55,20 @@
     pinch.delegate = (id<UIGestureRecognizerDelegate>)self;
     pinch.delaysTouchesBegan = YES;
     [self addGestureRecognizer:pinch];
+#endif
 
-    self.backgroundColor = HUD_COLOR;
-#if HUD_BLUR
+    //self.backgroundColor = [UIColor clearColor];
+#if HUD_BLUR && TARGET_OS_IOS
     if (@available(iOS 13.0, *))
         [self addBlur:UIBlurEffectStyleSystemUltraThinMaterialDark];
     else
         [self addBlur:UIBlurEffectStyleDark];
+#elif HUD_BLUR && TARGET_OS_TV
+    [self addBlur:UIBlurEffectStyleExtraDark];
+#else
+    self.backgroundColor = [UIColor.darkGrayColor colorWithAlphaComponent:0.8];
 #endif
-
+    
     return self;
 }
 
@@ -82,10 +87,12 @@
     UIVisualEffectView* effectView = [[UIVisualEffectView alloc] initWithEffect:blur];
     effectView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     effectView.frame = self.bounds;
+    for (UIView* view in self.subviews)
+        [effectView.contentView addSubview:view];
     [self addSubview:effectView];
-    [self sendSubviewToBack:effectView];
 }
 
+#if TARGET_OS_IOS
 // called before touchesBegan:withEvent: is called on the gesture recognizer for a new touch. return NO to prevent the gesture recognizer from seeing this touch
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
     if (gestureRecognizer.view == self && [touch.view isKindOfClass:[UISlider class]]) {
@@ -129,7 +136,7 @@
     _changedKey = key;
     [self sendActionsForControlEvents:UIControlEventValueChanged];
 }
-
+#endif
 
 - (void)setLayoutMargins:(UIEdgeInsets)layoutMargins {
     [super setLayoutMargins:layoutMargins];
@@ -186,6 +193,12 @@
         value = [self separatorViewWithHeight:1.0 color:UIColor.clearColor];
         [_stack addArrangedSubview:value];
         value = [self separatorViewWithHeight:1.0 color:UIColor.darkGrayColor];
+        [_stack addArrangedSubview:value];
+        value = [self separatorViewWithHeight:1.0 color:UIColor.clearColor];
+    }
+    if ([value isKindOfClass:[UIImage class]]) {
+        value = [[UIImageView alloc] initWithImage:value];
+        [value setContentMode:UIViewContentModeScaleAspectFit];
     }
 
     if ([value isKindOfClass:[UIView class]]) {
@@ -210,6 +223,7 @@
     if ([value isKindOfClass:[NSString class]])
         _width = MAX(_width, ceil([value sizeWithAttributes:@{NSFontAttributeName:label.font}].width));
     
+#if TARGET_OS_IOS
     if ([value isKindOfClass:[NSNumber class]] && [min floatValue] == 0.0 && [max floatValue] == 1.0 && [step floatValue] == 1.0) {
         _format[key] = nil;
         label.text = key;
@@ -250,6 +264,7 @@
 
         [slider setThumbImage:[self dotWithColor:(slider.minimumTrackTintColor ?: slider.tintColor) size:CGSizeMake(12,12)] forState:UIControlStateNormal];
     }
+#endif
     
     [self setValue:value forKey:key];
 }
@@ -271,6 +286,9 @@
 }
 - (void)addText:(NSString*)str {
     [self addValue:str];
+}
+- (void)addImage:(UIImage*)image {
+    [self addValue:image];
 }
 - (void)addView:(UIView*)view {
     [self addValue:view];
@@ -317,7 +335,7 @@
 
     [seg addTarget:self action:@selector(buttonPress:) forControlEvents:UIControlEventValueChanged];
     objc_setAssociatedObject(seg, @selector(buttonPress:), handler, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    if (@available(iOS 13.0, *))
+    if (@available(iOS 13.0, tvOS 13.0, *))
          seg.selectedSegmentTintColor = self.tintColor;
     if (items.firstObject == (id)@"")
         seg.alpha = 0.0;
@@ -329,7 +347,7 @@
     seg.apportionsSegmentWidthsByContent = YES;
     [self addView:seg];
 }
-- (void)addButtons:(NSArray*)items handler:(void (^)(NSUInteger button))handler {
+- (void)addButtons:(NSArray*)items color:(UIColor*)color handler:(void (^)(NSUInteger button))handler {
     UIStackView* stack = [[UIStackView alloc] init];
     stack.spacing = self.spacing;
     stack.distribution = UIStackViewDistributionFillEqually;
@@ -337,24 +355,28 @@
     for (NSUInteger i = 0; i<items.count; i++) {
         id item = items[i];
         if (![item isKindOfClass:[UIView class]]) {
-            item = [self makeSegmentedControl:@[item] handler:^(NSUInteger button) {
+            UISegmentedControl* seg = item = [self makeSegmentedControl:@[item] handler:^(NSUInteger button) {
                 handler(i);
             }];
+            seg.backgroundColor = color;
+            if (@available(iOS 13.0, tvOS 13.0, *))
+                 seg.selectedSegmentTintColor = color;
+            if (color == UIColor.clearColor)
+                [seg setBackgroundImage:[[UIImage alloc] init] forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
         }
         [stack addArrangedSubview:item];
     }
     [self addView:stack];
 }
+- (void)addButtons:(NSArray*)items handler:(void (^)(NSUInteger button))handler {
+    [self addButtons:items color:nil handler:handler];
+}
 
 - (void)addButton:(id)item color:(UIColor*)color handler:(void (^)(void))handler {
     NSParameterAssert([item isKindOfClass:[NSString class]] || [item isKindOfClass:[UIImage class]]);
-    UISegmentedControl* seg = [self makeSegmentedControl:@[item] handler:^(NSUInteger button) {
+    [self addButtons:@[item] color:color handler:^(NSUInteger button) {
         handler();
     }];
-    seg.backgroundColor = color;
-    if (@available(iOS 13.0, *))
-         seg.selectedSegmentTintColor = color;
-    [self addView:seg];
 }
 - (void)addButton:(id)item handler:(void (^)(void))handler {
     [self addButton:item color:nil handler:handler];
@@ -374,11 +396,13 @@
             val = round(val / step) * step;
         if (format != nil)
             label.text = [NSString stringWithFormat:format, val, key];
+#if TARGET_OS_IOS
         UISlider* slider = (__bridge UISlider*)(void*)label.tag;
         if ([slider isKindOfClass:[UISlider class]] && !slider.isTracking)
             slider.value = val;
         if ([slider isKindOfClass:[UISwitch class]])
             [(UISwitch*)slider setOn:val != 0.0];
+#endif
     }
     else if ([value isKindOfClass:[NSString class]]) {
         label.text = value;
@@ -397,13 +421,15 @@
     UILabel* label = _views[key];
     if (![label isKindOfClass:[UILabel class]])
         return label;
+#if TARGET_OS_IOS
     UISlider* slider = (__bridge UISlider*)(void*)label.tag;
     float step = [_step[key] floatValue];
     if (([slider isKindOfClass:[UISlider class]]))
         return @((step != 0.0) ? round(slider.value / step) * step : slider.value);
     else if (([slider isKindOfClass:[UISwitch class]]))
         return [(UISwitch*)slider isOn] ? @(1) : @(0);
-    else if ([label.text containsString:@": "])
+#endif
+    if ([label.text containsString:@": "])
         return @([label.text componentsSeparatedByString:@": "].lastObject.floatValue);
     else
         return label.text;
