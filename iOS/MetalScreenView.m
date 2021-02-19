@@ -805,7 +805,7 @@ VertexColor VertexColorP3(CGFloat r, CGFloat g, CGFloat b, CGFloat a) {
 //      [X] flip X                      othunder
 //      [X] flip Y                      lethalen
 //      [X] swap XY                     kick
-//      [ ] swap XY + flip X + flip Y   ???
+//      [ ] swap XY + flip X + flip Y   
 //      [X] texture WRAP                MAME menu
 //      [X] texture CLAMP               MAME menu
 //
