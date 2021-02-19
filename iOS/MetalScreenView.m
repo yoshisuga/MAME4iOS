@@ -600,6 +600,8 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
                 orientation = UIImageOrientationDown;
             else if (prim->texorient == ORIENTATION_ROT270)
                 orientation = UIImageOrientationLeft;
+            else if (prim->texorient & ORIENTATION_FLIP_X)
+                orientation = UIImageOrientationUpMirrored;
 
             [self drawRect:rect color:color orientation:orientation];
         }

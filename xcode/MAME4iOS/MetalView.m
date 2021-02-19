@@ -608,6 +608,11 @@ __attribute__((objc_direct_members))
             vertices[3].tex = simd_make_float2(1,0);
             break;
         case UIImageOrientationUpMirrored:
+            vertices[0].tex = simd_make_float2(1,0);
+            vertices[1].tex = simd_make_float2(0,0);
+            vertices[2].tex = simd_make_float2(1,1);
+            vertices[3].tex = simd_make_float2(0,1);
+            break;
         case UIImageOrientationDownMirrored:
         case UIImageOrientationLeftMirrored:
         case UIImageOrientationRightMirrored:
