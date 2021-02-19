@@ -223,6 +223,7 @@ struct _myosd_render_primitive
     uint32_t              texture_height;      /* height of the image */
     const void*           texture_palette;     /* palette for PALETTE16 textures, LUTs for RGB15/RGB32 */
     uint32_t              texture_seqid;       /* sequence ID */
+    uint32_t              texture_junk;        /* padding */
 //  render_quad_texuv     texcoords;           /* texture coordinates (for quad primitives) */
     struct {float u,v;}   texcoords[4];
 };
@@ -232,6 +233,7 @@ _Static_assert(sizeof(myosd_render_primitive) == sizeof(render_primitive), "");
 _Static_assert(offsetof(myosd_render_primitive, bounds_x0)    == offsetof(render_primitive, bounds), "");
 _Static_assert(offsetof(myosd_render_primitive, color_a)      == offsetof(render_primitive, color), "");
 _Static_assert(offsetof(myosd_render_primitive, texture_base) == offsetof(render_primitive, texture), "");
+_Static_assert(offsetof(myosd_render_primitive, texcoords)    == offsetof(render_primitive, texcoords), "");
 _Static_assert(PRIMFLAG_TEXORIENT_MASK == 0x000F);
 _Static_assert(PRIMFLAG_TEXFORMAT_MASK == 0x00F0);
 _Static_assert(PRIMFLAG_BLENDMODE_MASK == 0x0F00);
