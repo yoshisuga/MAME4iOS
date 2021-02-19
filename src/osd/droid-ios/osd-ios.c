@@ -12,8 +12,6 @@
 #include "emu.h"
 #include "myosd.h"
 
-#include "bt_joy.h"
-
 #include <unistd.h>
 #include <fcntl.h>
 #include <pthread.h>
@@ -203,18 +201,10 @@ unsigned long myosd_joystick_read(int n)
         
        if(myosd_pxasp1 && myosd_num_of_joys==1)
        {
-#ifdef BTJOY
-           res |= bt_joy_poll(0);
-#endif
     	   res |= myosd_joy_status[0];
        }
 
     }
-
-#ifdef BTJOY
-	if (n<myosd_num_of_joys)
-        res |= bt_joy_poll(n);
-#endif
 
     res |= myosd_joy_status[n];
 
@@ -227,12 +217,6 @@ float myosd_joystick_read_analog(int n, char axis)
     
     if(n==0 || myosd_pxasp1 && (myosd_num_of_joys==0 || myosd_num_of_joys==1))
     {
-#ifdef BTJOY
-        if(myosd_pxasp1 && myosd_num_of_joys==1)
-        {
-            bt_joy_poll(0);
-        }
-#endif
         if(axis=='x') res = joy_analog_x[0][0];
         else if (axis=='y') res = joy_analog_y[0][0];
         else if(axis=='X') res = joy_analog_x[0][1];
@@ -243,9 +227,6 @@ float myosd_joystick_read_analog(int n, char axis)
     
     if (n<myosd_num_of_joys)
     {
-#ifdef BTJOY
-        bt_joy_poll(n);
-#endif
         if(axis=='x') res = joy_analog_x[n][0];
         else if (axis=='y') res = joy_analog_y[n][0];
         else if(axis=='X') res = joy_analog_x[n][1];

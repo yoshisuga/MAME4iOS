@@ -47,7 +47,6 @@
 
 #import "Bootstrapper.h"
 #import "Globals.h"
-#import "BTJoyHelper.h"
 
 #import "myosd.h"
 #import "EmulatorController.h"
@@ -75,10 +74,6 @@ const char* get_documents_path(const char* file)
     sprintf(documents_path, "%s/%s",path.UTF8String, file);
 
     return documents_path;
-}
-
-unsigned long read_mfi_controller(unsigned long res){
-    return res;
 }
 
 @implementation Bootstrapper
