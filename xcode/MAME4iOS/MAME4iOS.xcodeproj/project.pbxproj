@@ -102,21 +102,12 @@
 		EF1C93F924C252C600749C69 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E424C252C400749C69 /* LICENSE */; };
 		EF1C93FD24C252C600749C69 /* skins in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E624C252C500749C69 /* skins */; };
 		EF1C93FF24C252C600749C69 /* skins in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E624C252C500749C69 /* skins */; };
-		EF1C940024C252C600749C69 /* effect-crt.png in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E724C252C500749C69 /* effect-crt.png */; };
-		EF1C940124C252C600749C69 /* effect-crt.png in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E724C252C500749C69 /* effect-crt.png */; };
-		EF1C940224C252C600749C69 /* effect-crt.png in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E724C252C500749C69 /* effect-crt.png */; };
 		EF1C940324C252C600749C69 /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E824C252C500749C69 /* Category.ini */; };
 		EF1C940424C252C600749C69 /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E824C252C500749C69 /* Category.ini */; };
 		EF1C940524C252C600749C69 /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E824C252C500749C69 /* Category.ini */; };
-		EF1C940924C252C600749C69 /* effect-dot.png in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93EA24C252C500749C69 /* effect-dot.png */; };
-		EF1C940A24C252C600749C69 /* effect-dot.png in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93EA24C252C500749C69 /* effect-dot.png */; };
-		EF1C940B24C252C600749C69 /* effect-dot.png in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93EA24C252C500749C69 /* effect-dot.png */; };
 		EF1C940C24C252C600749C69 /* hiscore.dat in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93EB24C252C500749C69 /* hiscore.dat */; };
 		EF1C940D24C252C600749C69 /* hiscore.dat in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93EB24C252C500749C69 /* hiscore.dat */; };
 		EF1C940E24C252C600749C69 /* hiscore.dat in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93EB24C252C500749C69 /* hiscore.dat */; };
-		EF1C940F24C252C600749C69 /* effect-scanline.png in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93EC24C252C500749C69 /* effect-scanline.png */; };
-		EF1C941024C252C600749C69 /* effect-scanline.png in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93EC24C252C500749C69 /* effect-scanline.png */; };
-		EF1C941124C252C600749C69 /* effect-scanline.png in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93EC24C252C500749C69 /* effect-scanline.png */; };
 		EF1C941224C252C600749C69 /* history0139.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93ED24C252C500749C69 /* history0139.zip */; };
 		EF1C941324C252C600749C69 /* history0139.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93ED24C252C500749C69 /* history0139.zip */; };
 		EF1C941424C252C600749C69 /* history0139.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93ED24C252C500749C69 /* history0139.zip */; };
@@ -512,11 +503,8 @@
 		EF1C93E324C252C400749C69 /* help.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = help.md; path = "../../iOS-res/help.md"; sourceTree = "<group>"; };
 		EF1C93E424C252C400749C69 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = folder; path = LICENSE; sourceTree = "<group>"; };
 		EF1C93E624C252C500749C69 /* skins */ = {isa = PBXFileReference; lastKnownFileType = folder; name = skins; path = "../../iOS-res/skins"; sourceTree = "<group>"; };
-		EF1C93E724C252C500749C69 /* effect-crt.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "effect-crt.png"; path = "../../iOS-res/effect-crt.png"; sourceTree = "<group>"; };
 		EF1C93E824C252C500749C69 /* Category.ini */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Category.ini; path = "../../iOS-res/Category.ini"; sourceTree = "<group>"; };
-		EF1C93EA24C252C500749C69 /* effect-dot.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "effect-dot.png"; path = "../../iOS-res/effect-dot.png"; sourceTree = "<group>"; };
 		EF1C93EB24C252C500749C69 /* hiscore.dat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = hiscore.dat; path = "../../iOS-res/hiscore.dat"; sourceTree = "<group>"; };
-		EF1C93EC24C252C500749C69 /* effect-scanline.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "effect-scanline.png"; path = "../../iOS-res/effect-scanline.png"; sourceTree = "<group>"; };
 		EF1C93ED24C252C500749C69 /* history0139.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = history0139.zip; path = "../../iOS-res/history0139.zip"; sourceTree = "<group>"; };
 		EF1C941B24C2552800749C69 /* gitinfo.json.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = gitinfo.json.sh; sourceTree = "<group>"; };
 		EF23D32F243CB9CE006B3EE2 /* PopupSegmentedControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PopupSegmentedControl.h; sourceTree = "<group>"; };
@@ -956,9 +944,6 @@
 				EFA756FE2405585D00A02AAB /* mameui.png */,
 				EF26AE07241848800078FD30 /* mame_logo.png */,
 				EFA7570424057FD800A02AAB /* default_game_icon.png */,
-				EF1C93E724C252C500749C69 /* effect-crt.png */,
-				EF1C93EA24C252C500749C69 /* effect-dot.png */,
-				EF1C93EC24C252C500749C69 /* effect-scanline.png */,
 			);
 			name = images;
 			sourceTree = "<group>";
@@ -1225,8 +1210,6 @@
 				EF1C940C24C252C600749C69 /* hiscore.dat in Resources */,
 				EF26AE08241848800078FD30 /* mame_logo.png in Resources */,
 				EF1C93FD24C252C600749C69 /* skins in Resources */,
-				EF1C940924C252C600749C69 /* effect-dot.png in Resources */,
-				EF1C940F24C252C600749C69 /* effect-scanline.png in Resources */,
 				EF1C93F724C252C600749C69 /* LICENSE in Resources */,
 				EFA7570524057FD800A02AAB /* default_game_icon.png in Resources */,
 				EF1C940324C252C600749C69 /* Category.ini in Resources */,
@@ -1238,7 +1221,6 @@
 				EFFBA6FE24F1C91200F8666B /* WHATSNEW.md in Resources */,
 				920BBDF220210C3800AE7D50 /* menu.png in Resources */,
 				92A533D021EBDDF20089FBB9 /* GCDWebUploader.bundle in Resources */,
-				EF1C940024C252C600749C69 /* effect-crt.png in Resources */,
 				EF1C93F124C252C600749C69 /* cheat0139.zip in Resources */,
 				EFA756FF2405585D00A02AAB /* mameui.png in Resources */,
 				EF1C93EE24C252C600749C69 /* SKIN_1 in Resources */,
@@ -1253,7 +1235,6 @@
 			files = (
 				EF1C93F224C252C600749C69 /* cheat0139.zip in Resources */,
 				EF24BB0024C7894700D9C55A /* skins_tvOS in Resources */,
-				EF1C940124C252C600749C69 /* effect-crt.png in Resources */,
 				EF26AE09241848800078FD30 /* mame_logo.png in Resources */,
 				EF1C940424C252C600749C69 /* Category.ini in Resources */,
 				EF1C93F824C252C600749C69 /* LICENSE in Resources */,
@@ -1262,9 +1243,7 @@
 				92ECB8F721EA985000D1E3D0 /* Assets.xcassets in Resources */,
 				EF1C940D24C252C600749C69 /* hiscore.dat in Resources */,
 				92A533D121EBDDF20089FBB9 /* GCDWebUploader.bundle in Resources */,
-				EF1C940A24C252C600749C69 /* effect-dot.png in Resources */,
 				EF1C941D24C2552900749C69 /* gitinfo.json.sh in Resources */,
-				EF1C941024C252C600749C69 /* effect-scanline.png in Resources */,
 				EFFBA6FF24F1C91200F8666B /* WHATSNEW.md in Resources */,
 				EF1C941324C252C600749C69 /* history0139.zip in Resources */,
 				B5FAE31921FCE64D003F44D0 /* MAME_tvOS.lsr in Resources */,
@@ -1278,8 +1257,6 @@
 				EF1C940E24C252C600749C69 /* hiscore.dat in Resources */,
 				EFA7A13424B65C020009CF88 /* mame_logo.png in Resources */,
 				EF1C93FF24C252C600749C69 /* skins in Resources */,
-				EF1C940B24C252C600749C69 /* effect-dot.png in Resources */,
-				EF1C941124C252C600749C69 /* effect-scanline.png in Resources */,
 				EF1C93F924C252C600749C69 /* LICENSE in Resources */,
 				EFA7A13724B65C020009CF88 /* default_game_icon.png in Resources */,
 				EF1C940524C252C600749C69 /* Category.ini in Resources */,
@@ -1291,7 +1268,6 @@
 				EFFBA70024F1C91200F8666B /* WHATSNEW.md in Resources */,
 				EFA7A14924B65C020009CF88 /* menu.png in Resources */,
 				EFA7A14E24B65C020009CF88 /* GCDWebUploader.bundle in Resources */,
-				EF1C940224C252C600749C69 /* effect-crt.png in Resources */,
 				EF1C93F324C252C600749C69 /* cheat0139.zip in Resources */,
 				EFA7A15024B65C020009CF88 /* mameui.png in Resources */,
 				EF1C93F024C252C600749C69 /* SKIN_1 in Resources */,
