@@ -198,7 +198,6 @@
 		EFA7A0EF24B65C020009CF88 /* SteamControllerInput.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA83244F7F5D00DA02BB /* SteamControllerInput.m */; };
 		EFA7A0F024B65C020009CF88 /* GCDWebServerURLEncodedFormRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5339F21EBDBAD0089FBB9 /* GCDWebServerURLEncodedFormRequest.m */; };
 		EFA7A0F124B65C020009CF88 /* WebServer.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A533D621EE601D0089FBB9 /* WebServer.m */; };
-		EFA7A0F224B65C020009CF88 /* CGScreenView.m in Sources */ = {isa = PBXBuildFile; fileRef = EFF9F807246356B200DDA88C /* CGScreenView.m */; };
 		EFA7A0F324B65C020009CF88 /* simpleCRT.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB3C6D524890F6200F44780 /* simpleCRT.metal */; };
 		EFA7A0F424B65C020009CF88 /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF301CF0240460C5000510FD /* Alert.m */; };
 		EFA7A0F524B65C020009CF88 /* GCDWebServerDataResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5339821EBDBAD0089FBB9 /* GCDWebServerDataResponse.m */; };
@@ -284,8 +283,6 @@
 		EFEEA4BA25C9D41E00314132 /* TopShelf.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = EFEEA4B125C9D41E00314132 /* TopShelf.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		EFEEA4CA25C9D4B700314132 /* ContentProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = EFEEA4C725C9D4B700314132 /* ContentProvider.m */; };
 		EFEEA4ED25CC8A2F00314132 /* MacMenu.m in Sources */ = {isa = PBXBuildFile; fileRef = EF67E11524B8972100AFF489 /* MacMenu.m */; };
-		EFF9F809246356B300DDA88C /* CGScreenView.m in Sources */ = {isa = PBXBuildFile; fileRef = EFF9F807246356B200DDA88C /* CGScreenView.m */; };
-		EFF9F80A246356B300DDA88C /* CGScreenView.m in Sources */ = {isa = PBXBuildFile; fileRef = EFF9F807246356B200DDA88C /* CGScreenView.m */; };
 		EFF9F825246EE2F800DDA88C /* Intents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFF9F824246EE2F800DDA88C /* Intents.framework */; };
 		EFF9F827246EE30200DDA88C /* IntentsUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFF9F826246EE30200DDA88C /* IntentsUI.framework */; };
 		EFF9F82A2470755800DDA88C /* MetalScreenView.m in Sources */ = {isa = PBXBuildFile; fileRef = EFF9F8292470755800DDA88C /* MetalScreenView.m */; };
@@ -604,8 +601,6 @@
 		EFEEA4C725C9D4B700314132 /* ContentProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ContentProvider.m; sourceTree = "<group>"; };
 		EFEEA4C825C9D4B700314132 /* ContentProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ContentProvider.h; sourceTree = "<group>"; };
 		EFEEA4CF25C9D4FE00314132 /* TopShelf.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TopShelf.entitlements; sourceTree = "<group>"; };
-		EFF9F807246356B200DDA88C /* CGScreenView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CGScreenView.m; path = ../../iOS/CGScreenView.m; sourceTree = "<group>"; };
-		EFF9F808246356B300DDA88C /* CGScreenView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CGScreenView.h; path = ../../iOS/CGScreenView.h; sourceTree = "<group>"; };
 		EFF9F824246EE2F800DDA88C /* Intents.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Intents.framework; path = System/Library/Frameworks/Intents.framework; sourceTree = SDKROOT; };
 		EFF9F826246EE30200DDA88C /* IntentsUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IntentsUI.framework; path = System/Library/Frameworks/IntentsUI.framework; sourceTree = SDKROOT; };
 		EFF9F8282470755800DDA88C /* MetalScreenView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MetalScreenView.h; path = ../../iOS/MetalScreenView.h; sourceTree = "<group>"; };
@@ -1075,8 +1070,6 @@
 			isa = PBXGroup;
 			children = (
 				CEE680C11635BB6100051BC2 /* ScreenView.h */,
-				EFF9F808246356B300DDA88C /* CGScreenView.h */,
-				EFF9F807246356B200DDA88C /* CGScreenView.m */,
 				EFF9F8282470755800DDA88C /* MetalScreenView.h */,
 				EFF9F8292470755800DDA88C /* MetalScreenView.m */,
 				EFB7B21B247ACFE300AD96A4 /* MameShaders.metal */,
@@ -1393,7 +1386,6 @@
 				EF8EAA8C244F7F5D00DA02BB /* SteamControllerInput.m in Sources */,
 				92A533C021EBDBAD0089FBB9 /* GCDWebServerURLEncodedFormRequest.m in Sources */,
 				92A533D821EE601D0089FBB9 /* WebServer.m in Sources */,
-				EFF9F809246356B300DDA88C /* CGScreenView.m in Sources */,
 				EFB3C6D624890F6200F44780 /* simpleCRT.metal in Sources */,
 				EF301CF1240460C5000510FD /* Alert.m in Sources */,
 				92A533BA21EBDBAD0089FBB9 /* GCDWebServerDataResponse.m in Sources */,
@@ -1450,7 +1442,6 @@
 				926C76FF21F1C87700103EDE /* TVOptionsController.m in Sources */,
 				EF286D35253CA930007DA6D3 /* CloudSync.m in Sources */,
 				EF568DB025D5D4F600092B30 /* InfoHUD.m in Sources */,
-				EFF9F80A246356B300DDA88C /* CGScreenView.m in Sources */,
 				EF8E427E249348220049C84C /* megaTron.metal in Sources */,
 				92A5332621EBC8D00089FBB9 /* Bootstrapper.m in Sources */,
 				92A533A921EBDBAD0089FBB9 /* GCDWebServerRequest.m in Sources */,
@@ -1512,7 +1503,6 @@
 				EFA7A0EF24B65C020009CF88 /* SteamControllerInput.m in Sources */,
 				EFA7A0F024B65C020009CF88 /* GCDWebServerURLEncodedFormRequest.m in Sources */,
 				EFA7A0F124B65C020009CF88 /* WebServer.m in Sources */,
-				EFA7A0F224B65C020009CF88 /* CGScreenView.m in Sources */,
 				EFA7A0F324B65C020009CF88 /* simpleCRT.metal in Sources */,
 				EFA7A0F424B65C020009CF88 /* Alert.m in Sources */,
 				EFA7A0F524B65C020009CF88 /* GCDWebServerDataResponse.m in Sources */,

@@ -492,7 +492,7 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
 
 // return 1 if you handled the draw, 0 for a software render
 // NOTE this is called on MAME background thread, dont do anything stupid.
-- (int)drawScreen:(void*)prim_list {
+- (void)drawScreen:(void*)prim_list {
     static Shader shader_map[] = {ShaderNone, ShaderAlpha, ShaderMultiply, ShaderAdd};
     static Shader shader_tex_map[]  = {ShaderTexture, ShaderTextureAlpha, ShaderTextureMultiply, ShaderTextureAdd};
 
@@ -502,7 +502,7 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
     
     if (![self drawBegin]) {
         NSLog(@"drawBegin *FAIL* dropping frame on the floor.");
-        return 1;
+        return;
     }
     _drawScreenStart = CACurrentMediaTime();
     TIMER_START(draw_screen);
@@ -681,9 +681,6 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
         TIMER_DUMP();
         TIMER_RESET();
     }
-    
-    // always return 1 saying we handled the draw.
-    return 1;
 }
 
 #pragma mark - TEST PATTERN
@@ -910,6 +907,65 @@ VertexColor VertexColorP3(CGFloat r, CGFloat g, CGFloat b, CGFloat a) {
                 assert(TRUE);
             if (fmt == TEXFORMAT_YUY16 && prim->texture_palette != NULL)
                 assert(FALSE);
+        }
+    }
+}
+#endif
+
+// code to DEBUG dump the current screen
+#ifdef DEBUG
+#undef NSLog
+
+- (void)dumpScreen:(void*)primitives {
+    
+    static char* texture_format_name[] = {"UNDEFINED", "PAL16", "PALA16", "555", "RGB", "ARGB", "YUV16"};
+    static char* blend_mode_name[] = {"NONE", "ALPHA", "MUL", "ADD"};
+    
+    NSLog(@"Draw Screen: %dx%d", myosd_video_width, myosd_video_height);
+    
+    for (myosd_render_primitive* prim = primitives; prim != NULL; prim = prim->next) {
+        
+        NSParameterAssert(prim->type == RENDER_PRIMITIVE_LINE || prim->type == RENDER_PRIMITIVE_QUAD);
+        NSParameterAssert(prim->blendmode <= BLENDMODE_ADD);
+        NSParameterAssert(prim->texformat <= TEXFORMAT_YUY16);
+        NSParameterAssert(prim->unused == 0);
+        
+        int blend = prim->blendmode;
+        int fmt = prim->texformat;
+        int aa = prim->antialias;
+        int screen = prim->screentex;
+        int orient = prim->texorient;
+        int wrap = prim->texwrap;
+        
+        if (prim->type == RENDER_PRIMITIVE_LINE) {
+            NSLog(@"    LINE (%.0f,%.0f) -> (%.0f,%.0f) (%0.2f,%0.2f,%0.2f,%0.2f) %f %s%s%s",
+                  prim->bounds_x0, prim->bounds_y0, prim->bounds_x1, prim->bounds_y1,
+                  prim->color_r, prim->color_g, prim->color_b, prim->color_a,
+                  prim->width, blend_mode_name[blend], aa ? " AA" : "", screen ? " SCREEN" : "");
+        }
+        else if (prim->type == RENDER_PRIMITIVE_QUAD && prim->texture_base == NULL) {
+            NSLog(@"    QUAD [%.0f,%.0f,%.0f,%.0f] (%0.2f,%0.2f,%0.2f,%0.2f) %s%s",
+                  prim->bounds_x0, prim->bounds_y0, prim->bounds_x1 - prim->bounds_x0, prim->bounds_y1 - prim->bounds_y0,
+                  prim->color_r, prim->color_g, prim->color_b, prim->color_a,
+                  blend_mode_name[blend], aa ? " AA" : "");
+        }
+        else if (prim->type == RENDER_PRIMITIVE_QUAD) {
+            NSLog(@"    TEXQ [%.0f,%.0f,%.0f,%.0f] [(%.0f,%.0f),(%.0f,%.0f),(%.0f,%.0f),(%.0f,%.0f)] %s %dx%d (%lX:%d) %s%s%s%s%s%s%s%s",
+                  prim->bounds_x0, prim->bounds_y0, prim->bounds_x1 - prim->bounds_x0, prim->bounds_y1 - prim->bounds_y0,
+                  prim->texcoords[0].u, prim->texcoords[0].v,
+                  prim->texcoords[1].u, prim->texcoords[1].v,
+                  prim->texcoords[2].u, prim->texcoords[2].v,
+                  prim->texcoords[3].u, prim->texcoords[3].v,
+                  blend_mode_name[blend],
+                  prim->texture_width, prim->texture_height, (intptr_t)prim->texture_base, prim->texture_seqid,
+                  texture_format_name[fmt],
+                  prim->texture_palette ? " PALLETE" : "",
+                  aa ? " AA" : "",
+                  screen ? " SCREEN" : "", wrap ? " WRAP" : "",
+                  (orient & ORIENTATION_FLIP_X) ? " FLIPX" : "",
+                  (orient & ORIENTATION_FLIP_Y) ? " FLIPY" : "",
+                  (orient & ORIENTATION_SWAP_XY) ? " SWAPXY" : ""
+                  );
         }
     }
 }

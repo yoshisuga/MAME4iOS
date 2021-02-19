@@ -135,6 +135,7 @@ int g_joy_used = 0;
 int g_iCade_used = 0;
 
 int g_enable_debug_view = 0;
+int g_debug_dump_screen = 0;
 int g_controller_opacity = 50;
 
 int g_device_is_landscape = 0;
@@ -276,24 +277,27 @@ void iphone_UpdateScreen(void)
 // ...not doing something stupid includes not leaking autoreleased objects! use a autorelease pool if you need to!
 int iphone_DrawScreen(myosd_render_primitive* prim_list) {
 
-    if (sharedInstance == nil || g_emulation_paused || sharedInstance->screenView == nil)
+    if (sharedInstance == nil || g_emulation_paused)
         return 0;
 
     @autoreleasepool {
         UIView<ScreenView>* screenView = sharedInstance->screenView;
 
 #ifdef DEBUG
-        [CGScreenView drawScreenDebug:prim_list];
+        if (g_debug_dump_screen) {
+            [screenView dumpScreen:prim_list];
+            g_debug_dump_screen = FALSE;
+        }
 #endif
-        BOOL result = [screenView drawScreen:prim_list];
+        [screenView drawScreen:prim_list];
         
         #pragma clang diagnostic push
         #pragma clang diagnostic ignored "-Wundeclared-selector"
-        if (g_pref_showFPS && result && (screenView.frameCount % UPDATE_FPS_EVERY) == 0)
+        if (g_pref_showFPS && (screenView.frameCount % UPDATE_FPS_EVERY) == 0)
             [sharedInstance performSelectorOnMainThread:@selector(updateFrameRate) withObject:nil waitUntilDone:NO];
         #pragma clang diagnostic pop
 
-        return result;
+        return 1;
     }
 }
 
@@ -956,7 +960,7 @@ void mame_state(int load_save, int slot)
     [skinManager setCurrentSkin:g_pref_skin];
 
     g_pref_integer_scale_only = op.integerScalingOnly;
-    g_pref_metal = op.useMetal;
+    g_pref_metal = TRUE;
     g_pref_showFPS = [op showFPS];
     g_pref_showHUD = [op showHUD];
 
@@ -983,6 +987,7 @@ void mame_state(int load_save, int slot)
         case 4: myosd_sound_value=44100;break;
         case 5: myosd_sound_value=48000;break;
         default:myosd_sound_value=-1;}
+    
     
     myosd_throttle = [op throttle];
     myosd_cheat = [op cheats];
@@ -1392,6 +1397,9 @@ void mame_state(int load_save, int slot)
 {
     [super viewDidAppear:animated];
     [self scanForDevices];
+    if (![MetalScreenView isSupported]) {
+        [self showAlertWithTitle:@PRODUCT_NAME message:@"Metal not supported on this device." buttons:@[] handler:nil];
+    }
 }
 
 #if TARGET_OS_IOS
@@ -2763,19 +2771,12 @@ void myosd_poll_input(void) {
         kScreenViewColorSpace: g_pref_colorspace,
     };
     
-    // select a CoreGraphics or Metal ScreenView
-    Class screen_view_class = [CGScreenView class];
-    
-    if (g_pref_metal && [MetalScreenView isSupported])
-        screen_view_class = [MetalScreenView class];
-
     // the reason we dont re-create screenView each time is because we access screenView from background threads
-    // (see iPhone_UpdateScreen, iPhone_DrawScreen) and we dont want to risk race condition on release.
-    // and not creating/destroying the ScreenView on a simple size change or rotation, is good for performace.
-    if (screenView == nil || [screenView class] != screen_view_class) {
-        [screenView removeFromSuperview];
-        screenView = [[screen_view_class alloc] init];
-    }
+    // (iPhone_DrawScreen) and we dont want to risk race condition on release.
+    // and not creating/destroying the ScreenView on a simple size change or rotation, is good too.
+    if (screenView == nil)
+        screenView = [[MetalScreenView alloc] init];
+        
     screenView.frame = r;
     screenView.userInteractionEnabled = NO;
     [screenView setOptions:options];
@@ -3021,23 +3022,13 @@ void myosd_poll_input(void) {
         case 'P':
             myosd_mame_pause = 1;
             break;
-        case 'M':
-        {
-            // toggle Metal, but in order to load the right shader we need to change the global Options.
-            Options* op = [[Options alloc] init];
-            op.useMetal = !op.useMetal;
-            [op saveOptions];
-            [self updateOptions];
-            [self changeUI];
-            break;
-        }
 #ifdef DEBUG
         case 'R':
             g_enable_debug_view = !g_enable_debug_view;
             [self changeUI];
             break;
         case 'D':
-            [CGScreenView drawScreenDebugDump];
+            g_debug_dump_screen = TRUE;
             break;
 #endif
     }
