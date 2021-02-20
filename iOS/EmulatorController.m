@@ -1223,6 +1223,9 @@ void mame_state(int load_save, int slot)
 
 -(void)viewDidLoad{
     
+   // tell system to shutup about constraints!
+   [NSUserDefaults.standardUserDefaults setValue:@(NO) forKey:@"_UIConstraintBasedLayoutLogUnsatisfiable"];
+    
    self.view.backgroundColor = [UIColor blackColor];
 
    g_controllers = nil;

@@ -795,7 +795,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 #if TARGET_OS_IOS
     CGFloat height = [UIFont preferredFontForTextStyle:UIFontTextStyleLargeTitle].pointSize;
 #else
-    CGFloat height = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].pointSize * 2.0;
+    CGFloat height = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].pointSize * 1.5;
 #endif
     layout.headerReferenceSize = CGSizeMake(height, height);
     layout.sectionInsetReference = UICollectionViewFlowLayoutSectionInsetFromSafeArea;
