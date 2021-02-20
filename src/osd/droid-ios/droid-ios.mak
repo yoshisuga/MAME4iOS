@@ -30,15 +30,7 @@ DEFS += -D_BSD_SETJMP_H
 endif
 
 ifdef iOS
-
 OSDOBJS += $(MYOSDOBJ)/osd-ios.o
-
-ifndef iOSNOJAILBREAK
-OSDOBJS += $(MYOSDOBJ)/wiimote.o
-OSDOBJS += $(MYOSDOBJ)/sixaxis.o
-OSDOBJS += $(MYOSDOBJ)/bt_joy.o
-endif
-	
 endif
 
 

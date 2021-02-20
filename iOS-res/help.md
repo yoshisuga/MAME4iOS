@@ -125,8 +125,6 @@ The emulator controls are the following ones:
 
 **Stick Touch DZ** Touch stick deadzone selector. Lower to gets more sensitivity.
 
-**BT Analog DZ** Sixaxis or Wii classic stick deadzone selector. Upper if you have problems with stick (controller going crazy). Lower to gets more sensitivity. (only jailbroken)
-
 **Sound** Enable or set the default sound rate for games.
 
 **Cheats** Enables the reading of the cheat database, if present, and the Cheat menu in the user interface.
@@ -403,7 +401,7 @@ Step 1\. Downloaded iFunBox (or a similar utility) and plug your iOS device into
 
 Step 2\. Launch iFunBox and select your iOS device on the left hand side.
 
-Step 3\. If you don't have a jailbroken device, click on apps icon. Now you should see a list of all of your device’s applications. Locate MAME4iOS, click it, and select Documents.
+Step 3\. click on apps icon. Now you should see a list of all of your device’s applications. Locate MAME4iOS, click it, and select Documents.
 
 Step 4\. And that’s all there is to it. Move your ROMs into this folder, launch MAME4iOS, and start playing!
 
