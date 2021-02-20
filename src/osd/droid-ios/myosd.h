@@ -29,7 +29,7 @@ enum  { MYOSD_UP=0x1,       MYOSD_LEFT=0x4,       MYOSD_DOWN=0x10,   MYOSD_RIGHT
         MYOSD_START=1<<8,   MYOSD_SELECT=1<<9,    MYOSD_L1=1<<10,    MYOSD_R1=1<<11,
         MYOSD_A=1<<12,      MYOSD_B=1<<13,        MYOSD_X=1<<14,     MYOSD_Y=1<<15,
         MYOSD_L3=1<<16,     MYOSD_R3=1<<17,       MYOSD_L2=1<<18,    MYOSD_R2=1<<19,
-        MYOSD_EXIT=1<<20,   MYOSD_OPTION=1<<21,
+        MYOSD_EXIT=1<<20,   MYOSD_OPTION=1<<21,   MYOSD_HOME=1<<22,  MYOSD_MENU=1<<23,
 };
     
 #define MAX_FILTER_KEYWORD 30
@@ -150,6 +150,24 @@ extern const char *myosd_array_main_manufacturers[];
 extern const char *myosd_array_years[];
 extern const char *myosd_array_main_driver_source[];
 extern const char *myosd_array_categories[];
+
+// myosd output
+enum myosd_output_channel
+{
+    MYOSD_OUTPUT_ERROR,
+    MYOSD_OUTPUT_WARNING,
+    MYOSD_OUTPUT_INFO,
+    MYOSD_OUTPUT_DEBUG,
+    MYOSD_OUTPUT_VERBOSE,
+};
+extern void myosd_output(int channel, const char* text);
+#ifdef __MACHINE_H__
+_Static_assert(MYOSD_OUTPUT_ERROR == OUTPUT_CHANNEL_ERROR);
+_Static_assert(MYOSD_OUTPUT_WARNING == OUTPUT_CHANNEL_WARNING);
+_Static_assert(MYOSD_OUTPUT_INFO == OUTPUT_CHANNEL_INFO);
+_Static_assert(MYOSD_OUTPUT_DEBUG == OUTPUT_CHANNEL_DEBUG);
+_Static_assert(MYOSD_OUTPUT_VERBOSE == OUTPUT_CHANNEL_VERBOSE);
+#endif
 
 // subset of a internal game_driver structure we pass up to the UI/OSD layer
 typedef struct

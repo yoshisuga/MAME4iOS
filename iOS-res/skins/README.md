@@ -139,6 +139,7 @@ The following files are used if present, there is no default.
 Name                    | Description
 ----------------------- | -------------------------------------
 background              | background of the whole app, tiled image, fullscreen portrait or landscape
+ui-background          | background of the choose game ui
 border                  | border image, drawn around the game screen.
 stick-U                 | image of the joystick ball UP
 stick-D                 | image of the joystick ball DOWN

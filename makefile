@@ -18,7 +18,7 @@ NOWERROR = 1
 ########## iOS/tvOS specific settings
 
 # set minimum tvOS and iOS version for the SDK to use
-OSVERSION = 12.0
+OSVERSION = 12.4
 
 iOS = 1
 
@@ -30,10 +30,14 @@ iOSARMV7 = 0
 
 iOSARM64 = 1
 
-ifdef macCatalyst
-ARCH = x86_64
+ifndef ARCH
+ifdef iOSSIMULATOR
+ARCH = $(shell uname -m)	# arm64 or x86_64
+else ifdef macCatalyst
+ARCH = $(shell uname -m)	# arm64 or x86_64
 else
 ARCH = arm64
+endif
 endif
 
 OPTIMIZE = fast
@@ -47,7 +51,7 @@ PTR64 = 1
 # uncomment to force the universal DRC to always use the C backend
 # you may need to do this if your target architecture does not have
 # a native backend
-# FORCE_DRC_C_BACKEND = 1
+FORCE_DRC_C_BACKEND = 1
 
 # setup the varios Apple SDK locations
 IOSSDK := $(shell xcodebuild -version -sdk iphoneos Path)
@@ -552,10 +556,10 @@ ifdef iOSSIMULATOR
 CFLAGS += -isysroot $(SIMSDK)
 endif
 
-ifndef iOSSIMULATOR
-
 CCOMFLAGS += -arch $(ARCH)
 LDFLAGS += -arch $(ARCH)
+
+ifndef iOSSIMULATOR
 
 ifdef tvOS
 #tvOS build command goes here
@@ -574,10 +578,8 @@ endif
 else
 
 #simulator build goes here
-CCOMFLAGS += -arch x86_64
-CCOMFLAGS += -D__IPHONE_OS_VERSION_MIN_REQUIRED=120000
 
-LDFLAGS += -arch x86_64
+CCOMFLAGS += -D__IPHONE_OS_VERSION_MIN_REQUIRED=120000
 
 ifndef tvOS
 CCOMFLAGS += -mios-simulator-version-min=$(OSVERSION)

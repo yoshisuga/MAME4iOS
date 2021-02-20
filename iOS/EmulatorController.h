@@ -71,7 +71,6 @@ enum {BTN_A,BTN_B,BTN_Y,BTN_X,BTN_L1,BTN_R1,
 #if TARGET_OS_IOS
 @class AnalogStickView;
 @class LayoutView;
-@class NetplayGameKit;
 @class InfoHUD;
 #endif
 
@@ -86,14 +85,13 @@ enum {BTN_A,BTN_B,BTN_Y,BTN_X,BTN_L1,BTN_R1,
   @public UIView<ScreenView>* screenView;
   UIImageView	    * imageBack;
   UIImageView	    * imageOverlay;
-  UIImageView        * imageExternalDisplay;
-  UIImageView        * imageLogo;
-  UILabel            * fpsView;
+  UIImageView       * imageExternalDisplay;
+  UIImageView       * imageLogo;
+  UILabel           * fpsView;
 #if TARGET_OS_IOS
   AnalogStickView   * analogStickView;
-    LayoutView        *layoutView;    
-    NetplayGameKit     *netplayHelper;
-    InfoHUD         * hudView;
+  LayoutView        * layoutView;
+  InfoHUD           * hudView;
 #endif
   @public UIView	* externalView;
   UIView            * inputView;    // parent view of all the input views
@@ -123,7 +121,11 @@ enum {BTN_A,BTN_B,BTN_Y,BTN_X,BTN_L1,BTN_R1,
 
 }
 
+@property (class,readonly,nonatomic,strong) EmulatorController* sharedInstance;
+
 + (NSArray<NSString*>*)romList;
++ (NSDictionary*)getCurrentGame;
++ (void)setCurrentGame:(NSDictionary*)game;
 
 #if TARGET_OS_IOS
 // editing interface used by LayoutView
@@ -158,9 +160,11 @@ enum {BTN_A,BTN_B,BTN_Y,BTN_X,BTN_L1,BTN_R1,
 
 - (UIImage *)loadImage:(NSString *)name;
 
++ (NSArray<NSString*>*)getROMS;
 - (void)moveROMS;
 - (void)playGame:(NSDictionary*)game;
 - (void)chooseGame:(NSArray*)games;
+- (void)reload;
 
 #if TARGET_OS_IOS
 - (NSSet*)touchesController:(NSSet *)touches withEvent:(UIEvent *)event;

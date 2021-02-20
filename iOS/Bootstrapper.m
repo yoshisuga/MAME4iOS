@@ -59,13 +59,7 @@
 const char* get_resource_path(const char* file)
 {
     static char resource_path[1024];
-    
-#ifdef JAILBREAK
-    sprintf(resource_path, "/Applications/MAME4iOS.app/%s", file);
-#else
-    const char *userPath = [[[NSBundle mainBundle] resourcePath] cStringUsingEncoding:NSASCIIStringEncoding];
-    sprintf(resource_path, "%s/%s", userPath, file);
-#endif
+    sprintf(resource_path, "%s/%s", NSBundle.mainBundle.resourcePath.UTF8String, file);
     return resource_path;
 }
 
@@ -73,17 +67,13 @@ const char* get_documents_path(const char* file)
 {
     static char documents_path[1024];
     
-#ifdef JAILBREAK
-    sprintf(documents_path, "/var/mobile/Media/ROMs/MAME4iOS/%s", file);
-#else
 #if TARGET_OS_IOS
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *path = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).firstObject;
 #elif TARGET_OS_TV
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+    NSString *path = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES).firstObject;
 #endif
-	const char *userPath = [[paths objectAtIndex:0] cStringUsingEncoding:NSUTF8StringEncoding];
-    sprintf(documents_path, "%s/%s",userPath, file);
-#endif
+    sprintf(documents_path, "%s/%s",path.UTF8String, file);
+
     return documents_path;
 }
 
@@ -134,6 +124,18 @@ unsigned long read_mfi_controller(unsigned long res){
     [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation : UIStatusBarAnimationNone];
 #endif
 #endif
+    
+    BOOL result = TRUE;
+    
+    // check UIApplicationLaunchOptionsURLKey to see if we were launched with a game URL, and set that as the game to restore.
+    NSURL* url = launchOptions[UIApplicationLaunchOptionsURLKey];
+    if ([url isKindOfClass:[NSURL class]]) {
+        // handle our own scheme mame4ios://name
+        if ([url.scheme isEqualToString:@"mame4ios"] && [url.host length] != 0 && [url.path length] == 0 && [url.query length] == 0) {
+            [EmulatorController setCurrentGame:@{@"name":url.host}];
+            result = FALSE;
+        }
+    }
 
 	hrViewController = [[EmulatorController alloc] init];
 	
@@ -169,7 +171,7 @@ unsigned long read_mfi_controller(unsigned long res){
         NSLog(@"Could not set audio session category: %@",audioSessionError.localizedDescription);
     }
 
-    return TRUE;
+    return result;
 }
 
 - (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
@@ -306,7 +308,7 @@ unsigned long read_mfi_controller(unsigned long res){
                     [externalScreen setCurrentMode:mode];
                     [self setupScreen:externalScreen];
                     if (!myosd_inGame)
-                        [self->hrViewController performSelectorOnMainThread:@selector(playGame:) withObject:nil waitUntilDone:NO];
+                        [self->hrViewController reload];
                 }]];
                 if (mode == externalScreen.preferredMode)
                     [g_alert setPreferredAction:g_alert.actions.lastObject];
@@ -315,7 +317,7 @@ unsigned long read_mfi_controller(unsigned long res){
                 g_alert = nil;
                 [self setupScreen:nil];
                 if (!myosd_inGame)
-                    [self->hrViewController performSelectorOnMainThread:@selector(playGame:) withObject:nil waitUntilDone:NO];
+                    [self->hrViewController reload];
             }]];
              
             [hrViewController.topViewController presentViewController:g_alert animated:YES completion:nil];

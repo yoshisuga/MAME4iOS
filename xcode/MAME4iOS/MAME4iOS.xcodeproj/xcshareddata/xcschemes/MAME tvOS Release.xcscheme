@@ -16,7 +16,7 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "92ECB8EA21EA984D00D1E3D0"
                BuildableName = "MAME4tvOS.app"
-               BlueprintName = "MAME tvOS"
+               BlueprintName = "MAME4tvOS"
                ReferencedContainer = "container:MAME4iOS.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -46,7 +46,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "92ECB8EA21EA984D00D1E3D0"
             BuildableName = "MAME4tvOS.app"
-            BlueprintName = "MAME tvOS"
+            BlueprintName = "MAME4tvOS"
             ReferencedContainer = "container:MAME4iOS.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -63,7 +63,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "92ECB8EA21EA984D00D1E3D0"
             BuildableName = "MAME4tvOS.app"
-            BlueprintName = "MAME tvOS"
+            BlueprintName = "MAME4tvOS"
             ReferencedContainer = "container:MAME4iOS.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

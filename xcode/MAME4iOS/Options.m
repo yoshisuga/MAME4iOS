@@ -36,6 +36,9 @@
 + (NSArray*)arrayControlType {
     return @[@"Keyboard",@"iCade or compatible",@"iCP, Gametel",@"iMpulse", @"8BitDo Zero"];
 }
++ (NSArray*)arraySoundValue {
+    return @[@"Off", @"On (11 KHz)", @"On (22 KHz)",@"On (33 KHz)", @"On (44 KHz)", @"On (48 KHz)"];
+}
 
 + (NSArray*)arraySkin {
     return [SkinManager getSkinNames];
@@ -89,15 +92,24 @@
     return self;
 }
 
++ (NSString*)optionsFile
+{
+    return @"iOS/options_v23.bin";
+}
+
++ (NSString*)optionsPath
+{
+    return [NSString stringWithUTF8String:get_documents_path(self.optionsFile.UTF8String)];
+}
+
 + (void)resetOptions
 {
-    NSString *path=[NSString stringWithUTF8String:get_documents_path("iOS/options_v23.bin")];
-    [[NSFileManager defaultManager] removeItemAtPath:path error:nil];
+    [[NSFileManager defaultManager] removeItemAtPath:Options.optionsPath error:nil];
 }
 
 - (void)loadOptions
 {
-    NSString *path=[NSString stringWithUTF8String:get_documents_path("iOS/options_v23.bin")];
+    NSString *path = Options.optionsPath;
     
     NSData *plistData;
     id plist = nil;
@@ -310,11 +322,23 @@
         
         _lowlsound  =  [[optionsDict objectForKey:@"lowlsound"] intValue];
         _vsync  =  [[optionsDict objectForKey:@"vsync"] intValue];
+        
+#if 0   // leave these values set to the defaults, there is no UI anymore to change them.
+        // ...and they only apply to CoreGraphics not Metal
         _threaded  =  [[optionsDict objectForKey:@"threaded"] intValue];
         _dblbuff  =  [[optionsDict objectForKey:@"dblbuff"] intValue];
-        
         _mainPriority  =  [[optionsDict objectForKey:@"mainPriority"] intValue];
         _videoPriority  =  [[optionsDict objectForKey:@"videoPriority"] intValue];
+        _mainThreadType  =  [[optionsDict objectForKey:@"mainThreadType"] intValue];
+        _videoThreadType  =  [[optionsDict objectForKey:@"videoThreadType"] intValue];
+#else
+        _threaded = 1;
+        _dblbuff = 1;
+        _mainPriority = 5;
+        _videoPriority = 5;
+        _mainThreadType = 0;
+        _videoThreadType = 0;
+#endif
         
         _autofire =  [[optionsDict objectForKey:@"autofire"] intValue];
         
@@ -340,9 +364,6 @@
         _vflicker  =  [[optionsDict objectForKey:@"vflicker"] intValue];
         
         _emuspeed  =  [[optionsDict objectForKey:@"emuspeed"] intValue];
-        
-        _mainThreadType  =  [[optionsDict objectForKey:@"mainThreadType"] intValue];
-        _videoThreadType  =  [[optionsDict objectForKey:@"videoThreadType"] intValue];
     }
     
 }

@@ -11,7 +11,7 @@
 #import "Bootstrapper.h"
 
 @interface Bootstrapper (AppMenu)
-- (void)buildMenuWithBuilder:(id<UIMenuBuilder>)builder;
+- (void)buildMenuWithBuilder:(id<UIMenuBuilder>)builder API_AVAILABLE(ios(13.0));
 @end
 
 // declare selectors
@@ -36,8 +36,6 @@
 
 @end
 
-#if TARGET_OS_MACCATALYST
-
 @implementation Bootstrapper (AppMenu)
 
 #pragma MARK - MENU BUILDER
@@ -53,23 +51,31 @@
     [builder removeMenuForIdentifier:UIMenuServices];
     [builder removeMenuForIdentifier:UIMenuToolbar];
     [builder removeMenuForIdentifier:UIMenuHelp];
-    
-    //[self addMenuItem:UIMenuView title:@"FULLSCREEN" action:@selector(toggleFullScreen:) key:@"\r" modifierFlags:UIKeyModifierCommand using:builder];
+
+    // remove all items in the File menu
+    [builder replaceChildrenOfMenuForIdentifier:UIMenuFile fromChildrenBlock:^NSArray* (NSArray* children) {return @[];}];
+
+    // then add the ones we want.
+    [builder insertChildMenu:[UIMenu menuWithTitle:@"FILE" image:nil identifier:nil options:UIMenuOptionsDisplayInline children:@[
+        [UIKeyCommand commandWithTitle:@"Play"     image:[UIImage systemImageNamed:@"play.circle"] action:@selector(filePlay) input:@" " modifierFlags:0 propertyList:nil],
+        [UIKeyCommand commandWithTitle:@"Favorite" image:[UIImage systemImageNamed:@"star.circle"] action:@selector(fileFavorite) input:@"y" modifierFlags:UIKeyModifierCommand propertyList:nil],
+        [UIKeyCommand commandWithTitle:@"Get Info" image:[UIImage systemImageNamed:@"info.circle"] action:@selector(fileInfo) input:@"i" modifierFlags:UIKeyModifierCommand propertyList:nil],
+    ]] atStartOfMenuForIdentifier:UIMenuFile];
 
     // TODO: do we want `Export Skin...` here? or burried in `Game Input`?
     [builder insertChildMenu:[UIMenu menuWithTitle:@"FILE" image:nil identifier:nil options:UIMenuOptionsDisplayInline children:@[
         [UICommand commandWithTitle:@"Import..."     image:[UIImage systemImageNamed:@"square.and.arrow.down.on.square"]      action:@selector(fileImport) propertyList:nil],
         [UICommand commandWithTitle:@"Export..."     image:[UIImage systemImageNamed:@"square.and.arrow.up.on.square"]        action:@selector(fileExport) propertyList:nil],
-        [UICommand commandWithTitle:@"Export Skin..."image:[UIImage systemImageNamed:@"square.and.arrow.up"]        action:@selector(fileExportSkin) propertyList:nil],
+//      [UICommand commandWithTitle:@"Export Skin..."image:[UIImage systemImageNamed:@"square.and.arrow.up"]        action:@selector(fileExportSkin) propertyList:nil],
         [UICommand commandWithTitle:@"Start Server"  image:[UIImage systemImageNamed:@"arrow.up.arrow.down.circle"] action:@selector(fileStartServer) propertyList:nil],
     ]] atStartOfMenuForIdentifier:UIMenuFile];
-
-    [builder insertSiblingMenu:[UIMenu menuWithTitle:@"FILE" image:nil identifier:nil options:UIMenuOptionsDisplayInline children:@[
-        [UIKeyCommand commandWithTitle:@"Play"     image:[UIImage systemImageNamed:@"play.circle"] action:@selector(filePlay) input:@" " modifierFlags:0 propertyList:nil],
-        [UIKeyCommand commandWithTitle:@"Favorite" image:[UIImage systemImageNamed:@"star.circle"] action:@selector(fileFavorite) input:@"y" modifierFlags:UIKeyModifierCommand propertyList:nil],
-        [UIKeyCommand commandWithTitle:@"Get Info" image:[UIImage systemImageNamed:@"info.circle"] action:@selector(fileInfo) input:@"i" modifierFlags:UIKeyModifierCommand propertyList:nil],
-    ]] beforeMenuForIdentifier:UIMenuClose];
-
+    
+    // UIKeyInputF3 is only valid on 13.4 or later, avoid a build warning
+    NSString* keyF3 = @"";
+    if (@available(iOS 13.4, *)) {
+        keyF3 = UIKeyInputF3;
+    }
+    
     // **NOTE** the keyboard shortcuts here are mostly for discoverability, the real key handling takes place in iCadeView.m
     // TODO: find out why some keys are handled by iCadeView.m and some are handled by UIKeyCommand, weird responder chain magic??
     UIMenu* mame = [UIMenu menuWithTitle:@"MAME" image:nil identifier:nil options:0 children:@[
@@ -81,16 +87,18 @@
         [UIKeyCommand commandWithTitle:@"Settings"  image:[UIImage systemImageNamed:@"gear"]                action:@selector(mameSettings)  input:@"," modifierFlags:UIKeyModifierCommand propertyList:nil],
         [UIKeyCommand commandWithTitle:@"Configure" image:[UIImage systemImageNamed:@"slider.horizontal.3"] action:@selector(mameConfigure) input:@"\t" modifierFlags:0 propertyList:nil],
         [UIKeyCommand commandWithTitle:@"Pause"     image:[UIImage systemImageNamed:@"pause.circle"]        action:@selector(mamePause)     input:@"P" modifierFlags:0 propertyList:nil],
-        [UIKeyCommand commandWithTitle:@"Reset"     image:[UIImage systemImageNamed:@"power"]               action:@selector(mameReset)     input:UIKeyInputF3 modifierFlags:0 propertyList:nil],
+        [UIKeyCommand commandWithTitle:@"Reset"     image:[UIImage systemImageNamed:@"power"]               action:@selector(mameReset)     input:keyF3 modifierFlags:0 propertyList:nil],
         [UIKeyCommand commandWithTitle:@"Exit"      image:[UIImage systemImageNamed:@"x.circle"]            action:@selector(mameExit)      input:UIKeyInputEscape modifierFlags:0  propertyList:nil],
     ]];
     [builder insertSiblingMenu:mame afterMenuForIdentifier:UIMenuView];
     
+#if TARGET_OS_MACCATALYST
     UIWindowScene* scene = deviceWindow.windowScene;
     if (scene) {
         scene.titlebar.autoHidesToolbarInFullScreen = YES;
         scene.titlebar.titleVisibility = UITitlebarTitleVisibilityHidden;
     }
+#endif
 }
 
 #pragma MARK - FILE MENU
@@ -109,6 +117,5 @@
 }
 
 @end
-#endif
 
 

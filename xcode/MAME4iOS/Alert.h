@@ -24,11 +24,11 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)dismissWithAction:(UIAlertAction*)action completion: (void (^ __nullable)(void))completion;
 -(void)dismissWithDefault;
 -(void)dismissWithCancel;
--(void)dismissWithTitle:(NSString*)title;
 -(void)moveDefaultAction:(NSUInteger)direction;
 @end
 
 @interface UIAlertController(setProgress)
+- (void)setProgress:(double)value text:(NSString* __nullable)text;
 - (void)setProgress:(double)value;
 @end
 

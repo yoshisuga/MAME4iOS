@@ -75,7 +75,7 @@ float joystick_read_analog(int n, char axis);
 static INT32 my_get_state(void *device_internal, void *item_internal);
 static INT32 my_axis_get_state(void *device_internal, void *item_internal);
 
-extern "C" void myosd_handle_turbo(void);
+extern "C" void myosd_poll_input(void);
 
 void droid_ios_init_input(running_machine *machine)
 {
@@ -278,11 +278,11 @@ void my_poll_ports(running_machine *machine)
             else
                 myosd_num_ways = 2;
         }
-        printf("Num Buttons %d\n",myosd_num_buttons);
-        printf("Num WAYS %d\n",myosd_num_ways);
-        printf("Num PLAYERS %d\n",myosd_num_players);
-        printf("Num COINS %d\n",myosd_num_coins);
-        printf("Num INPUTS %d\n",myosd_num_inputs);
+        mame_printf_debug("Num Buttons %d\n",myosd_num_buttons);
+        mame_printf_debug("Num WAYS %d\n",myosd_num_ways);
+        mame_printf_debug("Num PLAYERS %d\n",myosd_num_players);
+        mame_printf_debug("Num COINS %d\n",myosd_num_coins);
+        mame_printf_debug("Num INPUTS %d\n",myosd_num_inputs);
     }
     
 }
@@ -348,7 +348,7 @@ float joystick_read_analog(int n, char axis)
 void droid_ios_poll_input(running_machine *machine)
 {    
     my_poll_ports(machine);
-	myosd_handle_turbo();
+    myosd_poll_input();
     
     long _pad_status = joystick_read(0);
     

@@ -1,15 +1,22 @@
 # MAME4iOS
 
-Original Author: David Valdeita (Seleuco)<br/>
+Original Author: David Valdeita (Seleuco)  
 
-This is a port of MAME 0.139u1 for iOS, iPadOS, tvOS and macOS Catalina & Big Sur using Mac Catalyst.
+This is a port of MAME 0.139u1 for iOS 12+, iPadOS 12+, tvOS 12+ and on both macOS Catalina & Big Sur using Mac Catalyst.
 
 [Download IPAs for iOS and tvOS here](https://github.com/yoshisuga/MAME4iOS/releases)
 
 [Chat on Discord!](https://discord.gg/ZC6wkmU)
 
+[See what's new](WHATSNEW.md)
+
+## Screenshots
+
 ![iPhone Screenshot](README.images/screenshot-iphone-small.jpg)
 ![AppleTV Screenshot](README.images/screenshot-atv-small.png)
+![macOS Screenshot](README.images/screenshot-mac.png)
+
+## Summary
 
 MAME stands for Multi Arcade Machine Emulator, and lets you play arcade games from the past 30+ years on a device that fits in your pocket! My teenage self from decades ago would be replaying that ["mind blown GIF"](https://media0.giphy.com/media/xT0xeJpnrWC4XWblEk/giphy.gif) over and over again, but that GIF did not exist back then.
 
@@ -36,14 +43,16 @@ This repo adds additional support for:
 
 ### Xcode
 
-Requirements: Mac 10.13.6 with Xcode 10 or above
+Requirements: iOS 12.2 or higher, tvOS 12.4 or higher, or Mac 10.15 (Catalina) or higher to run.
+
+Requirements: Mac 10.13.6 with Xcode 10 or above to bulid.
 
 Building MAME4iOS requires a prebuilt MAME binary (it has not been included in this repo due to its large size):
 
-1. _Make sure you have the latest version of the Xcode commandline tools installed:_<br>
+1. Make sure you have the latest version of the Xcode commandline tools installed:  
 `xcode-select --install`
 
-2. In Terminal: `cd [path to MAME4iOS root]`<br>
+2. In Terminal: `cd [path to MAME4iOS root]`  
   <sup>(alternatively, you can drag & drop a folder on Terminal after `cd` if don't know how to get the directory path)</sup><br>
 
 3. Create the needed MAME binary by building it yourself from scratch: <br>
@@ -54,13 +63,27 @@ Building MAME4iOS requires a prebuilt MAME binary (it has not been included in t
         - tvOS: `./make-tvos.sh`<br>
         <sup>AppleTV (4/4k and above)</sup><br>
         - simulator: `./make-sim.sh`<br>
-        <sup>iOS/tvOS (version 12.0 and above)</sup><br>
+        <sup>iOS/tvOS (version 12.4 and above)</sup><br>
         - macOS: `./make-mac.sh`<br>
         <sup>macOS(version 10.15 Catalina and above)</sup><br>
+        
+    4. Set the Organization and Team Identifer in `xcode/MAME4iOS/MAME4iOS.xcconfig`
+        ```
+        ORG_IDENTIFIER   = com.example    // CHANGE this to your Organization Identifier.
+        DEVELOPMENT_TEAM = ABC8675309     // CHANGE this to your Team ID. (or select in Xcode project editor)
+        ```
 
-4. Choose the appropriate build target in Xcode:
-    - `MAME4iOS 64-bit Release` (iPhone/iPad)
-    - `MAME tvOS Release` (AppleTV)
+        - The `ORG_IDENTIFIER` is a reverse DNS string that uniquely identifies your organization.
+        - You can also set the Development Team via the drop down in the Xcode project editor, for each Target.  
+        - You can find your TeamID [here](https://developer.apple.com/account/#/membership).
+        
+5. Enable entitlements  in `xcode/MAME4iOS/MAME4iOS.xcconfig` (optional)  
+    - entitlements are required for tvOS TopShelf and iCloud Import/Export/Sync.
+
+6. Choose the appropriate build target in Xcode:
+    - `MAME4iOS` (iPhone/iPad)
+    - `MAME4tvOS` (AppleTV)
+    - `MAME4mac` (Mac Catalyst)
 
 Even if you are not in the paid Apple Developer Program, you can sideload the app using a Mac with Xcode.
 
@@ -69,15 +92,15 @@ Even if you are not in the paid Apple Developer Program, you can sideload the ap
 2. Build:
     1. If you are a developer: Build and `▶︎` Run on your device. _Done._
     2. If you are not a developer…
-        1. `File` → `Preferences` add your Apple ID, select your Personal Team, and create an iOS Development Profile.
+        1. `Xcode` → `Preferences` add your Apple ID, select your Personal Team, and create an iOS Development Profile.
         2. Select the project name on the left pane and make sure your personal team is selected
         3. Hit the `▶︎` Run button to install on your device. _Done._
-
+        
 ## tvOS
 
 MAME for tvOS support was added in early 2019, and it currently can run games has full native UI support and MFI controller support with most notably:
 
-- MFI controllers, Xbox One, PS4 DualShock, and Siri Remote suppor.
+- MFI controllers, Xbox One, PS4 DualShock, and Siri Remote support.
 
 ## Using MAME
 
@@ -87,8 +110,6 @@ When you start MAME4iOS, you are now presented with an updated and native iOS/tv
 
 - Onscreen D-Pad or MFI Controller D-Pad: Move through the menu
 - A Button: Start Game
-- X Button: Open Game Sub-menu: Add to Favorites or Remove Game
-- Y Button: Open the Settings menu (Apple TV only)
 
 ### In-Game
 
@@ -112,7 +133,7 @@ You can upload ROMs to MAME on your AppleTV using a computer. After MAME starts,
 
 ## Game Controller Support
 
-Pair your MFI, Xbox, or Dual Shock controller with your iOS device, and it should 'just work'.
+Pair your MFi, Xbox, or Dual Shock controller with your iOS device, and it should 'just work'.
 Up to 4 controllers are supported.
 
 ### Hotkey combinations (while in-game)
@@ -122,13 +143,16 @@ The following hotkey combinations are supported:
 | | |  
 ---------------- |-------------
 MENU             |Open MAME4iOS MENU   
-MENU+L1       |Insert coin                 
-MENU+R1       |Start Game               
+MENU+L1       |Player 1 Coin                 
+MENU+R1       |Player 1 Start               
+MENU+L2       |Player 2 Coin                
+MENU+R2       |Player 2 Start               
 MENU+X          |Exit Game                 
-MENU+B          |Open MAME menu   
-MENU+A          |Load State                
-MENU+Y          |Save State                
-OPTION            |Insert Coin and Start   
+MENU+Y          |Open MAME menu   
+MENU+DOWN  |Save State ①               
+MENU+UP        |Load State ①                
+MENU+LEFT     |Save State ②                
+MENU+RIGHT  |Load State ②               
 
 ### Dual analog support
 
@@ -145,7 +169,7 @@ to start playing a game, hit MENU and select "Coin + Start" from the list.
 
     TRACKPAD MOVE   - emulate a dpad or joystick
     TRAKPAD CLICK   - A button
-    PLAY            - X button
+    PLAY            - B button
     MENU            - bring up the MAME4iOS menu
 
 ## Touch Screen Lightgun Support (new in 2018, iOS only)

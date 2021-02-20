@@ -1,4 +1,34 @@
-<img src="mame_logo.png" width="60%">
+# Version 2021.4
+* Better support for MFi controllers.
+* Game Controllers with more than two menu buttons (Xbox, DualShock, Xinput, Nimbus+, new MFi)
+    - Left menu button is always `SELECT`
+    - Right menu button is always `START`
+    - `SELECT` + `START` will bring up MAME4iOS menu
+    - holding down `SELECT` or `START` will show a *quick help HUD*
+* on iOS 14+ (not on tvOS) the XBox `GUIDE` button, and the DualShock `PS` button can be used instead of `SELECT`+`START`
+
+# Version 2021.3
+* This is a Mac-only release that has all the updates to 2021.2 and supports both Intel and Apple Silicon Macs.
+
+# Version 2021.2
+* Fix for dynamic recompile core setting for games like Killer Instinct
+
+# Version 2021.1
+* bugfixes for tvOS.
+
+# Version 2020.14
+* Build on Xcode 12.2
+* Build Simulator and Catalyst on a Apple Silicon (M1) machine.
+
+# Version 2020.13
+* New default artwork.
+* Netplay bugfix, must be running a game to join or host.
+* Save independant HUD position for landscape/portrait.
+* iOS 14 Widget.
+* tvOS TopShelf
+* New ChooseGameUI look.
+* iCloud import, export, and sync.
+* Mame Warning messages now have their own Mame Menu entry.
 
 # Version 2020.12
 * `Metal` frame-skip updates and fixes.

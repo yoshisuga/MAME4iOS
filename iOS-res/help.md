@@ -12,7 +12,7 @@ MAME4iOS Reloaded emulates arcade games supported by original MAME 0.139u1.
 
 This MAME4iOS version is targeted at 64bit devies (A7 or higher, iPhone 5s or later) , because it is based on a high specs 2010 PC MAME build. Anyway don't expect arcade games of the 90 to work at full speed. Some games are really bad optimized (like outrun or mk series). This is related to MAME build used, since it is targeted to high specs PC's as i said before. This version doesn't have an UML backend ARM dynamic recompiler, which means drivers based on high specs arcade CPUs won't be playable (it has not sense since this games will be slow in any case).
 
-**TIP** You can try to use speed hacks (this menu appears pressing `START` + `COIN` at the same time when you are gaming) to make playables some games like CPS3 ones.
+**TIP** You can try to use speed hacks from the `MAME Configure` menu to make playables some games like CPS3 ones.
 
 Said that, with a low end device, use at your own risk. I suggest you use iMAME4all (0.37b5) instead. Remember that games that can be emulated on both versions will run much faster on iMAME4all (0.37b5) than on MAME4iOS Reloaded (0.139u1), and will drain less battery.
 
@@ -41,6 +41,7 @@ To see [MAME license](#MAME4iOS-LICENSE), go to the end of this document.
 *   Peer to Peer Netplay Multiplayer
 *   MiFI, Xbox, and DualShock [Game Controlers](#game-controlers)
 *   [TV-OUT](#tv-out)
+*   [iCloud Import, Export, and Sync.](#iCloud)
 
 ... and more.
 
@@ -112,7 +113,7 @@ The emulator controls are the following ones:
 
 **Fullscreen Stick Size** Lets you change the stick size (not DPAD) on lanscape or portrait fullscreen mode.
 
-**Nintendo Button Layout** if enabled the 🅐 🅑 and 🅧 🅨 buttons will be swapped to match a Nintendo layout.  This option has no effect on a custom layout, or a physical game controller.
+**Nintendo Button Layout** if enabled the 🅐 🅑 and 🅧 🅨 buttons will be swapped to match a Nintendo layout.  This option has no effect on a physical game controller.
 
 **External Controller** Enable external controller: iCade, iControlPad as iCade mode or iMpulse.
 
@@ -179,6 +180,7 @@ when you make a mistake and need to undo
 * delete Recent and Favorite games.
 * delete all cached Title Images. 
 * delete all MAME key mappings or settings. 
+* select `Delete all ROMs` to also remove all data.
 
 ### Per Game Settings Reset
 context menu, select `Delete`, then choose `Delete Settings`. 
@@ -189,6 +191,16 @@ context menu, select `Delete`, then choose `Delete Settings`.
 
 ### Delete Game 
 You can also remove a game totally, context menu `Delete`, choose `Delete All Files`
+
+## iCloud
+Store your favorite games in the cloud.
+
+When MAME4iOS is built with a CloudKit entitlement you will see a new iCloud section in Settings
+* **Export to iCloud** will copy all local ROM, Artwork, State files up to the *Cloud*. (Only files not already uploaded or have changed are copied)
+* **Import from iCloud** will copy down files from the Cloudkit database that dont exist on device, or have been updated.
+* **Sync with iCloud** will do both a Import and Export. 
+* **Erase iCloud** can be used to remove all files in **iCloud**. 
+**NOTE** files are *never* deleted, only ever copied. (execept for `Erase iCloud`)
 
 ## Hardware keyboard
 
@@ -234,7 +246,9 @@ we suppoprt a small subset of the keys supported by the command line MAME.
 
 ## Game Controlers
 
-<img src="https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/HNKT2?wid=1144&hei=1144&fmt=jpeg&qlt=95&op_usm=0.5%2C0.5&.v=1573236530750" width=30%> <img src="https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/HNKS2?wid=1144&hei=1144&fmt=jpeg&qlt=95&op_usm=0.5%2C0.5&.v=1573236454283" width=30%> <img src="https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/HJ162?wid=1144&hei=1144&fmt=jpeg&qlt=95&op_usm=0.5%2C0.5&.v=1477094888716" width=30%>
+<div style="background:white">
+<img src="https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/HJ162" width=25%><img src="https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/HNKT2" width=25%><img src="https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/HNKS2" width=25%><img src="https://images-na.ssl-images-amazon.com/images/I/81oyj8wrlCL._SL1500_.jpg" width=25%>
+</div>
 
 Some of the supported game controllers include, but are not limited to:
 * Xbox Wireless Controller with Bluetooth (Model 1708)
@@ -248,43 +262,43 @@ Some of the supported game controllers include, but are not limited to:
 
 To start playing a game using a controller, do one of the following.
 * hit MENU and select `Coin + Start` or `1 Player Start`
-* hit MENU+L1 to add a Coin, then hit MENU+R1 to Start. (iOS 13)
-* hit SELECT, then START (iOS 14+)
+* hit MENU+L1 to add a Coin, then hit MENU+R1 to Start.
+* hit SELECT, then START
 
-## Xbox Controller (on iOS 14+)
+## Xbox Controller
 
 | | |  
 -|-
 `VIEW`     |SELECT                
-`GUIDE`           |MAME4iOS MENU   
+`GUIDE`   |MAME4iOS MENU (on iOS 14+)  
 `MENU`     |START              
+`VIEW`+`MENU`|MAME4iOS MENU
 
-## Xbox Controller (on iOS 13)
-
-| | |  
--|-
-`VIEW`     |SELECT + START                
-`MENU`     |MAME4iOS MENU              
-
-## Playstation Dualshock (on iOS 14+)
+## Playstation Dualshock
 
 | | |  
 -|-
 `SHARE`     |SELECT                
-`PS Button`           |MAME4iOS MENU   
+`PS Button`           |MAME4iOS MENU  (iOS 14+)
 `OPTIONS`     |START      
+`SHARE`+`OPTIONS`|MAME4iOS MENU
 
-## Playstation Dualshock (on iOS 13)
+## SteelSeries Nimbus Controller (MFi)
 
 | | |  
 -|-
-`SHARE`     |SELECT + START               
-`OPTIONS`     |MAME4iOS MENU       
+`MENU`           |MAME4iOS MENU   
 
+## Nimbus+ Controller
+
+| | |  
+-|-
+`OPTIONS`     |SELECT                
+`HOME`           |MAME4iOS MENU (on iOS 14)   
+`MENU`           |START      
+`OPTIONS`+`MENU`|MAME4iOS MENU
 
 ## Steam Game Controlers
-
-<img src="https://images-na.ssl-images-amazon.com/images/I/81oyj8wrlCL._SL1500_.jpg" width=30%>
 
 To use a Steam Controller, make sure it is updated to BLE Firmware, and it paired with iOS device, see [here](https://support.steampowered.com/kb_article.php?ref=7728-QESJ-4420).
 
@@ -307,11 +321,13 @@ MENU+R1     |Player 1 Start
 MENU+L2     |Player 2 Coin                
 MENU+R2     |Player 2 Start               
 MENU+X       |Exit Game                 
-MENU+B       |Open MAME menu   
-MENU+A       |Load State  X (slot1) or Y (slot 2)            
-MENU+Y       |Save State  X (slot1) or Y (slot 2)              
+MENU+Y       |Open MAME menu   
+MENU+DOWN  |Save State ①               
+MENU+UP        |Load State ①                
+MENU+LEFT     |Save State ②                
+MENU+RIGHT  |Load State ②               
 
-**NOTE** on versions prior to iOS 13 only MiFi controllers are reconized and when doing multiple button combinations the secondary button must be pressed first.  For example to insert a coin hold down L1 and hit MENU.  on iOS 13+ you can hold MENU and then hit L1.
+**NOTE** when using a MFi controller on versions prior to iOS 13, and tvOS, when doing multiple button combinations the secondary button must be pressed first.  For example to insert a coin hold down L1 and hit MENU.  on iOS 13+ you can hold MENU and then hit L1.
 
 ## Multiplayer game start using game controllers
 
@@ -321,30 +337,32 @@ You can insert a COIN or do a START for another player from the main Game Contro
 
 | | |  
 -|-
-MENU+L1+UP     |Player 2 COIN           
-MENU+R1+UP     |Player 2 START
-MENU+L1+RIGHT     |Player 3 COIN          
-MENU+R1+RIGHT    |Player 3 START
-MENU+L1+DOWN     |Player 4 COIN          
-MENU+R1+DOWN     |Player 4 START
+MENU+L2|Player 2 COIN
+MENU+R2|Player 2 SELECT
+SELECT+UP     |Player 2 COIN           
+START+UP       |Player 2 START
+SELECT+RIGHT     |Player 3 COIN          
+START+RIGHT    |Player 3 START
+SELECT+DOWN     |Player 4 COIN          
+START+DOWN     |Player 4 START
 
 ## SAVE/LOAD STATE
 
-You can save or load game states by pressing the MENU button when you are gaming, and select save or load state option. Also you can press button MENU+A (Load) or MENU+Y (Save) on a external controller. Then you should press button B (slot1) or button X (slot 2) to save or load the state. If you select Load or Save state from the MAME4iOS menu slot 1 is always used.
+You can save or load game states by pressing the MENU button when you are gaming, and select save or load state option. Also you can press button MENU+UP (Load) or MENU+DOWN (Save) on a external controller. 
 
 ## 8BitDo Zero 
 MAME4iOS supports the [8BitDo Zero](https://www.8bitdo.com/zero2/) when in KEYBOARD mode.
 
 ## Siri Remote
-MAME4iOS is now usable on a AppleTV using only the stock Siri Remote. You can only play games that use only the A and X buttons.
+MAME4iOS is now usable on a AppleTV using only the stock Siri Remote. You can only play games that use only the A and B buttons.
 
-to start playing a game, hit MENU and select "Coin + Start" from the list.
+to start playing a game, hit `MENU` and select `1 Player Start` from the list.
 
 | | |  
 -|-
 TRACKPAD MOVE   | emulate a dpad or joystick
 TRAKPAD CLICK   | A button
-PLAY            | X button
+PLAY            | B button
 MENU          | bring up the MAME4iOS menu
 
 ## iCADE (or compatible)
@@ -360,6 +378,10 @@ Thanks to Todd Laney for sending me patches, and Martijn Bosschaart who has supp
 
 MAME4iOS works correctly out of the box for iMpulse, also has built-in support for local multiplayer (TwiMpulse). Anayway, if you need to redefine second player buttons, you should press coin (left shoulder button) before so MAME4iOS initializes second iMpulse controller.
 
+## XInput Controller
+
+If you have an XInput compatible controller, use `Settings` > `Accessibility` > `Switch Control` > `Switches` > `Bluetooth Devices` to pair controller, then use as normal in MAME4iOS.
+
 ## TV-OUT
 
 To connect an iPad or iPhone to your TV or a projector, you can either use the Apple HDMI, Component AV Cable, Apple Composite AV Cable, Apple Dock Connector to VGA Adapter, or other compatible cable.
@@ -374,17 +396,15 @@ You can set the amount of overscan corrections in options menu.
 
 If you like iOS TVOUT mirror or you use and external 3rd party TVOUT app, you can turn off MAME4iOS native TVOUT in options menu.
 
-## INSTALLATION
+## MANUAL ROM INSTALLATION
 
-After installing, place your MAME-titled zipped roms in /var/mobile/Media/ROMs/MAME4iOS/roms folder for MAME4iOS for jailbroken devices
-
-On MAME4iOS for NO jailbroken devices, use iTunes file sharing (if your MAME4iOS build has it available) or use a 3rd party app like iFunBox or iExplorer to copy ROMs on sandboxed MAME4iOS 'Documents' folder:
+use iTunes file sharing (if your MAME4iOS build has it available) or use a 3rd party app like iFunBox or iExplorer to copy ROMs on sandboxed MAME4iOS 'Documents' folder:
 
 Step 1\. Downloaded iFunBox (or a similar utility) and plug your iOS device into your computer.
 
 Step 2\. Launch iFunBox and select your iOS device on the left hand side.
 
-Step 3\. If you don't have a jailbroken device, click on apps icon. Now you should see a list of all of your device’s applications. Locate MAME4iOS, click it, and select Documents. If you have a jailbroken device, click on raw file system icon and locate /var/mobile/Media/ROMs/MAME4iOS/roms folder.
+Step 3\. If you don't have a jailbroken device, click on apps icon. Now you should see a list of all of your device’s applications. Locate MAME4iOS, click it, and select Documents.
 
 Step 4\. And that’s all there is to it. Move your ROMs into this folder, launch MAME4iOS, and start playing!
 
@@ -446,7 +466,7 @@ Port to iOS by David Valdeita (Seleuco)
 
 ## KNOWN PROBLEMS
 
--Button mapping problems: Remove cfg files or folder besides rom folder.
+-Button mapping problems: Remove cfg files or folder besides rom folder, or do a `Settings` > `Reset`.
 
 ## INTERESTING WEBPAGES ABOUT MAME
 

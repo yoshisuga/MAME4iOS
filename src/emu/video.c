@@ -283,7 +283,7 @@ INLINE int original_speed_setting(void)
     
     old_speed = myosd_speed;
     
-    printf("Emulated speed %d\n",res);
+    mame_printf_debug("Emulated speed %d\n",res);
     return res;
 }
 

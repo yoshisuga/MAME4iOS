@@ -264,7 +264,7 @@ static ImageCache* sharedInstance = nil;
 
 static CGColorRef blend(CGColorRef c0, CGColorRef c1, CGFloat f)
 {
-    assert(CGColorGetColorSpace(c0) == CGColorGetColorSpace(c1));
+    NSCParameterAssert(CGColorGetColorSpace(c0) == CGColorGetColorSpace(c1));
     
     const CGFloat* cc0 = CGColorGetComponents(c0);
     const CGFloat* cc1 = CGColorGetComponents(c1);

@@ -32,11 +32,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)addTitle:(NSString*)str;
 - (void)addText:(NSString*)str;
 - (void)addView:(UIView*)view;
+- (void)addImage:(UIImage*)image;
 - (void)addSeparator;
 
 // toolbar and button items can be a UIImage or a NSString
 // strings starting with ":symbol-name:fallback:" will be expanded to a SF Symbol (or use fallback text)
 - (void)addToolbar:(NSArray*)items handler:(void (^)(NSUInteger button))handler;
+- (void)addButtons:(NSArray*)items color:(nullable UIColor*)color handler:(void (^)(NSUInteger button))handler;
 - (void)addButtons:(NSArray*)items handler:(void (^)(NSUInteger button))handler;
 - (void)addButton:(id)item color:(nullable UIColor*)color handler:(void (^)(void))handler;
 - (void)addButton:(id)item handler:(void (^)(void))handler;

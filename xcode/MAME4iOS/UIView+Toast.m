@@ -440,26 +440,26 @@ static const NSString * CSToastQueueKey             = @"CSToastQueueKey";
 - (CGPoint)cs_centerPointForPosition:(id)point withToast:(UIView *)toast {
     CSToastStyle *style = [CSToastManager sharedStyle];
     
-    UIEdgeInsets safeInsets = UIEdgeInsetsZero;
+    CGRect rect = self.bounds;
     if (@available(iOS 11.0, *)) {
-        safeInsets = self.safeAreaInsets;
+        rect = UIEdgeInsetsInsetRect(rect, self.safeAreaInsets);
     }
-    
-    CGFloat topPadding = style.verticalPadding + safeInsets.top;
-    CGFloat bottomPadding = style.verticalPadding + safeInsets.bottom;
+    if (!CGRectIsEmpty(style.toastRect)) {
+        rect = style.toastRect;
+    }
     
     if([point isKindOfClass:[NSString class]]) {
         if([point caseInsensitiveCompare:CSToastPositionTop] == NSOrderedSame) {
-            return CGPointMake(self.bounds.size.width / 2.0, (toast.frame.size.height / 2.0) + topPadding);
+            return CGPointMake(rect.origin.x + (rect.size.width / 2.0), rect.origin.y + (toast.frame.size.height / 2.0) + style.verticalPadding);
         } else if([point caseInsensitiveCompare:CSToastPositionCenter] == NSOrderedSame) {
-            return CGPointMake(self.bounds.size.width / 2.0, self.bounds.size.height / 2.0);
+            return CGPointMake(rect.origin.x + (rect.size.width / 2.0), rect.origin.y + (rect.size.height / 2.0));
         }
     } else if ([point isKindOfClass:[NSValue class]]) {
         return [point CGPointValue];
     }
     
     // default to bottom
-    return CGPointMake(self.bounds.size.width / 2.0, (self.bounds.size.height - (toast.frame.size.height / 2.0)) - bottomPadding);
+    return CGPointMake(rect.origin.x + (rect.size.width / 2.0), rect.origin.y + (rect.size.height - (toast.frame.size.height / 2.0)) - style.verticalPadding);
 }
 
 @end
@@ -492,6 +492,7 @@ static const NSString * CSToastQueueKey             = @"CSToastQueueKey";
         self.imageSize = CGSizeMake(80.0, 80.0);
         self.activitySize = CGSizeMake(100.0, 100.0);
         self.fadeDuration = 0.2;
+        self.toastRect = CGRectZero;
     }
     return self;
 }
