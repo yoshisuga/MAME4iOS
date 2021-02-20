@@ -24,10 +24,6 @@ iOS = 1
 
 iOSOSX = 1
 
-iOSNOJAILBREAK = 1
-
-iOSARMV7 = 0
-
 iOSARM64 = 1
 
 ifndef ARCH
@@ -296,16 +292,7 @@ endif
 # fullname is prefix+name+suffix+suffix64+suffixdebug
 FULLNAME = $(PREFIX)$(PREFIXSDL)$(NAME)$(SUFFIX)$(SUFFIX64)$(SUFFIXDEBUG)$(SUFFIXPROFILE)
 
-# add an EXE suffix to get the final emulator name
-ifdef iOSNOJAILBREAK
-
-ifdef iOSSIMULATOR
-EMULATOR = libmamesim.a
-endif
-
-ifeq ($(iOSARMV7),1)
-EMULATOR = libmamearmv7.a
-else
+# get the final emulator name
 
 ifdef tvOS
 EMULATOR = libmamearm64-tvos.a
@@ -313,12 +300,6 @@ else ifdef macCatalyst
 EMULATOR = libmamearm64-mac.a
 else
 EMULATOR = libmamearm64.a
-endif
-
-endif
-
-else
-EMULATOR = $(FULLNAME)$(EXE)
 endif
 
 #-------------------------------------------------
@@ -543,10 +524,6 @@ SOFTFLOAT = $(OBJ)/libsoftfloat.a
 ifdef iOS
 CCOMFLAGS += -DIOS -DSDLMAME_NO64BITIO
 
-ifndef iOSNOJAILBREAK
-CCOMFLAGS += -DBTJOY -DJAILBREAK
-endif
-
 ifndef iOSOSX
 CCOMFLAGS += -DIOS3
 CCOMFLAGS += -F/home/david/Projects/iphone/toolchain/sdks/iPhoneOS3.1.2.sdk/System/Library/PrivateFrameworks
@@ -591,9 +568,6 @@ endif
 
 endif
 
-ifndef iOSNOJAILBREAK
-LDFLAGS += -weak_library ./lib/libBTstack.dylib
-endif
 CCOMFLAGS +=
 
 endif
@@ -630,14 +604,6 @@ include $(SRC)/lib/lib.mak
 include $(SRC)/build/build.mak
 -include $(SRC)/osd/$(CROSS_BUILD_OSD)/build.mak
 include $(SRC)/tools/tools.mak
-
-ifdef iOS
-ifndef iOSNOJAILBREAK
-include $(SRC)/../iOS/objc.mak
-else
-
-endif
-endif
 
 # combine the various definitions to one
 CDEFS = $(DEFS)
@@ -704,15 +670,9 @@ ifndef EXECUTABLE_DEFINED
 # always recompile the version string
 $(VERSIONOBJ): $(DRVLIBS) $(OSDOBJS) $(CPUOBJS) $(LIBEMUOBJS) $(SOUNDOBJS) $(UTILOBJS) $(EXPATOBJS) $(ZLIBOBJS) $(SOFTFLOATOBJS) $(OSDCOREOBJS) $(RESFILE)
 
-ifdef iOSNOJAILBREAK
 $(EMULATOR): $(VERSIONOBJ) $(DRVLIBS) $(OSDOBJS) $(CPUOBJS) $(LIBEMUOBJS) $(DASMOBJS) $(SOUNDOBJS) $(UTILOBJS) $(EXPATOBJS) $(SOFTFLOATOBJS) $(ZLIBOBJS) $(OSDCOREOBJS) $(RESFILE)
 	@echo Archiving $@...
 	$(AR) $(ARFLAGS) $@ $^
-else
-$(EMULATOR): $(VERSIONOBJ) $(DRVLIBS) $(OSDOBJS) $(CPUOBJS) $(LIBEMUOBJS) $(DASMOBJS) $(SOUNDOBJS) $(UTILOBJS) $(EXPATOBJS) $(SOFTFLOATOBJS) $(ZLIBOBJS) $(OSDCOREOBJS) $(RESFILE)
-	@echo Linking $@...
-	$(LD) $(LDFLAGS) $(LDFLAGSEMULATOR) $^ $(LIBS) -o $@
-endif
 
 ifeq ($(TARGETOS),win32)
 ifdef SYMBOLS
