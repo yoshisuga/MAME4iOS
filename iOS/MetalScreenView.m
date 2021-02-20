@@ -596,16 +596,13 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
             else
                 [self setTextureAddressMode:MTLSamplerAddressModeClampToZero];
 
-            // draw a quad in the correct orientation
-            UIImageOrientation orientation = UIImageOrientationUp;
-            if (prim->texorient == ORIENTATION_ROT90)
-                orientation = UIImageOrientationRight;
-            else if (prim->texorient == ORIENTATION_ROT180)
-                orientation = UIImageOrientationDown;
-            else if (prim->texorient == ORIENTATION_ROT270)
-                orientation = UIImageOrientationLeft;
-
-            [self drawRect:rect color:color orientation:orientation];
+            // draw a textured rect.
+            [self drawPrim:MTLPrimitiveTypeTriangleStrip vertices:(Vertex2D[]){
+                Vertex2D(rect.origin.x,                  rect.origin.y,                   prim->texcoords[0].u,prim->texcoords[0].v,color),
+                Vertex2D(rect.origin.x + rect.size.width,rect.origin.y,                   prim->texcoords[1].u,prim->texcoords[1].v,color),
+                Vertex2D(rect.origin.x,                  rect.origin.y + rect.size.height,prim->texcoords[2].u,prim->texcoords[2].v,color),
+                Vertex2D(rect.origin.x + rect.size.width,rect.origin.y + rect.size.height,prim->texcoords[3].u,prim->texcoords[3].v,color),
+            } count:4];
         }
         else if (prim->type == RENDER_PRIMITIVE_QUAD) {
             // solid color quad. only ALPHA or NONE blend mode.
@@ -806,6 +803,10 @@ VertexColor VertexColorP3(CGFloat r, CGFloat g, CGFloat b, CGFloat a) {
 //      [X] rotate 90                   pacman
 //      [X] rotate 180                  mario, cocktail
 //      [X] rotate 270                  mario, cocktail.
+//      [X] flip X                      othunder
+//      [X] flip Y                      lethalen
+//      [X] swap XY                     kick
+//      [ ] swap XY + flip X + flip Y   
 //      [X] texture WRAP                MAME menu
 //      [X] texture CLAMP               MAME menu
 //
@@ -885,6 +886,15 @@ VertexColor VertexColorP3(CGFloat r, CGFloat g, CGFloat b, CGFloat a) {
             if (orient == ORIENTATION_ROT270)
                 assert(TRUE);
             
+            if (orient == ORIENTATION_FLIP_X)
+                assert(TRUE);
+            if (orient == ORIENTATION_FLIP_Y)
+                assert(TRUE);
+            if (orient == ORIENTATION_SWAP_XY)
+                assert(TRUE);
+            if (orient == (ORIENTATION_SWAP_XY | ORIENTATION_FLIP_X | ORIENTATION_FLIP_Y))
+                assert(FALSE);
+
             if (wrap == 0)
                 assert(TRUE);
             if (wrap == 1)
