@@ -126,8 +126,6 @@ int buttonMask[NUM_BUTTONS];    // map a button index to a button MYOSD_* mask
 // Touch Directional Input tracking
 int touchDirectionalCyclesAfterMoved = 0;
 
-int g_isMetalSupported = 0;
-
 int g_emulation_paused = 0;
 int g_emulation_initiated=0;
 
@@ -196,16 +194,10 @@ float g_buttons_size = 1.0f;
 float g_stick_size = 1.0f;
 
 int global_low_latency_sound = 0;
-static int main_thread_priority = 46;
-int video_thread_priority = 46;
-static int main_thread_priority_type = 1;
-int video_thread_priority_type = 1;
 
 int prev_myosd_light_gun = 0;
 int prev_myosd_mouse = 0;
         
-static pthread_t main_tid;
-
 static int ways_auto = 0;
 static int change_layout=0;
 
@@ -255,30 +247,13 @@ void iphone_Reset_Views(void)
     g_video_reset = TRUE;
     //[sharedInstance performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:NO];
 }
-// called by the OSD layer to update the current software frame
-// **NOTE** this is called on the MAME background thread, dont do anything stupid.
-void iphone_UpdateScreen(void)
-{
-    if (sharedInstance == nil || g_emulation_paused || sharedInstance->screenView == nil)
-        return;
-    
-    UIView<ScreenView>* screenView = sharedInstance->screenView;
-    [screenView performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone:NO];
-
-    #pragma clang diagnostic push
-    #pragma clang diagnostic ignored "-Wundeclared-selector"
-    if (g_pref_showFPS && (screenView.frameCount % UPDATE_FPS_EVERY) == 0)
-        [sharedInstance performSelectorOnMainThread:@selector(updateFrameRate) withObject:nil waitUntilDone:NO];
-    #pragma clang diagnostic pop
-}
 // called by the OSD layer to render the current frame
-// return 1 if you did the render, 0 if you want a software render.
 // **NOTE** this is called on the MAME background thread, dont do anything stupid.
 // ...not doing something stupid includes not leaking autoreleased objects! use a autorelease pool if you need to!
-int iphone_DrawScreen(myosd_render_primitive* prim_list) {
+void iphone_DrawScreen(myosd_render_primitive* prim_list) {
 
     if (sharedInstance == nil || g_emulation_paused)
-        return 0;
+        return;
 
     @autoreleasepool {
         UIView<ScreenView>* screenView = sharedInstance->screenView;
@@ -296,8 +271,6 @@ int iphone_DrawScreen(myosd_render_primitive* prim_list) {
         if (g_pref_showFPS && (screenView.frameCount % UPDATE_FPS_EVERY) == 0)
             [sharedInstance performSelectorOnMainThread:@selector(updateFrameRate) withObject:nil waitUntilDone:NO];
         #pragma clang diagnostic pop
-
-        return 1;
     }
 }
 
@@ -537,24 +510,10 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     
     // delete the UserDefaults, this way if we crash we wont try this game next boot
     [EmulatorController setCurrentGame:nil];
-	     		    				
-    pthread_create(&main_tid, NULL, app_Thread_Start, NULL);
+	     
+    pthread_t tid;
+    pthread_create(&tid, NULL, app_Thread_Start, NULL);
 		
-	struct sched_param param;
- 
-    printf("main priority %d\n",main_thread_priority);
-    param.sched_priority = main_thread_priority;
-    int policy;
-    if(main_thread_priority_type == 1)
-      policy = SCHED_OTHER;
-    else if(main_thread_priority_type == 2)
-      policy = SCHED_RR;
-    else
-      policy = SCHED_FIFO;
-           
-    if(pthread_setschedparam(main_tid, policy, &param) != 0)
-        fprintf(stderr, "Error setting pthread priority\n");
-    
 #if TARGET_OS_IOS
     _impactFeedback = [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleLight];
     _selectionFeedback = [[UISelectionFeedbackGenerator alloc] init];
@@ -945,8 +904,6 @@ void mame_state(int load_save, int slot)
     
     //printf("load options\n");
     
-    g_isMetalSupported = [MetalScreenView isSupported];
-    
     Options *op = [[Options alloc] init];
     
     g_pref_keep_aspect_ratio = [op keepAspectRatio];
@@ -1046,16 +1003,6 @@ void mame_state(int load_save, int slot)
     myosd_filter_not_working = op.filterNotWorking;
     
     global_low_latency_sound = [op lowlsound];
-    if(myosd_video_threaded==-1)
-    {
-        myosd_video_threaded = [op threaded];
-        main_thread_priority =  MAX(1,[op mainPriority] * 10);
-        video_thread_priority = MAX(1,[op videoPriority] * 10);
-        myosd_dbl_buffer = [op dblbuff];
-        main_thread_priority_type = [op mainThreadType]+1;
-        main_thread_priority_type = [op videoThreadType]+1;
-        NSLog(@"thread Type %d %d\n",main_thread_priority_type,main_thread_priority_type);
-    }
     
     myosd_autofire = [op autofire];
     myosd_hiscore = [op hiscore];
@@ -1109,7 +1056,6 @@ void mame_state(int load_save, int slot)
     // ignore some settings in the Metal case
     if (g_pref_metal && [MetalScreenView isSupported]) {
         myosd_sleep = 1;            // sleep to let Metal get work done.
-        myosd_video_threaded = 0;   // dont need an extra thread
         myosd_vsync = -1;           // dont force 60Hz, just use the machine value, let MAME frameskip do what it can.
         myosd_frameskip_value = -1; // AUTO frameskip
     }
@@ -3007,10 +2953,6 @@ void myosd_poll_input(void) {
             myosd_throttle = !myosd_throttle;
             [self changeUI];
             break;
-        case 'V':
-            myosd_vsync = myosd_vsync == -1 ? 6000 : -1;
-            [self changeUI];
-            break;
         case 'X':
             myosd_force_pxaspect = !myosd_force_pxaspect;
             [self changeUI];
@@ -4462,11 +4404,13 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
           button == MYOSD_MENU ? "MENU" : button == MYOSD_HOME ? "HOME" : "OPTION",
           pressed ? "DOWN" : "UP", g_menuButtonState[index]);
 
-    // MENU button down (first time)
-    if (pressed && g_menuButton[index] == 0) {
-        g_menuButton[index] = button;
-        g_menuButtonPressed[index] = 0;
-        [self showControllerHUD:controller after:MENU_HUD_SHOW_DELAY];
+    // MENU button (first time)
+    if (g_menuButton[index] == 0) {
+        if (pressed) {
+            g_menuButton[index] = button;
+            g_menuButtonPressed[index] = 0;
+            [self showControllerHUD:controller after:MENU_HUD_SHOW_DELAY];
+        }
         return;
     }
 

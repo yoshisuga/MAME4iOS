@@ -7,19 +7,13 @@
 //
 //============================================================
 
-#ifdef ANDROID
-#include <android/log.h>
-#endif
-
 #include "osdcore.h"
-//#include <malloc.h>
 #include <unistd.h>
 #include "emu.h"
 #include "render.h"
 #include "rendlay.h"
 #include "osdvideo.h"
 
-#include <pthread.h>
 #include "myosd.h"
 
 static int screen_width;
@@ -32,32 +26,12 @@ static int curr_screen_height;
 static int curr_vis_area_screen_width;
 static int curr_vis_area_screen_height;
 
-static const render_primitive_list *currlist = NULL;
-static int thread_stopping = 0;
-
-static pthread_mutex_t cond_mutex     = PTHREAD_MUTEX_INITIALIZER;
-static pthread_cond_t  condition_var   = PTHREAD_COND_INITIALIZER;
-#ifdef ANDROID
-static void draw_rgb565_draw_primitives(const render_primitive *primlist, void *dstdata, UINT32 width, UINT32 height, UINT32 pitch);
-#else
-static void draw_rgb555_draw_primitives(const render_primitive *primlist, void *dstdata, UINT32 width, UINT32 height, UINT32 pitch);
-#endif
-
-static void droid_ios_video_draw(void);
-extern "C"
-void droid_ios_video_thread(void);
-
-//int video_threaded = 1;
-
 void droid_ios_setup_video()
 {
-
 }
 
-//static void droid_video_cleanup(running_machine *machine)
 static void droid_ios_video_cleanup(running_machine &machine)
 {
-   	usleep(150000);
 }
 
 void droid_ios_init_video(running_machine *machine)
@@ -72,22 +46,11 @@ void droid_ios_init_video(running_machine *machine)
 	vis_area_screen_width = 1;
 	vis_area_screen_height = 1;
 
-	//add_exit_callback(machine, droid_video_cleanup);
 	machine->add_notifier(MACHINE_NOTIFY_EXIT, droid_ios_video_cleanup);
 }
 
-void droid_ios_video_draw()
+void droid_ios_video_draw(const render_primitive_list *currlist)
 {
-	if(myosd_video_threaded)
-	{
-		pthread_mutex_lock( &cond_mutex );
-
-		while(currlist == NULL)
-		{
-			pthread_cond_wait( &condition_var, &cond_mutex );
-		}
-	}
-
 	if(curr_screen_width!= screen_width || curr_screen_height != screen_height ||
 	   curr_vis_area_screen_width!= vis_area_screen_width || curr_vis_area_screen_height != vis_area_screen_height)
 	{
@@ -100,54 +63,7 @@ void droid_ios_video_draw()
 		myosd_set_video_mode(screen_width,screen_height,vis_area_screen_width,vis_area_screen_height);
 	}
 
-	if(myosd_video_threaded)
-	   pthread_mutex_unlock( &cond_mutex );
-
-	if(myosd_video_threaded)
-	   osd_lock_acquire(currlist->lock);
-    
-    int should_draw_sw = myosd_video_draw(currlist->head) == 0;
-
-    if (should_draw_sw)
-    {
-#ifdef ANDROID
-        draw_rgb565_draw_primitives(currlist->head, myosd_curr_screen, screen_width, screen_height, screen_width);
-#else
-        draw_rgb555_draw_primitives(currlist->head, myosd_curr_screen, screen_width, screen_height, screen_width);
-#endif
-    }
-
-	if(myosd_video_threaded)
-	  osd_lock_release(currlist->lock);
-
-    if (should_draw_sw)
-        myosd_video_flip();
-
-	if(myosd_video_threaded)
-	   pthread_mutex_lock( &cond_mutex );
-
-	currlist = NULL;
-
-	if(myosd_video_threaded)
-	   pthread_mutex_unlock( &cond_mutex );
-}
-
-extern "C"
-void droid_ios_video_thread()
-{
-    while (!thread_stopping && myosd_video_threaded)
-	{
-		droid_ios_video_draw();
-	}
-}
-
-// HACK function to get current view from render target
-// TODO: move it into render.c??
-// TODO: make a function called render_target_has_art()??
-layout_view * render_target_get_current_view(render_target *target)
-{
-    //return target->curview;
-    return (layout_view *)((void**)target)[2];
+    myosd_video_draw(currlist->head);
 }
 
 void droid_ios_video_render(render_target *our_target)
@@ -155,120 +71,46 @@ void droid_ios_video_render(render_target *our_target)
 	int minwidth, minheight;
 	int viswidth, visheight;
 
-	if(myosd_video_threaded)
-	   pthread_mutex_lock( &cond_mutex );
-
-    if(currlist==NULL)
+    if(myosd_force_pxaspect)
     {
-		if(myosd_force_pxaspect)
-		{
-		   render_target_get_minimum_size(our_target, &minwidth, &minheight);
-		   viswidth = minwidth;
-		   visheight = minheight;
-		}
-		else if(myosd_res==1)
-		{
-		   render_target_get_minimum_size(our_target, &minwidth, &minheight);
+       render_target_get_minimum_size(our_target, &minwidth, &minheight);
+       viswidth = minwidth;
+       visheight = minheight;
+    }
+    else
+    {
+       render_target_get_minimum_size(our_target, &minwidth, &minheight);
 
-		   int w,h;
-		   render_target_compute_visible_area(our_target,minwidth,minheight,4/3,render_target_get_orientation(our_target),&w, &h);
-		   viswidth = w;
-		   visheight = h;
-            
-           // if the current view has artwork we want to use the largest target we can, to fit the display.
-           // in the no art case, use the minimal buffer size needed, so it gets scaled up by hardware.
-           layout_view * view = render_target_get_current_view(our_target);
-            
-           if (layout_view_has_art(view) && myosd_display_width > viswidth && myosd_display_height > visheight)
-           {
-                if (myosd_display_width < myosd_display_height * viswidth / visheight)
-                {
-                    visheight = visheight * myosd_display_width / viswidth;
-                    viswidth  = myosd_display_width;
-                }
-                else
-                {
-                    viswidth  = viswidth * myosd_display_height / visheight;
-                    visheight = myosd_display_height;
-                }
-                minwidth = viswidth;
-                minheight = visheight;
-           }
-		}
-		else
-		{
-			minwidth = 320;minheight = 200;
-			switch (myosd_res){
-			   case 3:{minwidth = 320;minheight = 240;break;}
-			   case 4:{minwidth = 400;minheight = 300;break;}
-			   case 5:{minwidth = 480;minheight = 300;break;}
-			   case 6:{minwidth = 512;minheight = 384;break;}
-			   case 7:{minwidth = 640;minheight = 400;break;}
-			   case 8:{minwidth = 640;minheight = 480;break;}
-			   case 9:{minwidth = 800;minheight = 600;break;}
-			   case 10:{minwidth = 1024;minheight = 768;break;}
-			   case 11:{minwidth = 1280;minheight = 960;break;}
-			   case 12:{minwidth = 1440;minheight = 1080;break;} // Optimal HD: added for 1080P displays
-         		   case 13:{minwidth = 1600;minheight = 1200;break;}
-         		   case 14:{minwidth = 1920;minheight = 1440;break;}
-         		   case 15:{minwidth = 2048;minheight = 1536;break;}
-         		   case 16:{minwidth = 2880;minheight = 2160;break;} // Optimal UHD: added for Consumer 4K/UHD displays		
-			}
-			render_target_compute_visible_area(our_target,minwidth,minheight,4/3,render_target_get_orientation(our_target),&minwidth,&minheight);
-			viswidth = minwidth;
-			visheight = minheight;
-		}
-
-		if(minwidth%2!=0)minwidth++;
+       int w,h;
+       render_target_compute_visible_area(our_target,minwidth,minheight,4/3,render_target_get_orientation(our_target),&w, &h);
+       viswidth = w;
+       visheight = h;
         
-        minwidth  = MIN(MYOSD_BUFFER_WIDTH, minwidth);
-        minheight = MIN(MYOSD_BUFFER_HEIGHT, minheight);
-
-		// make that the size of our target
-		render_target_set_bounds(our_target, minwidth, minheight, 0);
-
-		currlist = render_target_get_primitives(our_target);
-
-		curr_screen_width = minwidth;
-		curr_screen_height = minheight;
-		curr_vis_area_screen_width = viswidth;
-		curr_vis_area_screen_height = visheight;
-
-		if(myosd_video_threaded)
-		    pthread_cond_signal( &condition_var );
-		else
-			droid_ios_video_draw();
+       // we want to use the largest target we can, to fit the display.
+       if (myosd_display_width > viswidth && myosd_display_height > visheight)
+       {
+            if (myosd_display_width < myosd_display_height * viswidth / visheight)
+            {
+                visheight = visheight * myosd_display_width / viswidth;
+                viswidth  = myosd_display_width;
+            }
+            else
+            {
+                viswidth  = viswidth * myosd_display_height / visheight;
+                visheight = myosd_display_height;
+            }
+            minwidth = viswidth;
+            minheight = visheight;
+       }
     }
 
+    curr_screen_width = minwidth;
+    curr_screen_height = minheight;
+    curr_vis_area_screen_width = viswidth;
+    curr_vis_area_screen_height = visheight;
 
-    if(myosd_video_threaded)
-	   pthread_mutex_unlock( &cond_mutex );
+    // make that the size of our target
+    render_target_set_bounds(our_target, minwidth, minheight, 0);
+    // and draw the frame
+    droid_ios_video_draw(render_target_get_primitives(our_target));
 }
-
-#ifdef ANDROID
-
-#define FUNC_PREFIX(x)		draw_rgb565_##x
-#define PIXEL_TYPE			UINT16
-#define SRCSHIFT_R			3
-#define SRCSHIFT_G			2
-#define SRCSHIFT_B			3
-#define DSTSHIFT_R			11
-#define DSTSHIFT_G			5
-#define DSTSHIFT_B			0
-
-#include "rendersw.c"
-
-#else
-
-#define FUNC_PREFIX(x)		draw_rgb555_##x
-#define PIXEL_TYPE			UINT16
-#define SRCSHIFT_R			3
-#define SRCSHIFT_G			3
-#define SRCSHIFT_B			3
-#define DSTSHIFT_R			10
-#define DSTSHIFT_G			5
-#define DSTSHIFT_B			0
-
-#include "rendersw.c"
-
-#endif

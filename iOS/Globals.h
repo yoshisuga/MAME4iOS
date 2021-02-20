@@ -83,7 +83,6 @@
 (point.x <= rect.origin.x + rect.size.width) &&			\
 (point.y <= rect.origin.y + rect.size.height)) ? 1 : 0)
 
-extern int myosd_video_threaded;
 extern int myosd_video_width;
 extern int myosd_video_height;
 extern int myosd_waysStick;
@@ -100,8 +99,6 @@ extern unsigned long myosd_pad_status;
 extern unsigned long myosd_joy_status[NUM_JOY];
 extern float joy_analog_x[NUM_JOY][4];
 extern float joy_analog_y[NUM_JOY][2];
-
-extern int g_isMetalSupported;
 
 extern int g_emulation_initiated;
 extern int g_emulation_paused;

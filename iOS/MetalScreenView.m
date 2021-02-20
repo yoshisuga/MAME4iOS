@@ -386,7 +386,11 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
     
     NSUInteger width = texture.width;
     NSUInteger height = texture.height;
-    
+
+    #define TEMP_BUFFER_WIDTH  3840
+    #define TEMP_BUFFER_HEIGHT 2160
+    static unsigned short temp_buffer[TEMP_BUFFER_WIDTH * TEMP_BUFFER_HEIGHT * 2];
+
     NSCParameterAssert(texture.pixelFormat == MTLPixelFormatBGRA8Unorm);
     NSCParameterAssert(texture.width == prim->texture_width);
     NSCParameterAssert(texture.height == prim->texture_height);
@@ -403,7 +407,7 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
             static uint32_t pal_ident[32] = {0,8,16,24,32,41,49,57,65,74,82,90,98,106,115,123,131,139,148,156,164,172,180,189,197,205,213,222,230,238,246,255};
             TIMER_START(texture_load_rgb15);
             uint16_t* src = prim->texture_base;
-            uint32_t* dst = (uint32_t*)myosd_screen;
+            uint32_t* dst = (uint32_t*)temp_buffer;
             const uint32_t* pal = prim->texture_palette ?: pal_ident;
             for (NSUInteger y=0; y<height; y++) {
                 for (NSUInteger x=0; x<width; x++) {
@@ -416,7 +420,7 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
                 src += prim->texture_rowpixels - width;
             }
             TIMER_STOP(texture_load_rgb15);
-            [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:myosd_screen bytesPerRow:width*4];
+            [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:temp_buffer bytesPerRow:width*4];
             break;
         }
         case TEXFORMAT_RGB32:
@@ -428,7 +432,7 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
             }
             else {
                 uint32_t* src = prim->texture_base;
-                uint32_t* dst = (uint32_t*)myosd_screen;
+                uint32_t* dst = (uint32_t*)temp_buffer;
                 const uint32_t* pal = prim->texture_palette;
                 for (NSUInteger y=0; y<height; y++) {
                     for (NSUInteger x=0; x<width; x++) {
@@ -440,7 +444,7 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
                     }
                     src += prim->texture_rowpixels - width;
                 }
-                [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:myosd_screen bytesPerRow:width*4];
+                [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:temp_buffer bytesPerRow:width*4];
             }
             TIMER_STOP(texture_load_rgb32);
             break;
@@ -450,7 +454,7 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
         {
             TIMER_START(texture_load_pal16);
             uint16_t* src = prim->texture_base;
-            uint32_t* dst = (uint32_t*)myosd_screen;
+            uint32_t* dst = (uint32_t*)temp_buffer;
             const uint32_t* pal = prim->texture_palette;
             for (NSUInteger y=0; y<height; y++) {
                 NSUInteger dx = width;
@@ -472,7 +476,7 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
                 src += prim->texture_rowpixels - width;
             }
             TIMER_STOP(texture_load_pal16);
-            [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:myosd_screen bytesPerRow:width*4];
+            [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:temp_buffer bytesPerRow:width*4];
             break;
         }
         case TEXFORMAT_YUY16:

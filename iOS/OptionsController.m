@@ -168,7 +168,6 @@
                {
                    cell.textLabel.text   = @"Use Metal";
                    cell.accessoryView = [self optionSwitchForKey:@"useMetal"];
-                   [(UIControl*)cell.accessoryView setEnabled:g_isMetalSupported];
                    break;
                }
                case 7:
