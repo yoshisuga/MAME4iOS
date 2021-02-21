@@ -126,8 +126,6 @@ int buttonMask[NUM_BUTTONS];    // map a button index to a button MYOSD_* mask
 // Touch Directional Input tracking
 int touchDirectionalCyclesAfterMoved = 0;
 
-int g_isMetalSupported = 0;
-
 int g_emulation_paused = 0;
 int g_emulation_initiated=0;
 
@@ -135,6 +133,7 @@ int g_joy_used = 0;
 int g_iCade_used = 0;
 
 int g_enable_debug_view = 0;
+int g_debug_dump_screen = 0;
 int g_controller_opacity = 50;
 
 int g_device_is_landscape = 0;
@@ -195,16 +194,10 @@ float g_buttons_size = 1.0f;
 float g_stick_size = 1.0f;
 
 int global_low_latency_sound = 0;
-static int main_thread_priority = 46;
-int video_thread_priority = 46;
-static int main_thread_priority_type = 1;
-int video_thread_priority_type = 1;
 
 int prev_myosd_light_gun = 0;
 int prev_myosd_mouse = 0;
         
-static pthread_t main_tid;
-
 static int ways_auto = 0;
 static int change_layout=0;
 
@@ -254,46 +247,30 @@ void iphone_Reset_Views(void)
     g_video_reset = TRUE;
     //[sharedInstance performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:NO];
 }
-// called by the OSD layer to update the current software frame
-// **NOTE** this is called on the MAME background thread, dont do anything stupid.
-void iphone_UpdateScreen(void)
-{
-    if (sharedInstance == nil || g_emulation_paused || sharedInstance->screenView == nil)
-        return;
-    
-    UIView<ScreenView>* screenView = sharedInstance->screenView;
-    [screenView performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone:NO];
-
-    #pragma clang diagnostic push
-    #pragma clang diagnostic ignored "-Wundeclared-selector"
-    if (g_pref_showFPS && (screenView.frameCount % UPDATE_FPS_EVERY) == 0)
-        [sharedInstance performSelectorOnMainThread:@selector(updateFrameRate) withObject:nil waitUntilDone:NO];
-    #pragma clang diagnostic pop
-}
 // called by the OSD layer to render the current frame
-// return 1 if you did the render, 0 if you want a software render.
 // **NOTE** this is called on the MAME background thread, dont do anything stupid.
 // ...not doing something stupid includes not leaking autoreleased objects! use a autorelease pool if you need to!
-int iphone_DrawScreen(myosd_render_primitive* prim_list) {
+void iphone_DrawScreen(myosd_render_primitive* prim_list) {
 
-    if (sharedInstance == nil || g_emulation_paused || sharedInstance->screenView == nil)
-        return 0;
+    if (sharedInstance == nil || g_emulation_paused)
+        return;
 
     @autoreleasepool {
         UIView<ScreenView>* screenView = sharedInstance->screenView;
 
 #ifdef DEBUG
-        [CGScreenView drawScreenDebug:prim_list];
+        if (g_debug_dump_screen) {
+            [screenView dumpScreen:prim_list];
+            g_debug_dump_screen = FALSE;
+        }
 #endif
-        BOOL result = [screenView drawScreen:prim_list];
+        [screenView drawScreen:prim_list];
         
         #pragma clang diagnostic push
         #pragma clang diagnostic ignored "-Wundeclared-selector"
-        if (g_pref_showFPS && result && (screenView.frameCount % UPDATE_FPS_EVERY) == 0)
+        if (g_pref_showFPS && (screenView.frameCount % UPDATE_FPS_EVERY) == 0)
             [sharedInstance performSelectorOnMainThread:@selector(updateFrameRate) withObject:nil waitUntilDone:NO];
         #pragma clang diagnostic pop
-
-        return result;
     }
 }
 
@@ -533,24 +510,10 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     
     // delete the UserDefaults, this way if we crash we wont try this game next boot
     [EmulatorController setCurrentGame:nil];
-	     		    				
-    pthread_create(&main_tid, NULL, app_Thread_Start, NULL);
+	     
+    pthread_t tid;
+    pthread_create(&tid, NULL, app_Thread_Start, NULL);
 		
-	struct sched_param param;
- 
-    printf("main priority %d\n",main_thread_priority);
-    param.sched_priority = main_thread_priority;
-    int policy;
-    if(main_thread_priority_type == 1)
-      policy = SCHED_OTHER;
-    else if(main_thread_priority_type == 2)
-      policy = SCHED_RR;
-    else
-      policy = SCHED_FIFO;
-           
-    if(pthread_setschedparam(main_tid, policy, &param) != 0)
-        fprintf(stderr, "Error setting pthread priority\n");
-    
 #if TARGET_OS_IOS
     _impactFeedback = [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleLight];
     _selectionFeedback = [[UISelectionFeedbackGenerator alloc] init];
@@ -941,8 +904,6 @@ void mame_state(int load_save, int slot)
     
     //printf("load options\n");
     
-    g_isMetalSupported = [MetalScreenView isSupported];
-    
     Options *op = [[Options alloc] init];
     
     g_pref_keep_aspect_ratio = [op keepAspectRatio];
@@ -956,7 +917,7 @@ void mame_state(int load_save, int slot)
     [skinManager setCurrentSkin:g_pref_skin];
 
     g_pref_integer_scale_only = op.integerScalingOnly;
-    g_pref_metal = op.useMetal;
+    g_pref_metal = TRUE;
     g_pref_showFPS = [op showFPS];
     g_pref_showHUD = [op showHUD];
 
@@ -983,6 +944,7 @@ void mame_state(int load_save, int slot)
         case 4: myosd_sound_value=44100;break;
         case 5: myosd_sound_value=48000;break;
         default:myosd_sound_value=-1;}
+    
     
     myosd_throttle = [op throttle];
     myosd_cheat = [op cheats];
@@ -1041,16 +1003,6 @@ void mame_state(int load_save, int slot)
     myosd_filter_not_working = op.filterNotWorking;
     
     global_low_latency_sound = [op lowlsound];
-    if(myosd_video_threaded==-1)
-    {
-        myosd_video_threaded = [op threaded];
-        main_thread_priority =  MAX(1,[op mainPriority] * 10);
-        video_thread_priority = MAX(1,[op videoPriority] * 10);
-        myosd_dbl_buffer = [op dblbuff];
-        main_thread_priority_type = [op mainThreadType]+1;
-        main_thread_priority_type = [op videoThreadType]+1;
-        NSLog(@"thread Type %d %d\n",main_thread_priority_type,main_thread_priority_type);
-    }
     
     myosd_autofire = [op autofire];
     myosd_hiscore = [op hiscore];
@@ -1104,7 +1056,6 @@ void mame_state(int load_save, int slot)
     // ignore some settings in the Metal case
     if (g_pref_metal && [MetalScreenView isSupported]) {
         myosd_sleep = 1;            // sleep to let Metal get work done.
-        myosd_video_threaded = 0;   // dont need an extra thread
         myosd_vsync = -1;           // dont force 60Hz, just use the machine value, let MAME frameskip do what it can.
         myosd_frameskip_value = -1; // AUTO frameskip
     }
@@ -1272,6 +1223,9 @@ void mame_state(int load_save, int slot)
 
 -(void)viewDidLoad{
     
+   // tell system to shutup about constraints!
+   [NSUserDefaults.standardUserDefaults setValue:@(NO) forKey:@"_UIConstraintBasedLayoutLogUnsatisfiable"];
+    
    self.view.backgroundColor = [UIColor blackColor];
 
    g_controllers = nil;
@@ -1392,6 +1346,9 @@ void mame_state(int load_save, int slot)
 {
     [super viewDidAppear:animated];
     [self scanForDevices];
+    if (![MetalScreenView isSupported]) {
+        [self showAlertWithTitle:@PRODUCT_NAME message:@"Metal not supported on this device." buttons:@[] handler:nil];
+    }
 }
 
 #if TARGET_OS_IOS
@@ -2763,19 +2720,12 @@ void myosd_poll_input(void) {
         kScreenViewColorSpace: g_pref_colorspace,
     };
     
-    // select a CoreGraphics or Metal ScreenView
-    Class screen_view_class = [CGScreenView class];
-    
-    if (g_pref_metal && [MetalScreenView isSupported])
-        screen_view_class = [MetalScreenView class];
-
     // the reason we dont re-create screenView each time is because we access screenView from background threads
-    // (see iPhone_UpdateScreen, iPhone_DrawScreen) and we dont want to risk race condition on release.
-    // and not creating/destroying the ScreenView on a simple size change or rotation, is good for performace.
-    if (screenView == nil || [screenView class] != screen_view_class) {
-        [screenView removeFromSuperview];
-        screenView = [[screen_view_class alloc] init];
-    }
+    // (iPhone_DrawScreen) and we dont want to risk race condition on release.
+    // and not creating/destroying the ScreenView on a simple size change or rotation, is good too.
+    if (screenView == nil)
+        screenView = [[MetalScreenView alloc] init];
+        
     screenView.frame = r;
     screenView.userInteractionEnabled = NO;
     [screenView setOptions:options];
@@ -3006,10 +2956,6 @@ void myosd_poll_input(void) {
             myosd_throttle = !myosd_throttle;
             [self changeUI];
             break;
-        case 'V':
-            myosd_vsync = myosd_vsync == -1 ? 6000 : -1;
-            [self changeUI];
-            break;
         case 'X':
             myosd_force_pxaspect = !myosd_force_pxaspect;
             [self changeUI];
@@ -3021,23 +2967,13 @@ void myosd_poll_input(void) {
         case 'P':
             myosd_mame_pause = 1;
             break;
-        case 'M':
-        {
-            // toggle Metal, but in order to load the right shader we need to change the global Options.
-            Options* op = [[Options alloc] init];
-            op.useMetal = !op.useMetal;
-            [op saveOptions];
-            [self updateOptions];
-            [self changeUI];
-            break;
-        }
 #ifdef DEBUG
         case 'R':
             g_enable_debug_view = !g_enable_debug_view;
             [self changeUI];
             break;
         case 'D':
-            [CGScreenView drawScreenDebugDump];
+            g_debug_dump_screen = TRUE;
             break;
 #endif
     }
@@ -4471,11 +4407,13 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
           button == MYOSD_MENU ? "MENU" : button == MYOSD_HOME ? "HOME" : "OPTION",
           pressed ? "DOWN" : "UP", g_menuButtonState[index]);
 
-    // MENU button down (first time)
-    if (pressed && g_menuButton[index] == 0) {
-        g_menuButton[index] = button;
-        g_menuButtonPressed[index] = 0;
-        [self showControllerHUD:controller after:MENU_HUD_SHOW_DELAY];
+    // MENU button (first time)
+    if (g_menuButton[index] == 0) {
+        if (pressed) {
+            g_menuButton[index] = button;
+            g_menuButtonPressed[index] = 0;
+            [self showControllerHUD:controller after:MENU_HUD_SHOW_DELAY];
+        }
         return;
     }
 
@@ -4678,7 +4616,8 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
 
     if (g_menuHUD != nil)
         return;
-    
+
+#if TARGET_OS_TV && defined(__IPHONE_14_0)
     // see if we have any (non siri-remote) game controllers
     GCController* controller = (player < g_controllers.count) ? g_controllers[player] : nil;
     GCExtendedGamepad* gamepad = controller.extendedGamepad;
@@ -4688,7 +4627,6 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
         return;
 #endif
     
-#if TARGET_OS_TV && defined(__IPHONE_14_0)
     if (@available(iOS 14.0, *)) {
         
         g_menuHUD = [[InfoHUD alloc] initWithFrame:CGRectZero];

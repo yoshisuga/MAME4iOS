@@ -1,3 +1,6 @@
+# Version 2021.5
+* Metal only, remove support for a software renderer.
+
 # Version 2021.4
 * Better support for MFi controllers.
 * Game Controllers with more than two menu buttons (Xbox, DualShock, Xinput, Nimbus+, new MFi)

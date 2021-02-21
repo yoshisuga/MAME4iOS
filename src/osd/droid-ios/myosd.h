@@ -37,12 +37,6 @@ enum  { MYOSD_UP=0x1,       MYOSD_LEFT=0x4,       MYOSD_DOWN=0x10,   MYOSD_RIGHT
 #define NETPLAY_PORT 55435
 #define NUM_JOY 4
 
-#define MYOSD_BUFFER_WIDTH  3840
-#define MYOSD_BUFFER_HEIGHT 2160
-extern unsigned short *myosd_curr_screen;   // current screen being rendered.
-extern unsigned short *myosd_prev_screen;   // current screen being drawn (we hope).
-extern unsigned short myosd_screen[MYOSD_BUFFER_WIDTH * MYOSD_BUFFER_HEIGHT * 2];
-
 extern int  myosd_fps;
 extern int  myosd_showinfo;
 extern int  myosd_sleep;
@@ -68,7 +62,6 @@ extern int  myosd_res;
 extern int  myosd_force_pxaspect;
 extern int  myosd_num_of_joys;
 extern int  myosd_pxasp1;
-extern int  myosd_video_threaded;
 extern int  myosd_service;
 extern int  myosd_configure;
 extern int  myosd_mame_pause;           // NOTE myosd_pause is the state of the MAME thread, this is a request for MAME to PAUSE
@@ -122,7 +115,6 @@ extern int myosd_num_coins;
 extern int myosd_num_inputs;
 
 extern int myosd_vsync;
-extern int myosd_dbl_buffer;
 extern int myosd_autofire;
 extern int myosd_hiscore;
     
@@ -139,8 +131,7 @@ extern void myosd_deinit(void);
 extern unsigned long myosd_joystick_read(int n);
 extern float myosd_joystick_read_analog(int n, char axis);
 extern void myosd_set_video_mode(int width,int height,int vis_width, int vis_height);
-extern void myosd_video_flip(void);
-extern int  myosd_video_draw(void*);
+extern void myosd_video_draw(void*);
 extern void myosd_closeSound(void);
 extern void myosd_openSound(int rate,int stereo);
 extern void myosd_sound_play(void *buff, int len);

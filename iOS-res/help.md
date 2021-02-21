@@ -236,7 +236,6 @@ we suppoprt a small subset of the keys supported by the command line MAME.
      ⌘+T                  | TOGGLE THROTTLE
      ⌘+V                  | TOGGLE VSYNC
      ⌘+P                  | TOGGLE PAUSE
-     ⌘+M                  | TOGGLE `useMetal`
      ⌘+A                  | TOGGLE `Keep Aspect Ratio`
      ⌘+X                  | TOGGLE `Force Pixel Aspect`
      ⌘+1               | Player 1 COIN+START

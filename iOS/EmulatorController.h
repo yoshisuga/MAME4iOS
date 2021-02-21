@@ -46,7 +46,6 @@
 
 #import "Globals.h"
 #import "ScreenView.h"
-#import "CGScreenView.h"
 #import "MetalScreenView.h"
 #import "GCDWebUploader.h"
 #import <GameController/GameController.h>

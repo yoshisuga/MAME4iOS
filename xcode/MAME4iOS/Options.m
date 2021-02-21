@@ -11,7 +11,6 @@
 #import "Globals.h"
 #import "SkinManager.h"         // for skinList
 #import "MetalScreenView.h"     // for shader and filter list
-#import "CGScreenView.h"        // for shader and filter list
 
 @implementation Options
 
@@ -44,32 +43,16 @@
     return [SkinManager getSkinNames];
 }
 + (NSArray*)arrayFilter {
-    Options* op = [[Options alloc] init];
-    if (g_isMetalSupported && op.useMetal)
-        return [MetalScreenView filterList];
-    else
-        return [CGScreenView filterList];
+    return [MetalScreenView filterList];
 }
 + (NSArray*)arrayScreenShader {
-    Options* op = [[Options alloc] init];
-    if (g_isMetalSupported && op.useMetal)
-        return [MetalScreenView screenShaderList];
-    else
-        return [CGScreenView screenShaderList];
+    return [MetalScreenView screenShaderList];
 }
 + (NSArray*)arrayLineShader {
-    Options* op = [[Options alloc] init];
-    if (g_isMetalSupported && op.useMetal)
-        return [MetalScreenView lineShaderList];
-    else
-        return [CGScreenView lineShaderList];
+    return [MetalScreenView lineShaderList];
 }
 + (NSArray*)arrayColorSpace {
-    Options* op = [[Options alloc] init];
-    if (g_isMetalSupported && op.useMetal)
-        return [MetalScreenView colorSpaceList];
-    else
-        return [CGScreenView colorSpaceList];
+    return [MetalScreenView colorSpaceList];
 }
 
 #pragma mark - utility funciton to set a single option and save it.
