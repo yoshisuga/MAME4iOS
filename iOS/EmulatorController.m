@@ -4616,7 +4616,8 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
 
     if (g_menuHUD != nil)
         return;
-    
+
+#if TARGET_OS_TV && defined(__IPHONE_14_0)
     // see if we have any (non siri-remote) game controllers
     GCController* controller = (player < g_controllers.count) ? g_controllers[player] : nil;
     GCExtendedGamepad* gamepad = controller.extendedGamepad;
@@ -4626,7 +4627,6 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
         return;
 #endif
     
-#if TARGET_OS_TV && defined(__IPHONE_14_0)
     if (@available(iOS 14.0, *)) {
         
         g_menuHUD = [[InfoHUD alloc] initWithFrame:CGRectZero];
