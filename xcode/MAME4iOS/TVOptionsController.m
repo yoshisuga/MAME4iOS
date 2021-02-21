@@ -85,6 +85,17 @@
 
     return @"";
 }
+
+// helper to get a systemImage to use in the UI
+// HACK: on tvOS 13.x an image in a UITableViewCell will overhand on the left edge of the cell and look ugly, so add a space!
+- (UIImage*)systemImageNamed:(NSString*)name withFont:(UIFont*)font {
+    if (@available(tvOS 14.0, *))
+        return [UIImage systemImageNamed:name withFont:font];
+    else if (@available(tvOS 13.0, *))
+        return [UIImage imageWithString:[NSString stringWithFormat:@" :%@:", name] withFont:font];
+    else
+        return nil;
+}
     
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     
@@ -100,7 +111,7 @@
     
     Options* op = [[Options alloc] init];
     
-    CGFloat size = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].pointSize;
+    UIFont* font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
 
     if ( indexPath.section == kFilterSection ) {
         if ( indexPath.row == 0 ) {
@@ -113,27 +124,27 @@
     } else if ( indexPath.section == kImportSection ) {
         if ( indexPath.row == 0 ) {
             cell.textLabel.text = @"Start Web Server";
-            cell.imageView.image = [UIImage systemImageNamed:@"arrow.up.arrow.down.circle" withPointSize:size];
+            cell.imageView.image = [self systemImageNamed:@"arrow.up.arrow.down.circle" withFont:font];
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
         }
         if ( indexPath.row == 1 ) {
             cell.textLabel.text = @"Export to iCloud";
-            cell.imageView.image = [UIImage systemImageNamed:@"icloud.and.arrow.up" withPointSize:size];
+            cell.imageView.image = [self systemImageNamed:@"icloud.and.arrow.up" withFont:font];
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
         }
         if ( indexPath.row == 2 ) {
             cell.textLabel.text = @"Import from iCloud";
-            cell.imageView.image = [UIImage systemImageNamed:@"icloud.and.arrow.down" withPointSize:size];
+            cell.imageView.image = [self systemImageNamed:@"icloud.and.arrow.down"  withFont:font];
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
         }
         if ( indexPath.row == 3 ) {
             cell.textLabel.text = @"Sync with iCloud";
-            cell.imageView.image = [UIImage systemImageNamed:@"arrow.clockwise.icloud" withPointSize:size];
+            cell.imageView.image = [self systemImageNamed:@"arrow.clockwise.icloud"  withFont:font];
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
         }
         if ( indexPath.row == 4 ) {
             cell.textLabel.text = @"Erase iCloud";
-            cell.imageView.image = [UIImage systemImageNamed:@"xmark.icloud" withPointSize:size];
+            cell.imageView.image = [self systemImageNamed:@"xmark.icloud" withFont:font];
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
         }
     } else if ( indexPath.section == kScreenSection ) {
@@ -222,7 +233,7 @@
         }
     } else if ( indexPath.section == kInputSection ) {
         cell.textLabel.text = @"Game Input";
-        cell.imageView.image = [UIImage systemImageNamed:@"gamecontroller" withPointSize:size];
+        cell.imageView.image = [self systemImageNamed:@"gamecontroller" withFont:font];
         cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     } else if ( indexPath.section == kResetSection ) {
         cell.textLabel.text = @"Reset to Defaults";

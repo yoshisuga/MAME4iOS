@@ -4529,7 +4529,6 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
         
         NSString* title = [NSString stringWithFormat:@":%@:%@", menu.unmappedSfSymbolsName ?: @"line.horizontal.3.circle", name];
         UIImage* image = [UIImage imageWithString:title withFont:[UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]];
-        image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
         [g_menuHUD addImage:image];
         [g_menuHUD addSeparator];
 
