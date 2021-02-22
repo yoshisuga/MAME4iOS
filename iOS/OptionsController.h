@@ -60,35 +60,6 @@ enum OptionSections
     kNumSections
 };
 
-enum ListOptionType
-{
-    kTypeNumButtons,
-    kTypeEmuRes,
-    kTypeStickType,
-    kTypeTouchType,
-    kTypeControlType,
-    kTypeAnalogDZValue,
-    kTypeSoundValue,
-    kTypeFSValue,
-    kTypeOverscanValue,
-    kTypeManufacturerValue,
-    kTypeYearGTEValue,
-    kTypeYearLTEValue,
-    kTypeDriverSourceValue,
-    kTypeCategoryValue,
-    kTypeVideoPriorityValue,
-    kTypeMainPriorityValue,
-    kTypeAutofireValue,
-    kTypeStickSizeValue,
-    kTypeButtonSizeValue,
-    kTypeArrayWPANtype,
-    kTypeWFframeSync,
-    kTypeBTlatency,
-    kTypeEmuSpeed,
-    kTypeVideoThreadTypeValue,
-    kTypeMainThreadTypeValue
-};
-
 @interface OptionsController : OptionsTableViewController
 
 @end

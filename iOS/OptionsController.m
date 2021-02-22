@@ -159,30 +159,17 @@
                }
                case 5:
                {
-                   cell.textLabel.text   = @"Emulated Resolution";
-                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   cell.detailTextLabel.text = [Options.arrayEmuRes optionAtIndex:op.emures];
-                   break;
-               }
-               case 6:
-               {
-                   cell.textLabel.text   = @"Use Metal";
-                   cell.accessoryView = [self optionSwitchForKey:@"useMetal"];
-                   break;
-               }
-               case 7:
-               {
                     cell.textLabel.text   = @"Keep Aspect Ratio";
                     cell.accessoryView = [self optionSwitchForKey:@"keepAspectRatio"];
                    break;
                }
-               case 8:
+               case 6:
                {
                    cell.textLabel.text   = @"Integer Scaling Only";
                    cell.accessoryView = [self optionSwitchForKey:@"integerScalingOnly"];
                    break;
                }
-               case 9:
+               case 7:
                {
                    cell.textLabel.text   = @"Force Pixel Aspect";
                    cell.accessoryView = [self optionSwitchForKey:@"forcepxa"];
@@ -246,94 +233,49 @@
         {
             switch (indexPath.row) 
             {
-               case 0:
-               {
-                   cell.textLabel.text   = @"Show FPS";
-                   cell.accessoryView = [self optionSwitchForKey:@"showFPS"];
-                   break;
-               }
-               case 1:
-               {
-                   cell.textLabel.text   = @"Show HUD";
-                   cell.accessoryView = [self optionSwitchForKey:@"showHUD"];
-                   break;
-               }
-               case 2:
-               {
-                   cell.textLabel.text   = @"Show Info/Warnings";
-                   cell.accessoryView = [self optionSwitchForKey:@"showINFO"];
-                   break;
-               }
+                case 0:
+                {
+                    cell.textLabel.text   = @"Show FPS";
+                    cell.accessoryView = [self optionSwitchForKey:@"showFPS"];
+                    break;
+                }
+                case 1:
+                {
+                    cell.textLabel.text   = @"Show HUD";
+                    cell.accessoryView = [self optionSwitchForKey:@"showHUD"];
+                    break;
+                }
+                case 2:
+                {
+                    cell.textLabel.text   = @"Show Info/Warnings";
+                    cell.accessoryView = [self optionSwitchForKey:@"showINFO"];
+                    break;
+                }
                 case 3:
                 {
-                    cell.textLabel.text   = @"Throttle";
-                    cell.accessoryView = [self optionSwitchForKey:@"throttle"];
-                    break;
+                     cell.textLabel.text = @"Cheats";
+                     cell.accessoryView = [self optionSwitchForKey:@"cheats"];
+                     break;
                 }
                 case 4:
                 {
-                    cell.textLabel.text   = @"Frame Skip";
-                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                    cell.detailTextLabel.text = [Options.arrayFSValue optionAtIndex:op.fsvalue];
-                    break;
+                     cell.textLabel.text   = @"Save Hiscores";
+                     cell.accessoryView = [self optionSwitchForKey:@"hiscore"];
+                     break;
                 }
                 case 5:
                 {
-                    cell.textLabel.text   = @"Overscan TV-OUT";
-                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                    cell.detailTextLabel.text = [Options.arrayOverscanValue optionAtIndex:op.overscanValue];
-                    break;
+                     cell.textLabel.text   = @"Emulated Speed";
+                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                     cell.detailTextLabel.text = [Options.arrayEmuSpeed optionAtIndex:op.emuspeed];
+                     break;
                 }
-
-               case 6:
-               {
-                    cell.textLabel.text   = @"Emulated Speed";
-                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                    cell.detailTextLabel.text = [Options.arrayEmuSpeed optionAtIndex:op.emuspeed];
-                    break;
-               }
-               case 7:
-               {
-                   cell.textLabel.text   = @"Sleep on Idle";
-                   cell.accessoryView = [self optionSwitchForKey:@"sleep"];
-                   break;
-               }                                                                             
-               case 8:
-               {
-                    cell.textLabel.text   = @"Low Latency Audio";
-                    cell.accessoryView = [self optionSwitchForKey:@"lowlsound"];
-                    break;
-               }
-               case 9:
-               {
-                    cell.textLabel.text   = @"Sound";
-                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                    cell.detailTextLabel.text = [Options.arraySoundValue optionAtIndex:op.soundValue];
-                    break;
-               }
-               case 10:
-               {
-                    cell.textLabel.text = @"Cheats";
-                    cell.accessoryView = [self optionSwitchForKey:@"cheats"];
-                    break;
-               }
-               case 11:
-               {
-                    cell.textLabel.text   = @"Force 60Hz Sync";
-                    cell.accessoryView = [self optionSwitchForKey:@"vsync"];
-                    break;
-               }
-               case 12:
-               {
-                    cell.textLabel.text   = @"Save Hiscores";
-                    cell.accessoryView = [self optionSwitchForKey:@"hiscore"];
-                    break;
-               }
-                case 13:
+                case 6:
                 {
-                    cell.textLabel.text   = @"Native TV-OUT";
-                    cell.accessoryView = [self optionSwitchForKey:@"tvoutNative"];
-                    break;
+                     cell.textLabel.text   = @"Sound";
+                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                     cell.detailTextLabel.text = [Options.arraySoundValue optionAtIndex:op.soundValue];
+                     break;
                 }
             }
             break;   
@@ -506,9 +448,9 @@
           case kFullscreenSection: return 3;
           // only show the netplay option if we are being prestenting from main game, not from choose game ui
           case kOtherSection: return (self.presentingViewController == self.emuController) ? 2 : 1;
-          case kVideoSection: return 10;
+          case kVideoSection: return 8;
           case kVectorSection: return 3;
-          case kMiscSection: return 14;
+          case kMiscSection: return 7;
           case kFilterSection: return 2;
           case kImportSection: return 4;
           case kCloudImportSection:
@@ -580,27 +522,15 @@
                 ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"colorSpace" list:Options.arrayColorSpace title:cell.textLabel.text];
                 [[self navigationController] pushViewController:listController animated:YES];
             }
-            if (row==5){
-                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"emures" list:Options.arrayEmuRes title:cell.textLabel.text];
-                [[self navigationController] pushViewController:listController animated:YES];
-            }
             break;
         }
         case kMiscSection:
         {
-            if (row==4){
-                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"fsvalue" list:Options.arrayFSValue title:cell.textLabel.text];
-                [[self navigationController] pushViewController:listController animated:YES];
-            }
-            if (row==5){
-                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"overscanValue" list:Options.arrayOverscanValue title:cell.textLabel.text];
-                [[self navigationController] pushViewController:listController animated:YES];
-            }
-            if (row==6) {
+            if (row==5) {
                 ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"emuspeed" list:Options.arrayEmuSpeed title:cell.textLabel.text];
                 [[self navigationController] pushViewController:listController animated:YES];
             }
-            if (row==9) {
+            if (row==6) {
                 ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"soundValue" list:Options.arraySoundValue title:cell.textLabel.text];
                 [[self navigationController] pushViewController:listController animated:YES];
             }

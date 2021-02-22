@@ -49,84 +49,8 @@ void mylog(char * msg){
 //  GLOBALS
 //============================================================
 
-int isGridlee = 0;
-
-const char *myosd_array_main_manufacturers[] = {
-    "Alpha Denshi","Amcoe","American Laser Games","Arcadia Systems","Aristocrat","Atari","Atlus",
-    "Barcrest","Bally/Sente","Banpresto","BFM","C.M.C.","Cal Omega",
-    "Capcom","Century Electronics","Cinematronics","Comad","Data East","Dooyong",
-    "Dynax","Exidy","Eolith","Face","Gaelco","Gremlin","Greyhound Electronics","Gottlieb",
-    "High Video","Home Data","Igrosoft","Incredible Technologies","Impera","Irem","IGS",
-    "IGT","Jaleco","JPM","Leland","Kaneko","Konami","Merit","Metro",
-    "Midway","Mitchell","Namco","Nichibutsu","Nintendo","NMK","Noraut","Playmark","Psikyo","Rare","Raizing / Eighting",
-    "Sammy","Sega","Seibu Kaihatsu","SemiCom",
-    "Seta","SNK","Status Games","Stern","Subsino","Success","Sun Electronics","SunA","TAB Austria","TAD Corporation",
-    "Taito","Technos","Tecmo","Tehran","Toaplan",
-    "Universal","UPL","V-System","Video System","Visco","Williams","Yun Sung","Zaccaria",
-    "Other",""
-};
-
-
-const char *myosd_array_years[] ={
-    "1975","1976","1977","1978","1979","1980","1981","1982","1983","1984","1985",
-    "1986","1987","1988","1989","1990","1991","1992","1993","1994","1995","1996",
-    "1997","1998","1999","2000","2001","2002","2003","2004","2005","2006","2007",
-    ""
-};
-
-const char *myosd_array_main_driver_source[] = {
-    "8080bw","aerofgt","alpha68k","arcadia","aristmk4","armedf","astrocde","asuka","atarisy1","atarisy2","ataxx",
-    "bagman","balsente","bfm_sc2","blockade","btime","calomega","cave","cclimber","centiped","champbas","cinemat",
-    "cischeat","cojag","cosmic","cps1","cps2","cps3","cubocd32","cvs","ddenlovr","ddragon","dec0","dec8","deco32",
-    "decocass","djmain","dkong","docastle","dooyong","dynax","eolith","equites","esd16","exidy","exidy440","fastfred",
-    "fromance","funworld","galaxold","galdrvr","galpanic","gameplan","gei","goldnpkr","goldstar","gottlieb","harddriv",
-    "highvdeo","homedata","igs011","igspoker","itech32","itech8","jack","jalmah","jpmimpct","kaneko16","konamigv",
-    "konamigx","ksys573","kyugo","ladybug","leland","lethalj","liberate","m62","m72","m90","m92","mappy","marineb",
-    "maxaflex","mcr","mcr3","mcr68","megaplay","megasys1","merit","meritm","metro","midtunit","midwunit","midyunit",
-    "mitchell","ms32","multfish","multigam","mw8080bw","mystwarr","namcona1","namconb1","namcos1","namcos11","namcos12",
-    "namcos2","namcos22","namcos86","nbmj8688","nbmj8891","nbmj8991","nbmj9195","nemesis","neodrvr","ninjakd2","nmg5",
-    "nmk16","norautp","ojankohs","pacman","paradise","peplus","pgm","playch10","playmark","psikyo","psikyo4","psikyosh",
-    "qix","rallyx","royalmah","scobra","scramble","seattle","segac2","segae","segag80r","segag80v","segas16a",
-    "segas16b","segas18","segas24","segas32","segaxbd","segaybd","seibuspi","seta","seta2","sfbonus","simpl156",
-    "snesb","snk","snk6502","snowbros","srmp2","ssv","statriv2","stv","subsino","suprnova","system1","taito_b",
-    "taito_f2","taito_f3","taito_l","taito_x","taito_z","taitogn","taitosj","tetrisp2","thepit","tickee","tmaster",
-    "tmnt","tnzs","toaplan1","toaplan2","tsamurai","tumbleb","usgames","vamphalf","vicdual","vsnes","warpwarp","williams",
-    "zaxxon","zn","zodiack",
-    "Other",""
-};
-
-const char *myosd_array_categories[] = {
-    "Ball & Paddle","Breakout","Casino","Climbing",
-    "Driving","Driving / 1st Person","Driving / Boat","Driving / Plane","Driving / Race","Driving / Race (chase view)",
-    "Driving / Race (chase view) Bike","Driving / Race 1st P Bike","Driving / Race 1st Person","Driving / Race Bike","Driving / Race Track",
-    "Fighter","Fighter / 2.5D","Fighter / 2D","Fighter / 3D","Fighter / Field","Fighter / Misc.","Fighter / Multiplay","Fighter / Versus",
-    "Fighter / Versus Co-op","Fighter / Vertical",
-    "Maze","Maze / Digging","Maze / Driving","Maze / Fighter","Maze / Outline","Maze / Shooter Large","Maze / Shooter Small","Maze / Surround",
-    "Mini-Games","Misc.","Multiplay",
-    "Pinball","Platform","Platform / Fighter","Platform / Fighter Scrolling","Platform / Run Jump","Platform / Run Jump Scrolling",
-    "Platform / Shooter","Platform / Shooter Scrolling",
-    "Puzzle","Puzzle / Cards","Puzzle / Drop","Puzzle / Match","Puzzle / Maze","Puzzle / Outline","Puzzle / Sliding","Puzzle / Toss",
-    "Quiz","Quiz / Chinese","Quiz / English","Quiz / French","Quiz / German","Quiz / Italian","Quiz / Japanese","Quiz / Korean",
-    "Quiz / Music English","Quiz / Music Japanese","Quiz / Spanish",
-    "Rhythm","Rhythm / Dance","Rhythm / Instruments",
-    "Shooter","Shooter / 1st Person","Shooter / 3rd Person","Shooter / Command","Shooter / Driving","Shooter / Driving (chase view)",
-    "Shooter / Driving 1st Person","Shooter / Driving Diagonal","Shooter / Driving Horizontal","Shooter / Driving Vertical",
-    "Shooter / Field","Shooter / Flying","Shooter / Flying (chase view)","Shooter / Flying 1st Person",
-    "Shooter / Flying Diagonal","Shooter / Flying Horizontal","Shooter / Flying Vertical","Shooter / Gallery","Shooter / Gun",
-    "Shooter / Misc.","Shooter / Misc. Horizontal","Shooter / Misc. Vertical","Shooter / Versus","Shooter / Walking","Sports",
-    "Sports / Armwrestling","Sports / Baseball","Sports / Basketball","Sports / Bowling","Sports / Boxing","Sports / Bull Fighting",
-    "Sports / Darts","Sports / Dodgeball","Sports / Fishing","Sports / Football Amer.","Sports / Football Rugby","Sports / Golf",
-    "Sports / Handball","Sports / Hang Gliding","Sports / Hockey","Sports / Horse Racing","Sports / Horseshoes","Sports / Multiplay",
-    "Sports / Ping pong","Sports / Pool","Sports / Shuffleboard","Sports / Skateboarding","Sports / Skiing","Sports / SkyDiving",
-    "Sports / Soccer","Sports / Sumo","Sports / Swimming","Sports / Tennis","Sports / Track & Field","Sports / VolleyBall",
-    "Sports / Wrestling",
-    "Tabletop","Tabletop / Hanafuda","Tabletop / Mahjong","Tabletop / Othello","Tabletop / Renju","Tabletop / Shougi",
-    ""
-};
-
 // a single rendering target
 static render_target *our_target;
-
 
 static const options_entry droid_mame_options[] =
 {
@@ -199,10 +123,6 @@ int main(int argc, char **argv)
 		//args[n]= (char *)"-joystick_deadzone"; n++;args[n]= (char *)"0.0"; n++;
 		args[n]= (char *)"-nocoinlock"; n++;
         
-        if(isGridlee){
-            args[n]= (char *)"gridlee"; n++;
-        }
-        
         netplay_t *handle = netplay_get_handle();
         if(handle->has_connection)
         {
@@ -224,34 +144,7 @@ int main(int argc, char **argv)
             }
         }
                 
-        if(myosd_reset_filter==0)
-        {
-            f=fopen("mame4x.cfg","r");
-            if (f) {
-                fscanf(f,"%d",&myosd_last_game_selected);
-                fclose(f);
-            }
-        }
-        else
-        {
-            myosd_last_game_selected = 0;
-            f=fopen("mame4x.cfg","w");
-            if (f) {
-                fprintf(f,"%d",myosd_last_game_selected);
-                fclose(f);
-                sync();
-            }
-            myosd_reset_filter = 0;
-        }
-        
         ret = cli_execute(n, args, droid_mame_options);
-        
-        f=fopen("mame4x.cfg","w");
-        if (f) {
-            fprintf(f,"%d",myosd_last_game_selected);
-            fclose(f);
-            sync();
-        }
 	}
     
 	myosd_deinit();

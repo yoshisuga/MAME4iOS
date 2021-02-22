@@ -32,22 +32,18 @@ enum  { MYOSD_UP=0x1,       MYOSD_LEFT=0x4,       MYOSD_DOWN=0x10,   MYOSD_RIGHT
         MYOSD_EXIT=1<<20,   MYOSD_OPTION=1<<21,   MYOSD_HOME=1<<22,  MYOSD_MENU=1<<23,
 };
     
-#define MAX_FILTER_KEYWORD 30
 #define MAX_GAME_NAME 14
 #define NETPLAY_PORT 55435
 #define NUM_JOY 4
 
 extern int  myosd_fps;
 extern int  myosd_showinfo;
-extern int  myosd_sleep;
 extern int  myosd_exitGame;
 extern int  myosd_pause;
 extern int  myosd_exitPause;
 extern int  myosd_autosave;
 extern int  myosd_cheat;
 extern int  myosd_sound_value;
-extern int  myosd_frameskip_value;
-extern int  myosd_throttle;
 extern int  myosd_savestate;
 extern int  myosd_loadstate;
 extern int  myosd_waysStick;
@@ -58,7 +54,6 @@ extern int  myosd_vis_video_height;
 extern int  myosd_display_width;        // display width,height is the screen output resolution
 extern int  myosd_display_height;       // ...set in the iOS app, to pick a good default render target size.
 extern int  myosd_in_menu;
-extern int  myosd_res;
 extern int  myosd_force_pxaspect;
 extern int  myosd_num_of_joys;
 extern int  myosd_pxasp1;
@@ -97,16 +92,8 @@ extern unsigned short myosd_ext_status;
     
 extern int myosd_last_game_selected;
 
-extern int myosd_filter_favorites;
 extern int myosd_filter_clones;
 extern int myosd_filter_not_working;
-extern int myosd_filter_manufacturer;
-extern int myosd_filter_gte_year;
-extern int myosd_filter_lte_year;
-extern int myosd_filter_driver_source;
-extern int myosd_filter_category;
-extern char myosd_filter_keyword[MAX_FILTER_KEYWORD];
-extern int myosd_reset_filter;
 
 extern int myosd_num_buttons;
 extern int myosd_num_ways;
@@ -114,7 +101,6 @@ extern int myosd_num_players;
 extern int myosd_num_coins;
 extern int myosd_num_inputs;
 
-extern int myosd_vsync;
 extern int myosd_autofire;
 extern int myosd_hiscore;
     
@@ -137,11 +123,6 @@ extern void myosd_openSound(int rate,int stereo);
 extern void myosd_sound_play(void *buff, int len);
 extern void myosd_check_pause(void);
     
-extern const char *myosd_array_main_manufacturers[];
-extern const char *myosd_array_years[];
-extern const char *myosd_array_main_driver_source[];
-extern const char *myosd_array_categories[];
-
 // myosd output
 enum myosd_output_channel
 {

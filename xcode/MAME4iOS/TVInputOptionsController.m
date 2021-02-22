@@ -127,7 +127,7 @@
     
     if ( indexPath.section == 0 ) {
         if ( indexPath.row == 1 ) {
-            ListOptionController *listController = [[ListOptionController alloc] initWithType:kTypeControlType list:Options.arrayControlType];
+            ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"controltype" list:Options.arrayControlType title:cell.textLabel.text];
             [[self navigationController] pushViewController:listController animated:YES];
         }
     } else if (indexPath.section == 1) {

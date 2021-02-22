@@ -20,9 +20,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (class, readonly, strong) NSString* optionsFile;
 
-@property (class, readonly, strong) NSArray* arrayEmuRes;
-@property (class, readonly, strong) NSArray* arrayFSValue;
-@property (class, readonly, strong) NSArray* arrayOverscanValue;
 @property (class, readonly, strong) NSArray* arrayEmuSpeed;
 @property (class, readonly, strong) NSArray* arrayControlType;
 @property (class, readonly, strong) NSArray* arraySkin;
@@ -40,7 +37,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite,strong) NSString *lineShader;
 @property (readwrite,strong) NSString *colorSpace;
 
-@property (readwrite,assign) int useMetal;
 @property (readwrite,assign) int integerScalingOnly;
 
 @property (readwrite,assign) int showFPS;
@@ -50,9 +46,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite,assign) int fullscreenPortrait;
 @property (readwrite,assign) int fullscreenJoystick;
 
-@property (readwrite,assign) int overscanValue;
-@property (readwrite,assign) int tvoutNative;
-
 @property (readwrite,assign) int touchtype;
 @property (readwrite,assign) int analogDeadZoneValue;
 
@@ -61,39 +54,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readwrite,assign) int soundValue;
 
-@property (readwrite,assign) int throttle;
-@property (readwrite,assign) int fsvalue;
 @property (readwrite,assign) int sticktype;
 @property (readwrite,assign) int numbuttons;
 @property (readwrite,assign) int aplusb;
 @property (readwrite,assign) int cheats;
-@property (readwrite,assign) int sleep;
 
 @property (readwrite,assign) int forcepxa;
-@property (readwrite,assign) int emures;
 @property (readwrite,assign) int p1aspx;
 
 @property (readwrite,assign) int filterClones;
-@property (readwrite,assign) int filterFavorites;
 @property (readwrite,assign) int filterNotWorking;
-@property (readwrite,assign) int manufacturerValue;
-@property (readwrite,assign) int yearGTEValue;
-@property (readwrite,assign) int yearLTEValue;
-@property (readwrite,assign) int driverSourceValue;
-@property (readwrite,assign) int categoryValue;
-
-@property (readwrite,strong,nullable) NSString *filterKeyword;
-
-@property (readwrite,assign) int lowlsound;
-@property (readwrite,assign) int vsync;
-@property (readwrite,assign) int threaded;
-@property (readwrite,assign) int dblbuff;
-
-@property (readwrite,assign) int mainPriority;
-@property (readwrite,assign) int videoPriority;
 
 @property (readwrite,assign) int autofire;
-
 @property (readwrite,assign) int hiscore;
 
 @property (readwrite,assign) int buttonSize;
@@ -130,10 +102,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite,assign) int touchDirectionalEnabled;
 
 @property (readwrite,assign) CGFloat touchControlsOpacity;
-
-@property (readwrite,assign) int mainThreadType;
-@property (readwrite,assign) int videoThreadType;
-
 
 @end
 

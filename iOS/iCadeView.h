@@ -47,7 +47,7 @@
 #import "Globals.h"
 #import "EmulatorController.h"
 
-@interface iCadeView : UIView {
+@interface iCadeView : UIView<UIKeyInput> {
     UIView                  *inputView;//This is to show a fake invisible keyboard
     EmulatorController      *emuController;
 }

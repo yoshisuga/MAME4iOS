@@ -125,8 +125,6 @@ extern int g_pref_analog_DZ_value;
 extern int g_pref_input_touch_type;
 extern int g_pref_ext_control_type;
 extern int g_pref_nintendoBAYX;
-extern int g_pref_nativeTVOUT;
-extern int g_pref_overscanTVOUT;
 
 extern float g_buttons_size;
 extern float g_stick_size;

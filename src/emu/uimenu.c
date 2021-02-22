@@ -3794,9 +3794,6 @@ static void menu_select_game_populate(running_machine *machine, ui_menu *menu, s
 		return;
 	}
     
-    //if(myosd_filter_keyword[0]!=0)
-        //strcpy(menustate->search,myosd_filter_keyword);
-
 	/* otherwise, rebuild the match list */
 	if (menustate->search[0] != 0 || menustate->matchlist[0] == NULL || menustate->rerandomize)
 		driver_list_get_approx_matches(menustate->driverlist, menustate->search, matchcount, menustate->matchlist);
@@ -3876,27 +3873,12 @@ static void menu_select_game_build_driver_list(ui_menu *menu, select_game_state 
 	int drivnum, listnum;
 	mame_path *path;
 	UINT8 *found;
-
-//DAV HACK
+    
+    //DAV HACK
     categories_read();
-    
     favorites_read();
-    
-    //fixup filters
-    if(myosd_filter_manufacturer>=0)
-    {
-        if(strcmp(myosd_array_main_manufacturers[myosd_filter_manufacturer],"Other")==0)
-            myosd_filter_manufacturer = -2;
-    }
-    
-    if(myosd_filter_driver_source>=0)
-    {
-        if(strcmp(myosd_array_main_driver_source[myosd_filter_driver_source],"Other")==0)
-            myosd_filter_driver_source = -2;
-    }
-    
-////DAV HACK
-    
+    ////DAV HACK
+
 	/* create a sorted copy of the main driver list */
 	memcpy((void *)menustate->driverlist, drivers, driver_count * sizeof(menustate->driverlist[0]));
 	qsort((void *)menustate->driverlist, driver_count, sizeof(menustate->driverlist[0]), menu_select_game_driver_compare);
@@ -3933,69 +3915,13 @@ static void menu_select_game_build_driver_list(ui_menu *menu, select_game_state 
             
             int skip = found_driver == NULL;
  
-//DAV HACK            
+//DAV HACK
             if(!skip && myosd_filter_clones)
             {
                 const game_driver *cloneof = driver_get_clone(*found_driver);
                 skip = cloneof!=NULL && !(cloneof->flags & GAME_IS_BIOS_ROOT);
             }
             if(!skip) skip = myosd_filter_not_working && (*found_driver)->flags & GAME_NOT_WORKING;
-            if(!skip) skip = myosd_filter_favorites && !isFavorite(drivername) ;
-            if(!skip && myosd_filter_manufacturer !=  -1)
-            {
-                if(myosd_filter_manufacturer==-2)
-                {
-                    int i=0;
-                    while(!skip && myosd_array_main_manufacturers[i][0]!='\0')
-                    {
-                        skip = strstr((*found_driver)->manufacturer,myosd_array_main_manufacturers[i])!=NULL;
-                        i++;
-                    }
-                }
-                else
-                    skip =  strstr((*found_driver)->manufacturer,myosd_array_main_manufacturers[myosd_filter_manufacturer])==NULL;
-            }
-            
-            if(!skip && myosd_filter_gte_year!=-1)
-            {
-                const char *year = (*found_driver)->year;
-                skip = strcmp(year,"19??")==0 || strcmp(year,"197?")==0 || strcmp(year,"198?")==0 || strcmp(year,"200?")==0 || strcmp(year,myosd_array_years[myosd_filter_gte_year]) < 0;
-            }
-            if(!skip && myosd_filter_lte_year!=-1)
-            {
-                const char *year = (*found_driver)->year;
-                skip = strcmp(year,"19??")==0 || strcmp(year,"197?")==0 || strcmp(year,"198?")==0 || strcmp(year,"200?")==0 || strcmp(year,myosd_array_years[myosd_filter_lte_year]) > 0;
-            }
-            
-            if(!skip && myosd_filter_driver_source !=  -1)
-            {
-                astring source_name;
-                core_filename_extract_base(&source_name,(*found_driver)->source_file,true);
-                const char *sname= source_name.cstr();
-                
-                if(myosd_filter_driver_source==-2)
-                {
-                    int i=0;
-                    while(!skip && myosd_array_main_driver_source[i][0]!='\0')
-                    {
-                        skip = strcmp(sname,myosd_array_main_driver_source[i])==0;
-                        i++;
-                    }
-                }
-                else
-                    skip =  strcmp(sname,myosd_array_main_driver_source[myosd_filter_driver_source])!=0;
-            }
-            
-            if(!skip && myosd_filter_keyword[0] != '\0')
-                skip = mystristr((*found_driver)->name,myosd_filter_keyword)==NULL && mystristr((*found_driver)->description,myosd_filter_keyword)==NULL;
-            
-            if(!skip && myosd_filter_category != -1)
-            {
-                char *category = find_category((*found_driver)->name);
-                
-                skip = category==NULL || strstr(category,myosd_array_categories[myosd_filter_category])==NULL;
-            }
-            
 //DAV HACK
 			/* if found, mark the corresponding entry in the array */
 			if (!skip)
@@ -4040,59 +3966,12 @@ static void menu_select_game_custom_render(running_machine *machine, ui_menu *me
 	int line;
     
 //DAV HACK
-    
     int nroms = menu->numitems > 3 ? menu->numitems -3 : 0;
 //DAV HACK
 
 	/* display the current typeahead */
 	if (menustate->search[0] != 0)
 		sprintf(&tempbuf[0][0], "Type name or select: %s_", menustate->search);
-//DAV HACK
-	else if(/*myosd_filter_clones!=0 || myosd_filter_favorites!=0 || myosd_filter_not_working!=0 ||*/
-            myosd_filter_manufacturer!=-1 || myosd_filter_gte_year!=-1 || myosd_filter_lte_year!=-1 || myosd_filter_driver_source!=-1
-            || myosd_filter_keyword[0]!= '\0' || myosd_filter_category!=-1 )
-    {
-        char tempstr[255];
-        strcpy(tempstr, "Filter: ");
-        
-        if (myosd_filter_keyword[0]!='\0'){
-            strcat(tempstr, myosd_filter_keyword);
-            strcat(tempstr, "/");
-        }
-        
-        if (myosd_filter_gte_year>=0) {
-            strcat(tempstr, ">=");
-            strcat(tempstr, myosd_array_years[myosd_filter_gte_year]);
-            strcat(tempstr, "/");
-        }
-        if (myosd_filter_lte_year>=0) {
-            strcat(tempstr, "<=");
-            strcat(tempstr, myosd_array_years[myosd_filter_lte_year]);
-            strcat(tempstr, "/");
-        }
-        
-        if (myosd_filter_manufacturer>=0) {
-            strcat(tempstr, myosd_array_main_manufacturers[myosd_filter_manufacturer]);
-            strcat(tempstr, "/");
-        }
-        if (myosd_filter_manufacturer==-2)
-            strcat(tempstr, "Other Manufact/");
-        
-        if (myosd_filter_driver_source>=0) {
-            strcat(tempstr, myosd_array_main_driver_source[myosd_filter_driver_source]);
-            strcat(tempstr, "/");
-        }
-        if (myosd_filter_driver_source==-2)
-            strcat(tempstr, "Other DrvSrc/");
-        
-        if (myosd_filter_category>=0) {
-            strcat(tempstr, myosd_array_categories[myosd_filter_category]);
-            strcat(tempstr, "/");
-        }
-
-        tempstr[strlen(tempstr)-1] = '\0';
-        sprintf(&tempbuf[0][0], "%s. Game: %d/%d",tempstr,MIN(myosd_last_game_selected+1,nroms), nroms);
-    }
     else
     {
 			//sprintf(&tempbuf[0][0], "Type name or select: _");
@@ -4186,10 +4065,6 @@ static void menu_select_game_custom_render(running_machine *machine, ui_menu *me
 			soundstat = "OK";
 
 		sprintf(&tempbuf[3][0], "%s: Gfx: %s, Sound: %s",overall, gfxstat, soundstat);
-        
-//DAV HACK
-        strcpy(myosd_selected_game,driver->name);
-//END DAV HACK
 	}
 	else
 	{
@@ -4214,9 +4089,6 @@ static void menu_select_game_custom_render(running_machine *machine, ui_menu *me
 			if (*s != 0)
 				s++;
 		}
-        //DAV HACK
-        strcpy(myosd_selected_game,"");
-        //END DAV HACK
 	}
 
 	/* get the size of the text */
@@ -4288,16 +4160,7 @@ static void menu_alt_game(running_machine *machine, ui_menu *menu, void *paramet
         {
             if(isFavorite(name)) {
                 favorites_remove(name);
-                if(myosd_filter_favorites==-1)
-                {
-                   ui_menu_stack_pop(menu->machine); 
-                }
-                else
-                {
-                    machine->schedule_exit();
-                    ui_menu_stack_reset(machine);
-                }
-                
+                ui_menu_stack_pop(menu->machine);
             } else {
                 favorites_add(name);
                 ui_menu_stack_pop(menu->machine);

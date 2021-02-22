@@ -32,7 +32,6 @@ int  myosd_exitGame = 0;
 int  myosd_pause = 0;
 int  myosd_exitPause = 0;
 int  myosd_last_game_selected = 0;
-int  myosd_frameskip_value = -1;
 int  myosd_sound_value = 44100;
 int  myosd_throttle = 1;
 int  myosd_cheat = 1;
@@ -47,7 +46,6 @@ int  myosd_vis_video_height = 240;
 int  myosd_display_width;
 int  myosd_display_height;
 int  myosd_in_menu = 0;
-int  myosd_res = 1;
 int  myosd_force_pxaspect = 0;
 
 int  myosd_pxasp1 = 1;
@@ -60,27 +58,14 @@ int myosd_light_gun = 0;
 
 int myosd_num_of_joys=0;
 
-int myosd_filter_favorites = 0;
 int myosd_filter_clones = 0;
 int myosd_filter_not_working = 0;
-
-int myosd_filter_manufacturer = -1;
-int myosd_filter_gte_year = -1;
-int myosd_filter_lte_year = -1;
-int myosd_filter_driver_source= -1;
-int myosd_filter_category = -1;
-char myosd_filter_keyword[MAX_FILTER_KEYWORD] = {'\0'};
-
-int myosd_reset_filter = 0;
-
 int myosd_num_buttons = 0;
 int myosd_num_ways = 8;
 int myosd_num_players = 0;
 int myosd_num_coins = 0;
 int myosd_num_inputs = 0;
 
-
-int myosd_vsync = -1;
 int myosd_autofire=1;
 int myosd_hiscore=1;
 
@@ -124,7 +109,7 @@ static pthread_mutex_t cond_mutex     = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t  condition_var   = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t sound_mutex     = PTHREAD_MUTEX_INITIALIZER;
 
-extern int global_low_latency_sound;
+static int global_low_latency_sound  = 1;
 
 // OSD functions located in the iOS/tvOS app
 extern "C" void iphone_Reset_Views(void);
