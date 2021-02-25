@@ -75,7 +75,8 @@ extern int  myosd_inGame;
 extern int  myosd_in_menu;
 
 extern unsigned long myosd_pad_status;
-    
+extern unsigned long myosd_joy_status[NUM_JOY];
+
 extern float joy_analog_x[NUM_JOY][4];
 extern float joy_analog_y[NUM_JOY][2];
 
@@ -84,6 +85,8 @@ extern float lightgun_y[NUM_JOY];
 
 extern float mouse_x[NUM_JOY];
 extern float mouse_y[NUM_JOY];
+extern float mouse_z[NUM_JOY];
+extern unsigned long mouse_status[NUM_JOY];
 
 extern int myosd_mouse;
 extern int myosd_light_gun;

@@ -50,19 +50,27 @@
 #define NSLog(...) (void)0
 #endif
 
-@implementation iCadeView
+@implementation iCadeView {
+    UIView              *inputView;          //This is to show a fake invisible keyboard
+    EmulatorController  *emuController;
+}
 
 - (id)initWithFrame:(CGRect)frame withEmuController:(EmulatorController*)emulatorController
 {
     self = [super initWithFrame:frame];
     inputView = [[UIView alloc] initWithFrame:CGRectZero];//inputView es variable de instancia que ya elimina el super
-    
+
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didEnterBackground) name:UIApplicationDidEnterBackgroundNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didBecomeActive) name:UIApplicationDidBecomeActiveNotification object:nil];
     
     emuController = emulatorController;
     
     return self;
+}
+
+- (id)initWithFrame:(CGRect)frame
+{
+    return [self initWithFrame:frame withEmuController:EmulatorController.sharedInstance];
 }
 
 - (void)dealloc {
@@ -107,16 +115,6 @@
 
 - (UIView*) inputView {
     return inputView;
-}
-
-#pragma mark UIKeyInput
-
-- (BOOL) hasText {
-    return NO;
-}
-- (void)insertText:(NSString *)text {
-}
-- (void)deleteBackward {
 }
 
 #pragma mark handle iCade key
