@@ -340,14 +340,6 @@
                }
                case 2:
                {
-                   // TODO: do we want this here? or burried in `Game Input`?
-                   cell.textLabel.text = @"Export Skin";
-                   cell.imageView.image = [UIImage systemImageNamed:@"square.and.arrow.up"];
-                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   break;
-               }
-               case 3:
-               {
                    cell.textLabel.text = @"Start Web Server";
                    cell.imageView.image = [UIImage systemImageNamed:@"arrow.up.arrow.down.circle"];
                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
@@ -452,7 +444,7 @@
           case kVectorSection: return 3;
           case kMiscSection: return 7;
           case kFilterSection: return 2;
-          case kImportSection: return 4;
+          case kImportSection: return 3;
           case kCloudImportSection:
               if (CloudSync.status == CloudSyncStatusAvailable)
                   return 4;
@@ -545,9 +537,6 @@
                 [self.emuController runExport];
             }
             if (row==2) {
-                [self.emuController runExportSkin];
-            }
-            if (row==3) {
                 [self.emuController runServer];
             }
             break;
