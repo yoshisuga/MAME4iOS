@@ -44,12 +44,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "Globals.h"
-#import "EmulatorController.h"
-
 @interface iCadeView : UIView
-
-- (id)initWithFrame:(CGRect)frame withEmuController:(EmulatorController*)emulatorController;
 
 @property (nonatomic, assign) BOOL active;
 

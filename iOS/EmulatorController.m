@@ -826,7 +826,7 @@ void mame_state(int load_save, int slot)
     [self runExit:YES];
 }
 
-- (void)runPause
+- (void)enterBackground
 {
     // this is called from bootstrapper when app is going into the background, save the current game we are playing so we can restore next time.
     [EmulatorController setCurrentGame:g_mame_game_info];
@@ -834,19 +834,13 @@ void mame_state(int load_save, int slot)
     // also save the position of the HUD
     [self saveHUD];
     
-    [[NSUserDefaults standardUserDefaults] synchronize];
-    
-    if (self.presentedViewController != nil || g_emulation_paused)
-        return;
-    
-    // dont pause the MAME select game menu.
-    if (!myosd_inGame)
-        return;
+    if (self.presentedViewController == nil && g_emulation_paused == 0)
+        [self startMenu];
+}
 
-    [self startMenu];
-    [self showAlertWithTitle:@PRODUCT_NAME message:@"Game is PAUSED" buttons:@[@"Continue"] handler:^(NSUInteger button) {
+- (void)enterForeground {
+    if (self.presentedViewController == nil && g_emulation_paused == 1)
         [self endMenu];
-    }];
 }
 
 - (void)runSettings {
@@ -1269,7 +1263,7 @@ void mame_state(int load_save, int slot)
     
     [self changeUI];
     
-    icadeView = [[iCadeView alloc] initWithFrame:CGRectZero withEmuController:self];
+    icadeView = [[iCadeView alloc] init];
     [self.view addSubview:icadeView];
 
     // always enable iCadeView for hardware keyboard support
