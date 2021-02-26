@@ -651,12 +651,6 @@
 //      aq  dc    hr jn kp lv
 //        xz
 //
-// 8BitDo keys
-//       k     m
-//    c           h
-//   e f         i g
-//    d    n o    j
-//
 
 // NOTE you can find these constants now-a-days in UIKeyConstants.h
 #define KEY_RARROW   79
@@ -732,7 +726,7 @@
           keyCode, isKeyDown ? "DOWN" : "UP");
     
     // iCade (or compatible...)
-    if (!(g_pref_ext_control_type == EXT_CONTROL_NONE || g_pref_ext_control_type == EXT_CONTROL_8BITDO))
+    if (g_pref_ext_control_type != EXT_CONTROL_NONE)
     {
         if (isKeyDown && modifierFlags == 0)
             [self iCadeKey:key];
@@ -841,44 +835,6 @@
             [emuController commandKey:'1' + (keyCode - KEY_1)];
     }
     
-    // 8BitDo
-    if (g_pref_ext_control_type == EXT_CONTROL_8BITDO && modifierFlags == 0) {
-        switch (keyCode + (isKeyDown ? KEY_DOWN : 0)) {
-            
-        // DPAD
-        case KEY_F:            iCadeKey = @"c"; break;
-        case KEY_F+KEY_DOWN:   iCadeKey = @"d"; break;
-        case KEY_E:            iCadeKey = @"q"; break;
-        case KEY_E+KEY_DOWN:   iCadeKey = @"a"; break;
-        case KEY_C:            iCadeKey = @"e"; break;
-        case KEY_C+KEY_DOWN:   iCadeKey = @"w"; break;
-        case KEY_D:            iCadeKey = @"z"; break;
-        case KEY_D+KEY_DOWN:   iCadeKey = @"x"; break;
-
-        // A/B/Y/X
-        case KEY_G:             iCadeKey = @"p"; break;
-        case KEY_G+KEY_DOWN:    iCadeKey = @"k"; break;
-        case KEY_J:             iCadeKey = @"g"; break;
-        case KEY_J+KEY_DOWN:    iCadeKey = @"o"; break;
-        case KEY_I:             iCadeKey = @"m"; break;
-        case KEY_I+KEY_DOWN:    iCadeKey = @"i"; break;
-        case KEY_H:             iCadeKey = @"v"; break;
-        case KEY_H+KEY_DOWN:    iCadeKey = @"l"; break;
-
-        // L1/R1
-        case KEY_K:             iCadeKey = @"f"; break;
-        case KEY_K+KEY_DOWN:    iCadeKey = @"u"; break;
-        case KEY_M:             iCadeKey = @"n"; break;
-        case KEY_M+KEY_DOWN:    iCadeKey = @"j"; break;
-
-        // START and SELECT/COIN (Player 1)
-        case KEY_O:             iCadeKey = @"r"; break;
-        case KEY_O+KEY_DOWN:    iCadeKey = @"h"; break;
-        case KEY_N:             iCadeKey = @"t"; break;
-        case KEY_N+KEY_DOWN:    iCadeKey = @"y"; break;
-        }
-    }
-
     if (iCadeKey != nil) {
         [self iCadeKey:iCadeKey];
     }

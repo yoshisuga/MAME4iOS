@@ -329,9 +329,6 @@ START+DOWN     |Player 4 START
 
 You can save or load game states by pressing the MENU button when you are gaming, and select save or load state option. Also you can press button MENU+UP (Load) or MENU+DOWN (Save) on a external controller. 
 
-## 8BitDo Zero 
-MAME4iOS supports the [8BitDo Zero](https://www.8bitdo.com/zero2/) when in KEYBOARD mode.
-
 ## Siri Remote
 MAME4iOS is now usable on a AppleTV using only the stock Siri Remote. You can only play games that use only the A and B buttons.
 

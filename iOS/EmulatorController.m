@@ -1178,12 +1178,12 @@ void mame_state(int load_save, int slot)
         [self runExit];
     }
     
-    // SELECT and START at the same time (iCade, keyboard, 8bitDo, touch)
+    // SELECT and START at the same time (iCade, keyboard, touch)
     if ((pad_status & MYOSD_SELECT) && (pad_status & MYOSD_START))
     {
         // hide these keys from MAME, and prevent them from sticking down.
         myosd_pad_status &= ~(MYOSD_SELECT|MYOSD_START);
-        for (int i=0; i<4; i++)
+        for (int i=0; i<NUM_JOY; i++)
             myosd_joy_status[i] &= ~(MYOSD_SELECT|MYOSD_START);
         [self runMenu];
     }

@@ -174,7 +174,6 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     CGFloat _layoutWidth;
     UISearchController* _searchController;
     NSArray* _key_commands;
-    NSInteger _key_commands_type;
     BOOL _searchCancel;
     NSIndexPath* _currentlyFocusedIndexPath;
     UIImage* _defaultImage;
@@ -1891,54 +1890,23 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if (_searchController.isActive)
         return @[];
     
-    if (_key_commands == nil || g_pref_ext_control_type != _key_commands_type) {
-        
-#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_13_0
-        // standard keyboard
+    if (_key_commands == nil) {
         _key_commands = @[
-            [UIKeyCommand commandWithTitle:@"SELECT" image:nil action:@selector(onCommandSelect) input:@"\r"                modifierFlags:0 propertyList:nil],
-            [UIKeyCommand commandWithTitle:@"UP"     image:nil action:@selector(onCommandUp)     input:UIKeyInputUpArrow    modifierFlags:0 propertyList:nil],
-            [UIKeyCommand commandWithTitle:@"DOWN"   image:nil action:@selector(onCommandDown)   input:UIKeyInputDownArrow  modifierFlags:0 propertyList:nil],
-            [UIKeyCommand commandWithTitle:@"LEFT"   image:nil action:@selector(onCommandLeft)   input:UIKeyInputLeftArrow  modifierFlags:0 propertyList:nil],
-            [UIKeyCommand commandWithTitle:@"RIGHT"  image:nil action:@selector(onCommandRight)  input:UIKeyInputRightArrow modifierFlags:0 propertyList:nil],
-        ];
-#else
-        // standard keyboard
-        _key_commands = @[
-            [UIKeyCommand keyCommandWithInput:@"\r" modifierFlags:0 action:@selector(onCommandSelect) discoverabilityTitle:@"SELECT"],
-            [UIKeyCommand keyCommandWithInput:UIKeyInputUpArrow modifierFlags:0 action:@selector(onCommandUp) discoverabilityTitle:@"UP"],
-            [UIKeyCommand keyCommandWithInput:UIKeyInputDownArrow modifierFlags:0 action:@selector(onCommandDown) discoverabilityTitle:@"DOWN"],
-            [UIKeyCommand keyCommandWithInput:UIKeyInputLeftArrow modifierFlags:0 action:@selector(onCommandLeft) discoverabilityTitle:@"LEFT"],
-            [UIKeyCommand keyCommandWithInput:UIKeyInputRightArrow modifierFlags:0 action:@selector(onCommandRight) discoverabilityTitle:@"RIGHT"]
-        ];
-#endif
-
-        _key_commands_type = g_pref_ext_control_type;
-
-        if (g_pref_ext_control_type == EXT_CONTROL_8BITDO) {
-            // 8BitDo
-            _key_commands = [_key_commands arrayByAddingObjectsFromArray:@[
-                [UIKeyCommand keyCommandWithInput:@"n" modifierFlags:0 action:@selector(onCommandSelect)], // SELECT
-                [UIKeyCommand keyCommandWithInput:@"o" modifierFlags:0 action:@selector(onCommandSelect)], // START
-                [UIKeyCommand keyCommandWithInput:@"g" modifierFlags:0 action:@selector(onCommandSelect)], // A
-                [UIKeyCommand keyCommandWithInput:@"c" modifierFlags:0 action:@selector(onCommandUp)],
-                [UIKeyCommand keyCommandWithInput:@"d" modifierFlags:0 action:@selector(onCommandDown)],
-                [UIKeyCommand keyCommandWithInput:@"e" modifierFlags:0 action:@selector(onCommandLeft)],
-                [UIKeyCommand keyCommandWithInput:@"f" modifierFlags:0 action:@selector(onCommandRight)],
-            ]];
-        }
-        else if (g_pref_ext_control_type >= EXT_CONTROL_ICADE) {
+            // standard keyboard
+            [UIKeyCommand keyCommandWithInput:@"\r"                 modifierFlags:0 action:@selector(onCommandSelect)],
+            [UIKeyCommand keyCommandWithInput:UIKeyInputUpArrow     modifierFlags:0 action:@selector(onCommandUp)],
+            [UIKeyCommand keyCommandWithInput:UIKeyInputDownArrow   modifierFlags:0 action:@selector(onCommandDown)],
+            [UIKeyCommand keyCommandWithInput:UIKeyInputLeftArrow   modifierFlags:0 action:@selector(onCommandLeft)],
+            [UIKeyCommand keyCommandWithInput:UIKeyInputRightArrow  modifierFlags:0 action:@selector(onCommandRight)],
             // iCade
-            _key_commands = [_key_commands arrayByAddingObjectsFromArray:@[
-                [UIKeyCommand keyCommandWithInput:@"y" modifierFlags:0 action:@selector(onCommandSelect)], // SELECT
-                [UIKeyCommand keyCommandWithInput:@"h" modifierFlags:0 action:@selector(onCommandSelect)], // START
-                [UIKeyCommand keyCommandWithInput:@"k" modifierFlags:0 action:@selector(onCommandSelect)], // A
-                [UIKeyCommand keyCommandWithInput:@"w" modifierFlags:0 action:@selector(onCommandUp)],
-                [UIKeyCommand keyCommandWithInput:@"x" modifierFlags:0 action:@selector(onCommandDown)],
-                [UIKeyCommand keyCommandWithInput:@"a" modifierFlags:0 action:@selector(onCommandLeft)],
-                [UIKeyCommand keyCommandWithInput:@"d" modifierFlags:0 action:@selector(onCommandRight)],
-            ]];
-        }
+            [UIKeyCommand keyCommandWithInput:@"y" modifierFlags:0 action:@selector(onCommandSelect)], // SELECT
+            [UIKeyCommand keyCommandWithInput:@"h" modifierFlags:0 action:@selector(onCommandSelect)], // START
+            [UIKeyCommand keyCommandWithInput:@"k" modifierFlags:0 action:@selector(onCommandSelect)], // A
+            [UIKeyCommand keyCommandWithInput:@"w" modifierFlags:0 action:@selector(onCommandUp)],
+            [UIKeyCommand keyCommandWithInput:@"x" modifierFlags:0 action:@selector(onCommandDown)],
+            [UIKeyCommand keyCommandWithInput:@"a" modifierFlags:0 action:@selector(onCommandLeft)],
+            [UIKeyCommand keyCommandWithInput:@"d" modifierFlags:0 action:@selector(onCommandRight)],
+        ];
     }
     return _key_commands;
 }
