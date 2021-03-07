@@ -44,15 +44,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "Globals.h"
-#import "EmulatorController.h"
-
-@interface iCadeView : UIView<UIKeyInput> {
-    UIView                  *inputView;//This is to show a fake invisible keyboard
-    EmulatorController      *emuController;
-}
-
-- (id)initWithFrame:(CGRect)frame withEmuController:(EmulatorController*)emulatorController;
+@interface iCadeView : UIView
 
 @property (nonatomic, assign) BOOL active;
 

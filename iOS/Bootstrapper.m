@@ -258,10 +258,11 @@ const char* get_documents_path(const char* file)
 #endif
 
 - (void)applicationDidEnterBackground:(UIApplication *)application {
-    [hrViewController runPause];
+    [hrViewController enterBackground];
 }
 
-- (void)applicationWillResignActive:(UIApplication *)application {
+- (void)applicationWillEnterForeground:(UIApplication *)application {
+    [hrViewController enterForeground];
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application {

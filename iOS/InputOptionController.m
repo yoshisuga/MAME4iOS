@@ -114,7 +114,7 @@
         case 1: return 3;
         case 2: return 5;
         case 3: return 1;
-        case 4: return 2;
+        case 4: return 3;
         case 5: return 1;
         case 6: return 1;
         case 7: return 2;
@@ -298,6 +298,13 @@
                 {
                     cell.selectionStyle = UITableViewCellSelectionStyleBlue;
                     cell.textLabel.text = @"Reset Current Layout to Default";
+                    cell.textLabel.textAlignment = NSTextAlignmentCenter;
+                    break;
+                }
+                case 2:
+                {
+                    cell.selectionStyle = UITableViewCellSelectionStyleBlue;
+                    cell.textLabel.text = @"Export Skin";
                     cell.textLabel.textAlignment = NSTextAlignmentCenter;
                     break;
                 }
@@ -577,6 +584,10 @@
     {
         [self.emuController resetCurrentLayout];
         [tableView reloadData];
+    }
+    if(section==4 && row==2)
+    {
+        [self.emuController runExportSkin];
     }
 
     if(section==6 && row==0)

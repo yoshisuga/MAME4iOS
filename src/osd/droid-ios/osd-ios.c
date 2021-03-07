@@ -85,6 +85,8 @@ float lightgun_y[NUM_JOY];
 
 float mouse_x[NUM_JOY];
 float mouse_y[NUM_JOY];
+float mouse_z[NUM_JOY];
+unsigned long mouse_status[NUM_JOY];
 
 int myosd_mouse = 0;
 
