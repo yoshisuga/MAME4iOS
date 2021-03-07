@@ -49,13 +49,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ListOptionController : OptionsTableViewController 
 
-- (instancetype)initWithType:(NSInteger)typeValue list:(NSArray<NSString*> *)listValue;
-
 - (instancetype)initWithKey:(NSString*)keyValue list:(NSArray<NSString*>*)listValue;
 - (instancetype)initWithKey:(NSString*)keyValue list:(NSArray<NSString*>*)listValue title:(NSString*)titleValue;
-
-// old code is calling this, use just initWithType:list: or initWithKey:list: instead
-- (instancetype)initWithStyle:(UITableViewStyle)style type:(NSInteger)typeValue list:(NSArray<NSString*>*)listValue;
 
 @end
 

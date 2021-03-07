@@ -109,6 +109,16 @@
     return inputView;
 }
 
+#pragma mark UIKeyInput
+
+- (BOOL) hasText {
+    return NO;
+}
+- (void)insertText:(NSString *)text {
+}
+- (void)deleteBackward {
+}
+
 #pragma mark handle iCade key
 
 // iCade keys
@@ -931,7 +941,5 @@
 }
 
 #endif
-
-
 
 @end

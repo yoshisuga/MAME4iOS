@@ -283,6 +283,8 @@ void my_poll_ports(running_machine *machine)
         mame_printf_debug("Num PLAYERS %d\n",myosd_num_players);
         mame_printf_debug("Num COINS %d\n",myosd_num_coins);
         mame_printf_debug("Num INPUTS %d\n",myosd_num_inputs);
+        mame_printf_debug("Num MOUSE %d\n",myosd_mouse);
+        mame_printf_debug("Num GUN %d\n",myosd_light_gun);
     }
     
 }
@@ -396,10 +398,6 @@ void droid_ios_poll_input(running_machine *machine)
 	    else
 	    {
 			keyboard_state[KEY_ESCAPE] = 0;
-            
-            if(myosd_reset_filter==1){
-                myosd_exitGame= 1;
-            }
         }
         
         // SERVICE key

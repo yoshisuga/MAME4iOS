@@ -527,50 +527,45 @@
     
     NSUInteger row = [indexPath row];
     NSUInteger section = [indexPath section];
+    UITableViewCell* cell = [tableView cellForRowAtIndexPath:indexPath];
     
     if(section==1 && row==0)
     {
-        ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped type:kTypeTouchType list:arrayTouchType];
+        ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"touchtype" list:arrayTouchType title:cell.textLabel.text];
         [[self navigationController] pushViewController:listController animated:YES];
     }
     if(section==1 && row==1)
     {
-        ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
-                                                                                    type:kTypeStickType list:arrayStickType];
+        ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"sticktype" list:arrayStickType title:cell.textLabel.text];
         [[self navigationController] pushViewController:listController animated:YES];
     }
     if(section==1 && row==2)
     {
-        ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
-                                                                                      type:kTypeStickSizeValue list:arrayStickSizeValue];
+        ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"stickSize" list:arrayStickSizeValue title:cell.textLabel.text];
         [[self navigationController] pushViewController:listController animated:YES];
     }
     
     
     if(section==2 && row==0)
     {
-        ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
-                                                                                      type:kTypeNumButtons list:arrayNumbuttons];
+        ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"numbuttons" list:arrayNumbuttons title:cell.textLabel.text];
         [[self navigationController] pushViewController:listController animated:YES];
     }
     if(section==2 && row==2)
     {
-        ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
-                                                                                      type:kTypeAutofireValue list:arrayAutofireValue];
+        ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"autofire" list:arrayAutofireValue title:cell.textLabel.text];
         [[self navigationController] pushViewController:listController animated:YES];
     }
     
     if(section==2 && row==3)
     {
-        ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
-                                                                                      type:kTypeButtonSizeValue list:arrayButtonSizeValue];
+        ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"buttonSize" list:arrayButtonSizeValue title:cell.textLabel.text];
         [[self navigationController] pushViewController:listController animated:YES];
     }
 
     if(section==3 && row==0)
     {
-        ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
-                                                                                      type:kTypeControlType list:Options.arrayControlType];
+        ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"controltype" list:Options.arrayControlType title:cell.textLabel.text];
         [[self navigationController] pushViewController:listController animated:YES];
     }
     
@@ -586,8 +581,7 @@
 
     if(section==6 && row==0)
     {
-        ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
-                                                                                      type:kTypeAnalogDZValue list:arrayAnalogDZValue];
+        ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"analogDeadZoneValue" list:arrayAnalogDZValue title:cell.textLabel.text];
         [[self navigationController] pushViewController:listController animated:YES];
     }
 

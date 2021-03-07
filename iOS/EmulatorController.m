@@ -145,7 +145,6 @@ NSString* g_pref_filter;
 NSString* g_pref_skin;
 NSString* g_pref_colorspace;
 
-int g_pref_metal = 0;
 int g_pref_integer_scale_only = 0;
 int g_pref_showFPS = 0;
 
@@ -175,9 +174,6 @@ int g_pref_ext_control_type = 1;
 
 int g_pref_nintendoBAYX = 0;
 
-int g_pref_nativeTVOUT = 1;
-int g_pref_overscanTVOUT = 1;
-
 int g_pref_lightgun_enabled = 1;
 int g_pref_lightgun_bottom_reload = 0;
 
@@ -192,8 +188,6 @@ int g_skin_data = 1;
 
 float g_buttons_size = 1.0f;
 float g_stick_size = 1.0f;
-
-int global_low_latency_sound = 0;
 
 int prev_myosd_light_gun = 0;
 int prev_myosd_mouse = 0;
@@ -713,6 +707,7 @@ void mame_state(int load_save, int slot)
         }
     }
     [menu addAction:[UIAlertAction actionWithTitle:@"Settings" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"gear" withPointSize:size] handler:^(UIAlertAction* action) {
+        [self hideMenuHUD];
         [self runSettings];
     }]];
 
@@ -917,7 +912,6 @@ void mame_state(int load_save, int slot)
     [skinManager setCurrentSkin:g_pref_skin];
 
     g_pref_integer_scale_only = op.integerScalingOnly;
-    g_pref_metal = TRUE;
     g_pref_showFPS = [op showFPS];
     g_pref_showHUD = [op showHUD];
 
@@ -928,9 +922,6 @@ void mame_state(int load_save, int slot)
     g_pref_full_screen_joy   = [op fullscreenJoystick];
 
     myosd_pxasp1 = [op p1aspx];
-    
-    g_pref_nativeTVOUT = [op tvoutNative];
-    g_pref_overscanTVOUT = [op overscanValue];
     
     g_pref_input_touch_type = [op touchtype];
     g_pref_analog_DZ_value = [op analogDeadZoneValue];
@@ -946,12 +937,8 @@ void mame_state(int load_save, int slot)
         default:myosd_sound_value=-1;}
     
     
-    myosd_throttle = [op throttle];
     myosd_cheat = [op cheats];
-    myosd_vsync = [op vsync] == 1 ? 6000 : -1;
        
-    myosd_sleep = [op sleep];
-    
     g_pref_nintendoBAYX = [op nintendoBAYX];
 
     g_pref_full_num_buttons = [op numbuttons] - 1;  // -1 == Auto
@@ -986,23 +973,10 @@ void mame_state(int load_save, int slot)
         myosd_waysStick = 8;
     }
     
-    if([op fsvalue] == 0)
-    {
-        myosd_frameskip_value = -1;
-    }
-    else 
-    {
-        myosd_frameskip_value = [op fsvalue]-1;
-    }
-    
     myosd_force_pxaspect = [op forcepxa];
     
-    myosd_res = [op emures]+1;
-
     myosd_filter_clones = op.filterClones;
     myosd_filter_not_working = op.filterNotWorking;
-    
-    global_low_latency_sound = [op lowlsound];
     
     myosd_autofire = [op autofire];
     myosd_hiscore = [op hiscore];
@@ -1053,13 +1027,6 @@ void mame_state(int load_save, int slot)
     turboBtnEnabled[BTN_L1] = [op turboLEnabled];
     turboBtnEnabled[BTN_R1] = [op turboREnabled];
     
-    // ignore some settings in the Metal case
-    if (g_pref_metal && [MetalScreenView isSupported]) {
-        myosd_sleep = 1;            // sleep to let Metal get work done.
-        myosd_vsync = -1;           // dont force 60Hz, just use the machine value, let MAME frameskip do what it can.
-        myosd_frameskip_value = -1; // AUTO frameskip
-    }
-    
 #if TARGET_OS_IOS
     g_pref_lightgun_enabled = [op lightgunEnabled];
     g_pref_lightgun_bottom_reload = [op lightgunBottomScreenReload];
@@ -1081,22 +1048,10 @@ void mame_state(int load_save, int slot)
 // DONE button on Settings dialog
 -(void)done:(id)sender {
     
-	Options *op = [[Options alloc] init];
-    
     // have the parent of the options/setting dialog dismiss
     // we present settings two ways, from in-game menu (we are parent) and from ChooseGameUI (it is the parent)
     UIViewController* parent = self.topViewController.presentingViewController;
     [(parent ?: self) dismissViewControllerAnimated:YES completion:^{
-        
-        if(global_low_latency_sound != [op lowlsound])
-        {
-            if(myosd_sound_value!=-1)
-            {
-               myosd_closeSound();
-               global_low_latency_sound = [op lowlsound];
-               myosd_openSound(myosd_sound_value, 1);
-            }
-        }
         
         // if we are at the root menu, exit and restart.
         if (myosd_inGame == 0 || g_mame_reset)
@@ -2594,23 +2549,11 @@ void myosd_poll_input(void) {
     [self setNeedsUpdateOfHomeIndicatorAutoHidden];
 
     if (externalView != nil)
-    {
         r = externalView.window.screen.bounds;
-       
-        CGFloat overscan = (g_pref_overscanTVOUT *  0.025f);
-        CGFloat overscan_x = ceil(r.size.width * overscan / 2.0);
-        CGFloat overscan_y = ceil(r.size.height * overscan / 2.0);
-
-        r = CGRectInset(r, overscan_x, overscan_y);
-    }
     else if (g_device_is_fullscreen)
-    {
         r = rFrames[g_device_is_landscape ? LANDSCAPE_VIEW_FULL : PORTRAIT_VIEW_FULL];
-    }
     else
-    {
         r = rFrames[g_device_is_landscape ? LANDSCAPE_VIEW_NOT_FULL : PORTRAIT_VIEW_NOT_FULL];
-    }
 
     // Handle Safe Area (iPhone X and above) adjust the view down away from the notch, before adjusting for aspect
     if ( externalView == nil ) {
@@ -2952,10 +2895,6 @@ void myosd_poll_input(void) {
             [self changeUI];
             break;
         }
-        case 'T':
-            myosd_throttle = !myosd_throttle;
-            [self changeUI];
-            break;
         case 'X':
             myosd_force_pxaspect = !myosd_force_pxaspect;
             [self changeUI];
@@ -3879,9 +3818,6 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
                     // tell the SkinManager new files have arived.
                     [self->skinManager reload];
                     
-                    // reset MAME last game selected...
-                    myosd_last_game_selected = 0;
-                    
                     // reload the MAME menu....
                     [self reload];
                     
@@ -4529,7 +4465,6 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
         
         NSString* title = [NSString stringWithFormat:@":%@:%@", menu.unmappedSfSymbolsName ?: @"line.horizontal.3.circle", name];
         UIImage* image = [UIImage imageWithString:title withFont:[UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]];
-        image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
         [g_menuHUD addImage:image];
         [g_menuHUD addSeparator];
 

@@ -44,48 +44,18 @@
 
 #import "ListOptionController.h"
 #import "Options.h"
-#if TARGET_OS_IOS
-#import "OptionsController.h"
-#elif TARGET_OS_TV
-#import "TVOptionsController.h"
-#endif
-
-#define kTypeKeyValue    -1
 
 @implementation ListOptionController {
-    NSInteger type;
-    NSString* key;  // for kTypeKeyValue
+    NSString* key;
     NSArray<NSString*> *list;
     NSInteger value;
-    NSArray<NSString*> *sections;
 }
 
-- (id)initWithStyle:(UITableViewStyle)style type:(NSInteger)typeValue list:(NSArray *)listValue{
-    
-    if(self = [super initWithStyle:style])
-    {
-        type = typeValue;
-        list = listValue;
-        
-        switch (type) {
-            case kTypeManufacturerValue:
-            case kTypeDriverSourceValue:
-            case kTypeCategoryValue:
-                sections = @[@"#", @"a", @"b", @"c", @"d", @"e", @"f", @"g", @"h", @"i", @"j", @"k", @"l", @"m", @"n", @"o", @"p", @"q", @"r", @"s", @"t", @"u", @"v", @"w", @"x", @"y", @"z"];
-                break;
-        }
-    }
-    return self;
-}
-- (id)initWithType:(NSInteger)typeValue list:(NSArray *)listValue {
-    return [self initWithStyle:UITableViewStyleGrouped type:typeValue list:listValue];
-}
 - (instancetype)initWithKey:(NSString*)keyValue list:(NSArray<NSString*>*)listValue {
     if (self = [super initWithStyle:UITableViewStyleGrouped])
     {
         NSAssert([[[Options alloc] init] valueForKey:keyValue] != nil, @"bad key");
         
-        type = kTypeKeyValue;
         key = keyValue;
         list = [listValue mutableCopy];
         // if the list items are of the form "Name : Data", we only want to show "Name" to the user.
@@ -101,154 +71,30 @@
 }
 
 - (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
 
     Options *op = [[Options alloc] init];
     
-    // get the current value and set the title
-    switch (type) {
-        case kTypeNumButtons:
-            self.title = @"Number Of Buttons";
-            value = op.numbuttons;
-            break;
-        case kTypeEmuRes:
-            self.title = @"Emulated Resolution";
-            value = op.emures;
-            break;
-        case kTypeStickType:
-            self.title = @"Ways Stick";
-            value = op.sticktype;
-            break;
-        case kTypeTouchType:
-            self.title = @"Touch Type";
-            value = op.touchtype;
-            break;
-        case kTypeControlType:
-            self.title = @"External Controller";
-            value = op.controltype;
-            break;
-        case kTypeAnalogDZValue:
-            self.title = @"Stick Touch DZ";
-            value = op.analogDeadZoneValue;
-            break;
-        case kTypeSoundValue:
-            self.title = @"Sound";
-            value = op.soundValue;
-            break;
-        case kTypeFSValue:
-            self.title = @"Frame Skip";
-            value = op.fsvalue;
-            break;
-        case kTypeOverscanValue:
-            self.title = @"Overscan TV-OUT";
-            value = op.overscanValue;
-            break;
-        case kTypeManufacturerValue:
-            self.title = @"Manufacturer";
-            value = op.manufacturerValue;
-            break;
-        case kTypeYearGTEValue:
-            self.title = @"Year >=";
-            value = op.yearGTEValue;
-            break;
-        case kTypeYearLTEValue:
-            self.title = @"Year <=";
-            value = op.yearLTEValue;
-            break;
-        case kTypeDriverSourceValue:
-            self.title = @"Driver Source";
-            value = op.driverSourceValue;
-            break;
-        case kTypeCategoryValue:
-            self.title = @"Category";
-            value = op.categoryValue;
-            break;
-        case kTypeVideoPriorityValue:
-            self.title = @"Video Thread Priority";
-            value = op.videoPriority;
-            break;
-        case kTypeMainPriorityValue:
-            self.title = @"Main Thread Priority";
-            value = op.mainPriority;
-            break;
-        case kTypeAutofireValue:
-            self.title = @"A as Autofire";
-            value = op.autofire;
-            break;
-        case kTypeButtonSizeValue:
-            self.title = @"Buttons Size";
-            value = op.buttonSize;
-            break;
-        case kTypeStickSizeValue:
-            self.title = @"Fullscreen Stick Size";
-            value = op.stickSize;
-            break;
-        case kTypeArrayWPANtype:
-            self.title = @"WPAN mode";
-            value = op.wpantype;
-            break;
-        case kTypeWFframeSync:
-            self.title = @"Wi-Fi Frame Sync";
-            value = op.wfframesync;
-            break;
-        case kTypeBTlatency:
-            self.title = @"Bluetooth Latency";
-            value = op.btlatency;
-            break;
-        case kTypeEmuSpeed:
-            self.title = @"Emulation Speed";
-            value = op.emuspeed;
-            break;
-        case kTypeVideoThreadTypeValue:
-            self.title = @"Video Thread Type";
-            value = op.videoThreadType;
-            break;
-        case kTypeMainThreadTypeValue:
-            self.title = @"Main Thread Type";
-            value = op.mainThreadType;
-            break;
-        case kTypeKeyValue:
-        {
-            id val = [op valueForKey:key];
-            
-            if ([val isKindOfClass:[NSString class]])
-                value = [list indexOfOption:val];
-            else if ([val isKindOfClass:[NSNumber class]])
-                value = [val intValue];
-            else
-                value = 0;
-            break;
-        }
-        default:
-            NSAssert(FALSE, @"bad list type");
-            break;
-    }
+    id val = [op valueForKey:key];
+    
+    if ([val isKindOfClass:[NSString class]])
+        value = [list indexOfOption:val];
+    else if ([val isKindOfClass:[NSNumber class]])
+        value = [val intValue];
+    else
+        value = 0;
     
     if (value == NSNotFound || value >= [list count]) {
         NSLog(@"list value out of range, setting to 0");
         value = 0;
     }
-        
-    [super viewWillAppear:animated];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
     if (value > 10) {
         NSIndexPath *scrollIndexPath=nil;
-        if(sections != nil)
-        {
-            NSString *s = [list optionAtIndex:value];
-            NSString *l = [[s substringToIndex:1] lowercaseString];
-            int sec = (uint32_t)[sections indexOfObject:l];
-            NSArray *sectionArray = [list filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF beginswith[c] %@", [sections objectAtIndex: sec]]];
-            int row = (uint32_t)[sectionArray indexOfObject:s];
-            scrollIndexPath = [NSIndexPath indexPathForRow:row inSection:sec];
-        }
-        else
-        {
-           scrollIndexPath = [NSIndexPath indexPathForRow:(value) inSection:0];
-
-        }
+        scrollIndexPath = [NSIndexPath indexPathForRow:(value) inSection:0];
         [[self tableView] scrollToRowAtIndexPath:scrollIndexPath atScrollPosition:UITableViewScrollPositionMiddle animated:NO];
     }
 }
@@ -259,124 +105,23 @@
     Options *op = [[Options alloc] init];
     int value = (int)self->value;
     
-    // set the current value, in the kTypeCustom case call the handler to do it.
-    switch (type) {
-        case kTypeNumButtons:
-            op.numbuttons =value;
-            break;
-        case kTypeEmuRes:
-            op.emures =value;
-            break;
-        case kTypeTouchType:
-            op.touchtype =value;
-            break;
-        case kTypeStickType:
-            op.sticktype =value;
-            break;
-        case kTypeControlType:
-            op.controltype =value;
-            break;
-        case kTypeAnalogDZValue:
-            op.analogDeadZoneValue =value;
-            break;
-        case kTypeSoundValue:
-            op.soundValue =value;
-            break;
-        case kTypeFSValue:
-            op.fsvalue =value;
-            break;
-        case kTypeOverscanValue:
-            op.overscanValue =value;
-            break;
-        case kTypeManufacturerValue:
-            op.manufacturerValue =value;
-            break;
-        case kTypeYearGTEValue:
-            op.yearGTEValue =value;
-            break;
-        case kTypeYearLTEValue:
-            op.yearLTEValue =value;
-            break;
-        case kTypeDriverSourceValue:
-            op.driverSourceValue =value;
-            break;
-        case kTypeCategoryValue:
-            op.categoryValue =value;
-            break;
-        case kTypeVideoPriorityValue:
-            op.videoPriority =value;
-            break;
-        case kTypeMainPriorityValue:
-            op.mainPriority =value;
-            break;
-        case kTypeAutofireValue:
-            op.autofire =value;
-            break;
-        case kTypeButtonSizeValue:
-            op.buttonSize =value;
-            break;
-        case kTypeStickSizeValue:
-            op.stickSize =value;
-            break;
-        case kTypeArrayWPANtype:
-            op.wpantype =value;
-            break;
-        case kTypeWFframeSync:
-            op.wfframesync =value;
-            break;
-        case kTypeBTlatency:
-            op.btlatency =value;
-            break;
-        case kTypeEmuSpeed:
-            op.emuspeed =value;
-            break;
-        case kTypeMainThreadTypeValue:
-            op.mainThreadType =value;
-            break;
-        case kTypeVideoThreadTypeValue:
-            op.videoThreadType =value;
-            break;
-        case kTypeKeyValue:
-        {
-            id val = [op valueForKey:key];
+    id val = [op valueForKey:key];
 
-            if ([val isKindOfClass:[NSString class]])
-                [op setValue:[list optionAtIndex:value] forKey:key];
-            else if ([val isKindOfClass:[NSNumber class]])
-                [op setValue:@(value) forKey:key];
-            
-            NSLog(@"LIST SELECT: %@ = %@", key, [op valueForKey:key]);
-            break;
-        }
-        default:
-            NSAssert(FALSE, @"bad type");
-            break;
-    }
+    if ([val isKindOfClass:[NSString class]])
+        [op setValue:[list optionAtIndex:value] forKey:key];
+    else if ([val isKindOfClass:[NSNumber class]])
+        [op setValue:@(value) forKey:key];
     
+    NSLog(@"LIST SELECT: %@ = %@", key, [op valueForKey:key]);
     [op saveOptions];
 }
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    if (sections != nil)
-        return [sections count];
-    else
-        return 1;
-}
-
-- (NSArray *)sectionIndexTitlesForTableView:(UITableView *)tableView {
-    return sections;
-}
-
-- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
-    return nil;
+    return 1;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    
-    if (sections != nil)
-        return [[list filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF beginswith[c] %@", [sections objectAtIndex:section]]] count];
-    else
-        return [list count];
+    return [list count];
 }
 
 
@@ -388,45 +133,18 @@
     }
     
     NSUInteger row = [indexPath row];
-    if (sections != nil)
-    {
-        NSString *txt = [self retrieveIndexedCellText:indexPath];
-        cell.textLabel.text = txt;
-        cell.accessoryType = ([list indexOfObject:txt] == value) ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
-    }
-    else
-    {
-       cell.textLabel.text = [list objectAtIndex:row];
-       cell.accessoryType = (row == value) ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
-    }
-    
+    cell.textLabel.text = [list objectAtIndex:row];
+    cell.accessoryType = (row == value) ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
     return cell;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-        
-    if (sections != nil)
-    {
-        NSInteger curr = [list indexOfObject:[self retrieveIndexedCellText:indexPath]];
-        if(curr!=value) {
-            value = curr;
-        }
-    }
-    else
-    {
-       int row = (uint32_t)[indexPath row];
-       if (row != value) {
-           value = row;
-       }
+    int row = (uint32_t)[indexPath row];
+    if (row != value) {
+        value = row;
     }
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     [self.tableView reloadData];
-}
-
-- (NSString *)retrieveIndexedCellText:(NSIndexPath *)indexPath{
-    NSUInteger row = [indexPath row];
-    NSArray *sectionArray = [list filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF beginswith[c] %@", [sections objectAtIndex:[indexPath section] ]]];
-    return [sectionArray objectAtIndex:row];
 }
 
 @end

@@ -314,6 +314,7 @@ static void netplay_warn_callback(char *msg)
     
     NSUInteger row = [indexPath row];
     NSUInteger section = [indexPath section];
+    UITableViewCell* cell = [tableView cellForRowAtIndexPath:indexPath];
     
     netplay_t *handle = netplay_get_handle();
     Options *op = [[Options alloc] init];
@@ -371,8 +372,7 @@ static void netplay_warn_callback(char *msg)
         [tableView reloadData];
     }
     else if (section == 1 && row==0){
-        ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
-                                                                                      type:kTypeArrayWPANtype list:arrayWPANtype];
+        ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"wpantype" list:arrayWPANtype title:cell.textLabel.text];
         [[self navigationController] pushViewController:listController animated:YES];
     }
     else if(section == 2 && (row==1 || row==2))
@@ -382,14 +382,12 @@ static void netplay_warn_callback(char *msg)
     }
     else if(section == 2 && row==3)
     {
-        ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
-                                                                                      type:kTypeWFframeSync list:arrayWFframeSync];
+        ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"wfframesync" list:arrayWFframeSync title:cell.textLabel.text];
         [[self navigationController] pushViewController:listController animated:YES];
     }
     else if(section == 3 && row==0)
     {
-        ListOptionController *listController = [[ListOptionController alloc] initWithStyle:UITableViewStyleGrouped
-                                                                                      type:kTypeBTlatency list:arrayBTlatency];
+        ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"btlatency" list:arrayBTlatency title:cell.textLabel.text];
         [[self navigationController] pushViewController:listController animated:YES];
     }
 }
