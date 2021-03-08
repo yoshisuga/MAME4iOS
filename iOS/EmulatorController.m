@@ -1589,6 +1589,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     return arr;
 }
 
+#if TARGET_OS_IOS && defined(DEBUG)
 // if the list items are of the form "Name : Data", we only want to show "Name" to the user.
 static NSArray* list_trim(NSArray* _list) {
     NSMutableArray* list = [_list mutableCopy];
@@ -1596,6 +1597,7 @@ static NSArray* list_trim(NSArray* _list) {
         list[i] = [[list[i] componentsSeparatedByString:@":"].firstObject stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
     return [list copy];
 }
+#endif
 
 #if DebugLog
 -(void)logShader {
