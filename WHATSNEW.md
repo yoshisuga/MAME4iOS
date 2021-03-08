@@ -6,6 +6,7 @@
 
 # Version 2021.5
 * Metal only, remove support for a software renderer.
+* Fixed mirroring orientation in games like Lethal Enforcers, Space Gun
 
 # Version 2021.4
 * Better support for MFi controllers.
