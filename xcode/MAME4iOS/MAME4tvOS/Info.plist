@@ -56,7 +56,7 @@
 		<true/>
 	</dict>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>We need bluetooth for peer play and steam controllers</string>
+	<string>We need bluetooth for steam controllers</string>
 	<key>UIFileSharingEnabled</key>
 	<true/>
 	<key>UIRequiredDeviceCapabilities</key>

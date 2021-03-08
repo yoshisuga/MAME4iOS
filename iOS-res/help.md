@@ -38,7 +38,6 @@ To see [MAME license](#MAME4iOS-LICENSE), go to the end of this document.
 *   1/6 touch buttons selectable.
 *   External controller support: [iCade (or compatible)](#icade_or_compatible), iControlPad, iMpulse (1 or 2 Players).]
 *   [Hardware keyboard](#hardware-keyboard)
-*   Peer to Peer Netplay Multiplayer
 *   MiFI, Xbox, and DualShock [Game Controlers](#game-controlers)
 *   [TV-OUT](#tv-out)
 *   [iCloud Import, Export, and Sync.](#iCloud)
