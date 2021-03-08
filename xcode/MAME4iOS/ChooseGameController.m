@@ -48,7 +48,7 @@
 #define CELL_TINY_WIDTH    200.0
 #define CELL_SMALL_WIDTH   250.0
 #define CELL_LARGE_WIDTH   350.0
-#define CELL_LIST_WIDTH    800.0
+#define CELL_LIST_WIDTH    600.0
 #define CELL_INSET_X       8.0
 #define CELL_INSET_Y       4.0
 #endif
