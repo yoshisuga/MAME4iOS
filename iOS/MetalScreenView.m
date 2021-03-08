@@ -255,6 +255,11 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 - (void)setOptions:(NSDictionary *)options {
     _options = options;
     
+#ifdef DEBUG
+    // background color
+    self.backgroundColor = UIColor.orangeColor;
+#endif
+    
     // set our framerate
     self.preferredFramesPerSecond = 60;
     
@@ -607,12 +612,14 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
         else if (prim->type == RENDER_PRIMITIVE_QUAD) {
             // solid color quad. only ALPHA or NONE blend mode.
             
-            if (prim->blendmode == BLENDMODE_ALPHA && prim->color_a != 1.0)
-                [self setShader:ShaderAlpha];
-            else
+            if (prim->blendmode != BLENDMODE_ALPHA || prim->color_a == 1.0) {
                 [self setShader:ShaderNone];
-
-            [self drawRect:rect color:color];
+                [self drawRect:rect color:color];
+            }
+            else if (prim->color_a != 0.0) {
+                [self setShader:ShaderAlpha];
+                [self drawRect:rect color:color];
+            }
         }
         else if (prim->type == RENDER_PRIMITIVE_LINE && (prim->width * scale) <= 1.0) {
             // single pixel line.
@@ -781,7 +788,7 @@ VertexColor VertexColorP3(CGFloat r, CGFloat g, CGFloat b, CGFloat a) {
 // LINES
 //      [X] width <= 1.0                MAME menu
 //      [X] width  > 1.0                dkong artwork
-//      [ ] antialias <= 1.0
+//      [X] antialias <= 1.0            asteroid (slider menu, adjust beam width)
 //      [X] antialias  > 1.0            asteroid
 //      [ ] blend mode NONE
 //      [X] blend mode ALPHA            MAME menu
@@ -845,7 +852,7 @@ VertexColor VertexColorP3(CGFloat r, CGFloat g, CGFloat b, CGFloat a) {
             if (width  > 1.0 && !aa)
                 assert(TRUE);
             if (width <= 1.0 && aa)
-                assert(FALSE);
+                assert(TRUE);
             if (width  > 1.0 && aa)
                 assert(TRUE);
             if (blend == BLENDMODE_NONE)

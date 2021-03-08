@@ -76,8 +76,8 @@
         keyF3 = UIKeyInputF3;
     }
     
-    // **NOTE** the keyboard shortcuts here are mostly for discoverability, the real key handling takes place in iCadeView.m
-    // TODO: find out why some keys are handled by iCadeView.m and some are handled by UIKeyCommand, weird responder chain magic??
+    // **NOTE** the keyboard shortcuts here are mostly for discoverability, the real key handling takes place in KeyboardView.m
+    // TODO: find out why some keys are handled by KeyboardView.m and some are handled by UIKeyCommand, weird responder chain magic??
     UIMenu* mame = [UIMenu menuWithTitle:@"MAME" image:nil identifier:nil options:0 children:@[
         [UIKeyCommand commandWithTitle:@"Coin"      image:[UIImage systemImageNamed:@"centsign.circle"]     action:@selector(mameSelect)    input:@"5" modifierFlags:0 propertyList:nil],
         [UIKeyCommand commandWithTitle:@"Start"     image:[UIImage systemImageNamed:@"play.circle"]         action:@selector(mameStart)     input:@"1" modifierFlags:0 propertyList:nil],

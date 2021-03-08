@@ -27,7 +27,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (class, readonly, strong) NSArray* arrayScreenShader;
 @property (class, readonly, strong) NSArray* arrayLineShader;
 @property (class, readonly, strong) NSArray* arrayColorSpace;
-@property (class, readonly, strong) NSArray* arraySoundValue;
 
 @property (readwrite,assign) int keepAspectRatio;
 
@@ -52,8 +51,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite,assign) int controltype;
 @property (readwrite,assign) int showINFO;
 
-@property (readwrite,assign) int soundValue;
-
 @property (readwrite,assign) int sticktype;
 @property (readwrite,assign) int numbuttons;
 @property (readwrite,assign) int aplusb;
@@ -72,14 +69,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite,assign) int stickSize;
 @property (readwrite,assign) int nintendoBAYX;
 
-@property (readwrite,assign) int wpantype;
-@property (readwrite,strong,nullable) NSString *wfpeeraddr;
-@property (readwrite,assign) int wfport;
-@property (readwrite,assign) int wfframesync;
-@property (readwrite,assign) int btlatency;
-
 @property (readwrite,assign) int vbean2x;
-@property (readwrite,assign) int vantialias;
 @property (readwrite,assign) int vflicker;
 
 @property (readwrite,assign) int emuspeed;

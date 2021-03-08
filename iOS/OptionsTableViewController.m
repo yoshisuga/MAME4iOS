@@ -247,7 +247,7 @@
     Options* op = [[Options alloc] init];
     NSString* key = (__bridge NSString*)(void*)sender.tag;
     NSAssert([op valueForKey:key] != nil, @"bad key");
-    NSLog(@"updateOptionSwitch: %@ = %d", key, [sender isOn]);
+    //NSLog(@"updateOptionSwitch: %@ = %d", key, [sender isOn]);
     [op setValue:@([sender isOn]) forKey:key];
     [op saveOptions];
 }
@@ -279,7 +279,7 @@
     [op setValue:@(val) forKey:key];
     [op saveOptions];
 
-    NSLog(@"toggleOptionSwitch: %@ = %d", key, val);
+    //NSLog(@"toggleOptionSwitch: %@ = %d", key, val);
     sender.text = val ? @"On" : @"Off";
     [sender sizeToFit];
 }

@@ -51,7 +51,6 @@
 #include "snap.lh"
 
 #include "myosd.h"
-#include "netplay.h"
 
 // default these old myosd globals to defaults
 #define myosd_sleep 1
@@ -282,7 +281,7 @@ INLINE int original_speed_setting(void)
 {
     int res = 100;
     
-    if(myosd_speed != -1 && !netplay_get_handle()->has_connection)
+    if (myosd_speed != -1)
         res = myosd_speed;
     else
         res = options_get_float(mame_options(), OPTION_SPEED) * 100.0 + 0.5;
@@ -1947,7 +1946,7 @@ void screen_device::device_start()
 
     
     //DAV HACK
-    vsync_hack = (myosd_vsync != -1) && (ATTOSECONDS_TO_HZ(m_config.m_refresh) >= 50.00f) && !(netplay_get_handle()->has_connection);
+    vsync_hack = (myosd_vsync != -1) && (ATTOSECONDS_TO_HZ(m_config.m_refresh) >= 50.00f);
    
     
 	// configure the screen with the default parameters

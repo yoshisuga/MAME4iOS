@@ -46,8 +46,8 @@
 #define CELL_INSET_Y       4.0
 #else
 #define CELL_TINY_WIDTH    200.0
-#define CELL_SMALL_WIDTH   300.0
-#define CELL_LARGE_WIDTH   400.0
+#define CELL_SMALL_WIDTH   250.0
+#define CELL_LARGE_WIDTH   350.0
 #define CELL_LIST_WIDTH    800.0
 #define CELL_INSET_X       8.0
 #define CELL_INSET_Y       4.0
@@ -76,10 +76,17 @@
 #define CELL_TEXT_ALIGN         NSTextAlignmentCenter
 #endif
 
+#if TARGET_OS_IOS
 #define CELL_TITLE_FONT         [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
 #define CELL_TITLE_COLOR        [UIColor whiteColor]
 #define CELL_DETAIL_FONT        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote]
 #define CELL_DETAIL_COLOR       [UIColor lightGrayColor]
+#else
+#define CELL_TITLE_FONT         [UIFont boldSystemFontOfSize:24.0]
+#define CELL_TITLE_COLOR        [UIColor whiteColor]
+#define CELL_DETAIL_FONT        [UIFont systemFontOfSize:20.0]
+#define CELL_DETAIL_COLOR       [UIColor lightGrayColor]
+#endif
 
 #define INFO_BACKGROUND_COLOR   [UIColor colorWithWhite:0.111 alpha:1.0]
 #define INFO_IMAGE_WIDTH        (TARGET_OS_IOS ? 260.0 : 580.0)

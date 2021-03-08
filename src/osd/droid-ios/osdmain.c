@@ -32,19 +32,6 @@
 #include "osdvideo.h"
 #include "myosd.h"
 
-#include "netplay.h"
-
-/*
-void mylog(char * msg){
-	  FILE *f;
-	  f=fopen("log.txt","a+");
-	  if (f) {
-		  fprintf(f,"%s\n",msg);
-		  fclose(f);
-		  sync();
-	  }
-}*/
-
 //============================================================
 //  GLOBALS
 //============================================================
@@ -123,27 +110,6 @@ int main(int argc, char **argv)
 		//args[n]= (char *)"-joystick_deadzone"; n++;args[n]= (char *)"0.0"; n++;
 		args[n]= (char *)"-nocoinlock"; n++;
         
-        netplay_t *handle = netplay_get_handle();
-        if(handle->has_connection)
-        {
-            if(!handle->has_begun_game)
-            {
-                // ignore passed cmdline and force run the netplay game.
-                n = 0;
-                args[n]= (char *)"mame4x";n++;
-                args[n]= (char *)"-nocoinlock"; n++;
-                args[n]= (char *)handle->game_name; n++;
-            }
-            else
-            {
-                char buf[256];
-                sprintf(buf,"%s not found!",handle->game_name);
-                handle->netplay_warn(buf);
-                handle->has_begun_game = 0;
-                handle->has_connection = 0;
-            }
-        }
-                
         ret = cli_execute(n, args, droid_mame_options);
 	}
     
@@ -168,26 +134,9 @@ void osd_init(running_machine *machine)
 
 	myosd_inGame = !(machine->gamedrv == &GAME_NAME(empty));
     
-	options_set_bool(mame_options(), OPTION_CHEAT,myosd_cheat,OPTION_PRIORITY_CMDLINE);
-    options_set_bool(mame_options(), OPTION_AUTOSAVE,myosd_autosave,OPTION_PRIORITY_CMDLINE);
-    options_set_bool(mame_options(), OPTION_SOUND,myosd_sound_value != -1,OPTION_PRIORITY_CMDLINE);
-    if(myosd_sound_value!=-1)
-       options_set_int(mame_options(), OPTION_SAMPLERATE,myosd_sound_value,OPTION_PRIORITY_CMDLINE);
-    
-    options_set_float(mame_options(), OPTION_BEAM,myosd_vector_bean2x ? 2.5 : 1.0, OPTION_PRIORITY_CMDLINE);
-    options_set_float(mame_options(), OPTION_FLICKER,myosd_vector_flicker ? 0.4 : 0.0, OPTION_PRIORITY_CMDLINE);
-    options_set_bool(mame_options(), OPTION_ANTIALIAS,myosd_vector_antialias,OPTION_PRIORITY_CMDLINE);
-    
 	droid_ios_init_input(machine);
 	droid_ios_init_sound(machine);
 	droid_ios_init_video(machine);
-    
-    netplay_t *handle = netplay_get_handle();
-        
-    if(handle->has_connection)
-    {
-        handle->has_begun_game = 1;
-    }
 }
 
 //void osd_exit(running_machine *machine)
@@ -206,26 +155,13 @@ void osd_update(running_machine *machine, int skip_redraw)
 		droid_ios_video_render(our_target);
 	}
     
-    netplay_t *handle = netplay_get_handle();
-    
     attotime current_time = timer_get_time(machine);
     
     //char m[256];
     //sprintf(m,"fr: %d emutime sec:%d ms: %d\n",fr,current_time.seconds,(int)(current_time.attoseconds / ATTOSECONDS_PER_MILLISECOND));
     //mylog(m);
             
-    netplay_pre_frame_net(handle);
-
 	droid_ios_poll_input(machine);
-    
-    netplay_post_frame_net(handle);
-    
-    if(handle->has_connection && handle->has_begun_game && current_time.seconds==0 && current_time.attoseconds==0)
-    {
-        printf("Not emulation...\n");
-        handle->frame = 0;
-        handle->target_frame = 0;
-    }
 
 	myosd_check_pause();
 }

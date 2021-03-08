@@ -22,7 +22,7 @@ MAME stands for Multi Arcade Machine Emulator, and lets you play arcade games fr
 
 More than 2000 games are supported, and the currently supported romset version is MAME 0.139u1 (September 2010).
 
-It has been updated to compile and runs on Xcode 10+/iOS/tvOS 9+ by [Les Bird](http://www.lesbird.com/iMame4All/iMame4All_Xcode.html), and he has graciously added support for MFI Controllers.
+It has been updated to compile and runs on Xcode 11+/iOS/tvOS 12+ by [Les Bird](http://www.lesbird.com/iMame4All/iMame4All_Xcode.html), and he has graciously added support for MFI Controllers.
 
 This repo adds additional support for:
 
@@ -37,15 +37,15 @@ This repo adds additional support for:
 - Supports using the touch screen as a lightgun
 - Turbo mode toggle for buttons
 - Touch analog for games like Arkanoid
-- Builds in Xcode 11.x/12.x and runs on latest iOS 13/14 versions
+- Builds in Xcode 11.4/12.x and runs on latest iOS 12/13/14 versions
 
 ## Installation / Sideloading
 
 ### Xcode
 
-Requirements: iOS 12.2 or higher, tvOS 12.4 or higher, or Mac 10.15 (Catalina) or higher to run.
+Requirements: iOS 12.4 or higher, tvOS 12.4 or higher, or Mac 10.15.5 (Catalina) or higher to run.
 
-Requirements: Mac 10.13.6 with Xcode 10 or above to bulid.
+Requirements: Mac 10.13.6 with Xcode 11.4 or above to bulid.
 
 Building MAME4iOS requires a prebuilt MAME binary (it has not been included in this repo due to its large size):
 
@@ -58,12 +58,12 @@ Building MAME4iOS requires a prebuilt MAME binary (it has not been included in t
 3. Create the needed MAME binary by building it yourself from scratch: <br>
     *** FOR CATALINA USERS, IN THE SECURITY & PRIVACY SETTINGS, PLEASE ALLOW "TERMINAL" "TO RUN SOFTWARE LOCALLY THAT DOES NOT MEET THE SYSTEMS SECURITY POLICY" IN THE DEVELOPER TOOLS CATEGORY ON THE PRIVACY PAGE IN ORDER TO COMPLETE A SUCCESFUL BUILD *** <br>
 - Build it in the above selected terminal by chosing one of the following scripts (depending on which device you are building for):<br>
-        - iOS 64-bit: `./make-ios.sh`<br>
+        - iOS: `./make-ios.sh`<br>
         <sup>For iPhone 5S, iPad Air, iPad mini, and up…</sup><br>
         - tvOS: `./make-tvos.sh`<br>
         <sup>AppleTV (4/4k and above)</sup><br>
         - simulator: `./make-sim.sh`<br>
-        <sup>iOS/tvOS (version 12.4 and above)</sup><br>
+        <sup>iOS (version 12.4 and above)</sup><br>
         - macOS: `./make-mac.sh`<br>
         <sup>macOS(version 10.15 Catalina and above)</sup><br>
         
@@ -88,7 +88,7 @@ Building MAME4iOS requires a prebuilt MAME binary (it has not been included in t
 Even if you are not in the paid Apple Developer Program, you can sideload the app using a Mac with Xcode.
 
 1. Open the Xcode project in `xcode/MAME4iOS/MAME4iOS.xcodeproj`<br>
-    <sup>Make sure you have the `libmamearm64.a` (or `libmamearm64-tvos.a`) file in the root of your project.</sup><br>
+    <sup>Make sure you have the `libmame.a` (or `libmame-tvos.a`) file in the root of your project.</sup><br>
 2. Build:
     1. If you are a developer: Build and `▶︎` Run on your device. _Done._
     2. If you are not a developer…

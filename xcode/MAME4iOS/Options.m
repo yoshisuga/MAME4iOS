@@ -22,9 +22,6 @@
 + (NSArray*)arrayControlType {
     return @[@"Keyboard",@"iCade or compatible",@"iCP, Gametel",@"iMpulse"];
 }
-+ (NSArray*)arraySoundValue {
-    return @[@"Off", @"On (11 KHz)", @"On (22 KHz)",@"On (33 KHz)", @"On (44 KHz)", @"On (48 KHz)"];
-}
 
 + (NSArray*)arraySkin {
     return [SkinManager getSkinNames];
@@ -134,8 +131,6 @@
         
         _controltype = 0;
         
-        _soundValue = 5;
-        
         _sticktype = 0;
         _numbuttons = 0;
         _aplusb = 0;
@@ -154,14 +149,7 @@
         _buttonSize= 2;
         _nintendoBAYX=0;
 
-        _wpantype = 0;
-        _wfpeeraddr = nil;
-        _wfport = NETPLAY_PORT;
-        _wfframesync = 0;
-        _btlatency = 1;
-        
         _vbean2x = 1;
-        _vantialias = 1;
         _vflicker = 0;
         
         _emuspeed = 0;
@@ -233,8 +221,6 @@
         _analogDeadZoneValue =  [[optionsDict objectForKey:@"analogDeadZoneValue"] intValue];
         _controltype =  [[optionsDict objectForKey:@"controlType"] intValue];
         
-        _soundValue =  [[optionsDict objectForKey:@"soundValue"] intValue];
-        
         _sticktype  =  [[optionsDict objectForKey:@"sticktype"] intValue];
         _numbuttons  =  [[optionsDict objectForKey:@"numbuttons"] intValue];
         _aplusb  =  [[optionsDict objectForKey:@"aplusb"] intValue];
@@ -254,17 +240,7 @@
         _stickSize =  [[optionsDict objectForKey:@"stickSize"] intValue];
         _nintendoBAYX = [[optionsDict objectForKey:@"nintendoBAYX"] intValue];
         
-        _wpantype  =  [[optionsDict objectForKey:@"wpantype"] intValue];
-        _wfpeeraddr  =  [optionsDict objectForKey:@"wfpeeraddr"];
-        _wfport  =  [[optionsDict objectForKey:@"wfport"] intValue];
-        _wfframesync  =  [[optionsDict objectForKey:@"wfframesync"] intValue];
-        _btlatency  =  [[optionsDict objectForKey:@"btlatency"] intValue];
-        
-        if([_wfpeeraddr isEqualToString:@""])
-            _wfpeeraddr = nil;
-        
         _vbean2x  =  [[optionsDict objectForKey:@"vbean2x"] intValue];
-        _vantialias  =  [[optionsDict objectForKey:@"vantialias"] intValue];
         _vflicker  =  [[optionsDict objectForKey:@"vflicker"] intValue];
         
         _emuspeed  =  [[optionsDict objectForKey:@"emuspeed"] intValue];
@@ -317,8 +293,6 @@
                              
                              [NSString stringWithFormat:@"%d", _controltype], @"controlType",
                              
-                             [NSString stringWithFormat:@"%d", _soundValue], @"soundValue",
-                             
                              [NSString stringWithFormat:@"%d", _sticktype], @"sticktype",
                              [NSString stringWithFormat:@"%d", _numbuttons], @"numbuttons",
                              [NSString stringWithFormat:@"%d", _aplusb], @"aplusb",
@@ -339,14 +313,7 @@
                              [NSString stringWithFormat:@"%d", _buttonSize], @"buttonSize",
                              [NSString stringWithFormat:@"%d", _nintendoBAYX], @"nintendoBAYX",
 
-                             [NSString stringWithFormat:@"%d", _wpantype], @"wpantype",
-                             [NSString stringWithFormat:@"%d", _wfport], @"wfport",
-                             [NSString stringWithFormat:@"%d", _wfframesync], @"wfframesync",
-                             [NSString stringWithFormat:@"%d", _btlatency], @"btlatency",
-                             (_wfpeeraddr ?: @""), @"wfpeeraddr",
-                             
                              [NSString stringWithFormat:@"%d", _vbean2x], @"vbean2x",
-                             [NSString stringWithFormat:@"%d", _vantialias], @"vantialias",
                              [NSString stringWithFormat:@"%d", _vflicker], @"vflicker",
                              
                              [NSString stringWithFormat:@"%d", _emuspeed], @"emuspeed",

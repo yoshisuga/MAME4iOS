@@ -192,7 +192,7 @@ handle input from a hardware keyboard, the following are examples of hardware ke
 * Apple Smart Keyboard connected to an iPad
 * macOS keyboard when debugging in Xcode simulator
 
-we suppoprt a small subset of the keys supported by the command line MAME.
+below is a list of a small subset of the keys supported by MAME4iOS, for a full list look [here](https://docs.mamedev.org/usingmame/defaultkeys.html).
 
 | | |  
 -|-
@@ -201,8 +201,8 @@ we suppoprt a small subset of the keys supported by the command line MAME.
      LEFT OPTION/ALT | 🅑
      SPACE           | 🅨
      LEFT SHIFT      | 🅧
-     LEFT CMD        | L1
-     RIGHT CMD       | R1
+     Z        | L1
+     X       | R1
      1               | Player 1 START
      2               | Player 2 START
      5               | Player 1 COIN
@@ -210,16 +210,20 @@ we suppoprt a small subset of the keys supported by the command line MAME.
      TAB             | MAME UI MENU
      ESC             | MAME UI EXIT
      RETURN          | MAME UI SELECT (aka 🅐)
-     DELETE          | MAME UI BACK (aka 🅑)
-     BQUOTE          | MAME4iOS MENU
+
+These keys are specific to `MAME4iOS`
+
+| | |  
+-|-
      ⌘+ENTER       | TOGGLE FULLSCREEN
-     ⌘+I                  | TOGGLE INTEGER SCALE
-     ⌘+Z                  | TOGGLE FPS DISPLAY
-     ⌘+H                  | TOGGLE HUD DISPLAY
-     ⌘+F                  | TOGGLE FILTER (Nearest and Linear)
-     ⌘+P                  | TOGGLE PAUSE
+     ⌘+I           | TOGGLE INTEGER SCALE
+     ⌘+Z           | TOGGLE FPS DISPLAY
+     ⌘+U           | TOGGLE HUD DISPLAY
+     ⌘+F           | TOGGLE FILTER (Nearest and Linear)
+     ⌘+P           | TOGGLE PAUSE
      ⌘+A                  | TOGGLE `Keep Aspect Ratio`
      ⌘+X                  | TOGGLE `Force Pixel Aspect`
+     ⌘+M                  | TOGGLE `Mouse Capture`
      ⌘+1               | Player 1 COIN+START
      ⌘+2               | Player 2 COIN+START
 
@@ -310,6 +314,8 @@ MENU+RIGHT  |Load State ②
 
 ## Multiplayer game start using game controllers
 
+You can start a multiplayer game (1,2,3 or 4) players from the MAME4iOS menu.
+
 If a user inserts a COIN or hits START with a game controller, it will be interpeted as a COIN/START for that player.  
 
 You can insert a COIN or do a START for another player from the main Game Controller by pressing one of the following.
@@ -318,12 +324,6 @@ You can insert a COIN or do a START for another player from the main Game Contro
 -|-
 MENU+L2|Player 2 COIN
 MENU+R2|Player 2 SELECT
-SELECT+UP     |Player 2 COIN           
-START+UP       |Player 2 START
-SELECT+RIGHT     |Player 3 COIN          
-START+RIGHT    |Player 3 START
-SELECT+DOWN     |Player 4 COIN          
-START+DOWN     |Player 4 START
 
 ## SAVE/LOAD STATE
 

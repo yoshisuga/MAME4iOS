@@ -112,7 +112,7 @@
     else if ([val isKindOfClass:[NSNumber class]])
         [op setValue:@(value) forKey:key];
     
-    NSLog(@"LIST SELECT: %@ = %@", key, [op valueForKey:key]);
+    //NSLog(@"LIST SELECT: %@ = %@", key, [op valueForKey:key]);
     [op saveOptions];
 }
 

@@ -86,25 +86,26 @@
 extern int myosd_video_width;
 extern int myosd_video_height;
 extern int myosd_waysStick;
-extern int myosd_pxasp1;
-extern int myosd_num_of_joys;
 extern int myosd_inGame;
-extern int myosd_exitGame;
-extern int myosd_exitPause;
 
 extern void change_pause(int value);
 extern int iOS_main (int argc, char **argv);
 
-extern unsigned long myosd_pad_status;
+// NOTE these globals are used to pass input to the OSD
+// ....they should only be used by the MAME thread in myosd_poll_input()
 extern unsigned long myosd_joy_status[NUM_JOY];
 extern float joy_analog_x[NUM_JOY][4];
 extern float joy_analog_y[NUM_JOY][2];
+
+// these are the current status of the onscreen touch controls (or iCade)
+extern unsigned long myosd_pad_status;
+extern float myosd_pad_x;
+extern float myosd_pad_y;
 
 extern int g_emulation_initiated;
 extern int g_emulation_paused;
 
 extern int g_joy_used;
-extern int g_iCade_used;
 
 extern int g_controller_opacity;
 extern int g_enable_debug_view;
@@ -124,7 +125,6 @@ extern int g_pref_full_num_buttons;
 extern int g_pref_analog_DZ_value;
 extern int g_pref_input_touch_type;
 extern int g_pref_ext_control_type;
-extern int g_pref_nintendoBAYX;
 
 extern float g_buttons_size;
 extern float g_stick_size;

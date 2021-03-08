@@ -1,3 +1,9 @@
+# Version 2021.6
+* `Mouse` device support.
+* `MAME` full keyboard support.
+* Remove `Netplay`
+* `OSD` cleanup.
+
 # Version 2021.5
 * Metal only, remove support for a software renderer.
 

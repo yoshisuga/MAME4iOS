@@ -43,27 +43,9 @@
  */
 
 #import <UIKit/UIKit.h>
-#import "OptionsTableViewController.h"
 
-@class EmulatorController;
+@interface KeyboardView : UIView
 
-#import <CoreBluetooth/CoreBluetooth.h>
-
-typedef enum {
-    BluetoothNotSet = 0,
-    BluetoothUnknown,
-    BluetoothOff,
-    BluetoothOn,
-} BluetoothState;
-
-@interface NetplayController : OptionsTableViewController <UITextFieldDelegate, CBCentralManagerDelegate> {
-    
-    NSArray *arrayWPANtype;
-    NSArray *arrayWFframeSync;
-    NSArray *arrayBTlatency;
-    bool cancelled;
-    BluetoothState btState;
-    CBCentralManager *btMgr;
-}
+@property (nonatomic, assign) BOOL active;
 
 @end

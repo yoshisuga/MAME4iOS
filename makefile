@@ -295,11 +295,11 @@ FULLNAME = $(PREFIX)$(PREFIXSDL)$(NAME)$(SUFFIX)$(SUFFIX64)$(SUFFIXDEBUG)$(SUFFI
 # get the final emulator name
 
 ifdef tvOS
-EMULATOR = libmamearm64-tvos.a
+EMULATOR = libmame-tvos.a
 else ifdef macCatalyst
-EMULATOR = libmamearm64-mac.a
+EMULATOR = libmame-mac-$(ARCH).a
 else
-EMULATOR = libmamearm64.a
+EMULATOR = libmame.a
 endif
 
 #-------------------------------------------------
