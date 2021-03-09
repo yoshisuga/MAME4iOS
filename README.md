@@ -113,8 +113,9 @@ When you start MAME4iOS, you are now presented with an updated and native iOS/tv
 
 ### In-Game
 
-- Coin + Start together: Open MAME in-game menu for input remapping
-- Option: Open the Settings menu
+- Coin: `SELECT/COIN` for Player 1
+- Start: `START` for Player 1
+- Menu: Open the MAME4iOS menu
 - Exit: Exit the game
 
 ## Adding ROMs to MAME
