@@ -1113,6 +1113,20 @@ void mame_state(int load_save, int slot)
         if (pad_status & MYOSD_DOWN)
             [alert moveDefaultAction:+1];
     }
+    else if (hudView != nil) {
+        unsigned long pad_status = [status longValue];
+
+        if (pad_status & (MYOSD_A|MYOSD_SELECT))
+            [hudView handleButtonPress:UIPressTypeSelect];
+        if (pad_status & MYOSD_UP)
+            [hudView handleButtonPress:UIPressTypeUpArrow];
+        if (pad_status & MYOSD_DOWN)
+            [hudView handleButtonPress:UIPressTypeDownArrow];
+        if (pad_status & MYOSD_LEFT)
+            [hudView handleButtonPress:UIPressTypeLeftArrow];
+        if (pad_status & MYOSD_RIGHT)
+            [hudView handleButtonPress:UIPressTypeRightArrow];
+    }
 }
 
 - (void)handle_MENU:(unsigned long)pad_status stick:(CGPoint)stick
@@ -1121,7 +1135,7 @@ void mame_state(int load_save, int slot)
     UIViewController* viewController = [self presentedViewController];
 
     // if a viewController is up send the input to it.
-    if (viewController != nil) {
+    if (viewController != nil || hudView != nil) {
 
         if ([viewController isKindOfClass:[UINavigationController class]])
             viewController = [(UINavigationController*)viewController topViewController];

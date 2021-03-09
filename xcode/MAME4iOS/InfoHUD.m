@@ -21,7 +21,7 @@
     NSMutableDictionary* _format;
     NSMutableDictionary* _step;
     CGFloat _width;
-    NSInteger _current;     // currently "selected" item in the stack view, or -1 for nada
+    NSInteger _selected;    // currently "selected" item in the stack view, or -1 for nada
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -44,7 +44,7 @@
     _stack.distribution = UIStackViewDistributionEqualSpacing;
     _stack.alignment = UIStackViewAlignmentFill;
     
-    _current = -1;
+    _selected = -1;
     
     self.font = nil;
     
@@ -160,7 +160,7 @@
     for (UIView* view in _stack.subviews)
         [view removeFromSuperview];
     _width = 0.0;
-    _current = -1;
+    _selected = -1;
 }
 
 - (UIImage*)dotWithColor:(UIColor*)color size:(CGSize)size
@@ -460,18 +460,99 @@
     _stack.frame = UIEdgeInsetsInsetRect(self.bounds, self.layoutMargins);
 }
 
+#pragma mark - selection
+
+- (NSArray*)getSelectableItems {
+    NSMutableArray* items = [[NSMutableArray alloc] init];
+    
+    for (UIView* view in _stack.subviews) {
+        if ([view isKindOfClass:[UISegmentedControl class]])
+            [items addObject:view];
+        if ([view isKindOfClass:[UIStackView class]] && [view.subviews.firstObject isKindOfClass:[UISegmentedControl class]])
+            [items addObject:view];
+    }
+    
+    return items;
+}
+
+- (NSUInteger)getNumberOfSegments:(UIView*)view {
+    if ([view isKindOfClass:[UISegmentedControl class]])
+        return [(UISegmentedControl*)view numberOfSegments];
+    else
+        return view.subviews.count;
+}
+
+- (CGFloat)getSelectedSegment:(UIView*)view {
+    
+    if ([view isKindOfClass:[UISegmentedControl class]]) {
+        UISegmentedControl* seg = (UISegmentedControl*)view;
+        return (CGFloat)seg.selectedSegmentIndex / seg.numberOfSegments;
+    }
+    
+    if ([view isKindOfClass:[UIStackView class]]) {
+        UIStackView* stack = (UIStackView*)view;
+        for (int i=0; i<stack.subviews.count; i++) {
+            UISegmentedControl* seg = (UISegmentedControl*)stack.subviews[i];
+            if ([seg isKindOfClass:[UISegmentedControl class]] && seg.selectedSegmentIndex != UISegmentedControlNoSegment) {
+                return (CGFloat)i / stack.subviews.count;
+            }
+        }
+    }
+    
+    return (CGFloat)UISegmentedControlNoSegment;
+}
+
+- (void)setSelectedSegment:(UIView*)view value:(CGFloat)value {
+    
+    if ([view isKindOfClass:[UISegmentedControl class]]) {
+        UISegmentedControl* seg = (UISegmentedControl*)view;
+        seg.selectedSegmentIndex = (value < 0.0) ? UISegmentedControlNoSegment : MIN((int)(value * seg.numberOfSegments), seg.numberOfSegments-1);
+    }
+    
+    if ([view isKindOfClass:[UIStackView class]]) {
+        UIStackView* stack = (UIStackView*)view;
+        int n = (value < 0.0) ? UISegmentedControlNoSegment : (int)(value * stack.subviews.count);
+        for (int i=0; i<stack.subviews.count; i++) {
+            UISegmentedControl* seg = (UISegmentedControl*)stack.subviews[i];
+            if ([seg isKindOfClass:[UISegmentedControl class]])
+                seg.selectedSegmentIndex = (i == n) ? 0 : UISegmentedControlNoSegment;
+        }
+    }
+}
+
 // move current selection and perfom action, used with input from a game controller, keyboard, or remote.
 - (void)handleButtonPress:(UIPressType)type {
+    NSArray* items = [self getSelectableItems];
+    UIView* item = (_selected >= 0 && _selected < items.count) ? items[_selected] : nil;
+    
     switch (type) {
         case UIPressTypeUpArrow:
-            break;
         case UIPressTypeDownArrow:
+        {
+            int dir = (type == UIPressTypeUpArrow) ? -1 : +1;
+            int n = (int)_selected + dir;
+            
+            if (n >= 0 && n < items.count) {
+                CGFloat val = MAX([self getSelectedSegment:item], 0.0);
+                [self setSelectedSegment:item value:UISegmentedControlNoSegment];
+                [self setSelectedSegment:items[n] value:val];
+                _selected = n;
+            }
             break;
+        }
         case UIPressTypeLeftArrow:
-            break;
         case UIPressTypeRightArrow:
+        {
+            int dir = (type == UIPressTypeLeftArrow) ? -1 : +1;
+            CGFloat val = [self getSelectedSegment:item];
+            val = val + (CGFloat)dir / [self getNumberOfSegments:item];
+            [self setSelectedSegment:item value:val];
             break;
+        }
         case UIPressTypeSelect:
+            if (_selected != -1 && _selected < items.count) {
+                NSLog(@"SELECT: %@", items[_selected]);
+            }
             break;
         default:
             break;
