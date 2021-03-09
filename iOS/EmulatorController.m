@@ -4593,7 +4593,10 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
             }
             else {
                 NSLog(@"...MENU/HOME => MAME4iOS MENU");
-                [self runMenu:player];
+                if (controller.extendedGamepad != nil)
+                    [self runMenu:player];      // TODO: show a HUD based menu
+                else
+                    [self runMenu:player];      // Siri Remote show a UIAlertController based menu
             }
         }
 
@@ -4604,7 +4607,7 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
     g_menuButtonPressed[index] |= state;
     
     // cancel the HUD showing up if a modifier was pressed
-    if (state != 0 && g_menuHUD == nil)
+    if (state != 0)
         [self hideControllerHUD:controller];
 
     if (state & MYOSD_A) {
@@ -4656,8 +4659,7 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
     }
     if (state & (MYOSD_OPTION|MYOSD_MENU)) {
         NSLog(@"...SELECT+START => MAME4iOS MENU");
-        [self hideControllerHUD:controller];
-        [self runMenu:player];
+        [self runMenu:player];  // TODO: show a HUD based menu
     }
 }
 

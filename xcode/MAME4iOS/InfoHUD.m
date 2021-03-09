@@ -9,6 +9,10 @@
 #import "InfoHUD.h"
 #import <objc/runtime.h> // just for Associated Objects, I promise!
 
+@interface UIImage()
++ (UIImage*)imageWithString:(NSString*)str withFont:(UIFont*)font;
+@end
+
 #define HUD_BLUR    TRUE
 
 @implementation InfoHUD {
@@ -17,6 +21,7 @@
     NSMutableDictionary* _format;
     NSMutableDictionary* _step;
     CGFloat _width;
+    NSInteger _current;     // currently "selected" item in the stack view, or -1 for nada
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -38,6 +43,8 @@
     _stack.spacing = 4.0;
     _stack.distribution = UIStackViewDistributionEqualSpacing;
     _stack.alignment = UIStackViewAlignmentFill;
+    
+    _current = -1;
     
     self.font = nil;
     
@@ -153,6 +160,7 @@
     for (UIView* view in _stack.subviews)
         [view removeFromSuperview];
     _width = 0.0;
+    _current = -1;
 }
 
 - (UIImage*)dotWithColor:(UIColor*)color size:(CGSize)size
@@ -186,8 +194,9 @@
         else
             format = @"%0.3f";
     }
-    if ([format componentsSeparatedByString:@"%"].count == 2)
-        format = [@"%2$@: " stringByAppendingString:format];
+    
+    if ([format hasPrefix:@"%"] && key.length != 0)
+        format = [NSString stringWithFormat:@"%@: %@", key, format];
 
     if ([value isKindOfClass:[NSString class]] && [value isEqualToString:@"---"]) {
         value = [self separatorViewWithHeight:1.0 color:UIColor.clearColor];
@@ -303,10 +312,6 @@
     label.textAlignment = NSTextAlignmentCenter;
 }
 
-+ (UIImage*)imageWithString:(NSString*)str withFont:(UIFont*)font {
-    return nil;
-}
-
 - (NSArray*)convertItems:(NSArray*)_items {
     
     if (![[UIImage class] respondsToSelector:@selector(imageWithString:withFont:)])
@@ -315,8 +320,8 @@
     NSMutableArray* items = [_items mutableCopy];
     for (NSUInteger idx=0; idx<items.count; idx++) {
         id item = items[idx];
-        if ([item isKindOfClass:[NSString class]] && [item hasPrefix:@":"])
-            items[idx] = [[UIImage class] performSelector:@selector(imageWithString:withFont:) withObject:item withObject:self.font];
+        if ([item isKindOfClass:[NSString class]] && ([item hasPrefix:@":"] || [item hasSuffix:@":"]))
+            items[idx] = [UIImage imageWithString:item withFont:self.font];
     }
     return [items copy];
 }
@@ -395,7 +400,7 @@
         if (step != 0.0)
             val = round(val / step) * step;
         if (format != nil)
-            label.text = [NSString stringWithFormat:format, val, key];
+            label.text = [NSString stringWithFormat:format, val];
 #if TARGET_OS_IOS
         UISlider* slider = (__bridge UISlider*)(void*)label.tag;
         if ([slider isKindOfClass:[UISlider class]] && !slider.isTracking)
@@ -454,6 +459,25 @@
 - (void)layoutSubviews {
     _stack.frame = UIEdgeInsetsInsetRect(self.bounds, self.layoutMargins);
 }
+
+// move current selection and perfom action, used with input from a game controller, keyboard, or remote.
+- (void)handleButtonPress:(UIPressType)type {
+    switch (type) {
+        case UIPressTypeUpArrow:
+            break;
+        case UIPressTypeDownArrow:
+            break;
+        case UIPressTypeLeftArrow:
+            break;
+        case UIPressTypeRightArrow:
+            break;
+        case UIPressTypeSelect:
+            break;
+        default:
+            break;
+    }
+}
+
 
 
 @end

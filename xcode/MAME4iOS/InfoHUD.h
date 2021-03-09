@@ -49,6 +49,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (id)valueForKey:(NSString *)key;
 - (NSDictionary*)getValues;
 
+- (void)handleButtonPress:(UIPressType)type;
+
 @end
 
 NS_ASSUME_NONNULL_END
