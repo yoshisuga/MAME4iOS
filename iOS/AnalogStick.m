@@ -323,17 +323,8 @@
     
     [self updateAnalog];
     
-    if (g_pref_animated_DPad && pad_status != myosd_pad_status && g_pref_input_touch_type != TOUCH_INPUT_ANALOG)
+    if (g_pref_haptic_button_feedback && g_pref_animated_DPad && pad_status != myosd_pad_status && g_pref_input_touch_type != TOUCH_INPUT_ANALOG)
     {
-#ifdef XDEBUG
-        if (myosd_pad_status & (MYOSD_UP|MYOSD_DOWN|MYOSD_LEFT|MYOSD_RIGHT))
-            NSLog(@"****** BUZZ! *******: %s%s%s%s",
-                  (myosd_pad_status & MYOSD_UP) ?   "U" : "-", (myosd_pad_status & MYOSD_DOWN) ?  "D" : "-",
-                  (myosd_pad_status & MYOSD_LEFT) ? "L" : "-", (myosd_pad_status & MYOSD_RIGHT) ? "R" : "-");
-        else
-            NSLog(@"****** BONK! *******");
-#endif
-
         if (myosd_pad_status & (MYOSD_UP|MYOSD_DOWN|MYOSD_LEFT|MYOSD_RIGHT))
             [emuController.impactFeedback impactOccurred];
         else

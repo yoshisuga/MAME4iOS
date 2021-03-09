@@ -93,6 +93,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readwrite,assign) CGFloat touchControlsOpacity;
 
+@property (readwrite,assign) int hapticButtonFeedback;
+
 @end
 
 @interface NSArray (optionAtIndex)

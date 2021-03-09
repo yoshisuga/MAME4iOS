@@ -192,6 +192,7 @@ int g_pref_full_num_buttons=4;
 int g_pref_input_touch_type = TOUCH_INPUT_DSTICK;
 int g_pref_analog_DZ_value = 2;
 int g_pref_ext_control_type = 1;
+int g_pref_haptic_button_feedback = 1;
 
 int g_pref_nintendoBAYX = 0;
 int g_pref_p1aspx = 0;
@@ -953,6 +954,7 @@ void mame_state(int load_save, int slot)
     g_pref_input_touch_type = [op touchtype];
     g_pref_analog_DZ_value = [op analogDeadZoneValue];
     g_pref_ext_control_type = [op controltype];
+    g_pref_haptic_button_feedback = [op hapticButtonFeedback];
     
     g_pref_cheat = [op cheats];
        
@@ -2909,17 +2911,12 @@ void myosd_poll_input(void) {
         {
             buttonViews[i].highlighted = (pad_status & buttonMask[i]) != 0;
             
-#ifdef XDEBUG
-            if(pad_status & buttonMask[i])
-                NSLog(@"****** BUZZ! *******: %08X %@", (int)pad_status, [nameImgButton_Press[i] stringByDeletingPathExtension]);
-            else
-                NSLog(@"****** BONK! *******: %08X", (int)pad_status);
-#endif
-            
-            if(pad_status & buttonMask[i])
-                [self.impactFeedback impactOccurred];
-            else
-                [self.selectionFeedback selectionChanged];
+            if (g_pref_haptic_button_feedback) {
+                if(pad_status & buttonMask[i])
+                    [self.impactFeedback impactOccurred];
+                else
+                    [self.selectionFeedback selectionChanged];
+            }
         }
     }
     
