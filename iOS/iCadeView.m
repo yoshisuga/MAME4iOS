@@ -43,6 +43,7 @@
  */
 
 #import "iCadeView.h"
+#import "EmulatorController.h"
 #include "myosd.h"
 
 #define DebugLog 0
@@ -50,17 +51,20 @@
 #define NSLog(...) (void)0
 #endif
 
-@implementation iCadeView
+@implementation iCadeView {
+    UIView              *inputView;          //This is to show a fake invisible keyboard
+    EmulatorController  *emuController;
+}
 
-- (id)initWithFrame:(CGRect)frame withEmuController:(EmulatorController*)emulatorController
+- (id)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
     inputView = [[UIView alloc] initWithFrame:CGRectZero];//inputView es variable de instancia que ya elimina el super
-    
+
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didEnterBackground) name:UIApplicationDidEnterBackgroundNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didBecomeActive) name:UIApplicationDidBecomeActiveNotification object:nil];
     
-    emuController = emulatorController;
+    emuController = EmulatorController.sharedInstance;
     
     return self;
 }
@@ -931,7 +935,5 @@
 }
 
 #endif
-
-
 
 @end

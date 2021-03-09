@@ -386,7 +386,11 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
     
     NSUInteger width = texture.width;
     NSUInteger height = texture.height;
-    
+
+    #define TEMP_BUFFER_WIDTH  3840
+    #define TEMP_BUFFER_HEIGHT 2160
+    static unsigned short temp_buffer[TEMP_BUFFER_WIDTH * TEMP_BUFFER_HEIGHT * 2];
+
     NSCParameterAssert(texture.pixelFormat == MTLPixelFormatBGRA8Unorm);
     NSCParameterAssert(texture.width == prim->texture_width);
     NSCParameterAssert(texture.height == prim->texture_height);
@@ -403,7 +407,7 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
             static uint32_t pal_ident[32] = {0,8,16,24,32,41,49,57,65,74,82,90,98,106,115,123,131,139,148,156,164,172,180,189,197,205,213,222,230,238,246,255};
             TIMER_START(texture_load_rgb15);
             uint16_t* src = prim->texture_base;
-            uint32_t* dst = (uint32_t*)myosd_screen;
+            uint32_t* dst = (uint32_t*)temp_buffer;
             const uint32_t* pal = prim->texture_palette ?: pal_ident;
             for (NSUInteger y=0; y<height; y++) {
                 for (NSUInteger x=0; x<width; x++) {
@@ -416,7 +420,7 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
                 src += prim->texture_rowpixels - width;
             }
             TIMER_STOP(texture_load_rgb15);
-            [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:myosd_screen bytesPerRow:width*4];
+            [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:temp_buffer bytesPerRow:width*4];
             break;
         }
         case TEXFORMAT_RGB32:
@@ -428,7 +432,7 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
             }
             else {
                 uint32_t* src = prim->texture_base;
-                uint32_t* dst = (uint32_t*)myosd_screen;
+                uint32_t* dst = (uint32_t*)temp_buffer;
                 const uint32_t* pal = prim->texture_palette;
                 for (NSUInteger y=0; y<height; y++) {
                     for (NSUInteger x=0; x<width; x++) {
@@ -440,7 +444,7 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
                     }
                     src += prim->texture_rowpixels - width;
                 }
-                [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:myosd_screen bytesPerRow:width*4];
+                [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:temp_buffer bytesPerRow:width*4];
             }
             TIMER_STOP(texture_load_rgb32);
             break;
@@ -450,7 +454,7 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
         {
             TIMER_START(texture_load_pal16);
             uint16_t* src = prim->texture_base;
-            uint32_t* dst = (uint32_t*)myosd_screen;
+            uint32_t* dst = (uint32_t*)temp_buffer;
             const uint32_t* pal = prim->texture_palette;
             for (NSUInteger y=0; y<height; y++) {
                 NSUInteger dx = width;
@@ -472,7 +476,7 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
                 src += prim->texture_rowpixels - width;
             }
             TIMER_STOP(texture_load_pal16);
-            [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:myosd_screen bytesPerRow:width*4];
+            [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:temp_buffer bytesPerRow:width*4];
             break;
         }
         case TEXFORMAT_YUY16:
@@ -492,7 +496,7 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
 
 // return 1 if you handled the draw, 0 for a software render
 // NOTE this is called on MAME background thread, dont do anything stupid.
-- (int)drawScreen:(void*)prim_list {
+- (void)drawScreen:(void*)prim_list {
     static Shader shader_map[] = {ShaderNone, ShaderAlpha, ShaderMultiply, ShaderAdd};
     static Shader shader_tex_map[]  = {ShaderTexture, ShaderTextureAlpha, ShaderTextureMultiply, ShaderTextureAdd};
 
@@ -502,7 +506,7 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
     
     if (![self drawBegin]) {
         NSLog(@"drawBegin *FAIL* dropping frame on the floor.");
-        return 1;
+        return;
     }
     _drawScreenStart = CACurrentMediaTime();
     TIMER_START(draw_screen);
@@ -592,16 +596,13 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
             else
                 [self setTextureAddressMode:MTLSamplerAddressModeClampToZero];
 
-            // draw a quad in the correct orientation
-            UIImageOrientation orientation = UIImageOrientationUp;
-            if (prim->texorient == ORIENTATION_ROT90)
-                orientation = UIImageOrientationRight;
-            else if (prim->texorient == ORIENTATION_ROT180)
-                orientation = UIImageOrientationDown;
-            else if (prim->texorient == ORIENTATION_ROT270)
-                orientation = UIImageOrientationLeft;
-
-            [self drawRect:rect color:color orientation:orientation];
+            // draw a textured rect.
+            [self drawPrim:MTLPrimitiveTypeTriangleStrip vertices:(Vertex2D[]){
+                Vertex2D(rect.origin.x,                  rect.origin.y,                   prim->texcoords[0].u,prim->texcoords[0].v,color),
+                Vertex2D(rect.origin.x + rect.size.width,rect.origin.y,                   prim->texcoords[1].u,prim->texcoords[1].v,color),
+                Vertex2D(rect.origin.x,                  rect.origin.y + rect.size.height,prim->texcoords[2].u,prim->texcoords[2].v,color),
+                Vertex2D(rect.origin.x + rect.size.width,rect.origin.y + rect.size.height,prim->texcoords[3].u,prim->texcoords[3].v,color),
+            } count:4];
         }
         else if (prim->type == RENDER_PRIMITIVE_QUAD) {
             // solid color quad. only ALPHA or NONE blend mode.
@@ -681,9 +682,6 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
         TIMER_DUMP();
         TIMER_RESET();
     }
-    
-    // always return 1 saying we handled the draw.
-    return 1;
 }
 
 #pragma mark - TEST PATTERN
@@ -805,6 +803,10 @@ VertexColor VertexColorP3(CGFloat r, CGFloat g, CGFloat b, CGFloat a) {
 //      [X] rotate 90                   pacman
 //      [X] rotate 180                  mario, cocktail
 //      [X] rotate 270                  mario, cocktail.
+//      [X] flip X                      othunder
+//      [X] flip Y                      lethalen
+//      [X] swap XY                     kick
+//      [ ] swap XY + flip X + flip Y   
 //      [X] texture WRAP                MAME menu
 //      [X] texture CLAMP               MAME menu
 //
@@ -884,6 +886,15 @@ VertexColor VertexColorP3(CGFloat r, CGFloat g, CGFloat b, CGFloat a) {
             if (orient == ORIENTATION_ROT270)
                 assert(TRUE);
             
+            if (orient == ORIENTATION_FLIP_X)
+                assert(TRUE);
+            if (orient == ORIENTATION_FLIP_Y)
+                assert(TRUE);
+            if (orient == ORIENTATION_SWAP_XY)
+                assert(TRUE);
+            if (orient == (ORIENTATION_SWAP_XY | ORIENTATION_FLIP_X | ORIENTATION_FLIP_Y))
+                assert(FALSE);
+
             if (wrap == 0)
                 assert(TRUE);
             if (wrap == 1)
@@ -910,6 +921,65 @@ VertexColor VertexColorP3(CGFloat r, CGFloat g, CGFloat b, CGFloat a) {
                 assert(TRUE);
             if (fmt == TEXFORMAT_YUY16 && prim->texture_palette != NULL)
                 assert(FALSE);
+        }
+    }
+}
+#endif
+
+// code to DEBUG dump the current screen
+#ifdef DEBUG
+#undef NSLog
+
+- (void)dumpScreen:(void*)primitives {
+    
+    static char* texture_format_name[] = {"UNDEFINED", "PAL16", "PALA16", "555", "RGB", "ARGB", "YUV16"};
+    static char* blend_mode_name[] = {"NONE", "ALPHA", "MUL", "ADD"};
+    
+    NSLog(@"Draw Screen: %dx%d", myosd_video_width, myosd_video_height);
+    
+    for (myosd_render_primitive* prim = primitives; prim != NULL; prim = prim->next) {
+        
+        NSParameterAssert(prim->type == RENDER_PRIMITIVE_LINE || prim->type == RENDER_PRIMITIVE_QUAD);
+        NSParameterAssert(prim->blendmode <= BLENDMODE_ADD);
+        NSParameterAssert(prim->texformat <= TEXFORMAT_YUY16);
+        NSParameterAssert(prim->unused == 0);
+        
+        int blend = prim->blendmode;
+        int fmt = prim->texformat;
+        int aa = prim->antialias;
+        int screen = prim->screentex;
+        int orient = prim->texorient;
+        int wrap = prim->texwrap;
+        
+        if (prim->type == RENDER_PRIMITIVE_LINE) {
+            NSLog(@"    LINE (%.0f,%.0f) -> (%.0f,%.0f) (%0.2f,%0.2f,%0.2f,%0.2f) %f %s%s%s",
+                  prim->bounds_x0, prim->bounds_y0, prim->bounds_x1, prim->bounds_y1,
+                  prim->color_r, prim->color_g, prim->color_b, prim->color_a,
+                  prim->width, blend_mode_name[blend], aa ? " AA" : "", screen ? " SCREEN" : "");
+        }
+        else if (prim->type == RENDER_PRIMITIVE_QUAD && prim->texture_base == NULL) {
+            NSLog(@"    QUAD [%.0f,%.0f,%.0f,%.0f] (%0.2f,%0.2f,%0.2f,%0.2f) %s%s",
+                  prim->bounds_x0, prim->bounds_y0, prim->bounds_x1 - prim->bounds_x0, prim->bounds_y1 - prim->bounds_y0,
+                  prim->color_r, prim->color_g, prim->color_b, prim->color_a,
+                  blend_mode_name[blend], aa ? " AA" : "");
+        }
+        else if (prim->type == RENDER_PRIMITIVE_QUAD) {
+            NSLog(@"    TEXQ [%.0f,%.0f,%.0f,%.0f] [(%.0f,%.0f),(%.0f,%.0f),(%.0f,%.0f),(%.0f,%.0f)] %s %dx%d (%lX:%d) %s%s%s%s%s%s%s%s",
+                  prim->bounds_x0, prim->bounds_y0, prim->bounds_x1 - prim->bounds_x0, prim->bounds_y1 - prim->bounds_y0,
+                  prim->texcoords[0].u, prim->texcoords[0].v,
+                  prim->texcoords[1].u, prim->texcoords[1].v,
+                  prim->texcoords[2].u, prim->texcoords[2].v,
+                  prim->texcoords[3].u, prim->texcoords[3].v,
+                  blend_mode_name[blend],
+                  prim->texture_width, prim->texture_height, (intptr_t)prim->texture_base, prim->texture_seqid,
+                  texture_format_name[fmt],
+                  prim->texture_palette ? " PALLETE" : "",
+                  aa ? " AA" : "",
+                  screen ? " SCREEN" : "", wrap ? " WRAP" : "",
+                  (orient & ORIENTATION_FLIP_X) ? " FLIPX" : "",
+                  (orient & ORIENTATION_FLIP_Y) ? " FLIPY" : "",
+                  (orient & ORIENTATION_SWAP_XY) ? " SWAPXY" : ""
+                  );
         }
     }
 }

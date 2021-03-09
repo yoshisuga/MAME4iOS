@@ -47,7 +47,6 @@
 
 #import "Bootstrapper.h"
 #import "Globals.h"
-#import "BTJoyHelper.h"
 
 #import "myosd.h"
 #import "EmulatorController.h"
@@ -75,10 +74,6 @@ const char* get_documents_path(const char* file)
     sprintf(documents_path, "%s/%s",path.UTF8String, file);
 
     return documents_path;
-}
-
-unsigned long read_mfi_controller(unsigned long res){
-    return res;
 }
 
 @implementation Bootstrapper
@@ -155,12 +150,9 @@ unsigned long read_mfi_controller(unsigned long res){
     externalWindow = [[UIWindow alloc] initWithFrame:CGRectZero];
     externalWindow.hidden = YES;
     
-	if(g_pref_nativeTVOUT)
-	{
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(prepareScreen) name:UIScreenDidConnectNotification object:nil];
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(prepareScreen) name:UIScreenDidDisconnectNotification object:nil];
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateScreen)  name:UIScreenModeDidChangeNotification object:nil];
-	}
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(prepareScreen) name:UIScreenDidConnectNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(prepareScreen) name:UIScreenDidDisconnectNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateScreen)  name:UIScreenModeDidChangeNotification object:nil];
     
     [self prepareScreen];
 #endif
@@ -266,10 +258,11 @@ unsigned long read_mfi_controller(unsigned long res){
 #endif
 
 - (void)applicationDidEnterBackground:(UIApplication *)application {
-    [hrViewController runPause];
+    [hrViewController enterBackground];
 }
 
-- (void)applicationWillResignActive:(UIApplication *)application {
+- (void)applicationWillEnterForeground:(UIApplication *)application {
+    [hrViewController enterForeground];
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application {
@@ -289,7 +282,7 @@ unsigned long read_mfi_controller(unsigned long res){
         return;
     }
 
-    if ([[UIScreen screens] count] > 1 && g_pref_nativeTVOUT) {
+    if ([[UIScreen screens] count] > 1) {
         
         // Internal display is 0, external is 1.
         UIScreen* externalScreen = [[UIScreen screens] objectAtIndex:1];
@@ -333,7 +326,7 @@ unsigned long read_mfi_controller(unsigned long res){
 {
     if (screen != nil)
     {
-        [screen setOverscanCompensation:UIScreenOverscanCompensationNone];
+        [screen setOverscanCompensation:UIScreenOverscanCompensationInsetBounds];
         [externalWindow setScreen:screen];
                             
         for (UIView *view in externalWindow.subviews)

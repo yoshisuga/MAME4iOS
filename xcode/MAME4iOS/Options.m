@@ -11,27 +11,13 @@
 #import "Globals.h"
 #import "SkinManager.h"         // for skinList
 #import "MetalScreenView.h"     // for shader and filter list
-#import "CGScreenView.h"        // for shader and filter list
 
 @implementation Options
 
 #pragma mark - class properties
 
-+ (NSArray*)arrayEmuRes {
-    return @[@"Auto",@"320x200",@"320x240",@"400x300",@"480x300",@"512x384",@"640x400",@"640x480 (SD)",@"800x600",@"1024x768",@"1280x960",
-             @"1440x1080 (HD)",@"1600x1200",@"1920x1440",@"2048x1536",@"2880x2160 (UHD)"];
-}
-+ (NSArray*)arrayFSValue {
-    return [[NSArray alloc] initWithObjects:@"Auto",@"None", @"1", @"2", @"3",@"4", @"5", @"6", @"7", @"8", @"9", @"10", nil];
-}
-+ (NSArray*)arrayOverscanValue {
-    return [[NSArray alloc] initWithObjects:@"None",@"1", @"2", @"3",@"4", @"5", @"6", nil];
-}
 + (NSArray*)arrayEmuSpeed {
-    return [[NSArray alloc] initWithObjects: @"Default",
-                     @"50%", @"60%", @"70%", @"80%", @"85%",@"90%",@"95%",@"100%",
-                     @"105%", @"110%", @"115%", @"120%", @"130%",@"140%",@"150%",
-                     nil];
+    return @[@"Default",@"50%",@"60%",@"70%",@"80%",@"85%",@"90%",@"95%",@"100%",@"105%",@"110%",@"115%",@"120%",@"130%",@"140%",@"150%"];
 }
 + (NSArray*)arrayControlType {
     return @[@"Keyboard",@"iCade or compatible",@"iCP, Gametel",@"iMpulse", @"8BitDo Zero"];
@@ -44,32 +30,16 @@
     return [SkinManager getSkinNames];
 }
 + (NSArray*)arrayFilter {
-    Options* op = [[Options alloc] init];
-    if (g_isMetalSupported && op.useMetal)
-        return [MetalScreenView filterList];
-    else
-        return [CGScreenView filterList];
+    return [MetalScreenView filterList];
 }
 + (NSArray*)arrayScreenShader {
-    Options* op = [[Options alloc] init];
-    if (g_isMetalSupported && op.useMetal)
-        return [MetalScreenView screenShaderList];
-    else
-        return [CGScreenView screenShaderList];
+    return [MetalScreenView screenShaderList];
 }
 + (NSArray*)arrayLineShader {
-    Options* op = [[Options alloc] init];
-    if (g_isMetalSupported && op.useMetal)
-        return [MetalScreenView lineShaderList];
-    else
-        return [CGScreenView lineShaderList];
+    return [MetalScreenView lineShaderList];
 }
 + (NSArray*)arrayColorSpace {
-    Options* op = [[Options alloc] init];
-    if (g_isMetalSupported && op.useMetal)
-        return [MetalScreenView colorSpaceList];
-    else
-        return [CGScreenView colorSpaceList];
+    return [MetalScreenView colorSpaceList];
 }
 
 #pragma mark - utility funciton to set a single option and save it.
@@ -141,7 +111,6 @@
         _lineShader = @"";
 
         _colorSpace = @"";
-        _useMetal = 1;
         
         _integerScalingOnly = 0;
 
@@ -160,9 +129,6 @@
         _fullscreenJoystick = 1;
 #endif
         
-        _overscanValue = 0;
-        _tvoutNative = 1;
-        
         _touchtype = 1;
         _analogDeadZoneValue = 2;
         
@@ -170,36 +136,16 @@
         
         _soundValue = 5;
         
-        _throttle = 1;
-        _fsvalue = 0;
         _sticktype = 0;
         _numbuttons = 0;
         _aplusb = 0;
         _cheats = 1;
-        _sleep = 1;
         
         _forcepxa = 0;
-        _emures = 0;
         _p1aspx = 0;
         
         _filterClones=0;
-        _filterFavorites=0;
         _filterNotWorking=1;
-        _manufacturerValue=0;
-        _yearGTEValue=0;
-        _yearLTEValue=0;
-        _driverSourceValue=0;
-        _categoryValue=0;
-        
-        _filterKeyword = nil;
-        
-        _lowlsound = 1;
-        _vsync = 1;
-        _threaded = 1;
-        _dblbuff = 1;
-        
-        _mainPriority = 5;
-        _videoPriority = 5;
         
         _autofire = 0;
         _hiscore = 1;
@@ -219,9 +165,6 @@
         _vflicker = 0;
         
         _emuspeed = 0;
-        
-        _mainThreadType = 0;
-        _videoThreadType = 0;
         
         _lightgunEnabled = 1;
         _lightgunBottomScreenReload = 0;
@@ -253,7 +196,6 @@
         _lineShader = [optionsDict objectForKey:@"line-shader"] ?: @"";
 
         _colorSpace = [optionsDict objectForKey:@"sourceColorSpace"] ?: @"";
-        _useMetal = [([optionsDict objectForKey:@"useMetal"] ?: @(TRUE)) boolValue];
 
         _integerScalingOnly = [[optionsDict objectForKey:@"integerScalingOnly"] boolValue];
 
@@ -287,61 +229,25 @@
         
         _touchDirectionalEnabled = [[optionsDict objectForKey:@"touchDirectionalEnabled"] intValue];
         
-        _overscanValue =  [[optionsDict objectForKey:@"overscanValue"] intValue];
-        _tvoutNative =  [[optionsDict objectForKey:@"tvoutNative"] intValue];
-        
         _touchtype =  [[optionsDict objectForKey:@"inputTouchType"] intValue];
         _analogDeadZoneValue =  [[optionsDict objectForKey:@"analogDeadZoneValue"] intValue];
         _controltype =  [[optionsDict objectForKey:@"controlType"] intValue];
         
         _soundValue =  [[optionsDict objectForKey:@"soundValue"] intValue];
         
-        _throttle  =  [[optionsDict objectForKey:@"throttle"] intValue];
-        _fsvalue  =  [[optionsDict objectForKey:@"fsvalue"] intValue];
         _sticktype  =  [[optionsDict objectForKey:@"sticktype"] intValue];
         _numbuttons  =  [[optionsDict objectForKey:@"numbuttons"] intValue];
         _aplusb  =  [[optionsDict objectForKey:@"aplusb"] intValue];
         _cheats  =  [[optionsDict objectForKey:@"cheats"] intValue];
-        _sleep  =  [[optionsDict objectForKey:@"sleep"] intValue];
         
         _forcepxa  =  [[optionsDict objectForKey:@"forcepxa"] intValue];
-        _emures  =  [[optionsDict objectForKey:@"emures"] intValue];
         
         _p1aspx  =  [[optionsDict objectForKey:@"p1aspx"] intValue];
         
         _filterClones  =  [[optionsDict objectForKey:@"filterClones"] intValue];
-        _filterFavorites  =  [[optionsDict objectForKey:@"filterFavorites"] intValue];
         _filterNotWorking  =  [[optionsDict objectForKey:@"filterNotWorking"] intValue];
-        _manufacturerValue  =  [[optionsDict objectForKey:@"manufacturerValue"] intValue];
-        _yearGTEValue  =  [[optionsDict objectForKey:@"yearGTEValue"] intValue];
-        _yearLTEValue  =  [[optionsDict objectForKey:@"yearLTEValue"] intValue];
-        _driverSourceValue  =  [[optionsDict objectForKey:@"driverSourceValue"] intValue];
-        _categoryValue  =  [[optionsDict objectForKey:@"categoryValue"] intValue];
-        
-        _filterKeyword  =  [optionsDict objectForKey:@"filterKeyword"];
-        
-        _lowlsound  =  [[optionsDict objectForKey:@"lowlsound"] intValue];
-        _vsync  =  [[optionsDict objectForKey:@"vsync"] intValue];
-        
-#if 0   // leave these values set to the defaults, there is no UI anymore to change them.
-        // ...and they only apply to CoreGraphics not Metal
-        _threaded  =  [[optionsDict objectForKey:@"threaded"] intValue];
-        _dblbuff  =  [[optionsDict objectForKey:@"dblbuff"] intValue];
-        _mainPriority  =  [[optionsDict objectForKey:@"mainPriority"] intValue];
-        _videoPriority  =  [[optionsDict objectForKey:@"videoPriority"] intValue];
-        _mainThreadType  =  [[optionsDict objectForKey:@"mainThreadType"] intValue];
-        _videoThreadType  =  [[optionsDict objectForKey:@"videoThreadType"] intValue];
-#else
-        _threaded = 1;
-        _dblbuff = 1;
-        _mainPriority = 5;
-        _videoPriority = 5;
-        _mainThreadType = 0;
-        _videoThreadType = 0;
-#endif
         
         _autofire =  [[optionsDict objectForKey:@"autofire"] intValue];
-        
         _hiscore  =  [[optionsDict objectForKey:@"hiscore"] intValue];
         
         _buttonSize =  [[optionsDict objectForKey:@"buttonSize"] intValue];
@@ -356,8 +262,6 @@
         
         if([_wfpeeraddr isEqualToString:@""])
             _wfpeeraddr = nil;
-        if([_filterKeyword isEqualToString:@""])
-            _filterKeyword = nil;
         
         _vbean2x  =  [[optionsDict objectForKey:@"vbean2x"] intValue];
         _vantialias  =  [[optionsDict objectForKey:@"vantialias"] intValue];
@@ -379,7 +283,6 @@
                              _lineShader, @"line-shader",
 
                              _colorSpace, @"sourceColorSpace",
-                             [NSString stringWithFormat:@"%d", _useMetal], @"useMetal",
                                  
                              [NSString stringWithFormat:@"%d", _integerScalingOnly], @"integerScalingOnly",
 
@@ -409,9 +312,6 @@
                              [NSString stringWithFormat:@"%d", _fullscreenPortrait], @"fullPort",
                              [NSString stringWithFormat:@"%d", _fullscreenJoystick], @"fullJoy",
 
-                             [NSString stringWithFormat:@"%d", _overscanValue], @"overscanValue",
-                             [NSString stringWithFormat:@"%d", _tvoutNative], @"tvoutNative",
-                             
                              [NSString stringWithFormat:@"%d", _touchtype], @"inputTouchType",
                              [NSString stringWithFormat:@"%d", _analogDeadZoneValue], @"analogDeadZoneValue",
                              
@@ -419,34 +319,18 @@
                              
                              [NSString stringWithFormat:@"%d", _soundValue], @"soundValue",
                              
-                             [NSString stringWithFormat:@"%d", _throttle], @"throttle",
-                             [NSString stringWithFormat:@"%d", _fsvalue], @"fsvalue",
                              [NSString stringWithFormat:@"%d", _sticktype], @"sticktype",
                              [NSString stringWithFormat:@"%d", _numbuttons], @"numbuttons",
                              [NSString stringWithFormat:@"%d", _aplusb], @"aplusb",
                              [NSString stringWithFormat:@"%d", _cheats], @"cheats",
-                             [NSString stringWithFormat:@"%d", _sleep], @"sleep",
                              
                              [NSString stringWithFormat:@"%d", _forcepxa], @"forcepxa",
-                             [NSString stringWithFormat:@"%d", _emures], @"emures",
                              
                              [NSString stringWithFormat:@"%d", _p1aspx], @"p1aspx",
                              
                              [NSString stringWithFormat:@"%d", _filterClones], @"filterClones",
-                             [NSString stringWithFormat:@"%d", _filterFavorites], @"filterFavorites",
                              [NSString stringWithFormat:@"%d", _filterNotWorking], @"filterNotWorking",
-                             [NSString stringWithFormat:@"%d", _manufacturerValue], @"manufacturerValue",
-                             [NSString stringWithFormat:@"%d", _yearGTEValue], @"yearGTEValue",
-                             [NSString stringWithFormat:@"%d", _yearLTEValue], @"yearLTEValue",
-                             [NSString stringWithFormat:@"%d", _driverSourceValue], @"driverSourceValue",
-                             [NSString stringWithFormat:@"%d", _categoryValue], @"categoryValue",
-                             [NSString stringWithFormat:@"%d", _lowlsound], @"lowlsound",
-                             [NSString stringWithFormat:@"%d", _vsync], @"vsync",
-                             [NSString stringWithFormat:@"%d", _threaded], @"threaded",
-                             [NSString stringWithFormat:@"%d", _dblbuff], @"dblbuff",
-                             
-                             [NSString stringWithFormat:@"%d", _mainPriority], @"mainPriority",
-                             [NSString stringWithFormat:@"%d", _videoPriority], @"videoPriority",
+                                 
                              
                              [NSString stringWithFormat:@"%d", _autofire], @"autofire",
                              [NSString stringWithFormat:@"%d", _hiscore], @"hiscore",
@@ -461,51 +345,18 @@
                              [NSString stringWithFormat:@"%d", _btlatency], @"btlatency",
                              (_wfpeeraddr ?: @""), @"wfpeeraddr",
                              
-                             (_filterKeyword ?: @""), @"filterKeyword",
-                             
                              [NSString stringWithFormat:@"%d", _vbean2x], @"vbean2x",
                              [NSString stringWithFormat:@"%d", _vantialias], @"vantialias",
                              [NSString stringWithFormat:@"%d", _vflicker], @"vflicker",
                              
                              [NSString stringWithFormat:@"%d", _emuspeed], @"emuspeed",
                              
-                             [NSString stringWithFormat:@"%d", _mainThreadType], @"mainThreadType",
-                             [NSString stringWithFormat:@"%d", _videoThreadType], @"videoThreadType",
-                             
                              nil];
     
     
-    NSString *path=[NSString stringWithUTF8String:get_documents_path("iOS/options_v23.bin")];
-    
-    NSData *plistData;
-    
-    NSError *error = nil;
-    
-    plistData = [NSPropertyListSerialization dataWithPropertyList:@[optionsDict]
-                                                           format:NSPropertyListBinaryFormat_v1_0
-                                                          options:0
-                                                            error:&error];
-
-    if(plistData)
-    {
-        //NSError*err;
-        
-        BOOL b = [plistData writeToFile:path atomically:NO];
-        //BOOL b = [plistData writeToFile:path options:0  error:&err];
-        if(!b)
-        {
-            UIAlertController *errAlert = [UIAlertController alertControllerWithTitle:@"Error saving preferences!" message:@"Preferences cannot be saved.\n Check for write permissions. 'chmod -R 777 /var/mobile/Media/ROMs' if needed. Look at the help for details!." preferredStyle:UIAlertControllerStyleAlert];
-            [errAlert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-                
-            }]];
-            UIViewController *controller = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
-            [controller presentViewController:errAlert animated:YES completion:nil];
-        }
-    }
-    else
-    {
-        NSLog(@"%@",error);
-    }
+    NSData* data = [NSPropertyListSerialization dataWithPropertyList:optionsDict format:NSPropertyListBinaryFormat_v1_0 options:0 error:nil];
+    NSParameterAssert(data != nil);
+    [data writeToFile:Options.optionsPath atomically:NO];
 }
 
 @end

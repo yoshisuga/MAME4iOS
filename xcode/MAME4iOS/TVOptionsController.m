@@ -43,11 +43,11 @@
     if ( section == kFilterSection ) {
         return 2;
     } else if ( section == kScreenSection ) {
-        return 9;
+        return 8;
     } else if ( section == kVectorSection ) {
         return 3;
     } else if ( section == kMiscSection ) {
-        return 11;
+        return 6;
     } else if ( section == kInputSection ) {
         return 1;
     } else if ( section == kImportSection ) {
@@ -85,6 +85,17 @@
 
     return @"";
 }
+
+// helper to get a systemImage to use in the UI
+// HACK: on tvOS 13.x an image in a UITableViewCell will overhand on the left edge of the cell and look ugly, so add a space!
+- (UIImage*)systemImageNamed:(NSString*)name withFont:(UIFont*)font {
+    if (@available(tvOS 14.0, *))
+        return [UIImage systemImageNamed:name withFont:font];
+    else if (@available(tvOS 13.0, *))
+        return [UIImage imageWithString:[NSString stringWithFormat:@" :%@:", name] withFont:font];
+    else
+        return nil;
+}
     
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     
@@ -100,7 +111,7 @@
     
     Options* op = [[Options alloc] init];
     
-    CGFloat size = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].pointSize;
+    UIFont* font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
 
     if ( indexPath.section == kFilterSection ) {
         if ( indexPath.row == 0 ) {
@@ -113,27 +124,27 @@
     } else if ( indexPath.section == kImportSection ) {
         if ( indexPath.row == 0 ) {
             cell.textLabel.text = @"Start Web Server";
-            cell.imageView.image = [UIImage systemImageNamed:@"arrow.up.arrow.down.circle" withPointSize:size];
+            cell.imageView.image = [self systemImageNamed:@"arrow.up.arrow.down.circle" withFont:font];
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
         }
         if ( indexPath.row == 1 ) {
             cell.textLabel.text = @"Export to iCloud";
-            cell.imageView.image = [UIImage systemImageNamed:@"icloud.and.arrow.up" withPointSize:size];
+            cell.imageView.image = [self systemImageNamed:@"icloud.and.arrow.up" withFont:font];
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
         }
         if ( indexPath.row == 2 ) {
             cell.textLabel.text = @"Import from iCloud";
-            cell.imageView.image = [UIImage systemImageNamed:@"icloud.and.arrow.down" withPointSize:size];
+            cell.imageView.image = [self systemImageNamed:@"icloud.and.arrow.down"  withFont:font];
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
         }
         if ( indexPath.row == 3 ) {
             cell.textLabel.text = @"Sync with iCloud";
-            cell.imageView.image = [UIImage systemImageNamed:@"arrow.clockwise.icloud" withPointSize:size];
+            cell.imageView.image = [self systemImageNamed:@"arrow.clockwise.icloud"  withFont:font];
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
         }
         if ( indexPath.row == 4 ) {
             cell.textLabel.text = @"Erase iCloud";
-            cell.imageView.image = [UIImage systemImageNamed:@"xmark.icloud" withPointSize:size];
+            cell.imageView.image = [self systemImageNamed:@"xmark.icloud" withFont:font];
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
         }
     } else if ( indexPath.section == kScreenSection ) {
@@ -158,15 +169,12 @@
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
             cell.detailTextLabel.text = [Options.arrayColorSpace optionName:op.colorSpace];
         } else if ( indexPath.row == 5 ) {
-            cell.textLabel.text =  @"Use Metal";
-            cell.accessoryView = [self optionSwitchForKey:@"useMetal"];
-        } else if ( indexPath.row == 6 ) {
             cell.textLabel.text = @"Keep Aspect Ratio";
             cell.accessoryView = [self optionSwitchForKey:@"keepAspectRatio"];
-        } else if ( indexPath.row == 7 ) {
+        } else if ( indexPath.row == 6 ) {
             cell.textLabel.text = @"Integer Scaling Only";
             cell.accessoryView = [self optionSwitchForKey:@"integerScalingOnly"];
-        } else if ( indexPath.row == 8 ) {
+        } else if ( indexPath.row == 7 ) {
             cell.textLabel.text   = @"Force Pixel Aspect";
             cell.accessoryView = [self optionSwitchForKey:@"forcepxa"];
         }
@@ -189,40 +197,23 @@
             cell.textLabel.text   = @"Show Info/Warnings";
             cell.accessoryView = [self optionSwitchForKey:@"showINFO"];
         } else if ( indexPath.row == 2 ) {
-            cell.textLabel.text   = @"Emulated Resolution";
-            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-            cell.detailTextLabel.text = [Options.arrayEmuRes optionAtIndex:op.emures];
+            cell.textLabel.text = @"Cheats";
+            cell.accessoryView = [self optionSwitchForKey:@"cheats"];
         } else if ( indexPath.row == 3 ) {
+            cell.textLabel.text   = @"Save Hiscores";
+            cell.accessoryView = [self optionSwitchForKey:@"hiscore"];
+        } else if ( indexPath.row == 4 ) {
             cell.textLabel.text   = @"Emulated Speed";
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
             cell.detailTextLabel.text = [Options.arrayEmuSpeed optionAtIndex:op.emuspeed];
-        } else if ( indexPath.row == 4 ) {
-            cell.textLabel.text = @"Throttle";
-            cell.accessoryView = [self optionSwitchForKey:@"throttle"];
         } else if ( indexPath.row == 5 ) {
-            cell.textLabel.text = @"Frame Skip";
-            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-            cell.detailTextLabel.text = [Options.arrayFSValue optionAtIndex:op.fsvalue];
-        } else if ( indexPath.row == 6 ) {
-            cell.textLabel.text = @"Low Latency Audio";
-            cell.accessoryView = [self optionSwitchForKey:@"lowlsound"];
-        } else if ( indexPath.row == 7 ) {
             cell.textLabel.text   = @"Sound";
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
             cell.detailTextLabel.text = [Options.arraySoundValue optionAtIndex:op.soundValue];
-        } else if ( indexPath.row == 8 ) {
-            cell.textLabel.text = @"Cheats";
-            cell.accessoryView = [self optionSwitchForKey:@"cheats"];
-        } else if ( indexPath.row == 9 ) {
-            cell.textLabel.text   = @"Force 60Hz Sync";
-            cell.accessoryView = [self optionSwitchForKey:@"vsync"];
-        } else if ( indexPath.row == 10 ) {
-            cell.textLabel.text   = @"Save Hiscores";
-            cell.accessoryView = [self optionSwitchForKey:@"hiscore"];
         }
     } else if ( indexPath.section == kInputSection ) {
         cell.textLabel.text = @"Game Input";
-        cell.imageView.image = [UIImage systemImageNamed:@"gamecontroller" withPointSize:size];
+        cell.imageView.image = [self systemImageNamed:@"gamecontroller" withFont:font];
         cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     } else if ( indexPath.section == kResetSection ) {
         cell.textLabel.text = @"Reset to Defaults";
@@ -278,16 +269,10 @@
             [[self navigationController] pushViewController:listController animated:YES];
         }
     } else if ( indexPath.section == kMiscSection ) {
-        if ( indexPath.row == 2 ) {
-            ListOptionController *listController = [[ListOptionController alloc] initWithType:kTypeEmuRes list:Options.arrayEmuRes];
-            [[self navigationController] pushViewController:listController animated:YES];
-        } else if ( indexPath.row == 3 ) {
-            ListOptionController *listController = [[ListOptionController alloc] initWithType:kTypeEmuSpeed list:Options.arrayEmuSpeed];
+        if ( indexPath.row == 4 ) {
+            ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"emuspeed" list:Options.arrayEmuSpeed title:cell.textLabel.text];
             [[self navigationController] pushViewController:listController animated:YES];
         } else if ( indexPath.row == 5 ) {
-            ListOptionController *listController = [[ListOptionController alloc] initWithType:kTypeFSValue list:Options.arrayFSValue];
-            [[self navigationController] pushViewController:listController animated:YES];
-        } else if ( indexPath.row == 7 ) {
             ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"soundValue" list:Options.arraySoundValue title:cell.textLabel.text];
             [[self navigationController] pushViewController:listController animated:YES];
         }

@@ -46,7 +46,6 @@
 
 #import "Globals.h"
 #import "ScreenView.h"
-#import "CGScreenView.h"
 #import "MetalScreenView.h"
 #import "GCDWebUploader.h"
 #import <GameController/GameController.h>
@@ -143,7 +142,6 @@ enum {BTN_A,BTN_B,BTN_Y,BTN_X,BTN_L1,BTN_R1,
 
 - (void)runMenu;
 - (void)runExit;
-- (void)runPause;
 - (void)runServer;
 - (void)runReset;
 - (void)endMenu;
@@ -152,6 +150,9 @@ enum {BTN_A,BTN_B,BTN_Y,BTN_X,BTN_L1,BTN_R1,
 - (void)runExport;
 - (void)runExportSkin;
 #endif
+
+- (void)enterBackground;
+- (void)enterForeground;
 
 - (void)handle_INPUT;
 - (void)commandKey:(char)key;

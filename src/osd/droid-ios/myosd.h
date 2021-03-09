@@ -32,28 +32,18 @@ enum  { MYOSD_UP=0x1,       MYOSD_LEFT=0x4,       MYOSD_DOWN=0x10,   MYOSD_RIGHT
         MYOSD_EXIT=1<<20,   MYOSD_OPTION=1<<21,   MYOSD_HOME=1<<22,  MYOSD_MENU=1<<23,
 };
     
-#define MAX_FILTER_KEYWORD 30
 #define MAX_GAME_NAME 14
 #define NETPLAY_PORT 55435
 #define NUM_JOY 4
 
-#define MYOSD_BUFFER_WIDTH  3840
-#define MYOSD_BUFFER_HEIGHT 2160
-extern unsigned short *myosd_curr_screen;   // current screen being rendered.
-extern unsigned short *myosd_prev_screen;   // current screen being drawn (we hope).
-extern unsigned short myosd_screen[MYOSD_BUFFER_WIDTH * MYOSD_BUFFER_HEIGHT * 2];
-
 extern int  myosd_fps;
 extern int  myosd_showinfo;
-extern int  myosd_sleep;
 extern int  myosd_exitGame;
 extern int  myosd_pause;
 extern int  myosd_exitPause;
 extern int  myosd_autosave;
 extern int  myosd_cheat;
 extern int  myosd_sound_value;
-extern int  myosd_frameskip_value;
-extern int  myosd_throttle;
 extern int  myosd_savestate;
 extern int  myosd_loadstate;
 extern int  myosd_waysStick;
@@ -64,11 +54,9 @@ extern int  myosd_vis_video_height;
 extern int  myosd_display_width;        // display width,height is the screen output resolution
 extern int  myosd_display_height;       // ...set in the iOS app, to pick a good default render target size.
 extern int  myosd_in_menu;
-extern int  myosd_res;
 extern int  myosd_force_pxaspect;
 extern int  myosd_num_of_joys;
 extern int  myosd_pxasp1;
-extern int  myosd_video_threaded;
 extern int  myosd_service;
 extern int  myosd_configure;
 extern int  myosd_mame_pause;           // NOTE myosd_pause is the state of the MAME thread, this is a request for MAME to PAUSE
@@ -87,7 +75,8 @@ extern int  myosd_inGame;
 extern int  myosd_in_menu;
 
 extern unsigned long myosd_pad_status;
-    
+extern unsigned long myosd_joy_status[NUM_JOY];
+
 extern float joy_analog_x[NUM_JOY][4];
 extern float joy_analog_y[NUM_JOY][2];
 
@@ -96,6 +85,8 @@ extern float lightgun_y[NUM_JOY];
 
 extern float mouse_x[NUM_JOY];
 extern float mouse_y[NUM_JOY];
+extern float mouse_z[NUM_JOY];
+extern unsigned long mouse_status[NUM_JOY];
 
 extern int myosd_mouse;
 extern int myosd_light_gun;
@@ -104,16 +95,8 @@ extern unsigned short myosd_ext_status;
     
 extern int myosd_last_game_selected;
 
-extern int myosd_filter_favorites;
 extern int myosd_filter_clones;
 extern int myosd_filter_not_working;
-extern int myosd_filter_manufacturer;
-extern int myosd_filter_gte_year;
-extern int myosd_filter_lte_year;
-extern int myosd_filter_driver_source;
-extern int myosd_filter_category;
-extern char myosd_filter_keyword[MAX_FILTER_KEYWORD];
-extern int myosd_reset_filter;
 
 extern int myosd_num_buttons;
 extern int myosd_num_ways;
@@ -121,8 +104,6 @@ extern int myosd_num_players;
 extern int myosd_num_coins;
 extern int myosd_num_inputs;
 
-extern int myosd_vsync;
-extern int myosd_dbl_buffer;
 extern int myosd_autofire;
 extern int myosd_hiscore;
     
@@ -139,18 +120,12 @@ extern void myosd_deinit(void);
 extern unsigned long myosd_joystick_read(int n);
 extern float myosd_joystick_read_analog(int n, char axis);
 extern void myosd_set_video_mode(int width,int height,int vis_width, int vis_height);
-extern void myosd_video_flip(void);
-extern int  myosd_video_draw(void*);
+extern void myosd_video_draw(void*);
 extern void myosd_closeSound(void);
 extern void myosd_openSound(int rate,int stereo);
 extern void myosd_sound_play(void *buff, int len);
 extern void myosd_check_pause(void);
     
-extern const char *myosd_array_main_manufacturers[];
-extern const char *myosd_array_years[];
-extern const char *myosd_array_main_driver_source[];
-extern const char *myosd_array_categories[];
-
 // myosd output
 enum myosd_output_channel
 {
@@ -223,6 +198,7 @@ struct _myosd_render_primitive
     uint32_t              texture_height;      /* height of the image */
     const void*           texture_palette;     /* palette for PALETTE16 textures, LUTs for RGB15/RGB32 */
     uint32_t              texture_seqid;       /* sequence ID */
+    uint32_t              texture_junk;        /* padding */
 //  render_quad_texuv     texcoords;           /* texture coordinates (for quad primitives) */
     struct {float u,v;}   texcoords[4];
 };
@@ -232,6 +208,7 @@ _Static_assert(sizeof(myosd_render_primitive) == sizeof(render_primitive), "");
 _Static_assert(offsetof(myosd_render_primitive, bounds_x0)    == offsetof(render_primitive, bounds), "");
 _Static_assert(offsetof(myosd_render_primitive, color_a)      == offsetof(render_primitive, color), "");
 _Static_assert(offsetof(myosd_render_primitive, texture_base) == offsetof(render_primitive, texture), "");
+_Static_assert(offsetof(myosd_render_primitive, texcoords)    == offsetof(render_primitive, texcoords), "");
 _Static_assert(PRIMFLAG_TEXORIENT_MASK == 0x000F);
 _Static_assert(PRIMFLAG_TEXFORMAT_MASK == 0x00F0);
 _Static_assert(PRIMFLAG_BLENDMODE_MASK == 0x0F00);

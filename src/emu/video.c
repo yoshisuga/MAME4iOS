@@ -53,6 +53,12 @@
 #include "myosd.h"
 #include "netplay.h"
 
+// default these old myosd globals to defaults
+#define myosd_sleep 1
+#define myosd_frameskip_value -1
+#define myosd_throttle 1
+#define myosd_vsync -1
+
 static int old_speed;
 
 

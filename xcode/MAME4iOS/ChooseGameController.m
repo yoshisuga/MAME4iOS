@@ -103,8 +103,8 @@
 #define LAYOUT_MODE_KEY     @"LayoutMode"
 #define LAYOUT_MODE_DEFAULT LayoutSmall
 #define SCOPE_MODE_KEY      @"ScopeMode"
-#define SCOPE_MODE_DEFAULT  @"All"
-#define ALL_SCOPES          @[@"All", @"Manufacturer", @"Year", @"Genre", @"Driver"]
+#define SCOPE_MODE_DEFAULT  @"Machine"
+#define ALL_SCOPES          @[@"Machine", @"Manufacturer", @"Year", @"Genre", @"Driver"]
 #define RECENT_GAMES_MAX    8
 
 #define CLAMP(x, num) MIN(MAX(x,0), (num)-1)
@@ -273,6 +273,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     UISegmentedControl* seg2 = [[PopupSegmentedControl alloc] initWithItems:ALL_SCOPES];
     seg2.selectedSegmentIndex = [ALL_SCOPES indexOfObject:_gameFilterScope];
     seg2.apportionsSegmentWidthsByContent = TARGET_OS_IOS ? NO : YES;
+    seg2.autoresizingMask = UIViewAutoresizingFlexibleHeight;   // make vertical menu always.
     [seg2 addTarget:self action:@selector(scopeChange:) forControlEvents:UIControlEventValueChanged];
     UIBarButtonItem* scope = [[UIBarButtonItem alloc] initWithCustomView:seg2];
     
@@ -617,7 +618,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         key = kGameInfoParent;
 
     for (NSDictionary* game in filteredGames) {
-        NSString* section = key ? (game[key] ?: @"Unknown") : @"All";
+        NSString* section = key ? (game[key] ?: @"Unknown") : @"Arcade";
         
         // a UICollectionView will scroll like crap if we have too many sections, so try to filter/combine similar ones.
         section = [[section componentsSeparatedByString:@" ("] firstObject];
@@ -795,7 +796,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 #if TARGET_OS_IOS
     CGFloat height = [UIFont preferredFontForTextStyle:UIFontTextStyleLargeTitle].pointSize;
 #else
-    CGFloat height = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].pointSize * 2.0;
+    CGFloat height = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].pointSize * 1.5;
 #endif
     layout.headerReferenceSize = CGSizeMake(height, height);
     layout.sectionInsetReference = UICollectionViewFlowLayoutSectionInsetFromSafeArea;

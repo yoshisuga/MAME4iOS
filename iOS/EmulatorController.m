@@ -82,6 +82,7 @@
 // declare "safe" properties for buttonHome, buttonMenu, buttonsOptions that work on pre-iOS 13,14
 #if (TARGET_OS_IOS && __IPHONE_OS_VERSION_MIN_REQUIRED < 140000) || (TARGET_OS_TV && __TV_OS_VERSION_MIN_REQUIRED < 140000)
 #ifndef __IPHONE_14_0
+@class GCMouse;
 @interface GCExtendedGamepad()
 -(GCControllerButtonInput*)buttonHome;
 @end
@@ -104,6 +105,14 @@
 @end
 #endif
 
+#if TARGET_OS_MACCATALYST
+@class NSCursor;
+@interface NSObject()
+-(void)hide;
+-(void)unhide;
+@end
+#endif
+
 #define DebugLog 0
 #if DebugLog == 0 || DEBUG == 0
 #define NSLog(...) (void)0
@@ -114,6 +123,13 @@
 
 // Game Controllers
 NSArray * g_controllers;
+NSArray * g_keyboards;
+NSArray * g_mice;
+
+NSLock* mouse_lock;
+float mouse_delta_x[NUM_JOY];
+float mouse_delta_y[NUM_JOY];
+float mouse_delta_z[NUM_JOY];
 
 // Turbo functionality
 int cyclesAfterButtonPressed[NUM_JOY][NUM_BUTTONS];
@@ -126,8 +142,6 @@ int buttonMask[NUM_BUTTONS];    // map a button index to a button MYOSD_* mask
 // Touch Directional Input tracking
 int touchDirectionalCyclesAfterMoved = 0;
 
-int g_isMetalSupported = 0;
-
 int g_emulation_paused = 0;
 int g_emulation_initiated=0;
 
@@ -135,10 +149,12 @@ int g_joy_used = 0;
 int g_iCade_used = 0;
 
 int g_enable_debug_view = 0;
+int g_debug_dump_screen = 0;
 int g_controller_opacity = 50;
 
 int g_device_is_landscape = 0;
 int g_device_is_fullscreen = 0;
+int g_direct_mouse_enable;
 
 NSString* g_pref_screen_shader;
 NSString* g_pref_line_shader;
@@ -146,7 +162,6 @@ NSString* g_pref_filter;
 NSString* g_pref_skin;
 NSString* g_pref_colorspace;
 
-int g_pref_metal = 0;
 int g_pref_integer_scale_only = 0;
 int g_pref_showFPS = 0;
 
@@ -176,9 +191,6 @@ int g_pref_ext_control_type = 1;
 
 int g_pref_nintendoBAYX = 0;
 
-int g_pref_nativeTVOUT = 1;
-int g_pref_overscanTVOUT = 1;
-
 int g_pref_lightgun_enabled = 1;
 int g_pref_lightgun_bottom_reload = 0;
 
@@ -194,17 +206,9 @@ int g_skin_data = 1;
 float g_buttons_size = 1.0f;
 float g_stick_size = 1.0f;
 
-int global_low_latency_sound = 0;
-static int main_thread_priority = 46;
-int video_thread_priority = 46;
-static int main_thread_priority_type = 1;
-int video_thread_priority_type = 1;
-
 int prev_myosd_light_gun = 0;
 int prev_myosd_mouse = 0;
         
-static pthread_t main_tid;
-
 static int ways_auto = 0;
 static int change_layout=0;
 
@@ -254,46 +258,30 @@ void iphone_Reset_Views(void)
     g_video_reset = TRUE;
     //[sharedInstance performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:NO];
 }
-// called by the OSD layer to update the current software frame
-// **NOTE** this is called on the MAME background thread, dont do anything stupid.
-void iphone_UpdateScreen(void)
-{
-    if (sharedInstance == nil || g_emulation_paused || sharedInstance->screenView == nil)
-        return;
-    
-    UIView<ScreenView>* screenView = sharedInstance->screenView;
-    [screenView performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone:NO];
-
-    #pragma clang diagnostic push
-    #pragma clang diagnostic ignored "-Wundeclared-selector"
-    if (g_pref_showFPS && (screenView.frameCount % UPDATE_FPS_EVERY) == 0)
-        [sharedInstance performSelectorOnMainThread:@selector(updateFrameRate) withObject:nil waitUntilDone:NO];
-    #pragma clang diagnostic pop
-}
 // called by the OSD layer to render the current frame
-// return 1 if you did the render, 0 if you want a software render.
 // **NOTE** this is called on the MAME background thread, dont do anything stupid.
 // ...not doing something stupid includes not leaking autoreleased objects! use a autorelease pool if you need to!
-int iphone_DrawScreen(myosd_render_primitive* prim_list) {
+void iphone_DrawScreen(myosd_render_primitive* prim_list) {
 
-    if (sharedInstance == nil || g_emulation_paused || sharedInstance->screenView == nil)
-        return 0;
+    if (sharedInstance == nil || g_emulation_paused)
+        return;
 
     @autoreleasepool {
         UIView<ScreenView>* screenView = sharedInstance->screenView;
 
 #ifdef DEBUG
-        [CGScreenView drawScreenDebug:prim_list];
+        if (g_debug_dump_screen) {
+            [screenView dumpScreen:prim_list];
+            g_debug_dump_screen = FALSE;
+        }
 #endif
-        BOOL result = [screenView drawScreen:prim_list];
+        [screenView drawScreen:prim_list];
         
         #pragma clang diagnostic push
         #pragma clang diagnostic ignored "-Wundeclared-selector"
-        if (g_pref_showFPS && result && (screenView.frameCount % UPDATE_FPS_EVERY) == 0)
+        if (g_pref_showFPS && (screenView.frameCount % UPDATE_FPS_EVERY) == 0)
             [sharedInstance performSelectorOnMainThread:@selector(updateFrameRate) withObject:nil waitUntilDone:NO];
         #pragma clang diagnostic pop
-
-        return result;
     }
 }
 
@@ -533,24 +521,10 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     
     // delete the UserDefaults, this way if we crash we wont try this game next boot
     [EmulatorController setCurrentGame:nil];
-	     		    				
-    pthread_create(&main_tid, NULL, app_Thread_Start, NULL);
+	     
+    pthread_t tid;
+    pthread_create(&tid, NULL, app_Thread_Start, NULL);
 		
-	struct sched_param param;
- 
-    printf("main priority %d\n",main_thread_priority);
-    param.sched_priority = main_thread_priority;
-    int policy;
-    if(main_thread_priority_type == 1)
-      policy = SCHED_OTHER;
-    else if(main_thread_priority_type == 2)
-      policy = SCHED_RR;
-    else
-      policy = SCHED_FIFO;
-           
-    if(pthread_setschedparam(main_tid, policy, &param) != 0)
-        fprintf(stderr, "Error setting pthread priority\n");
-    
 #if TARGET_OS_IOS
     _impactFeedback = [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleLight];
     _selectionFeedback = [[UISelectionFeedbackGenerator alloc] init];
@@ -582,6 +556,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     g_emulation_paused = 1;
     change_pause(1);
     [UIApplication sharedApplication].idleTimerDisabled = NO;
+    [self updatePointerLocked];
 }
 
 
@@ -750,6 +725,7 @@ void mame_state(int load_save, int slot)
         }
     }
     [menu addAction:[UIAlertAction actionWithTitle:@"Settings" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"gear" withPointSize:size] handler:^(UIAlertAction* action) {
+        [self hideMenuHUD];
         [self runSettings];
     }]];
 
@@ -850,7 +826,7 @@ void mame_state(int load_save, int slot)
     [self runExit:YES];
 }
 
-- (void)runPause
+- (void)enterBackground
 {
     // this is called from bootstrapper when app is going into the background, save the current game we are playing so we can restore next time.
     [EmulatorController setCurrentGame:g_mame_game_info];
@@ -858,19 +834,13 @@ void mame_state(int load_save, int slot)
     // also save the position of the HUD
     [self saveHUD];
     
-    [[NSUserDefaults standardUserDefaults] synchronize];
-    
-    if (self.presentedViewController != nil || g_emulation_paused)
-        return;
-    
-    // dont pause the MAME select game menu.
-    if (!myosd_inGame)
-        return;
+    if (self.presentedViewController == nil && g_emulation_paused == 0)
+        [self startMenu];
+}
 
-    [self startMenu];
-    [self showAlertWithTitle:@PRODUCT_NAME message:@"Game is PAUSED" buttons:@[@"Continue"] handler:^(NSUInteger button) {
+- (void)enterForeground {
+    if (self.presentedViewController == nil && g_emulation_paused == 1)
         [self endMenu];
-    }];
 }
 
 - (void)runSettings {
@@ -913,6 +883,7 @@ void mame_state(int load_save, int slot)
     icadeView.active = TRUE; //force renable
     
     [UIApplication sharedApplication].idleTimerDisabled = (myosd_inGame || g_joy_used) ? YES : NO;//so atract mode dont sleep
+    [self updatePointerLocked];
 }
 
 -(void)presentViewController:(UIViewController *)viewControllerToPresent animated:(BOOL)flag completion:(void (^)(void))completion {
@@ -941,8 +912,6 @@ void mame_state(int load_save, int slot)
     
     //printf("load options\n");
     
-    g_isMetalSupported = [MetalScreenView isSupported];
-    
     Options *op = [[Options alloc] init];
     
     g_pref_keep_aspect_ratio = [op keepAspectRatio];
@@ -956,7 +925,6 @@ void mame_state(int load_save, int slot)
     [skinManager setCurrentSkin:g_pref_skin];
 
     g_pref_integer_scale_only = op.integerScalingOnly;
-    g_pref_metal = op.useMetal;
     g_pref_showFPS = [op showFPS];
     g_pref_showHUD = [op showHUD];
 
@@ -967,9 +935,6 @@ void mame_state(int load_save, int slot)
     g_pref_full_screen_joy   = [op fullscreenJoystick];
 
     myosd_pxasp1 = [op p1aspx];
-    
-    g_pref_nativeTVOUT = [op tvoutNative];
-    g_pref_overscanTVOUT = [op overscanValue];
     
     g_pref_input_touch_type = [op touchtype];
     g_pref_analog_DZ_value = [op analogDeadZoneValue];
@@ -984,12 +949,9 @@ void mame_state(int load_save, int slot)
         case 5: myosd_sound_value=48000;break;
         default:myosd_sound_value=-1;}
     
-    myosd_throttle = [op throttle];
-    myosd_cheat = [op cheats];
-    myosd_vsync = [op vsync] == 1 ? 6000 : -1;
-       
-    myosd_sleep = [op sleep];
     
+    myosd_cheat = [op cheats];
+       
     g_pref_nintendoBAYX = [op nintendoBAYX];
 
     g_pref_full_num_buttons = [op numbuttons] - 1;  // -1 == Auto
@@ -1024,33 +986,10 @@ void mame_state(int load_save, int slot)
         myosd_waysStick = 8;
     }
     
-    if([op fsvalue] == 0)
-    {
-        myosd_frameskip_value = -1;
-    }
-    else 
-    {
-        myosd_frameskip_value = [op fsvalue]-1;
-    }
-    
     myosd_force_pxaspect = [op forcepxa];
     
-    myosd_res = [op emures]+1;
-
     myosd_filter_clones = op.filterClones;
     myosd_filter_not_working = op.filterNotWorking;
-    
-    global_low_latency_sound = [op lowlsound];
-    if(myosd_video_threaded==-1)
-    {
-        myosd_video_threaded = [op threaded];
-        main_thread_priority =  MAX(1,[op mainPriority] * 10);
-        video_thread_priority = MAX(1,[op videoPriority] * 10);
-        myosd_dbl_buffer = [op dblbuff];
-        main_thread_priority_type = [op mainThreadType]+1;
-        main_thread_priority_type = [op videoThreadType]+1;
-        NSLog(@"thread Type %d %d\n",main_thread_priority_type,main_thread_priority_type);
-    }
     
     myosd_autofire = [op autofire];
     myosd_hiscore = [op hiscore];
@@ -1101,14 +1040,6 @@ void mame_state(int load_save, int slot)
     turboBtnEnabled[BTN_L1] = [op turboLEnabled];
     turboBtnEnabled[BTN_R1] = [op turboREnabled];
     
-    // ignore some settings in the Metal case
-    if (g_pref_metal && [MetalScreenView isSupported]) {
-        myosd_sleep = 1;            // sleep to let Metal get work done.
-        myosd_video_threaded = 0;   // dont need an extra thread
-        myosd_vsync = -1;           // dont force 60Hz, just use the machine value, let MAME frameskip do what it can.
-        myosd_frameskip_value = -1; // AUTO frameskip
-    }
-    
 #if TARGET_OS_IOS
     g_pref_lightgun_enabled = [op lightgunEnabled];
     g_pref_lightgun_bottom_reload = [op lightgunBottomScreenReload];
@@ -1130,22 +1061,10 @@ void mame_state(int load_save, int slot)
 // DONE button on Settings dialog
 -(void)done:(id)sender {
     
-	Options *op = [[Options alloc] init];
-    
     // have the parent of the options/setting dialog dismiss
     // we present settings two ways, from in-game menu (we are parent) and from ChooseGameUI (it is the parent)
     UIViewController* parent = self.topViewController.presentingViewController;
     [(parent ?: self) dismissViewControllerAnimated:YES completion:^{
-        
-        if(global_low_latency_sound != [op lowlsound])
-        {
-            if(myosd_sound_value!=-1)
-            {
-               myosd_closeSound();
-               global_low_latency_sound = [op lowlsound];
-               myosd_openSound(myosd_sound_value, 1);
-            }
-        }
         
         // if we are at the root menu, exit and restart.
         if (myosd_inGame == 0 || g_mame_reset)
@@ -1272,9 +1191,15 @@ void mame_state(int load_save, int slot)
 
 -(void)viewDidLoad{
     
+   // tell system to shutup about constraints!
+   [NSUserDefaults.standardUserDefaults setValue:@(NO) forKey:@"_UIConstraintBasedLayoutLogUnsatisfiable"];
+    
    self.view.backgroundColor = [UIColor blackColor];
 
    g_controllers = nil;
+   g_keyboards = nil;
+   g_mice = nil;
+   mouse_lock = [[NSLock alloc] init];
     
    skinManager = [[SkinManager alloc] init];
     
@@ -1312,15 +1237,9 @@ void mame_state(int load_save, int slot)
     buttonMask[BTN_SELECT] = MYOSD_SELECT;
     buttonMask[BTN_START] = MYOSD_START;
          
-	self.view.userInteractionEnabled = YES;
-
 #if TARGET_OS_IOS
 	self.view.multipleTouchEnabled = YES;
-	self.view.exclusiveTouch = NO;
 #endif
-	
-	//kito
-	[NSThread setThreadPriority:1.0];
 	
     [self updateOptions];
 
@@ -1344,7 +1263,7 @@ void mame_state(int load_save, int slot)
     
     [self changeUI];
     
-    icadeView = [[iCadeView alloc] initWithFrame:CGRectZero withEmuController:self];
+    icadeView = [[iCadeView alloc] init];
     [self.view addSubview:icadeView];
 
     // always enable iCadeView for hardware keyboard support
@@ -1361,14 +1280,24 @@ void mame_state(int load_save, int slot)
     
     NSLog(@"BLUETOOTH ENABLED: %@", g_bluetooth_enabled ? @"YES" : @"NO");
     
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(gameControllerConnected:)
-                                                 name:GCControllerDidConnectNotification
-                                               object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(gameControllerDisconnected:)
-                                                 name:GCControllerDidDisconnectNotification
-                                               object:nil];
+    [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(gameControllerConnected:) name:GCControllerDidConnectNotification object:nil];
+    [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(gameControllerDisconnected:) name:GCControllerDidDisconnectNotification object:nil];
+
+#ifdef __IPHONE_14_0
+    if (@available(iOS 14.0, tvOS 14.0, *)) {
+        [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(keyboardConnected:) name:GCKeyboardDidConnectNotification object:nil];
+        [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(keyboardDisconnected:) name:GCKeyboardDidDisconnectNotification object:nil];
+
+        [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(mouseConnected:) name:GCMouseDidConnectNotification object:nil];
+        [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(mouseDisconnected:) name:GCMouseDidDisconnectNotification object:nil];
+
+        [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(deviceDidBecomeCurrent:) name:GCControllerDidBecomeCurrentNotification object:nil];
+        [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(deviceDidBecomeNonCurrent:) name:GCControllerDidStopBeingCurrentNotification object:nil];
+
+        [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(deviceDidBecomeCurrent:) name:GCMouseDidBecomeCurrentNotification object:nil];
+        [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(deviceDidBecomeNonCurrent:) name:GCMouseDidStopBeingCurrentNotification object:nil];
+    }
+#endif
     
     [self performSelectorOnMainThread:@selector(setupGameControllers) withObject:nil waitUntilDone:NO];
     
@@ -1392,6 +1321,9 @@ void mame_state(int load_save, int slot)
 {
     [super viewDidAppear:animated];
     [self scanForDevices];
+    if (![MetalScreenView isSupported]) {
+        [self showAlertWithTitle:@PRODUCT_NAME message:@"Metal not supported on this device." buttons:@[] handler:nil];
+    }
 }
 
 #if TARGET_OS_IOS
@@ -2038,12 +1970,16 @@ static NSArray* list_trim(NSArray* _list) {
     [UIApplication sharedApplication].idleTimerDisabled = (myosd_inGame || g_joy_used) ? YES : NO;//so atract mode dont sleep
 
     if ( prev_myosd_light_gun == 0 && myosd_light_gun == 1 && g_pref_lightgun_enabled ) {
+        lightgun_x[0] = 0.0;
+        lightgun_y[0] = 0.0;
         [self.view makeToast:@"Touch Lightgun Mode Enabled!" duration:2.0 position:CSToastPositionCenter
                        title:nil image:[UIImage systemImageNamed:@"target"] style:toastStyle completion:nil];
     }
     prev_myosd_light_gun = myosd_light_gun;
     
     if ( prev_myosd_mouse == 0 && myosd_mouse == 1 && g_pref_touch_analog_enabled ) {
+        mouse_x[0] = mouse_delta_x[0] = 0.0;
+        mouse_y[0] = mouse_delta_y[0] = 0.0;
         [self.view makeToast:@"Touch Mouse Mode Enabled!" duration:2.0 position:CSToastPositionCenter
                        title:nil image:[UIImage systemImageNamed:@"cursorarrow.motionlines"] style:toastStyle completion:nil];
     }
@@ -2054,7 +1990,8 @@ static NSArray* list_trim(NSArray* _list) {
         [self.view makeToast:@"⚠️Game might not run correctly." duration:3.0 position:CSToastPositionBottom style:toastStyle];
         g_mame_warning = 1;
     }
-
+    
+    [self updatePointerLocked];
     [self indexGameControllers];
     
     areControlsHidden = NO;
@@ -2192,6 +2129,31 @@ static void handle_turbo() {
     }
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpartial-availability"
+// handle input from a mouse for a specific player (mouse will only be non-nil on iOS 14)
+static void read_mouse(int player, GCMouse *mouse)
+{
+#ifdef __IPHONE_14_0
+    // read the mouse buttons
+    mouse_status[player] =
+        (mouse.mouseInput.leftButton.pressed ? MYOSD_A : 0) |
+        (mouse.mouseInput.rightButton.pressed ? MYOSD_B : 0) |
+        (mouse.mouseInput.middleButton.pressed ? MYOSD_X : 0) ;
+#endif
+    
+    // read the accumulated movement
+    [mouse_lock lock];
+    mouse_x[player] = mouse_delta_x[player];
+    mouse_y[player] = mouse_delta_y[player];
+    mouse_z[player] = mouse_delta_z[player];
+    mouse_delta_x[player] = 0.0;
+    mouse_delta_y[player] = 0.0;
+    mouse_delta_z[player] = 0.0;
+    [mouse_lock unlock];
+}
+#pragma clang diagnostic pop
+
 // handle input from a siri remote for a specific player
 static void read_remote(int player, GCMicroGamepad *gamepad)
 {
@@ -2311,12 +2273,8 @@ static BOOL controller_is_zero(int player) {
 // handle any input from *all* game controllers
 static void handle_device_input()
 {
-    NSArray* controllers = g_controllers;
-
-    if (controllers.count == 0)
-        return;
-
     // poll each controller to get state of device *right* now
+    NSArray* controllers = g_controllers;
     for (int i = 0; i < controllers.count; i++) {
         GCController *controller = controllers[i];
         int index = (int)controller.playerIndex;
@@ -2324,6 +2282,18 @@ static void handle_device_input()
         // dont overwrite a lower index controller, unless....
         if (player == i || controller_is_zero(player))
             read_controller(player, controller);
+    }
+
+    // poll each mouse to get state of device *right* now
+    NSArray* mice = g_mice;
+    if (mice.count != 0 && g_direct_mouse_enable) {
+        for (int i = 0; i < MIN(NUM_JOY, mice.count); i++) {
+            read_mouse(i, mice[i]);
+        }
+    }
+    // if no HW mice, get input from the on-screen touch mouse
+    else if (myosd_mouse == 1 && g_pref_touch_analog_enabled) {
+        read_mouse(0, nil);
     }
 }
 
@@ -2432,7 +2402,7 @@ void myosd_poll_input(void) {
    
     BOOL touch_dpad_disabled = (myosd_mouse == 1 && g_pref_touch_analog_enabled && g_pref_touch_analog_hide_dpad) ||
                                (g_pref_touch_directional_enabled && g_pref_touch_analog_hide_dpad);
-    if ( !touch_dpad_disabled || !myosd_inGame ) {
+    if ( !(touch_dpad_disabled && g_device_is_fullscreen) || !myosd_inGame ) {
         //analogStickView
         analogStickView = [[AnalogStickView alloc] initWithFrame:rButton[BTN_STICK] withEmuController:self];
         [inputView addSubview:analogStickView];
@@ -2580,6 +2550,36 @@ void myosd_poll_input(void) {
 
 #pragma mark - SCREEN VIEW SETUP
 
+-(BOOL)isFullscreenWindow {
+    if (self.view.window == nil)
+        return TRUE;
+    
+#if TARGET_OS_MACCATALYST
+    CGSize windowSize = self.view.window.bounds.size;
+    CGSize screenSize = self.view.window.screen.bounds.size;
+    
+    // on Catalina the screenSize is a lie, so go to the NSScreen to get it!
+    // on BigSur the screen size is correct, so check for the 960x540 "lie" value.
+    if (screenSize.width == 960 && screenSize.height == 540)
+        screenSize = [(id)([NSClassFromString(@"NSScreen") mainScreen]) frame].size;
+
+    // To ensure that your text and interface elements are consistent with the macOS display environment, iOS views automatically scale down to 77%.
+    // ...UIUserInterfaceIdiomMac (5) does not do this scaling.
+    // https://developer.apple.com/design/human-interface-guidelines/ios/overview/mac-catalyst/
+    if (self.traitCollection.userInterfaceIdiom == UIUserInterfaceIdiomPad) {
+        screenSize.width = floor(screenSize.width / 0.77);
+        screenSize.height = floor(screenSize.height / 0.77);
+    }
+
+    NSLog(@"screenSize: %@", NSStringFromSize(screenSize));
+    NSLog(@"windowSize: %@", NSStringFromSize(windowSize));
+
+    return (windowSize.width >= screenSize.width && windowSize.height >= screenSize.height);
+#else
+    return TRUE;
+#endif
+}
+
 - (void)buildScreenView {
     
     g_device_is_landscape = (self.view.bounds.size.width >= self.view.bounds.size.height * 1.00);
@@ -2595,32 +2595,14 @@ void myosd_poll_input(void) {
     if (externalView != nil)
         g_device_is_fullscreen = FALSE;
     
+    g_direct_mouse_enable = TRUE;
 #if TARGET_OS_MACCATALYST
-    if (self.view.window != nil) {
-        CGSize windowSize = self.view.window.bounds.size;
-        CGSize screenSize = self.view.window.screen.bounds.size;
-        
-        // on Catalina the screenSize is a lie, so go to the NSScreen to get it!
-        // on BigSur the screen size is correct, so check for the 960x540 "lie" value.
-        if (screenSize.width == 960 && screenSize.height == 540)
-            screenSize = [(id)([NSClassFromString(@"NSScreen") mainScreen]) frame].size;
-
-        // To ensure that your text and interface elements are consistent with the macOS display environment, iOS views automatically scale down to 77%.
-        // ...UIUserInterfaceIdiomMac (5) does not do this scaling.
-        // https://developer.apple.com/design/human-interface-guidelines/ios/overview/mac-catalyst/
-        if (self.traitCollection.userInterfaceIdiom == UIUserInterfaceIdiomPad) {
-            screenSize.width = floor(screenSize.width / 0.77);
-            screenSize.height = floor(screenSize.height / 0.77);
-        }
-
-        NSLog(@"screenSize: %@", NSStringFromSize(screenSize));
-        NSLog(@"windowSize: %@", NSStringFromSize(windowSize));
-
-        if (windowSize.width >= screenSize.width && windowSize.height >= screenSize.height) {
-            NSLog(@"CATALYST FULLSCREEN");
-            g_device_is_fullscreen = TRUE;
-        }
-    }
+    if ([self isFullscreenWindow])
+        // on macOS device is always fullscreen when the app window is fullscreen.
+        g_device_is_fullscreen = TRUE;
+    else
+        // on macOS dont use direct mouse input when the app window is NOT fullscreen.
+        g_direct_mouse_enable = FALSE;
 #endif
     
     if (change_layout)
@@ -2637,23 +2619,11 @@ void myosd_poll_input(void) {
     [self setNeedsUpdateOfHomeIndicatorAutoHidden];
 
     if (externalView != nil)
-    {
         r = externalView.window.screen.bounds;
-       
-        CGFloat overscan = (g_pref_overscanTVOUT *  0.025f);
-        CGFloat overscan_x = ceil(r.size.width * overscan / 2.0);
-        CGFloat overscan_y = ceil(r.size.height * overscan / 2.0);
-
-        r = CGRectInset(r, overscan_x, overscan_y);
-    }
     else if (g_device_is_fullscreen)
-    {
         r = rFrames[g_device_is_landscape ? LANDSCAPE_VIEW_FULL : PORTRAIT_VIEW_FULL];
-    }
     else
-    {
         r = rFrames[g_device_is_landscape ? LANDSCAPE_VIEW_NOT_FULL : PORTRAIT_VIEW_NOT_FULL];
-    }
 
     // Handle Safe Area (iPhone X and above) adjust the view down away from the notch, before adjusting for aspect
     if ( externalView == nil ) {
@@ -2763,19 +2733,12 @@ void myosd_poll_input(void) {
         kScreenViewColorSpace: g_pref_colorspace,
     };
     
-    // select a CoreGraphics or Metal ScreenView
-    Class screen_view_class = [CGScreenView class];
-    
-    if (g_pref_metal && [MetalScreenView isSupported])
-        screen_view_class = [MetalScreenView class];
-
     // the reason we dont re-create screenView each time is because we access screenView from background threads
-    // (see iPhone_UpdateScreen, iPhone_DrawScreen) and we dont want to risk race condition on release.
-    // and not creating/destroying the ScreenView on a simple size change or rotation, is good for performace.
-    if (screenView == nil || [screenView class] != screen_view_class) {
-        [screenView removeFromSuperview];
-        screenView = [[screen_view_class alloc] init];
-    }
+    // (iPhone_DrawScreen) and we dont want to risk race condition on release.
+    // and not creating/destroying the ScreenView on a simple size change or rotation, is good too.
+    if (screenView == nil)
+        screenView = [[MetalScreenView alloc] init];
+        
     screenView.frame = r;
     screenView.userInteractionEnabled = NO;
     [screenView setOptions:options];
@@ -2792,8 +2755,9 @@ void myosd_poll_input(void) {
     [self buildOverlayImage:border_image rect:CGRectInset(r, -border_size.width, -border_size.height)];
 
 #if TARGET_OS_IOS
-    screenView.multipleTouchEnabled = NO;
     [self buildTouchControllerViews];
+    inputView.multipleTouchEnabled = YES;
+    screenView.multipleTouchEnabled = YES;
 #endif
    
     hideShowControlsForLightgun.hidden = YES;
@@ -3002,14 +2966,6 @@ void myosd_poll_input(void) {
             [self changeUI];
             break;
         }
-        case 'T':
-            myosd_throttle = !myosd_throttle;
-            [self changeUI];
-            break;
-        case 'V':
-            myosd_vsync = myosd_vsync == -1 ? 6000 : -1;
-            [self changeUI];
-            break;
         case 'X':
             myosd_force_pxaspect = !myosd_force_pxaspect;
             [self changeUI];
@@ -3022,33 +2978,78 @@ void myosd_poll_input(void) {
             myosd_mame_pause = 1;
             break;
         case 'M':
-        {
-            // toggle Metal, but in order to load the right shader we need to change the global Options.
-            Options* op = [[Options alloc] init];
-            op.useMetal = !op.useMetal;
-            [op saveOptions];
-            [self updateOptions];
-            [self changeUI];
+            g_direct_mouse_enable = !g_direct_mouse_enable;
+            [self updatePointerLocked];
             break;
-        }
 #ifdef DEBUG
         case 'R':
             g_enable_debug_view = !g_enable_debug_view;
             [self changeUI];
             break;
         case 'D':
-            [CGScreenView drawScreenDebugDump];
+            g_debug_dump_screen = TRUE;
             break;
 #endif
     }
 }
+
+-(void)updatePointerLocked {
+#if TARGET_OS_MACCATALYST
+    if (@available(iOS 14.0, *)) {
+        static int g_cursor_hide_count;
+
+        if ([self prefersPointerLocked] && self.presentedViewController == nil && g_emulation_paused == 0) {
+            [NSClassFromString(@"NSCursor") hide];
+            g_cursor_hide_count++;
+        }
+        else {
+            while (g_cursor_hide_count > 0) {
+                [NSClassFromString(@"NSCursor") unhide];
+                g_cursor_hide_count--;
+            }
+        }
+    }
+#elif TARGET_OS_IOS && defined(__IPHONE_14_0)
+    if (@available(iOS 14.0, *))
+        [self setNeedsUpdateOfPrefersPointerLocked];
+#endif
+}
+
 
 
 #if TARGET_OS_IOS
 
 #pragma mark Touch Handling
 
+// if the MAME game wants mouse or light gun input, and we have a mouse, dont show a mouse cursor.
+// FYI: need to do something totaly different on Catalyst to hide the mouse cursor (see updatePointerLocked)
+-(BOOL)prefersPointerLocked {
+    return g_mice.count != 0 && g_direct_mouse_enable && (myosd_mouse || myosd_light_gun);
+}
+
 -(NSSet*)touchHandler:(NSSet *)touches withEvent:(UIEvent *)event {
+    
+#if DebugLog && defined(DEBUG)
+    UITouch *touch = touches.anyObject;
+    NSLog(@"TOUCH (%0.3f, %0.3f) %@ %@",
+          [touch locationInView:self.view].x,
+          [touch locationInView:self.view].y,
+          
+          touch.phase == UITouchPhaseBegan ? @"Began" :
+          touch.phase == UITouchPhaseMoved ? @"Moved" :
+          touch.phase == UITouchPhaseStationary ? @"Stationary" :
+          touch.phase == UITouchPhaseEnded ? @"Ended" :
+          touch.phase == UITouchPhaseCancelled ? @"Cancelled" :
+          [NSString stringWithFormat:@"Phase(%ld)", touch.phase],
+
+          touch.type == UITouchTypeDirect ? @"Direct" :
+          touch.type == UITouchTypeIndirect ? @"Indirect" :
+          touch.type == UITouchTypePencil ? @"Pencil" :
+          touch.type == (UITouchTypePencil+1) /*UITouchTypeIndirectPointer*/ ? @"IndirectPointer" :
+          [NSString stringWithFormat:@"TouchType(%ld)", touch.type]
+          );
+#endif
+    
     if(change_layout)
     {
         [layoutView handleTouches:touches withEvent: event];
@@ -3071,8 +3072,7 @@ void myosd_poll_input(void) {
             return nil;
         }
         
-        if(touch.phase == UITouchPhaseBegan && allTouches.count == 1)
-        {
+        if(touch.phase == UITouchPhaseBegan && allTouches.count == 1) {
             [self runMenu];
         }
     }
@@ -3204,7 +3204,7 @@ void myosd_poll_input(void) {
                 (myosd_mouse == 1 && g_pref_touch_analog_enabled && g_pref_touch_analog_hide_dpad) ||
                 // OR directional touch is enabled and hiding dpad, and running a game
                 (g_pref_touch_directional_enabled && g_pref_touch_analog_hide_dpad && myosd_inGame);
-            if(!touch_dpad_disabled )
+            if(!(touch_dpad_disabled && g_device_is_fullscreen))
             {
                 if(MyCGRectContainsPoint(analogStickView.frame, point) || stickTouch == touch)
                 {
@@ -3216,7 +3216,7 @@ void myosd_poll_input(void) {
             
             if(touch == stickTouch) continue;
             
-            BOOL touch_buttons_disabled = myosd_mouse == 1 && g_pref_touch_analog_enabled && g_pref_touch_analog_hide_buttons;
+            BOOL touch_buttons_disabled = g_device_is_fullscreen && myosd_mouse == 1 && g_pref_touch_analog_enabled && g_pref_touch_analog_hide_buttons;
             
             if (buttonViews[BTN_Y] != nil &&
                 !buttonViews[BTN_Y].hidden && MyCGRectContainsPoint(rInput[BTN_Y], point) &&
@@ -3329,7 +3329,8 @@ void myosd_poll_input(void) {
                  [handledTouches addObject:touch];
             }
             else if ( myosd_light_gun == 1 && g_pref_lightgun_enabled ) {
-                [self handleLightgunTouchesBegan:touches];
+                if (i == 0)
+                    [self handleLightgunTouchesBegan:touches];
             }
             // if the OPTION button is hidden (zero size) by the current Skin, support a tap on the game area.
             else if (CGRectIsEmpty(rInput[BTN_OPTION]) && CGRectContainsPoint(screenView.frame, point) ) {
@@ -3368,6 +3369,11 @@ void myosd_poll_input(void) {
     NSUInteger touchcount = touches.count;
     if ( screenView.window != nil ) {
         UITouch *touch = [[touches allObjects] objectAtIndex:0];
+        
+        // dont handle a lightgun touch from a mouse or track pad.
+        if (g_direct_mouse_enable && !(touch.type == UITouchTypeDirect || touch.type == UITouchTypePencil))
+            return;
+
         CGPoint touchLoc = [touch locationInView:screenView];
         CGFloat newX = (touchLoc.x - (screenView.bounds.size.width / 2.0f)) / (screenView.bounds.size.width / 2.0f);
         CGFloat newY = (touchLoc.y - (screenView.bounds.size.height / 2.0f)) / (screenView.bounds.size.height / 2.0f) * -1.0f;
@@ -3419,13 +3425,20 @@ void myosd_poll_input(void) {
 - (void) handleMouseTouchesMoved:(NSSet *)touches {
     if ( screenView.window != nil && !CGPointEqualToPoint(mouseTouchStartLocation, mouseInitialLocation) ) {
         UITouch *touch = [[touches allObjects] objectAtIndex:0];
+
+        // dont handle a touch from a mouse or track pad.
+        if (g_direct_mouse_enable && !(touch.type == UITouchTypeDirect || touch.type == UITouchTypePencil))
+            return;
+
         CGPoint currentLocation = [touch locationInView:screenView];
         CGFloat dx = currentLocation.x - mouseTouchStartLocation.x;
         CGFloat dy = currentLocation.y - mouseTouchStartLocation.y;
-        mouse_x[0] = dx * g_pref_touch_analog_sensitivity;
-        mouse_y[0] = dy * g_pref_touch_analog_sensitivity;
-        NSLog(@"mouse x = %f , mouse y = %f",mouse_x[0],mouse_y[0]);
+        NSLog(@"mouse x = %f , mouse y = %f",dx,dy);
         mouseTouchStartLocation = [touch locationInView:screenView];
+        [mouse_lock lock];
+        mouse_delta_x[0] += dx * g_pref_touch_analog_sensitivity;
+        mouse_delta_y[0] += dy * g_pref_touch_analog_sensitivity;
+        [mouse_lock unlock];
     }
 }
 
@@ -3943,9 +3956,6 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
                     // tell the SkinManager new files have arived.
                     [self->skinManager reload];
                     
-                    // reset MAME last game selected...
-                    myosd_last_game_selected = 0;
-                    
                     // reload the MAME menu....
                     [self reload];
                     
@@ -4296,7 +4306,7 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
 #endif
     [self installUpdateHandler:controller];
     [self installMenuHandler:controller];
-    [self dumpGameController:controller];
+    [self dumpDevice:controller];
 }
 
 // setup a valueChangedHandler to watch for input on the game controller and update the UI (via handle_INPUT)
@@ -4471,11 +4481,13 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
           button == MYOSD_MENU ? "MENU" : button == MYOSD_HOME ? "HOME" : "OPTION",
           pressed ? "DOWN" : "UP", g_menuButtonState[index]);
 
-    // MENU button down (first time)
-    if (pressed && g_menuButton[index] == 0) {
-        g_menuButton[index] = button;
-        g_menuButtonPressed[index] = 0;
-        [self showControllerHUD:controller after:MENU_HUD_SHOW_DELAY];
+    // MENU button (first time)
+    if (g_menuButton[index] == 0) {
+        if (pressed) {
+            g_menuButton[index] = button;
+            g_menuButtonPressed[index] = 0;
+            [self showControllerHUD:controller after:MENU_HUD_SHOW_DELAY];
+        }
         return;
     }
 
@@ -4591,7 +4603,6 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
         
         NSString* title = [NSString stringWithFormat:@":%@:%@", menu.unmappedSfSymbolsName ?: @"line.horizontal.3.circle", name];
         UIImage* image = [UIImage imageWithString:title withFont:[UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]];
-        image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
         [g_menuHUD addImage:image];
         [g_menuHUD addSeparator];
 
@@ -4645,10 +4656,10 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
             }
         }
 
-        UIView* view = UIApplication.sharedApplication.keyWindow;
-        [view addSubview:g_menuHUD];
+        UIWindow* window = self.view.window;
+        [window addSubview:g_menuHUD];
         [g_menuHUD sizeToFit];
-        g_menuHUD.center = view.center;
+        g_menuHUD.center = window.center;
         CGFloat scale = TARGET_OS_TV ? 1.5 : 1.0;
         g_menuHUD.transform = CGAffineTransformMakeScale(0.001, 0.001);
         [UIView animateWithDuration:MENU_HUD_SHOW_ANIMATE animations:^{
@@ -4678,7 +4689,8 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
 
     if (g_menuHUD != nil)
         return;
-    
+
+#if TARGET_OS_TV && defined(__IPHONE_14_0)
     // see if we have any (non siri-remote) game controllers
     GCController* controller = (player < g_controllers.count) ? g_controllers[player] : nil;
     GCExtendedGamepad* gamepad = controller.extendedGamepad;
@@ -4688,7 +4700,6 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
         return;
 #endif
     
-#if TARGET_OS_TV && defined(__IPHONE_14_0)
     if (@available(iOS 14.0, *)) {
         
         g_menuHUD = [[InfoHUD alloc] initWithFrame:CGRectZero];
@@ -4707,7 +4718,7 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
             player == 0 ? [NSString stringWithFormat:@":%@:Player 2 Start", gamepad.rightTrigger.unmappedSfSymbolsName ?: @"r2.rectangle.roundedtop"] : @"",
         ] color:UIColor.clearColor handler:^(NSUInteger i){}];
         
-        UIWindow* window = UIApplication.sharedApplication.keyWindow;
+        UIWindow* window = self.view.window;
         [window addSubview:g_menuHUD];
         [g_menuHUD sizeToFit];
         g_menuHUD.center =  CGPointMake(window.center.x, window.bounds.size.height - g_menuHUD.bounds.size.height/2 - 16.0);
@@ -4779,33 +4790,39 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
     }
 }
 
--(void)dumpGameController:(GCController*)controller {
+-(void)dumpDevice:(NSObject*)_device {
 #if defined(DEBUG) && DebugLog && defined(__IPHONE_14_0)
     // print info about this controller
     if (@available(iOS 14.0, tvOS 14.0, *)) {
-        NSLog(@"         vendorName: %@", controller.vendorName);
-        NSLog(@"    productCategory: %@", controller.productCategory);
-        NSLog(@"        playerIndex: %ld", controller.playerIndex);
-
-
-        NSLog(@"         buttonHome: %@", controller.extendedGamepad.buttonHome ? @"YES" : @"NO");
-        NSLog(@"         buttonMenu: %@", controller.extendedGamepad.buttonMenu ? @"YES" : @"NO");
-        NSLog(@"      buttonOptions: %@", controller.extendedGamepad.buttonOptions ? @"YES" : @"NO");
-
-        if (controller.battery != nil)
-            NSLog(@"            Battery: %@", controller.battery);
+        NSObject<GCDevice>* device = (id)_device;
         
-        if (controller.motion != nil)
-            NSLog(@"             Motion: %@", controller.motion);
+        NSLog(@"         vendorName: %@", device.vendorName);
+        NSLog(@"    productCategory: %@", device.productCategory);
+        
+        if ([device isKindOfClass:[GCController class]]) {
+            GCController* controller = (id)device;
+            
+            NSLog(@"        playerIndex: %ld", controller.playerIndex);
 
-        if (controller.light != nil)
-            NSLog(@"              Light: %@", controller.light);
+            NSLog(@"         buttonHome: %@", controller.extendedGamepad.buttonHome ? @"YES" : @"NO");
+            NSLog(@"         buttonMenu: %@", controller.extendedGamepad.buttonMenu ? @"YES" : @"NO");
+            NSLog(@"      buttonOptions: %@", controller.extendedGamepad.buttonOptions ? @"YES" : @"NO");
 
-        if (controller.haptics != nil)
-            NSLog(@"            Haptics: %@", controller.haptics);
+            if (controller.battery != nil)
+                NSLog(@"            Battery: %@", controller.battery);
+            
+            if (controller.motion != nil)
+                NSLog(@"             Motion: %@", controller.motion);
 
-        for (NSString* key in [controller.physicalInputProfile.elements.allKeys sortedArrayUsingSelector:@selector(compare:)] ?: @[]) {
-            GCDeviceElement* element = controller.physicalInputProfile.elements[key];
+            if (controller.light != nil)
+                NSLog(@"              Light: %@", controller.light);
+
+            if (controller.haptics != nil)
+                NSLog(@"            Haptics: %@", controller.haptics);
+        }
+
+        for (NSString* key in [device.physicalInputProfile.elements.allKeys sortedArrayUsingSelector:@selector(compare:)] ?: @[]) {
+            GCDeviceElement* element = device.physicalInputProfile.elements[key];
             NSLog(@"            ELEMENT: %@", element);
             
             NSLog(@"                     Name: %@ (%@)", element.localizedName, element.unmappedLocalizedName);
@@ -4858,6 +4875,125 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
                    title:nil image:[UIImage systemImageNamed:@"gamecontroller"] style:toastStyle completion:nil];
 #endif
 }
+
+#ifdef __IPHONE_14_0
+
+#pragma mark current device
+
+-(void)deviceDidBecomeCurrent:(NSNotification*)note API_AVAILABLE(ios(14.0)) {
+    NSObject<GCDevice>* device = [note object];
+    if (device != nil)
+        NSLog(@"Device %@ IS CURRENT", device.vendorName);
+}
+
+-(void)deviceDidBecomeNonCurrent:(NSNotification*)note API_AVAILABLE(ios(14.0)) {
+    NSObject<GCDevice>* device = [note object];
+    if (device != nil)
+        NSLog(@"Device %@ IS NOT CURRENT", device.vendorName);
+}
+
+#pragma mark keyboard and mouse
+
+-(void)setupKeyboards API_AVAILABLE(ios(14.0)) {
+    
+    // someday iOS might let us use multiple keyboards, but for now just use the coalesced one.
+    if (GCKeyboard.coalescedKeyboard != nil)
+        g_keyboards = @[GCKeyboard.coalescedKeyboard];
+    else
+        g_keyboards = nil;
+    
+    for (GCKeyboard* keyboard in g_keyboards) {
+        [self dumpDevice:keyboard];
+// we do our own keyboard handler in iCadeView
+//        [keyboard.keyboardInput setKeyChangedHandler:^(GCKeyboardInput* keyboard, GCControllerButtonInput* key, GCKeyCode keyCode, BOOL pressed) {
+//            NSLog(@"KEYBOARD KEY: %@ (%ld) - %s",key, keyCode, pressed ? "DOWN" : "UP");
+//        }];
+    }
+}
+
+-(void)setupMice API_AVAILABLE(ios(14.0)) {
+    g_mice = [GCMouse.mice copy];
+    
+    for (int i = 0; i < MIN(NUM_JOY, g_mice.count); i++) {
+        GCMouse* mouse = g_mice[i];
+        [self dumpDevice:mouse];
+        
+        // TODO: figure out what units GCMouse gives us, for now assume they are *pixels*, and convert to points to be like what the touch mouse code.
+        float scale = self.view.window.screen.scale;
+        scale = scale == 0.0 ? 1.0 : (1/scale);
+
+        // TODO: what should happen with multiple mice (ie a trackpad and mouse)
+        // TODO: should they be merged?
+        // TODO: turns out MAME will merge mice by default, we dont need to.
+
+        [mouse.mouseInput setMouseMovedHandler:^(GCMouseInput* mouse, float deltaX, float deltaY) {
+            if (!g_direct_mouse_enable)
+                return;
+            deltaY = -deltaY;   // flip Y for MAME
+            NSLog(@"MOUSE MOVE: %f, %f", deltaX, deltaY);
+            [mouse_lock lock];
+            mouse_delta_x[i] += deltaX * g_pref_touch_analog_sensitivity * scale;
+            mouse_delta_y[i] += deltaY * g_pref_touch_analog_sensitivity * scale;
+            // make sure on-screen touch lightgun and mouse can coexit
+            lightgun_x[0] = 0.0;
+            lightgun_y[0] = 0.0;
+            [mouse_lock unlock];
+        }];
+        [mouse.mouseInput.scroll setValueChangedHandler:^(GCControllerDirectionPad* dpad, float xValue, float yValue) {
+            if (!g_direct_mouse_enable)
+                return;
+            yValue = -yValue;   // flip Y for MAME
+            float zValue = sqrtf(xValue*xValue + yValue*yValue);
+            if (yValue < -xValue)
+                zValue = -zValue;
+            NSLog(@"MOUSE SCROLL: (%f, %f) => %f", xValue, yValue, zValue);
+            [mouse_lock lock];
+            mouse_delta_z[i] += zValue * g_pref_touch_analog_sensitivity * scale;
+            [mouse_lock unlock];
+        }];
+    }
+}
+
+-(void)keyboardConnected:(NSNotification*)note API_AVAILABLE(ios(14.0)) {
+    GCKeyboard *keyboard = (GCKeyboard *)[note object];
+    
+    if ([g_keyboards containsObject:keyboard])
+        return;
+
+    NSLog(@"Hello %@", keyboard.vendorName);
+    [self setupKeyboards];
+}
+
+-(void)keyboardDisconnected:(NSNotification*)note API_AVAILABLE(ios(14.0)) {
+    GCKeyboard *keyboard = (GCKeyboard *)[note object];
+    
+    if (![g_keyboards containsObject:keyboard])
+        return;
+
+    NSLog(@"Goodbye %@", keyboard.vendorName);
+    [self setupKeyboards];
+}
+
+-(void)mouseConnected:(NSNotification*)note API_AVAILABLE(ios(14.0)) {
+    GCMouse *mouse = (GCMouse *)[note object];
+    if ([g_mice containsObject:mouse])
+        return;
+
+    NSLog(@"Hello %@", mouse.vendorName);
+    [self setupMice];
+}
+
+-(void)mouseDisconnected:(NSNotification*)note API_AVAILABLE(ios(14.0)) {
+    GCKeyboard *mouse = (GCKeyboard *)[note object];
+
+    if (![g_mice containsObject:mouse])
+        return;
+
+    NSLog(@"Goodbye %@", mouse.vendorName);
+    [self setupMice];
+}
+
+#endif  // __IPHONE_14_0
 
 #pragma mark GCDWebServerDelegate
 

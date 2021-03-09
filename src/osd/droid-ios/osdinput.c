@@ -58,13 +58,14 @@ static input_device *keyboard_device;
 
 // the states
 static int keyboard_state[KEY_TOTAL];
-static int joy_buttons[4][12];
-static int joy_axis[4][6];
-static int joy_hats[4][4];
+static int joy_buttons[NUM_JOY][12];
+static int joy_axis[NUM_JOY][6];
+static int joy_hats[NUM_JOY][4];
 
-static int lightgun_axis[4][2];
+static int lightgun_axis[NUM_JOY][2];
 
-static int mouse_axis[4][2];
+static int mouse_buttons[NUM_JOY][3];   // L,R,M
+static int mouse_axis[NUM_JOY][3];      // x,y,z
 
 static int poll_ports = 0;
 static int fire[4] = {0,0,0,0};
@@ -173,7 +174,11 @@ void droid_ios_init_input(running_machine *machine)
 		   //printf("Created Mouse Device!\n");
 	   }
 	   input_device_item_add(mouse_device, "X Axis", &mouse_axis[i][0], ITEM_ID_XAXIS, my_axis_get_state);
-	   input_device_item_add(mouse_device, "Y Axis", &mouse_axis[i][1], ITEM_ID_YAXIS, my_axis_get_state);
+       input_device_item_add(mouse_device, "Y Axis", &mouse_axis[i][1], ITEM_ID_YAXIS, my_axis_get_state);
+       input_device_item_add(mouse_device, "Z Axis", &mouse_axis[i][2], ITEM_ID_ZAXIS, my_axis_get_state);
+       input_device_item_add(mouse_device, "Left",   &mouse_buttons[i][0], ITEM_ID_BUTTON1, my_get_state);
+       input_device_item_add(mouse_device, "Right",  &mouse_buttons[i][1], ITEM_ID_BUTTON2, my_get_state);
+       input_device_item_add(mouse_device, "Middle", &mouse_buttons[i][2], ITEM_ID_BUTTON3, my_get_state);
     }
 
     poll_ports = 1;
@@ -283,6 +288,8 @@ void my_poll_ports(running_machine *machine)
         mame_printf_debug("Num PLAYERS %d\n",myosd_num_players);
         mame_printf_debug("Num COINS %d\n",myosd_num_coins);
         mame_printf_debug("Num INPUTS %d\n",myosd_num_inputs);
+        mame_printf_debug("Num MOUSE %d\n",myosd_mouse);
+        mame_printf_debug("Num GUN %d\n",myosd_light_gun);
     }
     
 }
@@ -396,10 +403,6 @@ void droid_ios_poll_input(running_machine *machine)
 	    else
 	    {
 			keyboard_state[KEY_ESCAPE] = 0;
-            
-            if(myosd_reset_filter==1){
-                myosd_exitGame= 1;
-            }
         }
         
         // SERVICE key
@@ -539,11 +542,12 @@ void droid_ios_poll_input(running_machine *machine)
             // ignore lightgun and mouse, if we have any joystick input. (why?)
             if(joy_axis[i][0] == 0 && joy_axis[i][1] == 0 && joy_axis[i][2] == 0 && joy_axis[i][3] == 0)
             {
-                lightgun_axis[i][0] = (int)(lightgun_x[0] *  32767 *  2 );
-                lightgun_axis[i][1] = (int)(lightgun_y[0] *  32767 *  -2 );
+                lightgun_axis[i][0] = (int)(lightgun_x[i] *  32767 *  2 );
+                lightgun_axis[i][1] = (int)(lightgun_y[i] *  32767 *  -2 );
 
-				mouse_axis[i][0] = (int)mouse_x[0];
-				mouse_axis[i][1] = (int)mouse_y[0];
+				mouse_axis[i][0] = (int)mouse_x[i];
+                mouse_axis[i][1] = (int)mouse_y[i];
+                mouse_axis[i][2] = (int)mouse_z[i];
             }
             else
             {
@@ -552,8 +556,13 @@ void droid_ios_poll_input(running_machine *machine)
 
                 mouse_axis[i][0] = 0;
                 mouse_axis[i][1] = 0;
+                mouse_axis[i][2] = 0;
             }
             
+            mouse_buttons[i][0] = (mouse_status[i] & MYOSD_A) ? 0x80 : 0x00;
+            mouse_buttons[i][1] = (mouse_status[i] & MYOSD_B) ? 0x80 : 0x00;
+            mouse_buttons[i][2] = (mouse_status[i] & MYOSD_Y) ? 0x80 : 0x00;
+
             if(myosd_inGame && !myosd_in_menu && myosd_autofire && !netplay)
             {
                 old_A_pressed[i] = A_pressed[i];

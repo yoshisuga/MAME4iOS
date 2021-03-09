@@ -71,14 +71,24 @@ The emulator controls are the following ones:
 - **Nearest** Dont appy any filtering, aka `FatBits`
 - **Linear**  Apply a smoothing image filter over the emulator screen.
 
-**Border** a border that will surround the emulator screen. 
-- **Light** - a bright thick border
-- **Dark** - a think dark border
-- **Solid** - a blue solid border, with rounded corners.
+**Skin** choose the artwork and layout of the onscreen controlls. 
+- **Default** - the default MAME4iOS look.
+- **Light Border** - Default + a bright thick border
+- **Dark Border** - Default + a think dark border
+- **Classic** - the old MAME4iOS look.
 
-**Effects**  a cool/retro effect to apply to the emulator screen. 
-- **CRT** Apply a CRT like filter over the image.
-- **Scanline** Apply a scanline filter over the image.
+**Screen Shader**  effect to apply to the emulator screen. 
+- **None** dont use any effect.
+- **Default** use the default `simpleTron`.
+- **simpleTron** simple CRT effect.
+- **megaTron** more advanced CRT effect.
+- **ulTron** even more advanced CRT effect.
+
+**Vector Shader** effect to apply to vector games. 
+- **None** dont use any effect.
+- **Default** use the default `lineTron`.
+- **lineTron** simple vector effect with fade out.
+
 
 **Colorspace** the [color space](https://en.wikipedia.org/wiki/Color_space) to use.
 - **DeviceRGB** just use the color space of the device. 
@@ -125,45 +135,17 @@ The emulator controls are the following ones:
 
 **Stick Touch DZ** Touch stick deadzone selector. Lower to gets more sensitivity.
 
-**BT Analog DZ** Sixaxis or Wii classic stick deadzone selector. Upper if you have problems with stick (controller going crazy). Lower to gets more sensitivity. (only jailbroken)
-
 **Sound** Enable or set the default sound rate for games.
 
 **Cheats** Enables the reading of the cheat database, if present, and the Cheat menu in the user interface.
 
-**Force 60hz sync** If enabled, forces 60Hz video emulatiob for smoother gameplay in some games (use with caution since it could broke other games like cave ones).
-
 **Save Hiscores** If enabled, saves hiscores on some games not saving on NVRAM. It could cause problems with some games or save states.
-
-**Native TV-OUT** If you want native iOS TVOUT mirror or you use and external 3rd party TVOUT app, you can turn off MAME4iOS native TVOUT.
-
-**Threaded video** Enable video threading for better performance on multicore devices.
-
-**Video Thread Priority** Sets the video thread priority if video thread is also enabled.
-
-**Double buffer** Avoids flickering.
-
-**Main Thread Priority** Sets the main thread priority.
 
 **Show FPS** Shows ON/OFF fps.
 
-**Emulated Resolution** Force MAME internal drawing resolution, use hires resolution to improve artwork rendering at the expense of performance.
-
-**Throttle** Configures the default thottling setting. When throttling is on, MAME attempts to keep the game running at the game's intended speed. When throttling is off, MAME runs the game as fast as it can.
-
-**Frame Skip** Specifies the frameskip value. This is the number of frames out of every 12 to drop when running. For example, if you say -frameskip 2,then MAME will display 10 out of every 12 frames. By skipping those frames, you may be able to get full speed in a game that requires more horsepower than your device has. The default value is autoframekip that Automatically determines the frameskip level while you're playing the game, adjusting it constantly in a frantic attempt to keep the game running at full speed.
-
 **Force Pixel Aspect** Enable it to force pixel aspect ratio bypassing MAME video selection.
 
-**Sleep on idle** Allows MAME to give time back to the system (sleep) when running with -throttle. This allows other programs to have some CPU time, assuming that the game isn't taxing 100% of your CPU resources. This option can potentially cause hiccups in performance if other demanding programs are running.
-
 **Show Info/Warnings** Shows Game Info and any warnings when a game is selected.
-
-**Low Latency Audio** Uses no queues (AudioUnit) to play audio with low latency.
-
-**Native TV-OUT** If you want native iOS TVOUT mirror or you use and external 3rd party TVOUT app, you can turn off MAME4iOS native TVOUT.
-
-**Overscan TV-OUT** You can set the amount of TV overscan correction.
 
 ## FAVORITES
 
@@ -235,10 +217,7 @@ we suppoprt a small subset of the keys supported by the command line MAME.
      ⌘+Z                  | TOGGLE FPS DISPLAY
      ⌘+H                  | TOGGLE HUD DISPLAY
      ⌘+F                  | TOGGLE FILTER (Nearest and Linear)
-     ⌘+T                  | TOGGLE THROTTLE
-     ⌘+V                  | TOGGLE VSYNC
      ⌘+P                  | TOGGLE PAUSE
-     ⌘+M                  | TOGGLE `useMetal`
      ⌘+A                  | TOGGLE `Keep Aspect Ratio`
      ⌘+X                  | TOGGLE `Force Pixel Aspect`
      ⌘+1               | Player 1 COIN+START
@@ -404,7 +383,7 @@ Step 1\. Downloaded iFunBox (or a similar utility) and plug your iOS device into
 
 Step 2\. Launch iFunBox and select your iOS device on the left hand side.
 
-Step 3\. If you don't have a jailbroken device, click on apps icon. Now you should see a list of all of your device’s applications. Locate MAME4iOS, click it, and select Documents.
+Step 3\. click on apps icon. Now you should see a list of all of your device’s applications. Locate MAME4iOS, click it, and select Documents.
 
 Step 4\. And that’s all there is to it. Move your ROMs into this folder, launch MAME4iOS, and start playing!
 

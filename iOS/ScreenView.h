@@ -84,9 +84,12 @@
 @property(readonly)  CGFloat    renderTime;         // time it took last frame to render (sec)
 @property(readonly)  CGFloat    renderTimeAverage;  // average renderTime
 
-// return 1 if you handled the draw, 0 for a software render
 // NOTE this is called on MAME background thread, dont do anything stupid.
-- (int)drawScreen:(void*)primitives;
+- (void)drawScreen:(void*)primitives;
+
+#ifdef DEBUG
+- (void)dumpScreen:(void*)primitives;
+#endif
 
 @end
 

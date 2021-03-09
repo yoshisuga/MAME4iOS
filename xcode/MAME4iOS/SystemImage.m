@@ -64,11 +64,12 @@
         return [self systemImageNamed:name];
 }
 
-// convert text to a UIImaage, replacing any strings of the form ":symbol:" with a systemImage
+// convert text to a UIImage, replacing any strings of the form ":symbol:" with a systemImage
 //      :symbol-name:                - return a UIImage created from [UIImage systemImageNamed] or [UIImage imageNamed]
 //      :symbol-name:fallback:       - return symbol as UIImage or fallback text if image not found
 //      :symbol-name:text            - return symbol + text
-//      :symbol-name:fallback:text   - return symbol or fallback text + text
+//      :symbol-name:fallback:text   - return (symbol or fallback) + text
+//      text:symbol-name:text        - return text + symbol + text
 + (UIImage*)imageWithString:(NSString*)text withFont:(UIFont*)_font {
 
     UIImage* image;
@@ -88,12 +89,16 @@
     }
     
     // if we have both text and an image, combine image + text
-    if (image == nil || text.length > 0) {
+    if (image == nil || text.length > 0 || [arr.firstObject length] > 0) {
         CGFloat spacing = 4.0;
         NSDictionary* attributes = @{NSFontAttributeName:font};
         
         CGSize textSize = [text boundingRectWithSize:CGSizeZero options:NSStringDrawingUsesLineFragmentOrigin attributes:attributes context:nil].size;
         CGSize size = CGSizeMake(ceil(textSize.width), ceil(textSize.height));
+
+        if (arr.count > 2 && [arr.firstObject length] > 0) {
+            size.width += [arr.firstObject boundingRectWithSize:CGSizeZero options:NSStringDrawingUsesLineFragmentOrigin attributes:attributes context:nil].size.width + spacing;
+        }
 
         if (image != nil) {
             size.width += image.size.width + spacing;
@@ -102,6 +107,11 @@
         
         image = [[[UIGraphicsImageRenderer alloc] initWithSize:size] imageWithActions:^(UIGraphicsImageRendererContext * context) {
             CGPoint point = CGPointZero;
+            
+            if (arr.count > 2 && [arr.firstObject length] > 0) {
+                [arr.firstObject drawAtPoint:CGPointMake(point.x, (size.height - textSize.height)/2) withAttributes:attributes];
+                point.x += [arr.firstObject boundingRectWithSize:CGSizeZero options:NSStringDrawingUsesLineFragmentOrigin attributes:attributes context:nil].size.width + spacing;
+            }
             
             if (image != nil) {
                 // TODO: align to baseline?
@@ -113,7 +123,7 @@
         }];
     }
 
-    return image;
+    return [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 }
 
 + (UIImage*)imageWithString:(NSString*)text {
