@@ -73,6 +73,8 @@ static int isPause = 0;
 unsigned char myosd_keyboard[NUM_KEYS];
 unsigned long myosd_joy_status[NUM_JOY];
 
+const char * myosd_version = build_version;
+
 typedef struct AQCallbackStruct {
     AudioQueueRef queue;
     UInt32 frameCount;
