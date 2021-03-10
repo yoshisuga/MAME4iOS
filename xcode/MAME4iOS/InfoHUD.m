@@ -545,11 +545,11 @@
         case UIPressTypeLeftArrow:
         case UIPressTypeRightArrow:
         {
+            int dir = (type == UIPressTypeLeftArrow) ? -1 : +1;
             if (item == nil && items.count != 0) {
                 _selected = 0;
                 item = items[_selected];
             }
-            int dir = (type == UIPressTypeLeftArrow) ? -1 : +1;
             CGFloat val = [self getSelectedSegment:item];
             val = val + (CGFloat)dir / MAX([self getNumberOfSegments:item], 1);
             [self setSelectedSegment:item value:MAX(0.0, MIN(1.0, val))];
