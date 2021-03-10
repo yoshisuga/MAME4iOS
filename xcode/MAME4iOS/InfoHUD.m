@@ -482,6 +482,7 @@
         return view.subviews.count;
 }
 
+// returns a normalized value from [0.0-1.0) or <0 for no selection
 - (CGFloat)getSelectedSegment:(UIView*)view {
     
     if ([view isKindOfClass:[UISegmentedControl class]]) {
@@ -499,9 +500,10 @@
         }
     }
     
-    return (CGFloat)UISegmentedControlNoSegment;
+    return -1.0;
 }
 
+// takes a normalized value from [0.0-1.0) or <0 for no selection
 - (void)setSelectedSegment:(UIView*)view value:(CGFloat)value {
     
     if ([view isKindOfClass:[UISegmentedControl class]]) {
@@ -511,7 +513,7 @@
     
     if ([view isKindOfClass:[UIStackView class]]) {
         UIStackView* stack = (UIStackView*)view;
-        int n = (value < 0.0) ? UISegmentedControlNoSegment : (int)(value * stack.subviews.count);
+        int n = (value < 0.0) ? UISegmentedControlNoSegment : MIN((int)(value * stack.subviews.count), (int)stack.subviews.count-1);
         for (int i=0; i<stack.subviews.count; i++) {
             UISegmentedControl* seg = (UISegmentedControl*)stack.subviews[i];
             if ([seg isKindOfClass:[UISegmentedControl class]])
@@ -543,15 +545,25 @@
         case UIPressTypeLeftArrow:
         case UIPressTypeRightArrow:
         {
+            if (item == nil && items.count != 0) {
+                _selected = 0;
+                item = items[_selected];
+            }
             int dir = (type == UIPressTypeLeftArrow) ? -1 : +1;
             CGFloat val = [self getSelectedSegment:item];
-            val = val + (CGFloat)dir / [self getNumberOfSegments:item];
-            [self setSelectedSegment:item value:val];
+            val = val + (CGFloat)dir / MAX([self getNumberOfSegments:item], 1);
+            [self setSelectedSegment:item value:MAX(0.0, MIN(1.0, val))];
             break;
         }
         case UIPressTypeSelect:
             if (_selected != -1 && _selected < items.count) {
-                NSLog(@"SELECT: %@", items[_selected]);
+                if ([item isKindOfClass:[UISegmentedControl class]])
+                    [self buttonPress:(UISegmentedControl*)item];
+                if ([item isKindOfClass:[UIStackView class]]) {
+                    int n = [self getSelectedSegment:item] * [self getNumberOfSegments:item];
+                    if (n >= 0 && n < item.subviews.count)
+                        [self buttonPress:(UISegmentedControl*)item.subviews[n]];
+                }
             }
             break;
         default:
