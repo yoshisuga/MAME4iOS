@@ -365,7 +365,7 @@
             }];
             seg.backgroundColor = color;
             if (@available(iOS 13.0, tvOS 13.0, *))
-                 seg.selectedSegmentTintColor = color;
+                seg.selectedSegmentTintColor = (color == nil || color == UIColor.clearColor) ? self.tintColor : color;
             if (color == UIColor.clearColor)
                 [seg setBackgroundImage:[[UIImage alloc] init] forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
         }
@@ -482,42 +482,42 @@
         return view.subviews.count;
 }
 
-// returns a normalized value from [0.0-1.0) or <0 for no selection
-- (CGFloat)getSelectedSegment:(UIView*)view {
+- (NSInteger)getSelectedSegmentIndex:(UIView*)view {
     
     if ([view isKindOfClass:[UISegmentedControl class]]) {
         UISegmentedControl* seg = (UISegmentedControl*)view;
-        return (CGFloat)seg.selectedSegmentIndex / seg.numberOfSegments;
+        return seg.selectedSegmentIndex;
     }
     
     if ([view isKindOfClass:[UIStackView class]]) {
         UIStackView* stack = (UIStackView*)view;
-        for (int i=0; i<stack.subviews.count; i++) {
+        for (NSInteger i=0; i<stack.subviews.count; i++) {
             UISegmentedControl* seg = (UISegmentedControl*)stack.subviews[i];
             if ([seg isKindOfClass:[UISegmentedControl class]] && seg.selectedSegmentIndex != UISegmentedControlNoSegment) {
-                return (CGFloat)i / stack.subviews.count;
+                return i;
             }
         }
     }
     
-    return -1.0;
+    return UISegmentedControlNoSegment;
 }
 
-// takes a normalized value from [0.0-1.0) or <0 for no selection
-- (void)setSelectedSegment:(UIView*)view value:(CGFloat)value {
+- (void)setSelectedSegmentIndex:(UIView*)view index:(NSInteger)index {
     
     if ([view isKindOfClass:[UISegmentedControl class]]) {
         UISegmentedControl* seg = (UISegmentedControl*)view;
-        seg.selectedSegmentIndex = (value < 0.0) ? UISegmentedControlNoSegment : MIN((int)(value * seg.numberOfSegments), seg.numberOfSegments-1);
+        seg.selectedSegmentIndex = index;
     }
     
     if ([view isKindOfClass:[UIStackView class]]) {
         UIStackView* stack = (UIStackView*)view;
-        int n = (value < 0.0) ? UISegmentedControlNoSegment : MIN((int)(value * stack.subviews.count), (int)stack.subviews.count-1);
-        for (int i=0; i<stack.subviews.count; i++) {
+        for (NSInteger i=0; i<stack.subviews.count; i++) {
             UISegmentedControl* seg = (UISegmentedControl*)stack.subviews[i];
-            if ([seg isKindOfClass:[UISegmentedControl class]])
-                seg.selectedSegmentIndex = (i == n) ? 0 : UISegmentedControlNoSegment;
+            if ([seg isKindOfClass:[UISegmentedControl class]]) {
+                seg.selectedSegmentIndex = (i == index) ? 0 : UISegmentedControlNoSegment;
+                if (seg.backgroundColor == UIColor.clearColor)
+                    [seg setBackgroundImage:((i == index) ? nil : [[UIImage alloc] init]) forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
+            }
         }
     }
 }
@@ -531,13 +531,13 @@
         case UIPressTypeUpArrow:
         case UIPressTypeDownArrow:
         {
-            int dir = (type == UIPressTypeUpArrow) ? -1 : +1;
-            int n = (int)_selected + dir;
+            NSInteger dir = (type == UIPressTypeUpArrow) ? -1 : +1;
+            NSInteger n = _selected + dir;
             
             if (n >= 0 && n < items.count) {
-                CGFloat val = MAX([self getSelectedSegment:item], 0.0);
-                [self setSelectedSegment:item value:UISegmentedControlNoSegment];
-                [self setSelectedSegment:items[n] value:val];
+                NSInteger index = MAX(0, [self getSelectedSegmentIndex:item]) * [self getNumberOfSegments:items[n]] / MAX(1, [self getNumberOfSegments:item]);
+                [self setSelectedSegmentIndex:items[n] index:index];
+                [self setSelectedSegmentIndex:item index:UISegmentedControlNoSegment];
                 _selected = n;
             }
             break;
@@ -545,25 +545,23 @@
         case UIPressTypeLeftArrow:
         case UIPressTypeRightArrow:
         {
-            int dir = (type == UIPressTypeLeftArrow) ? -1 : +1;
+            NSInteger dir = (type == UIPressTypeLeftArrow) ? -1 : +1;
             if (item == nil && items.count != 0) {
                 _selected = 0;
                 item = items[_selected];
             }
-            CGFloat val = [self getSelectedSegment:item];
-            val = val + (CGFloat)dir / MAX([self getNumberOfSegments:item], 1);
-            [self setSelectedSegment:item value:MAX(0.0, MIN(1.0, val))];
+            NSInteger n = [self getSelectedSegmentIndex:item] + dir;
+            n = MIN(MAX(0,n), [self getNumberOfSegments:item]-1);
+            [self setSelectedSegmentIndex:item index:n];
             break;
         }
         case UIPressTypeSelect:
-            if (_selected != -1 && _selected < items.count) {
-                if ([item isKindOfClass:[UISegmentedControl class]])
-                    [self buttonPress:(UISegmentedControl*)item];
-                if ([item isKindOfClass:[UIStackView class]]) {
-                    int n = [self getSelectedSegment:item] * [self getNumberOfSegments:item];
-                    if (n >= 0 && n < item.subviews.count)
-                        [self buttonPress:(UISegmentedControl*)item.subviews[n]];
-                }
+            if ([item isKindOfClass:[UISegmentedControl class]])
+                [self buttonPress:(UISegmentedControl*)item];
+            if ([item isKindOfClass:[UIStackView class]]) {
+                NSInteger n = [self getSelectedSegmentIndex:item];
+                if (n >= 0 && n < item.subviews.count)
+                    [self buttonPress:(UISegmentedControl*)item.subviews[n]];
             }
             break;
         default:
