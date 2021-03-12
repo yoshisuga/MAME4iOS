@@ -14,7 +14,6 @@
 #import "InfoDatabase.h"
 #import "Alert.h"
 #import "Globals.h"
-#import "myosd.h"
 
 #if TARGET_OS_IOS
 #import <Intents/Intents.h>
@@ -1390,11 +1389,12 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     
     NSMutableArray* files = [[NSMutableArray alloc] init];
     
-    for (NSString* file in @[@"artwork/%@.zip", @"samples/%@.zip", @"roms/%@/", @"titles/%@.png", @"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@/1.sta", @"sta/%@/2.sta", @"hi/%@.hi", @"nvram/%@.nv", @"inp/%@.inp"])
+    for (NSString* file in @[@"titles/%@.png", @"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@/1.sta", @"sta/%@/2.sta", @"hi/%@.hi", @"nvram/%@.nv", @"inp/%@.inp",
+                             @"snap/%@.png", @"snap/%@.mng", @"snap/%@.avi", @"snap/%@/"])
         [files addObject:[NSString stringWithFormat:file, name]];
     
     if (all) {
-        for (NSString* file in @[@"roms/%@.zip"])
+        for (NSString* file in @[@"roms/%@.zip", @"roms/%@/", @"artwork/%@.zip", @"samples/%@.zip"])
             [files addObject:[NSString stringWithFormat:file, name]];
     }
     
@@ -1871,22 +1871,22 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 // called when input happens on a gamecontroller, keyboard, or touch screen
 // check for input related to moving and selecting.
--(void)handle_MENU:(NSNumber*)status
+-(void)handleButtonPress:(UIPressType)type
 {
-    // get input from all DPADs
-    unsigned long pad_status = [status longValue];
-    
-    // get input from left and right joystick #1
-    if (pad_status & (MYOSD_A|MYOSD_SELECT|MYOSD_START))
-        [self onCommandSelect];
-    if (pad_status & MYOSD_UP)
-        [self onCommandUp];
-    if (pad_status & MYOSD_DOWN)
-        [self onCommandDown];
-    if (pad_status & MYOSD_LEFT)
-        [self onCommandLeft];
-    if (pad_status & MYOSD_RIGHT)
-        [self onCommandRight];
+    switch (type) {
+        case UIPressTypeUpArrow:
+            return [self onCommandUp];
+        case UIPressTypeDownArrow:
+            return [self onCommandDown];
+        case UIPressTypeLeftArrow:
+            return [self onCommandLeft];
+        case UIPressTypeRightArrow:
+            return [self onCommandRight];
+        case UIPressTypeSelect:
+            return [self onCommandSelect];
+        default:
+            break;
+    }
 }
 
 - (BOOL)canBecomeFirstResponder {
