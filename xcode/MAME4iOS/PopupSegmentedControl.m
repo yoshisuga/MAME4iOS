@@ -189,6 +189,7 @@ UIColor* getBackgroundColor(UIView* view) {
         ppc.delegate = (id<UIPopoverPresentationControllerDelegate>)self;
         ppc.sourceView = self;
         ppc.sourceRect = self.bounds;
+        ppc.backgroundColor = popup.view.backgroundColor;
         
         CGRect rect = [self convertRect:self.bounds toCoordinateSpace:self.window];
         CGRect safe = UIEdgeInsetsInsetRect(self.window.bounds, self.window.safeAreaInsets);

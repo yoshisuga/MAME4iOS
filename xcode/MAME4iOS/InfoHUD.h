@@ -53,4 +53,34 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+// HUD Button style (based on UIAlertActionStyle)
+typedef NS_ENUM(NSInteger, HUDButtonStyle) {
+    HUDButtonStyleDefault = UIAlertActionStyleDefault,
+    HUDButtonStyleCancel = UIAlertActionStyleCancel,
+    HUDButtonStyleDestructive = UIAlertActionStyleDestructive,
+    HUDButtonStylePlain
+};
+
+// a simple UIViewController for InfoHUD
+@interface HUDViewController : UIViewController
+
+- (void)addButtons:(NSArray*)items style:(HUDButtonStyle)style handler:(void (^)(NSUInteger button))handler;
+- (void)addButton:(id)item style:(HUDButtonStyle)style handler:(void (^)(void))handler;
+- (void)onCancel:(void (^)(void))handler;
+- (void)onDismiss:(void (^)(void))handler;
+
+@end
+
+// a UIAlertViewController(ish) compatible interface
+@interface HUDAlertController : HUDViewController
+
+@property (nonatomic, readonly) NSArray<UIAlertAction *> *actions;
+@property (nonatomic, strong, nullable) UIAlertAction *preferredAction;
+
++ (instancetype)alertControllerWithTitle:(nullable NSString *)title message:(nullable NSString *)message preferredStyle:(UIAlertControllerStyle)preferredStyle;
+
+-(void)addAction:(UIAlertAction *)action;
+
+@end
+
 NS_ASSUME_NONNULL_END

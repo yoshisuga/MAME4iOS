@@ -26,6 +26,9 @@ NS_ASSUME_NONNULL_BEGIN
 +(nullable UIImage*)systemImageNamed:(NSString*)name withPointSize:(CGFloat)pointSize;
 +(nullable UIImage*)systemImageNamed:(NSString*)name withFont:(UIFont*)font;
 
+// smash together some text + image + text
++ (UIImage*)imageWithText:(NSString*)textLeft image:(UIImage*)image text:(NSString*)textRight font:(UIFont*)font;
+
 // convert text to a UIImaage, replacing any strings of the form ":symbol:" with a systemImage
 //      :symbol-name:                - return a UIImage created from [UIImage systemImageNamed] or [UIImage imageNamed]
 //      :symbol-name:fallback:       - return symbol as UIImage or fallback text if image not found

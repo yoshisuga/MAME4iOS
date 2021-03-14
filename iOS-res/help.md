@@ -276,7 +276,7 @@ To start playing a game using a controller, do one of the following.
 | | |  
 -|-
 `OPTIONS`     |SELECT                
-`HOME`           |MAME4iOS MENU (on iOS 14)   
+`HOME`           |MAME4iOS MENU (on iOS 14+)   
 `MENU`           |START      
 `OPTIONS`+`MENU`|MAME4iOS MENU
 
@@ -297,7 +297,6 @@ Steam Controller Buttons
 
 | | |  
 -|-
-MENU           |Open MAME4iOS MENU   
 MENU+L1     |Player 1 Coin                 
 MENU+R1     |Player 1 Start               
 MENU+L2     |Player 2 Coin                
@@ -309,7 +308,6 @@ MENU+UP        |Load State ①
 MENU+LEFT     |Save State ②                
 MENU+RIGHT  |Load State ②               
 
-**NOTE** when using a MFi controller on versions prior to iOS 13, and tvOS, when doing multiple button combinations the secondary button must be pressed first.  For example to insert a coin hold down L1 and hit MENU.  on iOS 13+ you can hold MENU and then hit L1.
 
 ## Multiplayer game start using game controllers
 

@@ -11,6 +11,7 @@
 
 @interface UIImage()
 + (UIImage*)imageWithString:(NSString*)str withFont:(UIFont*)font;
++ (UIImage*)imageWithText:(NSString*)textLeft image:(UIImage*)image text:(NSString*)textRight font:(UIFont*)font;
 @end
 
 #define HUD_BLUR    TRUE
@@ -64,19 +65,28 @@
     [self addGestureRecognizer:pinch];
 #endif
 
-    //self.backgroundColor = [UIColor clearColor];
-#if HUD_BLUR && TARGET_OS_IOS
-    if (@available(iOS 13.0, *))
-        [self addBlur:UIBlurEffectStyleSystemUltraThinMaterialDark];
-    else
-        [self addBlur:UIBlurEffectStyleDark];
-#elif HUD_BLUR && TARGET_OS_TV
-    [self addBlur:UIBlurEffectStyleExtraDark];
-#else
-    self.backgroundColor = [UIColor.darkGrayColor colorWithAlphaComponent:0.8];
-#endif
+    self.backgroundColor = HUD_BLUR ? nil : [UIColor.darkGrayColor colorWithAlphaComponent:0.8];
     
     return self;
+}
+
+- (void)setBackgroundColor:(UIColor *)color {
+    [super setBackgroundColor:color];
+    
+    for (UIView* view in self.subviews)
+        [view removeFromSuperview];
+    [self addSubview:_stack];
+
+    if (color == nil) {
+#if TARGET_OS_IOS
+        if (@available(iOS 13.0, *))
+            [self addBlur:UIBlurEffectStyleSystemUltraThinMaterialDark];
+        else
+            [self addBlur:UIBlurEffectStyleDark];
+#else
+        [self addBlur:UIBlurEffectStyleExtraDark];
+#endif
+    }
 }
 
 - (void)setSpacing:(CGFloat)spacing {
@@ -94,9 +104,10 @@
     UIVisualEffectView* effectView = [[UIVisualEffectView alloc] initWithEffect:blur];
     effectView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     effectView.frame = self.bounds;
-    for (UIView* view in self.subviews)
-        [effectView.contentView addSubview:view];
+//    for (UIView* view in self.subviews)
+//        [effectView.contentView addSubview:view];
     [self addSubview:effectView];
+    [self sendSubviewToBack:effectView];
 }
 
 #if TARGET_OS_IOS
@@ -204,6 +215,9 @@
         value = [self separatorViewWithHeight:1.0 color:UIColor.darkGrayColor];
         [_stack addArrangedSubview:value];
         value = [self separatorViewWithHeight:1.0 color:UIColor.clearColor];
+    }
+    if ([value isKindOfClass:[NSString class]] && [value isEqualToString:@" "]) {
+        value = [self separatorViewWithHeight:3.0 color:UIColor.clearColor];
     }
     if ([value isKindOfClass:[UIImage class]]) {
         value = [[UIImageView alloc] initWithImage:value];
@@ -568,7 +582,179 @@
             break;
     }
 }
+@end
+
+#pragma mark - InfoHUD ViewController
+
+@implementation HUDViewController {
+    InfoHUD* _hud;
+    void (^_cancelHandler)(void);
+    void (^_dismissHandler)(void);
+}
+
+- (instancetype)init {
+    self = [super init];
+    
+    _hud = [[InfoHUD alloc] init];
+    _hud.moveable = NO;
+    _hud.sizeable = NO;
+    _hud.backgroundColor = UIColor.clearColor;
+    
+    self.modalPresentationStyle = UIModalPresentationPopover;
+    self.popoverPresentationController.delegate = (id<UIPopoverPresentationControllerDelegate>)self;
+
+    if (@available(iOS 13.0, tvOS 13.0, *))
+        self.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
+    else
+        self.popoverPresentationController.backgroundColor = [UIColor colorWithWhite:0.111 alpha:1.0];
+
+    return self;
+}
+
+- (void)setTitle:(NSString*)title {
+    [super setTitle:title];
+    if (self.title.length != 0) {
+        [_hud addTitle:self.title];
+        [_hud addSeparator];
+    }
+}
+
+- (void)addButtons:(NSArray*)items style:(HUDButtonStyle)style handler:(void (^)(NSUInteger button))handler {
+    
+    UIColor* color = nil;
+    
+    if (style == HUDButtonStyleDestructive)
+        color = UIColor.systemRedColor;
+    if (style == HUDButtonStylePlain)
+        color = UIColor.clearColor;
+
+    // we want to dismiss the ViewController *before* we call any button callbacks
+    __unsafe_unretained typeof(self) _self = self;
+    [_hud addButtons:items color:color handler:^(NSUInteger button) {
+        _self->_cancelHandler = nil;    // no need to call cancel handler now.
+        [_self.presentingViewController dismissViewControllerAnimated:YES completion:^{
+            handler(button);
+        }];
+    }];
+}
+
+- (void)addButton:(id)item style:(HUDButtonStyle)style handler:(void (^)(void))handler {
+    if (style == HUDButtonStyleCancel) {
+        [self onCancel:handler];
+        [_hud addText:@" "];
+    }
+    [self addButtons:@[item] style:style handler:^(NSUInteger button) {
+        handler();
+    }];
+}
+
+- (void)onCancel:(void (^)(void))handler {
+    _cancelHandler = handler;
+}
+
+- (void)onDismiss:(void (^)(void))handler {
+    _dismissHandler = handler;
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    [self.view addSubview:_hud];
+}
+
+- (CGSize)preferredContentSize {
+    return [_hud sizeThatFits:CGSizeZero];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    self.preferredContentSize = self.preferredContentSize;
+    if (self.popoverPresentationController.arrowDirection == 0) {
+        //self.popoverPresentationController.backgroundColor = nil;
+        self.view.backgroundColor = UIColor.clearColor;
+        self.view.superview.backgroundColor = UIColor.clearColor;
+        self.view.superview.superview.backgroundColor = UIColor.clearColor;
+        //_hud.backgroundColor = nil;
+    }
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    if (_cancelHandler)
+        _cancelHandler();
+    if (_dismissHandler)
+        _dismissHandler();
+}
+- (void)viewWillLayoutSubviews {
+    UIEdgeInsets safe = self.view.safeAreaInsets;
+    [_hud sizeToFit];
+    _hud.center = CGPointMake(safe.left + (self.view.bounds.size.width - safe.left - safe.right)/2 ,
+                              safe.top + (self.view.bounds.size.height - safe.top - safe.bottom)/2);
+}
+
+#pragma mark - handleButtonPress
+
+// move current selection and perfom action, used with input from a game controller, keyboard, or remote.
+- (void)handleButtonPress:(UIPressType)type {
+    
+    // MENU => CANCEL
+    if (type == UIPressTypeMenu)
+        return [self.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+    
+    return [_hud handleButtonPress:type];
+}
 
 
+#pragma mark - UIPopoverPresentationControllerDelegate
+
+// Returning UIModalPresentationNone will indicate that an adaptation should not happen.
+- (UIModalPresentationStyle)adaptivePresentationStyleForPresentationController:(UIPresentationController *)controller traitCollection:(UITraitCollection *)traitCollection {
+    return UIModalPresentationNone;
+}
+// -popoverPresentationController:willRepositionPopoverToRect:inView: is called on your delegate when the
+// popover may require a different view or rectangle.
+- (void)popoverPresentationController:(UIPopoverPresentationController *)popoverPresentationController willRepositionPopoverToRect:(inout CGRect*)rect inView:(inout UIView**)view {
+    NSLog(@"willRepositionPopoverToRect:%@ view:%@", NSStringFromCGRect(*rect), *view);
+    
+    popoverPresentationController.permittedArrowDirections = 0;
+    *view = self.presentingViewController.view;
+    *rect = CGRectMake(self.presentingViewController.view.bounds.size.width/2, self.presentingViewController.view.bounds.size.height/2, 0, 0);
+}
 
 @end
+
+#pragma mark - InfoHUD AlertController
+
+@implementation HUDAlertController {
+    NSMutableArray* _actions;
+}
+
++ (instancetype)alertControllerWithTitle:(nullable NSString *)title message:(nullable NSString *)message preferredStyle:(UIAlertControllerStyle)preferredStyle {
+    NSParameterAssert(preferredStyle == UIAlertControllerStyleActionSheet);
+    NSParameterAssert(message == nil);
+    HUDAlertController* alert = [[HUDAlertController alloc] init];
+    alert.title = title;
+    return alert;
+}
+
+- (void)addAction:(UIAlertAction *)action {
+    _actions = _actions ?: [[NSMutableArray alloc] init];
+
+    id item = action.title;
+    if ([action respondsToSelector:@selector(image)] && [action valueForKey:@"image"] != nil)
+         item = [UIImage imageWithText:nil image:[action valueForKey:@"image"] text:action.title font:nil];
+    
+    void (^handler)(UIAlertAction *) = nil;
+    if ([action respondsToSelector:@selector(handler)])
+        handler = [action valueForKey:@"handler"];
+
+    [_actions addObject:action];
+    [self addButton:item style:(HUDButtonStyle)action.style handler:^{
+        if (handler != nil)
+            handler(action);
+    }];
+}
+
+- (NSArray<UIAlertAction *> *)actions {
+    return [_actions copy];
+}
+
+@end
+

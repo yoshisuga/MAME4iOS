@@ -70,34 +70,53 @@
 //      :symbol-name:text            - return symbol + text
 //      :symbol-name:fallback:text   - return (symbol or fallback) + text
 //      text:symbol-name:text        - return text + symbol + text
-+ (UIImage*)imageWithString:(NSString*)text withFont:(UIFont*)_font {
++ (UIImage*)imageWithString:(NSString*)text withFont:(UIFont*)font {
 
     UIImage* image;
-    UIFont* font = _font ?: [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+    NSString* lhs = @"";
+    NSString* rhs = text;
 
     // handle :symbol-name: or :symbol-name:fallback:
     NSArray* arr = [(NSString*)text componentsSeparatedByString:@":"];
     if (arr.count > 2) {
-        text = arr.lastObject;
+        lhs = arr.firstObject;
+        rhs = arr.lastObject;
 
         if (@available(iOS 13.0, tvOS 13.0, *))
             image = [[UIImage systemImageNamed:arr[1]] imageByApplyingSymbolConfiguration:[UIImageSymbolConfiguration configurationWithFont:font]];
 
         // use fallback text if image not found.
         if (image == nil && arr.count == 4)
-            text = [arr[2] stringByAppendingString:text];
+            rhs = [arr[2] stringByAppendingString:rhs];
     }
     
     // if we have both text and an image, combine image + text
-    if (image == nil || text.length > 0 || [arr.firstObject length] > 0) {
+    if (image == nil || lhs.length != 0 || rhs.length != 0)
+        image = [UIImage imageWithText:lhs image:image text:rhs font:font];
+
+    return image;
+}
+
++ (UIImage*)imageWithString:(NSString*)text {
+    return [self imageWithString:text withFont:nil];
+}
+
+// smash together some text + image + text
++ (UIImage*)imageWithText:(NSString*)textLeft image:(UIImage*)image text:(NSString*)textRight font:(UIFont*)font {
+
+    // if we have both text and an image, combine image + text
+    if (image == nil || textLeft.length > 0 || textRight.length > 0) {
+        font = font ?: [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+
         CGFloat spacing = 4.0;
         NSDictionary* attributes = @{NSFontAttributeName:font};
         
-        CGSize textSize = [text boundingRectWithSize:CGSizeZero options:NSStringDrawingUsesLineFragmentOrigin attributes:attributes context:nil].size;
+        CGSize textSize = [textRight boundingRectWithSize:CGSizeZero options:NSStringDrawingUsesLineFragmentOrigin attributes:attributes context:nil].size;
         CGSize size = CGSizeMake(ceil(textSize.width), ceil(textSize.height));
 
-        if (arr.count > 2 && [arr.firstObject length] > 0) {
-            size.width += [arr.firstObject boundingRectWithSize:CGSizeZero options:NSStringDrawingUsesLineFragmentOrigin attributes:attributes context:nil].size.width + spacing;
+        if (textLeft.length != 0) {
+            textSize = [textLeft boundingRectWithSize:CGSizeZero options:NSStringDrawingUsesLineFragmentOrigin attributes:attributes context:nil].size;
+            size = CGSizeMake(size.width + spacing + ceil(textSize.width), ceil(textSize.height));
         }
 
         if (image != nil) {
@@ -108,9 +127,9 @@
         image = [[[UIGraphicsImageRenderer alloc] initWithSize:size] imageWithActions:^(UIGraphicsImageRendererContext * context) {
             CGPoint point = CGPointZero;
             
-            if (arr.count > 2 && [arr.firstObject length] > 0) {
-                [arr.firstObject drawAtPoint:CGPointMake(point.x, (size.height - textSize.height)/2) withAttributes:attributes];
-                point.x += [arr.firstObject boundingRectWithSize:CGSizeZero options:NSStringDrawingUsesLineFragmentOrigin attributes:attributes context:nil].size.width + spacing;
+            if (textLeft.length != 0) {
+                [textLeft drawAtPoint:CGPointMake(point.x, (size.height - textSize.height)/2) withAttributes:attributes];
+                point.x += [textLeft boundingRectWithSize:CGSizeZero options:NSStringDrawingUsesLineFragmentOrigin attributes:attributes context:nil].size.width + spacing;
             }
             
             if (image != nil) {
@@ -119,16 +138,14 @@
                 point.x += image.size.width + spacing;
             }
 
-            [text drawAtPoint:CGPointMake(point.x, (size.height - textSize.height)/2) withAttributes:attributes];
+            [textRight drawAtPoint:CGPointMake(point.x, (size.height - textSize.height)/2) withAttributes:attributes];
         }];
     }
 
     return [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 }
 
-+ (UIImage*)imageWithString:(NSString*)text {
-    return [self imageWithString:text withFont:nil];
-}
+
 
 
 @end
