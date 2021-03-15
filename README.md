@@ -143,8 +143,8 @@ The following hotkey combinations are supported:
 | | |  
 ---------------- |-------------
 MENU             |Open MAME4iOS MENU   
-MENU+L1       |Player 1 Coin                 
-MENU+R1       |Player 1 Start               
+MENU+L1       |Player Coin                 
+MENU+R1       |Player Start               
 MENU+L2       |Player 2 Coin                
 MENU+R2       |Player 2 Start               
 MENU+A          |Show or hide HUD                 

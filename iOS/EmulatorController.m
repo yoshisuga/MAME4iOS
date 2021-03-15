@@ -853,7 +853,7 @@ HUDViewController* g_menu;
         [self runExit:NO];
     }];
     
-    if (view == nil) {
+    if (view == nil && TARGET_OS_IOS) {
         [menu addButton:@"Cancel" style:HUDButtonStyleCancel handler:^{}];
     }
     
@@ -1241,12 +1241,14 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
 
 - (void)handle_MENU:(unsigned long)pad_status stick:(CGPoint)stick
 {
-#if TARGET_OS_IOS   // NOT needed on tvOS it handles it with the focus engine
     UIResponder* target = [self presentedViewController];
 
     // if a viewController or menu is up send the input to it.
     if (target != nil) {
-
+#if TARGET_OS_TV
+        if (self.controllerUserInteractionEnabled)
+            return;
+#endif
         if ([target isKindOfClass:[UINavigationController class]])
             target = [(UINavigationController*)target topViewController];
 
@@ -1261,7 +1263,8 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
 
         return;
     }
-    
+
+#if TARGET_OS_IOS   // NOT needed on tvOS it handles it with the focus engine
     // touch screen START button, when no COIN button
     if (CGRectIsEmpty(rInput[BTN_SELECT]) && (buttonState & MYOSD_START) && !(pad_status & MYOSD_START))
     {
@@ -1279,14 +1282,14 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
     {
         [self runMenu:0 from:buttonViews[BTN_OPTION]];
     }
+#endif
     
     // exit MAME MENU with B (but only if we are not mapping a input)
-    if (myosd_in_menu == 1 && (buttonState & MYOSD_B) && !(pad_status & MYOSD_B))
+    if (myosd_in_menu == 1 && (input_debounce(pad_status, stick) & MYOSD_B))
     {
         [self runExit];
     }
-#endif
-    
+
     // SELECT and START at the same time (iCade)
     if ((pad_status & MYOSD_SELECT) && (pad_status & MYOSD_START))
     {
@@ -1407,11 +1410,18 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
 #endif
 
 #if TARGET_OS_TV
-    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(remoteButtonPress:)];
-    tap.allowedPressTypes = @[@(UIPressTypeMenu), @(UIPressTypeSelect),
-                              @(UIPressTypeUpArrow), @(UIPressTypeDownArrow),
-                              @(UIPressTypeLeftArrow), @(UIPressTypeRightArrow)];
-    [self.view addGestureRecognizer:tap];
+    
+#define INSTALL_TAP(type, sel) {\
+    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(sel)];\
+    tap.allowedPressTypes = @[@(type)]; \
+    [self.view addGestureRecognizer:tap]; }
+    
+    INSTALL_TAP(UIPressTypeMenu, tapMenu);
+    INSTALL_TAP(UIPressTypeSelect, tapSelect);
+    INSTALL_TAP(UIPressTypeUpArrow, tapUp);
+    INSTALL_TAP(UIPressTypeDownArrow, tapDown);
+    INSTALL_TAP(UIPressTypeLeftArrow, tapLeft);
+    INSTALL_TAP(UIPressTypeRightArrow, tapRight);
 #endif
     
     [self performSelectorOnMainThread:@selector(setupGameControllers) withObject:nil waitUntilDone:NO];
@@ -1503,6 +1513,8 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
     }
 }
 #endif
+
+// TODO: why are we seeing the MAME UI when we run a game
 
 // hide or show the screen view
 // called from changeUI, and changeUI is called from iphone_Reset_Views() each time a new game (or menu) is started.
@@ -2127,6 +2139,10 @@ static NSArray* list_trim(NSArray* _list) {
 }}
 
 #pragma mark - mame device input
+
+#define MYOSD_PLAYER_SHIFT  28
+#define MYOSD_PLAYER(n)     (n << MYOSD_PLAYER_SHIFT)
+#define MYOSD_PLAYER_MASK   MYOSD_PLAYER(0xF)
 
 #define MAME_BUTTON_PLAYER_MASK     0xF0000000
 #define MAME_BUTTON_PLAYER_SHIFT    28
@@ -4534,13 +4550,6 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
         if (g_menuButtonMode[index] != 0 || g_menu != nil)
             return [self handleMenuButton:controller];
 
-#if TARGET_OS_TV
-        // exit MAME MENU with B, but only if we are not mapping a input, handled in handle_INPUT on iOS
-        if (myosd_in_menu == 1 && element == gamepad.buttonB && gamepad.buttonB.isPressed == FALSE)
-            return [self runExit];
-#endif
-
-#if TARGET_OS_IOS
         // no need to call handle_INPUT unless onscreen controls are visible *or* we have some UI/Alert up.
         if ((g_device_is_fullscreen && g_joy_used) && self.presentedViewController == nil && myosd_in_menu == 0)
             return;
@@ -4553,7 +4562,6 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
         
         unsigned long pad_status = read_gamepad_buttons(gamepad);
         [self handle_INPUT:pad_status stick:CGPointMake(gamepad.leftThumbstick.xAxis.value, gamepad.leftThumbstick.yAxis.value)];
-#endif
     };
 }
 
@@ -5342,9 +5350,12 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
 
 #if TARGET_OS_TV
 
--(void)remoteButtonPress:(UITapGestureRecognizer*)tap {
-    NSLog(@"REMOTE BUTTON PRESS: %@", tap);
-}
+-(void)tapMenu {[self toggleMenu:nil];}
+-(void)tapSelect {[g_menu handleButtonPress:UIPressTypeSelect];}
+-(void)tapUp {[g_menu handleButtonPress:UIPressTypeUpArrow];}
+-(void)tapDown {[g_menu handleButtonPress:UIPressTypeDownArrow];}
+-(void)tapLeft {[g_menu handleButtonPress:UIPressTypeLeftArrow];}
+-(void)tapRight {[g_menu handleButtonPress:UIPressTypeRightArrow];}
 
 /*
 - (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event; {

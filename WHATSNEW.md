@@ -1,3 +1,28 @@
+# Version 2021.7
+* New in-game menu using InfoHUD technology.
+* New Game Controller MENU modifiers. 
+* MENU+X works on MFi controllers.
+* Remove ColorSpace choices from the UI.
+
+## Game controller MENU combos
+
+| | |  
+---------------- |-------------
+MENU             |Open MAME4iOS MENU   
+MENU+L1       |Player Coin                 
+MENU+R1       |Player Start               
+MENU+L2       |Player 2 Coin                
+MENU+R2       |Player 2 Start               
+MENU+A          |Show or hide HUD                 
+MENU+B          |Pause MAME   
+MENU+X          |Exit Game                 
+MENU+Y          |Open MAME menu   
+MENU+DOWN  |Save State ①               
+MENU+UP        |Load State ①                
+MENU+LEFT     |Save State ②                
+MENU+RIGHT  |Load State ②               
+
+
 # Version 2021.6
 * `Mouse` device support.
 * `MAME` full keyboard support.

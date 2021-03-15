@@ -244,24 +244,24 @@ To start playing a game using a controller, do one of the following.
 | | |  
 -|-
 `VIEW`     |SELECT                
-`GUIDE`   |MAME4iOS MENU (on iOS 14+)  
+`GUIDE`   |MENU (on iOS 14+)  
 `MENU`     |START              
-`VIEW`+`MENU`|MAME4iOS MENU
+`VIEW`+`MENU`|MENU
 
 ## Playstation Dualshock
 
 | | |  
 -|-
 `SHARE`     |SELECT                
-`PS Button`           |MAME4iOS MENU  (iOS 14+)
+`PS Button`           |MENU  (iOS 14+)
 `OPTIONS`     |START      
-`SHARE`+`OPTIONS`|MAME4iOS MENU
+`SHARE`+`OPTIONS`|MENU
 
 ## SteelSeries Nimbus Controller (MFi)
 
 | | |  
 -|-
-`MENU`           |MAME4iOS MENU   
+`MENU` or `PAUSE`           |MENU   
 
 ## Nimbus+ Controller
 
@@ -281,16 +281,19 @@ Steam Controller Buttons
 | | |  
 -|-
 `BACK`     |SELECT                 
-`STEAM Button`           |MAME4iOS MENU   
+`STEAM Button`           |MENU   
 `START`     |START              
-
 
 ## MENU button on game controllers
 
+* if your controller has a dedicated `MENU` button pressing it will bring up the in-game menu.
+* if your controller only has `SELECT` and `START` you can long press either one to bring up the in-game menu, or press both at the same time.
+* you can use use any of `SELECT`, `START`, or `MENU` to perform a menu action, listed below, for example both `MENU+X` and `SELECT+X` will exit the game.
+
 | | |  
 -|-
-MENU+L1     |Player 1 Coin                 
-MENU+R1     |Player 1 Start               
+MENU+L1     |Player Coin                 
+MENU+R1     |Player Start               
 MENU+L2     |Player 2 Coin                
 MENU+R2     |Player 2 Start               
 MENU+A       |Show or hide HUD                 

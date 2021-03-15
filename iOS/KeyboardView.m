@@ -578,7 +578,6 @@
     myosd_pad_x = (myosd_pad_status & MYOSD_UP)    ? +1.0 : (myosd_pad_status & MYOSD_DOWN) ? -1.0 : 0.0;
     myosd_pad_y = (myosd_pad_status & MYOSD_RIGHT) ? +1.0 : (myosd_pad_status & MYOSD_LEFT) ? -1.0 : 0.0;
 
-#if TARGET_OS_IOS
     // only treat iCade as a controler when DPAD used for first time.
     if (g_joy_used == 0 && (myosd_pad_status & (MYOSD_DOWN|MYOSD_UP|MYOSD_RIGHT|MYOSD_LEFT)))
     {
@@ -587,7 +586,6 @@
     }
     if (!(g_device_is_fullscreen && g_joy_used) || emuController.presentedViewController != nil)
         [emuController handle_INPUT:myosd_pad_status stick:CGPointMake(myosd_pad_x, myosd_pad_y)];
-#endif
 }
 
 #pragma mark Hardare Keyboard
@@ -777,7 +775,6 @@ int hid_to_mame(int keyCode) {
     // send the key to MAME via myosd_keyboard
     myosd_keyboard[mame_key] = isKeyDown ? 0x80 : 0x00;
     
-#if TARGET_OS_IOS
     // only treat as a controler when arrow keys used for first time.
     if (g_joy_used == 0 && (mame_key >= MYOSD_KEY_LEFT && mame_key <= MYOSD_KEY_DOWN))
     {
@@ -796,7 +793,6 @@ int hid_to_mame(int keyCode) {
 
         [emuController handle_INPUT:kbd_status stick:CGPointZero];
     }
-#endif
 }
 
 // get keyboad input on macOS or iOS 13.4+
