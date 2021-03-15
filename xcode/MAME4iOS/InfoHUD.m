@@ -586,6 +586,10 @@
 
 #pragma mark - InfoHUD ViewController
 
+#if TARGET_OS_TV
+#define UIModalPresentationPopover ((UIModalPresentationStyle)7)
+#endif
+
 @implementation HUDViewController {
     InfoHUD* _hud;
     void (^_cancelHandler)(void);
@@ -624,7 +628,10 @@
 #endif
     
     [super setModalPresentationStyle:style];
-    
+
+    self.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
+
+#if TARGET_OS_IOS
     if (style == UIModalPresentationPopover) {
         // remove the background from the InfoHUD
         _hud.backgroundColor = UIColor.clearColor;
@@ -635,9 +642,7 @@
         else
             self.popoverPresentationController.backgroundColor = [UIColor colorWithWhite:0.111 alpha:1.0];
     }
-    else {
-        self.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
-    }
+#endif
 }
 
 - (void)addButtons:(NSArray*)items style:(HUDButtonStyle)style handler:(void (^)(NSUInteger button))handler {
@@ -730,17 +735,19 @@
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
-    if (self.modalPresentationStyle != UIModalPresentationPopover) {
+    
+    if (_cancelHandler)
+        _cancelHandler();
+    if (_dismissHandler)
+        _dismissHandler();
+
+    if (self.modalPresentationStyle == UIModalPresentationPopover) {
         [UIView animateWithDuration:0.200 animations:^{
             if (!self->_blurBackground && self->_dimBackground != 0.0)
                 self.view.backgroundColor = UIColor.clearColor;
             self->_hud.transform = CGAffineTransformMakeScale(0.001, 0.001);
         }];
     }
-    if (_cancelHandler)
-        _cancelHandler();
-    if (_dismissHandler)
-        _dismissHandler();
 }
 - (void)viewWillLayoutSubviews {
     UIEdgeInsets safe = self.view.safeAreaInsets;
@@ -761,8 +768,9 @@
     return [_hud handleButtonPress:type];
 }
 
-
 #pragma mark - UIPopoverPresentationControllerDelegate
+
+#if TARGET_OS_IOS
 
 // Returning UIModalPresentationNone will indicate that an adaptation should not happen.
 - (UIModalPresentationStyle)adaptivePresentationStyleForPresentationController:(UIPresentationController *)controller traitCollection:(UITraitCollection *)traitCollection {
@@ -777,6 +785,7 @@
     *view = self.presentingViewController.view;
     *rect = CGRectMake(self.presentingViewController.view.bounds.size.width/2, self.presentingViewController.view.bounds.size.height/2, 0, 0);
 }
+#endif
 
 @end
 
