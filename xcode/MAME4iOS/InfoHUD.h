@@ -64,6 +64,9 @@ typedef NS_ENUM(NSInteger, HUDButtonStyle) {
 // a simple UIViewController for InfoHUD
 @interface HUDViewController : UIViewController
 
+@property (nonatomic, readwrite) BOOL blurBackground;
+@property (nonatomic, readwrite) CGFloat dimBackground;
+
 - (void)addButtons:(NSArray*)items style:(HUDButtonStyle)style handler:(void (^)(NSUInteger button))handler;
 - (void)addButton:(id)item style:(HUDButtonStyle)style handler:(void (^)(void))handler;
 - (void)onCancel:(void (^)(void))handler;

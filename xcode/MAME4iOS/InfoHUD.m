@@ -595,6 +595,9 @@
 - (instancetype)init {
     self = [super init];
     
+    _blurBackground = YES;
+    _dimBackground = 0.5;
+    
     _hud = [[InfoHUD alloc] init];
     _hud.moveable = NO;
     _hud.sizeable = NO;
@@ -611,20 +614,30 @@
 }
 
 - (void)setModalPresentationStyle:(UIModalPresentationStyle)style {
+
+    if (style == UIModalPresentationFullScreen)
+        style = UIModalPresentationOverFullScreen;
+    
+#if TARGET_OS_TV
+    if (style == UIModalPresentationOverFullScreen && _blurBackground)
+        style = UIModalPresentationBlurOverFullScreen;
+#endif
+    
     [super setModalPresentationStyle:style];
     
     if (style == UIModalPresentationPopover) {
+        // remove the background from the InfoHUD
         _hud.backgroundColor = UIColor.clearColor;
         self.popoverPresentationController.delegate = (id<UIPopoverPresentationControllerDelegate>)self;
+
+        if (@available(iOS 13.0, tvOS 13.0, *))
+            self.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
+        else
+            self.popoverPresentationController.backgroundColor = [UIColor colorWithWhite:0.111 alpha:1.0];
     }
     else {
         self.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
     }
-    
-    if (@available(iOS 13.0, tvOS 13.0, *))
-        self.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
-    else
-        self.popoverPresentationController.backgroundColor = [UIColor colorWithWhite:0.111 alpha:1.0];
 }
 
 - (void)addButtons:(NSArray*)items style:(HUDButtonStyle)style handler:(void (^)(NSUInteger button))handler {
@@ -670,6 +683,20 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+#if TARGET_OS_IOS
+    if (self.modalPresentationStyle != UIModalPresentationPopover && _blurBackground) {
+        UIBlurEffectStyle style = UIBlurEffectStyleDark;
+
+        if (@available(iOS 13.0, *))
+            style = UIBlurEffectStyleSystemUltraThinMaterialDark;
+
+        UIBlurEffect* blur = [UIBlurEffect effectWithStyle:style];
+        UIVisualEffectView* effectView = [[UIVisualEffectView alloc] initWithEffect:blur];
+        effectView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        effectView.frame = self.view.bounds;
+        [self.view addSubview:effectView];
+    }
+#endif
     [self.view addSubview:_hud];
     [self.view addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap)]];
 }
@@ -683,7 +710,8 @@
     if (self.modalPresentationStyle != UIModalPresentationPopover) {
         _hud.transform = CGAffineTransformMakeScale(0.001, 0.001);
         [UIView animateWithDuration:0.200 animations:^{
-            self.view.backgroundColor = [UIColor.blackColor colorWithAlphaComponent:0.5];
+            if (!self->_blurBackground && self->_dimBackground != 0.0)
+                self.view.backgroundColor = [UIColor.blackColor colorWithAlphaComponent:self->_dimBackground];
             self->_hud.transform = CGAffineTransformMakeScale(1.0, 1.0);
         }];
     }
@@ -692,7 +720,8 @@
 - (void)viewWillDisappear:(BOOL)animated {
     if (self.modalPresentationStyle != UIModalPresentationPopover) {
         [UIView animateWithDuration:0.200 animations:^{
-            self.view.backgroundColor = UIColor.clearColor;
+            if (!self->_blurBackground && self->_dimBackground != 0.0)
+                self.view.backgroundColor = UIColor.clearColor;
             self->_hud.transform = CGAffineTransformMakeScale(0.001, 0.001);
         }];
     }
