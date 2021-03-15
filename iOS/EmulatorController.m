@@ -763,26 +763,26 @@ HUDViewController* g_menu;
                 }];
             }
 
-            // HUD and PAUSE
-            [menu addButtons:@[
-                [NSString stringWithFormat:@":%@:HUD", getGamepadSymbol(gamepad, gamepad.buttonA)],
-                [NSString stringWithFormat:@":%@:Pause", getGamepadSymbol(gamepad, gamepad.buttonB)],
-            ] style:HUDButtonStylePlain handler:^(NSUInteger button) {
-                if (button == 0)
-                    [self commandKey:'H'];
-                else
-                    push_mame_key(MYOSD_KEY_P);
-            }];
-
-            // EXIT and MAMEMENU
+            // EXIT and MAME MENU
             [menu addButtons:@[
                 [NSString stringWithFormat:@":%@:Exit Game", getGamepadSymbol(gamepad, gamepad.buttonX)],
-                [NSString stringWithFormat:@":%@:Configure", getGamepadSymbol(gamepad, gamepad.buttonY)],
+                [NSString stringWithFormat:@":%@:HUD", getGamepadSymbol(gamepad, gamepad.buttonA)],
             ] style:HUDButtonStylePlain handler:^(NSUInteger button) {
                 if (button == 0)
                     [self runExit:NO];
                 else
+                    [self commandKey:'H'];
+            }];
+
+            // HUD and PAUSE
+            [menu addButtons:@[
+                [NSString stringWithFormat:@":%@:Configure", getGamepadSymbol(gamepad, gamepad.buttonY)],
+                [NSString stringWithFormat:@":%@:Pause", getGamepadSymbol(gamepad, gamepad.buttonB)],
+            ] style:HUDButtonStylePlain handler:^(NSUInteger button) {
+                if (button == 0)
                     push_mame_key(MYOSD_KEY_TAB);
+                else
+                    push_mame_key(MYOSD_KEY_P);
             }];
         }
         
