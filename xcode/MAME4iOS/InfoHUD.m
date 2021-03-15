@@ -598,15 +598,6 @@
     _hud = [[InfoHUD alloc] init];
     _hud.moveable = NO;
     _hud.sizeable = NO;
-    _hud.backgroundColor = UIColor.clearColor;
-    
-    self.modalPresentationStyle = UIModalPresentationPopover;
-    self.popoverPresentationController.delegate = (id<UIPopoverPresentationControllerDelegate>)self;
-
-    if (@available(iOS 13.0, tvOS 13.0, *))
-        self.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
-    else
-        self.popoverPresentationController.backgroundColor = [UIColor colorWithWhite:0.111 alpha:1.0];
 
     return self;
 }
@@ -617,6 +608,23 @@
         [_hud addTitle:self.title];
         [_hud addSeparator];
     }
+}
+
+- (void)setModalPresentationStyle:(UIModalPresentationStyle)style {
+    [super setModalPresentationStyle:style];
+    
+    if (style == UIModalPresentationPopover) {
+        _hud.backgroundColor = UIColor.clearColor;
+        self.popoverPresentationController.delegate = (id<UIPopoverPresentationControllerDelegate>)self;
+    }
+    else {
+        self.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
+    }
+    
+    if (@available(iOS 13.0, tvOS 13.0, *))
+        self.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
+    else
+        self.popoverPresentationController.backgroundColor = [UIColor colorWithWhite:0.111 alpha:1.0];
 }
 
 - (void)addButtons:(NSArray*)items style:(HUDButtonStyle)style handler:(void (^)(NSUInteger button))handler {
@@ -656,9 +664,14 @@
     _dismissHandler = handler;
 }
 
+- (void)tap {
+    [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     [self.view addSubview:_hud];
+    [self.view addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap)]];
 }
 
 - (CGSize)preferredContentSize {
@@ -667,16 +680,22 @@
 
 - (void)viewWillAppear:(BOOL)animated {
     self.preferredContentSize = self.preferredContentSize;
-    if (self.popoverPresentationController.arrowDirection == 0) {
-        //self.popoverPresentationController.backgroundColor = nil;
-        self.view.backgroundColor = UIColor.clearColor;
-        self.view.superview.backgroundColor = UIColor.clearColor;
-        self.view.superview.superview.backgroundColor = UIColor.clearColor;
-        //_hud.backgroundColor = nil;
+    if (self.modalPresentationStyle != UIModalPresentationPopover) {
+        _hud.transform = CGAffineTransformMakeScale(0.001, 0.001);
+        [UIView animateWithDuration:0.200 animations:^{
+            self.view.backgroundColor = [UIColor.blackColor colorWithAlphaComponent:0.5];
+            self->_hud.transform = CGAffineTransformMakeScale(1.0, 1.0);
+        }];
     }
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
+    if (self.modalPresentationStyle != UIModalPresentationPopover) {
+        [UIView animateWithDuration:0.200 animations:^{
+            self.view.backgroundColor = UIColor.clearColor;
+            self->_hud.transform = CGAffineTransformMakeScale(0.001, 0.001);
+        }];
+    }
     if (_cancelHandler)
         _cancelHandler();
     if (_dismissHandler)

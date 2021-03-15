@@ -69,6 +69,8 @@ typedef NS_ENUM(NSInteger, HUDButtonStyle) {
 - (void)onCancel:(void (^)(void))handler;
 - (void)onDismiss:(void (^)(void))handler;
 
+- (void)handleButtonPress:(UIPressType)type;
+
 @end
 
 // a UIAlertViewController(ish) compatible interface

@@ -637,7 +637,7 @@ void mame_state(int load_save, int slot)
         }
         
         // convert to a view that will not go away on a rotate or resize
-        ppc.sourceRect = [ppc.sourceView convertRect:ppc.sourceView.bounds toView:self.view];
+        ppc.sourceRect = [ppc.sourceView convertRect:ppc.sourceRect toView:self.view];
         ppc.sourceView = self.view;
 
         // use only up/down arrows if the popup can fit
@@ -646,10 +646,10 @@ void mame_state(int load_save, int slot)
             CGRect safe = UIEdgeInsetsInsetRect(ppc.sourceView.window.bounds, ppc.sourceView.window.safeAreaInsets);
             CGSize size = viewController.preferredContentSize;
 
-            if (CGRectGetMaxY(safe) - CGRectGetMaxY(rect) > size.height + 16)
-                ppc.permittedArrowDirections = UIPopoverArrowDirectionUp;
-            else if (CGRectGetMinY(rect) - CGRectGetMinY(safe) > size.height + 16)
+            if (CGRectGetMinY(rect) - CGRectGetMinY(safe) > size.height + 16)
                 ppc.permittedArrowDirections = UIPopoverArrowDirectionDown;
+            else if (CGRectGetMaxY(safe) - CGRectGetMaxY(rect) > size.height + 16)
+                ppc.permittedArrowDirections = UIPopoverArrowDirectionUp;
         }
     }
 #endif
@@ -680,95 +680,184 @@ void mame_state(int load_save, int slot)
     }
 }
 
-- (void)runMenu:(GCController*)controller from:(UIView*)view
-{
-    if (self.presentedViewController != nil || g_menuHUD != nil)
-        return;
+HUDViewController* g_menu;
+
+-(void)runMenu:(GCController*)controller from:(UIView*)view {
+    NSLog(@"runMenu: %@", controller);
     
-    [self startMenu];
+    if (self.presentedViewController != nil)
+        return;
 
     int player = (int)controller.playerIndex;
-    NSString* title = nil;
+    GCExtendedGamepad* gamepad = controller.extendedGamepad;
+    
     NSInteger controller_count = g_controllers.count;
-#if TARGET_OS_TV
     if (controller_count > 1 && ((GCController*)g_controllers.lastObject).extendedGamepad == nil)
         controller_count--;
-#endif
-    if (controller != nil && controller_count > 1)
-        title = [NSString stringWithFormat:@"Player %d", player+1];
+
+    HUDViewController* menu = [[HUDViewController alloc] init];
     
-    //UIAlertController* menu = [UIAlertController alertControllerWithTitle:title message:nil preferredStyle:UIAlertControllerStyleActionSheet];
-    HUDAlertController* menu = [HUDAlertController alertControllerWithTitle:title message:nil preferredStyle:UIAlertControllerStyleActionSheet];
+    if (gamepad == nil)
+        menu.modalPresentationStyle = UIModalPresentationPopover;
+    else
+        menu.modalPresentationStyle = UIModalPresentationOverFullScreen;
 
-    CGFloat size = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].pointSize;
-
+    if (controller != nil && controller_count > 1 && myosd_num_players > 1)
+        menu.title = [NSString stringWithFormat:@"Player %d", player+1];
+    
     if(myosd_inGame && myosd_in_menu==0)
     {
-        // MENU item to insert a coin and do a start. usefull for fullscreen and AppleTV siri remote, and discoverability on a GameController
-        if (player >= 2 && myosd_num_players > 2) {
-            // in-game menu for player 3+ just give them a COIN+START option....
-            [menu addAction:[UIAlertAction actionWithTitle:@"Coin+Start" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"centsign.circle" withPointSize:size] handler:^(UIAlertAction* action) {
-                push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X (or P1) COIN
-                push_mame_button(player, MYOSD_START);  // Player X START
-                [self endMenu];
-            }]];
+        // 1P and 2P Start
+        [menu addButtons:(myosd_num_players >= 2) ? @[@":person:1P Start", @":person.2:2P Start"] : @[@":centsign.circle:Coin+Start"] style:HUDButtonStyleDefault handler:^(NSUInteger button) {
+            [self startPlayer:(int)button];
+        }];
+        // 3P and 4P Start
+        if (myosd_num_players >= 3) {
+            // FYI there is no person.4 symbol, so we just reuse person.3
+            [menu addButtons:@[@":person.3:3P Start", (myosd_num_players >= 4) ? @":person.3:4P Start" : @""] style:HUDButtonStyleDefault handler:^(NSUInteger button) {
+                if (button+2 < myosd_num_players)
+                    [self startPlayer:(int)button + 2];
+            }];
         }
-        else {
-            // in-game menu for player 1-4, give them options to start.
-            int num_players = MIN(myosd_num_players, 4);
-
-            for (int player=0; player<num_players; player++) {
-                title = [NSString stringWithFormat:@"%d Player Start", player+1];
-                NSString* image = @[@"person", @"person.2", @"person.3", @"person.3"][player];
-                [menu addAction:[UIAlertAction actionWithTitle:title style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:image withPointSize:size] handler:^(UIAlertAction* action) {
-                    [self startPlayer:player];
-                    [self endMenu];
-                }]];
+        // MENU modifier buttons
+        if (gamepad != nil) {
+            if (gamepad.buttonOptions != nil && gamepad.buttonMenu != nil) {
+                // Pn SELECT and START (menu buttons...)
+                [menu addButtons:@[
+                    [NSString stringWithFormat:@":%@:P%d Select", getGamepadSymbol(gamepad, gamepad.leftTrigger), player + 1],
+                    [NSString stringWithFormat:@":%@:P%d Start",  getGamepadSymbol(gamepad, gamepad.rightTrigger), player + 1]
+                ] style:HUDButtonStylePlain handler:^(NSUInteger button) {
+                    if (button == 0 )
+                        push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X coin
+                    else
+                        push_mame_button(player, MYOSD_START);
+                }];
             }
+            else {
+                // Pn SELECT and START
+                [menu addButtons:@[
+                    [NSString stringWithFormat:@":%@:P%d Select", getGamepadSymbol(gamepad, gamepad.leftShoulder), player + 1],
+                    [NSString stringWithFormat:@":%@:P%d Start",  getGamepadSymbol(gamepad, gamepad.rightShoulder), player + 1]
+                ] style:HUDButtonStylePlain handler:^(NSUInteger button) {
+                    if (button == 0 )
+                        push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X coin
+                    else
+                        push_mame_button(player, MYOSD_START);
+                }];
+            }
+            
+            // P2 SELECT and START (only on the Player 1 controller)
+            if (player == 0 && myosd_num_players > 1) {
+                [menu addButtons:@[
+                    [NSString stringWithFormat:@":%@:P2 Select", getGamepadSymbol(gamepad, gamepad.leftTrigger)],
+                    [NSString stringWithFormat:@":%@:P2 Start",  getGamepadSymbol(gamepad, gamepad.rightTrigger)]
+                ] style:HUDButtonStylePlain handler:^(NSUInteger button) {
+                    if (button == 0 )
+                        push_mame_button((1 < myosd_num_coins ? 1 : 0), MYOSD_SELECT);  // Player 2 coin
+                    else
+                        push_mame_button(1, MYOSD_START);
+                }];
+            }
+
+            // HUD and PAUSE
+            [menu addButtons:@[
+                [NSString stringWithFormat:@":%@:HUD", getGamepadSymbol(gamepad, gamepad.buttonA)],
+                [NSString stringWithFormat:@":%@:Pause", getGamepadSymbol(gamepad, gamepad.buttonB)],
+            ] style:HUDButtonStylePlain handler:^(NSUInteger button) {
+                if (button == 0)
+                    [self commandKey:'H'];
+                else
+                    push_mame_key(MYOSD_KEY_P);
+            }];
+
+            // EXIT and MAMEMENU
+            [menu addButtons:@[
+                [NSString stringWithFormat:@":%@:Exit Game", getGamepadSymbol(gamepad, gamepad.buttonX)],
+                [NSString stringWithFormat:@":%@:Configure", getGamepadSymbol(gamepad, gamepad.buttonY)],
+            ] style:HUDButtonStylePlain handler:^(NSUInteger button) {
+                if (button == 0)
+                    [self runExit:NO];
+                else
+                    push_mame_key(MYOSD_KEY_TAB);
+            }];
         }
-        [menu addAction:[UIAlertAction actionWithTitle:@"Load/Save State" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"bookmark" withPointSize:size] handler:^(UIAlertAction* action) {
-            [self runState:ASK_STATE];
-        }]];
-        [menu addAction:[UIAlertAction actionWithTitle:@"MAME Menu" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"slider.horizontal.3" withPointSize:size] handler:^(UIAlertAction* action) {
-            push_mame_key(MYOSD_KEY_TAB);
-            [self endMenu];
-        }]];
+        
+        // LOAD and SAVE State
+        [menu addButtons:@[
+            [NSString stringWithFormat:@":%@:Load ①", getGamepadSymbol(gamepad, gamepad.dpad.up) ?: @"bookmark"],
+            [NSString stringWithFormat:@":%@:Load ②", getGamepadSymbol(gamepad, gamepad.dpad.right) ?: @"bookmark"],
+        ] style:(gamepad ? HUDButtonStylePlain : HUDButtonStyleDefault) handler:^(NSUInteger button) {
+            if (button == 0)
+                mame_state(LOAD_STATE, 1);
+            else
+                mame_state(LOAD_STATE, 2);
+        }];
+        [menu addButtons:@[
+            [NSString stringWithFormat:@":%@:Save ①", getGamepadSymbol(gamepad, gamepad.dpad.down) ?: @"bookmark.fill"],
+            [NSString stringWithFormat:@":%@:Save ②", getGamepadSymbol(gamepad, gamepad.dpad.left) ?: @"bookmark.fill"],
+        ] style:(gamepad ? HUDButtonStylePlain : HUDButtonStyleDefault) handler:^(NSUInteger button) {
+            if (button == 0)
+                mame_state(SAVE_STATE, 1);
+            else
+                mame_state(SAVE_STATE, 2);
+        }];
+        
+        if (gamepad == nil) {
+            // CONFIGURE and PAUSE
+            [menu addButtons:@[@":slider.horizontal.3:Configure",@":pause.circle:Pause"] style:HUDButtonStyleDefault handler:^(NSUInteger button) {
+                if (button == 0)
+                    push_mame_key(MYOSD_KEY_TAB);
+                else
+                    push_mame_key(MYOSD_KEY_P);
+            }];
+        }
+        // RESET and SERVICE
+        [menu addButtons:@[@":power:Reset", @":wrench:Service"] style:HUDButtonStyleDefault handler:^(NSUInteger button) {
+            if (button == 0)
+                push_mame_key(MYOSD_KEY_F3);
+            else
+                push_mame_key(MYOSD_KEY_F2);
+        }];
+        
         // show any MAME output, usually a WARNING message, we catch errors in an other place.
         if (g_mame_output_text[0]) {
-            NSString* title = @"MAME Output";
-            NSString* symbol = @"info.circle";
+            NSString* button = @":info.circle:MAME Output";
             NSString* message = [[NSString stringWithUTF8String:g_mame_output_text] stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
 
-            if ([message rangeOfString:@"WARNING"].location != NSNotFound) {
-                title = @"MAME Warning";
-                symbol = @"exclamationmark.triangle";
-            }
+            if ([message rangeOfString:@"WARNING"].location != NSNotFound)
+                button = @":exclamationmark.triangle:MAME Warning";
             
-            if ([message rangeOfString:@"ERROR"].location != NSNotFound) {
-                title = @"MAME Error";
-                symbol = @"xmark.octagon";
-            }
+            if ([message rangeOfString:@"ERROR"].location != NSNotFound)
+                button = @":xmark.octagon:MAME Error";
             
-            [menu addAction:[UIAlertAction actionWithTitle:title style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:symbol withPointSize:size] handler:^(UIAlertAction* action) {
+            [menu addButton:button style:HUDButtonStyleDefault handler:^{
+                [self startMenu];
                 [self showAlertWithTitle:@PRODUCT_NAME message:message buttons:@[@"Continue"] handler:^(NSUInteger button) {
                     [self endMenu];
                 }];
-            }]];
+            }];
         }
     }
-    [menu addAction:[UIAlertAction actionWithTitle:@"Settings" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"gear" withPointSize:size] handler:^(UIAlertAction* action) {
+    
+    [menu addButton:@":gear:Settings" style:HUDButtonStyleDefault handler:^{
         [self runSettings];
-    }]];
+    }];
+    [menu addButton:(myosd_inGame && myosd_in_menu==0) ? @":xmark.circle:Exit Game" : @":xmark.circle:Exit" style:HUDButtonStyleDestructive handler:^{
+        [self runExit:NO];
+    }];
+    
+    if (menu.modalPresentationStyle != UIModalPresentationPopover) {
+        [menu addButton:@"Cancel" style:HUDButtonStyleCancel handler:^{
+        }];
+    }
+    
+    [menu onDismiss:^{
+         [self endMenu];
+    }];
 
-    [menu addAction:[UIAlertAction actionWithTitle:((myosd_inGame && myosd_in_menu==0) ? @"Exit Game" : @"Exit") style:UIAlertActionStyleDestructive image:[UIImage systemImageNamed:@"xmark.circle" withPointSize:size] handler:^(UIAlertAction* action) {
-        [self endMenu];
-        [self runExit:NO]; // the user just selected "Exit Game" from a menu, dont ask again
-    }]];
-    
-    [menu addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction* action) {
-        [self endMenu];
-    }]];
-    
+    NSParameterAssert(g_menu == nil);
+    g_menu = menu;
+    [self startMenu];
     [self presentPopup:menu from:view animated:YES completion:nil];
 }
 - (void)runMenu:(GCController*)controller
@@ -785,13 +874,14 @@ void mame_state(int load_save, int slot)
 {
     // if menu is up take it down
     if (self.presentedViewController != nil) {
-        if ([self.presentedViewController isKindOfClass:[UIAlertController class]]) {
-            UIAlertController* alert = (UIAlertController*)self.presentedViewController;
-            if (!alert.isBeingDismissed && alert.preferredStyle == UIAlertControllerStyleActionSheet) {
-                [alert dismissWithCancel];
-            }
-        }
-        return;
+        if (self.presentedViewController.isBeingDismissed || self.presentedViewController != g_menu)
+            return;
+        
+        if ([self.presentedViewController isKindOfClass:[UIAlertController class]])
+            [(UIAlertController*)self.presentedViewController dismissWithCancel];
+
+        if ([self.presentedViewController isKindOfClass:[HUDViewController class]])
+            [self dismissViewControllerAnimated:TRUE completion:nil];
     }
     else {
         [self runMenu:controller];
@@ -800,10 +890,7 @@ void mame_state(int load_save, int slot)
 
 - (void)runExit:(BOOL)ask_user from:(UIView*)view
 {
-    if (self.presentedViewController != nil)
-        return;
-
-    if (myosd_in_menu == 0 && ask_user)
+    if (myosd_in_menu == 0 && ask_user && self.presentedViewController == nil)
     {
         NSString* yes = (g_controllers.count > 0 && TARGET_OS_IOS) ? @"Ⓐ Yes" : @"Yes";
         NSString* no  = (g_controllers.count > 0 && TARGET_OS_IOS) ? @"Ⓑ No" : @"No";
@@ -903,6 +990,7 @@ void mame_state(int load_save, int slot)
 }
 
 - (void)endMenu{
+    g_menu = nil;
     g_emulation_paused = 0;
     change_pause(0);
     
@@ -1149,7 +1237,7 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
 - (void)handle_MENU:(unsigned long)pad_status stick:(CGPoint)stick
 {
 #if TARGET_OS_IOS   // NOT needed on tvOS it handles it with the focus engine
-    UIResponder* target = [self presentedViewController] ?: g_menuHUD;
+    UIResponder* target = [self presentedViewController];
 
     // if a viewController or menu is up send the input to it.
     if (target != nil) {
@@ -2304,7 +2392,7 @@ static void read_gamepad(int player, GCExtendedGamepad *gamepad)
     unsigned long status  = read_gamepad_buttons(gamepad);
     
     // dont let MAME see any MENU combo buttons.
-    if ((status & (MYOSD_OPTION|MYOSD_MENU|MYOSD_HOME)) != 0 || g_menuHUD != nil)
+    if (status & (MYOSD_OPTION|MYOSD_MENU|MYOSD_HOME))
         status = 0;
     
     myosd_joy_status[player] = status;
@@ -4305,9 +4393,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 
 #pragma mark - Game Controllers
 
-static InfoHUD* g_menuHUD;                          // controller "quick help", or menu HUD
 #define MENU_HUD_SHOW_DELAY     1.0
-#define MENU_HUD_SHOW_ANIMATE   0.100
 
 static unsigned long g_menuButtonMode[NUM_JOY];     // non-zero if a MENU button is down
 static unsigned long g_menuButtonState[NUM_JOY];    // button state while MENU is down
@@ -4353,7 +4439,7 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
     // cancel menu mode on all (current) controllers, this is needed when a controller disconects in menu mode.
     memset(g_menuButtonMode, 0, sizeof(g_menuButtonMode));
     for (GCController* controller in g_controllers)
-        [self hideMenuHUD:controller];
+        [self cancelShowMenu:controller];
     
     for (GCController* controller in controllers)
         [self setupGameController:controller];
@@ -4427,7 +4513,7 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
             return;
         
         // if a MENU button is down (or menuHUD) handle a menu button combo
-        if (g_menuButtonMode[index] != 0 || g_menuHUD)
+        if (g_menuButtonMode[index] != 0 || g_menu != nil)
             return [self handleMenuButton:controller];
 
 #if TARGET_OS_TV
@@ -4564,11 +4650,7 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
         g_menuButtonMode[index] = button;
         g_menuButtonPressed[index] = 0;
 
-        // HUD looks super ugly on pre-iOS 13, so dont show it...
-        if (@available(iOS 13.0, tvOS 13.0, *)) {
-            if (g_menuHUD == nil)
-                [self showMenuHUD:controller after:MENU_HUD_SHOW_DELAY];
-        }
+        [self showMenu:controller after:MENU_HUD_SHOW_DELAY];
     }
     
     // MENU button released
@@ -4577,28 +4659,43 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
         g_menuButtonMode[index] = 0;
 
         // cancel delay show of menuHUD
-        if (g_menuHUD == nil)
-            [self hideMenuHUD:controller];    // cancel delay show
+        [self cancelShowMenu:controller];
 
         // if no modifier buttons were pressed then do the "plain" action for the button.
         if (g_menuButtonPressed[index] == 0) {
-            if (button == MYOSD_OPTION && g_menuHUD == nil) {
+            if (button == MYOSD_OPTION && g_menu == nil) {
                 NSLog(@"...OPTION => SELECT");
                 push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X coin
             }
-            else if (button == MYOSD_MENU && controller.extendedGamepad.buttonOptions != nil && g_menuHUD == nil) {
+            else if (button == MYOSD_MENU && controller.extendedGamepad.buttonOptions != nil && g_menu == nil) {
                 NSLog(@"...MENU => START");
                 push_mame_button(player, MYOSD_START);
             }
             else {
                 NSLog(@"...MENU/HOME => MAME4iOS MENU");
-                if (@available(iOS 13.0, tvOS 13.0, *))
-                    [self toggleMenuHUD:controller];
-                else
-                    [self toggleMenu:controller];
+                [self toggleMenu:controller];
             }
         }
     }
+}
+
+-(void)delayedShowMenu:(GCController*)controller {
+    NSLog(@"showMenu (after delay): %@", controller);
+    int index = (int)[g_controllers indexOfObjectIdenticalTo:controller];
+    // treat showing the menu after a delay the same as hiting a combo button
+    NSParameterAssert(index >= 0 && index < NUM_JOY);
+    if (index >= 0 && index < NUM_JOY)
+        g_menuButtonPressed[index] |= MYOSD_MENU;
+    [self runMenu:controller];
+}
+
+-(void)showMenu:(GCController*)controller after:(NSTimeInterval)delay {
+    [self performSelector:@selector(delayedShowMenu:) withObject:controller afterDelay:MENU_HUD_SHOW_DELAY];
+}
+
+-(void)cancelShowMenu:(GCController*)controller {
+    NSLog(@"cancelShowMenu: %@", controller);
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(delayedShowMenu:) object:controller];
 }
 
 //
@@ -4611,8 +4708,8 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
 //      MENU+R1     = Pn START
 //      MENU+L2     = P2 COIN/SELECT
 //      MENU+R2     = P2 START
-//      MENU+A      = tbd
-//      MENU+B      = tbd
+//      MENU+A      = HUD
+//      MENU+B      = PAUSE
 //      MENU+X      = EXIT
 //      MENU+Y      = MAME MENU
 //      MENU+DOWN   = SAVE STATE 1
@@ -4645,28 +4742,30 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
           (changed_state & MYOSD_OPTION) ? "OPTION " : "", (changed_state & MYOSD_HOME) ? "HOME " : "",
           (changed_state & MYOSD_MENU) ? "MENU " : "");
     
-    // handle the MENU HUD first
-    if (g_menuHUD) {
+    // DPAD and A/B navigate the menu (unless MENU/HOME/OPTION are down now)
+    if (g_menu && (current_state & (MYOSD_MENU | MYOSD_OPTION | MYOSD_HOME)) == 0) {
         UIPressType press = input_debounce(current_state, CGPointMake(controller.extendedGamepad.leftThumbstick.xAxis.value, controller.extendedGamepad.leftThumbstick.yAxis.value));
-        [g_menuHUD handleButtonPress:press];
-        // B => cancel menu
-        if (press == UIPressTypeMenu)
-            [self hideMenuHUD:controller];
+        [g_menu handleButtonPress:press];
         changed_state &= ~(MYOSD_A|MYOSD_B|MYOSD_UP|MYOSD_DOWN|MYOSD_LEFT|MYOSD_RIGHT);
     }
     
     // cancel the HUD showing up, or hide it if a modifier was pressed
     if (changed_state & combo_buttons) {
         // TODO: only hide the HUD if *we* own it
-        [self hideMenuHUD:controller];
+        if (g_menu)
+            [self toggleMenu:controller];
+        else
+            [self cancelShowMenu:controller];
         g_menuButtonPressed[index] |= changed_state;
     }
 
     if (changed_state & MYOSD_A) {
-        NSLog(@"...MENU+A => tbd");
+        NSLog(@"...MENU+A => HUD");
+        [self commandKey:'H'];
     }
     if (changed_state & MYOSD_B) {
-        NSLog(@"...MENU+B => tbd");
+        NSLog(@"...MENU+B => PAUSE");
+        push_mame_key(MYOSD_KEY_P);
     }
     if (changed_state & MYOSD_X) {
         NSLog(@"...MENU+X => EXIT");
@@ -4709,14 +4808,12 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
         NSLog(@"...MENU+R2 => P2 START");
         push_mame_button(1, MYOSD_START);
     }
-    if (g_menuHUD == nil && (current_state & (MYOSD_OPTION|MYOSD_MENU)) == (MYOSD_OPTION|MYOSD_MENU)) {
+    if (g_menu == nil && (current_state & (MYOSD_OPTION|MYOSD_MENU)) == (MYOSD_OPTION|MYOSD_MENU)) {
         NSLog(@"...SELECT+START => MAME4iOS MENU");
         g_menuButtonPressed[index] |= MYOSD_MENU;
-        [self showMenuHUD:controller];
+        [self runMenu:controller];
     }
 }
-
-
 
 #pragma mark CONTROLLER MENU HUD
 
@@ -4755,225 +4852,6 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
     if (element == gamepad.buttonMenu)    return is_14 ? @"line.horizontal.3.circle" : @"line.horizontal.3.decrease.circle";
 
     return nil;
-}
-
-// show a menu HUD as the in-game menu
--(void)showMenuHUD:(GCController*)controller {
-    
-    NSLog(@"showMenuHUD: %@", controller);
-    
-    GCExtendedGamepad* gamepad = controller.extendedGamepad;
-    int player = (int)controller.playerIndex;
-
-    if (g_menuHUD != nil || self.presentedViewController != nil)
-        return;
-    
-    if (gamepad == nil)     // TODO: handle siri remote
-        return;
-
-    [self startMenu];
-    
-    UIColor* color = nil;
-
-    g_menuHUD = [[InfoHUD alloc] initWithFrame:CGRectZero];
-    g_menuHUD.moveable = NO;
-    g_menuHUD.sizeable = NO;
-
-    if (controller != nil && myosd_num_players > 1 && g_controllers.count > 1) {
-        [g_menuHUD addTitle:[NSString stringWithFormat:@"Player %d", player+1]];
-        [g_menuHUD addSeparator];
-    }
-    
-    [g_menuHUD addButtons:(myosd_num_players >= 2) ? @[@":person:1P Start", @":person.2:2P Start"] : @[@":centsign.circle:Coin+Start"] color:color handler:^(NSUInteger button) {
-        [self hideMenuHUD];
-        [self startPlayer:(int)button];
-    }];
-    if (myosd_num_players >= 3) {
-        // FYI there is no person.4 symbol, so we just reuse person.3
-        [g_menuHUD addButtons:@[@":person.3:3P Start", (myosd_num_players >= 4) ? @":person.3:4P Start" : @""] color:color handler:^(NSUInteger button) {
-            [self hideMenuHUD];
-            if (button+2 < myosd_num_players)
-                [self startPlayer:(int)button + 2];
-        }];
-    }
-    
-    if (controller != nil) {
-        color = UIColor.clearColor;
-        
-        // TODO: ????
-        if (gamepad.buttonOptions != nil && gamepad.buttonMenu != nil) {
-            // Pn SELECT and START (menu buttons...)
-            [g_menuHUD addButtons:@[
-                [NSString stringWithFormat:@":%@:P%d Select", getGamepadSymbol(gamepad, gamepad.buttonOptions), player + 1],
-                [NSString stringWithFormat:@":%@:P%d Start",  getGamepadSymbol(gamepad, gamepad.buttonMenu), player + 1]
-            ] color:color  handler:^(NSUInteger button) {
-                [self hideMenuHUD];
-                if (button == 0 )
-                    push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X coin
-                else
-                    push_mame_button(player, MYOSD_START);
-            }];
-        }
-        else {
-            // Pn SELECT and START
-            [g_menuHUD addButtons:@[
-                [NSString stringWithFormat:@":%@:P%d Select", getGamepadSymbol(gamepad, gamepad.leftShoulder), player + 1],
-                [NSString stringWithFormat:@":%@:P%d Start",  getGamepadSymbol(gamepad, gamepad.rightShoulder), player + 1]
-            ] color:color  handler:^(NSUInteger button) {
-                [self hideMenuHUD];
-                if (button == 0 )
-                    push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X coin
-                else
-                    push_mame_button(player, MYOSD_START);
-            }];
-        }
-        
-        // P2 SELECT and START (only on the Player 1 controller)
-        if (player == 0 && myosd_num_players > 1) {
-            [g_menuHUD addButtons:@[
-                [NSString stringWithFormat:@":%@:P2 Select", getGamepadSymbol(gamepad, gamepad.leftTrigger)],
-                [NSString stringWithFormat:@":%@:P2 Start",  getGamepadSymbol(gamepad, gamepad.rightTrigger)]
-            ] color:color  handler:^(NSUInteger button) {
-                [self hideMenuHUD];
-                if (button == 0 )
-                    push_mame_button((1 < myosd_num_coins ? 1 : 0), MYOSD_SELECT);  // Player 2 coin
-                else
-                    push_mame_button(1, MYOSD_START);
-            }];
-        }
-        
-        // EXIT and MAMEMENU
-        [g_menuHUD addButtons:@[
-            [NSString stringWithFormat:@":%@:Exit Game", getGamepadSymbol(gamepad, gamepad.buttonX)],
-            [NSString stringWithFormat:@":%@:Configure", getGamepadSymbol(gamepad, gamepad.buttonY)],
-        ] color:color handler:^(NSUInteger button) {
-            [self hideMenuHUD];
-            if (button == 0)
-                [self runExit:NO];
-            else
-                push_mame_key(MYOSD_KEY_TAB);
-        }];
-
-        /* (tbd)
-        [g_menuHUD addButtons:@[
-            [NSString stringWithFormat:@":%@:ButtonA", getGamepadSymbol(gamepad, gamepad.buttonA)],
-            [NSString stringWithFormat:@":%@:ButtonB", getGamepadSymbol(gamepad, gamepad.buttonB)],
-        ] color:color handler:^(NSUInteger button) {}];
-        */
-    }
-
-    // LOAD and SAVE State
-    [g_menuHUD addButtons:@[
-        [NSString stringWithFormat:@":%@:Load ①", getGamepadSymbol(gamepad, gamepad.dpad.up) ?: @"bookmark"],
-        [NSString stringWithFormat:@":%@:Load ②", getGamepadSymbol(gamepad, gamepad.dpad.right) ?: @"bookmark"],
-    ] color:color handler:^(NSUInteger button) {
-        [self hideMenuHUD];
-        if (button == 0)
-            mame_state(LOAD_STATE, 1);
-        else
-            mame_state(LOAD_STATE, 2);
-    }];
-    [g_menuHUD addButtons:@[
-        [NSString stringWithFormat:@":%@:Save ①", getGamepadSymbol(gamepad, gamepad.dpad.down) ?: @"bookmark.fill"],
-        [NSString stringWithFormat:@":%@:Save ②", getGamepadSymbol(gamepad, gamepad.dpad.left) ?: @"bookmark.fill"],
-    ] color:color  handler:^(NSUInteger button) {
-        [self hideMenuHUD];
-        if (button == 0)
-            mame_state(SAVE_STATE, 1);
-        else
-            mame_state(SAVE_STATE, 2);
-    }];
-
-    color = nil;
-    
-    [g_menuHUD addButtons:@[@":slider.horizontal.3:Configure",@":pause.circle:Pause"] color:color handler:^(NSUInteger button) {
-        [self hideMenuHUD];
-        if (button == 0)
-            push_mame_key(MYOSD_KEY_TAB);
-        else
-            push_mame_key(MYOSD_KEY_P);
-    }];
-    [g_menuHUD addButtons:@[@":power:Reset", @":wrench:Service"] color:color handler:^(NSUInteger button) {
-        [self hideMenuHUD];
-        if (button == 0)
-            push_mame_key(MYOSD_KEY_F3);
-        else
-            push_mame_key(MYOSD_KEY_F2);
-    }];
-    [g_menuHUD addButton:@":gear:Settings" color:color handler:^{
-        [self hideMenuHUD];
-        [self runSettings];
-    }];
-    [g_menuHUD addButton:(myosd_inGame && myosd_in_menu==0) ? @":xmark.circle:Exit Game" : @":xmark.circle:Exit" color:UIColor.systemRedColor handler:^{
-        [self hideMenuHUD];
-        [self runExit:NO];
-    }];
-    
-    [g_menuHUD addText:@" "];
-    [g_menuHUD addButton:@"Cancel" color:color handler:^{
-        [self hideMenuHUD];
-    }];
-
-    UIWindow* window = self.view.window;
-    [window addSubview:g_menuHUD];
-    [g_menuHUD sizeToFit];
-    g_menuHUD.center = window.center;
-    CGFloat scale = TARGET_OS_TV ? 1.5 : 1.0;
-    
-    if (g_menuHUD.bounds.size.width * scale > window.bounds.size.width * 0.95)
-        scale = window.bounds.size.width * 0.95 / g_menuHUD.bounds.size.width;
-
-    if (g_menuHUD.bounds.size.height * scale > window.bounds.size.height * 0.95)
-        scale = window.bounds.size.height * 0.95 / g_menuHUD.bounds.size.height;
-
-    g_menuHUD.transform = CGAffineTransformMakeScale(0.001, 0.001);
-    [UIView animateWithDuration:MENU_HUD_SHOW_ANIMATE animations:^{
-        g_menuHUD.transform = CGAffineTransformMakeScale(scale, scale);
-    }];
-}
-
--(void)delayedShowMenuHUD:(GCController*)controller {
-    NSLog(@"showMenuHUD (after delay): %@", controller);
-    int index = (int)[g_controllers indexOfObjectIdenticalTo:controller];
-    // treat showing the menu after a delay the same as hiting a combo button
-    NSParameterAssert(index >= 0 && index < NUM_JOY);
-    if (index >= 0 && index < NUM_JOY)
-        g_menuButtonPressed[index] |= MYOSD_MENU;
-    [self showMenuHUD:controller];
-}
-
--(void)showMenuHUD:(GCController*)controller after:(NSTimeInterval)delay {
-    [self performSelector:@selector(delayedShowMenuHUD:) withObject:controller afterDelay:MENU_HUD_SHOW_DELAY];
-}
-
--(void)hideMenuHUD:(GCController*)controller {
-    NSLog(@"hideMenuHUD: %@", controller);
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(delayedShowMenuHUD:) object:controller];
-    [self hideMenuHUD];
-}
-
--(void)hideMenuHUD {
-    NSLog(@"hideMenuHUD");
-    
-    if (g_menuHUD == nil)
-        return;
-    
-    [self endMenu];
-    
-    UIView* view = g_menuHUD;
-    g_menuHUD = nil;
-    [UIView animateWithDuration:MENU_HUD_SHOW_ANIMATE animations:^{
-        view.transform = CGAffineTransformMakeScale(0.001, 0.001);
-    } completion:^(BOOL finished) {
-        [view removeFromSuperview];
-    }];
-}
-
--(void)toggleMenuHUD:(GCController*)controller {
-    if (g_menuHUD == nil)
-        [self showMenuHUD:controller];
-    else
-        [self hideMenuHUD];
 }
 
 -(void)dumpDevice:(NSObject*)_device {
@@ -5304,7 +5182,6 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
         NSLog(@"CANT RUN GAME! (%@ is active)", viewController);
         return;
     }
-
     
     NSString* name = game[kGameInfoName];
     

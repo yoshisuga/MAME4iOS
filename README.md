@@ -147,6 +147,8 @@ MENU+L1       |Player 1 Coin
 MENU+R1       |Player 1 Start               
 MENU+L2       |Player 2 Coin                
 MENU+R2       |Player 2 Start               
+MENU+A          |Show or hide HUD                 
+MENU+B          |Pause MAME   
 MENU+X          |Exit Game                 
 MENU+Y          |Open MAME menu   
 MENU+DOWN  |Save State ①               
