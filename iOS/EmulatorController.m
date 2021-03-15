@@ -117,7 +117,11 @@
 #define NSLog(...) (void)0
 #endif
 
+#ifdef DEBUG
+#define UPDATE_FPS_EVERY    1
+#else
 #define UPDATE_FPS_EVERY    60
+#endif
 #define OPAQUE_FPS          FALSE
 
 static int myosd_exitGame = 0;      // set this to cause MAME to exit.
@@ -1626,15 +1630,9 @@ static int gcd(int a, int b) {
     NSUInteger sec = (frame_count / 60) % 60;
     NSUInteger min = (frame_count / 3600);
     
-    NSString* fps = [NSString stringWithFormat:@"%03d:%02d:%02d%@%@ %.2ffps %.1fms", (int)min, (int)sec, (int)frame,
-                    [screenView isKindOfClass:[MetalScreenView class]] ? @"🅼" : @"",
-                    [screenView isKindOfClass:[MetalScreenView class]] && [(MetalScreenView*)screenView pixelFormat] == MTLPixelFormatBGR10_XR ? @"🆆" : @"",
-                    screenView.frameRateAverage, screenView.renderTimeAverage * 1000.0];
+    NSString* fps = [NSString stringWithFormat:@"%03d:%02d:%02d %.2ffps", (int)min, (int)sec, (int)frame, screenView.frameRateAverage];
 #else
-    NSString* fps = [NSString stringWithFormat:@"%.2ffps %.1fms %@%@",
-                     screenView.frameRateAverage, screenView.renderTimeAverage * 1000.0,
-                     [screenView isKindOfClass:[MetalScreenView class]] ? @"🅼" : @"",
-                     [screenView isKindOfClass:[MetalScreenView class]] && [(MetalScreenView*)screenView pixelFormat] != MTLPixelFormatBGRA8Unorm ? @"🆆" : @""];
+    NSString* fps = [NSString stringWithFormat:@"%.2ffps", screenView.frameRateAverage];
 #endif
     
     fpsView.text = fps;
@@ -1644,8 +1642,10 @@ static int gcd(int a, int b) {
     CGSize size = screenView.bounds.size;
     CGFloat scale = screenView.window.screen.scale;
     int n = gcd((int)(size.width * scale), (int)(size.height * scale));
-    [hudView setValue:[NSString stringWithFormat:@"%dx%d@%dx [%d:%d]", (int)size.width, (int)size.height, (int)scale,
-                       (int)(size.width * scale) / n,  (int)(size.height * scale) / n] forKey:@"SIZE"];
+    NSString* str = [NSString stringWithFormat:@"%dx%d@%dx [%d:%d] %@", (int)size.width, (int)size.height, (int)scale,
+                       (int)(size.width * scale) / n,  (int)(size.height * scale) / n,
+                        [screenView isKindOfClass:[MetalScreenView class]] && [(MetalScreenView*)screenView pixelFormat] != MTLPixelFormatBGRA8Unorm ? @"🆆" : @""];
+    [hudView setValue:str forKey:@"SIZE"];
 #endif
 #endif
 }
