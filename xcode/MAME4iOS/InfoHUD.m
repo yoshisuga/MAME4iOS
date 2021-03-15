@@ -706,13 +706,25 @@
 }
 
 - (void)viewWillAppear:(BOOL)animated {
-    self.preferredContentSize = self.preferredContentSize;
+    CGSize size = self.preferredContentSize;
+    self.preferredContentSize = size;
+
     if (self.modalPresentationStyle != UIModalPresentationPopover) {
+
+        // TODO: change the font on tvOS instead
+        CGFloat scale = TARGET_OS_TV ? 1.5 : 1.0;
+        
+        if (size.width * scale > self.view.bounds.size.width * 0.95)
+            scale = self.view.bounds.size.width * 0.95 / size.width;
+
+        if (size.height * scale > self.view.bounds.size.height * 0.95)
+            scale = self.view.bounds.size.height * 0.95 / size.height;
+        
         _hud.transform = CGAffineTransformMakeScale(0.001, 0.001);
         [UIView animateWithDuration:0.200 animations:^{
             if (!self->_blurBackground && self->_dimBackground != 0.0)
                 self.view.backgroundColor = [UIColor.blackColor colorWithAlphaComponent:self->_dimBackground];
-            self->_hud.transform = CGAffineTransformMakeScale(1.0, 1.0);
+            self->_hud.transform = CGAffineTransformMakeScale(scale, scale);
         }];
     }
 }
