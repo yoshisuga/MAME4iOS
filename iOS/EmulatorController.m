@@ -697,10 +697,14 @@ HUDViewController* g_menu;
 
     HUDViewController* menu = [[HUDViewController alloc] init];
     
-    if (gamepad == nil)
+#if TARGET_OS_IOS
+    if (view != nil)
         menu.modalPresentationStyle = UIModalPresentationPopover;
     else
         menu.modalPresentationStyle = UIModalPresentationOverFullScreen;
+#else
+    menu.modalPresentationStyle = UIModalPresentationBlurOverFullScreen;
+#endif
 
     if (controller != nil && controller_count > 1 && myosd_num_players > 1)
         menu.title = [NSString stringWithFormat:@"Player %d", player+1];
@@ -847,8 +851,7 @@ HUDViewController* g_menu;
     }];
     
     if (menu.modalPresentationStyle != UIModalPresentationPopover) {
-        [menu addButton:@"Cancel" style:HUDButtonStyleCancel handler:^{
-        }];
+        [menu addButton:@"Cancel" style:HUDButtonStyleCancel handler:^{}];
     }
     
     [menu onDismiss:^{
