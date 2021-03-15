@@ -151,24 +151,17 @@
                 }
                case 4:
                {
-                   cell.textLabel.text   = @"Colorspace";
-                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                   cell.detailTextLabel.text = [Options.arrayColorSpace optionName:op.colorSpace];
-                   break;
-               }
-               case 5:
-               {
                     cell.textLabel.text   = @"Keep Aspect Ratio";
                     cell.accessoryView = [self optionSwitchForKey:@"keepAspectRatio"];
                    break;
                }
-               case 6:
+               case 5:
                {
                    cell.textLabel.text   = @"Integer Scaling Only";
                    cell.accessoryView = [self optionSwitchForKey:@"integerScalingOnly"];
                    break;
                }
-               case 7:
+               case 6:
                {
                    cell.textLabel.text   = @"Force Pixel Aspect";
                    cell.accessoryView = [self optionSwitchForKey:@"forcepxa"];
@@ -418,7 +411,7 @@
           case kSupportSection: return 2;
           case kFullscreenSection: return 3;
           case kOtherSection: return 1;
-          case kVideoSection: return 8;
+          case kVideoSection: return 7;
           case kVectorSection: return 2;
           case kMiscSection: return 6;
           case kFilterSection: return 2;
@@ -480,10 +473,6 @@
             }
             if (row==3){
                 ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"lineShader" list:Options.arrayLineShader title:cell.textLabel.text];
-                [[self navigationController] pushViewController:listController animated:YES];
-            }
-            if (row==4){
-                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"colorSpace" list:Options.arrayColorSpace title:cell.textLabel.text];
                 [[self navigationController] pushViewController:listController animated:YES];
             }
             break;

@@ -44,7 +44,6 @@
 #import <Metal/Metal.h>
 #import "MetalScreenView.h"
 #import "myosd.h"
-#import "ColorSpace.h"
 
 #define DebugLog 0
 #if DebugLog == 0 || !defined(DEBUG)
@@ -73,7 +72,6 @@ TIMER_INIT_END
     MTLSamplerMinMagFilter _filter;
     
     Shader _screen_shader;
-    CGColorSpaceRef _screenColorSpace;  // color space used to render MAME screen
     
     Shader _line_shader;
     CGFloat _line_width_scale;
@@ -211,36 +209,6 @@ TIMER_INIT_END
     return @[kScreenViewFilterLinear, kScreenViewFilterNearest];
 }
 
-//
-// COLOR SPACE
-//
-// color space data, we define the colorSpaces here, in one place, so it stays in-sync with the UI.
-//
-// you can specify a colorSpace in two ways, with a system name or with parameters.
-// these strings are of the form <Friendly Name> : <colorSpace name OR colorSpace parameters>
-//
-// colorSpace name is one of the sytem contants passed to `CGColorSpaceCreateWithName`
-// see (Color Space Names)[https://developer.apple.com/documentation/coregraphics/cgcolorspace/color_space_names]
-//
-// colorSpace parameters are 3 - 18 floating point numbers separated with commas.
-// see [CGColorSpaceCreateCalibratedRGB](https://developer.apple.com/documentation/coregraphics/1408861-cgcolorspacecreatecalibratedrgb)
-//
-// if <colorSpace name OR colorSpace parameters> is blank or not valid, a device-dependent RGB color space is used.
-//
-+ (NSArray*)colorSpaceList {
-
-    return @[kScreenViewColorSpaceDefault,
-             @"sRGB : kCGColorSpaceSRGB",
-             @"CRT (sRGB, D65, 2.5) :    0.95047,1.0,1.08883, 0,0,0, 2.5,2.5,2.5, 0.412456,0.212673,0.019334,0.357576,0.715152,0.119192,0.180437,0.072175,0.950304",
-             @"Rec709 (sRGB, D65, 2.4) : 0.95047,1.0,1.08883, 0,0,0, 2.4,2.4,2.4, 0.412456,0.212673,0.019334,0.357576,0.715152,0.119192,0.180437,0.072175,0.950304",
-#ifdef DEBUG
-             @"Adobe RGB : kCGColorSpaceAdobeRGB1998",
-             @"Linear sRGB : kCGColorSpaceLinearSRGB",
-             @"NTSC Luminance : 0.9504,1.0000,1.0888, 0,0,0, 1,1,1, 0.299,0.299,0.299, 0.587,0.587,0.587, 0.114,0.114,0.114",
-#endif
-    ];
-}
-
 #pragma mark - MetalScreenView INIT
 
 // split and trim a string
@@ -262,14 +230,6 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     
     // set our framerate
     self.preferredFramesPerSecond = 60;
-    
-    // set a custom color space
-    NSString* color_space = _options[kScreenViewColorSpace];
-
-    if (color_space != nil && color_space.length != 0 && ![color_space isEqualToString:kScreenViewColorSpaceDefault])
-        _screenColorSpace = ColorSpaceFromString(color_space);
-    else
-        _screenColorSpace = NULL;
     
     // enable filtering (default to Linear)
     NSString* filter_string = _options[kScreenViewFilter];
@@ -325,7 +285,6 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     
     NSLog(@"FILTER: %@", _filter == MTLSamplerMinMagFilterNearest ? @"NEAREST" : @"LINEAR");
     NSLog(@"SCREEN SHADER: %@", split(_screen_shader, @",").firstObject);
-    NSLog(@"SCREEN COLORSPACE: %@", _screenColorSpace);
     NSLog(@"LINE SHADER: %@", split(_line_shader, @",").firstObject);
     NSLog(@"LINE SHADER WANTS PAST LINES: %@", _line_shader_wants_past_lines ? @"YES" : @"NO");
     if (_line_width_scale_variable != nil)
@@ -553,7 +512,6 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
             [self setTexture:0 texture:prim->texture_base hash:prim->texture_seqid
                        width:prim->texture_width height:prim->texture_height
                       format:MTLPixelFormatBGRA8Unorm
-                  colorspace:(prim->screentex ? _screenColorSpace : NULL)
                 texture_load:^(id<MTLTexture> texture) {load_texture_prim(texture, prim);} ];
 
             // set the shader
@@ -694,12 +652,31 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
 #pragma mark - TEST PATTERN
 
 #ifdef DEBUG
-// DisplayP3 -> sRGB (ExtendedSRGB)
-VertexColor VertexColorP3(CGFloat r, CGFloat g, CGFloat b, CGFloat a) {
-    return ColorMatch(kCGColorSpaceExtendedSRGB, kCGColorSpaceDisplayP3, simd_make_float4(r, g, b, a));
+
+// COLOR MATCH a CGColor
+simd_float4 ColorMatchCGColor(CGColorSpaceRef destColorSpace, CGColorRef sourceColor) {
+    CGColorRef destColor = CGColorCreateCopyByMatchingToColorSpace(destColorSpace, kCGRenderingIntentDefault, sourceColor, NULL);
+    const CGFloat* c = CGColorGetComponents(destColor);
+    simd_float4 color = simd_make_float4(c[0], c[1], c[2], c[3]);
+    CGColorRelease(destColor);
+    return color;
 }
+// COLOR MATCH a SIMD Color
+simd_float4 ColorMatch(CGColorSpaceRef destColorSpace, CGColorSpaceRef sourceColorSpace, simd_float4 color) {
+    CGFloat rgba[] = {color.r,color.g,color.b,color.a};
+    CGColorRef sourceSolor = CGColorCreate(sourceColorSpace, rgba);
+    return ColorMatchCGColor(destColorSpace, sourceSolor);
+}
+
 -(void)drawTestPattern:(CGRect)rect {
     CGFloat width = rect.size.width;
+    
+    static CGColorSpaceRef displayP3, extendedSRGB;
+    
+    if (displayP3 == NULL) {
+        displayP3 = CGColorSpaceCreateWithName(kCGColorSpaceDisplayP3);
+        extendedSRGB = CGColorSpaceCreateWithName(kCGColorSpaceExtendedSRGB);
+    }
 
     simd_float4 colors[] = {simd_make_float4(1, 0, 0, 1), simd_make_float4(0, 1, 0, 1), simd_make_float4(0, 0, 1, 1), simd_make_float4(1, 1, 0, 1), simd_make_float4(1, 1, 1, 1)};
     int n = sizeof(colors)/sizeof(colors[0]);
@@ -717,7 +694,7 @@ VertexColor VertexColorP3(CGFloat r, CGFloat g, CGFloat b, CGFloat a) {
     [self setShader:ShaderCopy];
     for (int i=0; i<n; i++) {
         simd_float4 color = colors[i];
-        simd_float4 colorP3 = VertexColorP3(color.r, color.g, color.b, color.a);
+        simd_float4 colorP3 = ColorMatch(extendedSRGB, displayP3, color);
         [self drawRect:CGRectMake(x,y,w,h) color:color];
         [self drawRect:CGRectMake(x+w/3,y+h/3,w/3,h/3) color:colorP3];
         x += w + space_x;
@@ -733,10 +710,11 @@ VertexColor VertexColorP3(CGFloat r, CGFloat g, CGFloat b, CGFloat a) {
         [self setShader:ShaderTextureAlpha];
         [self setTextureFilter:MTLSamplerMinMagFilterNearest];
         NSString* ident = [NSString stringWithFormat:@"TestP3%d", i];
-        [self setTexture:0 texture:(void*)ident hash:0 width:3 height:3 format:MTLPixelFormatBGRA8Unorm colorspace:ColorSpaceWithName(kCGColorSpaceDisplayP3) texture_load:^(id<MTLTexture> texture) {
+        
+        [self setTexture:0 texture:(void*)ident hash:0 width:3 height:3 format:MTLPixelFormatBGRA8Unorm colorspace:displayP3 texture_load:^(id<MTLTexture> texture) {
             
-            simd_float4 c0 = ColorMatch(kCGColorSpaceDisplayP3, kCGColorSpaceDisplayP3,    color); // P3 -> P3 (should be a NOOP)
-            simd_float4 c1 = ColorMatch(kCGColorSpaceDisplayP3, kCGColorSpaceExtendedSRGB, color); // sRGB -> P3
+            simd_float4 c0 = ColorMatch(displayP3, displayP3,    color); // P3 -> P3 (should be a NOOP)
+            simd_float4 c1 = ColorMatch(displayP3, extendedSRGB, color); // sRGB -> P3
             
             uint32_t dw0 = 0xFF000000 |
                 ((uint32_t)(c0.r * 255.0) << 16) |
@@ -755,7 +733,7 @@ VertexColor VertexColorP3(CGFloat r, CGFloat g, CGFloat b, CGFloat a) {
             texture.label = @"TestP3";
         }];
 
-        [self drawRect:CGRectMake(x,y,w,h) color:VertexColorP3(1, 1, 1, 1)];
+        [self drawRect:CGRectMake(x,y,w,h) color:ColorMatch(extendedSRGB, displayP3, simd_make_float4(1, 1, 1, 1))];
         x += w + space_x;
     }
     y += h;
@@ -768,7 +746,7 @@ VertexColor VertexColorP3(CGFloat r, CGFloat g, CGFloat b, CGFloat a) {
     [self setShader:ShaderCopy];
     for (int i=0; i<sizeof(colors)/sizeof(colors[0]); i++) {
         simd_float4 color = colors[i];
-        simd_float4 colorP3 = VertexColorP3(color.r, color.g, color.b, color.a);
+        simd_float4 colorP3 = ColorMatch(extendedSRGB, displayP3, color);
         [self drawGradientRect:CGRectMake(x,y,w,h)   color:VertexColor(0, 0, 0, 1) color:color   orientation:UIImageOrientationRight];
         [self drawGradientRect:CGRectMake(x+w,y,w,h) color:VertexColor(0, 0, 0, 1) color:colorP3 orientation:UIImageOrientationLeft];
         y += h;

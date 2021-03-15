@@ -35,9 +35,6 @@
 + (NSArray*)arrayLineShader {
     return [MetalScreenView lineShaderList];
 }
-+ (NSArray*)arrayColorSpace {
-    return [MetalScreenView colorSpaceList];
-}
 
 #pragma mark - utility funciton to set a single option and save it.
 
@@ -107,8 +104,6 @@
         _screenShader = @"";
         _lineShader = @"";
 
-        _colorSpace = @"";
-        
         _integerScalingOnly = 0;
 
         _showFPS = 0;
@@ -183,8 +178,6 @@
         _screenShader = [optionsDict objectForKey:@"screen-shader"] ?: [optionsDict objectForKey:@"effect"] ?: @"";
         _lineShader = [optionsDict objectForKey:@"line-shader"] ?: @"";
 
-        _colorSpace = [optionsDict objectForKey:@"sourceColorSpace"] ?: @"";
-
         _integerScalingOnly = [[optionsDict objectForKey:@"integerScalingOnly"] boolValue];
 
         _lightgunEnabled = [[optionsDict objectForKey:@"lightgunEnabled"] intValue];
@@ -258,8 +251,6 @@
                              _screenShader, @"screen-shader",
                              _lineShader, @"line-shader",
 
-                             _colorSpace, @"sourceColorSpace",
-                                 
                              [NSString stringWithFormat:@"%d", _integerScalingOnly], @"integerScalingOnly",
 
                              [NSString stringWithFormat:@"%d", _lightgunEnabled],@"lightgunEnabled",

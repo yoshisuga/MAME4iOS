@@ -156,8 +156,6 @@
 		EF926C9C24BA36980048392B /* SkinManager.m in Sources */ = {isa = PBXBuildFile; fileRef = EF926C9A24BA36980048392B /* SkinManager.m */; };
 		EF941F0024427D1200D58F7F /* OptionsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF941EFF24427D1200D58F7F /* OptionsTableViewController.m */; };
 		EF941F0124427D1200D58F7F /* OptionsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF941EFF24427D1200D58F7F /* OptionsTableViewController.m */; };
-		EF950BAA24B1211F00DC9A47 /* ColorSpace.m in Sources */ = {isa = PBXBuildFile; fileRef = EF950BA924B1211F00DC9A47 /* ColorSpace.m */; };
-		EF950BAB24B1211F00DC9A47 /* ColorSpace.m in Sources */ = {isa = PBXBuildFile; fileRef = EF950BA924B1211F00DC9A47 /* ColorSpace.m */; };
 		EFA756FF2405585D00A02AAB /* mameui.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA756FE2405585D00A02AAB /* mameui.png */; };
 		EFA757002405585D00A02AAB /* mameui.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA756FE2405585D00A02AAB /* mameui.png */; };
 		EFA7570524057FD800A02AAB /* default_game_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA7570424057FD800A02AAB /* default_game_icon.png */; };
@@ -244,7 +242,6 @@
 		EFA7A14E24B65C020009CF88 /* GCDWebUploader.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 92A533CC21EBDDF20089FBB9 /* GCDWebUploader.bundle */; };
 		EFA7A15024B65C020009CF88 /* mameui.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA756FE2405585D00A02AAB /* mameui.png */; };
 		EFA7A15124B65C020009CF88 /* iCadeControls.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA757212408488D00A02AAB /* iCadeControls.png */; };
-		EFA7A16424B792B50009CF88 /* ColorSpace.m in Sources */ = {isa = PBXBuildFile; fileRef = EF950BA924B1211F00DC9A47 /* ColorSpace.m */; };
 		EFA7A16624B792CE0009CF88 /* MetalPerformanceShaders.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA7A16524B792CE0009CF88 /* MetalPerformanceShaders.framework */; };
 		EFA7A16B24B7A38E0009CF88 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EFA7A16A24B7A38E0009CF88 /* Assets.xcassets */; };
 		EFA7A16D24B7A40F0009CF88 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EFA7A16C24B7A40F0009CF88 /* Assets.xcassets */; };
@@ -533,8 +530,6 @@
 		EF926C9A24BA36980048392B /* SkinManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SkinManager.m; sourceTree = "<group>"; };
 		EF941EFE24427D1200D58F7F /* OptionsTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OptionsTableViewController.h; path = ../../iOS/OptionsTableViewController.h; sourceTree = "<group>"; };
 		EF941EFF24427D1200D58F7F /* OptionsTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OptionsTableViewController.m; path = ../../iOS/OptionsTableViewController.m; sourceTree = "<group>"; };
-		EF950BA824B1211F00DC9A47 /* ColorSpace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ColorSpace.h; sourceTree = "<group>"; };
-		EF950BA924B1211F00DC9A47 /* ColorSpace.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ColorSpace.m; sourceTree = "<group>"; };
 		EF950BAC24B1239F00DC9A47 /* MetalPerformanceShaders.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalPerformanceShaders.framework; path = System/Library/Frameworks/MetalPerformanceShaders.framework; sourceTree = SDKROOT; };
 		EF950BAE24B123A900DC9A47 /* MetalPerformanceShaders.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalPerformanceShaders.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS14.0.sdk/System/Library/Frameworks/MetalPerformanceShaders.framework; sourceTree = DEVELOPER_DIR; };
 		EF9F9C9E240070E700352554 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../../README.md; sourceTree = "<group>"; };
@@ -964,8 +959,6 @@
 			isa = PBXGroup;
 			children = (
 				EF06A576248064AC00A974B8 /* Timer.h */,
-				EF950BA824B1211F00DC9A47 /* ColorSpace.h */,
-				EF950BA924B1211F00DC9A47 /* ColorSpace.m */,
 				EFB7B2162479FBD900AD96A4 /* MetalView.h */,
 				EFB7B2132479FBD800AD96A4 /* MetalView.m */,
 				EFB7B2142479FBD800AD96A4 /* MetalViewShaders.h */,
@@ -1360,7 +1353,6 @@
 				925ABCB61E46DCC500997182 /* InputOptionController.m in Sources */,
 				92A533C321EBDBAD0089FBB9 /* GCDWebServerMultiPartFormRequest.m in Sources */,
 				EF26AE0C241AA6900078FD30 /* FileItemProvider.m in Sources */,
-				EF950BAA24B1211F00DC9A47 /* ColorSpace.m in Sources */,
 				EF7B232C23FD0469001FF51D /* (null) in Sources */,
 				EF8E427D249348220049C84C /* megaTron.metal in Sources */,
 				92A533B421EBDBAD0089FBB9 /* GCDWebServerErrorResponse.m in Sources */,
@@ -1382,7 +1374,6 @@
 			files = (
 				EF27F36823F73CD400B1E50A /* ZipFile.m in Sources */,
 				EF8E428C249FE5410049C84C /* ulTron.metal in Sources */,
-				EF950BAB24B1211F00DC9A47 /* ColorSpace.m in Sources */,
 				92A533BE21EBDBAD0089FBB9 /* GCDWebServerStreamedResponse.m in Sources */,
 				EF8E4284249915F30049C84C /* lineTron.metal in Sources */,
 				92A533C421EBDBAD0089FBB9 /* GCDWebServerMultiPartFormRequest.m in Sources */,
@@ -1476,7 +1467,6 @@
 				EFA7A10924B65C020009CF88 /* InputOptionController.m in Sources */,
 				EFA7A10A24B65C020009CF88 /* GCDWebServerMultiPartFormRequest.m in Sources */,
 				EFA7A10B24B65C020009CF88 /* FileItemProvider.m in Sources */,
-				EFA7A16424B792B50009CF88 /* ColorSpace.m in Sources */,
 				EFA7A10D24B65C020009CF88 /* (null) in Sources */,
 				EFA7A10E24B65C020009CF88 /* megaTron.metal in Sources */,
 				EFA7A10F24B65C020009CF88 /* GCDWebServerErrorResponse.m in Sources */,

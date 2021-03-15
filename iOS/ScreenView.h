@@ -51,15 +51,12 @@
 #define kScreenViewFilter           @"filter"
 #define kScreenViewScreenShader     @"screen-shader"
 #define kScreenViewLineShader       @"line-shader"
-#define kScreenViewColorSpace       @"colorspace"
 
 #define kScreenViewFilterNearest    @"Nearest"
 #define kScreenViewFilterLinear     @"Linear"
 
 #define kScreenViewShaderNone       @"None"
 #define kScreenViewShaderDefault    @"Default"
-
-#define kScreenViewColorSpaceDefault @"Default"
 
 @protocol ScreenView <NSObject>
 
@@ -73,7 +70,6 @@
 + (NSArray<NSString*>*)filterList;
 + (NSArray<NSString*>*)screenShaderList;
 + (NSArray<NSString*>*)lineShaderList;
-+ (NSArray<NSString*>*)colorSpaceList;
 
 - (void)setOptions:(NSDictionary*)options;
 

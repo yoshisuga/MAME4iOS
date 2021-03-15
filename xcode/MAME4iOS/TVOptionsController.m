@@ -42,7 +42,7 @@
     if ( section == kFilterSection ) {
         return 2;
     } else if ( section == kScreenSection ) {
-        return 8;
+        return 7;
     } else if ( section == kVectorSection ) {
         return 2;
     } else if ( section == kMiscSection ) {
@@ -164,16 +164,12 @@
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
             cell.detailTextLabel.text = [Options.arrayLineShader optionName:op.lineShader];
         } else if ( indexPath.row == 4 ) {
-            cell.textLabel.text   = @"ColorSpace";
-            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-            cell.detailTextLabel.text = [Options.arrayColorSpace optionName:op.colorSpace];
-        } else if ( indexPath.row == 5 ) {
             cell.textLabel.text = @"Keep Aspect Ratio";
             cell.accessoryView = [self optionSwitchForKey:@"keepAspectRatio"];
-        } else if ( indexPath.row == 6 ) {
+        } else if ( indexPath.row == 5 ) {
             cell.textLabel.text = @"Integer Scaling Only";
             cell.accessoryView = [self optionSwitchForKey:@"integerScalingOnly"];
-        } else if ( indexPath.row == 7 ) {
+        } else if ( indexPath.row == 6 ) {
             cell.textLabel.text   = @"Force Pixel Aspect";
             cell.accessoryView = [self optionSwitchForKey:@"forcepxa"];
         }
@@ -255,9 +251,6 @@
             [[self navigationController] pushViewController:listController animated:YES];
         } else if ( indexPath.row == 3 ) {
             ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"lineShader" list:Options.arrayLineShader title:cell.textLabel.text];
-            [[self navigationController] pushViewController:listController animated:YES];
-        } else if ( indexPath.row == 4 ) {
-            ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"colorSpace" list:Options.arrayColorSpace title:cell.textLabel.text];
             [[self navigationController] pushViewController:listController animated:YES];
         }
     } else if ( indexPath.section == kMiscSection ) {

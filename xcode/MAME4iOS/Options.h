@@ -26,7 +26,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (class, readonly, strong) NSArray* arrayFilter;
 @property (class, readonly, strong) NSArray* arrayScreenShader;
 @property (class, readonly, strong) NSArray* arrayLineShader;
-@property (class, readonly, strong) NSArray* arrayColorSpace;
 
 @property (readwrite,assign) int keepAspectRatio;
 
@@ -34,7 +33,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite,strong) NSString *skin;
 @property (readwrite,strong) NSString *screenShader;
 @property (readwrite,strong) NSString *lineShader;
-@property (readwrite,strong) NSString *colorSpace;
 
 @property (readwrite,assign) int integerScalingOnly;
 

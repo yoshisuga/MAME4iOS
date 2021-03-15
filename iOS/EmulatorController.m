@@ -164,7 +164,6 @@ NSString* g_pref_screen_shader;
 NSString* g_pref_line_shader;
 NSString* g_pref_filter;
 NSString* g_pref_skin;
-NSString* g_pref_colorspace;
 
 int g_pref_integer_scale_only = 0;
 int g_pref_showFPS = 0;
@@ -1037,7 +1036,6 @@ HUDViewController* g_menu;
     g_pref_filter = [Options.arrayFilter optionData:op.filter];
     g_pref_screen_shader = [Options.arrayScreenShader optionData:op.screenShader];
     g_pref_line_shader = [Options.arrayLineShader optionData:op.lineShader];
-    g_pref_colorspace = [Options.arrayColorSpace optionData:op.colorSpace];
 
     g_pref_skin = [Options.arraySkin optionData:op.skin];
     [skinManager setCurrentSkin:g_pref_skin];
@@ -2932,7 +2930,6 @@ void myosd_poll_input(void) {
         kScreenViewFilter: g_pref_filter,
         kScreenViewScreenShader: g_pref_screen_shader,
         kScreenViewLineShader: g_pref_line_shader,
-        kScreenViewColorSpace: g_pref_colorspace,
     };
     
     // the reason we dont re-create screenView each time is because we access screenView from background threads
