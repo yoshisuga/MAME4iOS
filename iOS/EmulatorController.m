@@ -78,6 +78,13 @@
 #import "CloudSync.h"
 #import "InfoHUD.h"
 
+#import "Timer.h"
+TIMER_INIT_BEGIN
+TIMER_INIT(timer_read_input)
+TIMER_INIT(timer_read_controllers)
+TIMER_INIT(timer_read_mice)
+TIMER_INIT_END
+
 // declare "safe" properties for buttonHome, buttonMenu, buttonsOptions that work on pre-iOS 13,14
 #if (TARGET_OS_IOS && __IPHONE_OS_VERSION_MIN_REQUIRED < 140000) || (TARGET_OS_TV && __TV_OS_VERSION_MIN_REQUIRED < 140000)
 #ifndef __IPHONE_14_0
@@ -688,6 +695,8 @@ HUDViewController* g_menu;
 
 -(void)runMenu:(GCController*)controller from:(UIView*)view {
     NSLog(@"runMenu: %@", controller);
+    TIMER_DUMP();
+    TIMER_RESET();
     
     if (self.presentedViewController != nil)
         return;
@@ -2444,7 +2453,10 @@ static BOOL controller_is_zero(int player) {
 // handle any input from *all* game controllers
 static void handle_device_input()
 {
+    TIMER_START(timer_read_input);
+
     // poll each controller to get state of device *right* now
+    TIMER_START(timer_read_controllers);
     NSArray* controllers = g_controllers;
     NSUInteger controllers_count = controllers.count;
     
@@ -2465,7 +2477,7 @@ static void handle_device_input()
             if (player == i || controller_is_zero(player))
                 read_controller(player, controller);
         }
-        
+
         // read the on-screen controls
         if (controller_is_zero(0)) {
             myosd_joy_status[0] = myosd_pad_status;
@@ -2473,8 +2485,10 @@ static void handle_device_input()
             joy_analog_y[0][0] = myosd_pad_y;
         }
     }
-    
+    TIMER_STOP(timer_read_controllers);
+
     // poll each mouse to get state of device *right* now
+    TIMER_START(timer_read_mice);
     NSArray* mice = g_mice;
     if (mice.count != 0 && g_direct_mouse_enable) {
         for (int i = 0; i < MIN(NUM_JOY, mice.count); i++) {
@@ -2485,6 +2499,9 @@ static void handle_device_input()
     else if (myosd_mouse == 1 && g_pref_touch_analog_enabled) {
         read_mouse(0, nil);
     }
+    TIMER_STOP(timer_read_mice);
+
+    TIMER_STOP(timer_read_input);
 }
 
 // handle p1aspx (P1 as P2, P3, P4)
@@ -3187,6 +3204,8 @@ void myosd_poll_input(void) {
             break;
         case 'D':
             g_debug_dump_screen = TRUE;
+            TIMER_DUMP();
+            TIMER_RESET();
             break;
 #endif
     }
@@ -4554,10 +4573,6 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
 -(void)installMenuHandler:(GCController*)controller {
     GCExtendedGamepad* gamepad = controller.extendedGamepad;
     
-    // ignore the Siri Remote, we handle the MENU button in pressesBegan/Ended
-    if (gamepad == nil)
-        return;
-    
     GCControllerButtonInput *buttonHome = gamepad.buttonHome;
     GCControllerButtonInput *buttonMenu = gamepad.buttonMenu;
     GCControllerButtonInput *buttonOptions = gamepad.buttonOptions;
@@ -5341,25 +5356,30 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
 
 #if TARGET_OS_TV
 
-- (void)pressesEnded:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event; {
-    NSLog(@"PRESSES END: %@", presses.allObjects.firstObject);
+- (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event; {
+    NSLog(@"PRESSES BEGAN: %ld", presses.allObjects.firstObject.type);
     for (UIPress *press in presses) {
-
         UIPressType type = press.type;
-        
-        // these are press types sent by a keyboard
+
+#if TARGET_OS_SIMULATOR
+        // these are press types sent by a keyboard in the simulator
         if (type == 2040) type = UIPressTypeSelect;
         if (type == 2079) type = UIPressTypeRightArrow;
         if (type == 2080) type = UIPressTypeLeftArrow;
         if (type == 2081) type = UIPressTypeDownArrow;
         if (type == 2082) type = UIPressTypeUpArrow;
-        
-        // TODO: make sure this is a press from the Siri Remote only!
-        if (type == UIPressTypeMenu && g_menu == nil && !myosd_in_menu)
-            [self runMenu];
-        else if (type >= UIPressTypeUpArrow && type <= UIPressTypeMenu && g_menu != nil)
+#endif
+        if (type >= UIPressTypeUpArrow && type <= UIPressTypeSelect && g_menu != nil)
             [g_menu handleButtonPress:type];
+
+        if (type == UIPressTypeMenu && g_menu == nil && !myosd_in_menu && g_controllers.count == 0)
+            [self runMenu];
     }
+    [super pressesBegan:presses withEvent:event];
+}
+
+- (void)pressesEnded:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event; {
+    NSLog(@"PRESSES END: %ld", presses.allObjects.firstObject.type);
     [super pressesEnded:presses withEvent:event];
 }
 #endif

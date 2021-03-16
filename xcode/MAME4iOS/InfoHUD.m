@@ -709,7 +709,10 @@
     _dismissHandler = handler;
 }
 
-- (void)tap {
+- (void)ignoreMenu {
+}
+
+- (void)tapBackgroundToDismiss {
     [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
 }
 
@@ -729,14 +732,12 @@
         effectView.frame = self.view.bounds;
         [self.view addSubview:effectView];
     }
-#endif
-    
-    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap)];
-#if TARGET_OS_TV
+    [self.view addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapBackgroundToDismiss)]];
+#else
+    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(ignoreMenu)];
     tap.allowedPressTypes = @[[NSNumber numberWithInteger:UIPressTypeMenu]];
-#endif
     [self.view addGestureRecognizer:tap];
- 
+#endif
     [self.view addSubview:_hud];
 }
 
