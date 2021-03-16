@@ -1,7 +1,7 @@
 # Version 2021.7
 * New in-game menu using InfoHUD technology.
 * New Game Controller MENU modifiers. 
-* MENU+X works on MFi controllers.
+* MENU, X (press MENU then press X) works on MFi controllers.
 * Remove ColorSpace choices from the UI.
 
 ## Game controller MENU combos

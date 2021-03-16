@@ -268,9 +268,9 @@ To start playing a game using a controller, do one of the following.
 | | |  
 -|-
 `OPTIONS`     |SELECT                
-`HOME`           |MAME4iOS MENU (on iOS 14+)   
+`HOME`           |MENU (on iOS 14+)   
 `MENU`           |START      
-`OPTIONS`+`MENU`|MAME4iOS MENU
+`OPTIONS`+`MENU`|MENU
 
 ## Steam Game Controlers
 
@@ -289,6 +289,13 @@ Steam Controller Buttons
 * if your controller has a dedicated `MENU` button pressing it will bring up the in-game menu.
 * if your controller only has `SELECT` and `START` you can long press either one to bring up the in-game menu, or press both at the same time.
 * you can use use any of `SELECT`, `START`, or `MENU` to perform a menu action, listed below, for example both `MENU+X` and `SELECT+X` will exit the game.
+
+## MENU combination actions
+
+To perform a menu action do one of the following
+* hold down `MENU` or `SELECT` or `START` and press the combo button. ie MENU+X
+* hold down the combo button and press `MENU` or `SELECT` or `START`. ie X+MENU
+* on a MFi controller on tvOS press `MENU/PAUSE` and then press the combo button. ie MENU, X
 
 | | |  
 -|-
@@ -356,15 +363,7 @@ If you have an XInput compatible controller, use `Settings` > `Accessibility` > 
 
 To connect an iPad or iPhone to your TV or a projector, you can either use the Apple HDMI, Component AV Cable, Apple Composite AV Cable, Apple Dock Connector to VGA Adapter, or other compatible cable.
 
-Use TV Out settings to set up how iPad or iPhone plays videos on your TV.
-
 When the cable is connected to a TV or projector, MAME4iOS will automatically use it when playing a game.
-
-Set the TV signal to NTSC or PAL: Choose Video > TV Signal and select NTSC or PAL. NTSC and PAL are TV broadcast standards, used in different regions. If you are in the Americas, NTSC is probably the correct choice. Elsewhere, try PAL. If you're not sure, check the documentation that came with your TV or projector.
-
-You can set the amount of overscan corrections in options menu.
-
-If you like iOS TVOUT mirror or you use and external 3rd party TVOUT app, you can turn off MAME4iOS native TVOUT in options menu.
 
 ## MANUAL ROM INSTALLATION
 

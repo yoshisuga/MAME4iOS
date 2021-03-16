@@ -1018,8 +1018,8 @@ HUDViewController* g_menu;
     }
 
 #if TARGET_OS_TV
-    // TODO:!!!
-    //self.controllerUserInteractionEnabled = YES;
+    if (![viewControllerToPresent isKindOfClass:[HUDViewController class]])
+        self.controllerUserInteractionEnabled = YES;
 #endif
     [super presentViewController:viewControllerToPresent animated:flag completion:completion];
 }
@@ -2403,7 +2403,7 @@ static void read_gamepad(int player, GCExtendedGamepad *gamepad)
     unsigned long status  = read_gamepad_buttons(gamepad);
     
     // dont let MAME see any MENU combo buttons.
-    if (status & (MYOSD_OPTION|MYOSD_MENU|MYOSD_HOME))
+    if (status & (MYOSD_OPTION|MYOSD_MENU|MYOSD_HOME) || g_menuButtonMode[player] != 0)
         status = 0;
     
     myosd_joy_status[player] = status;
@@ -4503,7 +4503,7 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
 -(void)installUpdateHandler:(GCController*)controller {
     
 #if TARGET_OS_TV
-    // Siri Remote special case
+    // Siri Remote special case to navigate the menu
     if (controller.extendedGamepad == nil) {
         controller.microGamepad.valueChangedHandler = ^(GCMicroGamepad* gamepad, GCControllerElement* element) {
             if (g_menu) {
@@ -4661,21 +4661,24 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
     
     // MENU button first time pressed
     if (g_menuButtonMode[index] == 0 && pressed) {
-
-        // get current state of buttons, so we can look for changes
-        g_menuButtonState[index] = read_gamepad_buttons(controller.extendedGamepad);
+        
+        // enter menu mode
         g_menuButtonMode[index] = button;
+        [self showMenu:controller after:MENU_HUD_SHOW_DELAY];
+
+        // reset current state of buttons, so we can look for changes
+        g_menuButtonState[index] = 0;
         g_menuButtonPressed[index] = 0;
 
-        [self showMenu:controller after:MENU_HUD_SHOW_DELAY];
+        // handle any buttons that are down now, for a reverse combo button (ie X+MENU)
+        [self handleMenuButton:controller];
     }
     
     // MENU button released
     if (g_menuButtonMode[index] == button && !pressed) {
-        // leave menu mode
+        
+        // leave menu mode and cancel the menu
         g_menuButtonMode[index] = 0;
-
-        // cancel delay show of menuHUD
         [self cancelShowMenu:controller];
 
         // if no modifier buttons were pressed then do the "plain" action for the button.
@@ -4746,7 +4749,7 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
     
     unsigned long combo_buttons = (MYOSD_A|MYOSD_B|MYOSD_X|MYOSD_Y|MYOSD_UP|MYOSD_DOWN|MYOSD_LEFT|MYOSD_RIGHT|MYOSD_L1|MYOSD_R1|MYOSD_L2|MYOSD_R2);
     unsigned long current_state = read_gamepad_buttons(controller.extendedGamepad);
-    unsigned long changed_state = (current_state ^ g_menuButtonState[index]) & ~current_state;   // changed buttons that are UP now
+    unsigned long changed_state = (current_state ^ g_menuButtonState[index]) & current_state;   // changed buttons that are DOWN
     g_menuButtonState[index] = current_state;
     
     NSLog(@"handleMenuButton[%d]: %s%s%s%s %s%s%s%s %s%s%s%s %s%s%s", index,
@@ -4759,7 +4762,7 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
           (changed_state & MYOSD_OPTION) ? "OPTION " : "", (changed_state & MYOSD_HOME) ? "HOME " : "",
           (changed_state & MYOSD_MENU) ? "MENU " : "");
     
-    // DPAD and A/B navigate the menu (unless MENU/HOME/OPTION are down now)
+    // DPAD and A/B navigate the menu (unless MENU/HOME/OPTION are down)
     if (g_menu && (current_state & (MYOSD_MENU | MYOSD_OPTION | MYOSD_HOME)) == 0) {
         UIPressType press = input_debounce(current_state, CGPointMake(controller.extendedGamepad.leftThumbstick.xAxis.value, controller.extendedGamepad.leftThumbstick.yAxis.value));
         [g_menu handleButtonPress:press];
