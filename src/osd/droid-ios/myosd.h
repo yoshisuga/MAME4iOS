@@ -35,7 +35,7 @@ enum  { MYOSD_UP=0x1,       MYOSD_LEFT=0x4,       MYOSD_DOWN=0x10,   MYOSD_RIGHT
 #define NUM_JOY 4
 #define NUM_KEYS 256
 
-extern char myosd_version[];
+extern const char * myosd_version;
 extern int  myosd_fps;
 extern int  myosd_showinfo;
 extern int  myosd_pause;

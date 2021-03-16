@@ -44,6 +44,7 @@
 
 #import "OptionsTableViewController.h"
 #import "Options.h"
+#import "myosd.h"
 
 @implementation OptionsTableViewController
 
@@ -80,10 +81,10 @@
     version = [NSString stringWithFormat:@"%@ • DEBUG", version];
 #endif
     
-    // TODO: get the mame version from MYOSD
-    NSString* mame_version = @"139u1";
+    // get the mame version from MYOSD, and remove any date in ()s
+    NSString* mame_version = [[NSString stringWithUTF8String:myosd_version] componentsSeparatedByString:@" ("].firstObject;
     
-    if (mame_version != nil)
+    if (mame_version.length != 0)
         version = [NSString stringWithFormat:@"%@ • %@", version, mame_version];
 
     // this is the last date Info.plist was modifed, if you do a clean build, or change the version, it is the build date.

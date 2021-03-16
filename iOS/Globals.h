@@ -125,6 +125,8 @@ extern int g_pref_full_num_buttons;
 extern int g_pref_analog_DZ_value;
 extern int g_pref_input_touch_type;
 extern int g_pref_ext_control_type;
+extern int g_pref_haptic_button_feedback;
+
 
 extern float g_buttons_size;
 extern float g_stick_size;

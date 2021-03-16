@@ -28,6 +28,7 @@ MENU+RIGHT  |Load State ②
 * `MAME` full keyboard support.
 * Remove `Netplay`
 * `OSD` cleanup.
+* add an Option to turn ON/OFF haptic feedback.
 
 # Version 2021.5
 * Metal only, remove support for a software renderer.

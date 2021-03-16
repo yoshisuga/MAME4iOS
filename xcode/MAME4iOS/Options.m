@@ -166,6 +166,8 @@
         _touchControlsOpacity = 50.0;
         
         _touchDirectionalEnabled = 0;
+        
+        _hapticButtonFeedback = 1;
     }
     else
     {
@@ -237,6 +239,8 @@
         _vflicker  =  [[optionsDict objectForKey:@"vflicker"] intValue];
         
         _emuspeed  =  [[optionsDict objectForKey:@"emuspeed"] intValue];
+        
+        _hapticButtonFeedback = [([optionsDict objectForKey:@"hapticButtonFeedback"] ?: @(1)) intValue];
     }
     
 }
@@ -308,7 +312,9 @@
                              [NSString stringWithFormat:@"%d", _vflicker], @"vflicker",
                              
                              [NSString stringWithFormat:@"%d", _emuspeed], @"emuspeed",
-                             
+                                 
+                             [NSString stringWithFormat:@"%d", _hapticButtonFeedback], @"hapticButtonFeedback",
+                                 
                              nil];
     
     
