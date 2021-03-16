@@ -858,7 +858,10 @@ HUDViewController* g_menu;
     }
     
     [menu onDismiss:^{
-         [self endMenu];
+        g_menu = nil;
+        // if we did not show something else (ie Settings) then call endMenu
+        if (self.presentedViewController == nil)
+            [self endMenu];
     }];
 
     NSParameterAssert(g_menu == nil);
@@ -996,7 +999,6 @@ HUDViewController* g_menu;
 }
 
 - (void)endMenu{
-    g_menu = nil;
     g_emulation_paused = 0;
     change_pause(0);
     
@@ -1016,7 +1018,8 @@ HUDViewController* g_menu;
     }
 
 #if TARGET_OS_TV
-    self.controllerUserInteractionEnabled = YES;
+    // TODO:!!!
+    //self.controllerUserInteractionEnabled = YES;
 #endif
     [super presentViewController:viewControllerToPresent animated:flag completion:completion];
 }
@@ -1217,7 +1220,7 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
         if (stick.x <= -0.5) pad_status |= MYOSD_LEFT;
     }
 
-    if ((now - g_last_input_time) < 0.200)
+    if ((now - g_last_input_time) < 0.100)
         return UIPressTypeNone;
     
     if (pad_status != 0)
@@ -1285,7 +1288,7 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
 #endif
     
     // exit MAME MENU with B (but only if we are not mapping a input)
-    if (myosd_in_menu == 1 && (input_debounce(pad_status, stick) & MYOSD_B))
+    if (myosd_in_menu == 1 && (input_debounce(pad_status, stick) == UIPressTypeMenu))
     {
         [self runExit];
     }
@@ -1407,21 +1410,6 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
         [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(deviceDidBecomeCurrent:) name:GCMouseDidBecomeCurrentNotification object:nil];
         [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(deviceDidBecomeNonCurrent:) name:GCMouseDidStopBeingCurrentNotification object:nil];
     }
-#endif
-
-#if TARGET_OS_TV
-    
-#define INSTALL_TAP(type, sel) {\
-    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(sel)];\
-    tap.allowedPressTypes = @[@(type)]; \
-    [self.view addGestureRecognizer:tap]; }
-    
-    INSTALL_TAP(UIPressTypeMenu, tapMenu);
-    INSTALL_TAP(UIPressTypeSelect, tapSelect);
-    INSTALL_TAP(UIPressTypeUpArrow, tapUp);
-    INSTALL_TAP(UIPressTypeDownArrow, tapDown);
-    INSTALL_TAP(UIPressTypeLeftArrow, tapLeft);
-    INSTALL_TAP(UIPressTypeRightArrow, tapRight);
 #endif
     
     [self performSelectorOnMainThread:@selector(setupGameControllers) withObject:nil waitUntilDone:NO];
@@ -2141,11 +2129,9 @@ static NSArray* list_trim(NSArray* _list) {
 #pragma mark - mame device input
 
 #define MYOSD_PLAYER_SHIFT  28
+#define MYOSD_PLAYER_MASK   MYOSD_PLAYER(0x3)
 #define MYOSD_PLAYER(n)     (n << MYOSD_PLAYER_SHIFT)
-#define MYOSD_PLAYER_MASK   MYOSD_PLAYER(0xF)
 
-#define MAME_BUTTON_PLAYER_MASK     0xF0000000
-#define MAME_BUTTON_PLAYER_SHIFT    28
 NSMutableArray<NSNumber*>* g_mame_buttons;  // FIFO queue of buttons to press
 NSLock* g_mame_buttons_lock;
 NSInteger g_mame_buttons_tick;              // ticks until we send next one
@@ -2157,7 +2143,7 @@ static void push_mame_button(int player, int button)
         g_mame_buttons = [[NSMutableArray alloc] init];
         g_mame_buttons_lock = [[NSLock alloc] init];
     }
-    button = button | (player << MAME_BUTTON_PLAYER_SHIFT);
+    button = button | MYOSD_PLAYER(player);
     [g_mame_buttons_lock lock];
     [g_mame_buttons addObject:@(button)];
     [g_mame_buttons_lock unlock];
@@ -2219,8 +2205,8 @@ static int handle_buttons()
     
     [g_mame_buttons_lock lock];
     unsigned long button = g_mame_buttons.firstObject.intValue;
-    unsigned long player = (button & MAME_BUTTON_PLAYER_MASK) >> MAME_BUTTON_PLAYER_SHIFT;
-    button = button & ~MAME_BUTTON_PLAYER_MASK;
+    unsigned long player = (button & MYOSD_PLAYER_MASK) >> MYOSD_PLAYER_SHIFT;
+    button = button & ~MYOSD_PLAYER_MASK;
     
     if ((myosd_joy_status[player] & button) == button) {
         [g_mame_buttons removeObjectAtIndex:0];
@@ -4516,19 +4502,20 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
 // we also handle the MENU combo buttons here
 -(void)installUpdateHandler:(GCController*)controller {
     
+#if TARGET_OS_TV
     // Siri Remote special case
     if (controller.extendedGamepad == nil) {
         controller.microGamepad.valueChangedHandler = ^(GCMicroGamepad* gamepad, GCControllerElement* element) {
-            NSLog(@"valueChangedHandler[%ld:%ld]: %@ %s %s%s%s%s", [g_controllers indexOfObjectIdenticalTo:gamepad.controller], gamepad.controller.playerIndex, element,
-                  ([element isKindOfClass:[GCControllerButtonInput class]] && [(GCControllerButtonInput*)element isPressed]) ? "PRESSED" : "",
-                  ([element isKindOfClass:[GCControllerDirectionPad class]] && [(GCControllerDirectionPad*)element up].pressed) ? "U": "-",
-                  ([element isKindOfClass:[GCControllerDirectionPad class]] && [(GCControllerDirectionPad*)element down].pressed) ? "D" : "-",
-                  ([element isKindOfClass:[GCControllerDirectionPad class]] && [(GCControllerDirectionPad*)element left].pressed) ? "L" : "-",
-                  ([element isKindOfClass:[GCControllerDirectionPad class]] && [(GCControllerDirectionPad*)element right].pressed) ? "R" : "-"
-                  );
+            if (g_menu) {
+                GCControllerDirectionPad* dpad = gamepad.dpad;
+                // read A and DPAD axis
+                unsigned long pad_status = (gamepad.buttonA.isPressed ? MYOSD_A : 0);
+                [self handle_INPUT:pad_status stick:CGPointMake(dpad.xAxis.value,dpad.yAxis.value)];
+            }
         };
         return;
     }
+#endif
     
     controller.extendedGamepad.valueChangedHandler = ^(GCExtendedGamepad* gamepad, GCControllerElement* element) {
         NSLog(@"valueChangedHandler[%ld:%ld]: %@ %s %s%s%s%s", [g_controllers indexOfObjectIdenticalTo:gamepad.controller], gamepad.controller.playerIndex, element,
@@ -4569,6 +4556,10 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
 // if the controller has neither, insall a old skoool pause handler.
 -(void)installMenuHandler:(GCController*)controller {
     GCExtendedGamepad* gamepad = controller.extendedGamepad;
+    
+    // ignore the Siri Remote, we handle the MENU button in pressesBegan/Ended
+    if (gamepad == nil)
+        return;
     
     GCControllerButtonInput *buttonHome = gamepad.buttonHome;
     GCControllerButtonInput *buttonMenu = gamepad.buttonMenu;
@@ -5350,54 +5341,27 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
 
 #if TARGET_OS_TV
 
--(void)tapMenu {[self toggleMenu:nil];}
--(void)tapSelect {[g_menu handleButtonPress:UIPressTypeSelect];}
--(void)tapUp {[g_menu handleButtonPress:UIPressTypeUpArrow];}
--(void)tapDown {[g_menu handleButtonPress:UIPressTypeDownArrow];}
--(void)tapLeft {[g_menu handleButtonPress:UIPressTypeLeftArrow];}
--(void)tapRight {[g_menu handleButtonPress:UIPressTypeRightArrow];}
-
-/*
-- (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event; {
-    NSLog(@"PRESSES BEGAN: %@", presses.allObjects.firstObject);
-    for (UIPress *press in presses) {
-        // TODO: handle other UIPressTypes
-        if (g_menu != nil)
-            return [g_menu handleButtonPress:press.type];
-        if (press.type == UIPressTypeMenu && g_controllers.count == 0) {
-            return [self runMenu];
-        }
-    }
-    // not a menu press, delegate to UIKit responder handling
-    [super pressesBegan:presses withEvent:event];
-}
-- (void)pressesChanged:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event; {
-    NSLog(@"PRESSES CHANGE: %@", presses.allObjects.firstObject);
-    for (UIPress *press in presses) {
-        // TODO: handle other UIPressTypes
-        if (g_menu != nil)
-            return [g_menu handleButtonPress:press.type];
-        if (press.type == UIPressTypeMenu && g_controllers.count == 0) {
-            return [self runMenu];
-        }
-    }
-    // not a menu press, delegate to UIKit responder handling
-    [super pressesChanged:presses withEvent:event];
-}
 - (void)pressesEnded:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event; {
     NSLog(@"PRESSES END: %@", presses.allObjects.firstObject);
     for (UIPress *press in presses) {
-        // TODO: handle other UIPressTypes
-        if (g_menu != nil)
-            return [g_menu handleButtonPress:press.type];
-        if (press.type == UIPressTypeMenu && g_controllers.count == 0) {
-            return [self runMenu];
-        }
+
+        UIPressType type = press.type;
+        
+        // these are press types sent by a keyboard
+        if (type == 2040) type = UIPressTypeSelect;
+        if (type == 2079) type = UIPressTypeRightArrow;
+        if (type == 2080) type = UIPressTypeLeftArrow;
+        if (type == 2081) type = UIPressTypeDownArrow;
+        if (type == 2082) type = UIPressTypeUpArrow;
+        
+        // TODO: make sure this is a press from the Siri Remote only!
+        if (type == UIPressTypeMenu && g_menu == nil && !myosd_in_menu)
+            [self runMenu];
+        else if (type >= UIPressTypeUpArrow && type <= UIPressTypeMenu && g_menu != nil)
+            [g_menu handleButtonPress:type];
     }
-    // not a menu press, delegate to UIKit responder handling
     [super pressesEnded:presses withEvent:event];
 }
-*/
 #endif
 
 #pragma mark NSUserActivty

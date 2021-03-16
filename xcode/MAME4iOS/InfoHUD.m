@@ -52,6 +52,10 @@
     if (@available(iOS 13.0, tvOS 13.0, *))
         self.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
     
+#if TARGET_OS_TV
+    self.tintColor = UIApplication.sharedApplication.keyWindow.tintColor;
+#endif
+    
     [self addSubview:_stack];
     
 #if TARGET_OS_IOS
@@ -346,13 +350,14 @@
 }
 - (UISegmentedControl*)makeSegmentedControl:(NSArray*)items handler:(void (^)(NSUInteger button))handler {
     UISegmentedControl* seg = [[UISegmentedControl alloc] initWithItems:[self convertItems:items]];
-    seg.momentary = YES;
+    seg.momentary = TARGET_OS_IOS ? YES : NO;
     [seg setTitleTextAttributes:@{NSFontAttributeName:_font} forState:UIControlStateNormal];
     
     CGFloat h = _font.lineHeight * 1.5;
     [seg addConstraint:[NSLayoutConstraint constraintWithItem:seg attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:h]];
-
+#if TARGET_OS_IOS
     [seg addTarget:self action:@selector(buttonPress:) forControlEvents:UIControlEventValueChanged];
+#endif
     objc_setAssociatedObject(seg, @selector(buttonPress:), handler, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     if (@available(iOS 13.0, tvOS 13.0, *))
          seg.selectedSegmentTintColor = self.tintColor;
@@ -370,6 +375,10 @@
     UIStackView* stack = [[UIStackView alloc] init];
     stack.spacing = self.spacing;
     stack.distribution = UIStackViewDistributionFillEqually;
+    
+#if TARGET_OS_TV
+    color = color ?: [UIColor colorWithWhite:0.222 alpha:1.0];
+#endif
 
     for (NSUInteger i = 0; i<items.count; i++) {
         id item = items[i];
@@ -379,9 +388,19 @@
             }];
             seg.backgroundColor = color;
             if (@available(iOS 13.0, tvOS 13.0, *))
-                seg.selectedSegmentTintColor = (color == nil || color == UIColor.clearColor) ? self.tintColor : color;
+                seg.selectedSegmentTintColor = (color == nil || color == UIColor.clearColor || TARGET_OS_TV) ? self.tintColor : color;
             if (color == UIColor.clearColor)
                 [seg setBackgroundImage:[[UIImage alloc] init] forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
+#if TARGET_OS_TV
+            [seg setTitleTextAttributes:@{NSFontAttributeName:_font,
+                NSForegroundColorAttributeName: color == UIColor.clearColor ? self.tintColor : UIColor.whiteColor,
+                NSBackgroundColorAttributeName: color
+            } forState:UIControlStateNormal];
+            [seg setTitleTextAttributes:@{NSFontAttributeName:_font,
+                NSForegroundColorAttributeName: UIColor.whiteColor,
+                NSBackgroundColorAttributeName: self.tintColor
+            } forState:UIControlStateSelected];
+#endif
         }
         [stack addArrangedSubview:item];
     }
@@ -529,8 +548,16 @@
             UISegmentedControl* seg = (UISegmentedControl*)stack.subviews[i];
             if ([seg isKindOfClass:[UISegmentedControl class]]) {
                 seg.selectedSegmentIndex = (i == index) ? 0 : UISegmentedControlNoSegment;
-                if (seg.backgroundColor == UIColor.clearColor)
-                    [seg setBackgroundImage:((i == index) ? nil : [[UIImage alloc] init]) forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
+#if TARGET_OS_TV
+                if (seg.selectedSegmentIndex == 0)
+                    seg.backgroundColor = [seg titleTextAttributesForState:UIControlStateSelected][NSBackgroundColorAttributeName];
+                else
+                    seg.backgroundColor = [seg titleTextAttributesForState:UIControlStateNormal][NSBackgroundColorAttributeName];
+#endif
+                if (seg.backgroundColor == UIColor.clearColor && seg.selectedSegmentIndex == UISegmentedControlNoSegment)
+                    [seg setBackgroundImage:[[UIImage alloc] init] forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
+                else
+                    [seg setBackgroundImage:nil forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
             }
         }
     }
@@ -599,7 +626,7 @@
 - (instancetype)init {
     self = [super init];
     
-    _blurBackground = YES;
+    _blurBackground = TARGET_OS_IOS ? YES : NO;
     _dimBackground = 0.5;
     
     _hud = [[InfoHUD alloc] init];
@@ -653,7 +680,7 @@
         color = UIColor.systemRedColor;
     if (style == HUDButtonStylePlain)
         color = UIColor.clearColor;
-
+    
     // we want to dismiss the ViewController *before* we call any button callbacks
     __unsafe_unretained typeof(self) _self = self;
     [_hud addButtons:items color:color handler:^(NSUInteger button) {
@@ -688,6 +715,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
 #if TARGET_OS_IOS
     if (self.modalPresentationStyle != UIModalPresentationPopover && _blurBackground) {
         UIBlurEffectStyle style = UIBlurEffectStyleDark;
@@ -702,8 +730,14 @@
         [self.view addSubview:effectView];
     }
 #endif
+    
+    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap)];
+#if TARGET_OS_TV
+    tap.allowedPressTypes = @[[NSNumber numberWithInteger:UIPressTypeMenu]];
+#endif
+    [self.view addGestureRecognizer:tap];
+ 
     [self.view addSubview:_hud];
-    [self.view addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap)]];
 }
 
 - (CGSize)preferredContentSize {
@@ -734,14 +768,20 @@
     }
 }
 
-- (void)viewWillDisappear:(BOOL)animated {
-    
-    if (_cancelHandler)
+-(void)afterDismiss {
+    NSParameterAssert(self.isBeingDismissed == FALSE);
+     if (_cancelHandler)
         _cancelHandler();
     if (_dismissHandler)
         _dismissHandler();
+}
+- (void)viewDidDisappear:(BOOL)animated {
+    if (_cancelHandler || _dismissHandler)
+        [self performSelector:@selector(afterDismiss) withObject:nil afterDelay:0.0];
+}
 
-    if (self.modalPresentationStyle == UIModalPresentationPopover) {
+- (void)viewWillDisappear:(BOOL)animated {
+    if (self.modalPresentationStyle != UIModalPresentationPopover) {
         [UIView animateWithDuration:0.200 animations:^{
             if (!self->_blurBackground && self->_dimBackground != 0.0)
                 self.view.backgroundColor = UIColor.clearColor;
@@ -779,8 +819,6 @@
 // -popoverPresentationController:willRepositionPopoverToRect:inView: is called on your delegate when the
 // popover may require a different view or rectangle.
 - (void)popoverPresentationController:(UIPopoverPresentationController *)popoverPresentationController willRepositionPopoverToRect:(inout CGRect*)rect inView:(inout UIView**)view {
-    NSLog(@"willRepositionPopoverToRect:%@ view:%@", NSStringFromCGRect(*rect), *view);
-    
     popoverPresentationController.permittedArrowDirections = 0;
     *view = self.presentingViewController.view;
     *rect = CGRectMake(self.presentingViewController.view.bounds.size.width/2, self.presentingViewController.view.bounds.size.height/2, 0, 0);
