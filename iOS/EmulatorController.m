@@ -779,7 +779,11 @@ HUDViewController* g_menu;
             // EXIT and MAME MENU
             [menu addButtons:@[
                 [NSString stringWithFormat:@":%@:Exit Game", getGamepadSymbol(gamepad, gamepad.buttonX)],
+#if TARGET_OS_IOS
                 [NSString stringWithFormat:@":%@:HUD", getGamepadSymbol(gamepad, gamepad.buttonA)],
+#else
+                @""     // TODO: HUD on tvOS
+#endif
             ] style:HUDButtonStylePlain handler:^(NSUInteger button) {
                 if (button == 0)
                     [self runExit:NO];
@@ -4637,10 +4641,7 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
         #pragma clang diagnostic ignored "-Wdeprecated"
         controller.controllerPausedHandler = ^(GCController *controller) {
             [self handleMenuButton:_controller button:MYOSD_MENU pressed:TRUE];
-            // give the user 1/2 sec to push a combo button, then bring up the menu.
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(MENU_HUD_SHOW_DELAY * 0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                [self handleMenuButton:_controller button:MYOSD_MENU pressed:FALSE];
-            });
+            [self handleMenuButton:_controller button:MYOSD_MENU pressed:FALSE];
         };
         #pragma clang diagnostic pop
     }
@@ -5368,10 +5369,11 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
         if (type == 2080) type = UIPressTypeLeftArrow;
         if (type == 2081) type = UIPressTypeDownArrow;
         if (type == 2082) type = UIPressTypeUpArrow;
-#endif
+
+        // TODO: find out if this is a press from a remote or a controller??
         if (type >= UIPressTypeUpArrow && type <= UIPressTypeSelect && g_menu != nil)
             [g_menu handleButtonPress:type];
-
+#endif
         if (type == UIPressTypeMenu && g_menu == nil && !myosd_in_menu && g_controllers.count == 0)
             [self runMenu];
     }

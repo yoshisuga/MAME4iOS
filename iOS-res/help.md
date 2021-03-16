@@ -295,7 +295,6 @@ Steam Controller Buttons
 To perform a menu action do one of the following
 * hold down `MENU` or `SELECT` or `START` and press the combo button. ie MENU+X
 * hold down the combo button and press `MENU` or `SELECT` or `START`. ie X+MENU
-* on a MFi controller on tvOS press `MENU/PAUSE` and then press the combo button. ie MENU, X
 
 | | |  
 -|-
