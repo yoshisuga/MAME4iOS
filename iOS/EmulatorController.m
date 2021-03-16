@@ -1220,7 +1220,7 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
         if (stick.x <= -0.5) pad_status |= MYOSD_LEFT;
     }
 
-    if ((now - g_last_input_time) < 0.100)
+    if ((now - g_last_input_time) < 0.150)
         return UIPressTypeNone;
     
     if (pad_status != 0)
