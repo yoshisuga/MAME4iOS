@@ -445,6 +445,11 @@
     else if ([value isKindOfClass:[NSString class]]) {
         label.text = value;
     }
+    else if ([value isKindOfClass:[NSAttributedString class]]) {
+        label.attributedText = value;
+        label.numberOfLines = 0;
+        label.preferredMaxLayoutWidth = MAX(_width, 320.0);
+    }
     else {
         label.text = [value description];
     }
