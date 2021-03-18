@@ -1221,11 +1221,10 @@ HUDViewController* g_menu;
 
 #define UIPressTypeNone ((UIPressType)-1)
 
-// de-bounce input from analog buttons (MFi controler)
+// de-bounce input from analog buttons (MFi controler) only track a CHANGE
 UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
-
-    static NSTimeInterval g_last_input_time;
-    NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
+    
+    static unsigned long g_input_status;
 
     // use the stick position if nothing on dpad
     if ((pad_status & (MYOSD_UP|MYOSD_DOWN|MYOSD_LEFT|MYOSD_RIGHT)) == 0) {
@@ -1235,23 +1234,20 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
         if (stick.x <= -0.5) pad_status |= MYOSD_LEFT;
     }
 
-    if ((now - g_last_input_time) < 0.150)
-        return UIPressTypeNone;
+    unsigned long changed_status = (pad_status ^ g_input_status) & pad_status;
+    g_input_status = pad_status;
     
-    if (pad_status != 0)
-        g_last_input_time = now;
-    
-    if (pad_status & MYOSD_A)
+    if (changed_status & MYOSD_A)
         return UIPressTypeSelect;
-    if (pad_status & MYOSD_B)
+    if (changed_status & MYOSD_B)
         return UIPressTypeMenu;
-    if (pad_status & MYOSD_UP)
+    if (changed_status & MYOSD_UP)
         return UIPressTypeUpArrow;
-    if (pad_status & MYOSD_DOWN)
+    if (changed_status & MYOSD_DOWN)
         return UIPressTypeDownArrow;
-    if (pad_status & MYOSD_LEFT)
+    if (changed_status & MYOSD_LEFT)
         return UIPressTypeLeftArrow;
-    if (pad_status & MYOSD_RIGHT)
+    if (changed_status & MYOSD_RIGHT)
         return UIPressTypeRightArrow;
 
     return UIPressTypeNone;
@@ -1601,9 +1597,9 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
     fpsView.shadowColor = UIColor.blackColor;
     fpsView.shadowOffset = CGSizeMake(1.0,1.0);
 #if UPDATE_FPS_EVERY == 1
-    fpsView.text = @"000:00:00🅼🆆\n0000.00fps 0.0ms";
+    fpsView.text = @"000:00:00\n0000.00fps";
 #else
-    fpsView.text = @"000.00fps 0.0ms 🅼🆆";
+    fpsView.text = @"000.00fps";
 #endif
     
     CGPoint pos = screenView.frame.origin;
@@ -1629,15 +1625,13 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
     [screenView.superview addSubview:fpsView];
 }
 
-#if TARGET_OS_IOS && defined(DEBUG)
-static int gcd(int a, int b) {
+int gcd(int a, int b) {
     int c;
     while (a != 0) {
        c = a; a = b%a; b = c;
     }
     return b;
 }
-#endif
 
 -(void)updateFrameRate {
     NSParameterAssert([NSThread isMainThread]);
@@ -1653,23 +1647,27 @@ static int gcd(int a, int b) {
     NSUInteger sec = (frame_count / 60) % 60;
     NSUInteger min = (frame_count / 3600);
     
-    NSString* fps = [NSString stringWithFormat:@"%03d:%02d:%02d %.2ffps", (int)min, (int)sec, (int)frame, screenView.frameRateAverage];
+    NSString* fps = [NSString stringWithFormat:@"%02d:%02d:%02d %.2ffps", (int)min, (int)sec, (int)frame, screenView.frameRateAverage];
 #else
     NSString* fps = [NSString stringWithFormat:@"%.2ffps", screenView.frameRateAverage];
 #endif
     
     fpsView.text = fps;
-#if TARGET_OS_IOS
-    [hudView setValue:fps forKey:@"FPS"];
+
 #ifdef DEBUG
     CGSize size = screenView.bounds.size;
     CGFloat scale = screenView.window.screen.scale;
-    int n = gcd((int)(size.width * scale), (int)(size.height * scale));
-    NSString* str = [NSString stringWithFormat:@"%dx%d@%dx [%d:%d] %@", (int)size.width, (int)size.height, (int)scale,
-                       (int)(size.width * scale) / n,  (int)(size.height * scale) / n,
-                        [screenView isKindOfClass:[MetalScreenView class]] && [(MetalScreenView*)screenView pixelFormat] != MTLPixelFormatBGRA8Unorm ? @"🆆" : @""];
-    [hudView setValue:str forKey:@"SIZE"];
+    NSString* wide = [screenView isKindOfClass:[MetalScreenView class]] && [(MetalScreenView*)screenView pixelFormat] != MTLPixelFormatBGRA8Unorm ? @"🆆" : @"";
+
+    NSString* str = [NSString stringWithFormat:@" • %dx%d@%dx %@", (int)size.width, (int)size.height, (int)scale, wide];
+    fps = [fps stringByAppendingString:str];
+//    int n = gcd((int)(size.width * scale), (int)(size.height * scale));
+//    str = [NSString stringWithFormat:@" [%d:%d]", (int)(size.width * scale) / n,  (int)(size.height * scale) / n];
+//    fps = [fps stringByAppendingString:str];
 #endif
+
+#if TARGET_OS_IOS
+    [hudView setValue:fps forKey:@"FPS"];
 #endif
 }
 
@@ -1686,29 +1684,6 @@ static int gcd(int a, int b) {
     [self performSelector:@selector(logShader) withObject:nil afterDelay:0.500];
 #endif
 }
--(void)hudOptionChange:(PopupSegmentedControl*)seg {
-    NSLog(@"HUD OPTION CHANGE %ld: %@", seg.selectedSegmentIndex, [seg titleForSegmentAtIndex:seg.selectedSegmentIndex]);
-    NSString* str = [seg titleForSegmentAtIndex:seg.selectedSegmentIndex];
-    BOOL is_vector_game = seg.tag;
-    Options* op = [[Options alloc] init];
-    switch ([seg.superview.subviews indexOfObject:seg]) {
-        case 0:
-            op.filter = str;
-            break;
-        case 1:
-            op.skin = str;
-            break;
-        case 2:
-            if (is_vector_game)
-                op.lineShader = str;
-            else
-                op.screenShader = str;
-            break;
-    }
-    [op saveOptions];
-    [self updateOptions];
-    [self changeUI];
-}
 
 // split and trim a string
 static NSMutableArray* split(NSString* str, NSString* sep) {
@@ -1717,16 +1692,6 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         arr[i] = [arr[i] stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
     return arr;
 }
-
-#ifdef XDEBUG
-// if the list items are of the form "Name : Data", we only want to show "Name" to the user.
-static NSArray* list_trim(NSArray* _list) {
-    NSMutableArray* list = [_list mutableCopy];
-    for (NSInteger i=0; i<list.count; i++)
-        list[i] = [[list[i] componentsSeparatedByString:@":"].firstObject stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
-    return [list copy];
-}
-#endif
 
 #if DebugLog
 -(void)logShader {
@@ -1887,53 +1852,17 @@ static NSArray* list_trim(NSArray* _list) {
 #endif
         // add FPS display
         if (g_pref_showFPS) {
-            [hudView addValue:@"0000.00fps 000.0ms" forKey:@"FPS"];
 #ifdef DEBUG
-            [hudView addValue:@"WWWWxHHHH@2x" forKey:@"SIZE"];
+            [hudView addValue:@"00.00.00 000.00fps WWWxHHH@2x" forKey:@"FPS"];
+#else
+            [hudView addValue:@"000.00fps" forKey:@"FPS"];
 #endif
         }
-    }
-
-    // add popups to select Filter, Skin, and Shader (only DEBUG, only iOS)
-#ifdef XDEBUG
-    if (g_pref_showHUD == HudSizeLarge || g_pref_showHUD == HudSizeEditor) {
-        // add set of buttons to select the Filter, Skin, and Effect/Shader
-        NSArray* items = @[
-            [[PopupSegmentedControl alloc] initWithItems:list_trim(Options.arrayFilter)],
-            [[PopupSegmentedControl alloc] initWithItems:list_trim(Options.arraySkin)],
-            [[PopupSegmentedControl alloc] initWithItems:list_trim(is_vector_game ? Options.arrayLineShader : Options.arrayScreenShader)],
-        ];
-
-        Options *op = [[Options alloc] init];
-        [items[0] setSelectedSegmentIndex:[Options.arrayFilter indexOfOption:op.filter]];
-        [items[1] setSelectedSegmentIndex:[Options.arraySkin indexOfOption:op.skin]];
-        [items[2] setTag:is_vector_game];
-
-        // TODO: HUD does not always get re-built on vector/raster game change
-        if (is_vector_game)
-            [items[2] setSelectedSegmentIndex:[Options.arrayLineShader indexOfOption:op.lineShader]];
-        else
-            [items[2] setSelectedSegmentIndex:[Options.arrayScreenShader indexOfOption:op.screenShader]];
-
-        [items[0] setTitle:@"Filter" forSegmentAtIndex:UISegmentedControlNoSegment];
-        [items[1] setTitle:@"Skin" forSegmentAtIndex:UISegmentedControlNoSegment];
-        [items[2] setTitle:@"Shader" forSegmentAtIndex:UISegmentedControlNoSegment];
-
-        for (PopupSegmentedControl* seg in items) {
-            [seg addTarget:self action:@selector(hudOptionChange:) forControlEvents:UIControlEventValueChanged];
-            
-            [seg setTitleTextAttributes:@{NSFontAttributeName:hudView.font} forState:UIControlStateNormal];
-            CGFloat h = hudView.font.lineHeight * 1.5;
-            [seg addConstraint:[NSLayoutConstraint constraintWithItem:seg attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:h]];
-
-            if (@available(iOS 13.0, *)) {
-                seg.selectedSegmentTintColor = self.view.tintColor;
-                seg.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
-            }
+        // add game info
+        if (g_mame_game_info != nil) {
+            [hudView addValue:[ChooseGameController getGameText:g_mame_game_info]];
         }
-        [hudView addButtons:items handler:^(NSUInteger button) {}];
     }
-#endif
     
     if (g_pref_showHUD == HudSizeLarge) {
         [hudView addButtons:(myosd_num_players >= 2) ? @[@":person:1P Start", @":person.2:2P Start"] : @[@":centsign.circle:Coin+Start"] handler:^(NSUInteger button) {
@@ -1978,7 +1907,7 @@ static NSArray* list_trim(NSArray* _list) {
         NSArray* shader_arr = split(shader, @",");
 
         [hudView addSeparator];
-        [hudView addText:[NSString stringWithFormat:@"Shader: %@", shader_arr.firstObject]];
+        [hudView addTitle:shader_arr.firstObject];
 
         for (NSString* str in shader_arr) {
             NSArray* arr = split(str, @"=");
