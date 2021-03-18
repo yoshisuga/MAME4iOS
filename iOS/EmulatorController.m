@@ -1858,13 +1858,13 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
             [hudView addValue:@"000.00fps" forKey:@"FPS"];
 #endif
         }
-        // add game info
-        if (g_mame_game_info != nil) {
-            [hudView addValue:[ChooseGameController getGameText:g_mame_game_info]];
-        }
     }
     
     if (g_pref_showHUD == HudSizeLarge) {
+        // add game info
+        if (g_mame_game_info != nil && g_mame_game_info[kGameInfoName] != nil) {
+            [hudView addValue:[ChooseGameController getGameText:g_mame_game_info]];
+        }
         [hudView addButtons:(myosd_num_players >= 2) ? @[@":person:1P Start", @":person.2:2P Start"] : @[@":centsign.circle:Coin+Start"] handler:^(NSUInteger button) {
             [_self startPlayer:(int)button];
         }];
@@ -4513,7 +4513,7 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
 #ifdef __IPHONE_14_0
     // dont let tvOS or iOS do anything with **our** buttons!!
     // iOS will start a screen recording if you hold or dbl click the OPTIONS button, we dont want that.
-    if (@available(iOS 14.0, *)) {
+    if (@available(iOS 14.0, tvOS 14.0, *)) {
         buttonHome.preferredSystemGestureState = GCSystemGestureStateDisabled;
         buttonMenu.preferredSystemGestureState = GCSystemGestureStateDisabled;
         buttonOptions.preferredSystemGestureState = GCSystemGestureStateDisabled;
