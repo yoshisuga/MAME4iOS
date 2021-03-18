@@ -41,6 +41,8 @@
 @property(nonatomic, strong) void (^selectGameCallback)(NSDictionary* info);
 @property(nonatomic, strong) UIImage* backgroundImage;
 
++(NSAttributedString*)getGameText:(NSDictionary*)game;
+
 @end
 
 

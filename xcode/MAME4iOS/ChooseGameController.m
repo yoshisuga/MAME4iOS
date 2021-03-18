@@ -1134,6 +1134,13 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     return [text copy];
 }
 
++(NSAttributedString*)getGameText:(NSDictionary*)game
+{
+    if (game[kGameInfoName] == nil || game[kGameInfoDescription] == nil)
+        return nil;
+    return [self getGameText:game layoutMode:LayoutLarge textAlignment:CELL_TEXT_ALIGN];
+}
+
 -(NSAttributedString*)getGameText:(NSDictionary*)game
 {
     return [[self class] getGameText:game layoutMode:_layoutMode textAlignment:_layoutMode == LayoutList ? NSTextAlignmentLeft : CELL_TEXT_ALIGN];
