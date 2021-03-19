@@ -119,7 +119,7 @@ TIMER_INIT_END
 @end
 #endif
 
-#define DebugLog 1
+#define DebugLog 0
 #if DebugLog == 0 || DEBUG == 0
 #define NSLog(...) (void)0
 #endif
@@ -155,6 +155,9 @@ unsigned long myosd_pad_status;
 float myosd_pad_x;
 float myosd_pad_y;
 
+// internal pad status, input is from Siri Remote.
+#define MYOSD_SIRI_REMOTE   0x80000000
+
 // Touch Directional Input tracking
 int touchDirectionalCyclesAfterMoved = 0;
 
@@ -183,8 +186,9 @@ enum {
     HudSizeZero = 0,        // HUD is not visible at all.
     HudSizeNormal = 1,      // HUD is 'normal' size, just a toolbar and FPS.
     HudSizeTiny = 2,        // HUD is single button, press to expand.
-    HudSizeLarge = 3,       // HUD is expanded to include in-game menu.
-    HudSizeEditor = 4,      // HUD is expanded to include Shader editing sliders.
+    HudSizeInfo = 3,        // HUD is expanded to include extra info.
+    HudSizeLarge = 4,       // HUD is expanded to include in-game menu.
+    HudSizeEditor = 5,      // HUD is expanded to include Shader editing sliders.
 };
 int g_pref_showHUD = 0;
 int g_pref_saveHUD = 0;     // previous value of g_pref_showHUD
@@ -709,6 +713,10 @@ HUDViewController* g_menu;
         controller_count--;
 
     HUDViewController* menu = [[HUDViewController alloc] init];
+
+#if TARGET_OS_TV
+    menu.font = [UIFont systemFontOfSize:42.0 weight:UIFontWeightRegular];
+#endif
     
 #if TARGET_OS_IOS
     if (view != nil)
@@ -779,11 +787,7 @@ HUDViewController* g_menu;
             // EXIT and MAME MENU
             [menu addButtons:@[
                 [NSString stringWithFormat:@":%@:Exit Game", getGamepadSymbol(gamepad, gamepad.buttonX)],
-#if TARGET_OS_IOS
                 [NSString stringWithFormat:@":%@:HUD", getGamepadSymbol(gamepad, gamepad.buttonA)],
-#else
-                @""     // TODO: HUD on tvOS
-#endif
             ] style:HUDButtonStylePlain handler:^(NSUInteger button) {
                 if (button == 0)
                     [self runExit:NO];
@@ -877,6 +881,10 @@ HUDViewController* g_menu;
         if (self.presentedViewController == nil)
             [self endMenu];
     }];
+    
+    // select the first item
+    if (controller != nil)
+        [menu handleButtonPress:UIPressTypeDownArrow];
 
     NSParameterAssert(g_menu == nil);
     g_menu = menu;
@@ -1256,7 +1264,12 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
 - (void)handle_MENU:(unsigned long)pad_status stick:(CGPoint)stick
 {
     UIResponder* target = [self presentedViewController];
-
+    
+#if TARGET_OS_TV
+    if (target == nil && hudView != nil && (pad_status & MYOSD_SIRI_REMOTE))
+        target = hudView;
+#endif
+    
     // if a viewController or menu is up send the input to it.
     if (target != nil) {
 #if TARGET_OS_TV
@@ -1266,13 +1279,14 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
         if ([target isKindOfClass:[UINavigationController class]])
             target = [(UINavigationController*)target topViewController];
 
-        if (![target respondsToSelector:@selector(handleButtonPress:)])
-            return;
-
         // de-bounce input from analog buttons (MFi controler)
         UIPressType button = input_debounce(pad_status, stick);
 
-        if (button != UIPressTypeNone)
+        // TODO: send stick position if select is down
+//        if ((pad_status & MYOSD_A) && [target respondsToSelector:@selector(handleButtonPress:stick:)])
+//            [(id)target handleButtonPress:button stick:stick];
+
+        if (button != UIPressTypeNone && [target respondsToSelector:@selector(handleButtonPress:)])
             [(id)target handleButtonPress:button];
 
         return;
@@ -1542,9 +1556,7 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
     imageOverlay.alpha = alpha;
     fpsView.alpha = alpha;
     imageLogo.alpha = (1.0 - alpha);
-#if TARGET_OS_IOS
     hudView.alpha *= alpha;
-#endif
 }
 
 -(void)buildLogoView {
@@ -1575,7 +1587,7 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
 
 -(void)buildFrameRateView {
     
-    BOOL showFPS = g_pref_showFPS && (g_pref_showHUD == HudSizeZero || g_pref_showHUD == HudSizeTiny);
+    BOOL showFPS = g_pref_showFPS && (g_pref_showHUD < HudSizeInfo);
 
     myosd_fps = showFPS;
 
@@ -1645,14 +1657,16 @@ int gcd(int a, int b) {
     // get the timecode assuming 60fps
     NSUInteger frame = frame_count % 60;
     NSUInteger sec = (frame_count / 60) % 60;
-    NSUInteger min = (frame_count / 3600);
-    
+    NSUInteger min = (frame_count / 3600) % 60;
     NSString* fps = [NSString stringWithFormat:@"%02d:%02d:%02d %.2ffps", (int)min, (int)sec, (int)frame, screenView.frameRateAverage];
 #else
     NSString* fps = [NSString stringWithFormat:@"%.2ffps", screenView.frameRateAverage];
 #endif
     
     fpsView.text = fps;
+    
+    if (hudView == nil)
+        return;
 
 #ifdef DEBUG
     CGSize size = screenView.bounds.size;
@@ -1666,12 +1680,8 @@ int gcd(int a, int b) {
 //    fps = [fps stringByAppendingString:str];
 #endif
 
-#if TARGET_OS_IOS
     [hudView setValue:fps forKey:@"FPS"];
-#endif
 }
-
-#if TARGET_OS_IOS
 
 -(void)hudChange:(InfoHUD*)hud {
     if ([screenView isKindOfClass:[MetalScreenView class]]) {
@@ -1732,7 +1742,10 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         CGFloat scale = [NSUserDefaults.standardUserDefaults floatForKey:wide ? kHUDScaleLandKey : kHUDScalePortKey] ?: 1.0;
 
         if (CGRectIsEmpty(rect)) {
-            rect = CGRectMake(self.view.bounds.size.width/2, self.view.safeAreaInsets.top + 16, 0, 0);
+            if (TARGET_OS_TV)
+                rect = CGRectMake(16, 16, 0, 0);
+            else
+                rect = CGRectMake(self.view.bounds.size.width/2, self.view.safeAreaInsets.top + 16, 0, 0);
             scale = 1.0;
         }
 
@@ -1767,6 +1780,8 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     EmulatorController* _self = self;
 
     BOOL is_vector_game = [screenView isKindOfClass:[MetalScreenView class]] ? [(MetalScreenView*)screenView numScreens] == 0 : FALSE;
+    // numScreens will not be correct when the HUD is first shown, so just always assume non-vector game.
+    is_vector_game = FALSE;
     NSString* shader = is_vector_game ? g_pref_line_shader : g_pref_screen_shader;
     BOOL can_edit_shader = [[shader stringByReplacingOccurrencesOfString:@"blend=" withString:@""] componentsSeparatedByString:@"="].count > 1;
     
@@ -1790,12 +1805,17 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         // add a toolbar of quick actions.
         NSArray* items = @[
             @"Coin", @"Start",
+#if TARGET_OS_IOS
             @":rectangle.and.arrow.up.right.and.arrow.down.left:⤢:",
+#endif
             @":gear:#:",
-            (g_pref_showHUD == HudSizeLarge && can_edit_shader) ? @":slider.horizontal.3:=:" : @":list.dash:=:",
+            g_pref_showHUD <= HudSizeNormal ? @":info.circle:ⓘ:" : (g_pref_showHUD >= HudSizeLarge && can_edit_shader) ? @":slider.horizontal.3:☰:" : @":list.dash:☷:",
             @":command:⌘:"
         ];
         [hudView addToolbar:items handler:^(NSUInteger button) {
+#if !TARGET_OS_IOS
+            if (button >= 2) button++;
+#endif
             switch (button) {
                 case 0:
                     push_mame_button(0, MYOSD_SELECT);
@@ -1813,6 +1833,8 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
                 {
                     Options* op = [[Options alloc] init];
                     if (g_pref_showHUD <= HudSizeNormal)
+                        g_pref_showHUD = HudSizeInfo;
+                    else if (g_pref_showHUD == HudSizeInfo)
                         g_pref_showHUD = HudSizeLarge;
                     else if (g_pref_showHUD == HudSizeLarge && can_edit_shader)
                         g_pref_showHUD = HudSizeEditor;
@@ -1850,21 +1872,22 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
             [_self commandKey:"ZAXIPD"[button]];
         }];
 #endif
-        // add FPS display
-        if (g_pref_showFPS) {
-#ifdef DEBUG
-            [hudView addValue:@"00.00.00 000.00fps WWWxHHH@2x" forKey:@"FPS"];
-#else
-            [hudView addValue:@"000.00fps" forKey:@"FPS"];
-#endif
-        }
     }
     
-    if (g_pref_showHUD == HudSizeLarge) {
+    if (g_pref_showHUD == HudSizeInfo || g_pref_showHUD == HudSizeLarge) {
+        // add FPS display
+        if (g_pref_showFPS) {
+            NSString* fps = UPDATE_FPS_EVERY == 1 ? @"00.00.00 000.00fps" : @"000.00fps";
+            [hudView addValue:fps forKey:@"FPS"];
+        }
+
         // add game info
         if (g_mame_game_info != nil && g_mame_game_info[kGameInfoName] != nil) {
             [hudView addValue:[ChooseGameController getGameText:g_mame_game_info]];
         }
+    }
+    
+    if (g_pref_showHUD == HudSizeLarge) {
         [hudView addButtons:(myosd_num_players >= 2) ? @[@":person:1P Start", @":person.2:2P Start"] : @[@":centsign.circle:Coin+Start"] handler:^(NSUInteger button) {
             [_self startPlayer:(int)button];
         }];
@@ -1884,12 +1907,14 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
             else
                 push_mame_key(MYOSD_KEY_P);
         }];
+#if TARGET_OS_IOS
         [hudView addButtons:@[@":camera:Snapshot", @":video:Record"] handler:^(NSUInteger button) {
             if (button == 0)
                 push_mame_key(MYOSD_KEY_F12);
             else
                 push_mame_keys(MYOSD_KEY_LSHIFT, MYOSD_KEY_F12, 0, 0);
         }];
+#endif
         [hudView addButtons:@[@":power:Reset", @":wrench:Service"] handler:^(NSUInteger button) {
             if (button == 0)
                 push_mame_key(MYOSD_KEY_F3);
@@ -1906,7 +1931,6 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         NSDictionary* shader_variables = ([screenView isKindOfClass:[MetalScreenView class]]) ?  [(MetalScreenView*)screenView getShaderVariables] : nil;
         NSArray* shader_arr = split(shader, @",");
 
-        [hudView addSeparator];
         [hudView addTitle:shader_arr.firstObject];
 
         for (NSString* str in shader_arr) {
@@ -1958,9 +1982,11 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         rect = CGRectMake(frame.origin.x + frame.size.width - w, frame.origin.y, w, h);
     else
         rect = CGRectMake(frame.origin.x + frame.size.width/2 - w/2, frame.origin.y, w, h);
+    
+    UIEdgeInsets safe = TARGET_OS_IOS ? self.view.safeAreaInsets : UIEdgeInsetsZero;
 
-    rect.origin.x = MAX(self.view.safeAreaInsets.left + 8, MIN(self.view.bounds.size.width  - self.view.safeAreaInsets.right  - w - 8, rect.origin.x));
-    rect.origin.y = MAX(self.view.safeAreaInsets.top + 8,  MIN(self.view.bounds.size.height - self.view.safeAreaInsets.bottom - h - 8, rect.origin.y));
+    rect.origin.x = MAX(safe.left + 8, MIN(self.view.bounds.size.width  - safe.right  - w - 8, rect.origin.x));
+    rect.origin.y = MAX(safe.top + 8,  MIN(self.view.bounds.size.height - safe.bottom - h - 8, rect.origin.y));
     [self saveHUD];
 
     [UIView animateWithDuration:0.250 animations:^{
@@ -1971,13 +1997,6 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
             self->hudView.alpha = 1.0;
     }];
 }
-#else
-// TODO: HUD on tvOS
--(void)saveHUD {
-}
--(void)buildHUD {
-}
-#endif
 
 - (void)resetUI {
     NSLog(@"RESET UI (MAME VIDEO MODE CHANGE)");
@@ -1996,10 +2015,8 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     // reset the frame count when you first turn on/off
     if (g_pref_showFPS != (fpsView != nil))
         screenView.frameCount = 0;
-#if TARGET_OS_IOS
     if ((g_pref_showHUD != 0) != (hudView != nil))
         screenView.frameCount = 0;
-#endif
     
     [imageBack removeFromSuperview];
     imageBack = nil;
@@ -2371,7 +2388,7 @@ static void read_controller(int player, GCController *controller)
         return read_gamepad(player, gamepad);
     
     GCMicroGamepad* remote = controller.microGamepad;
-    if (remote)
+    if (remote && !(g_pref_showHUD && TARGET_OS_TV))
         return read_remote(player, remote);
 }
 
@@ -4455,10 +4472,10 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
     // Siri Remote special case to navigate the menu
     if (controller.extendedGamepad == nil) {
         controller.microGamepad.valueChangedHandler = ^(GCMicroGamepad* gamepad, GCControllerElement* element) {
-            if (g_menu) {
+            if (g_menu || g_pref_showHUD) {
                 GCControllerDirectionPad* dpad = gamepad.dpad;
                 // read A and DPAD axis
-                unsigned long pad_status = (gamepad.buttonA.isPressed ? MYOSD_A : 0);
+                unsigned long pad_status = MYOSD_SIRI_REMOTE | (gamepad.buttonA.isPressed ? MYOSD_A : 0);
                 [self handle_INPUT:pad_status stick:CGPointMake(dpad.xAxis.value,dpad.yAxis.value)];
             }
         };
@@ -4713,7 +4730,7 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
     
     // cancel the HUD showing up, or hide it if a modifier was pressed
     if (changed_state & combo_buttons) {
-        // TODO: only hide the HUD if *we* own it
+        // TODO: only hide the menuHUD if *we* own it
         if (g_menu)
             [self toggleMenu:controller];
         else
@@ -5298,13 +5315,21 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
         if (type == 2080) type = UIPressTypeLeftArrow;
         if (type == 2081) type = UIPressTypeDownArrow;
         if (type == 2082) type = UIPressTypeUpArrow;
-
-        // TODO: find out if this is a press from a remote or a controller??
-        if (type >= UIPressTypeUpArrow && type <= UIPressTypeSelect && g_menu != nil)
-            [g_menu handleButtonPress:type];
 #endif
-        if (type == UIPressTypeMenu && g_menu == nil && !myosd_in_menu && g_controllers.count == 0)
-            [self runMenu];
+        // maybe send input to MENU or HUD
+        unsigned long press_status = (type == UIPressTypeSelect ? MYOSD_A : 0) |
+            (type == UIPressTypeLeftArrow ? MYOSD_LEFT : 0) | (type == UIPressTypeRightArrow ? MYOSD_RIGHT : 0) |
+            (type == UIPressTypeUpArrow ? MYOSD_UP : 0)     | (type == UIPressTypeDownArrow ? MYOSD_DOWN : 0) ;
+
+        // TODO: detect when this press is coming from a controller
+        // NOTE we can get a press without a controller in the SIMULATOR or from an IR remote
+        if (type == UIPressTypeMenu && g_controllers.count == 0) {
+            [self toggleMenu:nil];
+        }
+        else if (press_status != 0 && g_controllers.count == 0) {
+            [self handle_INPUT:(MYOSD_SIRI_REMOTE | press_status) stick:CGPointMake(0, 0)];
+            [self handle_INPUT:(MYOSD_SIRI_REMOTE | 0) stick:CGPointMake(0, 0)];
+        }
     }
     [super pressesBegan:presses withEvent:event];
 }

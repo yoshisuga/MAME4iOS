@@ -70,9 +70,9 @@ enum {BTN_A,BTN_B,BTN_Y,BTN_X,BTN_L1,BTN_R1,
 #if TARGET_OS_IOS
 @class AnalogStickView;
 @class LayoutView;
-@class InfoHUD;
 #endif
 
+@class InfoHUD;
 @class KeyboardView;
 
 #if TARGET_OS_IOS
@@ -87,10 +87,10 @@ enum {BTN_A,BTN_B,BTN_Y,BTN_X,BTN_L1,BTN_R1,
   UIImageView       * imageExternalDisplay;
   UIImageView       * imageLogo;
   UILabel           * fpsView;
+  InfoHUD           * hudView;
 #if TARGET_OS_IOS
   AnalogStickView   * analogStickView;
   LayoutView        * layoutView;
-  InfoHUD           * hudView;
 #endif
   @public UIView	* externalView;
   UIView            * inputView;    // parent view of all the input views

@@ -14,7 +14,18 @@
 + (UIImage*)imageWithText:(NSString*)textLeft image:(UIImage*)image text:(NSString*)textRight font:(UIFont*)font;
 @end
 
-#define HUD_BLUR    TRUE
+#if TARGET_OS_TV
+@interface TVSlider : UIControl
+@property(nonatomic) float value;                                 // default 0.0. this value will be pinned to min/max
+@property(nonatomic) float minimumValue;                          // default 0.0. the current value may change if outside new min value
+@property(nonatomic) float maximumValue;                          // default 1.0. the current value may change if outside new max value
+- (void)setThumbImage:(nullable UIImage *)image forState:(UIControlState)state;
+@end
+#define UISlider TVSlider
+#endif
+
+// TODO: why does UIBlurEffect not work on tvOS?
+#define HUD_BLUR    (TARGET_OS_IOS ? TRUE : FALSE)
 
 @implementation InfoHUD {
     UIStackView* _stack;
@@ -69,7 +80,11 @@
     [self addGestureRecognizer:pinch];
 #endif
 
-    self.backgroundColor = HUD_BLUR ? nil : [UIColor.darkGrayColor colorWithAlphaComponent:0.8];
+#if HUD_BLUR
+    self.backgroundColor = nil;
+#else
+    self.backgroundColor = [UIColor colorWithWhite:0.222 alpha:0.5];
+#endif
     
     return self;
 }
@@ -145,13 +160,6 @@
     self.transform = CGAffineTransformScale(self.transform, pinch.scale, pinch.scale);
     pinch.scale = 1.0;
 }
-
-- (void)slide:(UISlider*)slider {
-    NSString* key = (__bridge NSString*)(void*)slider.tag;
-    [self setValue:@(slider.value) forKey:key];
-    _changedKey = key;
-    [self sendActionsForControlEvents:UIControlEventValueChanged];
-}
 - (void)switch:(UISwitch*)sender {
     NSString* key = (__bridge NSString*)(void*)sender.tag;
     [self setValue:@(sender.isOn ? 1.0 : 0.0) forKey:key];
@@ -159,6 +167,12 @@
     [self sendActionsForControlEvents:UIControlEventValueChanged];
 }
 #endif
+- (void)slide:(UISlider*)slider {
+    NSString* key = (__bridge NSString*)(void*)slider.tag;
+    [self setValue:@(slider.value) forKey:key];
+    _changedKey = key;
+    [self sendActionsForControlEvents:UIControlEventValueChanged];
+}
 
 - (void)setLayoutMargins:(UIEdgeInsets)layoutMargins {
     [super setLayoutMargins:layoutMargins];
@@ -237,6 +251,7 @@
     UILabel* label = [[UILabel alloc] init];
     label.font = _font;
     label.textColor = [UIColor.whiteColor colorWithAlphaComponent:0.75];
+    label.adjustsFontSizeToFitWidth = YES;
     _views[key] = label;
     _format[key] = format;
     _step[key] = step;
@@ -266,8 +281,11 @@
         UIStackView* stack = [[UIStackView alloc] initWithArrangedSubviews:@[label, sw]];
         [_stack addArrangedSubview:stack];
     }
-    else if ([value isKindOfClass:[NSNumber class]] && min != nil && max != nil) {
+    else
+#endif
+    if ([value isKindOfClass:[NSNumber class]] && min != nil && max != nil) {
         UISlider* slider = [[UISlider alloc] init];
+        slider.userInteractionEnabled = TARGET_OS_IOS ? YES : NO;
         CGFloat h = _font.lineHeight;
         [slider addConstraint:[NSLayoutConstraint constraintWithItem:slider attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:h]];
         [slider addTarget:self action:@selector(slide:) forControlEvents:UIControlEventValueChanged];
@@ -286,12 +304,9 @@
             slider.tintColor = UIColor.systemGreenColor;
         if ([key hasSuffix:@"_b"] || [key hasSuffix:@"_blue"]  || [key hasSuffix:@"-b"] || [key hasSuffix:@"-blue"])
             slider.tintColor = UIColor.systemBlueColor;
-        if ([key hasSuffix:@"_a"] || [key hasSuffix:@"_alpha"]  || [key hasSuffix:@"-a"] || [key hasSuffix:@"-alpha"])
-            slider.minimumTrackTintColor = UIColor.darkGrayColor;
-
-        [slider setThumbImage:[self dotWithColor:(slider.minimumTrackTintColor ?: slider.tintColor) size:CGSizeMake(12,12)] forState:UIControlStateNormal];
+        
+        [slider setThumbImage:[self dotWithColor:(slider.tintColor ?: self.tintColor) size:CGSizeMake(12,12)] forState:UIControlStateNormal];
     }
-#endif
     
     [self setValue:value forKey:key];
 }
@@ -351,6 +366,7 @@
 - (UISegmentedControl*)makeSegmentedControl:(NSArray*)items handler:(void (^)(NSUInteger button))handler {
     UISegmentedControl* seg = [[UISegmentedControl alloc] initWithItems:[self convertItems:items]];
     seg.momentary = TARGET_OS_IOS ? YES : NO;
+    seg.userInteractionEnabled = TARGET_OS_IOS ? YES : NO;
     [seg setTitleTextAttributes:@{NSFontAttributeName:_font} forState:UIControlStateNormal];
     
     CGFloat h = _font.lineHeight * 1.5;
@@ -367,9 +383,15 @@
 }
 
 - (void)addToolbar:(NSArray*)items handler:(void (^)(NSUInteger button))handler {
+#if TARGET_OS_TV
+    [self addButtons:items handler:handler];
+    UIStackView* stack = (UIStackView*)_stack.subviews.lastObject;
+    stack.distribution = UIStackViewDistributionEqualSpacing;
+#else
     UISegmentedControl* seg = [self makeSegmentedControl:items handler:handler];
     seg.apportionsSegmentWidthsByContent = YES;
     [self addView:seg];
+#endif
 }
 - (void)addButtons:(NSArray*)items color:(UIColor*)color handler:(void (^)(NSUInteger button))handler {
     UIStackView* stack = [[UIStackView alloc] init];
@@ -434,10 +456,10 @@
             val = round(val / step) * step;
         if (format != nil)
             label.text = [NSString stringWithFormat:format, val];
-#if TARGET_OS_IOS
         UISlider* slider = (__bridge UISlider*)(void*)label.tag;
         if ([slider isKindOfClass:[UISlider class]] && !slider.isTracking)
             slider.value = val;
+#if TARGET_OS_IOS
         if ([slider isKindOfClass:[UISwitch class]])
             [(UISwitch*)slider setOn:val != 0.0];
 #endif
@@ -508,6 +530,8 @@
             [items addObject:view];
         if ([view isKindOfClass:[UIStackView class]] && [view.subviews.firstObject isKindOfClass:[UISegmentedControl class]])
             [items addObject:view];
+        if ([view isKindOfClass:[UISlider class]])
+            [items addObject:view];
     }
     
     return items;
@@ -516,6 +540,8 @@
 - (NSUInteger)getNumberOfSegments:(UIView*)view {
     if ([view isKindOfClass:[UISegmentedControl class]])
         return [(UISegmentedControl*)view numberOfSegments];
+    else if ([view isKindOfClass:[UISlider class]])
+        return 1;
     else
         return view.subviews.count;
 }
@@ -526,7 +552,9 @@
         UISegmentedControl* seg = (UISegmentedControl*)view;
         return seg.selectedSegmentIndex;
     }
-    
+    if ([view isKindOfClass:[UISlider class]]) {
+        return 0;
+    }
     if ([view isKindOfClass:[UIStackView class]]) {
         UIStackView* stack = (UIStackView*)view;
         for (NSInteger i=0; i<stack.subviews.count; i++) {
@@ -545,14 +573,19 @@
     if ([view isKindOfClass:[UISegmentedControl class]]) {
         UISegmentedControl* seg = (UISegmentedControl*)view;
         seg.selectedSegmentIndex = index;
+        seg.selected = (index != UISegmentedControlNoSegment);
     }
-    
+    if ([view isKindOfClass:[UISlider class]]) {
+        UISlider* slider = (UISlider*)view;
+        slider.selected = (index != UISegmentedControlNoSegment);
+    }
     if ([view isKindOfClass:[UIStackView class]]) {
         UIStackView* stack = (UIStackView*)view;
         for (NSInteger i=0; i<stack.subviews.count; i++) {
             UISegmentedControl* seg = (UISegmentedControl*)stack.subviews[i];
             if ([seg isKindOfClass:[UISegmentedControl class]]) {
                 seg.selectedSegmentIndex = (i == index) ? 0 : UISegmentedControlNoSegment;
+                seg.selected = (i == index);
 #if TARGET_OS_TV
                 if (seg.selectedSegmentIndex == 0)
                     seg.backgroundColor = [seg titleTextAttributesForState:UIControlStateSelected][NSBackgroundColorAttributeName];
@@ -599,6 +632,18 @@
             NSInteger n = [self getSelectedSegmentIndex:item] + dir;
             n = MIN(MAX(0,n), [self getNumberOfSegments:item]-1);
             [self setSelectedSegmentIndex:item index:n];
+            if ([item isKindOfClass:[UISlider class]]) {
+                UISlider* slider = (UISlider*)item;
+                NSString* key = (__bridge NSString*)(void*)slider.tag;
+                
+                float step = [_step[key] floatValue];
+                
+                if (step == 0.0)
+                    step = (slider.maximumValue - slider.minimumValue)  / 10;
+
+                slider.value = slider.value + (dir * step);
+                [self slide:slider];
+            }
             break;
         }
         case UIPressTypeSelect:
@@ -614,6 +659,12 @@
             break;
     }
 }
+
+// disable the tvOS Focus Engine
+- (BOOL) canBecomeFocused {
+    return FALSE;
+}
+
 @end
 
 #pragma mark - InfoHUD ViewController
@@ -631,7 +682,7 @@
 - (instancetype)init {
     self = [super init];
     
-    _blurBackground = TARGET_OS_IOS ? YES : NO;
+    _blurBackground = TARGET_OS_IOS ? YES : YES;
     _dimBackground = 0.5;
     
     _hud = [[InfoHUD alloc] init];
@@ -647,6 +698,13 @@
         [_hud addTitle:self.title];
         [_hud addSeparator];
     }
+}
+
+- (void)setFont:(UIFont *)font {
+    [_hud setFont:font];
+}
+- (UIFont*)font {
+    return [_hud font];
 }
 
 - (void)setModalPresentationStyle:(UIModalPresentationStyle)style {
@@ -756,8 +814,7 @@
 
     if (self.modalPresentationStyle != UIModalPresentationPopover) {
 
-        // TODO: change the font on tvOS instead
-        CGFloat scale = TARGET_OS_TV ? 1.5 : 1.0;
+        CGFloat scale = 1.0;
         
         if (size.width * scale > self.view.bounds.size.width * 0.95)
             scale = self.view.bounds.size.width * 0.95 / size.width;
@@ -870,4 +927,41 @@
 }
 
 @end
+
+#pragma mark - TVSlider
+
+#if TARGET_OS_TV
+@implementation TVSlider {
+    UIProgressView* _progress;
+}
+-(instancetype)initWithFrame:(CGRect)frame {
+    self = [super initWithFrame:frame];
+    self.minimumValue = 0.0;
+    self.maximumValue = 1.0;
+    _progress = [[UIProgressView alloc] init];
+    _progress.tintColor = UIColor.whiteColor;
+    [self addSubview:_progress];
+    return self;
+}
+-(float) value {
+    return _minimumValue + _progress.progress * (_maximumValue - _minimumValue);
+}
+-(void)setValue:(float)value {
+    value = (value - _minimumValue) / (_maximumValue - _minimumValue);
+    _progress.progress = MAX(0.0, MIN(1.0, value));
+}
+-(void)setThumbImage:(nullable UIImage *)image forState:(UIControlState)state {
+}
+- (void)setSelected:(BOOL)selected {
+    _progress.progressTintColor = selected ? self.tintColor : UIColor.whiteColor;
+    _progress.trackTintColor = selected ? [self.tintColor colorWithAlphaComponent:0.2] : nil;
+}
+- (void)layoutSubviews {
+    CGFloat h = [_progress sizeThatFits:CGSizeZero].height;
+    CGFloat w = self.bounds.size.width;
+    _progress.frame = CGRectMake((self.bounds.size.width - w)/2, (self.bounds.size.height - h)/2, w, h);
+}
+@end
+#endif
+
 
