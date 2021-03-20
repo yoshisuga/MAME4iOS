@@ -338,9 +338,7 @@ int run_mame(char* game)
         g_pref_autosave ? "-autosave" : "-noautosave",
         "-flicker", g_pref_vector_flicker ? "0.4" : "0.0",
         "-beam", g_pref_vector_bean2x ? "2.5" : "1.0",          // TODO: -beam_width_min and -beam_width_max on latest MAME
-#ifdef DEBUG
         "-pause_brightness", "1.0",     // to debug shaders
-#endif
         };
     
     int argc = sizeof(argv) / sizeof(argv[0]);
@@ -1238,12 +1236,14 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
     
     static unsigned long g_input_status;
 
-    // use the stick position if nothing on dpad
+    // use the stick position if nothing on dpad (4-way)
     if ((pad_status & (MYOSD_UP|MYOSD_DOWN|MYOSD_LEFT|MYOSD_RIGHT)) == 0) {
-        if (stick.y >= +0.5) pad_status |= MYOSD_UP;
-        if (stick.y <= -0.5) pad_status |= MYOSD_DOWN;
-        if (stick.x >= +0.5) pad_status |= MYOSD_RIGHT;
-        if (stick.x <= -0.5) pad_status |= MYOSD_LEFT;
+        if (sqrtf(stick.x*stick.x + stick.y*stick.y) > 0.15) {
+            if (fabs(stick.x) < fabs(stick.y))
+                pad_status |= (stick.y < 0.0 ? MYOSD_DOWN : MYOSD_UP);
+            else
+                pad_status |= (stick.x < 0.0 ? MYOSD_LEFT : MYOSD_RIGHT);
+        }
     }
 
     unsigned long changed_status = (pad_status ^ g_input_status) & pad_status;
