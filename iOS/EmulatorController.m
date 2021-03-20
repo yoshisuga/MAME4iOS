@@ -1814,7 +1814,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 #endif
             @":gear:#:",
             g_pref_showHUD <= HudSizeNormal ? @":info.circle:ⓘ:" : (g_pref_showHUD >= HudSizeLarge && can_edit_shader) ? @":slider.horizontal.3:☰:" : @":list.dash:☷:",
-            @":command:⌘:"
+            TARGET_OS_IOS ? @":command:⌘:" : @":xmark.circle:ⓧ:"
         ];
         [hudView addToolbar:items handler:^(NSUInteger button) {
 #if !TARGET_OS_IOS
@@ -1853,7 +1853,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
                 {
                     Options* op = [[Options alloc] init];
                     g_pref_saveHUD = g_pref_showHUD;
-                    g_pref_showHUD = HudSizeTiny;
+                    g_pref_showHUD = TARGET_OS_IOS ? HudSizeTiny : HudSizeZero;
                     op.showHUD = g_pref_showHUD;
                     [op saveOptions];
                     [_self changeUI];
