@@ -31,6 +31,15 @@ enum  { MYOSD_UP=0x1,       MYOSD_LEFT=0x4,       MYOSD_DOWN=0x10,   MYOSD_RIGHT
         MYOSD_L3=1<<16,     MYOSD_R3=1<<17,       MYOSD_L2=1<<18,    MYOSD_R2=1<<19,
         MYOSD_EXIT=1<<20,   MYOSD_OPTION=1<<21,   MYOSD_HOME=1<<22,  MYOSD_MENU=1<<23,
 };
+enum MYOSD_AXIS {
+    MYOSD_AXIS_LX,
+    MYOSD_AXIS_LY,
+    MYOSD_AXIS_RX,
+    MYOSD_AXIS_RY,
+    MYOSD_AXIS_LZ,
+    MYOSD_AXIS_RZ,
+    MYOSD_AXIS_NUM
+};
     
 #define NUM_JOY 4
 #define NUM_KEYS 256
@@ -64,8 +73,7 @@ extern int  myosd_in_menu;
 extern unsigned long myosd_joy_status[NUM_JOY];
 extern unsigned char myosd_keyboard[NUM_KEYS];
 
-extern float joy_analog_x[NUM_JOY][4];
-extern float joy_analog_y[NUM_JOY][2];
+extern float myosd_joy_analog[NUM_JOY][MYOSD_AXIS_NUM];
 
 extern float lightgun_x[NUM_JOY];
 extern float lightgun_y[NUM_JOY];
@@ -95,7 +103,7 @@ extern int myosd_speed;
 extern void myosd_init(void);
 extern void myosd_deinit(void);
 extern unsigned long myosd_joystick_read(int n);
-extern float myosd_joystick_read_analog(int n, char axis);
+extern float myosd_joystick_read_analog(int n, int axis);
 extern void myosd_set_video_mode(int width,int height,int vis_width, int vis_height);
 extern void myosd_video_draw(void*);
 extern void myosd_closeSound(void);

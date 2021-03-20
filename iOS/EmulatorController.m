@@ -2089,6 +2089,10 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
 #pragma mark - mame device input
 
+#define DIRECT_CONTROLLER_READ  0 // 1 - always read controller, 0 - cache read, and only read when marked dirty
+
+#define NUM_DEV (NUM_JOY+1) // one extra device for the Siri Remote!
+
 #define MYOSD_PLAYER_SHIFT  28
 #define MYOSD_PLAYER_MASK   MYOSD_PLAYER(0x3)
 #define MYOSD_PLAYER(n)     (n << MYOSD_PLAYER_SHIFT)
@@ -2262,16 +2266,8 @@ void handle_autofire(void)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpartial-availability"
 // handle input from a mouse for a specific player (mouse will only be non-nil on iOS 14)
-static void read_mouse(int player, GCMouse *mouse)
+static void read_mouse(GCMouse* mouse, int player)
 {
-#ifdef __IPHONE_14_0
-    // read the mouse buttons
-    mouse_status[player] =
-        (mouse.mouseInput.leftButton.pressed ? MYOSD_A : 0) |
-        (mouse.mouseInput.rightButton.pressed ? MYOSD_B : 0) |
-        (mouse.mouseInput.middleButton.pressed ? MYOSD_X : 0) ;
-#endif
-    
     // read the accumulated movement
     [mouse_lock lock];
     mouse_x[player] = mouse_delta_x[player];
@@ -2284,13 +2280,13 @@ static void read_mouse(int player, GCMouse *mouse)
 }
 #pragma clang diagnostic pop
 
-// handle input from a siri remote for a specific player
-static void read_remote(int player, GCMicroGamepad *gamepad)
+// handle input from a siri remote
+static unsigned long read_remote(GCMicroGamepad *gamepad, float *axis)
 {
     GCControllerDirectionPad* dpad = gamepad.dpad;
     
     // read the DPAD and A, B
-    myosd_joy_status[player] =
+    unsigned long status =
         (dpad.up.pressed ? MYOSD_UP : 0) |
         (dpad.down.pressed ? MYOSD_DOWN : 0) |
         (dpad.left.pressed ? MYOSD_LEFT : 0) |
@@ -2298,35 +2294,38 @@ static void read_remote(int player, GCMicroGamepad *gamepad)
         (gamepad.buttonA.isPressed ? MYOSD_A : 0) |
         (gamepad.buttonX.isPressed ? MYOSD_B : 0) ;
     
-    joy_analog_x[player][0] = 0.0;
-    joy_analog_y[player][0] = 0.0;
+    float analog_x = dpad.xAxis.value;
+    float analog_y = dpad.yAxis.value;
 
-    joy_analog_x[player][1] = 0.0;
-    joy_analog_y[player][1] = 0.0;
-
-    joy_analog_x[player][2] = 0.0;
-    joy_analog_x[player][3] = 0.0;
-
-    // READ DPAD as a ANALOG STICK, except when in a menu
-    if (myosd_inGame && !myosd_in_menu) {
-        joy_analog_x[player][0] = dpad.xAxis.value;
-        joy_analog_y[player][0] = dpad.yAxis.value;
-    }
-    
     if (STICK2WAY) {
-        myosd_joy_status[player] &= ~(MYOSD_UP | MYOSD_DOWN);
-        joy_analog_y[player][0] = 0.0;
+        status &= ~(MYOSD_UP | MYOSD_DOWN);
+        analog_y = 0.0;
     }
     else if (STICK4WAY) {
-        if (fabs(dpad.yAxis.value) > fabs(dpad.xAxis.value))
-            myosd_joy_status[player] &= ~(MYOSD_LEFT|MYOSD_RIGHT);
+        if (fabs(analog_y) > fabs(analog_x))
+            status &= ~(MYOSD_LEFT|MYOSD_RIGHT);
         else
-            myosd_joy_status[player] &= ~(MYOSD_DOWN|MYOSD_UP);
+            status &= ~(MYOSD_DOWN|MYOSD_UP);
     }
+    
+    // READ DPAD as a ANALOG STICK, except when in a menu
+    if (!(myosd_inGame && !myosd_in_menu))
+        analog_x = analog_y = 0.0;
+
+    if (axis != NULL) {
+        axis[MYOSD_AXIS_LX] = analog_x;
+        axis[MYOSD_AXIS_LY] = analog_y;
+        axis[MYOSD_AXIS_LZ] = 0.0;
+        axis[MYOSD_AXIS_RX] = 0.0;
+        axis[MYOSD_AXIS_RY] = 0.0;
+        axis[MYOSD_AXIS_RZ] = 0.0;
+    }
+    
+    return status;
 }
 
-// read all the buttons from a game controller
-static unsigned long read_gamepad_buttons(GCExtendedGamepad *gamepad)
+// read all the data from a extended gamepad
+static unsigned long read_gamepad(GCExtendedGamepad *gamepad, float* axis)
 {
     GCControllerDirectionPad* dpad = gamepad.dpad;
     unsigned long status = 0;
@@ -2354,50 +2353,62 @@ static unsigned long read_gamepad_buttons(GCExtendedGamepad *gamepad)
               (gamepad.buttonMenu.isPressed ? MYOSD_MENU : 0) |
               (gamepad.buttonHome.isPressed ? MYOSD_HOME : 0) ;
     
+    // READ the ANALOG STICKS
+    if (axis != NULL) {
+        axis[MYOSD_AXIS_LX] = gamepad.leftThumbstick.xAxis.value;
+        axis[MYOSD_AXIS_LY] = gamepad.leftThumbstick.yAxis.value;
+        axis[MYOSD_AXIS_LZ] = gamepad.leftTrigger.value;
+        axis[MYOSD_AXIS_RX] = gamepad.rightThumbstick.xAxis.value;
+        axis[MYOSD_AXIS_RY] = gamepad.rightThumbstick.yAxis.value;
+        axis[MYOSD_AXIS_RZ] = gamepad.rightTrigger.value;
+    }
+    
     return status;
 }
 
-
-// handle input from a game controller for a specific player
-static void read_gamepad(int player, GCExtendedGamepad *gamepad)
+// read all the data from a game controller
+static unsigned long read_controller(GCController *controller, float* axis)
 {
-    unsigned long status  = read_gamepad_buttons(gamepad);
+    GCExtendedGamepad* gamepad = controller.extendedGamepad;
     
-    // dont let MAME see any MENU combo buttons.
-    if (status & (MYOSD_OPTION|MYOSD_MENU|MYOSD_HOME) || g_menuButtonMode[player] != 0)
-        status = 0;
-    
-    myosd_joy_status[player] = status;
+    if (gamepad != nil)
+        return read_gamepad(gamepad, axis);
 
-    // READ the ANALOG STICKS
-    joy_analog_x[player][0] = gamepad.leftThumbstick.xAxis.value;
-    joy_analog_y[player][0] = gamepad.leftThumbstick.yAxis.value;
-
-    joy_analog_x[player][1] = gamepad.rightThumbstick.xAxis.value;
-    joy_analog_y[player][1] = gamepad.rightThumbstick.yAxis.value;
-
-    joy_analog_x[player][2] = gamepad.leftTrigger.value;
-    joy_analog_x[player][3] = gamepad.rightTrigger.value;
+    // dont let MAME see the Siri Remote if the HUD is active
+    if (!(TARGET_OS_TV && g_pref_showHUD))
+        return read_remote(controller.microGamepad, axis);
 }
 
 // handle input from a game controller for a specific player
-static void read_controller(int player, GCController *controller)
+static void read_player_controller(GCController *controller, int index, int player)
 {
-    GCExtendedGamepad* gamepad = controller.extendedGamepad;
-    if (gamepad)
-        return read_gamepad(player, gamepad);
+    // if the controller is in MENU mode, dont let MAME see any input
+    if (g_menuButtonMode[index] != 0)
+        return;
     
-    GCMicroGamepad* remote = controller.microGamepad;
-    if (remote && !(g_pref_showHUD && TARGET_OS_TV))
-        return read_remote(player, remote);
+#if DIRECT_CONTROLLER_READ
+    // read controller directly into player data
+    myosd_joy_status[player] = read_controller(controller, myosd_joy_analog[player]);
+#else
+    // do a *lazy* read, only read if the updateHandler set the device dirty
+    static unsigned long g_device_status[NUM_DEV];
+    static float g_device_analog[NUM_DEV][MYOSD_AXIS_NUM];
+
+    if (g_device_has_input[index]) {
+        g_device_status[index] = read_controller(controller, g_device_analog[index]);
+        g_device_has_input[index] = 0;
+    }
+    myosd_joy_status[player] = g_device_status[index];
+    _Static_assert(sizeof(myosd_joy_analog[0]) == MYOSD_AXIS_NUM * sizeof(float), "");
+    memcpy(myosd_joy_analog[player], g_device_analog[index], sizeof(g_device_analog[0]));
+#endif
 }
 
 static BOOL controller_is_zero(int player) {
     return myosd_joy_status[player] == 0 &&
-        joy_analog_x[player][0] == 0.0 && joy_analog_y[player][0] == 0.0 &&
-        joy_analog_x[player][1] == 0.0 && joy_analog_y[player][1] == 0.0 &&
-        joy_analog_x[player][2] == 0.0 &&
-        joy_analog_x[player][3] == 0.0 ;
+        myosd_joy_analog[player][MYOSD_AXIS_LX] == 0.0 && myosd_joy_analog[player][MYOSD_AXIS_RX] == 0.0 &&
+        myosd_joy_analog[player][MYOSD_AXIS_LY] == 0.0 && myosd_joy_analog[player][MYOSD_AXIS_RY] == 0.0 &&
+        myosd_joy_analog[player][MYOSD_AXIS_LZ] == 0.0 && myosd_joy_analog[player][MYOSD_AXIS_RZ] == 0.0 ;
 }
 
 // handle any input from *all* game controllers
@@ -2413,26 +2424,26 @@ static void handle_device_input()
     if (controllers_count == 0) {
         // read only the on-screen controlls
         myosd_joy_status[0] = myosd_pad_status;
-        joy_analog_x[0][0] = myosd_pad_x;
-        joy_analog_y[0][0] = myosd_pad_y;
+        myosd_joy_analog[0][MYOSD_AXIS_LX] = myosd_pad_x;
+        myosd_joy_analog[0][MYOSD_AXIS_LY] = myosd_pad_y;
     }
     else {
-        for (int i = 0; i < controllers_count; i++) {
-            GCController *controller = controllers[i];
+        for (int index = 0; index < controllers_count; index++) {
+            GCController *controller = controllers[index];
             int player = (int)controller.playerIndex;
             // when in a MAME menu (or the root) let any controller work the UI
             if (myosd_inGame == 0 || myosd_in_menu == 1)
                 player = 0;
             // dont overwrite a lower index controller, unless....
-            if (player == i || controller_is_zero(player))
-                read_controller(player, controller);
+            if (player == index || controller_is_zero(player))
+                read_player_controller(controller, index, player);
         }
 
-        // read the on-screen controls
+        // read the on-screen controls if no game controller input
         if (controller_is_zero(0)) {
             myosd_joy_status[0] = myosd_pad_status;
-            joy_analog_x[0][0] = myosd_pad_x;
-            joy_analog_y[0][0] = myosd_pad_y;
+            myosd_joy_analog[0][MYOSD_AXIS_LX] = myosd_pad_x;
+            myosd_joy_analog[0][MYOSD_AXIS_LY] = myosd_pad_y;
         }
     }
     TIMER_STOP(timer_read_controllers);
@@ -2442,12 +2453,12 @@ static void handle_device_input()
     NSArray* mice = g_mice;
     if (mice.count != 0 && g_direct_mouse_enable) {
         for (int i = 0; i < MIN(NUM_JOY, mice.count); i++) {
-            read_mouse(i, mice[i]);
+            read_mouse(mice[i], i);
         }
     }
     // if no HW mice, get input from the on-screen touch mouse
     else if (myosd_mouse == 1 && g_pref_touch_analog_enabled) {
-        read_mouse(0, nil);
+        read_mouse(nil, 0);
     }
     TIMER_STOP(timer_read_mice);
 
@@ -2459,18 +2470,11 @@ static void handle_p1aspx(void) {
     
     if (g_pref_p1aspx == 0 || myosd_in_menu != 0)
         return;
+
     
     for (int i=1; i<NUM_JOY; i++) {
         myosd_joy_status[i] = myosd_joy_status[0];
-
-        joy_analog_x[i][0] = joy_analog_x[0][0];
-        joy_analog_y[i][0] = joy_analog_y[0][0];
-
-        joy_analog_x[i][1] = joy_analog_x[0][1];
-        joy_analog_y[i][1] = joy_analog_y[0][1];
-
-        joy_analog_x[i][2] = joy_analog_x[0][2];
-        joy_analog_x[i][3] = joy_analog_x[0][3];
+        memcpy(myosd_joy_analog[i], myosd_joy_analog[0], sizeof(myosd_joy_analog[0]));
     }
 }
 
@@ -4371,9 +4375,10 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 
 #define MENU_HUD_SHOW_DELAY     1.0
 
-static unsigned long g_menuButtonMode[NUM_JOY];     // non-zero if a MENU button is down
-static unsigned long g_menuButtonState[NUM_JOY];    // button state while MENU is down
-static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier button was handled
+static unsigned long g_menuButtonMode[NUM_DEV];     // non-zero if a MENU button is down
+static unsigned long g_menuButtonState[NUM_DEV];    // button state while MENU is down
+static unsigned long g_menuButtonPressed[NUM_DEV];  // bit set if a modifier button was handled
+static unsigned long g_device_has_input[NUM_DEV];   // TRUE if device needs to be read.
 
 -(void)setupGameControllers {
     
@@ -4403,14 +4408,13 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
     }
     // add all the controllers without a extendedGamepad profile last, ie the Siri Remote.
     for (GCController* controler in GCController.controllers) {
-        if (controler.extendedGamepad == nil && controler.microGamepad != nil)
+        if (controler.extendedGamepad == nil && controler.microGamepad != nil && controllers.count < NUM_DEV)
             [controllers addObject:controler];
     }
 
     // reset current input state
     memset(myosd_joy_status, 0, sizeof(myosd_joy_status));
-    memset(joy_analog_x, 0, sizeof(joy_analog_x));
-    memset(joy_analog_y, 0, sizeof(joy_analog_y));
+    memset(myosd_joy_analog, 0, sizeof(myosd_joy_analog));
 
     // cancel menu mode on all (current) controllers, this is needed when a controller disconects in menu mode.
     memset(g_menuButtonMode, 0, sizeof(g_menuButtonMode));
@@ -4472,6 +4476,9 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
     // Siri Remote special case to navigate the menu
     if (controller.extendedGamepad == nil) {
         controller.microGamepad.valueChangedHandler = ^(GCMicroGamepad* gamepad, GCControllerElement* element) {
+            int index = (int)[g_controllers indexOfObjectIdenticalTo:gamepad.controller];
+            NSParameterAssert(index >= 0 && index < NUM_DEV);
+            g_device_has_input[index] = 1;
             if (g_menu || g_pref_showHUD) {
                 GCControllerDirectionPad* dpad = gamepad.dpad;
                 // read A and DPAD axis
@@ -4494,11 +4501,13 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
         
         GCController* controller = gamepad.controller;
         int index = (int)[g_controllers indexOfObjectIdenticalTo:controller];
-        
-        NSParameterAssert(index >= 0 && index < NUM_JOY);
-        if (!(index >= 0 && index < NUM_JOY))
+
+        NSParameterAssert(index >= 0 && index < NUM_DEV);
+        if (!(index >= 0 && index < NUM_DEV))
             return;
-        
+
+        g_device_has_input[index] = 1;
+
         // if a MENU button is down (or menuHUD) handle a menu button combo
         if (g_menuButtonMode[index] != 0 || g_menu != nil)
             return [self handleMenuButton:controller];
@@ -4513,7 +4522,7 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
             [self changeUI];
         }
         
-        unsigned long pad_status = read_gamepad_buttons(gamepad);
+        unsigned long pad_status = read_gamepad(gamepad, NULL);
         [self handle_INPUT:pad_status stick:CGPointMake(gamepad.leftThumbstick.xAxis.value, gamepad.leftThumbstick.yAxis.value)];
     };
 }
@@ -4610,8 +4619,8 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
     int index = (int)[g_controllers indexOfObjectIdenticalTo:controller];
     int player = (int)controller.playerIndex;
 
-    NSParameterAssert(index >= 0 && index < NUM_JOY && player >= 0 && player < NUM_JOY);
-    if (index < 0 || index >= NUM_JOY || player < 0 || player >= NUM_JOY)
+    NSParameterAssert(index >= 0 && index < NUM_DEV && player >= 0 && player < NUM_JOY);
+    if (index < 0 || index >= NUM_DEV || player < 0 || player >= NUM_JOY)
         return;
     
     NSLog(@"handleMenuButton[%d]: %s %s", index,
@@ -4662,8 +4671,8 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
     NSLog(@"showMenu (after delay): %@", controller);
     int index = (int)[g_controllers indexOfObjectIdenticalTo:controller];
     // treat showing the menu after a delay the same as hiting a combo button
-    NSParameterAssert(index >= 0 && index < NUM_JOY);
-    if (index >= 0 && index < NUM_JOY)
+    NSParameterAssert(index >= 0 && index < NUM_DEV);
+    if (index >= 0 && index < NUM_DEV)
         g_menuButtonPressed[index] |= MYOSD_MENU;
     [self runMenu:controller];
 }
@@ -4702,12 +4711,12 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
     int index = (int)[g_controllers indexOfObjectIdenticalTo:controller];
     int player = (int)controller.playerIndex;
 
-    NSParameterAssert(index >= 0 && index < NUM_JOY && player >= 0 && player < NUM_JOY);
-    if (index < 0 || index >= NUM_JOY || player < 0 || player >= NUM_JOY)
+    NSParameterAssert(index >= 0 && index < NUM_DEV && player >= 0 && player < NUM_JOY);
+    if (index < 0 || index >= NUM_DEV || player < 0 || player >= NUM_JOY)
         return;
     
     unsigned long combo_buttons = (MYOSD_A|MYOSD_B|MYOSD_X|MYOSD_Y|MYOSD_UP|MYOSD_DOWN|MYOSD_LEFT|MYOSD_RIGHT|MYOSD_L1|MYOSD_R1|MYOSD_L2|MYOSD_R2);
-    unsigned long current_state = read_gamepad_buttons(controller.extendedGamepad);
+    unsigned long current_state = read_gamepad(controller.extendedGamepad, NULL);
     unsigned long changed_state = (current_state ^ g_menuButtonState[index]) & current_state;   // changed buttons that are DOWN
     g_menuButtonState[index] = current_state;
     
@@ -4969,6 +4978,15 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
         // TODO: should they be merged?
         // TODO: turns out MAME will merge mice by default, we dont need to.
 
+        [mouse.mouseInput.leftButton setPressedChangedHandler:^(GCControllerButtonInput* button, float value, BOOL pressed) {
+            mouse_status[i] = (mouse_status[i] & ~MYOSD_A) | (pressed ? MYOSD_A : 0);
+        }];
+        [mouse.mouseInput.rightButton setPressedChangedHandler:^(GCControllerButtonInput* button, float value, BOOL pressed) {
+            mouse_status[i] = (mouse_status[i] & ~MYOSD_B) | (pressed ? MYOSD_B : 0);
+        }];
+        [mouse.mouseInput.middleButton setPressedChangedHandler:^(GCControllerButtonInput* button, float value, BOOL pressed) {
+            mouse_status[i] = (mouse_status[i] & ~MYOSD_Y) | (pressed ? MYOSD_Y : 0);
+        }];
         [mouse.mouseInput setMouseMovedHandler:^(GCMouseInput* mouse, float deltaX, float deltaY) {
             if (!g_direct_mouse_enable)
                 return;

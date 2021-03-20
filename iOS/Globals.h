@@ -71,8 +71,6 @@
 
 #define absf(x)			    ((x >= 0) ? (x) : (x * -1.0f))
 
-#define NUM_JOY 4
-
 //#define STICK4WAY (myosd_waysStick == 4 && myosd_inGame)
 #define STICK4WAY (myosd_waysStick == 4 || !myosd_inGame || myosd_in_menu)
 #define STICK2WAY (myosd_waysStick == 2 && myosd_inGame && !myosd_in_menu)
@@ -90,12 +88,6 @@ extern int myosd_inGame;
 
 extern void change_pause(int value);
 extern int iOS_main (int argc, char **argv);
-
-// NOTE these globals are used to pass input to the OSD
-// ....they should only be used by the MAME thread in myosd_poll_input()
-extern unsigned long myosd_joy_status[NUM_JOY];
-extern float joy_analog_x[NUM_JOY][4];
-extern float joy_analog_y[NUM_JOY][2];
 
 // these are the current status of the onscreen touch controls (or iCade)
 extern unsigned long myosd_pad_status;
