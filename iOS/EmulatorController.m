@@ -719,7 +719,7 @@ HUDViewController* g_menu;
     menu.blurBackground = YES;
 #else
     menu.font = [UIFont systemFontOfSize:42.0 weight:UIFontWeightRegular];
-    menu.blurBackground = YES;
+    menu.blurBackground = NO;
 #endif
     
 #if TARGET_OS_IOS
@@ -2380,7 +2380,7 @@ static unsigned long read_controller(GCController *controller, float* axis)
         return read_gamepad(gamepad, axis);
 
     // dont let MAME see the Siri Remote if the HUD is active
-    if (!(TARGET_OS_TV && g_pref_showHUD))
+    if (!(TARGET_OS_TV && g_pref_showHUD && !(myosd_inGame && !myosd_in_menu)))
         return read_remote(controller.microGamepad, axis);
     
     return 0;
@@ -4486,7 +4486,7 @@ static unsigned long g_device_has_input[NUM_DEV];   // TRUE if device needs to b
             int index = (int)[g_controllers indexOfObjectIdenticalTo:gamepad.controller];
             NSParameterAssert(index >= 0 && index < NUM_DEV);
             g_device_has_input[index] = 1;
-            if (g_menu || g_pref_showHUD) {
+            if ((g_menu || g_pref_showHUD) && (myosd_inGame && !myosd_in_menu)) {
                 GCControllerDirectionPad* dpad = gamepad.dpad;
                 // read A and DPAD axis
                 unsigned long pad_status = MYOSD_SIRI_REMOTE | (gamepad.buttonA.isPressed ? MYOSD_A : 0);
