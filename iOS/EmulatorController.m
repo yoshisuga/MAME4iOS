@@ -714,8 +714,12 @@ HUDViewController* g_menu;
 
     HUDViewController* menu = [[HUDViewController alloc] init];
 
-#if TARGET_OS_TV
+#if TARGET_OS_IOS
+    menu.font = nil;
+    menu.blurBackground = YES;
+#else
     menu.font = [UIFont systemFontOfSize:42.0 weight:UIFontWeightRegular];
+    menu.blurBackground = YES;
 #endif
     
 #if TARGET_OS_IOS
@@ -2137,6 +2141,7 @@ static int handle_buttons()
 {
     // check for exit (we cound just do this with push_mame_key...)
     if (myosd_exitGame) {
+        NSCParameterAssert(g_mame_key == 0);
         g_mame_key = MYOSD_KEY_ESC;
         myosd_exitGame = 0;
     }
@@ -2377,6 +2382,8 @@ static unsigned long read_controller(GCController *controller, float* axis)
     // dont let MAME see the Siri Remote if the HUD is active
     if (!(TARGET_OS_TV && g_pref_showHUD))
         return read_remote(controller.microGamepad, axis);
+    
+    return 0;
 }
 
 // handle input from a game controller for a specific player

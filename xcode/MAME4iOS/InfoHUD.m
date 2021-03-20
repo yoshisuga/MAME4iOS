@@ -486,12 +486,12 @@
     UILabel* label = _views[key];
     if (![label isKindOfClass:[UILabel class]])
         return label;
-#if TARGET_OS_IOS
     UISlider* slider = (__bridge UISlider*)(void*)label.tag;
     float step = [_step[key] floatValue];
     if (([slider isKindOfClass:[UISlider class]]))
         return @((step != 0.0) ? round(slider.value / step) * step : slider.value);
-    else if (([slider isKindOfClass:[UISwitch class]]))
+#if TARGET_OS_IOS
+    if (([slider isKindOfClass:[UISwitch class]]))
         return [(UISwitch*)slider isOn] ? @(1) : @(0);
 #endif
     if ([label.text containsString:@": "])
@@ -682,7 +682,7 @@
 - (instancetype)init {
     self = [super init];
     
-    _blurBackground = TARGET_OS_IOS ? YES : YES;
+    _blurBackground = YES;
     _dimBackground = 0.5;
     
     _hud = [[InfoHUD alloc] init];
