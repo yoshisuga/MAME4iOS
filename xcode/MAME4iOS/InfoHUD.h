@@ -50,6 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSDictionary*)getValues;
 
 - (void)handleButtonPress:(UIPressType)type;
+- (void)handleRemotePan:(UIPanGestureRecognizer*)pan;
 
 @end
 

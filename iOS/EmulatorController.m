@@ -155,9 +155,6 @@ unsigned long myosd_pad_status;
 float myosd_pad_x;
 float myosd_pad_y;
 
-// internal pad status, input is from Siri Remote.
-#define MYOSD_SIRI_REMOTE   0x80000000
-
 // Touch Directional Input tracking
 int touchDirectionalCyclesAfterMoved = 0;
 
@@ -884,10 +881,6 @@ HUDViewController* g_menu;
             [self endMenu];
     }];
     
-    // select the first item
-    if (controller != nil)
-        [menu handleButtonPress:UIPressTypeDownArrow];
-
     NSParameterAssert(g_menu == nil);
     g_menu = menu;
     [self startMenu];
@@ -1266,28 +1259,17 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
 
 - (void)handle_MENU:(unsigned long)pad_status stick:(CGPoint)stick
 {
+#if TARGET_OS_IOS   // NOT needed on tvOS it handles it with the focus engine
     UIResponder* target = [self presentedViewController];
-    
-#if TARGET_OS_TV
-    if (target == nil && hudView != nil && (pad_status & MYOSD_SIRI_REMOTE))
-        target = hudView;
-#endif
     
     // if a viewController or menu is up send the input to it.
     if (target != nil) {
-#if TARGET_OS_TV
-        if (self.controllerUserInteractionEnabled)
-            return;
-#endif
+
         if ([target isKindOfClass:[UINavigationController class]])
             target = [(UINavigationController*)target topViewController];
 
         // de-bounce input from analog buttons (MFi controler)
         UIPressType button = input_debounce(pad_status, stick);
-
-        // TODO: send stick position if select is down
-//        if ((pad_status & MYOSD_A) && [target respondsToSelector:@selector(handleButtonPress:stick:)])
-//            [(id)target handleButtonPress:button stick:stick];
 
         if (button != UIPressTypeNone && [target respondsToSelector:@selector(handleButtonPress:)])
             [(id)target handleButtonPress:button];
@@ -1295,7 +1277,6 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
         return;
     }
 
-#if TARGET_OS_IOS   // NOT needed on tvOS it handles it with the focus engine
     // touch screen START button, when no COIN button
     if (CGRectIsEmpty(rInput[BTN_SELECT]) && (buttonState & MYOSD_START) && !(pad_status & MYOSD_START))
     {
@@ -1400,6 +1381,10 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
     [self.view addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeCenterX multiplier:1.0f constant:0.0f]];
     [self.view addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeTopMargin multiplier:1.0f constant:8.0f]];
     areControlsHidden = NO;
+#else
+    UIPanGestureRecognizer* pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(remotePan:)];
+    pan.allowedTouchTypes = @[@(UITouchTypeIndirect)];
+    [self.view addGestureRecognizer:pan];
 #endif
     
     [self changeUI];
@@ -2381,12 +2366,12 @@ static unsigned long read_controller(GCController *controller, float* axis)
     
     if (gamepad != nil)
         return read_gamepad(gamepad, axis);
-
-    // dont let MAME see the Siri Remote if the HUD is active
-    if (!(TARGET_OS_TV && g_pref_showHUD && !(myosd_inGame && !myosd_in_menu)))
-        return read_remote(controller.microGamepad, axis);
     
-    return 0;
+    // dont let MAME see the Siri Remote if the HUD is active
+    if (TARGET_OS_TV && g_pref_showHUD && (myosd_inGame && !myosd_in_menu))
+        return 0;
+
+    return read_remote(controller.microGamepad, axis);
 }
 
 // handle input from a game controller for a specific player
@@ -4483,18 +4468,12 @@ static unsigned long g_device_has_input[NUM_DEV];   // TRUE if device needs to b
 -(void)installUpdateHandler:(GCController*)controller {
     
 #if TARGET_OS_TV
-    // Siri Remote special case to navigate the menu
+    // Siri Remote special case
     if (controller.extendedGamepad == nil) {
         controller.microGamepad.valueChangedHandler = ^(GCMicroGamepad* gamepad, GCControllerElement* element) {
             int index = (int)[g_controllers indexOfObjectIdenticalTo:gamepad.controller];
             NSParameterAssert(index >= 0 && index < NUM_DEV);
             g_device_has_input[index] = 1;
-            if ((g_menu || g_pref_showHUD) && (myosd_inGame && !myosd_in_menu)) {
-                GCControllerDirectionPad* dpad = gamepad.dpad;
-                // read A and DPAD axis
-                unsigned long pad_status = MYOSD_SIRI_REMOTE | (gamepad.buttonA.isPressed ? MYOSD_A : 0);
-                [self handle_INPUT:pad_status stick:CGPointMake(dpad.xAxis.value,dpad.yAxis.value)];
-            }
         };
         return;
     }
@@ -4742,8 +4721,10 @@ static unsigned long g_device_has_input[NUM_DEV];   // TRUE if device needs to b
     
     // DPAD and A/B navigate the menu (unless MENU/HOME/OPTION are down)
     if (g_menu && (current_state & (MYOSD_MENU | MYOSD_OPTION | MYOSD_HOME)) == 0) {
+#if TARGET_OS_IOS
         UIPressType press = input_debounce(current_state, CGPointMake(controller.extendedGamepad.leftThumbstick.xAxis.value, controller.extendedGamepad.leftThumbstick.yAxis.value));
         [g_menu handleButtonPress:press];
+#endif
         changed_state &= ~(MYOSD_A|MYOSD_B|MYOSD_UP|MYOSD_DOWN|MYOSD_LEFT|MYOSD_RIGHT);
     }
     
@@ -5335,33 +5316,33 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
     return @[keyboardView];
 }
 
+- (void)remotePan:(UIPanGestureRecognizer*)pan {
+    if (g_pref_showHUD)
+        [hudView handleRemotePan:pan];
+}
+
 - (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
     NSLog(@"PRESSES BEGAN: %ld", presses.allObjects.firstObject.type);
     for (UIPress *press in presses) {
         UIPressType type = press.type;
 
-#if TARGET_OS_SIMULATOR
         // these are press types sent by a keyboard in the simulator
         if (type == 2040) type = UIPressTypeSelect;
         if (type == 2079) type = UIPressTypeRightArrow;
         if (type == 2080) type = UIPressTypeLeftArrow;
         if (type == 2081) type = UIPressTypeDownArrow;
         if (type == 2082) type = UIPressTypeUpArrow;
-#endif
-        // maybe send input to MENU or HUD
-        unsigned long press_status = (type == UIPressTypeSelect ? MYOSD_A : 0) |
-            (type == UIPressTypeLeftArrow ? MYOSD_LEFT : 0) | (type == UIPressTypeRightArrow ? MYOSD_RIGHT : 0) |
-            (type == UIPressTypeUpArrow ? MYOSD_UP : 0)     | (type == UIPressTypeDownArrow ? MYOSD_DOWN : 0) ;
 
         // TODO: detect when this press is coming from a controller
         // NOTE we can get a press without a controller in the SIMULATOR or from an IR remote
-        if (type == UIPressTypeMenu && g_controllers.count == 0) {
+
+        // dont handle MENU here, we do it in handleMenuButton
+        if (type == UIPressTypeMenu && g_controllers.count == 0)
             [self toggleMenu:nil];
-        }
-        else if (press_status != 0 && g_controllers.count == 0) {
-            [self handle_INPUT:(MYOSD_SIRI_REMOTE | press_status) stick:CGPointMake(0, 0)];
-            [self handle_INPUT:(MYOSD_SIRI_REMOTE | 0) stick:CGPointMake(0, 0)];
-        }
+        
+        // but handle UP/DOWN/LEFT/RIGHT.
+        if (g_pref_showHUD && type >= UIPressTypeUpArrow && type <= UIPressTypeSelect && self.presentedViewController == nil)
+            [hudView handleButtonPress:type];
     }
     [super pressesBegan:presses withEvent:event];
 }

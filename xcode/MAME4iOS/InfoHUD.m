@@ -577,7 +577,7 @@
     
     if ([view isKindOfClass:[UISegmentedControl class]]) {
         UISegmentedControl* seg = (UISegmentedControl*)view;
-        seg.selectedSegmentIndex = index;
+        seg.selectedSegmentIndex = MIN(index, (NSInteger)seg.numberOfSegments-1);
         seg.selected = (index != UISegmentedControlNoSegment);
     }
     if ([view isKindOfClass:[UISlider class]]) {
@@ -586,6 +586,7 @@
     }
     if ([view isKindOfClass:[UIStackView class]]) {
         UIStackView* stack = (UIStackView*)view;
+        index = MIN(index, (NSInteger)stack.subviews.count-1);
         for (NSInteger i=0; i<stack.subviews.count; i++) {
             UISegmentedControl* seg = (UISegmentedControl*)stack.subviews[i];
             if ([seg isKindOfClass:[UISegmentedControl class]]) {
@@ -660,11 +661,74 @@
     }
 }
 
+#if TARGET_OS_TV
+
+#pragma mark - siri remote pan
+
+// called when the user does a pan on the Siri Remote
+- (void)handleRemotePan:(UIPanGestureRecognizer*)pan {
+    
+    static CGFloat g_start_value;
+    
+
+    CGPoint delta = [pan translationInView:pan.view];
+    delta.x = delta.x / pan.view.bounds.size.width;
+    delta.y = delta.y / pan.view.bounds.size.height;
+    CGFloat mag = sqrtf(delta.x * delta.x + delta.y * delta.y);
+    UIGestureRecognizerState state = pan.state;
+    
+    if (fabs(delta.y) > 2*fabs(delta.x)) {
+        delta.x = 0.0;
+        if (mag > 0.15) {
+            [self handleButtonPress:delta.y > 0 ? UIPressTypeDownArrow : UIPressTypeUpArrow];
+            state = UIGestureRecognizerStateBegan;
+            [pan setTranslation:CGPointZero inView:pan.view];
+        }
+    }
+    
+    if (_selected < 0)
+        [self handleButtonPress:UIPressTypeDownArrow];
+    
+    NSArray* items = [self getSelectableItems];
+    UIView* item = (_selected >= 0 && _selected < items.count) ? items[_selected] : nil;
+    
+    if (item == nil)
+        return;
+
+    if (state == UIGestureRecognizerStateBegan) {
+        NSLog(@"REMOTE PAN START");
+        if ([item isKindOfClass:[UISlider class]]) {
+            UISlider* slider = (UISlider*)item;
+            g_start_value = (slider.value - slider.minimumValue) / (slider.maximumValue - slider.minimumValue);
+        }
+        else
+            g_start_value = (CGFloat)[self getSelectedSegmentIndex:item] / (CGFloat)[self getNumberOfSegments:item];
+    }
+    else if (state == UIGestureRecognizerStateChanged) {
+        NSLog(@"REMOTE PAN: (%0.3f, %0.3f) mag=%0.3f", delta.x, delta.y, mag);
+        CGFloat value = g_start_value + delta.x;
+        value = MAX(0.0, MIN(1.0, value));
+        if ([item isKindOfClass:[UISlider class]]) {
+            UISlider* slider = (UISlider*)item;
+            value = slider.minimumValue + value * (slider.maximumValue - slider.minimumValue);
+            [slider setValue:value];
+            [self slide:slider];
+        }
+        else
+            [self setSelectedSegmentIndex:item index:value * [self getNumberOfSegments:item]];
+    }
+    else { // UIGestureRecognizerStateEnded or Canceled
+        NSLog(@"REMOTE PAN END");
+    }
+}
+
 #pragma mark - focus
 
 - (BOOL) canBecomeFocused {
     return NO;
 }
+
+#endif
 
 @end
 
