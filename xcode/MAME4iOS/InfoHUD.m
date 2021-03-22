@@ -669,14 +669,14 @@
 - (void)handleRemotePan:(UIPanGestureRecognizer*)pan {
     
     static CGFloat g_start_value;
-    
 
     CGPoint delta = [pan translationInView:pan.view];
     delta.x = delta.x / pan.view.bounds.size.width;
     delta.y = delta.y / pan.view.bounds.size.height;
     CGFloat mag = sqrtf(delta.x * delta.x + delta.y * delta.y);
     UIGestureRecognizerState state = pan.state;
-    
+
+    // check for a PAN in Y
     if (fabs(delta.y) > 2*fabs(delta.x)) {
         delta.x = 0.0;
         if (mag > 0.15) {
@@ -696,7 +696,7 @@
         return;
 
     if (state == UIGestureRecognizerStateBegan) {
-        NSLog(@"REMOTE PAN START");
+        //NSLog(@"REMOTE PAN START");
         if ([item isKindOfClass:[UISlider class]]) {
             UISlider* slider = (UISlider*)item;
             g_start_value = (slider.value - slider.minimumValue) / (slider.maximumValue - slider.minimumValue);
@@ -705,7 +705,7 @@
             g_start_value = (CGFloat)[self getSelectedSegmentIndex:item] / (CGFloat)[self getNumberOfSegments:item];
     }
     else if (state == UIGestureRecognizerStateChanged) {
-        NSLog(@"REMOTE PAN: (%0.3f, %0.3f) mag=%0.3f", delta.x, delta.y, mag);
+        //NSLog(@"REMOTE PAN: (%0.3f, %0.3f) mag=%0.3f", delta.x, delta.y, mag);
         CGFloat value = g_start_value + delta.x;
         value = MAX(0.0, MIN(1.0, value));
         if ([item isKindOfClass:[UISlider class]]) {
@@ -718,7 +718,7 @@
             [self setSelectedSegmentIndex:item index:value * [self getNumberOfSegments:item]];
     }
     else { // UIGestureRecognizerStateEnded or Canceled
-        NSLog(@"REMOTE PAN END");
+        //NSLog(@"REMOTE PAN END");
     }
 }
 
