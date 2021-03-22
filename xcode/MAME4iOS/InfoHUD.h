@@ -50,7 +50,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSDictionary*)getValues;
 
 - (void)handleButtonPress:(UIPressType)type;
+
+#if TARGET_OS_TV
 - (void)handleRemotePan:(UIPanGestureRecognizer*)pan;
+#endif
 
 @end
 
