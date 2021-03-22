@@ -790,7 +790,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 -(void)updateLayout
 {
     UICollectionViewFlowLayout* layout = (UICollectionViewFlowLayout*)self.collectionView.collectionViewLayout;
-    CGFloat space = TARGET_OS_IOS ? 8.0 : 16.0;
+    CGFloat space = TARGET_OS_IOS ? 8.0 : 32.0;
     layout.scrollDirection = UICollectionViewScrollDirectionVertical;
     layout.sectionInset = UIEdgeInsetsMake(space, space, space, space);
     layout.minimumLineSpacing = space;
@@ -2274,13 +2274,12 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 - (void)didHintFocusMovement:(UIFocusMovementHint *)hint {
     NSLog(@"didHintFocusMovement(%@): dir=%@", [self.text.text stringByReplacingOccurrencesOfString:@"\n" withString:@" • "],
           NSStringFromCGVector(hint.movementDirection));
-    BOOL selected = self.selected || self.focused;
-    CGFloat scale = selected ? _scale : self.highlighted ? (2.0 - _scale) : 1.0;
-    
-    self.transform = CGAffineTransformConcat(
-        CGAffineTransformMakeScale(scale, scale),
-        CGAffineTransformMakeTranslation(hint.translation.dx, hint.translation.dy)
-    );
+//    BOOL selected = self.selected || self.focused;
+//    CGFloat scale = selected ? _scale : self.highlighted ? (2.0 - _scale) : 1.0;
+//    self.transform = CGAffineTransformConcat(
+//        CGAffineTransformMakeTranslation(hint.translation.dx, hint.translation.dy),
+//        CGAffineTransformMakeScale(scale, scale)
+//    );
 }
 - (void)didUpdateFocusInContext:(UIFocusUpdateContext *)context withAnimationCoordinator:(UIFocusAnimationCoordinator *)coordinator
 {
