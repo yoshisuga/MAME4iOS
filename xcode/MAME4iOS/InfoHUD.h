@@ -68,6 +68,7 @@ typedef NS_ENUM(NSInteger, HUDButtonStyle) {
 @property (nonatomic, readwrite) CGFloat dimBackground;
 @property(null_resettable,nonatomic,strong) UIFont* font;
 
+- (void)addToolbar:(NSArray*)items handler:(void (^)(NSUInteger button))handler;
 - (void)addButtons:(NSArray*)items style:(HUDButtonStyle)style handler:(void (^)(NSUInteger button))handler;
 - (void)addButton:(id)item style:(HUDButtonStyle)style handler:(void (^)(void))handler;
 - (void)onCancel:(void (^)(void))handler;

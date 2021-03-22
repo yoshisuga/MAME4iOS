@@ -1042,8 +1042,7 @@ HUDViewController* g_menu;
     }
 
 #if TARGET_OS_TV
-    if (![viewControllerToPresent isKindOfClass:[HUDViewController class]])
-        self.controllerUserInteractionEnabled = YES;
+    self.controllerUserInteractionEnabled = YES;
 #endif
     [super presentViewController:viewControllerToPresent animated:flag completion:completion];
 }
@@ -1770,8 +1769,13 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     
     if (hudView == nil) {
         hudView = [[InfoHUD alloc] init];
+#ifdef TARGET_OS_IOS
         hudView.font = [UIFont monospacedDigitSystemFontOfSize:hudView.font.pointSize weight:UIFontWeightRegular];
         hudView.layoutMargins = UIEdgeInsetsMake(8, 8, 8, 8);
+#else
+        hudView.font = [UIFont monospacedDigitSystemFontOfSize:24.0 weight:UIFontWeightRegular];
+        hudView.layoutMargins = UIEdgeInsetsMake(16, 16, 16, 16);
+#endif
         [hudView addTarget:self action:@selector(hudChange:) forControlEvents:UIControlEventValueChanged];
         [self loadHUD];
         [self.view addSubview:hudView];
@@ -1861,9 +1865,8 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
                 }
             }
         }];
-        
-        // add debug toolbar too
 #ifdef XDEBUG
+        // add debug toolbar too
         items = @[
             @":z.square.fill:Z:",
             @":a.square.fill:A:",
@@ -5328,7 +5331,11 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
 
 #if TARGET_OS_TV
 
-- (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event; {
+- (NSArray*)preferredFocusEnvironments {
+    return @[keyboardView];
+}
+
+- (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
     NSLog(@"PRESSES BEGAN: %ld", presses.allObjects.firstObject.type);
     for (UIPress *press in presses) {
         UIPressType type = press.type;
@@ -5359,7 +5366,7 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
     [super pressesBegan:presses withEvent:event];
 }
 
-- (void)pressesEnded:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event; {
+- (void)pressesEnded:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
     NSLog(@"PRESSES END: %ld", presses.allObjects.firstObject.type);
     [super pressesEnded:presses withEvent:event];
 }

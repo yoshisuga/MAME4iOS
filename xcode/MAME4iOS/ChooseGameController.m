@@ -53,7 +53,6 @@
 #endif
 
 #define USE_TITLE_IMAGE         TRUE
-#define TVOS_PARALLAX           FALSE
 #define TITLE_COLOR             [UIColor whiteColor]
 #define HEADER_TEXT_COLOR       [UIColor whiteColor]
 #define HEADER_BACKGROUND_COLOR [UIColor clearColor]
@@ -2244,15 +2243,14 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 - (void)updateSelected
 {
     BOOL selected = self.selected || self.focused;
-#if TARGET_OS_IOS || !TVOS_PARALLAX
     if (_image.image == nil)
         return;
     if (!(CELL_BACKGROUND_COLOR == UIColor.clearColor))
         [self setBackgroundColor:selected ? CELL_SELECTED_COLOR : CELL_BACKGROUND_COLOR];
     [self setShadowColor:selected ? CELL_SELECTED_COLOR : CELL_SHADOW_COLOR];
-    self.transform = selected ? CGAffineTransformMakeScale(_scale, _scale) : (self.highlighted ? CGAffineTransformMakeScale(2.0 - _scale, 2.0 - _scale) : CGAffineTransformIdentity);
-#endif
-#if TARGET_OS_TV && TVOS_PARALLAX
+    CGFloat scale = selected ? _scale : self.highlighted ? (2.0 - _scale) : 1.0;
+    self.transform = CGAffineTransformMakeScale(scale, scale);
+#if TARGET_OS_TV
     if (selected)
         [self.superview bringSubviewToFront:self];
     else
@@ -2272,33 +2270,18 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     [self updateSelected];
 }
 
-#if TARGET_OS_TV && TVOS_PARALLAX
--(void)drawRect:(CGRect)rect
-{
-    // on tvOS we flatten the cell into a single image so the parallax selection works.
-    // NOTE we do this in drawRect so we know the cell is ready to be displayed, passing afterScreenUpdates:YES is crazy slow.
-    if (_image.image != nil && !_image.adjustsImageWhenAncestorFocused && _image.subviews.count == 0 && self.bounds.size.height < self.window.bounds.size.height) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if (!self.image.adjustsImageWhenAncestorFocused && self.image.subviews.count == 0) {
-                CGRect rect = self.bounds;
-                UIImage* image = [[[UIGraphicsImageRenderer alloc] initWithSize:rect.size] imageWithActions:^(UIGraphicsImageRendererContext * context) {
-                    [self drawViewHierarchyInRect:rect afterScreenUpdates:NO];
-                }];
-                self.image.adjustsImageWhenAncestorFocused = YES;
-                self.image.image = image;
-                self.text.text = nil;
-                [self setTextInsets:UIEdgeInsetsZero];
-                [self setImageAspect:0.0];
-                [self setBorderWidth:0.0];
-                self.contentView.clipsToBounds = NO;
-                self.image.clipsToBounds = NO;
-            }
-        });
-    }
-}
-#endif
-
 #if TARGET_OS_TV
+- (void)didHintFocusMovement:(UIFocusMovementHint *)hint {
+    NSLog(@"didHintFocusMovement(%@): dir=%@", [self.text.text stringByReplacingOccurrencesOfString:@"\n" withString:@" • "],
+          NSStringFromCGVector(hint.movementDirection));
+    BOOL selected = self.selected || self.focused;
+    CGFloat scale = selected ? _scale : self.highlighted ? (2.0 - _scale) : 1.0;
+    
+    self.transform = CGAffineTransformConcat(
+        CGAffineTransformMakeScale(scale, scale),
+        CGAffineTransformMakeTranslation(hint.translation.dx, hint.translation.dy)
+    );
+}
 - (void)didUpdateFocusInContext:(UIFocusUpdateContext *)context withAnimationCoordinator:(UIFocusAnimationCoordinator *)coordinator
 {
     [super didUpdateFocusInContext:context withAnimationCoordinator:coordinator];
