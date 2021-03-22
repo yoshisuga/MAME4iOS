@@ -1939,6 +1939,21 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
             [hudView addValue:value forKey:name format:nil min:min max:max step:step];
         }
+        
+        __unsafe_unretained typeof(self) _self = self;
+        [hudView addButton:@"Restore Defaults" color:UIColor.systemPurpleColor handler:^{
+            NSLog(@"RESTORE DEFAULTS");
+            for (NSString* str in shader_arr) {
+                NSArray* arr = split(str, @"=");
+                if (arr.count < 2 || [arr[0] isEqualToString:@"blend"])
+                    continue;
+                NSString* key = arr[0];
+                NSNumber* value = @([arr[1] floatValue]);
+                NSLog(@"    %@ = %@", key, value);
+                [(MetalScreenView*)_self->screenView setShaderVariables:@{key: value}];
+                [_self->hudView setValue:value forKey:key];
+            }
+        }];
 #if DebugLog
         [self logShader];
 #endif
