@@ -83,7 +83,7 @@
 #if HUD_BLUR
     self.backgroundColor = nil;
 #else
-    self.backgroundColor = [UIColor colorWithWhite:0.222 alpha:0.5];
+    self.backgroundColor = [UIColor colorWithWhite:0.222 alpha:0.6];
 #endif
     
     return self;
