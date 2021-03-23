@@ -1935,6 +1935,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
             if (arr.count < 2 || [arr[0] isEqualToString:@"blend"])
                 continue;
 
+            // TODO: allow Shader string to contain a "Friendly Name" for the parameter, so the key name can be unique
             NSString* name = arr[0];
             arr = split(arr[1], @" ");
             NSNumber* value = shader_variables[name] ?: @([arr[0] floatValue]);
