@@ -148,7 +148,7 @@ __attribute__((objc_direct_members))
     [super didMoveToWindow];
     _window = self.window;
     if (_window != nil) {
-#ifdef DEBUG
+#if defined(DEBUG) && DebugLog != 0
         if (_window.screen != nil) {
             NSLog(@"SCREEN: %@", _window.screen);
             NSLog(@"MODE: %@", _window.screen.currentMode);
@@ -259,6 +259,8 @@ __attribute__((objc_direct_members))
     // init sampler state(s)
     _texture_address_mode = MTLSamplerAddressModeClampToEdge;
     _texture_filter = MTLSamplerMinMagFilterNearest;
+    for (int i=0; i<sizeof(_texture_sampler)/sizeof(_texture_sampler[0]); i++)
+        _texture_sampler[i] = nil;
 }
 
 #pragma mark - vertex buffers
@@ -988,30 +990,16 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
 /// add to the dictionary used to resolve named shader variables
 - (void)setShaderVariablesInternal:(NSDictionary *)variables {
+    
 #ifdef DEBUG
+    NSParameterAssert(variables != nil);
     for (NSString* key in variables.allKeys) {
         NSParameterAssert([key isKindOfClass:[NSString class]]);
         NSParameterAssert([variables[key] isKindOfClass:[NSValue class]]);
     }
 #endif
     
-#if DebugLog
-    BOOL change = FALSE;
-    for (NSString* key in variables.allKeys) {
-        if ([key isEqualToString:@"frame-count"])
-            continue;
-        if (_shader_variables[key] == nil || ![_shader_variables[key] isEqual:variables[key]])
-             change = TRUE;
-    }
-#endif
-
     [_shader_variables addEntriesFromDictionary:variables];
-    
-#if DebugLog
-    if (change) {
-        NSLog(@"SHADER VARIABLES CHANGE: %@", _shader_variables);
-    }
-#endif
     
     // if the currently set shader has params, re-set the render state
     if (_encoder != nil && _shader_params[_shader_current] != nil)
@@ -1020,7 +1008,10 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
 /// add to the dictionary used to resolve named shader variables
 - (void)setShaderVariables:(NSDictionary *)variables {
-    if ([NSThread currentThread] == _draw_thread) {
+    if (variables == nil) {
+        _resetDevice = TRUE;
+    }
+    else if ([NSThread currentThread] == _draw_thread) {
         [self setShaderVariablesInternal:variables];
     }
     else {

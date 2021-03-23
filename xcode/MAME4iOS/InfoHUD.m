@@ -214,20 +214,24 @@
 
     key = key ?: @"";
     
-    if (format.length == 0) {
+    if ([value isKindOfClass:[NSNumber class]] && [format rangeOfString:@"%"].length == 0) {
+        NSString* fmt = @"%0.3f";
+        
         if ([step floatValue] >= 1)
-            format = @"%0.0f";
+            fmt = @"%0.0f";
         else if ([step floatValue] >= 0.1)
-            format = @"%0.1f";
+            fmt = @"%0.1f";
         else if ([step floatValue] >= 0.01)
-            format = @"%0.2f";
+            fmt = @"%0.2f";
+
+        if ([format length] != 0)
+            format = [NSString stringWithFormat:@"%@: %@", format, fmt];
+        else if ([key length] != 0)
+            format = [NSString stringWithFormat:@"%@: %@", key, fmt];
         else
-            format = @"%0.3f";
+            format = fmt;
     }
     
-    if ([format hasPrefix:@"%"] && key.length != 0)
-        format = [NSString stringWithFormat:@"%@: %@", key, format];
-
     if ([value isKindOfClass:[NSString class]] && [value isEqualToString:@"---"]) {
         value = [self separatorViewWithHeight:1.0 color:UIColor.clearColor];
         [_stack addArrangedSubview:value];

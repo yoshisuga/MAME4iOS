@@ -2,6 +2,8 @@
 * New in-game menu using InfoHUD technology.
 * New Game Controller MENU modifiers. 
 * Remove ColorSpace choices from the UI.
+* Remember changes made in Shader parameter editor.
+* HUD can be used on tvOS, but only with SiriRemote.
 
 ## Game controller MENU combos
 

@@ -181,9 +181,9 @@ int g_pref_showFPS = 0;
 
 enum {
     HudSizeZero = 0,        // HUD is not visible at all.
-    HudSizeNormal = 1,      // HUD is 'normal' size, just a toolbar and FPS.
+    HudSizeNormal = 1,      // HUD is 'normal' size, just a toolbar.
     HudSizeTiny = 2,        // HUD is single button, press to expand.
-    HudSizeInfo = 3,        // HUD is expanded to include extra info.
+    HudSizeInfo = 3,        // HUD is expanded to include extra info, and FPS.
     HudSizeLarge = 4,       // HUD is expanded to include in-game menu.
     HudSizeEditor = 5,      // HUD is expanded to include Shader editing sliders.
 };
@@ -581,49 +581,17 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     [self updatePointerLocked];
 }
 
-
-enum {LOAD_STATE, SAVE_STATE, ASK_STATE};
-
-void mame_state(int load_save, int slot)
+// TODO: what happens if the user re-maps the save/load state key away from F7
+void mame_load_state(int slot)
 {
-    // TODO: what happens if the user re-maps the save/load state key away from F7
-    if (load_save == LOAD_STATE)
-        push_mame_keys(MYOSD_KEY_F7, (slot == 1) ? MYOSD_KEY_1 : MYOSD_KEY_2, 0, 0);
-    else
-        push_mame_keys(MYOSD_KEY_LSHIFT, MYOSD_KEY_F7, (slot == 1) ? MYOSD_KEY_1 : MYOSD_KEY_2, 0);
+    NSCParameterAssert(slot == 1 || slot == 2);
+    push_mame_keys(MYOSD_KEY_F7, (slot == 1) ? MYOSD_KEY_1 : MYOSD_KEY_2, 0, 0);
 }
 
-- (void)runState:(int)load_save
+void mame_save_state(int slot)
 {
-    if (self.presentedViewController)
-        return NSLog(@"runLoadSaveState: BUSY!");
-    
-    if (load_save == ASK_STATE) {
-        [self startMenu];
-        [self showAlertWithTitle:nil message:nil buttons:@[@"Save State 1", @"Load State 1", @"Save State 2", @"Load State 2", @"Cancel"] handler:^(NSUInteger button) {
-            if (button < 4)
-                mame_state((button & 1) ? LOAD_STATE : SAVE_STATE, (button < 2) ? 1 : 2);
-            [self endMenu];
-        }];
-    }
-    else {
-        NSString* message = [NSString stringWithFormat:@"Select State to %@", (load_save == LOAD_STATE) ? @"Load" : @"Save"];
-        
-        [self startMenu];
-        [self showAlertWithTitle:nil message:message buttons:@[@"State 1", @"State 2", @"Cancel"] handler:^(NSUInteger button) {
-            if (button <= 1)
-                mame_state(load_save, (button == 0) ? 1 : 2);
-            [self endMenu];
-        }];
-    }
-}
-- (void)runLoadState
-{
-    [self runState:LOAD_STATE];
-}
-- (void)runSaveState
-{
-    [self runState:SAVE_STATE];
+    NSCParameterAssert(slot == 1 || slot == 2);
+    push_mame_keys(MYOSD_KEY_LSHIFT, MYOSD_KEY_F7, (slot == 1) ? MYOSD_KEY_1 : MYOSD_KEY_2, 0);
 }
 
 - (void)presentPopup:(UIViewController *)viewController from:(UIView*)view animated:(BOOL)flag completion:(void (^)(void))completion {
@@ -811,19 +779,13 @@ HUDViewController* g_menu;
             [NSString stringWithFormat:@":%@:Load ①", getGamepadSymbol(gamepad, gamepad.dpad.up) ?: @"bookmark"],
             [NSString stringWithFormat:@":%@:Load ②", getGamepadSymbol(gamepad, gamepad.dpad.right) ?: @"bookmark"],
         ] style:(gamepad ? HUDButtonStylePlain : HUDButtonStyleDefault) handler:^(NSUInteger button) {
-            if (button == 0)
-                mame_state(LOAD_STATE, 1);
-            else
-                mame_state(LOAD_STATE, 2);
+            mame_load_state((int)button+1);
         }];
         [menu addButtons:@[
             [NSString stringWithFormat:@":%@:Save ①", getGamepadSymbol(gamepad, gamepad.dpad.down) ?: @"bookmark.fill"],
             [NSString stringWithFormat:@":%@:Save ②", getGamepadSymbol(gamepad, gamepad.dpad.left) ?: @"bookmark.fill"],
         ] style:(gamepad ? HUDButtonStylePlain : HUDButtonStyleDefault) handler:^(NSUInteger button) {
-            if (button == 0)
-                mame_state(SAVE_STATE, 1);
-            else
-                mame_state(SAVE_STATE, 2);
+            mame_save_state((int)button+1);
         }];
         
         if (gamepad == nil) {
@@ -875,6 +837,7 @@ HUDViewController* g_menu;
     }
     
     [menu onDismiss:^{
+        NSParameterAssert(g_menu != nil);
         g_menu = nil;
         // if we did not show something else (ie Settings) then call endMenu
         if (self.presentedViewController == nil)
@@ -1575,7 +1538,7 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
 
 -(void)buildFrameRateView {
     
-    BOOL showFPS = g_pref_showFPS && (g_pref_showHUD < HudSizeInfo);
+    BOOL showFPS = g_pref_showFPS && (g_pref_showHUD != HudSizeInfo);
 
     myosd_fps = showFPS;
 
@@ -1677,10 +1640,8 @@ int gcd(int a, int b) {
             hud.changedKey: [hud valueForKey:hud.changedKey]
         }];
     }
-#if DebugLog
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(logShader) object:nil];
-    [self performSelector:@selector(logShader) withObject:nil afterDelay:0.500];
-#endif
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(saveShader) object:nil];
+    [self performSelector:@selector(saveShader) withObject:nil afterDelay:2.0];
 }
 
 // split and trim a string
@@ -1691,27 +1652,70 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     return arr;
 }
 
-#if DebugLog
--(void)logShader {
-    NSDictionary* shader_variables = ([screenView isKindOfClass:[MetalScreenView class]]) ?  [(MetalScreenView*)screenView getShaderVariables] : nil;
+// load the shader variables from disk
+-(NSString*)getShaderPath {
+    return [NSString stringWithUTF8String:get_documents_path("iOS/ShaderData.json")];
+}
+
+// save the current shader variables to disk
+-(void)saveShader {
+    if (![screenView isKindOfClass:[MetalScreenView class]])
+        return;
+
+    NSDictionary* shader_variables = [(MetalScreenView*)screenView getShaderVariables];
+    NSMutableDictionary* shader_dict = [[NSMutableDictionary alloc] init];
     
-    for (NSString* shader in @[g_pref_line_shader, g_pref_screen_shader]) {
+    // walk over *all* screen and line shaders and save any non-default values...
+    for (NSString* shader in [Options.arrayScreenShader arrayByAddingObjectsFromArray:Options.arrayLineShader]) {
         NSMutableArray* arr = [split(shader, @",") mutableCopy];
+        NSString* shaderName = split(arr[0], @":").firstObject;
+        NSMutableDictionary* dict = [[NSMutableDictionary alloc] init];
         
         for (int i=0; i<arr.count; i++) {
             if ([arr[i] hasPrefix:@"blend="] || ![arr[i] containsString:@"="])
                 continue;
             NSString* key = split(arr[i], @"=").firstObject;
-            NSArray* vals = split(split(arr[i], @"=").lastObject, @" ");
-            arr[i] = shader_variables[key] ?: vals.firstObject;
-
-            float step = (vals.count > 3) ? [vals[3] floatValue] : 0.001;
-            arr[i] = [NSString stringWithFormat:@"%@=%@", key, @(round([arr[i] floatValue] / step) * step)];
+            float default_value = [split(arr[i], @"=").lastObject floatValue];
+            float current_value = [(shader_variables[key] ?: @(default_value)) floatValue];
+            
+            if (fabs(current_value - default_value) > 0.00001)
+                dict[key] = @(current_value);
         }
-        NSLog(@"%s SHADER: %@", (shader==g_pref_screen_shader) ? "SCREEN" : "LINE", [arr componentsJoinedByString:@"\r\t"]);
+        
+        if ([dict count] != 0)
+            shader_dict[shaderName] = dict;
+    }
+    
+    // write the shader data to disk
+    if ([shader_dict count] == 0) {
+        [NSFileManager.defaultManager removeItemAtPath:[self getShaderPath] error:nil];
+    }
+    else {
+        NSData* data = [NSJSONSerialization dataWithJSONObject:shader_dict options:NSJSONWritingPrettyPrinted error:nil];
+        [data writeToFile:[self getShaderPath] atomically:NO];
+        NSLog(@"SAVE SHADER: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
     }
 }
-#endif
+
+// load the shader variables from disk
+-(void)loadShader {
+    if (![screenView isKindOfClass:[MetalScreenView class]])
+        return;
+    NSData* data = [NSData dataWithContentsOfFile:[self getShaderPath]];
+    NSDictionary* dict = data ? [NSJSONSerialization JSONObjectWithData:data options:0 error:nil] : @{};
+    for (NSString* key in dict.allKeys) {
+        id val = dict[key];
+        if ([val isKindOfClass:[NSDictionary class]])
+            [(MetalScreenView*)screenView setShaderVariables:val];
+    }
+}
+
+// reset *all* shader variables to default
+-(void)resetShader {
+    [NSFileManager.defaultManager removeItemAtPath:[self getShaderPath] error:nil];
+    if ([screenView isKindOfClass:[MetalScreenView class]])
+        [(MetalScreenView*)screenView setShaderVariables:nil];
+}
 
 -(void)saveHUD {
     if (hudView) {
@@ -1773,13 +1777,11 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     EmulatorController* _self = self;
 
     BOOL is_vector_game = [screenView isKindOfClass:[MetalScreenView class]] ? [(MetalScreenView*)screenView numScreens] == 0 : FALSE;
-    // numScreens will not be correct when the HUD is first shown, so just always assume non-vector game.
-    is_vector_game = FALSE;
     NSString* shader = is_vector_game ? g_pref_line_shader : g_pref_screen_shader;
     BOOL can_edit_shader = [[shader stringByReplacingOccurrencesOfString:@"blend=" withString:@""] componentsSeparatedByString:@"="].count > 1;
     
     if (g_pref_showHUD == HudSizeEditor && !can_edit_shader)
-        g_pref_showHUD = HudSizeLarge;
+        g_pref_showHUD = HudSizeNormal;
     
     if (g_pref_showHUD == HudSizeTiny) {
         [hudView addButton:@":command:⌘:" handler:^{
@@ -1829,7 +1831,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
                         g_pref_showHUD = HudSizeInfo;
                     else if (g_pref_showHUD == HudSizeInfo)
                         g_pref_showHUD = HudSizeLarge;
-                    else if (g_pref_showHUD == HudSizeLarge && can_edit_shader)
+                    else if (g_pref_showHUD == HudSizeLarge)
                         g_pref_showHUD = HudSizeEditor;
                     else
                         g_pref_showHUD = HudSizeNormal;
@@ -1866,7 +1868,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 #endif
     }
     
-    if (g_pref_showHUD == HudSizeInfo || g_pref_showHUD == HudSizeLarge) {
+    if (g_pref_showHUD == HudSizeInfo) {
         // add FPS display
         if (g_pref_showFPS) {
             NSString* fps = UPDATE_FPS_EVERY == 1 ? @"00.00.00 000.00fps" : @"000.00fps";
@@ -1890,8 +1892,11 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
                     [_self startPlayer:(int)button + 2];
             }];
         }
-        [hudView addButtons:@[@":bookmark:Load",@":bookmark.fill:Save"] handler:^(NSUInteger button) {
-             [_self runState:button == 0 ? LOAD_STATE : SAVE_STATE];
+        [hudView addButtons:@[@":bookmark:Load ①", @":bookmark:Load ②"] handler:^(NSUInteger button) {
+            mame_load_state((int)button + 1);
+        }];
+        [hudView addButtons:@[@":bookmark.fill:Save ①", @":bookmark.fill:Save ②"] handler:^(NSUInteger button) {
+            mame_save_state((int)button + 1);
         }];
         [hudView addButtons:@[@":slider.horizontal.3:Configure",@":pause.circle:Pause"] handler:^(NSUInteger button) {
             if (button == 0)
@@ -1899,7 +1904,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
             else
                 push_mame_key(MYOSD_KEY_P);
         }];
-#if TARGET_OS_IOS
+#if (FALSE && TARGET_OS_IOS)    // TODO: show snapshots in the ChooseGameUI
         [hudView addButtons:@[@":camera:Snapshot", @":video:Record"] handler:^(NSUInteger button) {
             if (button == 0)
                 push_mame_key(MYOSD_KEY_F12);
@@ -1920,9 +1925,9 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
     // add a bunch of slider controls to tweak with the current Shader
     if (g_pref_showHUD == HudSizeEditor) {
-        NSDictionary* shader_variables = ([screenView isKindOfClass:[MetalScreenView class]]) ?  [(MetalScreenView*)screenView getShaderVariables] : nil;
+        NSDictionary* shader_variables = ([screenView isKindOfClass:[MetalScreenView class]]) ? [(MetalScreenView*)screenView getShaderVariables] : nil;
         NSArray* shader_arr = split(shader, @",");
-
+        
         [hudView addTitle:shader_arr.firstObject];
 
         for (NSString* str in shader_arr) {
@@ -1953,10 +1958,8 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
                 [(MetalScreenView*)_self->screenView setShaderVariables:@{key: value}];
                 [_self->hudView setValue:value forKey:key];
             }
+            [_self saveShader];
         }];
-#if DebugLog
-        [self logShader];
-#endif
     }
     
     // add a grab handle on the left so you can move the HUD without hitting a button.
@@ -2007,7 +2010,13 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
 - (void)resetUI {
     NSLog(@"RESET UI (MAME VIDEO MODE CHANGE)");
+    
+    // we dont know (yet) raster/vector game, so take down any HUD Editor so it wont be wrong.
+    if (g_pref_showHUD == HudSizeEditor)
+        g_pref_showHUD = HudSizeLarge;
+    
     [self changeUI];
+    [self loadShader];
 }
 
 - (void)changeUI { @autoreleasepool {
@@ -4333,6 +4342,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     [Options resetOptions];
     [ChooseGameController reset];
     [SkinManager reset];
+    [self resetShader];
     g_mame_reset = TRUE;
 }
 
@@ -4771,19 +4781,19 @@ static unsigned long g_device_has_input[NUM_DEV];   // TRUE if device needs to b
     }
     if (changed_state & MYOSD_UP) {
         NSLog(@"...MENU+UP => LOAD STATE 1");
-        mame_state(LOAD_STATE, 1);
+        mame_load_state(1);
     }
     if (changed_state & MYOSD_DOWN) {
         NSLog(@"...MENU+DOWN => SAVE STATE 1");
-        mame_state(SAVE_STATE, 1);
+        mame_save_state(1);
     }
     if (changed_state & MYOSD_LEFT) {
         NSLog(@"...MENU+LEFT => SAVE STATE 2");
-        mame_state(SAVE_STATE, 2);
+        mame_save_state(2);
     }
     if (changed_state & MYOSD_RIGHT) {
         NSLog(@"...MENU+RIGHT => LOAD STATE 2");
-        mame_state(LOAD_STATE, 2);
+        mame_load_state(2);
     }
     if (changed_state & MYOSD_L1) {
         NSLog(@"...MENU+L1 => SELECT");
