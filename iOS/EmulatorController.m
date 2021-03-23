@@ -1654,7 +1654,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
 // load the shader variables from disk
 -(NSString*)getShaderPath {
-    return [NSString stringWithUTF8String:get_documents_path("iOS/ShaderData.json")];
+    return [NSString stringWithUTF8String:get_documents_path("iOS/ShaderOptions.json")];
 }
 
 // save the current shader variables to disk
