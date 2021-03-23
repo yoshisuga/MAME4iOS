@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)dismissWithDefault;
 -(void)dismissWithCancel;
 -(void)moveDefaultAction:(NSUInteger)direction;
+-(void)handleButtonPress:(UIPressType)type;
 @end
 
 @interface UIAlertController(setProgress)

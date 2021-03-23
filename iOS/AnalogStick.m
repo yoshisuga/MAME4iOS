@@ -175,26 +175,23 @@
         
         if(g_pref_input_touch_type==TOUCH_INPUT_ANALOG)
         {
-           joy_analog_x[0][0] = rx;
+            myosd_pad_x = rx;
            if(!STICK2WAY)
-              joy_analog_y[0][0] = ry * -1.0f;
+               myosd_pad_y = ry * -1.0f;
            else
-              joy_analog_y[0][0] = 0;
-           //printf("Sending analog %f, %f...\n",joy_analog_x[0],joy_analog_y[0] );
+               myosd_pad_y = 0;
         }
         else
         {
             // emulate a analog joystick, and a dpad so games that require analog will work with dpad, and viz viz
-            joy_analog_y[0][0] = (myosd_pad_status & MYOSD_UP)    ? +1.0 : (myosd_pad_status & MYOSD_DOWN) ? -1.0 : 0.0;
-            joy_analog_x[0][0] = (myosd_pad_status & MYOSD_RIGHT) ? +1.0 : (myosd_pad_status & MYOSD_LEFT) ? -1.0 : 0.0;
+            myosd_pad_y = (myosd_pad_status & MYOSD_UP)    ? +1.0 : (myosd_pad_status & MYOSD_DOWN) ? -1.0 : 0.0;
+            myosd_pad_x = (myosd_pad_status & MYOSD_RIGHT) ? +1.0 : (myosd_pad_status & MYOSD_LEFT) ? -1.0 : 0.0;
         }
 	}
 	else
 	{
-	    joy_analog_x[0][0]=0.0f;
-	    joy_analog_y[0][0]=0.0f;
-        //printf("Sending analog %f, %f...\n",joy_analog_x[0],joy_analog_y[0] );
-	     
+        myosd_pad_x = 0.0f;
+        myosd_pad_y = 0.0f;
 	    myosd_pad_status &= ~MYOSD_UP;
 	    myosd_pad_status &= ~MYOSD_DOWN;
 	    myosd_pad_status &= ~MYOSD_LEFT;
@@ -204,7 +201,7 @@
 }
 
 // get the image to use for the stick based on the position.
-- (UIImage*)getStickImage {
+- (UIImage*)getStickImage:(unsigned long)status {
     NSString* base = @"stick-";
     NSString* zero = @"inner.png";
 
@@ -214,7 +211,7 @@
     }
     
     NSString* ext = zero;
-    switch ((myosd_pad_status | myosd_joy_status[0]) & (MYOSD_UP|MYOSD_DOWN|MYOSD_LEFT|MYOSD_RIGHT))
+    switch (status & (MYOSD_UP|MYOSD_DOWN|MYOSD_LEFT|MYOSD_RIGHT))
     {
         case MYOSD_UP:    ext = @"U.png"; break;
         case MYOSD_DOWN:  ext = @"D.png"; break;
@@ -237,7 +234,7 @@
         
         emuController = emulatorController;
         
-        innerView = [ [ UIImageView alloc ] initWithImage:[self getStickImage]];
+        innerView = [ [ UIImageView alloc ] initWithImage:[self getStickImage:0]];
         [self addSubview: innerView];
         
         if (g_device_is_fullscreen)
@@ -326,17 +323,8 @@
     
     [self updateAnalog];
     
-    if (g_pref_animated_DPad && pad_status != myosd_pad_status && g_pref_input_touch_type != TOUCH_INPUT_ANALOG)
+    if (g_pref_haptic_button_feedback && g_pref_animated_DPad && pad_status != myosd_pad_status && g_pref_input_touch_type != TOUCH_INPUT_ANALOG)
     {
-#ifdef DEBUG
-        if (myosd_pad_status & (MYOSD_UP|MYOSD_DOWN|MYOSD_LEFT|MYOSD_RIGHT))
-            NSLog(@"****** BUZZ! *******: %s%s%s%s",
-                  (myosd_pad_status & MYOSD_UP) ?   "U" : "-", (myosd_pad_status & MYOSD_DOWN) ?  "D" : "-",
-                  (myosd_pad_status & MYOSD_LEFT) ? "L" : "-", (myosd_pad_status & MYOSD_RIGHT) ? "R" : "-");
-        else
-            NSLog(@"****** BONK! *******");
-#endif
-
         if (myosd_pad_status & (MYOSD_UP|MYOSD_DOWN|MYOSD_LEFT|MYOSD_RIGHT))
             [emuController.impactFeedback impactOccurred];
         else
@@ -345,17 +333,16 @@
 }
 
 // update the position of the stick image from the joy stick state
--(void)update {
+-(void)update:(unsigned long)pad_status stick:(CGPoint)stick {
     CGFloat x,y;
     
-    if (joy_analog_x[0][0] != 0.0 || joy_analog_y[0][0] != 0.0)
+    if (stick.x != 0.0 || stick.y != 0.0)
     {
-        x = joy_analog_x[0][0];
-        y = joy_analog_y[0][0];
+        x = stick.x;
+        y = stick.y;
     }
     else
     {
-        unsigned long pad_status = myosd_pad_status | myosd_joy_status[0];
         x = (pad_status & MYOSD_RIGHT) ? +1.0 : (pad_status & MYOSD_LEFT) ? -1.0 : 0.0;
         y = (pad_status & MYOSD_UP)    ? +1.0 : (pad_status & MYOSD_DOWN) ? -1.0 : 0.0;
     }
@@ -371,7 +358,7 @@
         stickPos.size.height = stickHeight;
         innerView.frame = stickPos;
     }
-    innerView.image = [self getStickImage];
+    innerView.image = [self getStickImage:pad_status];
 }
 
 @end

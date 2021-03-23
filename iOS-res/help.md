@@ -38,7 +38,6 @@ To see [MAME license](#MAME4iOS-LICENSE), go to the end of this document.
 *   1/6 touch buttons selectable.
 *   External controller support: [iCade (or compatible)](#icade_or_compatible), iControlPad, iMpulse (1 or 2 Players).]
 *   [Hardware keyboard](#hardware-keyboard)
-*   Peer to Peer Netplay Multiplayer
 *   MiFI, Xbox, and DualShock [Game Controlers](#game-controlers)
 *   [TV-OUT](#tv-out)
 *   [iCloud Import, Export, and Sync.](#iCloud)
@@ -88,14 +87,6 @@ The emulator controls are the following ones:
 - **None** dont use any effect.
 - **Default** use the default `lineTron`.
 - **lineTron** simple vector effect with fade out.
-
-
-**Colorspace** the [color space](https://en.wikipedia.org/wiki/Color_space) to use.
-- **DeviceRGB** just use the color space of the device. 
-- **sRGB** use the [sRGB](https://en.wikipedia.org/wiki/SRGB) color space. 
-- **CRT (sRGB, D65, 2.5)** Idealized CRT with a gamma of 2.5
-- **Rec709 (sRGB, D65, 2.4)** the [Rec709](https://en.wikipedia.org/wiki/Rec._709) color space.
-
 
 **Full Screen** Uses all available screen or shows the emulator windowed.
 
@@ -192,7 +183,7 @@ handle input from a hardware keyboard, the following are examples of hardware ke
 * Apple Smart Keyboard connected to an iPad
 * macOS keyboard when debugging in Xcode simulator
 
-we suppoprt a small subset of the keys supported by the command line MAME.
+below is a list of a small subset of the keys supported by MAME4iOS, for a full list look [here](https://docs.mamedev.org/usingmame/defaultkeys.html).
 
 | | |  
 -|-
@@ -201,8 +192,8 @@ we suppoprt a small subset of the keys supported by the command line MAME.
      LEFT OPTION/ALT | 🅑
      SPACE           | 🅨
      LEFT SHIFT      | 🅧
-     LEFT CMD        | L1
-     RIGHT CMD       | R1
+     Z        | L1
+     X       | R1
      1               | Player 1 START
      2               | Player 2 START
      5               | Player 1 COIN
@@ -210,16 +201,20 @@ we suppoprt a small subset of the keys supported by the command line MAME.
      TAB             | MAME UI MENU
      ESC             | MAME UI EXIT
      RETURN          | MAME UI SELECT (aka 🅐)
-     DELETE          | MAME UI BACK (aka 🅑)
-     BQUOTE          | MAME4iOS MENU
+
+These keys are specific to `MAME4iOS`
+
+| | |  
+-|-
      ⌘+ENTER       | TOGGLE FULLSCREEN
-     ⌘+I                  | TOGGLE INTEGER SCALE
-     ⌘+Z                  | TOGGLE FPS DISPLAY
-     ⌘+H                  | TOGGLE HUD DISPLAY
-     ⌘+F                  | TOGGLE FILTER (Nearest and Linear)
-     ⌘+P                  | TOGGLE PAUSE
+     ⌘+I           | TOGGLE INTEGER SCALE
+     ⌘+Z           | TOGGLE FPS DISPLAY
+     ⌘+U           | TOGGLE HUD DISPLAY
+     ⌘+F           | TOGGLE FILTER (Nearest and Linear)
+     ⌘+P           | TOGGLE PAUSE
      ⌘+A                  | TOGGLE `Keep Aspect Ratio`
      ⌘+X                  | TOGGLE `Force Pixel Aspect`
+     ⌘+M                  | TOGGLE `Mouse Capture`
      ⌘+1               | Player 1 COIN+START
      ⌘+2               | Player 2 COIN+START
 
@@ -249,33 +244,33 @@ To start playing a game using a controller, do one of the following.
 | | |  
 -|-
 `VIEW`     |SELECT                
-`GUIDE`   |MAME4iOS MENU (on iOS 14+)  
+`GUIDE`   |MENU (on iOS 14+)  
 `MENU`     |START              
-`VIEW`+`MENU`|MAME4iOS MENU
+`VIEW`+`MENU`|MENU
 
 ## Playstation Dualshock
 
 | | |  
 -|-
 `SHARE`     |SELECT                
-`PS Button`           |MAME4iOS MENU  (iOS 14+)
+`PS Button`           |MENU  (iOS 14+)
 `OPTIONS`     |START      
-`SHARE`+`OPTIONS`|MAME4iOS MENU
+`SHARE`+`OPTIONS`|MENU
 
 ## SteelSeries Nimbus Controller (MFi)
 
 | | |  
 -|-
-`MENU`           |MAME4iOS MENU   
+`MENU` or `PAUSE`           |MENU   
 
 ## Nimbus+ Controller
 
 | | |  
 -|-
 `OPTIONS`     |SELECT                
-`HOME`           |MAME4iOS MENU (on iOS 14)   
+`HOME`           |MENU (on iOS 14+)   
 `MENU`           |START      
-`OPTIONS`+`MENU`|MAME4iOS MENU
+`OPTIONS`+`MENU`|MENU
 
 ## Steam Game Controlers
 
@@ -286,29 +281,40 @@ Steam Controller Buttons
 | | |  
 -|-
 `BACK`     |SELECT                 
-`STEAM Button`           |MAME4iOS MENU   
+`STEAM Button`           |MENU   
 `START`     |START              
-
 
 ## MENU button on game controllers
 
+* if your controller has a dedicated `MENU` button pressing it will bring up the in-game menu.
+* if your controller only has `SELECT` and `START` you can long press either one to bring up the in-game menu, or press both at the same time.
+* you can use use any of `SELECT`, `START`, or `MENU` to perform a menu action, listed below, for example both `MENU+X` and `SELECT+X` will exit the game.
+
+## MENU combination actions
+
+To perform a menu action do one of the following
+* hold down `MENU` or `SELECT` or `START` and press the combo button. ie MENU+X
+* hold down the combo button and press `MENU` or `SELECT` or `START`. ie X+MENU
+
 | | |  
 -|-
-MENU           |Open MAME4iOS MENU   
-MENU+L1     |Player 1 Coin                 
-MENU+R1     |Player 1 Start               
+MENU+L1     |Player Coin                 
+MENU+R1     |Player Start               
 MENU+L2     |Player 2 Coin                
 MENU+R2     |Player 2 Start               
+MENU+A       |Show or hide HUD                 
+MENU+B       |Pause MAME   
 MENU+X       |Exit Game                 
-MENU+Y       |Open MAME menu   
+MENU+Y       |Open MAME Configure menu   
 MENU+DOWN  |Save State ①               
 MENU+UP        |Load State ①                
 MENU+LEFT     |Save State ②                
 MENU+RIGHT  |Load State ②               
 
-**NOTE** when using a MFi controller on versions prior to iOS 13, and tvOS, when doing multiple button combinations the secondary button must be pressed first.  For example to insert a coin hold down L1 and hit MENU.  on iOS 13+ you can hold MENU and then hit L1.
 
 ## Multiplayer game start using game controllers
+
+You can start a multiplayer game (1,2,3 or 4) players from the MAME4iOS menu.
 
 If a user inserts a COIN or hits START with a game controller, it will be interpeted as a COIN/START for that player.  
 
@@ -318,19 +324,10 @@ You can insert a COIN or do a START for another player from the main Game Contro
 -|-
 MENU+L2|Player 2 COIN
 MENU+R2|Player 2 SELECT
-SELECT+UP     |Player 2 COIN           
-START+UP       |Player 2 START
-SELECT+RIGHT     |Player 3 COIN          
-START+RIGHT    |Player 3 START
-SELECT+DOWN     |Player 4 COIN          
-START+DOWN     |Player 4 START
 
 ## SAVE/LOAD STATE
 
 You can save or load game states by pressing the MENU button when you are gaming, and select save or load state option. Also you can press button MENU+UP (Load) or MENU+DOWN (Save) on a external controller. 
-
-## 8BitDo Zero 
-MAME4iOS supports the [8BitDo Zero](https://www.8bitdo.com/zero2/) when in KEYBOARD mode.
 
 ## Siri Remote
 MAME4iOS is now usable on a AppleTV using only the stock Siri Remote. You can only play games that use only the A and B buttons.
@@ -365,15 +362,7 @@ If you have an XInput compatible controller, use `Settings` > `Accessibility` > 
 
 To connect an iPad or iPhone to your TV or a projector, you can either use the Apple HDMI, Component AV Cable, Apple Composite AV Cable, Apple Dock Connector to VGA Adapter, or other compatible cable.
 
-Use TV Out settings to set up how iPad or iPhone plays videos on your TV.
-
 When the cable is connected to a TV or projector, MAME4iOS will automatically use it when playing a game.
-
-Set the TV signal to NTSC or PAL: Choose Video > TV Signal and select NTSC or PAL. NTSC and PAL are TV broadcast standards, used in different regions. If you are in the Americas, NTSC is probably the correct choice. Elsewhere, try PAL. If you're not sure, check the documentation that came with your TV or projector.
-
-You can set the amount of overscan corrections in options menu.
-
-If you like iOS TVOUT mirror or you use and external 3rd party TVOUT app, you can turn off MAME4iOS native TVOUT in options menu.
 
 ## MANUAL ROM INSTALLATION
 

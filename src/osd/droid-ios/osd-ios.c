@@ -26,18 +26,10 @@
 
 int  myosd_fps = 1;
 int  myosd_showinfo = 0;
-int  myosd_sleep = 1;
 int  myosd_inGame = 0;
-int  myosd_exitGame = 0;
 int  myosd_pause = 0;
 int  myosd_exitPause = 0;
 int  myosd_last_game_selected = 0;
-int  myosd_sound_value = 44100;
-int  myosd_throttle = 1;
-int  myosd_cheat = 1;
-int  myosd_autosave = 0;
-int  myosd_savestate = 0;
-int  myosd_loadstate = 0;
 int  myosd_waysStick = 8;
 int  myosd_video_width = 320;
 int  myosd_video_height = 240;
@@ -48,15 +40,8 @@ int  myosd_display_height;
 int  myosd_in_menu = 0;
 int  myosd_force_pxaspect = 0;
 
-int  myosd_pxasp1 = 1;
-int  myosd_service = 0;
-int  myosd_configure = 0;
-int  myosd_mame_pause = 0;
-int  myosd_reset = 0;
-
+int myosd_mouse = 0;
 int myosd_light_gun = 0;
-
-int myosd_num_of_joys=0;
 
 int myosd_filter_clones = 0;
 int myosd_filter_not_working = 0;
@@ -66,19 +51,12 @@ int myosd_num_players = 0;
 int myosd_num_coins = 0;
 int myosd_num_inputs = 0;
 
-int myosd_autofire=1;
 int myosd_hiscore=1;
-
-int myosd_vector_bean2x = 1;
-int myosd_vector_antialias = 1;
-int myosd_vector_flicker = 0;
 
 int  myosd_speed = 100;
 
-char myosd_selected_game[MAX_GAME_NAME] = {'\0'};
-
-/*extern */float joy_analog_x[NUM_JOY][4];
-/*extern */float joy_analog_y[NUM_JOY][2];
+float joy_analog_x[NUM_JOY][4];
+float joy_analog_y[NUM_JOY][2];
 
 float lightgun_x[NUM_JOY];
 float lightgun_y[NUM_JOY];
@@ -88,15 +66,14 @@ float mouse_y[NUM_JOY];
 float mouse_z[NUM_JOY];
 unsigned long mouse_status[NUM_JOY];
 
-int myosd_mouse = 0;
-
 static int lib_inited = 0;
 static int soundInit = 0;
 static int isPause = 0;
 
-unsigned long myosd_pad_status = 0;
+unsigned char myosd_keyboard[NUM_KEYS];
 unsigned long myosd_joy_status[NUM_JOY];
-unsigned short myosd_ext_status = 0;
+
+const char * myosd_version = build_version;
 
 typedef struct AQCallbackStruct {
     AudioQueueRef queue;
@@ -118,7 +95,6 @@ extern "C" void iphone_Reset_Views(void);
 extern "C" int  iphone_DrawScreen(void*);
 
 extern "C" void change_pause(int value);
-void* threaded_video(void* args);
 int sound_close_AudioQueue(void);
 int sound_open_AudioQueue(int rate, int bits, int stereo);
 int sound_close_AudioUnit(void);
@@ -146,47 +122,19 @@ void myosd_video_draw(void* prims)
 
 unsigned long myosd_joystick_read(int n)
 {
-    unsigned long res=0;
-
-    if(n==0 || myosd_pxasp1 && (myosd_num_of_joys==0 || myosd_num_of_joys==1))
-    {
-       res = myosd_pad_status;
-        
-       if(myosd_pxasp1 && myosd_num_of_joys==1)
-       {
-    	   res |= myosd_joy_status[0];
-       }
-
-    }
-
-    res |= myosd_joy_status[n];
-
-	return res;
+    return myosd_joy_status[n];
 }
 
 float myosd_joystick_read_analog(int n, char axis)
 {
     float res = 0.0;
     
-    if(n==0 || myosd_pxasp1 && (myosd_num_of_joys==0 || myosd_num_of_joys==1))
-    {
-        if(axis=='x') res = joy_analog_x[0][0];
-        else if (axis=='y') res = joy_analog_y[0][0];
-        else if(axis=='X') res = joy_analog_x[0][1];
-        else if (axis=='Y') res = joy_analog_y[0][1];
-        else if(axis=='z') res = joy_analog_x[0][2];
-        else if(axis=='Z') res = joy_analog_x[0][3];
-    }
-    
-    if (n<myosd_num_of_joys)
-    {
-        if(axis=='x') res = joy_analog_x[n][0];
-        else if (axis=='y') res = joy_analog_y[n][0];
-        else if(axis=='X') res = joy_analog_x[n][1];
-        else if (axis=='Y') res = joy_analog_y[n][1];
-        else if(axis=='z') res = joy_analog_x[n][2];
-        else if(axis=='Z') res = joy_analog_x[n][3];
-    }
+    if(axis=='x') res = joy_analog_x[n][0];
+    else if (axis=='y') res = joy_analog_y[n][0];
+    else if(axis=='X') res = joy_analog_x[n][1];
+    else if (axis=='Y') res = joy_analog_y[n][1];
+    else if(axis=='z') res = joy_analog_x[n][2];
+    else if(axis=='Z') res = joy_analog_x[n][3];
     
     return res;
 }
@@ -202,7 +150,6 @@ static void mame_output(void *param, const char *format, va_list argptr)
 void myosd_init(void)
 {
 	int res = 0;
-	struct sched_param param;
     
     // capture all MAME output so we can send it to the app.
     for (int n=0; n<OUTPUT_CHANNEL_COUNT; n++)

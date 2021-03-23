@@ -14,7 +14,6 @@
 #import "InfoDatabase.h"
 #import "Alert.h"
 #import "Globals.h"
-#import "myosd.h"
 
 #if TARGET_OS_IOS
 #import <Intents/Intents.h>
@@ -46,9 +45,9 @@
 #define CELL_INSET_Y       4.0
 #else
 #define CELL_TINY_WIDTH    200.0
-#define CELL_SMALL_WIDTH   300.0
-#define CELL_LARGE_WIDTH   400.0
-#define CELL_LIST_WIDTH    800.0
+#define CELL_SMALL_WIDTH   250.0
+#define CELL_LARGE_WIDTH   350.0
+#define CELL_LIST_WIDTH    600.0
 #define CELL_INSET_X       8.0
 #define CELL_INSET_Y       4.0
 #endif
@@ -76,10 +75,17 @@
 #define CELL_TEXT_ALIGN         NSTextAlignmentCenter
 #endif
 
+#if TARGET_OS_IOS
 #define CELL_TITLE_FONT         [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
 #define CELL_TITLE_COLOR        [UIColor whiteColor]
 #define CELL_DETAIL_FONT        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote]
 #define CELL_DETAIL_COLOR       [UIColor lightGrayColor]
+#else
+#define CELL_TITLE_FONT         [UIFont boldSystemFontOfSize:24.0]
+#define CELL_TITLE_COLOR        [UIColor whiteColor]
+#define CELL_DETAIL_FONT        [UIFont systemFontOfSize:20.0]
+#define CELL_DETAIL_COLOR       [UIColor lightGrayColor]
+#endif
 
 #define INFO_BACKGROUND_COLOR   [UIColor colorWithWhite:0.111 alpha:1.0]
 #define INFO_IMAGE_WIDTH        (TARGET_OS_IOS ? 260.0 : 580.0)
@@ -103,8 +109,8 @@
 #define LAYOUT_MODE_KEY     @"LayoutMode"
 #define LAYOUT_MODE_DEFAULT LayoutSmall
 #define SCOPE_MODE_KEY      @"ScopeMode"
-#define SCOPE_MODE_DEFAULT  @"Machine"
-#define ALL_SCOPES          @[@"Machine", @"Manufacturer", @"Year", @"Genre", @"Driver"]
+#define SCOPE_MODE_DEFAULT  @"System"
+#define ALL_SCOPES          @[@"System", @"Manufacturer", @"Year", @"Genre", @"Driver"]
 #define RECENT_GAMES_MAX    8
 
 #define CLAMP(x, num) MIN(MAX(x,0), (num)-1)
@@ -174,7 +180,6 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     CGFloat _layoutWidth;
     UISearchController* _searchController;
     NSArray* _key_commands;
-    NSInteger _key_commands_type;
     BOOL _searchCancel;
     NSIndexPath* _currentlyFocusedIndexPath;
     UIImage* _defaultImage;
@@ -1129,6 +1134,13 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     return [text copy];
 }
 
++(NSAttributedString*)getGameText:(NSDictionary*)game
+{
+    if (game[kGameInfoName] == nil || game[kGameInfoDescription] == nil)
+        return nil;
+    return [self getGameText:game layoutMode:LayoutLarge textAlignment:CELL_TEXT_ALIGN];
+}
+
 -(NSAttributedString*)getGameText:(NSDictionary*)game
 {
     return [[self class] getGameText:game layoutMode:_layoutMode textAlignment:_layoutMode == LayoutList ? NSTextAlignmentLeft : CELL_TEXT_ALIGN];
@@ -1384,11 +1396,12 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     
     NSMutableArray* files = [[NSMutableArray alloc] init];
     
-    for (NSString* file in @[@"artwork/%@.zip", @"samples/%@.zip", @"roms/%@/", @"titles/%@.png", @"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@/1.sta", @"sta/%@/2.sta", @"hi/%@.hi", @"nvram/%@.nv", @"inp/%@.inp"])
+    for (NSString* file in @[@"titles/%@.png", @"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@/1.sta", @"sta/%@/2.sta", @"hi/%@.hi", @"nvram/%@.nv", @"inp/%@.inp",
+                             @"snap/%@.png", @"snap/%@.mng", @"snap/%@.avi", @"snap/%@/"])
         [files addObject:[NSString stringWithFormat:file, name]];
     
     if (all) {
-        for (NSString* file in @[@"roms/%@.zip"])
+        for (NSString* file in @[@"roms/%@.zip", @"roms/%@/", @"artwork/%@.zip", @"samples/%@.zip"])
             [files addObject:[NSString stringWithFormat:file, name]];
     }
     
@@ -1865,22 +1878,22 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 // called when input happens on a gamecontroller, keyboard, or touch screen
 // check for input related to moving and selecting.
--(void)handle_MENU:(NSNumber*)status
+-(void)handleButtonPress:(UIPressType)type
 {
-    // get input from all DPADs
-    unsigned long pad_status = [status longValue];
-    
-    // get input from left and right joystick #1
-    if (pad_status & (MYOSD_A|MYOSD_SELECT|MYOSD_START))
-        [self onCommandSelect];
-    if (pad_status & MYOSD_UP)
-        [self onCommandUp];
-    if (pad_status & MYOSD_DOWN)
-        [self onCommandDown];
-    if (pad_status & MYOSD_LEFT)
-        [self onCommandLeft];
-    if (pad_status & MYOSD_RIGHT)
-        [self onCommandRight];
+    switch (type) {
+        case UIPressTypeUpArrow:
+            return [self onCommandUp];
+        case UIPressTypeDownArrow:
+            return [self onCommandDown];
+        case UIPressTypeLeftArrow:
+            return [self onCommandLeft];
+        case UIPressTypeRightArrow:
+            return [self onCommandRight];
+        case UIPressTypeSelect:
+            return [self onCommandSelect];
+        default:
+            break;
+    }
 }
 
 - (BOOL)canBecomeFirstResponder {
@@ -1891,54 +1904,23 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if (_searchController.isActive)
         return @[];
     
-    if (_key_commands == nil || g_pref_ext_control_type != _key_commands_type) {
-        
-#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_13_0
-        // standard keyboard
+    if (_key_commands == nil) {
         _key_commands = @[
-            [UIKeyCommand commandWithTitle:@"SELECT" image:nil action:@selector(onCommandSelect) input:@"\r"                modifierFlags:0 propertyList:nil],
-            [UIKeyCommand commandWithTitle:@"UP"     image:nil action:@selector(onCommandUp)     input:UIKeyInputUpArrow    modifierFlags:0 propertyList:nil],
-            [UIKeyCommand commandWithTitle:@"DOWN"   image:nil action:@selector(onCommandDown)   input:UIKeyInputDownArrow  modifierFlags:0 propertyList:nil],
-            [UIKeyCommand commandWithTitle:@"LEFT"   image:nil action:@selector(onCommandLeft)   input:UIKeyInputLeftArrow  modifierFlags:0 propertyList:nil],
-            [UIKeyCommand commandWithTitle:@"RIGHT"  image:nil action:@selector(onCommandRight)  input:UIKeyInputRightArrow modifierFlags:0 propertyList:nil],
-        ];
-#else
-        // standard keyboard
-        _key_commands = @[
-            [UIKeyCommand keyCommandWithInput:@"\r" modifierFlags:0 action:@selector(onCommandSelect) discoverabilityTitle:@"SELECT"],
-            [UIKeyCommand keyCommandWithInput:UIKeyInputUpArrow modifierFlags:0 action:@selector(onCommandUp) discoverabilityTitle:@"UP"],
-            [UIKeyCommand keyCommandWithInput:UIKeyInputDownArrow modifierFlags:0 action:@selector(onCommandDown) discoverabilityTitle:@"DOWN"],
-            [UIKeyCommand keyCommandWithInput:UIKeyInputLeftArrow modifierFlags:0 action:@selector(onCommandLeft) discoverabilityTitle:@"LEFT"],
-            [UIKeyCommand keyCommandWithInput:UIKeyInputRightArrow modifierFlags:0 action:@selector(onCommandRight) discoverabilityTitle:@"RIGHT"]
-        ];
-#endif
-
-        _key_commands_type = g_pref_ext_control_type;
-
-        if (g_pref_ext_control_type == EXT_CONTROL_8BITDO) {
-            // 8BitDo
-            _key_commands = [_key_commands arrayByAddingObjectsFromArray:@[
-                [UIKeyCommand keyCommandWithInput:@"n" modifierFlags:0 action:@selector(onCommandSelect)], // SELECT
-                [UIKeyCommand keyCommandWithInput:@"o" modifierFlags:0 action:@selector(onCommandSelect)], // START
-                [UIKeyCommand keyCommandWithInput:@"g" modifierFlags:0 action:@selector(onCommandSelect)], // A
-                [UIKeyCommand keyCommandWithInput:@"c" modifierFlags:0 action:@selector(onCommandUp)],
-                [UIKeyCommand keyCommandWithInput:@"d" modifierFlags:0 action:@selector(onCommandDown)],
-                [UIKeyCommand keyCommandWithInput:@"e" modifierFlags:0 action:@selector(onCommandLeft)],
-                [UIKeyCommand keyCommandWithInput:@"f" modifierFlags:0 action:@selector(onCommandRight)],
-            ]];
-        }
-        else if (g_pref_ext_control_type >= EXT_CONTROL_ICADE) {
+            // standard keyboard
+            [UIKeyCommand keyCommandWithInput:@"\r"                 modifierFlags:0 action:@selector(onCommandSelect)],
+            [UIKeyCommand keyCommandWithInput:UIKeyInputUpArrow     modifierFlags:0 action:@selector(onCommandUp)],
+            [UIKeyCommand keyCommandWithInput:UIKeyInputDownArrow   modifierFlags:0 action:@selector(onCommandDown)],
+            [UIKeyCommand keyCommandWithInput:UIKeyInputLeftArrow   modifierFlags:0 action:@selector(onCommandLeft)],
+            [UIKeyCommand keyCommandWithInput:UIKeyInputRightArrow  modifierFlags:0 action:@selector(onCommandRight)],
             // iCade
-            _key_commands = [_key_commands arrayByAddingObjectsFromArray:@[
-                [UIKeyCommand keyCommandWithInput:@"y" modifierFlags:0 action:@selector(onCommandSelect)], // SELECT
-                [UIKeyCommand keyCommandWithInput:@"h" modifierFlags:0 action:@selector(onCommandSelect)], // START
-                [UIKeyCommand keyCommandWithInput:@"k" modifierFlags:0 action:@selector(onCommandSelect)], // A
-                [UIKeyCommand keyCommandWithInput:@"w" modifierFlags:0 action:@selector(onCommandUp)],
-                [UIKeyCommand keyCommandWithInput:@"x" modifierFlags:0 action:@selector(onCommandDown)],
-                [UIKeyCommand keyCommandWithInput:@"a" modifierFlags:0 action:@selector(onCommandLeft)],
-                [UIKeyCommand keyCommandWithInput:@"d" modifierFlags:0 action:@selector(onCommandRight)],
-            ]];
-        }
+            [UIKeyCommand keyCommandWithInput:@"y" modifierFlags:0 action:@selector(onCommandSelect)], // SELECT
+            [UIKeyCommand keyCommandWithInput:@"h" modifierFlags:0 action:@selector(onCommandSelect)], // START
+            [UIKeyCommand keyCommandWithInput:@"k" modifierFlags:0 action:@selector(onCommandSelect)], // A
+            [UIKeyCommand keyCommandWithInput:@"w" modifierFlags:0 action:@selector(onCommandUp)],
+            [UIKeyCommand keyCommandWithInput:@"x" modifierFlags:0 action:@selector(onCommandDown)],
+            [UIKeyCommand keyCommandWithInput:@"a" modifierFlags:0 action:@selector(onCommandLeft)],
+            [UIKeyCommand keyCommandWithInput:@"d" modifierFlags:0 action:@selector(onCommandRight)],
+        ];
     }
     return _key_commands;
 }

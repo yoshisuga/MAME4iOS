@@ -73,7 +73,7 @@ enum {BTN_A,BTN_B,BTN_Y,BTN_X,BTN_L1,BTN_R1,
 @class InfoHUD;
 #endif
 
-@class iCadeView;
+@class KeyboardView;
 
 #if TARGET_OS_IOS
 @interface EmulatorController : UIViewController<GCDWebUploaderDelegate, UIDocumentPickerDelegate>
@@ -97,7 +97,7 @@ enum {BTN_A,BTN_B,BTN_Y,BTN_X,BTN_L1,BTN_R1,
   UIImageView	    * buttonViews[NUM_BUTTONS];
 
     
-  iCadeView         *icadeView;
+  KeyboardView      *keyboardView;
     
 
   //views frames
@@ -154,7 +154,7 @@ enum {BTN_A,BTN_B,BTN_Y,BTN_X,BTN_L1,BTN_R1,
 - (void)enterBackground;
 - (void)enterForeground;
 
-- (void)handle_INPUT;
+- (void)handle_INPUT:(unsigned long)status stick:(CGPoint)stick;
 - (void)commandKey:(char)key;
 
 - (void)updateOptions;

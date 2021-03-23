@@ -44,6 +44,7 @@
 
 #import "OptionsTableViewController.h"
 #import "Options.h"
+#import "myosd.h"
 
 @implementation OptionsTableViewController
 
@@ -80,10 +81,10 @@
     version = [NSString stringWithFormat:@"%@ • DEBUG", version];
 #endif
     
-    // TODO: get the mame version from MYOSD
-    NSString* mame_version = @"139u1";
+    // get the mame version from MYOSD, and remove any date in ()s
+    NSString* mame_version = [[NSString stringWithUTF8String:myosd_version] componentsSeparatedByString:@" ("].firstObject;
     
-    if (mame_version != nil)
+    if (mame_version.length != 0)
         version = [NSString stringWithFormat:@"%@ • %@", version, mame_version];
 
     // this is the last date Info.plist was modifed, if you do a clean build, or change the version, it is the build date.
@@ -247,7 +248,7 @@
     Options* op = [[Options alloc] init];
     NSString* key = (__bridge NSString*)(void*)sender.tag;
     NSAssert([op valueForKey:key] != nil, @"bad key");
-    NSLog(@"updateOptionSwitch: %@ = %d", key, [sender isOn]);
+    //NSLog(@"updateOptionSwitch: %@ = %d", key, [sender isOn]);
     [op setValue:@([sender isOn]) forKey:key];
     [op saveOptions];
 }
@@ -279,7 +280,7 @@
     [op setValue:@(val) forKey:key];
     [op saveOptions];
 
-    NSLog(@"toggleOptionSwitch: %@ = %d", key, val);
+    //NSLog(@"toggleOptionSwitch: %@ = %d", key, val);
     sender.text = val ? @"On" : @"Off";
     [sender sizeToFit];
 }

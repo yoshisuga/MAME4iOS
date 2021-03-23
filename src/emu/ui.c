@@ -24,7 +24,6 @@
 #include <ctype.h>
 
 #include "myosd.h"
-#include "netplay.h"
 
 
 /***************************************************************************
@@ -290,10 +289,8 @@ int ui_display_startup_screens(running_machine *machine, int first_time, int sho
 	if (!first_time || (str > 0 && str < 60*5) || machine->gamedrv == &GAME_NAME(empty) || (machine->debug_flags & DEBUG_FLAG_ENABLED) != 0)
 		show_gameinfo = show_warnings = show_disclaimer = FALSE;
 
-	if(myosd_showinfo == 0 || netplay_get_handle()->has_connection)
-	{
+	if (myosd_showinfo == 0)
 		show_gameinfo = show_warnings = show_disclaimer = FALSE;
-	}
 
 	/* initialize the on-screen display system */
 	slider_list = slider_current = slider_init(machine);

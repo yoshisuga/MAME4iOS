@@ -1542,31 +1542,9 @@ static void menu_main(running_machine *machine, ui_menu *menu, void *parameter, 
 		menu_main_populate(machine, menu, state);
 
 	/* process the menu */
-	/*
 	event = ui_menu_process(machine, menu, 0);
 	if (event != NULL && event->iptkey == IPT_UI_SELECT)
 		ui_menu_stack_push(ui_menu_alloc(machine, menu->container, (ui_menu_handler_func)event->itemref, NULL));
-	*/	
-	//DAV HACK
-	event = ui_menu_process(machine, menu, 0);
-	if (event != NULL && event->iptkey == IPT_UI_SELECT)
-	{
-		if((FPTR)event->itemref==777)
-		{
-			machine->schedule_soft_reset();
-			myosd_exitGame = 1;
-			popmessage("Done!");
-		}
-		else if((FPTR)event->itemref==778)
-		{
-			myosd_service = 1;
-			myosd_exitGame = 1;
-			popmessage("Done!.");
-		}
-		else
-		  ui_menu_stack_push(ui_menu_alloc(machine, menu->container, (ui_menu_handler_func)event->itemref, NULL));
-	}
-	//DAV HACK
 }
 
 
@@ -1688,16 +1666,7 @@ static void menu_main_populate(running_machine *machine, ui_menu *menu, void *st
 		ui_menu_item_append(menu, "Memory Card", NULL, 0, (void *)menu_memory_card);
 
     //DAV HACK
-	ui_menu_item_append(menu, "Soft Reset", NULL, 0, (void *)777);
-
-	ui_menu_item_append(menu, "Service", NULL, 0, (void *)778);
-
 	ui_menu_item_append(menu, "Speed Hacks", NULL, 0, (void *)menu_speed_hacks);
-
-	/* add reset and exit menus */
-#if 0
-	ui_menu_item_append(menu, "Select New " CAPSTARTGAMENOUN, NULL, 0, (void *)menu_select_game);
-#endif
 	//DAV HACK
 }
 

@@ -20,10 +20,7 @@
     return @[@"Default",@"50%",@"60%",@"70%",@"80%",@"85%",@"90%",@"95%",@"100%",@"105%",@"110%",@"115%",@"120%",@"130%",@"140%",@"150%"];
 }
 + (NSArray*)arrayControlType {
-    return @[@"Keyboard",@"iCade or compatible",@"iCP, Gametel",@"iMpulse", @"8BitDo Zero"];
-}
-+ (NSArray*)arraySoundValue {
-    return @[@"Off", @"On (11 KHz)", @"On (22 KHz)",@"On (33 KHz)", @"On (44 KHz)", @"On (48 KHz)"];
+    return @[@"Keyboard",@"iCade or compatible",@"iCP, Gametel",@"iMpulse"];
 }
 
 + (NSArray*)arraySkin {
@@ -37,9 +34,6 @@
 }
 + (NSArray*)arrayLineShader {
     return [MetalScreenView lineShaderList];
-}
-+ (NSArray*)arrayColorSpace {
-    return [MetalScreenView colorSpaceList];
 }
 
 #pragma mark - utility funciton to set a single option and save it.
@@ -110,8 +104,6 @@
         _screenShader = @"";
         _lineShader = @"";
 
-        _colorSpace = @"";
-        
         _integerScalingOnly = 0;
 
         _showFPS = 0;
@@ -134,8 +126,6 @@
         
         _controltype = 0;
         
-        _soundValue = 5;
-        
         _sticktype = 0;
         _numbuttons = 0;
         _aplusb = 0;
@@ -154,14 +144,7 @@
         _buttonSize= 2;
         _nintendoBAYX=0;
 
-        _wpantype = 0;
-        _wfpeeraddr = nil;
-        _wfport = NETPLAY_PORT;
-        _wfframesync = 0;
-        _btlatency = 1;
-        
         _vbean2x = 1;
-        _vantialias = 1;
         _vflicker = 0;
         
         _emuspeed = 0;
@@ -183,6 +166,8 @@
         _touchControlsOpacity = 50.0;
         
         _touchDirectionalEnabled = 0;
+        
+        _hapticButtonFeedback = 1;
     }
     else
     {
@@ -194,8 +179,6 @@
         _skin = [optionsDict objectForKey:@"skin"] ?: @"";
         _screenShader = [optionsDict objectForKey:@"screen-shader"] ?: [optionsDict objectForKey:@"effect"] ?: @"";
         _lineShader = [optionsDict objectForKey:@"line-shader"] ?: @"";
-
-        _colorSpace = [optionsDict objectForKey:@"sourceColorSpace"] ?: @"";
 
         _integerScalingOnly = [[optionsDict objectForKey:@"integerScalingOnly"] boolValue];
 
@@ -233,8 +216,6 @@
         _analogDeadZoneValue =  [[optionsDict objectForKey:@"analogDeadZoneValue"] intValue];
         _controltype =  [[optionsDict objectForKey:@"controlType"] intValue];
         
-        _soundValue =  [[optionsDict objectForKey:@"soundValue"] intValue];
-        
         _sticktype  =  [[optionsDict objectForKey:@"sticktype"] intValue];
         _numbuttons  =  [[optionsDict objectForKey:@"numbuttons"] intValue];
         _aplusb  =  [[optionsDict objectForKey:@"aplusb"] intValue];
@@ -254,20 +235,12 @@
         _stickSize =  [[optionsDict objectForKey:@"stickSize"] intValue];
         _nintendoBAYX = [[optionsDict objectForKey:@"nintendoBAYX"] intValue];
         
-        _wpantype  =  [[optionsDict objectForKey:@"wpantype"] intValue];
-        _wfpeeraddr  =  [optionsDict objectForKey:@"wfpeeraddr"];
-        _wfport  =  [[optionsDict objectForKey:@"wfport"] intValue];
-        _wfframesync  =  [[optionsDict objectForKey:@"wfframesync"] intValue];
-        _btlatency  =  [[optionsDict objectForKey:@"btlatency"] intValue];
-        
-        if([_wfpeeraddr isEqualToString:@""])
-            _wfpeeraddr = nil;
-        
         _vbean2x  =  [[optionsDict objectForKey:@"vbean2x"] intValue];
-        _vantialias  =  [[optionsDict objectForKey:@"vantialias"] intValue];
         _vflicker  =  [[optionsDict objectForKey:@"vflicker"] intValue];
         
         _emuspeed  =  [[optionsDict objectForKey:@"emuspeed"] intValue];
+        
+        _hapticButtonFeedback = [([optionsDict objectForKey:@"hapticButtonFeedback"] ?: @(1)) intValue];
     }
     
 }
@@ -282,8 +255,6 @@
                              _screenShader, @"screen-shader",
                              _lineShader, @"line-shader",
 
-                             _colorSpace, @"sourceColorSpace",
-                                 
                              [NSString stringWithFormat:@"%d", _integerScalingOnly], @"integerScalingOnly",
 
                              [NSString stringWithFormat:@"%d", _lightgunEnabled],@"lightgunEnabled",
@@ -317,8 +288,6 @@
                              
                              [NSString stringWithFormat:@"%d", _controltype], @"controlType",
                              
-                             [NSString stringWithFormat:@"%d", _soundValue], @"soundValue",
-                             
                              [NSString stringWithFormat:@"%d", _sticktype], @"sticktype",
                              [NSString stringWithFormat:@"%d", _numbuttons], @"numbuttons",
                              [NSString stringWithFormat:@"%d", _aplusb], @"aplusb",
@@ -339,18 +308,13 @@
                              [NSString stringWithFormat:@"%d", _buttonSize], @"buttonSize",
                              [NSString stringWithFormat:@"%d", _nintendoBAYX], @"nintendoBAYX",
 
-                             [NSString stringWithFormat:@"%d", _wpantype], @"wpantype",
-                             [NSString stringWithFormat:@"%d", _wfport], @"wfport",
-                             [NSString stringWithFormat:@"%d", _wfframesync], @"wfframesync",
-                             [NSString stringWithFormat:@"%d", _btlatency], @"btlatency",
-                             (_wfpeeraddr ?: @""), @"wfpeeraddr",
-                             
                              [NSString stringWithFormat:@"%d", _vbean2x], @"vbean2x",
-                             [NSString stringWithFormat:@"%d", _vantialias], @"vantialias",
                              [NSString stringWithFormat:@"%d", _vflicker], @"vflicker",
                              
                              [NSString stringWithFormat:@"%d", _emuspeed], @"emuspeed",
-                             
+                                 
+                             [NSString stringWithFormat:@"%d", _hapticButtonFeedback], @"hapticButtonFeedback",
+                                 
                              nil];
     
     

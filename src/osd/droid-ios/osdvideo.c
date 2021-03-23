@@ -66,6 +66,15 @@ void droid_ios_video_draw(const render_primitive_list *currlist)
     myosd_video_draw(currlist->head);
 }
 
+// HACK function to get current view from render target
+// TODO: move it into render.c??
+// TODO: make a function called render_target_has_art()??
+layout_view * render_target_get_current_view(render_target *target)
+{
+    //return target->curview;
+    return (layout_view *)((void**)target)[2];
+}
+
 void droid_ios_video_render(render_target *our_target)
 {
 	int minwidth, minheight;
@@ -86,8 +95,11 @@ void droid_ios_video_render(render_target *our_target)
        viswidth = w;
        visheight = h;
         
-       // we want to use the largest target we can, to fit the display.
-       if (myosd_display_width > viswidth && myosd_display_height > visheight)
+       layout_view * view = render_target_get_current_view(our_target);
+        
+       // if the current view has artwork we want to use the largest target we can, to fit the display
+       // in the no art case, use the minimal buffer size needed, so it gets scaled up by hardware.
+       if (layout_view_has_art(view) && myosd_display_width > viswidth && myosd_display_height > visheight)
        {
             if (myosd_display_width < myosd_display_height * viswidth / visheight)
             {

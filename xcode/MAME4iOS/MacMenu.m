@@ -72,12 +72,14 @@
     
     // UIKeyInputF3 is only valid on 13.4 or later, avoid a build warning
     NSString* keyF3 = @"";
+#ifdef __IPHONE_13_4
     if (@available(iOS 13.4, *)) {
         keyF3 = UIKeyInputF3;
     }
-    
-    // **NOTE** the keyboard shortcuts here are mostly for discoverability, the real key handling takes place in iCadeView.m
-    // TODO: find out why some keys are handled by iCadeView.m and some are handled by UIKeyCommand, weird responder chain magic??
+#endif
+
+    // **NOTE** the keyboard shortcuts here are mostly for discoverability, the real key handling takes place in KeyboardView.m
+    // TODO: find out why some keys are handled by KeyboardView.m and some are handled by UIKeyCommand, weird responder chain magic??
     UIMenu* mame = [UIMenu menuWithTitle:@"MAME" image:nil identifier:nil options:0 children:@[
         [UIKeyCommand commandWithTitle:@"Coin"      image:[UIImage systemImageNamed:@"centsign.circle"]     action:@selector(mameSelect)    input:@"5" modifierFlags:0 propertyList:nil],
         [UIKeyCommand commandWithTitle:@"Start"     image:[UIImage systemImageNamed:@"play.circle"]         action:@selector(mameStart)     input:@"1" modifierFlags:0 propertyList:nil],

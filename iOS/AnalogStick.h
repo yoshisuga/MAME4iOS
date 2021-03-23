@@ -67,6 +67,6 @@
 
 - (id)initWithFrame:(CGRect)frame withEmuController:(EmulatorController*)emulatorController;
 - (void)analogTouches:(UITouch *)touch withEvent:(UIEvent *)event;
-- (void)update;
+- (void)update:(unsigned long)status stick:(CGPoint)stick;
 
 @end

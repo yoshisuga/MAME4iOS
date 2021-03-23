@@ -54,7 +54,6 @@
 #import "AnalogStick.h"
 #import "AnalogStick.h"
 #import "LayoutView.h"
-#import "NetplayGameKit.h"
 #import "FileItemProvider.h"
 #import "PopupSegmentedControl.h"
 #endif
@@ -65,7 +64,7 @@
 #import "TVOptionsController.h"
 #endif
 
-#import "iCadeView.h"
+#import "KeyboardView.h"
 #import <pthread.h>
 #import "UIView+Toast.h"
 #import "Bootstrapper.h"
@@ -78,6 +77,13 @@
 #import "SkinManager.h"
 #import "CloudSync.h"
 #import "InfoHUD.h"
+
+#import "Timer.h"
+TIMER_INIT_BEGIN
+TIMER_INIT(timer_read_input)
+TIMER_INIT(timer_read_controllers)
+TIMER_INIT(timer_read_mice)
+TIMER_INIT_END
 
 // declare "safe" properties for buttonHome, buttonMenu, buttonsOptions that work on pre-iOS 13,14
 #if (TARGET_OS_IOS && __IPHONE_OS_VERSION_MIN_REQUIRED < 140000) || (TARGET_OS_TV && __TV_OS_VERSION_MIN_REQUIRED < 140000)
@@ -113,13 +119,19 @@
 @end
 #endif
 
-#define DebugLog 0
+#define DebugLog 1
 #if DebugLog == 0 || DEBUG == 0
 #define NSLog(...) (void)0
 #endif
 
+#ifdef DEBUG
+#define UPDATE_FPS_EVERY    1
+#else
 #define UPDATE_FPS_EVERY    60
+#endif
 #define OPAQUE_FPS          FALSE
+
+static int myosd_exitGame = 0;      // set this to cause MAME to exit.
 
 // Game Controllers
 NSArray * g_controllers;
@@ -131,13 +143,17 @@ float mouse_delta_x[NUM_JOY];
 float mouse_delta_y[NUM_JOY];
 float mouse_delta_z[NUM_JOY];
 
-// Turbo functionality
+// Turbo and Autofire functionality
 int cyclesAfterButtonPressed[NUM_JOY][NUM_BUTTONS];
 int turboBtnEnabled[NUM_BUTTONS];
+int g_pref_autofire = 0;
 
 // On-screen touch gamepad button state
 unsigned long buttonState;      // on-screen button state, MYOSD_*
 int buttonMask[NUM_BUTTONS];    // map a button index to a button MYOSD_* mask
+unsigned long myosd_pad_status;
+float myosd_pad_x;
+float myosd_pad_y;
 
 // Touch Directional Input tracking
 int touchDirectionalCyclesAfterMoved = 0;
@@ -146,7 +162,6 @@ int g_emulation_paused = 0;
 int g_emulation_initiated=0;
 
 int g_joy_used = 0;
-int g_iCade_used = 0;
 
 int g_enable_debug_view = 0;
 int g_debug_dump_screen = 0;
@@ -160,7 +175,6 @@ NSString* g_pref_screen_shader;
 NSString* g_pref_line_shader;
 NSString* g_pref_filter;
 NSString* g_pref_skin;
-NSString* g_pref_colorspace;
 
 int g_pref_integer_scale_only = 0;
 int g_pref_showFPS = 0;
@@ -188,8 +202,15 @@ int g_pref_full_num_buttons=4;
 int g_pref_input_touch_type = TOUCH_INPUT_DSTICK;
 int g_pref_analog_DZ_value = 2;
 int g_pref_ext_control_type = 1;
+int g_pref_haptic_button_feedback = 1;
 
 int g_pref_nintendoBAYX = 0;
+int g_pref_p1aspx = 0;
+
+int g_pref_vector_bean2x = 0;
+int g_pref_vector_flicker = 0;
+int g_pref_cheat = 0;
+int g_pref_autosave = 0;
 
 int g_pref_lightgun_enabled = 1;
 int g_pref_lightgun_bottom_reload = 0;
@@ -219,8 +240,8 @@ static int change_layout=0;
 #define kSelectedGameInfoKey @"selected_game_info"
 static NSDictionary* g_mame_game_info;
 static BOOL g_mame_reset = FALSE;           // do a full reset (delete cfg files) before running MAME
-static char g_mame_game[MAX_GAME_NAME];     // game MAME should run (or empty is menu)
-static char g_mame_game_error[MAX_GAME_NAME];
+static char g_mame_game[16];                // game MAME should run (or empty is menu)
+static char g_mame_game_error[16];
 static char g_mame_output_text[4096];
 static BOOL g_mame_warning = FALSE;
 static BOOL g_no_roms_found = FALSE;
@@ -307,12 +328,18 @@ void myosd_output(int channel, const char* text)
 // run MAME (or pass NULL for main menu)
 int run_mame(char* game)
 {
-    char* argv[] = {"mame4ios", "-pause_brightness", "1.0", game};
+    // TODO: hiscore?
+    char* argv[] = {"mame4ios", game ?: "",
+        g_pref_cheat ? "-cheat" : "-nocheat",
+        g_pref_autosave ? "-autosave" : "-noautosave",
+        "-flicker", g_pref_vector_flicker ? "0.4" : "0.0",
+        "-beam", g_pref_vector_bean2x ? "2.5" : "1.0",          // TODO: -beam_width_min and -beam_width_max on latest MAME
+#ifdef DEBUG
+        "-pause_brightness", "1.0",     // to debug shaders
+#endif
+        };
     
     int argc = sizeof(argv) / sizeof(argv[0]);
-    
-    if (game == NULL || *game == 0)
-        argc--;
 
     return iOS_main(argc,argv);
 }
@@ -335,10 +362,6 @@ void* app_Thread_Start(void* args)
 
             g_mame_reset = FALSE;
         }
-        
-        // set this myosd global so the netplay code knows what the current game is.
-        if (g_mame_game[0] != 0 && g_mame_game[0] != ' ')
-            strcpy(myosd_selected_game, g_mame_game);
         
         // reset g_mame_output_text if we are running a game, but not if we are just running menu.
         if (g_mame_game[0] != 0)
@@ -564,9 +587,11 @@ enum {LOAD_STATE, SAVE_STATE, ASK_STATE};
 
 void mame_state(int load_save, int slot)
 {
-    myosd_loadstate = (load_save == LOAD_STATE);
-    myosd_savestate = (load_save == SAVE_STATE);
-    push_mame_buttons(0, 0, (slot == 1) ? MYOSD_B : MYOSD_X);       // delay, slot #
+    // TODO: what happens if the user re-maps the save/load state key away from F7
+    if (load_save == LOAD_STATE)
+        push_mame_keys(MYOSD_KEY_F7, (slot == 1) ? MYOSD_KEY_1 : MYOSD_KEY_2, 0, 0);
+    else
+        push_mame_keys(MYOSD_KEY_LSHIFT, MYOSD_KEY_F7, (slot == 1) ? MYOSD_KEY_1 : MYOSD_KEY_2, 0);
 }
 
 - (void)runState:(int)load_save
@@ -604,22 +629,38 @@ void mame_state(int load_save, int slot)
 
 - (void)presentPopup:(UIViewController *)viewController from:(UIView*)view animated:(BOOL)flag completion:(void (^)(void))completion {
 #if TARGET_OS_IOS // UIPopoverPresentationController does not exist on tvOS.
-    UIPopoverPresentationController *popoverController = viewController.popoverPresentationController;
-    if ( popoverController != nil ) {
-        if (view == nil || view.hidden || CGRectIsEmpty(view.bounds) ) {
-            popoverController.sourceView = self.view;
-            popoverController.sourceRect = CGRectMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds), 0.0f, 0.0f);
-            popoverController.permittedArrowDirections = 0; /*UIPopoverArrowDirectionNone*/
+    UIPopoverPresentationController *ppc = viewController.popoverPresentationController;
+    if ( ppc != nil ) {
+        if (view == nil || view.hidden || CGRectIsEmpty(view.bounds)) {
+            ppc.sourceView = self.view;
+            ppc.sourceRect = CGRectMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds), 0.0f, 0.0f);
+            ppc.permittedArrowDirections = 0; /*UIPopoverArrowDirectionNone*/
         }
         else if ([view isKindOfClass:[UIImageView class]] && view.contentMode == UIViewContentModeScaleAspectFit) {
-            popoverController.sourceView = view;
-            popoverController.sourceRect = AVMakeRectWithAspectRatioInsideRect([(UIImageView*)view image].size, view.bounds);
-            popoverController.permittedArrowDirections = UIPopoverArrowDirectionAny;
+            ppc.sourceView = view;
+            ppc.sourceRect = AVMakeRectWithAspectRatioInsideRect([(UIImageView*)view image].size, view.bounds);
+            ppc.permittedArrowDirections = UIPopoverArrowDirectionAny;
         }
         else {
-            popoverController.sourceView = view;
-            popoverController.sourceRect = view.bounds;
-            popoverController.permittedArrowDirections = UIPopoverArrowDirectionAny;
+            ppc.sourceView = view;
+            ppc.sourceRect = view.bounds;
+            ppc.permittedArrowDirections = UIPopoverArrowDirectionAny;
+        }
+        
+        // convert to a view that will not go away on a rotate or resize
+        ppc.sourceRect = [ppc.sourceView convertRect:ppc.sourceRect toView:self.view];
+        ppc.sourceView = self.view;
+
+        // use only up/down arrows if the popup can fit
+        if (ppc.permittedArrowDirections == UIPopoverArrowDirectionAny) {
+            CGRect rect = [ppc.sourceView convertRect:ppc.sourceRect toCoordinateSpace:ppc.sourceView.window];
+            CGRect safe = UIEdgeInsetsInsetRect(ppc.sourceView.window.bounds, ppc.sourceView.window.safeAreaInsets);
+            CGSize size = viewController.preferredContentSize;
+
+            if (CGRectGetMinY(rect) - CGRectGetMinY(safe) > size.height + 16)
+                ppc.permittedArrowDirections = UIPopoverArrowDirectionDown;
+            else if (CGRectGetMaxY(safe) - CGRectGetMaxY(rect) > size.height + 16)
+                ppc.permittedArrowDirections = UIPopoverArrowDirectionUp;
         }
     }
 #endif
@@ -650,131 +691,229 @@ void mame_state(int load_save, int slot)
     }
 }
 
-- (void)runMenu:(int)player from:(UIView*)view
-{
+HUDViewController* g_menu;
+
+-(void)runMenu:(GCController*)controller from:(UIView*)view {
+    NSLog(@"runMenu: %@", controller);
+    TIMER_DUMP();
+    TIMER_RESET();
+    
     if (self.presentedViewController != nil)
         return;
-    
-    [self startMenu];
 
-    NSString* title = nil;
+    int player = (int)controller.playerIndex;
+    GCExtendedGamepad* gamepad = controller.extendedGamepad;
+    
     NSInteger controller_count = g_controllers.count;
-#if TARGET_OS_TV
     if (controller_count > 1 && ((GCController*)g_controllers.lastObject).extendedGamepad == nil)
         controller_count--;
-#endif
-    if (controller_count > 1)
-        title = [NSString stringWithFormat:@"Player %d", player+1];
+
+    HUDViewController* menu = [[HUDViewController alloc] init];
     
-    UIAlertController* menu = [UIAlertController alertControllerWithTitle:title message:nil preferredStyle:UIAlertControllerStyleActionSheet];
+#if TARGET_OS_IOS
+    if (view != nil)
+        menu.modalPresentationStyle = UIModalPresentationPopover;
+    else
+        menu.modalPresentationStyle = UIModalPresentationOverFullScreen;
+#else
+    menu.modalPresentationStyle = UIModalPresentationOverFullScreen;
+#endif
 
-    CGFloat size = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].pointSize;
-
+    if (controller != nil && controller_count > 1 && myosd_num_players > 1)
+        menu.title = [NSString stringWithFormat:@"Player %d", player+1];
+    
     if(myosd_inGame && myosd_in_menu==0)
     {
-        // MENU item to insert a coin and do a start. usefull for fullscreen and AppleTV siri remote, and discoverability on a GameController
-        if (player >= 2 && myosd_num_players > 2) {
-            // in-game menu for player 3+ just give them a COIN+START option....
-            [menu addAction:[UIAlertAction actionWithTitle:@"Coin+Start" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"centsign.circle" withPointSize:size] handler:^(UIAlertAction* action) {
-                push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X (or P1) COIN
-                push_mame_button(player, MYOSD_START);  // Player X START
-                [self endMenu];
-            }]];
+        // 1P and 2P Start
+        [menu addButtons:(myosd_num_players >= 2) ? @[@":person:1P Start", @":person.2:2P Start"] : @[@":centsign.circle:Coin+Start"] style:HUDButtonStyleDefault handler:^(NSUInteger button) {
+            [self startPlayer:(int)button];
+        }];
+        // 3P and 4P Start
+        if (myosd_num_players >= 3) {
+            // FYI there is no person.4 symbol, so we just reuse person.3
+            [menu addButtons:@[@":person.3:3P Start", (myosd_num_players >= 4) ? @":person.3:4P Start" : @""] style:HUDButtonStyleDefault handler:^(NSUInteger button) {
+                if (button+2 < myosd_num_players)
+                    [self startPlayer:(int)button + 2];
+            }];
         }
-        else {
-            // in-game menu for player 1-4, give them options to start.
-            int num_players = MIN(myosd_num_players, 4);
-
-            for (int player=0; player<num_players; player++) {
-                title = [NSString stringWithFormat:@"%d Player Start", player+1];
-                NSString* image = @[@"person", @"person.2", @"person.3", @"person.3"][player];
-                [menu addAction:[UIAlertAction actionWithTitle:title style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:image withPointSize:size] handler:^(UIAlertAction* action) {
-                    [self startPlayer:player];
-                    [self endMenu];
-                }]];
+        // MENU modifier buttons
+        if (gamepad != nil) {
+            if (gamepad.buttonOptions != nil && gamepad.buttonMenu != nil) {
+                // Pn SELECT and START (menu buttons...)
+                [menu addButtons:@[
+                    [NSString stringWithFormat:@":%@:P%d Select", getGamepadSymbol(gamepad, gamepad.leftTrigger), player + 1],
+                    [NSString stringWithFormat:@":%@:P%d Start",  getGamepadSymbol(gamepad, gamepad.rightTrigger), player + 1]
+                ] style:HUDButtonStylePlain handler:^(NSUInteger button) {
+                    if (button == 0 )
+                        push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X coin
+                    else
+                        push_mame_button(player, MYOSD_START);
+                }];
             }
+            else {
+                // Pn SELECT and START
+                [menu addButtons:@[
+                    [NSString stringWithFormat:@":%@:P%d Select", getGamepadSymbol(gamepad, gamepad.leftShoulder), player + 1],
+                    [NSString stringWithFormat:@":%@:P%d Start",  getGamepadSymbol(gamepad, gamepad.rightShoulder), player + 1]
+                ] style:HUDButtonStylePlain handler:^(NSUInteger button) {
+                    if (button == 0 )
+                        push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X coin
+                    else
+                        push_mame_button(player, MYOSD_START);
+                }];
+            }
+            
+            // P2 SELECT and START (only on the Player 1 controller)
+            if (player == 0 && myosd_num_players > 1) {
+                [menu addButtons:@[
+                    [NSString stringWithFormat:@":%@:P2 Select", getGamepadSymbol(gamepad, gamepad.leftTrigger)],
+                    [NSString stringWithFormat:@":%@:P2 Start",  getGamepadSymbol(gamepad, gamepad.rightTrigger)]
+                ] style:HUDButtonStylePlain handler:^(NSUInteger button) {
+                    if (button == 0 )
+                        push_mame_button((1 < myosd_num_coins ? 1 : 0), MYOSD_SELECT);  // Player 2 coin
+                    else
+                        push_mame_button(1, MYOSD_START);
+                }];
+            }
+
+            // EXIT and MAME MENU
+            [menu addButtons:@[
+                [NSString stringWithFormat:@":%@:Exit Game", getGamepadSymbol(gamepad, gamepad.buttonX)],
+#if TARGET_OS_IOS
+                [NSString stringWithFormat:@":%@:HUD", getGamepadSymbol(gamepad, gamepad.buttonA)],
+#else
+                @""     // TODO: HUD on tvOS
+#endif
+            ] style:HUDButtonStylePlain handler:^(NSUInteger button) {
+                if (button == 0)
+                    [self runExit:NO];
+                else
+                    [self commandKey:'H'];
+            }];
+
+            // HUD and PAUSE
+            [menu addButtons:@[
+                [NSString stringWithFormat:@":%@:Configure", getGamepadSymbol(gamepad, gamepad.buttonY)],
+                [NSString stringWithFormat:@":%@:Pause", getGamepadSymbol(gamepad, gamepad.buttonB)],
+            ] style:HUDButtonStylePlain handler:^(NSUInteger button) {
+                if (button == 0)
+                    push_mame_key(MYOSD_KEY_TAB);
+                else
+                    push_mame_key(MYOSD_KEY_P);
+            }];
         }
-        [menu addAction:[UIAlertAction actionWithTitle:@"Load/Save State" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"bookmark" withPointSize:size] handler:^(UIAlertAction* action) {
-            [self runState:ASK_STATE];
-        }]];
-        [menu addAction:[UIAlertAction actionWithTitle:@"MAME Menu" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"slider.horizontal.3" withPointSize:size] handler:^(UIAlertAction* action) {
-            myosd_configure = 1;
-            [self endMenu];
-        }]];
+        
+        // LOAD and SAVE State
+        [menu addButtons:@[
+            [NSString stringWithFormat:@":%@:Load ①", getGamepadSymbol(gamepad, gamepad.dpad.up) ?: @"bookmark"],
+            [NSString stringWithFormat:@":%@:Load ②", getGamepadSymbol(gamepad, gamepad.dpad.right) ?: @"bookmark"],
+        ] style:(gamepad ? HUDButtonStylePlain : HUDButtonStyleDefault) handler:^(NSUInteger button) {
+            if (button == 0)
+                mame_state(LOAD_STATE, 1);
+            else
+                mame_state(LOAD_STATE, 2);
+        }];
+        [menu addButtons:@[
+            [NSString stringWithFormat:@":%@:Save ①", getGamepadSymbol(gamepad, gamepad.dpad.down) ?: @"bookmark.fill"],
+            [NSString stringWithFormat:@":%@:Save ②", getGamepadSymbol(gamepad, gamepad.dpad.left) ?: @"bookmark.fill"],
+        ] style:(gamepad ? HUDButtonStylePlain : HUDButtonStyleDefault) handler:^(NSUInteger button) {
+            if (button == 0)
+                mame_state(SAVE_STATE, 1);
+            else
+                mame_state(SAVE_STATE, 2);
+        }];
+        
+        if (gamepad == nil) {
+            // CONFIGURE and PAUSE
+            [menu addButtons:@[@":slider.horizontal.3:Configure",@":pause.circle:Pause"] style:HUDButtonStyleDefault handler:^(NSUInteger button) {
+                if (button == 0)
+                    push_mame_key(MYOSD_KEY_TAB);
+                else
+                    push_mame_key(MYOSD_KEY_P);
+            }];
+        }
+        // RESET and SERVICE
+        [menu addButtons:@[@":power:Reset", @":wrench:Service"] style:HUDButtonStyleDefault handler:^(NSUInteger button) {
+            if (button == 0)
+                push_mame_key(MYOSD_KEY_F3);
+            else
+                push_mame_key(MYOSD_KEY_F2);
+        }];
+        
         // show any MAME output, usually a WARNING message, we catch errors in an other place.
         if (g_mame_output_text[0]) {
-            NSString* title = @"MAME Output";
-            NSString* symbol = @"info.circle";
+            NSString* button = @":info.circle:MAME Output";
             NSString* message = [[NSString stringWithUTF8String:g_mame_output_text] stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
 
-            if ([message rangeOfString:@"WARNING"].location != NSNotFound) {
-                title = @"MAME Warning";
-                symbol = @"exclamationmark.triangle";
-            }
+            if ([message rangeOfString:@"WARNING"].location != NSNotFound)
+                button = @":exclamationmark.triangle:MAME Warning";
             
-            if ([message rangeOfString:@"ERROR"].location != NSNotFound) {
-                title = @"MAME Error";
-                symbol = @"xmark.octagon";
-            }
+            if ([message rangeOfString:@"ERROR"].location != NSNotFound)
+                button = @":xmark.octagon:MAME Error";
             
-            [menu addAction:[UIAlertAction actionWithTitle:title style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:symbol withPointSize:size] handler:^(UIAlertAction* action) {
+            [menu addButton:button style:HUDButtonStyleDefault handler:^{
+                [self startMenu];
                 [self showAlertWithTitle:@PRODUCT_NAME message:message buttons:@[@"Continue"] handler:^(NSUInteger button) {
                     [self endMenu];
                 }];
-            }]];
+            }];
         }
     }
-    [menu addAction:[UIAlertAction actionWithTitle:@"Settings" style:UIAlertActionStyleDefault image:[UIImage systemImageNamed:@"gear" withPointSize:size] handler:^(UIAlertAction* action) {
-        [self hideMenuHUD];
+    
+    [menu addButton:@":gear:Settings" style:HUDButtonStyleDefault handler:^{
         [self runSettings];
-    }]];
-
-    [menu addAction:[UIAlertAction actionWithTitle:((myosd_inGame && myosd_in_menu==0) ? @"Exit Game" : @"Exit") style:UIAlertActionStyleDestructive image:[UIImage systemImageNamed:@"arrow.uturn.left.circle" withPointSize:size] handler:^(UIAlertAction* action) {
-        [self endMenu];
-        [self runExit:NO]; // the user just selected "Exit Game" from a menu, dont ask again
-    }]];
-    
-    [menu addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction* action) {
-        [self endMenu];
-    }]];
-    
-    [self presentPopup:menu from:view animated:YES completion:^{
-        [self showMenuHUD:player];
     }];
+    [menu addButton:(myosd_inGame && myosd_in_menu==0) ? @":xmark.circle:Exit Game" : @":xmark.circle:Exit" style:HUDButtonStyleDestructive handler:^{
+        [self runExit:NO];
+    }];
+    
+    if (view == nil && TARGET_OS_IOS) {
+        [menu addButton:@"Cancel" style:HUDButtonStyleCancel handler:^{}];
+    }
+    
+    [menu onDismiss:^{
+        g_menu = nil;
+        // if we did not show something else (ie Settings) then call endMenu
+        if (self.presentedViewController == nil)
+            [self endMenu];
+    }];
+
+    NSParameterAssert(g_menu == nil);
+    g_menu = menu;
+    [self startMenu];
+    [self presentPopup:menu from:view animated:YES completion:nil];
 }
-- (void)runMenu:(int)player
+- (void)runMenu:(GCController*)controller
 {
-    [self runMenu:player from:nil];
+    [self runMenu:controller from:nil];
 }
 - (void)runMenu
 {
-    [self runMenu:0];
+    [self runMenu:nil];
 }
 
 // show or dismiss our in-game menu (called on joystick MENU button)
-- (void)toggleMenu:(int)player
+- (void)toggleMenu:(GCController*)controller
 {
     // if menu is up take it down
     if (self.presentedViewController != nil) {
-        if ([self.presentedViewController isKindOfClass:[UIAlertController class]]) {
-            UIAlertController* alert = (UIAlertController*)self.presentedViewController;
-            if (!alert.isBeingDismissed && alert.preferredStyle == UIAlertControllerStyleActionSheet) {
-                [alert dismissWithCancel];
-            }
-        }
-        return;
+        if (self.presentedViewController.isBeingDismissed || self.presentedViewController != g_menu)
+            return;
+        
+        if ([self.presentedViewController isKindOfClass:[UIAlertController class]])
+            [(UIAlertController*)self.presentedViewController dismissWithCancel];
+
+        if ([self.presentedViewController isKindOfClass:[HUDViewController class]])
+            [self dismissViewControllerAnimated:TRUE completion:nil];
     }
     else {
-        [self runMenu:player];
+        [self runMenu:controller];
     }
 }
 
 - (void)runExit:(BOOL)ask_user from:(UIView*)view
 {
-    if (self.presentedViewController != nil)
-        return;
-
-    if (myosd_in_menu == 0 && ask_user)
+    if (myosd_in_menu == 0 && ask_user && self.presentedViewController == nil)
     {
         NSString* yes = (g_controllers.count > 0 && TARGET_OS_IOS) ? @"Ⓐ Yes" : @"Yes";
         NSString* no  = (g_controllers.count > 0 && TARGET_OS_IOS) ? @"Ⓑ No" : @"No";
@@ -841,6 +980,12 @@ void mame_state(int load_save, int slot)
 - (void)enterForeground {
     if (self.presentedViewController == nil && g_emulation_paused == 1)
         [self endMenu];
+
+    // use the touch ui, until a countroller is used.
+    if (g_joy_used) {
+        g_joy_used = 0;
+        [self changeUI];
+    }
 }
 
 - (void)runSettings {
@@ -868,19 +1013,11 @@ void mame_state(int load_save, int slot)
 }
 
 - (void)endMenu{
-    [self hideMenuHUD];
-
-    int old_joy_used = g_joy_used;
-    g_joy_used = myosd_num_of_joys!=0;
-    
-    if (old_joy_used != g_joy_used)
-        [self changeUI];
-    
     g_emulation_paused = 0;
     change_pause(0);
     
-    // always enable iCadeView so we can get input from a Hardware keyboard.
-    icadeView.active = TRUE; //force renable
+    // always enable Keyboard so we can get input from a Hardware keyboard.
+    keyboardView.active = TRUE; //force renable
     
     [UIApplication sharedApplication].idleTimerDisabled = (myosd_inGame || g_joy_used) ? YES : NO;//so atract mode dont sleep
     [self updatePointerLocked];
@@ -895,7 +1032,8 @@ void mame_state(int load_save, int slot)
     }
 
 #if TARGET_OS_TV
-    self.controllerUserInteractionEnabled = YES;
+    if (![viewControllerToPresent isKindOfClass:[HUDViewController class]])
+        self.controllerUserInteractionEnabled = YES;
 #endif
     [super presentViewController:viewControllerToPresent animated:flag completion:completion];
 }
@@ -919,7 +1057,6 @@ void mame_state(int load_save, int slot)
     g_pref_filter = [Options.arrayFilter optionData:op.filter];
     g_pref_screen_shader = [Options.arrayScreenShader optionData:op.screenShader];
     g_pref_line_shader = [Options.arrayLineShader optionData:op.lineShader];
-    g_pref_colorspace = [Options.arrayColorSpace optionData:op.colorSpace];
 
     g_pref_skin = [Options.arraySkin optionData:op.skin];
     [skinManager setCurrentSkin:g_pref_skin];
@@ -934,23 +1071,14 @@ void mame_state(int load_save, int slot)
     g_pref_full_screen_port  = [op fullscreenPortrait];
     g_pref_full_screen_joy   = [op fullscreenJoystick];
 
-    myosd_pxasp1 = [op p1aspx];
+    g_pref_p1aspx = [op p1aspx];
     
     g_pref_input_touch_type = [op touchtype];
     g_pref_analog_DZ_value = [op analogDeadZoneValue];
     g_pref_ext_control_type = [op controltype];
+    g_pref_haptic_button_feedback = [op hapticButtonFeedback];
     
-    switch  ([op soundValue]){
-        case 0: myosd_sound_value=-1;break;
-        case 1: myosd_sound_value=11025;break;
-        case 2: myosd_sound_value=22050;break;
-        case 3: myosd_sound_value=32000;break;
-        case 4: myosd_sound_value=44100;break;
-        case 5: myosd_sound_value=48000;break;
-        default:myosd_sound_value=-1;}
-    
-    
-    myosd_cheat = [op cheats];
+    g_pref_cheat = [op cheats];
        
     g_pref_nintendoBAYX = [op nintendoBAYX];
 
@@ -991,7 +1119,7 @@ void mame_state(int load_save, int slot)
     myosd_filter_clones = op.filterClones;
     myosd_filter_not_working = op.filterNotWorking;
     
-    myosd_autofire = [op autofire];
+    g_pref_autofire = [op autofire];
     myosd_hiscore = [op hiscore];
     
     switch ([op buttonSize]) {
@@ -1010,9 +1138,8 @@ void mame_state(int load_save, int slot)
         case 4: g_stick_size = 1.2; break;
     }
     
-    myosd_vector_bean2x = [op vbean2x];
-    myosd_vector_antialias = [op vantialias];
-    myosd_vector_flicker = [op vflicker];
+    g_pref_vector_bean2x = [op vbean2x];
+    g_pref_vector_flicker = [op vflicker];
 
     switch ([op emuspeed]) {
         case 0: myosd_speed = -1; break;
@@ -1092,67 +1219,66 @@ void mame_state(int load_save, int slot)
     }];
 }
 
-- (void)handle_MENU:(NSNumber*)status {
+#define UIPressTypeNone ((UIPressType)-1)
+
+// de-bounce input from analog buttons (MFi controler) only track a CHANGE
+UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
     
-    // if we are showing an alert map controller input to the alert
-    UIAlertController* alert = (UIAlertController*)[self presentedViewController];
+    static unsigned long g_input_status;
 
-    if ([alert isKindOfClass:[UIAlertController class]])
-    {
-        unsigned long pad_status = [status longValue];
-
-        if (pad_status & (MYOSD_A|MYOSD_SELECT))
-            [alert dismissWithDefault];
-        if (pad_status & (MYOSD_B|MYOSD_MENU|MYOSD_HOME|MYOSD_OPTION))
-            [alert dismissWithCancel];
-        if (pad_status & MYOSD_UP)
-            [alert moveDefaultAction:-1];
-        if (pad_status & MYOSD_DOWN)
-            [alert moveDefaultAction:+1];
+    // use the stick position if nothing on dpad
+    if ((pad_status & (MYOSD_UP|MYOSD_DOWN|MYOSD_LEFT|MYOSD_RIGHT)) == 0) {
+        if (stick.y >= +0.5) pad_status |= MYOSD_UP;
+        if (stick.y <= -0.5) pad_status |= MYOSD_DOWN;
+        if (stick.x >= +0.5) pad_status |= MYOSD_RIGHT;
+        if (stick.x <= -0.5) pad_status |= MYOSD_LEFT;
     }
+
+    unsigned long changed_status = (pad_status ^ g_input_status) & pad_status;
+    g_input_status = pad_status;
+    
+    if (changed_status & MYOSD_A)
+        return UIPressTypeSelect;
+    if (changed_status & MYOSD_B)
+        return UIPressTypeMenu;
+    if (changed_status & MYOSD_UP)
+        return UIPressTypeUpArrow;
+    if (changed_status & MYOSD_DOWN)
+        return UIPressTypeDownArrow;
+    if (changed_status & MYOSD_LEFT)
+        return UIPressTypeLeftArrow;
+    if (changed_status & MYOSD_RIGHT)
+        return UIPressTypeRightArrow;
+
+    return UIPressTypeNone;
 }
 
-- (void)handle_MENU
+- (void)handle_MENU:(unsigned long)pad_status stick:(CGPoint)stick
 {
-    // get input from all DPADs
-    unsigned long pad_status = myosd_pad_status | myosd_joy_status[0] | myosd_joy_status[1] | myosd_joy_status[2] | myosd_joy_status[3];
+    UIResponder* target = [self presentedViewController];
 
-#if TARGET_OS_IOS   // NOT needed on tvOS it handles it with the focus engine
-    UIViewController* viewController = [self presentedViewController];
+    // if a viewController or menu is up send the input to it.
+    if (target != nil) {
+#if TARGET_OS_TV
+        if (self.controllerUserInteractionEnabled)
+            return;
+#endif
+        if ([target isKindOfClass:[UINavigationController class]])
+            target = [(UINavigationController*)target topViewController];
 
-    // if a viewController is up send the input to it.
-    if (viewController != nil) {
+        if (![target respondsToSelector:@selector(handleButtonPress:)])
+            return;
 
-        if ([viewController isKindOfClass:[UINavigationController class]])
-            viewController = [(UINavigationController*)viewController topViewController];
+        // de-bounce input from analog buttons (MFi controler)
+        UIPressType button = input_debounce(pad_status, stick);
 
-        // get input from left and right joystick of any player
-        static NSTimeInterval g_last_input_time;
-        NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
-        if ((now - g_last_input_time) > 0.250 && (pad_status & (MYOSD_UP|MYOSD_DOWN|MYOSD_LEFT|MYOSD_RIGHT)) == 0) {
-            for (int i=0; i<NUM_JOY; i++) {
-                if (joy_analog_y[i][0] >= +0.5 || joy_analog_y[i][1] >= +0.5)
-                    pad_status |= MYOSD_UP;
-                if (joy_analog_y[i][0] <= -0.5 || joy_analog_y[i][1] <= -0.5)
-                    pad_status |= MYOSD_DOWN;
-                if (joy_analog_x[i][0] >= +0.5 || joy_analog_x[i][1] >= +0.5)
-                    pad_status |= MYOSD_RIGHT;
-                if (joy_analog_x[i][0] <= -0.5 || joy_analog_x[i][1] <= -0.5)
-                    pad_status |= MYOSD_LEFT;
-            }
-            if  (pad_status & (MYOSD_UP|MYOSD_DOWN|MYOSD_LEFT|MYOSD_RIGHT))
-                g_last_input_time = now;
-        }
+        if (button != UIPressTypeNone)
+            [(id)target handleButtonPress:button];
 
-        // if we are showing some other UI, give it a chance to handle input.
-        if ([viewController respondsToSelector:@selector(handle_MENU:)])
-            [viewController performSelector:@selector(handle_MENU:) withObject:@(pad_status)];
-        else
-            [self handle_MENU:@(pad_status)];
-        
         return;
     }
-    
+
+#if TARGET_OS_IOS   // NOT needed on tvOS it handles it with the focus engine
     // touch screen START button, when no COIN button
     if (CGRectIsEmpty(rInput[BTN_SELECT]) && (buttonState & MYOSD_START) && !(pad_status & MYOSD_START))
     {
@@ -1173,18 +1299,16 @@ void mame_state(int load_save, int slot)
 #endif
     
     // exit MAME MENU with B (but only if we are not mapping a input)
-    if (myosd_in_menu == 1 && (pad_status & MYOSD_B))
+    if (myosd_in_menu == 1 && (input_debounce(pad_status, stick) == UIPressTypeMenu))
     {
         [self runExit];
     }
-    
-    // SELECT and START at the same time (iCade, keyboard, 8bitDo, touch)
+
+    // SELECT and START at the same time (iCade)
     if ((pad_status & MYOSD_SELECT) && (pad_status & MYOSD_START))
     {
         // hide these keys from MAME, and prevent them from sticking down.
         myosd_pad_status &= ~(MYOSD_SELECT|MYOSD_START);
-        for (int i=0; i<4; i++)
-            myosd_joy_status[i] &= ~(MYOSD_SELECT|MYOSD_START);
         [self runMenu];
     }
 }
@@ -1263,11 +1387,11 @@ void mame_state(int load_save, int slot)
     
     [self changeUI];
     
-    icadeView = [[iCadeView alloc] init];
-    [self.view addSubview:icadeView];
+    keyboardView = [[KeyboardView alloc] init];
+    [self.view addSubview:keyboardView];
 
-    // always enable iCadeView for hardware keyboard support
-    icadeView.active = YES;
+    // always enable Keyboard for hardware keyboard support
+    keyboardView.active = YES;
     
     // see if bluetooth is enabled...
     
@@ -1302,7 +1426,7 @@ void mame_state(int load_save, int slot)
     [self performSelectorOnMainThread:@selector(setupGameControllers) withObject:nil waitUntilDone:NO];
     
     toastStyle = [CSToastManager sharedStyle];
-    toastStyle.backgroundColor = [UIColor colorWithWhite:0.333 alpha:0.50];
+    toastStyle.backgroundColor = [UIColor colorWithWhite:0.111 alpha:0.80];
     toastStyle.messageColor = [UIColor whiteColor];
     toastStyle.imageSize = CGSizeMake(toastStyle.messageFont.lineHeight, toastStyle.messageFont.lineHeight);
     
@@ -1359,6 +1483,7 @@ void mame_state(int load_save, int slot)
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
+    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
     [self saveHUD];
 }
 
@@ -1387,6 +1512,8 @@ void mame_state(int load_save, int slot)
     }
 }
 #endif
+
+// TODO: why are we seeing the MAME UI when we run a game
 
 // hide or show the screen view
 // called from changeUI, and changeUI is called from iphone_Reset_Views() each time a new game (or menu) is started.
@@ -1470,9 +1597,9 @@ void mame_state(int load_save, int slot)
     fpsView.shadowColor = UIColor.blackColor;
     fpsView.shadowOffset = CGSizeMake(1.0,1.0);
 #if UPDATE_FPS_EVERY == 1
-    fpsView.text = @"000:00:00🅼🆆\n0000.00fps 0.0ms";
+    fpsView.text = @"000:00:00\n0000.00fps";
 #else
-    fpsView.text = @"000.00fps 0.0ms 🅼🆆";
+    fpsView.text = @"000.00fps";
 #endif
     
     CGPoint pos = screenView.frame.origin;
@@ -1498,15 +1625,13 @@ void mame_state(int load_save, int slot)
     [screenView.superview addSubview:fpsView];
 }
 
-#if TARGET_OS_IOS && defined(DEBUG)
-static int gcd(int a, int b) {
+int gcd(int a, int b) {
     int c;
     while (a != 0) {
        c = a; a = b%a; b = c;
     }
     return b;
 }
-#endif
 
 -(void)updateFrameRate {
     NSParameterAssert([NSThread isMainThread]);
@@ -1522,68 +1647,42 @@ static int gcd(int a, int b) {
     NSUInteger sec = (frame_count / 60) % 60;
     NSUInteger min = (frame_count / 3600);
     
-    NSString* fps = [NSString stringWithFormat:@"%03d:%02d:%02d%@%@ %.2ffps %.1fms", (int)min, (int)sec, (int)frame,
-                    [screenView isKindOfClass:[MetalScreenView class]] ? @"🅼" : @"",
-                    [screenView isKindOfClass:[MetalScreenView class]] && [(MetalScreenView*)screenView pixelFormat] == MTLPixelFormatBGR10_XR ? @"🆆" : @"",
-                    screenView.frameRateAverage, screenView.renderTimeAverage * 1000.0];
+    NSString* fps = [NSString stringWithFormat:@"%02d:%02d:%02d %.2ffps", (int)min, (int)sec, (int)frame, screenView.frameRateAverage];
 #else
-    NSString* fps = [NSString stringWithFormat:@"%.2ffps %.1fms %@%@",
-                     screenView.frameRateAverage, screenView.renderTimeAverage * 1000.0,
-                     [screenView isKindOfClass:[MetalScreenView class]] ? @"🅼" : @"",
-                     [screenView isKindOfClass:[MetalScreenView class]] && [(MetalScreenView*)screenView pixelFormat] != MTLPixelFormatBGRA8Unorm ? @"🆆" : @""];
+    NSString* fps = [NSString stringWithFormat:@"%.2ffps", screenView.frameRateAverage];
 #endif
     
     fpsView.text = fps;
-#if TARGET_OS_IOS
-    [hudView setValue:fps forKey:@"FPS"];
+
 #ifdef DEBUG
     CGSize size = screenView.bounds.size;
     CGFloat scale = screenView.window.screen.scale;
-    int n = gcd((int)(size.width * scale), (int)(size.height * scale));
-    [hudView setValue:[NSString stringWithFormat:@"%dx%d@%dx [%d:%d]", (int)size.width, (int)size.height, (int)scale,
-                       (int)(size.width * scale) / n,  (int)(size.height * scale) / n] forKey:@"SIZE"];
+    NSString* wide = [screenView isKindOfClass:[MetalScreenView class]] && [(MetalScreenView*)screenView pixelFormat] != MTLPixelFormatBGRA8Unorm ? @"🆆" : @"";
+
+    NSString* str = [NSString stringWithFormat:@" • %dx%d@%dx %@", (int)size.width, (int)size.height, (int)scale, wide];
+    fps = [fps stringByAppendingString:str];
+//    int n = gcd((int)(size.width * scale), (int)(size.height * scale));
+//    str = [NSString stringWithFormat:@" [%d:%d]", (int)(size.width * scale) / n,  (int)(size.height * scale) / n];
+//    fps = [fps stringByAppendingString:str];
 #endif
+
+#if TARGET_OS_IOS
+    [hudView setValue:fps forKey:@"FPS"];
 #endif
 }
 
 #if TARGET_OS_IOS
 
 -(void)hudChange:(InfoHUD*)hud {
-    NSLog(@"HUD CHANGE: %@=%@", hud.changedKey, [hud valueForKey:hud.changedKey]);
-    
     if ([screenView isKindOfClass:[MetalScreenView class]]) {
         [(MetalScreenView*)screenView setShaderVariables:@{
             hud.changedKey: [hud valueForKey:hud.changedKey]
         }];
     }
-    
 #if DebugLog
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(logShader) object:nil];
     [self performSelector:@selector(logShader) withObject:nil afterDelay:0.500];
 #endif
-}
--(void)hudOptionChange:(PopupSegmentedControl*)seg {
-    NSLog(@"HUD OPTION CHANGE %ld: %@", seg.selectedSegmentIndex, [seg titleForSegmentAtIndex:seg.selectedSegmentIndex]);
-    NSString* str = [seg titleForSegmentAtIndex:seg.selectedSegmentIndex];
-    BOOL is_vector_game = seg.tag;
-    Options* op = [[Options alloc] init];
-    switch ([seg.superview.subviews indexOfObject:seg]) {
-        case 0:
-            op.filter = str;
-            break;
-        case 1:
-            op.skin = str;
-            break;
-        case 2:
-            if (is_vector_game)
-                op.lineShader = str;
-            else
-                op.screenShader = str;
-            break;
-    }
-    [op saveOptions];
-    [self updateOptions];
-    [self changeUI];
 }
 
 // split and trim a string
@@ -1592,14 +1691,6 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     for (int i=0; i<arr.count; i++)
         arr[i] = [arr[i] stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
     return arr;
-}
-
-// if the list items are of the form "Name : Data", we only want to show "Name" to the user.
-static NSArray* list_trim(NSArray* _list) {
-    NSMutableArray* list = [_list mutableCopy];
-    for (NSInteger i=0; i<list.count; i++)
-        list[i] = [[list[i] componentsSeparatedByString:@":"].firstObject stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
-    return [list copy];
 }
 
 #if DebugLog
@@ -1617,9 +1708,9 @@ static NSArray* list_trim(NSArray* _list) {
             arr[i] = shader_variables[key] ?: vals.firstObject;
 
             float step = (vals.count > 3) ? [vals[3] floatValue] : 0.001;
-            arr[i] = @(round([arr[i] floatValue] / step) * step);
+            arr[i] = [NSString stringWithFormat:@"%@=%@", key, @(round([arr[i] floatValue] / step) * step)];
         }
-        NSLog(@"%s SHADER: \"%@\"", (shader==g_pref_screen_shader) ? "SCREEN" : "LINE", [arr componentsJoinedByString:@", "]);
+        NSLog(@"%s SHADER: %@", (shader==g_pref_screen_shader) ? "SCREEN" : "LINE", [arr componentsJoinedByString:@"\r\t"]);
     }
 }
 #endif
@@ -1705,7 +1796,6 @@ static NSArray* list_trim(NSArray* _list) {
             @":command:⌘:"
         ];
         [hudView addToolbar:items handler:^(NSUInteger button) {
-            NSLog(@"HUD BUTTON: %ld", button);
             switch (button) {
                 case 0:
                     push_mame_button(0, MYOSD_SELECT);
@@ -1747,7 +1837,7 @@ static NSArray* list_trim(NSArray* _list) {
         }];
         
         // add debug toolbar too
-#ifdef DEBUG
+#ifdef XDEBUG
         items = @[
             @":z.square.fill:Z:",
             @":a.square.fill:A:",
@@ -1762,57 +1852,25 @@ static NSArray* list_trim(NSArray* _list) {
 #endif
         // add FPS display
         if (g_pref_showFPS) {
-            [hudView addValue:@"0000.00fps 000.0ms" forKey:@"FPS"];
 #ifdef DEBUG
-            [hudView addValue:@"WWWWxHHHH@2x" forKey:@"SIZE"];
+            [hudView addValue:@"00.00.00 000.00fps WWWxHHH@2x" forKey:@"FPS"];
+#else
+            [hudView addValue:@"000.00fps" forKey:@"FPS"];
 #endif
         }
     }
-
-    if (g_pref_showHUD == HudSizeLarge || g_pref_showHUD == HudSizeEditor) {
-        // add set of buttons to select the Filter, Skin, and Effect/Shader
-        NSArray* items = @[
-            [[PopupSegmentedControl alloc] initWithItems:list_trim(Options.arrayFilter)],
-            [[PopupSegmentedControl alloc] initWithItems:list_trim(Options.arraySkin)],
-            [[PopupSegmentedControl alloc] initWithItems:list_trim(is_vector_game ? Options.arrayLineShader : Options.arrayScreenShader)],
-        ];
-
-        Options *op = [[Options alloc] init];
-        [items[0] setSelectedSegmentIndex:[Options.arrayFilter indexOfOption:op.filter]];
-        [items[1] setSelectedSegmentIndex:[Options.arraySkin indexOfOption:op.skin]];
-        [items[2] setTag:is_vector_game];
-
-        if (is_vector_game)
-            [items[2] setSelectedSegmentIndex:[Options.arrayLineShader indexOfOption:op.lineShader]];
-        else
-            [items[2] setSelectedSegmentIndex:[Options.arrayScreenShader indexOfOption:op.screenShader]];
-
-        [items[0] setTitle:@"Filter" forSegmentAtIndex:UISegmentedControlNoSegment];
-        [items[1] setTitle:@"Skin" forSegmentAtIndex:UISegmentedControlNoSegment];
-        [items[2] setTitle:@"Shader" forSegmentAtIndex:UISegmentedControlNoSegment];
-
-        for (PopupSegmentedControl* seg in items) {
-            [seg addTarget:self action:@selector(hudOptionChange:) forControlEvents:UIControlEventValueChanged];
-            
-            [seg setTitleTextAttributes:@{NSFontAttributeName:hudView.font} forState:UIControlStateNormal];
-            CGFloat h = hudView.font.lineHeight * 1.5;
-            [seg addConstraint:[NSLayoutConstraint constraintWithItem:seg attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:h]];
-
-            if (@available(iOS 13.0, *)) {
-                seg.selectedSegmentTintColor = self.view.tintColor;
-                seg.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
-            }
-        }
-        [hudView addButtons:items handler:^(NSUInteger button) {}];
-    }
-
+    
     if (g_pref_showHUD == HudSizeLarge) {
-        [hudView addButtons:(myosd_num_players >= 2) ? @[@":person:P1 Start", @":person.2:P2 Start"] : @[@":centsign.circle:Coin+Start"] handler:^(NSUInteger button) {
+        // add game info
+        if (g_mame_game_info != nil && g_mame_game_info[kGameInfoName] != nil) {
+            [hudView addValue:[ChooseGameController getGameText:g_mame_game_info]];
+        }
+        [hudView addButtons:(myosd_num_players >= 2) ? @[@":person:1P Start", @":person.2:2P Start"] : @[@":centsign.circle:Coin+Start"] handler:^(NSUInteger button) {
             [_self startPlayer:(int)button];
         }];
         if (myosd_num_players >= 3) {
             // FYI there is no person.4 symbol, so we just reuse person.3
-            [hudView addButtons:@[@":person.3:P3 Start", (myosd_num_players >= 4) ? @":person.3:P4 Start" : @""] handler:^(NSUInteger button) {
+            [hudView addButtons:@[@":person.3:3P Start", (myosd_num_players >= 4) ? @":person.3:4P Start" : @""] handler:^(NSUInteger button) {
                 if (button+2 < myosd_num_players)
                     [_self startPlayer:(int)button + 2];
             }];
@@ -1820,13 +1878,25 @@ static NSArray* list_trim(NSArray* _list) {
         [hudView addButtons:@[@":bookmark:Load",@":bookmark.fill:Save"] handler:^(NSUInteger button) {
              [_self runState:button == 0 ? LOAD_STATE : SAVE_STATE];
         }];
-        [hudView addButtons:@[@":slider.horizontal.3:Configure",@":power:Reset"] handler:^(NSUInteger button) {
+        [hudView addButtons:@[@":slider.horizontal.3:Configure",@":pause.circle:Pause"] handler:^(NSUInteger button) {
             if (button == 0)
-                myosd_configure = 1;
+                push_mame_key(MYOSD_KEY_TAB);
             else
-                myosd_reset = 1;
+                push_mame_key(MYOSD_KEY_P);
         }];
-        [hudView addButton:(myosd_inGame && myosd_in_menu==0) ? @":xmark.circle:Exit Game" : @":arrow.uturn.left.circle:Exit" color:UIColor.systemRedColor handler:^{
+        [hudView addButtons:@[@":camera:Snapshot", @":video:Record"] handler:^(NSUInteger button) {
+            if (button == 0)
+                push_mame_key(MYOSD_KEY_F12);
+            else
+                push_mame_keys(MYOSD_KEY_LSHIFT, MYOSD_KEY_F12, 0, 0);
+        }];
+        [hudView addButtons:@[@":power:Reset", @":wrench:Service"] handler:^(NSUInteger button) {
+            if (button == 0)
+                push_mame_key(MYOSD_KEY_F3);
+            else
+                push_mame_key(MYOSD_KEY_F2);
+        }];
+        [hudView addButton:(myosd_inGame && myosd_in_menu==0) ? @":xmark.circle:Exit Game" : @":xmark.circle:Exit" color:UIColor.systemRedColor handler:^{
             [_self runExit:NO];
         }];
     }
@@ -1837,7 +1907,7 @@ static NSArray* list_trim(NSArray* _list) {
         NSArray* shader_arr = split(shader, @",");
 
         [hudView addSeparator];
-        [hudView addText:[NSString stringWithFormat:@"Shader: %@", shader_arr.firstObject]];
+        [hudView addTitle:shader_arr.firstObject];
 
         for (NSString* str in shader_arr) {
             NSArray* arr = split(str, @"=");
@@ -1859,6 +1929,7 @@ static NSArray* list_trim(NSArray* _list) {
     }
     
     // add a grab handle on the left so you can move the HUD without hitting a button.
+#if TARGET_OS_IOS
     if (g_pref_showHUD != HudSizeZero) {
         hudView.layoutMargins = UIEdgeInsetsMake(8, 16, 8, 8);
         CGFloat height = [hudView sizeThatFits:CGSizeZero].height;
@@ -1871,6 +1942,7 @@ static NSArray* list_trim(NSArray* _list) {
         grab.layer.cornerRadius = w/2;
         [hudView addSubview:grab];
     }
+#endif
     
     CGRect rect;
     CGRect bounds = self.view.bounds;
@@ -1998,12 +2070,16 @@ static NSArray* list_trim(NSArray* _list) {
     memset(cyclesAfterButtonPressed, 0, sizeof(cyclesAfterButtonPressed));
 }}
 
-#define MAME_BUTTON_PLAYER_MASK     0xF0000000
-#define MAME_BUTTON_PLAYER_SHIFT    28
+#pragma mark - mame device input
+
+#define MYOSD_PLAYER_SHIFT  28
+#define MYOSD_PLAYER_MASK   MYOSD_PLAYER(0x3)
+#define MYOSD_PLAYER(n)     (n << MYOSD_PLAYER_SHIFT)
+
 NSMutableArray<NSNumber*>* g_mame_buttons;  // FIFO queue of buttons to press
 NSLock* g_mame_buttons_lock;
 NSInteger g_mame_buttons_tick;              // ticks until we send next one
-        
+
 static void push_mame_button(int player, int button)
 {
     NSCParameterAssert([NSThread isMainThread]);     // only add buttons from main thread
@@ -2011,23 +2087,58 @@ static void push_mame_button(int player, int button)
         g_mame_buttons = [[NSMutableArray alloc] init];
         g_mame_buttons_lock = [[NSLock alloc] init];
     }
-    button = button | (player << MAME_BUTTON_PLAYER_SHIFT);
+    button = button | MYOSD_PLAYER(player);
     [g_mame_buttons_lock lock];
     [g_mame_buttons addObject:@(button)];
     [g_mame_buttons_lock unlock];
 }
-static void push_mame_buttons(int player, int button1, int button2)
+
+NSUInteger g_mame_key;                      // key(s) to send to mame
+
+// send a set of MYOSD_KEY(s) to MAME
+static void push_mame_key(NSUInteger key)
 {
-    push_mame_button(player, button1);
-    push_mame_button(player, button2);
+    NSCParameterAssert(g_mame_key == 0);
+    g_mame_key = key;
 }
 
-// send keys - we do this inside of myosd_poll_input() because it is called from droid_ios_poll_input
+// send a set of MYOSD_KEY(s) to MAME
+static void push_mame_keys(NSUInteger key1, NSUInteger key2, NSUInteger key3, NSUInteger key4)
+{
+    push_mame_key(key1 | (key2 << 8) | (key3 << 16) | (key4 << 24));
+}
+
+// send buttons and keys - we do this inside of myosd_poll_input() because it is called from droid_ios_poll_input
 // ...and we are sure MAME is in a state to accept input, and not waking up from being paused or loading a ROM
-// ...we hold a key DOWN for 2 frames (buttonPressReleaseCycles) and wait (buttonNextPressCycles) frames  between keys.
+// ...we hold a button DOWN for 2 frames (buttonPressReleaseCycles) and wait (buttonNextPressCycles) frames.
 // ...these are *magic* numbers that seam to work good. if we hold a key down too long, games may ignore it. if we send too fast bad too.
 static int handle_buttons()
 {
+    // check for exit (we cound just do this with push_mame_key...)
+    if (myosd_exitGame) {
+        g_mame_key = MYOSD_KEY_ESC;
+        myosd_exitGame = 0;
+    }
+    
+    // send keys to MAME
+    if (g_mame_key != 0) {
+        int key = g_mame_key & 0xFF;
+
+        if (myosd_keyboard[key] == 0) {
+            myosd_keyboard[key] = 0x80;
+        }
+        else {
+            if (key != MYOSD_KEY_LSHIFT && key != MYOSD_KEY_LCONTROL) {
+                myosd_keyboard[key] = 0;
+                myosd_keyboard[MYOSD_KEY_LSHIFT] = 0;
+                myosd_keyboard[MYOSD_KEY_LCONTROL] = 0;
+            }
+            g_mame_key = g_mame_key >> 8;
+        }
+        return 1;
+    }
+    
+    // send buttons to MAME
     if (g_mame_buttons.count == 0)
         return 0;
     
@@ -2038,30 +2149,24 @@ static int handle_buttons()
     
     [g_mame_buttons_lock lock];
     unsigned long button = g_mame_buttons.firstObject.intValue;
-    unsigned long player = (button & MAME_BUTTON_PLAYER_MASK) >> MAME_BUTTON_PLAYER_SHIFT;
-    button = button & ~MAME_BUTTON_PLAYER_MASK;
+    unsigned long player = (button & MYOSD_PLAYER_MASK) >> MYOSD_PLAYER_SHIFT;
+    button = button & ~MYOSD_PLAYER_MASK;
     
     if ((myosd_joy_status[player] & button) == button) {
         [g_mame_buttons removeObjectAtIndex:0];
         if (g_mame_buttons.count > 0)
             g_mame_buttons_tick = buttonNextPressCycles;  // wait this long before next button
         myosd_joy_status[player] &= ~button;
-        if (player == 0)
-            myosd_pad_status &= ~button;
     }
     else {
         g_mame_buttons_tick = buttonPressReleaseCycles;  // keep button DOWN for this long.
         myosd_joy_status[player] |= button;
-        if (player == 0)
-            myosd_pad_status |= button;
     }
     [g_mame_buttons_lock unlock];
     return 1;
 }
 
 // handle any TURBO mode buttons.
-// TODO: clean up this function!
-// TODO: handle race condition with main thread
 static void handle_turbo() {
     
     // dont do turbo mode in MAME menus.
@@ -2075,56 +2180,64 @@ static void handle_turbo() {
         return;
     }
     
-    // TODO: verify race condition with main thread
-    NSArray* controllers = g_controllers;
-
-    if (controllers.count > 0) {
-        unsigned long mfi_button_state[NUM_JOY];
-        
-        // poll mfi controllers and read current state of buttons
-        for (int i = 0; i < controllers.count; i++) {
-            GCController *controller = [controllers objectAtIndex:i];
-            GCExtendedGamepad *gamepad = controller.extendedGamepad;
-            mfi_button_state[i]=(gamepad.buttonX.isPressed ? MYOSD_X : 0) |
-                                (gamepad.buttonY.isPressed ? MYOSD_Y : 0) |
-                                (gamepad.buttonA.isPressed ? MYOSD_A : 0) |
-                                (gamepad.buttonB.isPressed ? MYOSD_B : 0) |
-                                (gamepad.leftShoulder.isPressed ? MYOSD_L1 : 0) |
-                                (gamepad.rightShoulder.isPressed ? MYOSD_R1 : 0) ;
-        }
-        
-        for (int button=0; button<NUM_BUTTONS; button++) {
-            for (int i = 0; i < controllers.count; i++) {
-                if ( turboBtnEnabled[button] && (mfi_button_state[i] & buttonMask[button])) {
-                    if ( cyclesAfterButtonPressed[i][button] > buttonPressReleaseCycles ) {
-                        //NSLog(@"Turbo enabled! (mfi)");
-                        if ( myosd_joy_status[i] & buttonMask[button]) {
-                            myosd_joy_status[i] &= ~buttonMask[button];
-                        } else {
-                            myosd_joy_status[i] |= buttonMask[button];
-                        }
-                        cyclesAfterButtonPressed[i][button] = 0;
-                    }
+    for (int button=0; button<NUM_BUTTONS; button++) {
+        for (int i = 0; i < NUM_JOY; i++) {
+            if (turboBtnEnabled[button]) {
+                if (myosd_joy_status[i] & buttonMask[button]) {
+                    // toggle the button every `buttonPressReleaseCycles`
+                    if ((cyclesAfterButtonPressed[i][button] / buttonPressReleaseCycles) & 1)
+                        myosd_joy_status[i] &= ~buttonMask[button];
                     cyclesAfterButtonPressed[i][button]++;
+                }
+                else {
+                    cyclesAfterButtonPressed[i][button] = 0;
                 }
             }
         }
     }
-    else {
-        // For the on-screen touch controlls
-        for (int button=0; button<NUM_BUTTONS; button++) {
-            if ( turboBtnEnabled[button] && (buttonState & buttonMask[button]) ) {
-                if ( cyclesAfterButtonPressed[0][button] > buttonPressReleaseCycles ) {
-                    //NSLog(@"Turbo enabled!");
-                    if ( myosd_pad_status & buttonMask[button]) {
-                        myosd_pad_status &= ~buttonMask[button];
-                    } else {
-                        myosd_pad_status |= buttonMask[button];
-                    }
-                    cyclesAfterButtonPressed[0][button] = 0;
-                }
-                cyclesAfterButtonPressed[0][button]++;
+}
+
+void handle_autofire(void)
+{
+    if (!g_pref_autofire || !myosd_inGame || myosd_in_menu)
+        return;
+
+    static int A_pressed[NUM_JOY];
+    static int old_A_pressed[NUM_JOY];
+    static int enabled_autofire[NUM_JOY];
+    static int fire[NUM_JOY];
+
+    for(int i=0; i<NUM_JOY; i++)
+    {
+        old_A_pressed[i] = A_pressed[i];
+        A_pressed[i] = (myosd_joy_status[i] & MYOSD_A) != 0;
+        
+        if (!old_A_pressed[i] && A_pressed[i])
+           enabled_autofire[i] = !enabled_autofire[i];
+
+        if (enabled_autofire[i])
+        {
+            int value  = 0;
+            switch (g_pref_autofire) {
+                case 1: value = 1;break;
+                case 2: value = 2;break;
+                case 3: value = 4; break;
+                case 4: value = 6; break;
+                case 5: value = 8; break;
+                case 6: value = 10; break;
+                case 7: value = 13; break;
+                case 8: value = 16; break;
+                case 9: value = 20; break;
+                default:value = 6; break;
             }
+                 
+            if (fire[i]++ >=value)
+                myosd_joy_status[i] |= MYOSD_A;
+            else
+                myosd_joy_status[i] &= ~MYOSD_A;
+
+            if (fire[i] >= value*2)
+                fire[i] = 0;
         }
     }
 }
@@ -2168,7 +2281,6 @@ static void read_remote(int player, GCMicroGamepad *gamepad)
         (gamepad.buttonA.isPressed ? MYOSD_A : 0) |
         (gamepad.buttonX.isPressed ? MYOSD_B : 0) ;
     
-    // READ DPAD as a ANALOG STICK, except when in a menu
     joy_analog_x[player][0] = 0.0;
     joy_analog_y[player][0] = 0.0;
 
@@ -2178,6 +2290,7 @@ static void read_remote(int player, GCMicroGamepad *gamepad)
     joy_analog_x[player][2] = 0.0;
     joy_analog_x[player][3] = 0.0;
 
+    // READ DPAD as a ANALOG STICK, except when in a menu
     if (myosd_inGame && !myosd_in_menu) {
         joy_analog_x[player][0] = dpad.xAxis.value;
         joy_analog_y[player][0] = dpad.yAxis.value;
@@ -2234,8 +2347,8 @@ static void read_gamepad(int player, GCExtendedGamepad *gamepad)
     unsigned long status  = read_gamepad_buttons(gamepad);
     
     // dont let MAME see any MENU combo buttons.
-    if (status & (MYOSD_OPTION|MYOSD_MENU|MYOSD_HOME))
-        status &= MYOSD_OPTION|MYOSD_MENU|MYOSD_HOME;
+    if (status & (MYOSD_OPTION|MYOSD_MENU|MYOSD_HOME) || g_menuButtonMode[player] != 0)
+        status = 0;
     
     myosd_joy_status[player] = status;
 
@@ -2273,18 +2386,42 @@ static BOOL controller_is_zero(int player) {
 // handle any input from *all* game controllers
 static void handle_device_input()
 {
+    TIMER_START(timer_read_input);
+
     // poll each controller to get state of device *right* now
+    TIMER_START(timer_read_controllers);
     NSArray* controllers = g_controllers;
-    for (int i = 0; i < controllers.count; i++) {
-        GCController *controller = controllers[i];
-        int index = (int)controller.playerIndex;
-        int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
-        // dont overwrite a lower index controller, unless....
-        if (player == i || controller_is_zero(player))
-            read_controller(player, controller);
+    NSUInteger controllers_count = controllers.count;
+    
+    if (controllers_count == 0) {
+        // read only the on-screen controlls
+        myosd_joy_status[0] = myosd_pad_status;
+        joy_analog_x[0][0] = myosd_pad_x;
+        joy_analog_y[0][0] = myosd_pad_y;
     }
+    else {
+        for (int i = 0; i < controllers_count; i++) {
+            GCController *controller = controllers[i];
+            int player = (int)controller.playerIndex;
+            // when in a MAME menu (or the root) let any controller work the UI
+            if (myosd_inGame == 0 || myosd_in_menu == 1)
+                player = 0;
+            // dont overwrite a lower index controller, unless....
+            if (player == i || controller_is_zero(player))
+                read_controller(player, controller);
+        }
+
+        // read the on-screen controls
+        if (controller_is_zero(0)) {
+            myosd_joy_status[0] = myosd_pad_status;
+            joy_analog_x[0][0] = myosd_pad_x;
+            joy_analog_y[0][0] = myosd_pad_y;
+        }
+    }
+    TIMER_STOP(timer_read_controllers);
 
     // poll each mouse to get state of device *right* now
+    TIMER_START(timer_read_mice);
     NSArray* mice = g_mice;
     if (mice.count != 0 && g_direct_mouse_enable) {
         for (int i = 0; i < MIN(NUM_JOY, mice.count); i++) {
@@ -2294,6 +2431,29 @@ static void handle_device_input()
     // if no HW mice, get input from the on-screen touch mouse
     else if (myosd_mouse == 1 && g_pref_touch_analog_enabled) {
         read_mouse(0, nil);
+    }
+    TIMER_STOP(timer_read_mice);
+
+    TIMER_STOP(timer_read_input);
+}
+
+// handle p1aspx (P1 as P2, P3, P4)
+static void handle_p1aspx(void) {
+    
+    if (g_pref_p1aspx == 0 || myosd_in_menu != 0)
+        return;
+    
+    for (int i=1; i<NUM_JOY; i++) {
+        myosd_joy_status[i] = myosd_joy_status[0];
+
+        joy_analog_x[i][0] = joy_analog_x[0][0];
+        joy_analog_y[i][0] = joy_analog_y[0][0];
+
+        joy_analog_x[i][1] = joy_analog_x[0][1];
+        joy_analog_y[i][1] = joy_analog_y[0][1];
+
+        joy_analog_x[i][2] = joy_analog_x[0][2];
+        joy_analog_x[i][3] = joy_analog_x[0][3];
     }
 }
 
@@ -2316,11 +2476,15 @@ void myosd_poll_input(void) {
         if (handle_buttons())
             return;
         
-        // read input direct from game controller
+        // read input direct from game controller(s)
         handle_device_input();
         
-        // handle TURBO
+        // handle TURBO and AUTOFIRE
         handle_turbo();
+        handle_autofire();
+        
+        // handle P1 as P2,P3,P4
+        handle_p1aspx();
     }
 }
 
@@ -2394,8 +2558,6 @@ void myosd_poll_input(void) {
     inputView = [[UIView alloc] initWithFrame:self.view.bounds];
     [self.view addSubview:inputView];
     
-    g_joy_used = myosd_num_of_joys!=0;
-   
     // no touch controlls for fullscreen with a joystick
     if (g_joy_used && g_device_is_fullscreen)
         return;
@@ -2730,7 +2892,6 @@ void myosd_poll_input(void) {
         kScreenViewFilter: g_pref_filter,
         kScreenViewScreenShader: g_pref_screen_shader,
         kScreenViewLineShader: g_pref_line_shader,
-        kScreenViewColorSpace: g_pref_colorspace,
     };
     
     // the reason we dont re-create screenView each time is because we access screenView from background threads
@@ -2775,48 +2936,41 @@ void myosd_poll_input(void) {
 #pragma mark - INPUT
 
 // handle_INPUT - called when input happens on a controller, keyboard, or screen
-- (void)handle_INPUT {
+- (void)handle_INPUT:(unsigned long)pad_status stick:(CGPoint)stick {
+
 #if defined(DEBUG) && DebugLog
-    for (int i=0; i<MAX(1, myosd_num_of_joys); i++) {
-        unsigned long pad_status = myosd_joy_status[i] | (i == 0 ? myosd_pad_status : 0);
-        
-        NSLog(@"%s[%d]: %s%s%s%s (%+1.3f,%+1.3f) %s%s%s%s %s%s%s%s%s%s %s%s%s%s %s%s (%+1.3f,%+1.3f) (%1.3f,%1.3f) inGame=%d, inMenu=%d",
-              i==0 ? "handle_INPUT" : "            ", i,
-              (pad_status & MYOSD_UP) ?   "U" : "-", (pad_status & MYOSD_DOWN) ?  "D" : "-",
-              (pad_status & MYOSD_LEFT) ? "L" : "-", (pad_status & MYOSD_RIGHT) ? "R" : "-",
+    NSLog(@"handle_INPUT: %s%s%s%s (%+1.3f,%+1.3f) %s%s%s%s %s%s%s%s%s%s %s%s%s%s %s%s inGame=%d, inMenu=%d",
+          (pad_status & MYOSD_UP) ?   "U" : "-", (pad_status & MYOSD_DOWN) ?  "D" : "-",
+          (pad_status & MYOSD_LEFT) ? "L" : "-", (pad_status & MYOSD_RIGHT) ? "R" : "-",
+          
+          stick.x, stick.y,
 
-              joy_analog_x[i][0], joy_analog_y[i][0],
+          (pad_status & MYOSD_A) ? "A" : "-", (pad_status & MYOSD_B) ? "B" : "-",
+          (pad_status & MYOSD_X) ? "X" : "-", (pad_status & MYOSD_Y) ? "Y" : "-",
 
-              (pad_status & MYOSD_A) ? "A" : "-", (pad_status & MYOSD_B) ? "B" : "-",
-              (pad_status & MYOSD_X) ? "X" : "-", (pad_status & MYOSD_Y) ? "Y" : "-",
-  
-              (pad_status & MYOSD_L1) ? "L1" : "--", (pad_status & MYOSD_L2) ? "L2" : "--",
-              (pad_status & MYOSD_L3) ? "L3" : "--", (pad_status & MYOSD_R3) ? "R3" : "--",
-              (pad_status & MYOSD_R2) ? "R2" : "--", (pad_status & MYOSD_R1) ? "R1" : "--",
+          (pad_status & MYOSD_L1) ? "L1" : "--", (pad_status & MYOSD_L2) ? "L2" : "--",
+          (pad_status & MYOSD_L3) ? "L3" : "--", (pad_status & MYOSD_R3) ? "R3" : "--",
+          (pad_status & MYOSD_R2) ? "R2" : "--", (pad_status & MYOSD_R1) ? "R1" : "--",
 
-              (pad_status & MYOSD_SELECT) ? "C" : "-", (pad_status & MYOSD_EXIT) ? "X" : "-",
-              (pad_status & MYOSD_OPTION) ? "O" : "-", (pad_status & MYOSD_START) ? "S" : "-",
-              
-              (pad_status & MYOSD_HOME)   ? "H" : "-", (pad_status & MYOSD_MENU)   ? "M" : "-",
+          (pad_status & MYOSD_SELECT) ? "C" : "-", (pad_status & MYOSD_EXIT) ? "X" : "-",
+          (pad_status & MYOSD_OPTION) ? "O" : "-", (pad_status & MYOSD_START) ? "S" : "-",
+          
+          (pad_status & MYOSD_HOME)   ? "H" : "-", (pad_status & MYOSD_MENU)   ? "M" : "-",
 
-              joy_analog_x[i][1], joy_analog_y[i][1], joy_analog_x[i][2],joy_analog_x[i][3],
-              
-              myosd_inGame, myosd_in_menu
-              );
-    }
+          myosd_inGame, myosd_in_menu
+          );
 #endif
 
     // call handle_MENU first so it can use buttonState to see key up.
-    [self handle_MENU];
+    [self handle_MENU:pad_status stick:stick];
 #if TARGET_OS_IOS
-    [self handle_DPAD];
+    [self handle_DPAD:pad_status stick:stick];
 #endif
 }
 
 #if TARGET_OS_IOS
 // update the state of the on-screen buttons and dpad/stick
-- (void)handle_DPAD{
-    unsigned long pad_status = myosd_pad_status | myosd_joy_status[0];
+- (void)handle_DPAD:(unsigned long)pad_status stick:(CGPoint)stick {
     
     if (!g_pref_animated_DPad || (g_device_is_fullscreen && g_joy_used)) {
         buttonState = pad_status;
@@ -2829,24 +2983,19 @@ void myosd_poll_input(void) {
         {
             buttonViews[i].highlighted = (pad_status & buttonMask[i]) != 0;
             
-#ifdef XDEBUG
-            if(pad_status & buttonMask[i])
-                NSLog(@"****** BUZZ! *******: %08X %@", (int)pad_status, [nameImgButton_Press[i] stringByDeletingPathExtension]);
-            else
-                NSLog(@"****** BONK! *******: %08X", (int)pad_status);
-#endif
-            
-            if(pad_status & buttonMask[i])
-                [self.impactFeedback impactOccurred];
-            else
-                [self.selectionFeedback selectionChanged];
+            if (g_pref_haptic_button_feedback) {
+                if(pad_status & buttonMask[i])
+                    [self.impactFeedback impactOccurred];
+                else
+                    [self.selectionFeedback selectionChanged];
+            }
         }
     }
     
     buttonState = pad_status;
     
     if (analogStickView != nil && ![analogStickView isHidden])
-        [analogStickView update];
+        [analogStickView update:pad_status stick:stick];
 }
 #endif
 
@@ -2879,16 +3028,16 @@ void myosd_poll_input(void) {
     [self startPlayer:0];
 }
 -(void)mameConfigure {
-    myosd_configure = 1;
+    push_mame_key(MYOSD_KEY_TAB);
 }
 -(void)mameSettings {
     [self runSettings];
 }
 -(void)mamePause {
-    myosd_mame_pause = 1;
+    push_mame_key(MYOSD_KEY_P);
 }
 -(void)mameReset {
-    myosd_reset = 1;
+    push_mame_key(MYOSD_KEY_F3);
 }
 -(void)mameFullscreen {
     [self commandKey:'\r'];
@@ -2975,7 +3124,7 @@ void myosd_poll_input(void) {
             [self changeUI];
             break;
         case 'P':
-            myosd_mame_pause = 1;
+            push_mame_key(MYOSD_KEY_P);
             break;
         case 'M':
             g_direct_mouse_enable = !g_direct_mouse_enable;
@@ -2988,6 +3137,8 @@ void myosd_poll_input(void) {
             break;
         case 'D':
             g_debug_dump_screen = TRUE;
+            TIMER_DUMP();
+            TIMER_RESET();
             break;
 #endif
     }
@@ -3029,7 +3180,7 @@ void myosd_poll_input(void) {
 
 -(NSSet*)touchHandler:(NSSet *)touches withEvent:(UIEvent *)event {
     
-#if DebugLog && defined(DEBUG)
+#if FALSE && DebugLog && defined(DEBUG)
     UITouch *touch = touches.anyObject;
     NSLog(@"TOUCH (%0.3f, %0.3f) %@ %@",
           [touch locationInView:self.view].x,
@@ -3148,9 +3299,7 @@ void myosd_poll_input(void) {
     // light gun release?
     if ( myosd_light_gun == 1 && g_pref_lightgun_enabled ) {
         myosd_pad_status &= ~MYOSD_A;
-        myosd_joy_status[0] &= ~MYOSD_A;
         myosd_pad_status &= ~MYOSD_B;
-        myosd_joy_status[0] &= ~MYOSD_B;
     }
     
     if ( g_pref_touch_analog_enabled && myosd_mouse == 1 ) {
@@ -3353,12 +3502,9 @@ void myosd_poll_input(void) {
     const unsigned long BUTTON_MASK = (MYOSD_A|MYOSD_B|MYOSD_X|MYOSD_Y|MYOSD_L1|MYOSD_R1|MYOSD_SELECT|MYOSD_START|MYOSD_EXIT|MYOSD_OPTION);
     myosd_pad_status = pad_status | (myosd_pad_status & ~BUTTON_MASK);
 
-    if (buttonState != myosd_pad_status || (stickWasTouched && g_pref_input_touch_type == TOUCH_INPUT_ANALOG)) {
-        [self handle_INPUT];
-    }
+    if (buttonState != myosd_pad_status || (stickWasTouched && g_pref_input_touch_type == TOUCH_INPUT_ANALOG))
+        [self handle_INPUT:myosd_pad_status stick:CGPointMake(myosd_pad_x, myosd_pad_y)];
     
-//    BOOL touchWasHandled = stickTouch != nil || handledTouches.count != 0;
-//    NSLog(@"touchController touch stick touch =  %@ , buttonTouched = %@, wasStickTouched = %@",stickTouch != nil ? @"YES" : @"NO",buttonTouched ? @"YES" : @"NO",stickWasTouched ? @"YES" : @"NO");
     return handledTouches;
 }
 
@@ -3379,8 +3525,6 @@ void myosd_poll_input(void) {
         CGFloat newY = (touchLoc.y - (screenView.bounds.size.height / 2.0f)) / (screenView.bounds.size.height / 2.0f) * -1.0f;
 //        NSLog(@"touch began light gun? loc: %f, %f",touchLoc.x, touchLoc.y);
 //        NSLog(@"new loc = %f , %f",newX,newY);
-        myosd_joy_status[0] |= MYOSD_A;
-        myosd_pad_status |= MYOSD_A;
         if ( touchcount > 3 ) {
             // 4 touches = insert coin
             NSLog(@"LIGHTGUN: COIN");
@@ -3393,10 +3537,8 @@ void myosd_poll_input(void) {
             // more than one touch means secondary button press
             NSLog(@"LIGHTGUN: B");
             myosd_pad_status |= MYOSD_B;
-            myosd_joy_status[0] |= MYOSD_B;
-            myosd_pad_status &= ~MYOSD_A;
-            myosd_joy_status[0] &= ~MYOSD_A;
         } else if ( touchcount == 1 ) {
+            myosd_pad_status |= MYOSD_A;
             if ( g_pref_lightgun_bottom_reload && newY < -0.80 ) {
                 NSLog(@"LIGHTGUN: RELOAD");
                 newY = -12.1f;
@@ -3404,11 +3546,6 @@ void myosd_poll_input(void) {
             NSLog(@"LIGHTGUN: %f,%f",newX,newY);
             lightgun_x[0] = newX;
             lightgun_y[0] = newY;
-            
-            if (joy_analog_x[0][0] != 0 || joy_analog_y[0][0] != 0 ||
-                joy_analog_x[0][1] != 0 || joy_analog_y[0][1] != 0) {
-                NSLog(@"LIGHTGUN: NON ZERO JOYSTICK! (%f,%f) (%f,%f)", joy_analog_x[0][0], joy_analog_y[0][0], joy_analog_x[0][1], joy_analog_y[0][1]);
-            }
         }
     }
 }
@@ -4215,12 +4352,9 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 
 #pragma mark - Game Controllers
 
-static InfoHUD* g_menuHUD;                          // controller "quick help", or menu HUD
 #define MENU_HUD_SHOW_DELAY     1.0
-#define MENU_HUD_SHOW_ANIMATE   0.100
 
-static unsigned long g_menuPlayer;                  // player for the menu HUD
-static unsigned long g_menuButton[NUM_JOY];         // non-zero if a MENU button is down
+static unsigned long g_menuButtonMode[NUM_JOY];     // non-zero if a MENU button is down
 static unsigned long g_menuButtonState[NUM_JOY];    // button state while MENU is down
 static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier button was handled
 
@@ -4256,24 +4390,28 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
             [controllers addObject:controler];
     }
 
-    // cancel menu mode on all controllers, this is needed when a controller disconects in menu mode.
-    for (int i=0; i<g_controllers.count; i++) {
-        g_menuButton[i] = 0;
-        [self hideControllerHUD:g_controllers[i]];
-    }
-    
-    for (NSInteger index = 0; index < controllers.count; index++) {
-        GCController *controller = [controllers objectAtIndex:index];
-        [self setupGameController:controller index:index];
-    }
+    // reset current input state
+    memset(myosd_joy_status, 0, sizeof(myosd_joy_status));
+    memset(joy_analog_x, 0, sizeof(joy_analog_x));
+    memset(joy_analog_y, 0, sizeof(joy_analog_y));
 
+    // cancel menu mode on all (current) controllers, this is needed when a controller disconects in menu mode.
+    memset(g_menuButtonMode, 0, sizeof(g_menuButtonMode));
+    for (GCController* controller in g_controllers)
+        [self cancelShowMenu:controller];
+    
+    for (GCController* controller in controllers)
+        [self setupGameController:controller];
+    
     // set the global controller list in one swoop so MAME thread does not get confused.
     g_controllers = [controllers copy];
 
-    // redraw the UI when controllers show up or go away
-    if (controllers.count != myosd_num_of_joys) {
-        myosd_num_of_joys = (int)controllers.count;
-        g_joy_used = (myosd_num_of_joys != 0);
+    // set the player index on all controllers
+    [self indexGameControllers];
+
+    // redraw the UI when controllers go away
+    if (g_joy_used && g_controllers.count == 0) {
+        g_joy_used = 0;
         [self changeUI];
     }
 }
@@ -4284,7 +4422,7 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
     for (NSInteger index = 0; index < g_controllers.count; index++) {
         GCController* controller = g_controllers[index];
         // the Siri Remote, or any controller higher than MAME is looking for get mapped to Player 1
-        if (controller.extendedGamepad == nil || index >= myosd_num_inputs)
+        if (controller.extendedGamepad == nil || index >= MIN(myosd_num_inputs, NUM_JOY))
             [controller setPlayerIndex:0];
         else
             [controller setPlayerIndex:index];
@@ -4292,16 +4430,15 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
 }
 
 
--(void)setupGameController:(GCController*)controller index:(NSInteger)index {
-    NSLog(@"setupGameController[%ld]: %@", index, controller.vendorName);
-    [controller setPlayerIndex:index];
-
+-(void)setupGameController:(GCController*)controller {
+    NSLog(@"setupGameController: %@", controller.vendorName);
+    [controller setPlayerIndex:0];  // this will get set correctly later in indexGameControllers
+    
 #if TARGET_OS_TV
     BOOL isSiriRemote = (controller.extendedGamepad == nil && controller.microGamepad != nil);
     if (isSiriRemote) {
         controller.microGamepad.allowsRotation = YES;
         controller.microGamepad.reportsAbsoluteDpadValues = NO;
-        [controller setPlayerIndex:0];  // Siri Remote is always Player 1
     }
 #endif
     [self installUpdateHandler:controller];
@@ -4314,45 +4451,53 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
 // we also handle the MENU combo buttons here
 -(void)installUpdateHandler:(GCController*)controller {
     
-    // we dont bother installing a handler on the Siri Remote
-    if (controller.extendedGamepad == nil)
+#if TARGET_OS_TV
+    // Siri Remote special case to navigate the menu
+    if (controller.extendedGamepad == nil) {
+        controller.microGamepad.valueChangedHandler = ^(GCMicroGamepad* gamepad, GCControllerElement* element) {
+            if (g_menu) {
+                GCControllerDirectionPad* dpad = gamepad.dpad;
+                // read A and DPAD axis
+                unsigned long pad_status = (gamepad.buttonA.isPressed ? MYOSD_A : 0);
+                [self handle_INPUT:pad_status stick:CGPointMake(dpad.xAxis.value,dpad.yAxis.value)];
+            }
+        };
         return;
+    }
+#endif
     
     controller.extendedGamepad.valueChangedHandler = ^(GCExtendedGamepad* gamepad, GCControllerElement* element) {
-        NSLog(@"valueChangedHandler[%ld]: %@ %s", gamepad.controller.playerIndex, element, ([element isKindOfClass:[GCControllerButtonInput class]] && [(GCControllerButtonInput*)element isPressed]) ? "PRESSED" : "");
-
+        NSLog(@"valueChangedHandler[%ld:%ld]: %@ %s %s%s%s%s", [g_controllers indexOfObjectIdenticalTo:gamepad.controller], gamepad.controller.playerIndex, element,
+              ([element isKindOfClass:[GCControllerButtonInput class]] && [(GCControllerButtonInput*)element isPressed]) ? "PRESSED" : "",
+              ([element isKindOfClass:[GCControllerDirectionPad class]] && [(GCControllerDirectionPad*)element up].pressed) ? "U": "-",
+              ([element isKindOfClass:[GCControllerDirectionPad class]] && [(GCControllerDirectionPad*)element down].pressed) ? "D" : "-",
+              ([element isKindOfClass:[GCControllerDirectionPad class]] && [(GCControllerDirectionPad*)element left].pressed) ? "L" : "-",
+              ([element isKindOfClass:[GCControllerDirectionPad class]] && [(GCControllerDirectionPad*)element right].pressed) ? "R" : "-"
+              );
+        
         GCController* controller = gamepad.controller;
-        int index = (int)controller.playerIndex;
-
-        // if a MENU button is down check for a button combo
-        if (g_menuButton[index] != 0)
-            return [self handleMenuButton:controller button:g_menuButton[index] pressed:TRUE];
+        int index = (int)[g_controllers indexOfObjectIdenticalTo:controller];
         
-        // exit MAME MENU with B (but only if we are not mapping a input)
-        if (myosd_in_menu == 1 && element == gamepad.buttonB && gamepad.buttonB.isPressed == FALSE)
-            return [self runExit];
-        
-#if TARGET_OS_TV
-        if (g_menuHUD != nil && self.presentedViewController != nil)
-            return [self handleMenuButton:controller element:element];
-#endif
-
-#if TARGET_OS_IOS
-        // no need to call handle_INPUT unless onscreen controls are visible *or* we have some UI/Alert up.
-        if (g_device_is_fullscreen && self.presentedViewController == nil)
+        NSParameterAssert(index >= 0 && index < NUM_JOY);
+        if (!(index >= 0 && index < NUM_JOY))
             return;
         
-        int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
-        unsigned long status = myosd_joy_status[player];
-        read_gamepad(player, gamepad);
+        // if a MENU button is down (or menuHUD) handle a menu button combo
+        if (g_menuButtonMode[index] != 0 || g_menu != nil)
+            return [self handleMenuButton:controller];
+
+        // no need to call handle_INPUT unless onscreen controls are visible *or* we have some UI/Alert up.
+        if ((g_device_is_fullscreen && g_joy_used) && self.presentedViewController == nil && myosd_in_menu == 0)
+            return;
+
+        // update the UI if this is the first controller input
+        if (g_joy_used == 0) {
+            g_joy_used = 1;
+            [self changeUI];
+        }
         
-        if (status != myosd_joy_status[player] || element == gamepad.leftThumbstick)
-            [self handle_INPUT];
-#if defined(DEBUG) && DebugLog
-        else if (element == gamepad.leftThumbstick || element == gamepad.rightThumbstick || element == gamepad.rightTrigger || element == gamepad.leftTrigger)
-            [self handle_INPUT];
-#endif
-#endif
+        unsigned long pad_status = read_gamepad_buttons(gamepad);
+        [self handle_INPUT:pad_status stick:CGPointMake(gamepad.leftThumbstick.xAxis.value, gamepad.leftThumbstick.yAxis.value)];
     };
 }
 
@@ -4368,7 +4513,7 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
 #ifdef __IPHONE_14_0
     // dont let tvOS or iOS do anything with **our** buttons!!
     // iOS will start a screen recording if you hold or dbl click the OPTIONS button, we dont want that.
-    if (@available(iOS 14.0, *)) {
+    if (@available(iOS 14.0, tvOS 14.0, *)) {
         buttonHome.preferredSystemGestureState = GCSystemGestureStateDisabled;
         buttonMenu.preferredSystemGestureState = GCSystemGestureStateDisabled;
         buttonOptions.preferredSystemGestureState = GCSystemGestureStateDisabled;
@@ -4395,7 +4540,7 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
     // < iOS 13 (MFi only) we only have a PAUSE handler, and we only get a single event on button up
     //      PAUSE => MAME4iOS MENU
     //
-    // on tvOS the MENU button is *broken* it is better to use the PAUSE handler.
+    // on tvOS a single MENU button (MFi) is *broken* it is better to use the PAUSE handler.
     //
 #if TARGET_OS_TV
     if (buttonMenu != nil && buttonOptions == nil)
@@ -4434,24 +4579,7 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
 #pragma mark CONTROLLER MENU BUTTON
 
 //
-// handle a MENU BUTTON modifier
-//
-// a MENU button is one of (OPTION, HOME, MENU)
-// the modifier can be either X+MENU or MENU+X
-//
-//      MENU+OPTION = MAME4iOS menu
-//      MENU+L1     = Pn COIN/SELECT
-//      MENU+R1     = Pn START
-//      MENU+L2     = P2 COIN/SELECT
-//      MENU+R2     = P2 START
-//      MENU+A      = tbd
-//      MENU+B      = tbd
-//      MENU+X      = EXIT
-//      MENU+Y      = MAME MENU
-//      MENU+DOWN   = SAVE STATE 1
-//      MENU+UP     = LOAD STATE 1
-//      MENU+LEFT   = SAVE STATE 2
-//      MENU+RIGHT  = LOAD STATE 2
+// handle a MENU BUTTON and start/stop menu mode
 //
 // a MENU button with no modifier will do the following
 //
@@ -4459,335 +4587,233 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
 //      HOME        = MAME4iOS menu
 //      MENU        = START (or MAME4iOS MENU, if there is no OPTION button)
 //
-// if a MENU button is held down for at least 1sec a "quick help" HUD will be shown with all the modifiers.
+// if a MENU button is long pressed (held down for at least 1sec) the menu HUD will be shown with all the modifiers.
 //
 -(void)handleMenuButton:(GCController*)controller button:(unsigned long)button pressed:(BOOL)pressed {
-    int index = (int)controller.playerIndex;
-    int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
+    int index = (int)[g_controllers indexOfObjectIdenticalTo:controller];
+    int player = (int)controller.playerIndex;
 
-    // dont handle a different menu button
-    if (g_menuButton[index] != 0 && g_menuButton[index] != button)
+    NSParameterAssert(index >= 0 && index < NUM_JOY && player >= 0 && player < NUM_JOY);
+    if (index < 0 || index >= NUM_JOY || player < 0 || player >= NUM_JOY)
         return;
     
-    // dont start a new menu when alert/UI is up.
-    if (g_menuButton[index] == 0 && self.presentedViewController != nil)
-        return;
-
-    // get current state of the other buttons, but save the previous one
-    unsigned long state = g_menuButtonState[index];
-    g_menuButtonState[index] = read_gamepad_buttons(controller.extendedGamepad) & ~button;
-
-    NSLog(@"menuButtonHandler[%ld]: %s %s state=%04lX", controller.playerIndex,
+    NSLog(@"handleMenuButton[%d]: %s %s", index,
           button == MYOSD_MENU ? "MENU" : button == MYOSD_HOME ? "HOME" : "OPTION",
-          pressed ? "DOWN" : "UP", g_menuButtonState[index]);
-
-    // MENU button (first time)
-    if (g_menuButton[index] == 0) {
-        if (pressed) {
-            g_menuButton[index] = button;
-            g_menuButtonPressed[index] = 0;
-            [self showControllerHUD:controller after:MENU_HUD_SHOW_DELAY];
-        }
-        return;
-    }
-
-    if (pressed) {
-        // get the buttons that have changed, and are UP now, these are the ones we want to handle
-        state = (state ^ g_menuButtonState[index]) & ~g_menuButtonState[index];
-    }
-    else {
-        // get the buttons that are down right now, and handle those
-        state = g_menuButtonState[index];
+          pressed ? "DOWN" : "UP");
+    
+    // MENU button first time pressed
+    if (g_menuButtonMode[index] == 0 && pressed) {
         
+        // enter menu mode
+        g_menuButtonMode[index] = button;
+        [self showMenu:controller after:MENU_HUD_SHOW_DELAY];
+
+        // reset current state of buttons, so we can look for changes
+        g_menuButtonState[index] = 0;
+        g_menuButtonPressed[index] = 0;
+
+        // handle any buttons that are down now, for a reverse combo button (ie X+MENU)
+        [self handleMenuButton:controller];
+    }
+    
+    // MENU button released
+    if (g_menuButtonMode[index] == button && !pressed) {
+        
+        // leave menu mode and cancel the menu
+        g_menuButtonMode[index] = 0;
+        [self cancelShowMenu:controller];
+
         // if no modifier buttons were pressed then do the "plain" action for the button.
-        if (state == 0 && g_menuButtonPressed[index] == 0 && g_menuHUD == nil) {
-            if (button == MYOSD_OPTION) {
+        if (g_menuButtonPressed[index] == 0) {
+            if (button == MYOSD_OPTION && g_menu == nil) {
                 NSLog(@"...OPTION => SELECT");
                 push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X coin
             }
-            else if (button == MYOSD_MENU && controller.extendedGamepad.buttonOptions != nil) {
+            else if (button == MYOSD_MENU && controller.extendedGamepad.buttonOptions != nil && g_menu == nil) {
                 NSLog(@"...MENU => START");
                 push_mame_button(player, MYOSD_START);
             }
             else {
                 NSLog(@"...MENU/HOME => MAME4iOS MENU");
-                [self runMenu:player];
+                [self toggleMenu:controller];
             }
         }
-
-        g_menuButton[index] = 0;
-        [self hideControllerHUD:controller];
     }
+}
 
-    g_menuButtonPressed[index] |= state;
+-(void)delayedShowMenu:(GCController*)controller {
+    NSLog(@"showMenu (after delay): %@", controller);
+    int index = (int)[g_controllers indexOfObjectIdenticalTo:controller];
+    // treat showing the menu after a delay the same as hiting a combo button
+    NSParameterAssert(index >= 0 && index < NUM_JOY);
+    if (index >= 0 && index < NUM_JOY)
+        g_menuButtonPressed[index] |= MYOSD_MENU;
+    [self runMenu:controller];
+}
+
+-(void)showMenu:(GCController*)controller after:(NSTimeInterval)delay {
+    [self performSelector:@selector(delayedShowMenu:) withObject:controller afterDelay:MENU_HUD_SHOW_DELAY];
+}
+
+-(void)cancelShowMenu:(GCController*)controller {
+    NSLog(@"cancelShowMenu: %@", controller);
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(delayedShowMenu:) object:controller];
+}
+
+//
+// handle a MENU BUTTON modifier
+//
+// a MENU button is one of (OPTION, HOME, MENU)
+//
+//      MENU+OPTION = MAME4iOS menu
+//      MENU+L1     = Pn COIN/SELECT
+//      MENU+R1     = Pn START
+//      MENU+L2     = P2 COIN/SELECT
+//      MENU+R2     = P2 START
+//      MENU+A      = HUD
+//      MENU+B      = PAUSE
+//      MENU+X      = EXIT
+//      MENU+Y      = MAME MENU
+//      MENU+DOWN   = SAVE STATE 1
+//      MENU+UP     = LOAD STATE 1
+//      MENU+LEFT   = SAVE STATE 2
+//      MENU+RIGHT  = LOAD STATE 2
+//
+// if the menuHUD is active the DPAD and A, B will move/select items in the menu *not* do a modifier
+//
+-(void)handleMenuButton:(GCController*)controller {
+    int index = (int)[g_controllers indexOfObjectIdenticalTo:controller];
+    int player = (int)controller.playerIndex;
+
+    NSParameterAssert(index >= 0 && index < NUM_JOY && player >= 0 && player < NUM_JOY);
+    if (index < 0 || index >= NUM_JOY || player < 0 || player >= NUM_JOY)
+        return;
     
-    // cancel the HUD showing up if a modifier was pressed
-    if (state != 0 && g_menuHUD == nil)
-        [self hideControllerHUD:controller];
+    unsigned long combo_buttons = (MYOSD_A|MYOSD_B|MYOSD_X|MYOSD_Y|MYOSD_UP|MYOSD_DOWN|MYOSD_LEFT|MYOSD_RIGHT|MYOSD_L1|MYOSD_R1|MYOSD_L2|MYOSD_R2);
+    unsigned long current_state = read_gamepad_buttons(controller.extendedGamepad);
+    unsigned long changed_state = (current_state ^ g_menuButtonState[index]) & current_state;   // changed buttons that are DOWN
+    g_menuButtonState[index] = current_state;
+    
+    NSLog(@"handleMenuButton[%d]: %s%s%s%s %s%s%s%s %s%s%s%s %s%s%s", index,
+          (changed_state & MYOSD_UP) ? "U" : "-", (changed_state & MYOSD_DOWN) ? "D" : "-",
+          (changed_state & MYOSD_LEFT) ? "L" : "-", (changed_state & MYOSD_RIGHT) ? "R" : "-",
+          (changed_state & MYOSD_A) ? "A" : "-", (changed_state & MYOSD_B) ? "B" : "-",
+          (changed_state & MYOSD_X) ? "X" : "-", (changed_state & MYOSD_Y) ? "Y" : "-",
+          (changed_state & MYOSD_L1) ? "L1" : "--", (changed_state & MYOSD_R1) ? "R1" : "--",
+          (changed_state & MYOSD_L2) ? "L2" : "--", (changed_state & MYOSD_R2) ? "R2" : "--",
+          (changed_state & MYOSD_OPTION) ? "OPTION " : "", (changed_state & MYOSD_HOME) ? "HOME " : "",
+          (changed_state & MYOSD_MENU) ? "MENU " : "");
+    
+    // DPAD and A/B navigate the menu (unless MENU/HOME/OPTION are down)
+    if (g_menu && (current_state & (MYOSD_MENU | MYOSD_OPTION | MYOSD_HOME)) == 0) {
+        UIPressType press = input_debounce(current_state, CGPointMake(controller.extendedGamepad.leftThumbstick.xAxis.value, controller.extendedGamepad.leftThumbstick.yAxis.value));
+        [g_menu handleButtonPress:press];
+        changed_state &= ~(MYOSD_A|MYOSD_B|MYOSD_UP|MYOSD_DOWN|MYOSD_LEFT|MYOSD_RIGHT);
+    }
+    
+    // cancel the HUD showing up, or hide it if a modifier was pressed
+    if (changed_state & combo_buttons) {
+        // TODO: only hide the HUD if *we* own it
+        if (g_menu)
+            [self toggleMenu:controller];
+        else
+            [self cancelShowMenu:controller];
+        g_menuButtonPressed[index] |= changed_state;
+    }
 
-    if (state & MYOSD_A) {
-        NSLog(@"...MENU+A => tbd");
+    if (changed_state & MYOSD_A) {
+        NSLog(@"...MENU+A => HUD");
+        [self commandKey:'H'];
     }
-    if (state & MYOSD_B) {
-        NSLog(@"...MENU+B => tbd");
+    if (changed_state & MYOSD_B) {
+        NSLog(@"...MENU+B => PAUSE");
+        push_mame_key(MYOSD_KEY_P);
     }
-    if (state & MYOSD_X) {
+    if (changed_state & MYOSD_X) {
         NSLog(@"...MENU+X => EXIT");
-        [self runExit];
+        [self runExit:NO];
     }
-    if (state & MYOSD_Y) {
+    if (changed_state & MYOSD_Y) {
         NSLog(@"...MENU+Y => MAME MENU");
-        myosd_configure = 1;
+        push_mame_key(MYOSD_KEY_TAB);
     }
-    if (state & MYOSD_UP) {
+    if (changed_state & MYOSD_UP) {
         NSLog(@"...MENU+UP => LOAD STATE 1");
         mame_state(LOAD_STATE, 1);
     }
-    if (state & MYOSD_DOWN) {
+    if (changed_state & MYOSD_DOWN) {
         NSLog(@"...MENU+DOWN => SAVE STATE 1");
         mame_state(SAVE_STATE, 1);
     }
-    if (state & MYOSD_LEFT) {
+    if (changed_state & MYOSD_LEFT) {
         NSLog(@"...MENU+LEFT => SAVE STATE 2");
         mame_state(SAVE_STATE, 2);
     }
-    if (state & MYOSD_RIGHT) {
+    if (changed_state & MYOSD_RIGHT) {
         NSLog(@"...MENU+RIGHT => LOAD STATE 2");
         mame_state(LOAD_STATE, 2);
     }
-    if (state & MYOSD_L1) {
+    if (changed_state & MYOSD_L1) {
         NSLog(@"...MENU+L1 => SELECT");
         push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X coin
     }
-    if (state & MYOSD_R1) {
+    if (changed_state & MYOSD_R1) {
         NSLog(@"...MENU+R1 => START");
         push_mame_button(player, MYOSD_START);
     }
-    if (state & MYOSD_L2) {
+    if (changed_state & MYOSD_L2) {
         NSLog(@"...MENU+L2 => P2 SELECT");
         push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X coin
         push_mame_button((1 < myosd_num_coins ? 1 : 0), MYOSD_SELECT);  // Player 2 coin
     }
-    if (state & MYOSD_R2) {
+    if (changed_state & MYOSD_R2) {
         NSLog(@"...MENU+R2 => P2 START");
         push_mame_button(1, MYOSD_START);
     }
-    if (state & (MYOSD_OPTION|MYOSD_MENU)) {
+    if (g_menu == nil && (current_state & (MYOSD_OPTION|MYOSD_MENU)) == (MYOSD_OPTION|MYOSD_MENU)) {
         NSLog(@"...SELECT+START => MAME4iOS MENU");
-        [self hideControllerHUD:controller];
-        [self runMenu:player];
+        g_menuButtonPressed[index] |= MYOSD_MENU;
+        [self runMenu:controller];
     }
 }
 
 #pragma mark CONTROLLER MENU HUD
 
--(void)showControllerHUD:(GCController*)controller {
-
-    if (g_menuHUD != nil)
-        return;
-
-// SF Symbols only has the button symbols we want on iOS 14+
+NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* element) {
+    
+    if (gamepad == nil || element == nil)
+        return nil;
+    
+    BOOL is_14 = FALSE;
 #ifdef __IPHONE_14_0
-    if (@available(iOS 14.0, *)) {
-        GCExtendedGamepad* gamepad = controller.extendedGamepad;
-        int index = (int)controller.playerIndex;
-        int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
-
-        g_menuHUD = [[InfoHUD alloc] initWithFrame:CGRectZero];
-
-        GCControllerButtonInput *menu = gamepad.buttonHome.pressed ? gamepad.buttonHome : gamepad.buttonOptions.pressed ? gamepad.buttonOptions : gamepad.buttonMenu;
-        
-        NSString* name = @"Menu";
-        if (gamepad.buttonOptions != nil && gamepad.buttonMenu != nil && menu != gamepad.buttonHome)
-            name = menu == gamepad.buttonOptions ? @"Select" : @"Start";
-        
-        NSString* title = [NSString stringWithFormat:@":%@:%@", menu.unmappedSfSymbolsName ?: @"line.horizontal.3.circle", name];
-        UIImage* image = [UIImage imageWithString:title withFont:[UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]];
-        [g_menuHUD addImage:image];
-        [g_menuHUD addSeparator];
-
-        // Pn SELECT and START
-        [g_menuHUD addButtons:@[
-            [NSString stringWithFormat:@":%@:Player %d Select", gamepad.leftShoulder.unmappedSfSymbolsName ?: @"l1.rectangle.roundedbottom", player + 1],
-            [NSString stringWithFormat:@":%@:Player %d Start", gamepad.rightShoulder.unmappedSfSymbolsName ?: @"r1.rectangle.roundedbottom", player + 1]
-        ] color:UIColor.clearColor handler:^(NSUInteger i){}];
-        
-        // P2 SELECT and START (only on the Player 1 controller)
-        if (player == 0) {
-            [g_menuHUD addButtons:@[
-                [NSString stringWithFormat:@":%@:Player 2 Select", gamepad.leftTrigger.unmappedSfSymbolsName ?: @"l2.rectangle.roundedtop"],
-                [NSString stringWithFormat:@":%@:Player 2 Start", gamepad.rightTrigger.unmappedSfSymbolsName ?: @"r2.rectangle.roundedtop"]
-            ] color:UIColor.clearColor handler:^(NSUInteger i){}];
-        }
-
-        // A,B,X,Y buttons
-        [g_menuHUD addButtons:@[
-            [NSString stringWithFormat:@":%@:Configure", gamepad.buttonY.unmappedSfSymbolsName ?: @"y.circle"],
-            [NSString stringWithFormat:@":%@:Exit Game", gamepad.buttonX.unmappedSfSymbolsName ?: @"x.circle"]
-        ] color:UIColor.clearColor handler:^(NSUInteger i){}];
-        /* tbd
-        [g_menuHUD addButtons:@[
-            [NSString stringWithFormat:@":%@:Button A", gamepad.buttonA.unmappedSfSymbolsName ?: @"a.circle"],
-            [NSString stringWithFormat:@":%@:Button B", gamepad.buttonB.unmappedSfSymbolsName ?: @"b.circle"]
-        ] color:UIColor.clearColor handler:^(NSUInteger i){}];
-        */
-
-        // LOAD and SAVE State
-        [g_menuHUD addButtons:@[
-            [NSString stringWithFormat:@":%@:Load ①", gamepad.dpad.up.unmappedSfSymbolsName ?: @"circle.grid.cross.up.fill"],
-            [NSString stringWithFormat:@":%@:Save ①", gamepad.dpad.down.unmappedSfSymbolsName ?: @"circle.grid.cross.down.fill"],
-        ] color:UIColor.clearColor handler:^(NSUInteger i){}];
-        [g_menuHUD addButtons:@[
-            [NSString stringWithFormat:@":%@:Load ②", gamepad.dpad.right.unmappedSfSymbolsName ?: @"circle.grid.cross.right.fill"],
-            [NSString stringWithFormat:@":%@:Save ②", gamepad.dpad.left.unmappedSfSymbolsName ?: @"circle.grid.cross.left.fill"],
-        ] color:UIColor.clearColor handler:^(NSUInteger i){}];
-
-        // if a controller has both OPTION and MENU, let user know that OPTION+MENU => MAME4iOS menu
-        if (gamepad.buttonOptions != nil && gamepad.buttonMenu != nil) {
-            if (menu == gamepad.buttonOptions) {
-                [g_menuHUD addButtons:@[
-                    @"", [NSString stringWithFormat:@":%@:Menu", gamepad.buttonMenu.unmappedSfSymbolsName ?: @"line.horizontal.3.circle"]
-                ] color:UIColor.clearColor handler:^(NSUInteger i){}];
-            }
-            if (menu == gamepad.buttonMenu) {
-                [g_menuHUD addButtons:@[
-                    [NSString stringWithFormat:@":%@:Menu", gamepad.buttonOptions.unmappedSfSymbolsName ?: @"rectangle.fill.on.rectangle.fill.circle"], @""
-                ] color:UIColor.clearColor handler:^(NSUInteger i){}];
-            }
-        }
-
-        UIWindow* window = self.view.window;
-        [window addSubview:g_menuHUD];
-        [g_menuHUD sizeToFit];
-        g_menuHUD.center = window.center;
-        CGFloat scale = TARGET_OS_TV ? 1.5 : 1.0;
-        g_menuHUD.transform = CGAffineTransformMakeScale(0.001, 0.001);
-        [UIView animateWithDuration:MENU_HUD_SHOW_ANIMATE animations:^{
-            g_menuHUD.transform = CGAffineTransformMakeScale(scale, scale);
-        }];
+    if (@available(iOS 14.0, tvOS 14.0, *)) {
+        is_14 = TRUE;
+        NSString* symbol = element.unmappedSfSymbolsName ?: element.sfSymbolsName;
+        if (symbol != nil)
+            return symbol;
     }
 #endif
-}
--(void)showControllerHUD:(GCController*)controller after:(NSTimeInterval)delay {
-    [self performSelector:@selector(showControllerHUD:) withObject:controller afterDelay:MENU_HUD_SHOW_DELAY];
-}
--(void)hideControllerHUD:(GCController*)controller {
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(showControllerHUD:) object:controller];
-
-    if (g_menuHUD != nil) {
-        [UIView animateWithDuration:MENU_HUD_SHOW_ANIMATE animations:^{
-            g_menuHUD.transform = CGAffineTransformMakeScale(0.001, 0.001);
-        } completion:^(BOOL finished) {
-            [g_menuHUD removeFromSuperview];
-            g_menuHUD = nil;
-        }];
-    }
-}
-
-// show a quick help HUD while the in-game menu is on screen, only for tvOS
--(void)showMenuHUD:(int)player {
-
-    if (g_menuHUD != nil)
-        return;
-
-#if TARGET_OS_TV && defined(__IPHONE_14_0)
-    // see if we have any (non siri-remote) game controllers
-    GCController* controller = (player < g_controllers.count) ? g_controllers[player] : nil;
-    GCExtendedGamepad* gamepad = controller.extendedGamepad;
     
-#if TARGET_OS_SIMULATOR == 0
-    if (gamepad == nil)
-        return;
-#endif
-    
-    if (@available(iOS 14.0, *)) {
-        
-        g_menuHUD = [[InfoHUD alloc] initWithFrame:CGRectZero];
-        g_menuPlayer = player;
-        
-        // only show combo buttons that dont conflict with UIAlertController
-        [g_menuHUD addButtons:@[
-            [NSString stringWithFormat:@":%@:Player Select", gamepad.leftShoulder.unmappedSfSymbolsName ?: @"l1.rectangle.roundedbottom"],
-            [NSString stringWithFormat:@":%@:Exit Game", gamepad.buttonX.unmappedSfSymbolsName ?: @"x.circle"],
-            [NSString stringWithFormat:@":%@:Player Start", gamepad.rightShoulder.unmappedSfSymbolsName ?: @"r1.rectangle.roundedbottom"],
-        ] color:UIColor.clearColor handler:^(NSUInteger i){}];
-        
-        [g_menuHUD addButtons:@[
-            player == 0 ? [NSString stringWithFormat:@":%@:Player 2 Select", gamepad.leftTrigger.unmappedSfSymbolsName ?: @"l2.rectangle.roundedtop"] : @"",
-            [NSString stringWithFormat:@":%@:Configure", gamepad.buttonY.unmappedSfSymbolsName ?: @"y.circle"],
-            player == 0 ? [NSString stringWithFormat:@":%@:Player 2 Start", gamepad.rightTrigger.unmappedSfSymbolsName ?: @"r2.rectangle.roundedtop"] : @"",
-        ] color:UIColor.clearColor handler:^(NSUInteger i){}];
-        
-        UIWindow* window = self.view.window;
-        [window addSubview:g_menuHUD];
-        [g_menuHUD sizeToFit];
-        g_menuHUD.center =  CGPointMake(window.center.x, window.bounds.size.height - g_menuHUD.bounds.size.height/2 - 16.0);
-    }
-#endif
-}
--(void)hideMenuHUD {
-    [g_menuHUD removeFromSuperview];
-    g_menuHUD = nil;
-}
+    if (element == gamepad.buttonA) return @"a.circle";
+    if (element == gamepad.buttonB) return @"b.circle";
+    if (element == gamepad.buttonX) return @"x.circle";
+    if (element == gamepad.buttonY) return @"y.circle";
 
-//
-// handle a controller button when the in-game menu is up, only on tvOS
-// this is called from the GameController valueChanged handler if g_menuHUD is non-nil.
-// NOTE we can only use controller buttons that will not conflict with the Alert handling done by tvOS.
-// (that means no dpad or A, B) so we only do a subset.
-//
-//      MENU+L1     = Pn COIN/SELECT
-//      MENU+R1     = Pn START
-//      MENU+L2     = P2 COIN/SELECT
-//      MENU+R2     = P2 START
-//      MENU+X      = EXIT
-//      MENU+Y      = MAME MENU
-//
--(void)handleMenuButton:(GCController*)controller element:(GCControllerElement*)element {
-    GCExtendedGamepad* gamepad = controller.extendedGamepad;
-    UIAlertController* alert = (UIAlertController*)self.presentedViewController;
+    if (element == gamepad.leftShoulder)  return is_14 ? @"l1.rectangle.roundedbottom" : @"l.circle";
+    if (element == gamepad.rightShoulder) return is_14 ? @"r1.rectangle.roundedbottom" : @"r.circle";
+    if (element == gamepad.leftTrigger)   return is_14 ? @"l2.rectangle.roundedtop" : @"l.square";
+    if (element == gamepad.rightTrigger)  return is_14 ? @"r2.rectangle.roundedtop" : @"r.square";
 
-    if (g_menuHUD == nil || gamepad == nil || ![alert isKindOfClass:[UIAlertController class]] || alert.isBeingDismissed)
-        return;
-    
-    int index = (int)controller.playerIndex;
-    int player = (index < myosd_num_inputs) ? index : 0; // act as Player 1 if MAME is not using us.
-    
-    if (player != g_menuPlayer)
-        return;
+    if (element == gamepad.dpad.up)    return is_14 ? @"dpad.up.fill" : @"chevron.up.circle";
+    if (element == gamepad.dpad.down)  return is_14 ? @"dpad.down.fill" : @"chevron.down.circle";
+    if (element == gamepad.dpad.right) return is_14 ? @"dpad.right.fill" : @"chevron.right.circle";
+    if (element == gamepad.dpad.left)  return is_14 ? @"dpad.left.fill" : @"chevron.left.circle";
 
-    if (element == gamepad.buttonX && !gamepad.buttonX.pressed) {
-        NSLog(@"...MENU+X => EXIT");
-        [alert dismissWithAction:alert.cancelAction completion:^{
-            [self runExit:NO];
-        }];
-    }
-    else if (element == gamepad.buttonY && !gamepad.buttonY.pressed) {
-        NSLog(@"...MENU+Y => MAME MENU");
-        myosd_configure = 1;
-        [alert dismissWithCancel];
-    }
-    else if (element == gamepad.leftShoulder && !gamepad.leftShoulder.pressed) {
-        NSLog(@"...MENU+L1 => SELECT");
-        push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X coin
-        [alert dismissWithCancel];
-    }
-    else if (element == gamepad.rightShoulder && !gamepad.rightShoulder.pressed) {
-        NSLog(@"...MENU+R1 => START");
-        push_mame_button(player, MYOSD_START);
-        [alert dismissWithCancel];
-    }
-    else if (element == gamepad.leftTrigger && !gamepad.leftTrigger.pressed && player == 0) {
-        NSLog(@"...MENU+L2 => P2 SELECT");
-        push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X coin
-        push_mame_button((1 < myosd_num_coins ? 1 : 0), MYOSD_SELECT);  // Player 2 coin
-        [alert dismissWithCancel];
-    }
-    else if (element == gamepad.rightTrigger && !gamepad.rightTrigger.pressed && player == 0) {
-        NSLog(@"...MENU+R2 => P2 START");
-        push_mame_button(1, MYOSD_START);
-        [alert dismissWithCancel];
-    }
+    if (element == gamepad.buttonOptions) return is_14 ? @"rectangle.fill.on.rectangle.fill.circle" : @"ellipsis.circle";
+    if (element == gamepad.buttonHome)    return is_14 ? @"house.circle" : @"asterisk.circle";
+    if (element == gamepad.buttonMenu)    return is_14 ? @"line.horizontal.3.circle" : @"line.horizontal.3.decrease.circle";
+
+    return nil;
 }
 
 -(void)dumpDevice:(NSObject*)_device {
@@ -4904,7 +4930,7 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
     
     for (GCKeyboard* keyboard in g_keyboards) {
         [self dumpDevice:keyboard];
-// we do our own keyboard handler in iCadeView
+// we do our own keyboard handler via responder chain (in KeyboardView.m)
 //        [keyboard.keyboardInput setKeyChangedHandler:^(GCKeyboardInput* keyboard, GCControllerButtonInput* key, GCKeyCode keyCode, BOOL pressed) {
 //            NSLog(@"KEYBOARD KEY: %@ (%ld) - %s",key, keyCode, pressed ? "DOWN" : "UP");
 //        }];
@@ -4930,7 +4956,7 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
             if (!g_direct_mouse_enable)
                 return;
             deltaY = -deltaY;   // flip Y for MAME
-            NSLog(@"MOUSE MOVE: %f, %f", deltaX, deltaY);
+            //NSLog(@"MOUSE MOVE: %f, %f", deltaX, deltaY);
             [mouse_lock lock];
             mouse_delta_x[i] += deltaX * g_pref_touch_analog_sensitivity * scale;
             mouse_delta_y[i] += deltaY * g_pref_touch_analog_sensitivity * scale;
@@ -4946,7 +4972,7 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
             float zValue = sqrtf(xValue*xValue + yValue*yValue);
             if (yValue < -xValue)
                 zValue = -zValue;
-            NSLog(@"MOUSE SCROLL: (%f, %f) => %f", xValue, yValue, zValue);
+            //NSLog(@"MOUSE SCROLL: (%f, %f) => %f", xValue, yValue, zValue);
             [mouse_lock lock];
             mouse_delta_z[i] += zValue * g_pref_touch_analog_sensitivity * scale;
             [mouse_lock unlock];
@@ -5083,7 +5109,7 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
         UIAlertController* alert = (UIAlertController*)viewController;
         UIAlertAction* action;
 
-        NSLog(@"ALERT: %@:%@", alert.title, alert.message);
+        NSLog(@"ALERT: %@", alert.title);
         
         if (alert.actions.count == 1)
             action = alert.preferredAction ?: alert.cancelAction;
@@ -5101,6 +5127,12 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
             return;
         }
     }
+    else if ([viewController isKindOfClass:[HUDViewController class]]) {
+        [viewController.presentingViewController dismissViewControllerAnimated:TRUE completion:^{
+            [self performSelectorOnMainThread:@selector(playGame:) withObject:game waitUntilDone:NO];
+        }];
+        return;
+    }
     else if ([viewController isKindOfClass:[ChooseGameController class]] && viewController.presentedViewController == nil) {
         // if we are in the ChooseGame UI dismiss and run game
         ChooseGameController* choose = (ChooseGameController*)viewController;
@@ -5112,7 +5144,6 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
         NSLog(@"CANT RUN GAME! (%@ is active)", viewController);
         return;
     }
-
     
     NSString* name = game[kGameInfoName];
     
@@ -5158,6 +5189,7 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
         if ([CloudSync status] == CloudSyncStatusUnknown) {
             NSLog(@"....WAITING FOR iCloud");
             [self performSelector:_cmd withObject:games afterDelay:1.0];
+            return;
         }
 
         NSString* title = @"Welcome to " PRODUCT_NAME_LONG;
@@ -5233,8 +5265,12 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
             [self runSettings];
             return;
         }
+        
+        if (self.presentedViewController.isBeingDismissed)
+            return;
+        
         [self dismissViewControllerAnimated:YES completion:^{
-            self->icadeView.active = TRUE;
+            self->keyboardView.active = TRUE;
             [self performSelectorOnMainThread:@selector(playGame:) withObject:game waitUntilDone:FALSE];
         }];
     };
@@ -5249,14 +5285,32 @@ static unsigned long g_menuButtonPressed[NUM_JOY];  // bit set if a modifier but
 #pragma mark UIEvent handling for button presses
 
 #if TARGET_OS_TV
-- (void)pressesEnded:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event; {
-    NSLog(@"PRESSES ENDED: %@", presses.allObjects.firstObject);
+
+- (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event; {
+    NSLog(@"PRESSES BEGAN: %ld", presses.allObjects.firstObject.type);
     for (UIPress *press in presses) {
-        if (press.type == UIPressTypeMenu && g_controllers.count == 0) {
-            return [self runMenu];
-        }
+        UIPressType type = press.type;
+
+#if TARGET_OS_SIMULATOR
+        // these are press types sent by a keyboard in the simulator
+        if (type == 2040) type = UIPressTypeSelect;
+        if (type == 2079) type = UIPressTypeRightArrow;
+        if (type == 2080) type = UIPressTypeLeftArrow;
+        if (type == 2081) type = UIPressTypeDownArrow;
+        if (type == 2082) type = UIPressTypeUpArrow;
+
+        // TODO: find out if this is a press from a remote or a controller??
+        if (type >= UIPressTypeUpArrow && type <= UIPressTypeSelect && g_menu != nil)
+            [g_menu handleButtonPress:type];
+#endif
+        if (type == UIPressTypeMenu && g_menu == nil && !myosd_in_menu && g_controllers.count == 0)
+            [self runMenu];
     }
-    // not a menu press, delegate to UIKit responder handling
+    [super pressesBegan:presses withEvent:event];
+}
+
+- (void)pressesEnded:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event; {
+    NSLog(@"PRESSES END: %ld", presses.allObjects.firstObject.type);
     [super pressesEnded:presses withEvent:event];
 }
 #endif

@@ -110,7 +110,7 @@
 {
     switch (section)
     {
-        case 0: return 2;
+        case 0: return 3;
         case 1: return 3;
         case 2: return 5;
         case 3: return 1;
@@ -195,6 +195,10 @@
                 [cell.contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:[sliderTouchControlsOpacity]-8@750-|" options:0 metrics:nil views:viewBindings]];
                 [cell.contentView addConstraint:[NSLayoutConstraint constraintWithItem:sliderTouchControlsOpacity attribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationEqual toItem:cell.contentView attribute:NSLayoutAttributeCenterY multiplier:1.0 constant:0.0]];
                 [sliderTouchControlsOpacity addConstraint:[NSLayoutConstraint constraintWithItem:sliderTouchControlsOpacity attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:100.0]];
+                break;
+            } else if (indexPath.row == 2 ) {
+                cell.textLabel.text = @"Haptic Feedback";
+                cell.accessoryView = [self optionSwitchForKey:@"hapticButtonFeedback"];
                 break;
             }
         }

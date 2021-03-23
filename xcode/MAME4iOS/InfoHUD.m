@@ -9,6 +9,11 @@
 #import "InfoHUD.h"
 #import <objc/runtime.h> // just for Associated Objects, I promise!
 
+@interface UIImage()
++ (UIImage*)imageWithString:(NSString*)str withFont:(UIFont*)font;
++ (UIImage*)imageWithText:(NSString*)textLeft image:(UIImage*)image text:(NSString*)textRight font:(UIFont*)font;
+@end
+
 #define HUD_BLUR    TRUE
 
 @implementation InfoHUD {
@@ -17,6 +22,7 @@
     NSMutableDictionary* _format;
     NSMutableDictionary* _step;
     CGFloat _width;
+    NSInteger _selected;    // currently "selected" item in the stack view, or -1 for nada
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -39,10 +45,16 @@
     _stack.distribution = UIStackViewDistributionEqualSpacing;
     _stack.alignment = UIStackViewAlignmentFill;
     
+    _selected = -1;
+    
     self.font = nil;
     
     if (@available(iOS 13.0, tvOS 13.0, *))
         self.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
+    
+#if TARGET_OS_TV
+    self.tintColor = UIApplication.sharedApplication.keyWindow.tintColor;
+#endif
     
     [self addSubview:_stack];
     
@@ -57,19 +69,28 @@
     [self addGestureRecognizer:pinch];
 #endif
 
-    //self.backgroundColor = [UIColor clearColor];
-#if HUD_BLUR && TARGET_OS_IOS
-    if (@available(iOS 13.0, *))
-        [self addBlur:UIBlurEffectStyleSystemUltraThinMaterialDark];
-    else
-        [self addBlur:UIBlurEffectStyleDark];
-#elif HUD_BLUR && TARGET_OS_TV
-    [self addBlur:UIBlurEffectStyleExtraDark];
-#else
-    self.backgroundColor = [UIColor.darkGrayColor colorWithAlphaComponent:0.8];
-#endif
+    self.backgroundColor = HUD_BLUR ? nil : [UIColor.darkGrayColor colorWithAlphaComponent:0.8];
     
     return self;
+}
+
+- (void)setBackgroundColor:(UIColor *)color {
+    [super setBackgroundColor:color];
+    
+    for (UIView* view in self.subviews)
+        [view removeFromSuperview];
+    [self addSubview:_stack];
+
+    if (color == nil) {
+#if TARGET_OS_IOS
+        if (@available(iOS 13.0, *))
+            [self addBlur:UIBlurEffectStyleSystemUltraThinMaterialDark];
+        else
+            [self addBlur:UIBlurEffectStyleDark];
+#else
+        [self addBlur:UIBlurEffectStyleExtraDark];
+#endif
+    }
 }
 
 - (void)setSpacing:(CGFloat)spacing {
@@ -87,9 +108,10 @@
     UIVisualEffectView* effectView = [[UIVisualEffectView alloc] initWithEffect:blur];
     effectView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     effectView.frame = self.bounds;
-    for (UIView* view in self.subviews)
-        [effectView.contentView addSubview:view];
+//    for (UIView* view in self.subviews)
+//        [effectView.contentView addSubview:view];
     [self addSubview:effectView];
+    [self sendSubviewToBack:effectView];
 }
 
 #if TARGET_OS_IOS
@@ -153,6 +175,7 @@
     for (UIView* view in _stack.subviews)
         [view removeFromSuperview];
     _width = 0.0;
+    _selected = -1;
 }
 
 - (UIImage*)dotWithColor:(UIColor*)color size:(CGSize)size
@@ -186,8 +209,9 @@
         else
             format = @"%0.3f";
     }
-    if ([format componentsSeparatedByString:@"%"].count == 2)
-        format = [@"%2$@: " stringByAppendingString:format];
+    
+    if ([format hasPrefix:@"%"] && key.length != 0)
+        format = [NSString stringWithFormat:@"%@: %@", key, format];
 
     if ([value isKindOfClass:[NSString class]] && [value isEqualToString:@"---"]) {
         value = [self separatorViewWithHeight:1.0 color:UIColor.clearColor];
@@ -195,6 +219,9 @@
         value = [self separatorViewWithHeight:1.0 color:UIColor.darkGrayColor];
         [_stack addArrangedSubview:value];
         value = [self separatorViewWithHeight:1.0 color:UIColor.clearColor];
+    }
+    if ([value isKindOfClass:[NSString class]] && [value isEqualToString:@" "]) {
+        value = [self separatorViewWithHeight:3.0 color:UIColor.clearColor];
     }
     if ([value isKindOfClass:[UIImage class]]) {
         value = [[UIImageView alloc] initWithImage:value];
@@ -303,10 +330,6 @@
     label.textAlignment = NSTextAlignmentCenter;
 }
 
-+ (UIImage*)imageWithString:(NSString*)str withFont:(UIFont*)font {
-    return nil;
-}
-
 - (NSArray*)convertItems:(NSArray*)_items {
     
     if (![[UIImage class] respondsToSelector:@selector(imageWithString:withFont:)])
@@ -315,8 +338,8 @@
     NSMutableArray* items = [_items mutableCopy];
     for (NSUInteger idx=0; idx<items.count; idx++) {
         id item = items[idx];
-        if ([item isKindOfClass:[NSString class]] && [item hasPrefix:@":"])
-            items[idx] = [[UIImage class] performSelector:@selector(imageWithString:withFont:) withObject:item withObject:self.font];
+        if ([item isKindOfClass:[NSString class]] && ([item hasPrefix:@":"] || [item hasSuffix:@":"]))
+            items[idx] = [UIImage imageWithString:item withFont:self.font];
     }
     return [items copy];
 }
@@ -327,13 +350,14 @@
 }
 - (UISegmentedControl*)makeSegmentedControl:(NSArray*)items handler:(void (^)(NSUInteger button))handler {
     UISegmentedControl* seg = [[UISegmentedControl alloc] initWithItems:[self convertItems:items]];
-    seg.momentary = YES;
+    seg.momentary = TARGET_OS_IOS ? YES : NO;
     [seg setTitleTextAttributes:@{NSFontAttributeName:_font} forState:UIControlStateNormal];
     
     CGFloat h = _font.lineHeight * 1.5;
     [seg addConstraint:[NSLayoutConstraint constraintWithItem:seg attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:h]];
-
+#if TARGET_OS_IOS
     [seg addTarget:self action:@selector(buttonPress:) forControlEvents:UIControlEventValueChanged];
+#endif
     objc_setAssociatedObject(seg, @selector(buttonPress:), handler, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     if (@available(iOS 13.0, tvOS 13.0, *))
          seg.selectedSegmentTintColor = self.tintColor;
@@ -351,6 +375,10 @@
     UIStackView* stack = [[UIStackView alloc] init];
     stack.spacing = self.spacing;
     stack.distribution = UIStackViewDistributionFillEqually;
+    
+#if TARGET_OS_TV
+    color = color ?: [UIColor colorWithWhite:0.222 alpha:1.0];
+#endif
 
     for (NSUInteger i = 0; i<items.count; i++) {
         id item = items[i];
@@ -360,9 +388,19 @@
             }];
             seg.backgroundColor = color;
             if (@available(iOS 13.0, tvOS 13.0, *))
-                 seg.selectedSegmentTintColor = color;
+                seg.selectedSegmentTintColor = (color == nil || color == UIColor.clearColor || TARGET_OS_TV) ? self.tintColor : color;
             if (color == UIColor.clearColor)
                 [seg setBackgroundImage:[[UIImage alloc] init] forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
+#if TARGET_OS_TV
+            [seg setTitleTextAttributes:@{NSFontAttributeName:_font,
+                NSForegroundColorAttributeName: color == UIColor.clearColor ? self.tintColor : UIColor.whiteColor,
+                NSBackgroundColorAttributeName: color
+            } forState:UIControlStateNormal];
+            [seg setTitleTextAttributes:@{NSFontAttributeName:_font,
+                NSForegroundColorAttributeName: UIColor.whiteColor,
+                NSBackgroundColorAttributeName: self.tintColor
+            } forState:UIControlStateSelected];
+#endif
         }
         [stack addArrangedSubview:item];
     }
@@ -395,7 +433,7 @@
         if (step != 0.0)
             val = round(val / step) * step;
         if (format != nil)
-            label.text = [NSString stringWithFormat:format, val, key];
+            label.text = [NSString stringWithFormat:format, val];
 #if TARGET_OS_IOS
         UISlider* slider = (__bridge UISlider*)(void*)label.tag;
         if ([slider isKindOfClass:[UISlider class]] && !slider.isTracking)
@@ -406,6 +444,11 @@
     }
     else if ([value isKindOfClass:[NSString class]]) {
         label.text = value;
+    }
+    else if ([value isKindOfClass:[NSAttributedString class]]) {
+        label.attributedText = value;
+        label.numberOfLines = 0;
+        label.preferredMaxLayoutWidth = MAX(_width, 320.0);
     }
     else {
         label.text = [value description];
@@ -455,5 +498,376 @@
     _stack.frame = UIEdgeInsetsInsetRect(self.bounds, self.layoutMargins);
 }
 
+#pragma mark - selection
+
+- (NSArray*)getSelectableItems {
+    NSMutableArray* items = [[NSMutableArray alloc] init];
+    
+    for (UIView* view in _stack.subviews) {
+        if ([view isKindOfClass:[UISegmentedControl class]])
+            [items addObject:view];
+        if ([view isKindOfClass:[UIStackView class]] && [view.subviews.firstObject isKindOfClass:[UISegmentedControl class]])
+            [items addObject:view];
+    }
+    
+    return items;
+}
+
+- (NSUInteger)getNumberOfSegments:(UIView*)view {
+    if ([view isKindOfClass:[UISegmentedControl class]])
+        return [(UISegmentedControl*)view numberOfSegments];
+    else
+        return view.subviews.count;
+}
+
+- (NSInteger)getSelectedSegmentIndex:(UIView*)view {
+    
+    if ([view isKindOfClass:[UISegmentedControl class]]) {
+        UISegmentedControl* seg = (UISegmentedControl*)view;
+        return seg.selectedSegmentIndex;
+    }
+    
+    if ([view isKindOfClass:[UIStackView class]]) {
+        UIStackView* stack = (UIStackView*)view;
+        for (NSInteger i=0; i<stack.subviews.count; i++) {
+            UISegmentedControl* seg = (UISegmentedControl*)stack.subviews[i];
+            if ([seg isKindOfClass:[UISegmentedControl class]] && seg.selectedSegmentIndex != UISegmentedControlNoSegment) {
+                return i;
+            }
+        }
+    }
+    
+    return UISegmentedControlNoSegment;
+}
+
+- (void)setSelectedSegmentIndex:(UIView*)view index:(NSInteger)index {
+    
+    if ([view isKindOfClass:[UISegmentedControl class]]) {
+        UISegmentedControl* seg = (UISegmentedControl*)view;
+        seg.selectedSegmentIndex = index;
+    }
+    
+    if ([view isKindOfClass:[UIStackView class]]) {
+        UIStackView* stack = (UIStackView*)view;
+        for (NSInteger i=0; i<stack.subviews.count; i++) {
+            UISegmentedControl* seg = (UISegmentedControl*)stack.subviews[i];
+            if ([seg isKindOfClass:[UISegmentedControl class]]) {
+                seg.selectedSegmentIndex = (i == index) ? 0 : UISegmentedControlNoSegment;
+#if TARGET_OS_TV
+                if (seg.selectedSegmentIndex == 0)
+                    seg.backgroundColor = [seg titleTextAttributesForState:UIControlStateSelected][NSBackgroundColorAttributeName];
+                else
+                    seg.backgroundColor = [seg titleTextAttributesForState:UIControlStateNormal][NSBackgroundColorAttributeName];
+#endif
+                if (seg.backgroundColor == UIColor.clearColor && seg.selectedSegmentIndex == UISegmentedControlNoSegment)
+                    [seg setBackgroundImage:[[UIImage alloc] init] forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
+                else
+                    [seg setBackgroundImage:nil forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
+            }
+        }
+    }
+}
+
+// move current selection and perfom action, used with input from a game controller, keyboard, or remote.
+- (void)handleButtonPress:(UIPressType)type {
+    NSArray* items = [self getSelectableItems];
+    UIView* item = (_selected >= 0 && _selected < items.count) ? items[_selected] : nil;
+    
+    switch (type) {
+        case UIPressTypeUpArrow:
+        case UIPressTypeDownArrow:
+        {
+            NSInteger dir = (type == UIPressTypeUpArrow) ? -1 : +1;
+            NSInteger n = _selected + dir;
+            
+            if (n >= 0 && n < items.count) {
+                NSInteger index = MAX(0, [self getSelectedSegmentIndex:item]) * [self getNumberOfSegments:items[n]] / MAX(1, [self getNumberOfSegments:item]);
+                [self setSelectedSegmentIndex:items[n] index:index];
+                [self setSelectedSegmentIndex:item index:UISegmentedControlNoSegment];
+                _selected = n;
+            }
+            break;
+        }
+        case UIPressTypeLeftArrow:
+        case UIPressTypeRightArrow:
+        {
+            NSInteger dir = (type == UIPressTypeLeftArrow) ? -1 : +1;
+            if (item == nil && items.count != 0) {
+                _selected = 0;
+                item = items[_selected];
+            }
+            NSInteger n = [self getSelectedSegmentIndex:item] + dir;
+            n = MIN(MAX(0,n), [self getNumberOfSegments:item]-1);
+            [self setSelectedSegmentIndex:item index:n];
+            break;
+        }
+        case UIPressTypeSelect:
+            if ([item isKindOfClass:[UISegmentedControl class]])
+                [self buttonPress:(UISegmentedControl*)item];
+            if ([item isKindOfClass:[UIStackView class]]) {
+                NSInteger n = [self getSelectedSegmentIndex:item];
+                if (n >= 0 && n < item.subviews.count)
+                    [self buttonPress:(UISegmentedControl*)item.subviews[n]];
+            }
+            break;
+        default:
+            break;
+    }
+}
+@end
+
+#pragma mark - InfoHUD ViewController
+
+#if TARGET_OS_TV
+#define UIModalPresentationPopover ((UIModalPresentationStyle)7)
+#endif
+
+@implementation HUDViewController {
+    InfoHUD* _hud;
+    void (^_cancelHandler)(void);
+    void (^_dismissHandler)(void);
+}
+
+- (instancetype)init {
+    self = [super init];
+    
+    _blurBackground = TARGET_OS_IOS ? YES : NO;
+    _dimBackground = 0.5;
+    
+    _hud = [[InfoHUD alloc] init];
+    _hud.moveable = NO;
+    _hud.sizeable = NO;
+
+    return self;
+}
+
+- (void)setTitle:(NSString*)title {
+    [super setTitle:title];
+    if (self.title.length != 0) {
+        [_hud addTitle:self.title];
+        [_hud addSeparator];
+    }
+}
+
+- (void)setModalPresentationStyle:(UIModalPresentationStyle)style {
+
+    if (style == UIModalPresentationFullScreen)
+        style = UIModalPresentationOverFullScreen;
+    
+#if TARGET_OS_TV
+    if (style == UIModalPresentationOverFullScreen && _blurBackground)
+        style = UIModalPresentationBlurOverFullScreen;
+#endif
+    
+    [super setModalPresentationStyle:style];
+
+    self.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
+
+#if TARGET_OS_IOS
+    if (style == UIModalPresentationPopover) {
+        // remove the background from the InfoHUD
+        _hud.backgroundColor = UIColor.clearColor;
+        self.popoverPresentationController.delegate = (id<UIPopoverPresentationControllerDelegate>)self;
+
+        if (@available(iOS 13.0, tvOS 13.0, *))
+            self.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
+        else
+            self.popoverPresentationController.backgroundColor = [UIColor colorWithWhite:0.111 alpha:1.0];
+    }
+#endif
+}
+
+- (void)addButtons:(NSArray*)items style:(HUDButtonStyle)style handler:(void (^)(NSUInteger button))handler {
+    
+    UIColor* color = nil;
+    
+    if (style == HUDButtonStyleDestructive)
+        color = UIColor.systemRedColor;
+    if (style == HUDButtonStylePlain)
+        color = UIColor.clearColor;
+    
+    // we want to dismiss the ViewController *before* we call any button callbacks
+    __unsafe_unretained typeof(self) _self = self;
+    [_hud addButtons:items color:color handler:^(NSUInteger button) {
+        _self->_cancelHandler = nil;    // no need to call cancel handler now.
+        [_self.presentingViewController dismissViewControllerAnimated:YES completion:^{
+            handler(button);
+        }];
+    }];
+}
+
+- (void)addButton:(id)item style:(HUDButtonStyle)style handler:(void (^)(void))handler {
+    if (style == HUDButtonStyleCancel) {
+        [self onCancel:handler];
+        [_hud addText:@" "];
+    }
+    [self addButtons:@[item] style:style handler:^(NSUInteger button) {
+        handler();
+    }];
+}
+
+- (void)onCancel:(void (^)(void))handler {
+    _cancelHandler = handler;
+}
+
+- (void)onDismiss:(void (^)(void))handler {
+    _dismissHandler = handler;
+}
+
+- (void)ignoreMenu {
+}
+
+- (void)tapBackgroundToDismiss {
+    [self.presentingViewController dismissViewControllerAnimated:TRUE completion:nil];
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+#if TARGET_OS_IOS
+    if (self.modalPresentationStyle != UIModalPresentationPopover && _blurBackground) {
+        UIBlurEffectStyle style = UIBlurEffectStyleDark;
+
+        if (@available(iOS 13.0, *))
+            style = UIBlurEffectStyleSystemUltraThinMaterialDark;
+
+        UIBlurEffect* blur = [UIBlurEffect effectWithStyle:style];
+        UIVisualEffectView* effectView = [[UIVisualEffectView alloc] initWithEffect:blur];
+        effectView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        effectView.frame = self.view.bounds;
+        [self.view addSubview:effectView];
+    }
+    [self.view addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapBackgroundToDismiss)]];
+#else
+    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(ignoreMenu)];
+    tap.allowedPressTypes = @[[NSNumber numberWithInteger:UIPressTypeMenu]];
+    [self.view addGestureRecognizer:tap];
+#endif
+    [self.view addSubview:_hud];
+}
+
+- (CGSize)preferredContentSize {
+    return [_hud sizeThatFits:CGSizeZero];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    CGSize size = self.preferredContentSize;
+    self.preferredContentSize = size;
+
+    if (self.modalPresentationStyle != UIModalPresentationPopover) {
+
+        // TODO: change the font on tvOS instead
+        CGFloat scale = TARGET_OS_TV ? 1.5 : 1.0;
+        
+        if (size.width * scale > self.view.bounds.size.width * 0.95)
+            scale = self.view.bounds.size.width * 0.95 / size.width;
+
+        if (size.height * scale > self.view.bounds.size.height * 0.95)
+            scale = self.view.bounds.size.height * 0.95 / size.height;
+        
+        _hud.transform = CGAffineTransformMakeScale(0.001, 0.001);
+        [UIView animateWithDuration:0.200 animations:^{
+            if (!self->_blurBackground && self->_dimBackground != 0.0)
+                self.view.backgroundColor = [UIColor.blackColor colorWithAlphaComponent:self->_dimBackground];
+            self->_hud.transform = CGAffineTransformMakeScale(scale, scale);
+        }];
+    }
+}
+
+-(void)afterDismiss {
+    NSParameterAssert(self.isBeingDismissed == FALSE);
+     if (_cancelHandler)
+        _cancelHandler();
+    if (_dismissHandler)
+        _dismissHandler();
+}
+- (void)viewDidDisappear:(BOOL)animated {
+    if (_cancelHandler || _dismissHandler)
+        [self performSelector:@selector(afterDismiss) withObject:nil afterDelay:0.0];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    if (self.modalPresentationStyle != UIModalPresentationPopover) {
+        [UIView animateWithDuration:0.200 animations:^{
+            if (!self->_blurBackground && self->_dimBackground != 0.0)
+                self.view.backgroundColor = UIColor.clearColor;
+            self->_hud.transform = CGAffineTransformMakeScale(0.001, 0.001);
+        }];
+    }
+}
+- (void)viewWillLayoutSubviews {
+    UIEdgeInsets safe = self.view.safeAreaInsets;
+    [_hud sizeToFit];
+    _hud.center = CGPointMake(safe.left + (self.view.bounds.size.width - safe.left - safe.right)/2 ,
+                              safe.top + (self.view.bounds.size.height - safe.top - safe.bottom)/2);
+}
+
+#pragma mark - handleButtonPress
+
+// move current selection and perfom action, used with input from a game controller, keyboard, or remote.
+- (void)handleButtonPress:(UIPressType)type {
+    
+    // MENU => CANCEL
+    if (type == UIPressTypeMenu)
+        return [self.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+    
+    return [_hud handleButtonPress:type];
+}
+
+#pragma mark - UIPopoverPresentationControllerDelegate
+
+#if TARGET_OS_IOS
+
+// Returning UIModalPresentationNone will indicate that an adaptation should not happen.
+- (UIModalPresentationStyle)adaptivePresentationStyleForPresentationController:(UIPresentationController *)controller traitCollection:(UITraitCollection *)traitCollection {
+    return UIModalPresentationNone;
+}
+// -popoverPresentationController:willRepositionPopoverToRect:inView: is called on your delegate when the
+// popover may require a different view or rectangle.
+- (void)popoverPresentationController:(UIPopoverPresentationController *)popoverPresentationController willRepositionPopoverToRect:(inout CGRect*)rect inView:(inout UIView**)view {
+    popoverPresentationController.permittedArrowDirections = 0;
+    *view = self.presentingViewController.view;
+    *rect = CGRectMake(self.presentingViewController.view.bounds.size.width/2, self.presentingViewController.view.bounds.size.height/2, 0, 0);
+}
+#endif
 
 @end
+
+#pragma mark - InfoHUD AlertController
+
+@implementation HUDAlertController {
+    NSMutableArray* _actions;
+}
+
++ (instancetype)alertControllerWithTitle:(nullable NSString *)title message:(nullable NSString *)message preferredStyle:(UIAlertControllerStyle)preferredStyle {
+    NSParameterAssert(preferredStyle == UIAlertControllerStyleActionSheet);
+    NSParameterAssert(message == nil);
+    HUDAlertController* alert = [[HUDAlertController alloc] init];
+    alert.title = title;
+    return alert;
+}
+
+- (void)addAction:(UIAlertAction *)action {
+    _actions = _actions ?: [[NSMutableArray alloc] init];
+
+    id item = action.title;
+    if ([action respondsToSelector:@selector(image)] && [action valueForKey:@"image"] != nil)
+         item = [UIImage imageWithText:nil image:[action valueForKey:@"image"] text:action.title font:nil];
+    
+    void (^handler)(UIAlertAction *) = nil;
+    if ([action respondsToSelector:@selector(handler)])
+        handler = [action valueForKey:@"handler"];
+
+    [_actions addObject:action];
+    [self addButton:item style:(HUDButtonStyle)action.style handler:^{
+        if (handler != nil)
+            handler(action);
+    }];
+}
+
+- (NSArray<UIAlertAction *> *)actions {
+    return [_actions copy];
+}
+
+@end
+

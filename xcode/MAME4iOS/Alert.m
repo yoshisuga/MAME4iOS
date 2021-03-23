@@ -171,6 +171,21 @@
     self.preferredAction = self.actions[index];
     [self.preferredAction setHighlighted:YES];
 }
+-(void)handleButtonPress:(UIPressType)type
+{
+    switch (type) {
+        case UIPressTypeUpArrow:
+            return [self moveDefaultAction:-1];
+        case UIPressTypeDownArrow:
+            return [self moveDefaultAction:+1];
+        case UIPressTypeSelect:
+            return [self dismissWithDefault];
+        case UIPressTypeMenu:
+            return [self dismissWithCancel];
+        default:
+            break;
+    }
+}
 @end
 
 @implementation UIAlertAction(Helper)

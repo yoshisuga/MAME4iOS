@@ -32,20 +32,14 @@ enum  { MYOSD_UP=0x1,       MYOSD_LEFT=0x4,       MYOSD_DOWN=0x10,   MYOSD_RIGHT
         MYOSD_EXIT=1<<20,   MYOSD_OPTION=1<<21,   MYOSD_HOME=1<<22,  MYOSD_MENU=1<<23,
 };
     
-#define MAX_GAME_NAME 14
-#define NETPLAY_PORT 55435
 #define NUM_JOY 4
+#define NUM_KEYS 256
 
+extern const char * myosd_version;
 extern int  myosd_fps;
 extern int  myosd_showinfo;
-extern int  myosd_exitGame;
 extern int  myosd_pause;
 extern int  myosd_exitPause;
-extern int  myosd_autosave;
-extern int  myosd_cheat;
-extern int  myosd_sound_value;
-extern int  myosd_savestate;
-extern int  myosd_loadstate;
 extern int  myosd_waysStick;
 extern int  myosd_video_width;
 extern int  myosd_video_height;
@@ -53,14 +47,7 @@ extern int  myosd_vis_video_width;
 extern int  myosd_vis_video_height;
 extern int  myosd_display_width;        // display width,height is the screen output resolution
 extern int  myosd_display_height;       // ...set in the iOS app, to pick a good default render target size.
-extern int  myosd_in_menu;
 extern int  myosd_force_pxaspect;
-extern int  myosd_num_of_joys;
-extern int  myosd_pxasp1;
-extern int  myosd_service;
-extern int  myosd_configure;
-extern int  myosd_mame_pause;           // NOTE myosd_pause is the state of the MAME thread, this is a request for MAME to PAUSE
-extern int  myosd_reset;
 
 //
 // inGame   in_menu
@@ -74,8 +61,8 @@ extern int  myosd_reset;
 extern int  myosd_inGame;
 extern int  myosd_in_menu;
 
-extern unsigned long myosd_pad_status;
 extern unsigned long myosd_joy_status[NUM_JOY];
+extern unsigned char myosd_keyboard[NUM_KEYS];
 
 extern float joy_analog_x[NUM_JOY][4];
 extern float joy_analog_y[NUM_JOY][2];
@@ -91,8 +78,6 @@ extern unsigned long mouse_status[NUM_JOY];
 extern int myosd_mouse;
 extern int myosd_light_gun;
 
-extern unsigned short myosd_ext_status;
-    
 extern int myosd_last_game_selected;
 
 extern int myosd_filter_clones;
@@ -104,17 +89,9 @@ extern int myosd_num_players;
 extern int myosd_num_coins;
 extern int myosd_num_inputs;
 
-extern int myosd_autofire;
 extern int myosd_hiscore;
+extern int myosd_speed;
     
-extern int myosd_vector_bean2x;
-extern int myosd_vector_antialias;
-extern int myosd_vector_flicker;
-    
-extern int  myosd_speed;
-    
-extern char myosd_selected_game[MAX_GAME_NAME];
-
 extern void myosd_init(void);
 extern void myosd_deinit(void);
 extern unsigned long myosd_joystick_read(int n);
@@ -257,6 +234,130 @@ enum
 #define ORIENTATION_ROT180  (ORIENTATION_FLIP_X | ORIENTATION_FLIP_Y)    /* rotate 180 degrees */
 #define ORIENTATION_ROT270  (ORIENTATION_SWAP_XY | ORIENTATION_FLIP_Y)   /* rotate counter-clockwise 90 degrees */
 
+#endif
+
+// define MYOSD KEY CODES to match ITEM_ID_* codes from input.h
+enum myosd_keycode
+{
+    MYOSD_KEY_INVALID,
+    MYOSD_KEY_A,
+    MYOSD_KEY_B,
+    MYOSD_KEY_C,
+    MYOSD_KEY_D,
+    MYOSD_KEY_E,
+    MYOSD_KEY_F,
+    MYOSD_KEY_G,
+    MYOSD_KEY_H,
+    MYOSD_KEY_I,
+    MYOSD_KEY_J,
+    MYOSD_KEY_K,
+    MYOSD_KEY_L,
+    MYOSD_KEY_M,
+    MYOSD_KEY_N,
+    MYOSD_KEY_O,
+    MYOSD_KEY_P,
+    MYOSD_KEY_Q,
+    MYOSD_KEY_R,
+    MYOSD_KEY_S,
+    MYOSD_KEY_T,
+    MYOSD_KEY_U,
+    MYOSD_KEY_V,
+    MYOSD_KEY_W,
+    MYOSD_KEY_X,
+    MYOSD_KEY_Y,
+    MYOSD_KEY_Z,
+    MYOSD_KEY_0,
+    MYOSD_KEY_1,
+    MYOSD_KEY_2,
+    MYOSD_KEY_3,
+    MYOSD_KEY_4,
+    MYOSD_KEY_5,
+    MYOSD_KEY_6,
+    MYOSD_KEY_7,
+    MYOSD_KEY_8,
+    MYOSD_KEY_9,
+    MYOSD_KEY_F1,
+    MYOSD_KEY_F2,
+    MYOSD_KEY_F3,
+    MYOSD_KEY_F4,
+    MYOSD_KEY_F5,
+    MYOSD_KEY_F6,
+    MYOSD_KEY_F7,
+    MYOSD_KEY_F8,
+    MYOSD_KEY_F9,
+    MYOSD_KEY_F10,
+    MYOSD_KEY_F11,
+    MYOSD_KEY_F12,
+    MYOSD_KEY_F13,
+    MYOSD_KEY_F14,
+    MYOSD_KEY_F15,
+    MYOSD_KEY_ESC,
+    MYOSD_KEY_TILDE,
+    MYOSD_KEY_MINUS,
+    MYOSD_KEY_EQUALS,
+    MYOSD_KEY_BACKSPACE,
+    MYOSD_KEY_TAB,
+    MYOSD_KEY_OPENBRACE,
+    MYOSD_KEY_CLOSEBRACE,
+    MYOSD_KEY_ENTER,
+    MYOSD_KEY_COLON,
+    MYOSD_KEY_QUOTE,
+    MYOSD_KEY_BACKSLASH,
+    MYOSD_KEY_BACKSLASH2,
+    MYOSD_KEY_COMMA,
+    MYOSD_KEY_STOP,
+    MYOSD_KEY_SLASH,
+    MYOSD_KEY_SPACE,
+    MYOSD_KEY_INSERT,
+    MYOSD_KEY_DEL,
+    MYOSD_KEY_HOME,
+    MYOSD_KEY_END,
+    MYOSD_KEY_PGUP,
+    MYOSD_KEY_PGDN,
+    MYOSD_KEY_LEFT,
+    MYOSD_KEY_RIGHT,
+    MYOSD_KEY_UP,
+    MYOSD_KEY_DOWN,
+    MYOSD_KEY_0_PAD,
+    MYOSD_KEY_1_PAD,
+    MYOSD_KEY_2_PAD,
+    MYOSD_KEY_3_PAD,
+    MYOSD_KEY_4_PAD,
+    MYOSD_KEY_5_PAD,
+    MYOSD_KEY_6_PAD,
+    MYOSD_KEY_7_PAD,
+    MYOSD_KEY_8_PAD,
+    MYOSD_KEY_9_PAD,
+    MYOSD_KEY_SLASH_PAD,
+    MYOSD_KEY_ASTERISK,
+    MYOSD_KEY_MINUS_PAD,
+    MYOSD_KEY_PLUS_PAD,
+    MYOSD_KEY_DEL_PAD,
+    MYOSD_KEY_ENTER_PAD,
+    MYOSD_KEY_PRTSCR,
+    MYOSD_KEY_PAUSE,
+    MYOSD_KEY_LSHIFT,
+    MYOSD_KEY_RSHIFT,
+    MYOSD_KEY_LCONTROL,
+    MYOSD_KEY_RCONTROL,
+    MYOSD_KEY_LALT,
+    MYOSD_KEY_RALT,
+    MYOSD_KEY_SCRLOCK,
+    MYOSD_KEY_NUMLOCK,
+    MYOSD_KEY_CAPSLOCK,
+    MYOSD_KEY_LCMD,
+    MYOSD_KEY_RCMD,
+    MYOSD_KEY_MENU,
+    MYOSD_KEY_CANCEL
+};
+#ifdef __INPUT_H__
+// make sure MYOSD_KEY enum matches ITEM_ID enum
+_Static_assert(MYOSD_KEY_A == ITEM_ID_A);
+_Static_assert(MYOSD_KEY_0 == ITEM_ID_0);
+_Static_assert(MYOSD_KEY_F1 == ITEM_ID_F1);
+_Static_assert(MYOSD_KEY_ESC == ITEM_ID_ESC);
+_Static_assert(MYOSD_KEY_LCMD == ITEM_ID_LWIN);
+_Static_assert(MYOSD_KEY_CANCEL == ITEM_ID_CANCEL);
 #endif
 
 #if defined(__cplusplus)
