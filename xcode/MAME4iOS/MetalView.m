@@ -45,7 +45,8 @@ __attribute__((objc_direct_members))
     NSUInteger _maximumFramesPerSecond;
     UIWindow* _window;
     BOOL _externalDisplay;      // we are on an external display
-    BOOL _wideColor;            // display supports wide-color
+    BOOL _wideColor;            // display supports wide-color (P3)
+    BOOL _hdr;                  // display supports HDR (HDR10 or Dolby Vision)
     BOOL _textureCacheFlush;
     BOOL _resetDevice;
 
@@ -147,11 +148,41 @@ __attribute__((objc_direct_members))
     [super didMoveToWindow];
     _window = self.window;
     if (_window != nil) {
+#ifdef DEBUG
+        if (_window.screen != nil) {
+            NSLog(@"SCREEN: %@", _window.screen);
+            NSLog(@"MODE: %@", _window.screen.currentMode);
+
+            #pragma clang diagnostic push
+            #pragma clang diagnostic ignored "-Wundeclared-selector"
+            if ([_window.screen respondsToSelector:@selector(displayConfiguration)])
+                NSLog(@"CONFIG: %@", [_window.screen valueForKey:@"displayConfiguration"]);
+            #pragma clang diagnostic pop
+
+            @try {
+                NSLog(@"CURRENT MODE: %@", [_window.screen valueForKeyPath:@"displayConfiguration.currentMode"]);
+                NSLog(@" refreshRate: %@", [_window.screen valueForKeyPath:@"displayConfiguration.currentMode.refreshRate"]);
+                NSLog(@"  colorGamut: %@", [_window.screen valueForKeyPath:@"displayConfiguration.currentMode.colorGamut"]);
+                NSLog(@"     hdrMode: %@", [_window.screen valueForKeyPath:@"displayConfiguration.currentMode.hdrMode"]);
+            }
+            @catch (id exception) {
+            }
+        }
+#endif
         _layer.contentsScale = _window.screen.scale;
         _maximumFramesPerSecond = _window.screen.maximumFramesPerSecond;
         _externalDisplay = (_window.screen != UIScreen.mainScreen);
+        
         // TODO: wideColor on macCatalyst!
         _wideColor = _window.screen.traitCollection.displayGamut == UIDisplayGamutP3 && !(TARGET_OS_SIMULATOR || TARGET_OS_MACCATALYST);
+        
+        @try {
+            _hdr = [[_window.screen valueForKeyPath:@"displayConfiguration.currentMode.hdrMode"] intValue] != 0;
+        }
+        @catch (id exception) {
+            _hdr = FALSE;
+        }
+        
         if (_wideColor) {
             _colorSpace = _colorSpaceExtendedSRGB;
 #if TARGET_OS_MACCATALYST
@@ -346,6 +377,7 @@ __attribute__((objc_direct_members))
         @"frame-count": @(_frameCount),
         @"render-target-size": @(size),
         @"render-target-depth": @(_wideColor ? 10 : 8),
+        @"render-target-hdr": @(_hdr),
     }];
     
     return TRUE;
