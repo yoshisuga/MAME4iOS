@@ -1653,8 +1653,13 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 }
 
 // load the shader variables from disk
--(NSString*)getShaderPath {
-    return [NSString stringWithUTF8String:get_documents_path("iOS/ShaderOptions.json")];
++(NSString*)shaderFile {
+    return @"iOS/ShaderOptions.json";
+}
+
+// load the shader variables from disk
+-(NSString*)shaderPath {
+    return @(get_documents_path(self.class.shaderFile.UTF8String));
 }
 
 // save the current shader variables to disk
@@ -1688,11 +1693,11 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     
     // write the shader data to disk
     if ([shader_dict count] == 0) {
-        [NSFileManager.defaultManager removeItemAtPath:[self getShaderPath] error:nil];
+        [NSFileManager.defaultManager removeItemAtPath:self.shaderPath error:nil];
     }
     else {
         NSData* data = [NSJSONSerialization dataWithJSONObject:shader_dict options:NSJSONWritingPrettyPrinted error:nil];
-        [data writeToFile:[self getShaderPath] atomically:NO];
+        [data writeToFile:self.shaderPath atomically:NO];
         NSLog(@"SAVE SHADER: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
     }
 }
@@ -1701,7 +1706,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 -(void)loadShader {
     if (![screenView isKindOfClass:[MetalScreenView class]])
         return;
-    NSData* data = [NSData dataWithContentsOfFile:[self getShaderPath]];
+    NSData* data = [NSData dataWithContentsOfFile:self.shaderPath];
     NSDictionary* dict = data ? [NSJSONSerialization JSONObjectWithData:data options:0 error:nil] : @{};
     for (NSString* key in dict.allKeys) {
         id val = dict[key];
@@ -1712,7 +1717,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
 // reset *all* shader variables to default
 -(void)resetShader {
-    [NSFileManager.defaultManager removeItemAtPath:[self getShaderPath] error:nil];
+    [NSFileManager.defaultManager removeItemAtPath:self.shaderPath error:nil];
     if ([screenView isKindOfClass:[MetalScreenView class]])
         [(MetalScreenView*)screenView setShaderVariables:nil];
 }
@@ -4154,10 +4159,12 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 
     NSMutableArray* files = [[NSMutableArray alloc] init];
 
-    // add in options data file.
-    if ([NSFileManager.defaultManager fileExistsAtPath:[rootPath stringByAppendingPathComponent:Options.optionsFile]])
-        [files addObject:Options.optionsFile];
-
+    // add in options file(s).
+    for (NSString* file in @[Options.optionsFile, self.shaderFile]) {
+        if ([NSFileManager.defaultManager fileExistsAtPath:[rootPath stringByAppendingPathComponent:file]])
+            [files addObject:file];
+    }
+    
     NSArray* roms = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:romsPath error:nil];
     for (NSString* rom in roms) {
         if (![rom.pathExtension.uppercaseString isEqualToString:@"ZIP"])
