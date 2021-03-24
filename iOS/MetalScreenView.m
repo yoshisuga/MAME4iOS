@@ -159,7 +159,7 @@ TIMER_INIT_END
              @"Test (dot): mame_screen_dot, mame-screen-matrix",
              @"Test (scanline): mame_screen_line, mame-screen-matrix",
              @"Test (rainbow): mame_screen_rainbow, mame-screen-matrix, frame-count, rainbow_h = 16.0 4.0 32.0 1.0, rainbow_speed = 1.0 1.0 16.0",
-             @"Test (color): texture, blend=copy, color-test-pattern=1 0 1 1, test-brightness-factor=1.0 0.0 10.0 0.1",
+             @"Test (color): texture, blend=copy, color-test-pattern=1 0 1 1, test-brightness-factor=1.0 1.0 2.0 0.1",
 #endif
     ];
 }
@@ -722,8 +722,8 @@ simd_float4 ColorMatch(CGColorSpaceRef destColorSpace, CGColorSpaceRef sourceCol
     [self setShader:ShaderCopy];
     for (int i=0; i<n; i++) {
         simd_float4 color0 = colors[i];
-        simd_float4 color1 = ColorMatch(extendedSRGB, displayP3, color0) * brightness;
-        [self drawRect:CGRectMake(x,y,w,h) color:color0];
+        simd_float4 color1 = ColorMatch(extendedSRGB, displayP3, color0);
+        [self drawRect:CGRectMake(x,y,w,h) color:color0 * brightness];
         [self drawRect:CGRectMake(x+w/3,y+h/3,w/3,h/3) color:color1];
         x += w + space_x;
     }
@@ -774,13 +774,13 @@ simd_float4 ColorMatch(CGColorSpaceRef destColorSpace, CGColorSpaceRef sourceCol
     [self setShader:ShaderCopy];
     for (int i=0; i<sizeof(colors)/sizeof(colors[0]); i++) {
         simd_float4 color0 = colors[i];
-        simd_float4 color1 = ColorMatch(extendedSRGB, displayP3, color0) * brightness;
-        [self drawGradientRect:CGRectMake(x,y,w,h)   color:VertexColor(0, 0, 0, 1) color:color0 orientation:UIImageOrientationRight];
+        simd_float4 color1 = ColorMatch(extendedSRGB, displayP3, color0);
+        [self drawGradientRect:CGRectMake(x,y,w,h)   color:VertexColor(0, 0, 0, 1) color:color0 * brightness orientation:UIImageOrientationRight];
         [self drawGradientRect:CGRectMake(x+w,y,w,h) color:VertexColor(0, 0, 0, 1) color:color1 orientation:UIImageOrientationLeft];
         y += h;
     }
     
-    // draw RGB gradients in SRGB and P3.
+    // draw RGB gradients.
     h = width/16;
     w = width;
     x = 0;
@@ -788,8 +788,8 @@ simd_float4 ColorMatch(CGColorSpaceRef destColorSpace, CGColorSpaceRef sourceCol
     [self setShader:ShaderCopy];
     for (int i=0; i<sizeof(colors)/sizeof(colors[0]); i++) {
         simd_float4 color0 = colors[i];
-        simd_float4 color1 = ColorMatch(extendedSRGB, displayP3, color0) * brightness;
-        [self drawGradientRect:CGRectMake(x,y,w,h)   color:VertexColor(0, 0, 0, 1) color:color0 orientation:UIImageOrientationRight];
+        simd_float4 color1 = color0;
+        [self drawGradientRect:CGRectMake(x,y,w,h)   color:VertexColor(0, 0, 0, 1) color:color0 * brightness orientation:UIImageOrientationRight];
         [self drawGradientRect:CGRectMake(x,y+h/4,w,h/2) color:VertexColor(0, 0, 0, 1) color:color1 orientation:UIImageOrientationRight];
         y += h;
     }

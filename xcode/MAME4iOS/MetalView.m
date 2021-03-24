@@ -1008,7 +1008,6 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
 /// add to the dictionary used to resolve named shader variables
 - (void)setShaderVariables:(NSDictionary *)variables {
-    NSParameterAssert(_shader_variables != nil);
     if (variables == nil) {
         _resetDevice = TRUE;
     }

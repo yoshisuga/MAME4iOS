@@ -266,6 +266,7 @@
     UILabel* label = [[UILabel alloc] initWithFrame:CGRectZero];
     [label setTag:(NSInteger)(__bridge void*)key];
     label.text = [[op valueForKey:key] boolValue] ? @"On" : @"Off";
+    label.textColor = UIColor.lightGrayColor;
     [label sizeToFit];
     return label;
 }
