@@ -159,7 +159,7 @@ TIMER_INIT_END
              @"Test (dot): mame_screen_dot, mame-screen-matrix",
              @"Test (scanline): mame_screen_line, mame-screen-matrix",
              @"Test (rainbow): mame_screen_rainbow, mame-screen-matrix, frame-count, rainbow_h = 16.0 4.0 32.0 1.0, rainbow_speed = 1.0 1.0 16.0",
-             @"Test (color): texture, blend=copy, color-test-pattern=1 0 1 1, test-brightness-factor=1.0 0.0 5.0 0.1",
+             @"Test (color): texture, blend=copy, color-test-pattern=1 0 1 1, test-brightness-factor=1.0 0.0 10.0 0.1",
 #endif
     ];
 }
@@ -694,8 +694,21 @@ simd_float4 ColorMatch(CGColorSpaceRef destColorSpace, CGColorSpaceRef sourceCol
                   color_p3.r, color_p3.g, color_p3.b,
                   color_srgb.r, color_srgb.g, color_srgb.b);
         }
+        
+        if (@available(iOS 13.4, tvOS 13.4, *)) {
+            NSLog(@"");
+            CGColorSpaceRef rec2020 = CGColorSpaceCreateWithName(kCGColorSpaceITUR_2020_PQ);
+            for (int i=0; i<n; i++) {
+                simd_float4 color = colors[i];
+                simd_float4 color_srgb = ColorMatch(extendedSRGB, rec2020, color);
+                NSLog(@"rec2020_PQ(%f,%f,%f) ==> extendedSRGB(%f,%f,%f)",
+                      color.r, color.g, color.b,
+                      color_srgb.r, color_srgb.g, color_srgb.b);
+            }
+            CGColorSpaceRelease(rec2020);
+        }
     }
-    
+
     CGFloat space_x = width / 32;
     CGFloat space_y = width / 32;
     CGFloat y = 0;
