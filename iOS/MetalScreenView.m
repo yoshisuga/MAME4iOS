@@ -651,9 +651,11 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
             NSString* fps = [NSString stringWithFormat:@"%02d:%02d:%02d %.2ffps", (int)min, (int)sec, (int)frame, self.frameRateAverage];
             
             CGFloat screen_scale = self.drawableSize.width / self.boundsSize.width;
-            CGFloat x = 8.0 * (1.0 / scale_x) * screen_scale;
-            CGFloat y = 8.0 * (1.0 / scale_y) * screen_scale;
-            CGFloat h = 16.0 * (1.0 / scale_y) * screen_scale;
+            CGFloat f = (1.0 / scale_x) * screen_scale;
+            CGFloat x = 8.0 * f;
+            CGFloat y = 8.0 * f;
+            CGFloat h = 16.0 * f;
+            [self drawText:fps at:CGPointMake(x + f,y + f) height:h color:VertexColor(0,0,0,1)];
             [self drawText:fps at:CGPointMake(x,y) height:h color:VertexColor(1,1,1,1)];
         }
         TIMER_STOP(draw_fps);

@@ -131,7 +131,7 @@ __attribute__((objc_direct_members))
             _colorSpace2020_PQ = CGColorSpaceCreateWithName(kCGColorSpaceITUR_2100_PQ);
             _colorSpace2020_HLG = CGColorSpaceCreateWithName(kCGColorSpaceITUR_2100_HLG);
         }
-        else if (@available(iOS 12.6, tvOS 12.6, *)) {
+        else if (@available(iOS 13.4, tvOS 13.4, *)) {
             _colorSpace2020_PQ = CGColorSpaceCreateWithName(kCGColorSpaceITUR_2020_PQ);
             _colorSpace2020_HLG = CGColorSpaceCreateWithName(kCGColorSpaceITUR_2020_HLG);
         }
