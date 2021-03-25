@@ -173,8 +173,7 @@ __attribute__((objc_direct_members))
         _maximumFramesPerSecond = _window.screen.maximumFramesPerSecond;
         _externalDisplay = (_window.screen != UIScreen.mainScreen);
         
-        // TODO: wideColor on macCatalyst!
-        _wideColor = _window.screen.traitCollection.displayGamut == UIDisplayGamutP3 && !(TARGET_OS_SIMULATOR || TARGET_OS_MACCATALYST);
+        _wideColor = _window.screen.traitCollection.displayGamut == UIDisplayGamutP3;
         
         @try {
             _hdr = [[_window.screen valueForKeyPath:@"displayConfiguration.currentMode.hdrMode"] intValue] != 0;
@@ -184,10 +183,16 @@ __attribute__((objc_direct_members))
         }
         
         if (_wideColor) {
+#if TARGET_OS_TV
             _colorSpace = _colorSpaceExtendedSRGB;
-#if TARGET_OS_MACCATALYST
-            _pixelFormat = MTLPixelFormatRGBA16Float;
-#else
+            //_pixelFormat = _hdr ? MTLPixelFormatRGBA16Float : MTLPixelFormatBGR10_XR;
+            _pixelFormat = MTLPixelFormatBGR10_XR;
+#elif TARGET_OS_MACCATALYST
+            // TODO: wideColor on macCatalyst!
+            _colorSpace = _colorSpaceSRGB;
+            _pixelFormat = MTLPixelFormatBGRA8Unorm;
+#else // TARGET_OS_IOS
+            _colorSpace = _colorSpaceExtendedSRGB;
             _pixelFormat = MTLPixelFormatBGR10_XR;
 #endif
         }
@@ -228,10 +233,19 @@ __attribute__((objc_direct_members))
     _resetDevice = FALSE;
     
     _layer.device = _device;
-    _layer.pixelFormat = _pixelFormat;
-    //_layer.colorspace = _colorSpace;
     _layer.framebufferOnly = TRUE;
     _layer.maximumDrawableCount = 3;    // TODO: !
+
+    @try {
+        _layer.pixelFormat = _pixelFormat;
+        //_layer.colorspace = _colorSpace;
+    }
+    @catch (id exception) {
+        _colorSpace = _colorSpaceSRGB;
+        _pixelFormat = MTLPixelFormatBGRA8Unorm;
+        _layer.pixelFormat = _pixelFormat;
+        //_layer.colorspace = _colorSpace;
+    }
 
     _library = [_device newDefaultLibrary];
     _queue = [_device newCommandQueue];
@@ -375,10 +389,11 @@ __attribute__((objc_direct_members))
     [self updateSamplerState];
 
     // set default (frame based) shader variables
+    int depth = _pixelFormat == MTLPixelFormatRGBA16Float ? 16 : (_pixelFormat == MTLPixelFormatBGRA8Unorm ? 8 : 10);
     [self setShaderVariables:@{
         @"frame-count": @(_frameCount),
         @"render-target-size": @(size),
-        @"render-target-depth": @(_wideColor ? 10 : 8),
+        @"render-target-depth": @(depth),
         @"render-target-hdr": @(_hdr),
     }];
     
