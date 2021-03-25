@@ -41,6 +41,10 @@ __attribute__((objc_direct_members))
     CGColorSpaceRef _colorSpaceDevice;
     CGColorSpaceRef _colorSpaceSRGB;
     CGColorSpaceRef _colorSpaceExtendedSRGB;
+    CGColorSpaceRef _colorSpace2020;
+    CGColorSpaceRef _colorSpaceExtended2020;
+    CGColorSpaceRef _colorSpace2020_PQ;
+    CGColorSpaceRef _colorSpace2020_HLG;
 
     NSUInteger _maximumFramesPerSecond;
     UIWindow* _window;
@@ -120,6 +124,18 @@ __attribute__((objc_direct_members))
         _colorSpaceSRGB = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
         _colorSpaceExtendedSRGB = CGColorSpaceCreateWithName(kCGColorSpaceExtendedSRGB);
 
+        _colorSpace2020 = CGColorSpaceCreateWithName(kCGColorSpaceITUR_2020);
+
+        if (@available(iOS 14.0, tvOS 14.0, *)) {
+            _colorSpaceExtended2020 = CGColorSpaceCreateWithName(kCGColorSpaceExtendedITUR_2020);
+            _colorSpace2020_PQ = CGColorSpaceCreateWithName(kCGColorSpaceITUR_2100_PQ);
+            _colorSpace2020_HLG = CGColorSpaceCreateWithName(kCGColorSpaceITUR_2100_HLG);
+        }
+        else if (@available(iOS 12.6, tvOS 12.6, *)) {
+            _colorSpace2020_PQ = CGColorSpaceCreateWithName(kCGColorSpaceITUR_2020_PQ);
+            _colorSpace2020_HLG = CGColorSpaceCreateWithName(kCGColorSpaceITUR_2020_HLG);
+        }
+
         _pixelFormat = MTLPixelFormatBGRA8Unorm;
         _colorSpace = _colorSpaceDevice;
 
@@ -137,6 +153,10 @@ __attribute__((objc_direct_members))
     CGColorSpaceRelease(_colorSpaceDevice);
     CGColorSpaceRelease(_colorSpaceSRGB);
     CGColorSpaceRelease(_colorSpaceExtendedSRGB);
+    CGColorSpaceRelease(_colorSpaceExtended2020);
+    CGColorSpaceRelease(_colorSpace2020);
+    CGColorSpaceRelease(_colorSpace2020_PQ);
+    CGColorSpaceRelease(_colorSpace2020_HLG);
 }
 
 - (void)layoutSubviews {
@@ -184,9 +204,19 @@ __attribute__((objc_direct_members))
         
         if (_wideColor) {
 #if TARGET_OS_TV
-            _colorSpace = _colorSpaceExtendedSRGB;
-            //_pixelFormat = _hdr ? MTLPixelFormatRGBA16Float : MTLPixelFormatBGR10_XR;
-            _pixelFormat = MTLPixelFormatBGR10_XR;
+            if (_hdr) {
+                _colorSpace = _colorSpaceExtendedSRGB;
+                _pixelFormat = MTLPixelFormatBGR10_XR;
+
+                if (@available(iOS 14.0, tvOS 14.0, *)) {
+                    //_colorSpace = _colorSpaceExtended2020;
+                    //_pixelFormat = MTLPixelFormatRGBA16Float;
+                }
+            }
+            else {
+                _colorSpace = _colorSpaceExtendedSRGB;
+                _pixelFormat = MTLPixelFormatBGR10_XR;
+            }
 #elif TARGET_OS_MACCATALYST
             // TODO: wideColor on macCatalyst!
             _colorSpace = _colorSpaceSRGB;
@@ -238,13 +268,13 @@ __attribute__((objc_direct_members))
 
     @try {
         _layer.pixelFormat = _pixelFormat;
-        //_layer.colorspace = _colorSpace;
+        _layer.colorspace = _colorSpace;
     }
     @catch (id exception) {
         _colorSpace = _colorSpaceSRGB;
         _pixelFormat = MTLPixelFormatBGRA8Unorm;
         _layer.pixelFormat = _pixelFormat;
-        //_layer.colorspace = _colorSpace;
+        _layer.colorspace = _colorSpace;
     }
 
     _library = [_device newDefaultLibrary];

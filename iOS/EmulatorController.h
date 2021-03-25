@@ -86,7 +86,6 @@ enum {BTN_A,BTN_B,BTN_Y,BTN_X,BTN_L1,BTN_R1,
   UIImageView	    * imageOverlay;
   UIImageView       * imageExternalDisplay;
   UIImageView       * imageLogo;
-  UILabel           * fpsView;
   InfoHUD           * hudView;
 #if TARGET_OS_IOS
   AnalogStickView   * analogStickView;

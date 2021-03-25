@@ -43,6 +43,7 @@
  */
 #import <Metal/Metal.h>
 #import "MetalScreenView.h"
+#import "MetalViewText.h"
 #import "myosd.h"
 
 #define DebugLog 0
@@ -63,6 +64,7 @@ TIMER_INIT(texture_load_rgb32)
 TIMER_INIT(texture_load_rgb15)
 TIMER_INIT(line_prim)
 TIMER_INIT(quad_prim)
+TIMER_INIT(draw_fps)
 TIMER_INIT_END
 
 #pragma mark - MetalScreenView
@@ -159,7 +161,7 @@ TIMER_INIT_END
              @"Test (dot): mame_screen_dot, mame-screen-matrix",
              @"Test (scanline): mame_screen_line, mame-screen-matrix",
              @"Test (rainbow): mame_screen_rainbow, mame-screen-matrix, frame-count, rainbow_h = 16.0 4.0 32.0 1.0, rainbow_speed = 1.0 1.0 16.0",
-             @"Test (color): texture, blend=copy, color-test-pattern=1 0 1 1, test-brightness-factor=1.0 1.0 2.0",
+             @"Test (color): texture, blend=copy, color-test-pattern=1 0 1 1, test-brightness-factor=1.0 1.0 4.0",
 #endif
     ];
 }
@@ -636,17 +638,32 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
     }
 #endif
     
+    // draw the frame rate if enabled
+    
+    if (myosd_fps != 0) {
+        TIMER_START(draw_fps);
+        NSUInteger frame_count = self.frameCount;
+        if (frame_count != 0) {
+            // get the timecode assuming 60fps
+            NSUInteger frame = frame_count % 60;
+            NSUInteger sec = (frame_count / 60) % 60;
+            NSUInteger min = (frame_count / 3600) % 60;
+            NSString* fps = [NSString stringWithFormat:@"%02d:%02d:%02d %.2ffps", (int)min, (int)sec, (int)frame, self.frameRateAverage];
+            
+            CGFloat screen_scale = self.drawableSize.width / self.boundsSize.width;
+            CGFloat x = 8.0 * (1.0 / scale_x) * screen_scale;
+            CGFloat y = 8.0 * (1.0 / scale_y) * screen_scale;
+            CGFloat h = 16.0 * (1.0 / scale_y) * screen_scale;
+            [self drawText:fps at:CGPointMake(x,y) height:h color:VertexColor(1,1,1,1)];
+        }
+        TIMER_STOP(draw_fps);
+    }
+    
     [self drawEnd];
     TIMER_STOP(draw_screen);
     
     // set the number of SCREENs we rendered, so the app can detect RASTER vs VECTOR game.
     _numScreens = num_screens;
-
-    // DUMP TIMERS....
-    if (TIMER_COUNT(draw_screen) % 100 == 0) {
-        TIMER_DUMP();
-        TIMER_RESET();
-    }
 }
 
 #pragma mark - TEST PATTERN
@@ -667,6 +684,20 @@ simd_float4 ColorMatch(CGColorSpaceRef destColorSpace, CGColorSpaceRef sourceCol
     CGFloat rgba[] = {color.r,color.g,color.b,color.a};
     CGColorRef sourceSolor = CGColorCreate(sourceColorSpace, rgba);
     return ColorMatchCGColor(destColorSpace, sourceSolor);
+}
+
+-(void)drawGradientRect:(CGRect)rect color:(simd_float4)color0 color:(simd_float4)color1 steps:(int)steps {
+    CGFloat w = rect.size.width / steps;
+    CGFloat h = rect.size.height;
+    CGFloat x = rect.origin.x;
+    CGFloat y = rect.origin.y;
+    
+    for (int i=0; i<steps; i++) {
+        float f = (float)i / (float)(steps-1);
+        simd_float4 color = color0 + f * (color1 - color0);
+        [self drawRect:CGRectMake(x, y, w, h) color:color];
+        x += w;
+    }
 }
 
 -(void)drawTestPattern:(CGRect)rect {
@@ -707,6 +738,19 @@ simd_float4 ColorMatch(CGColorSpaceRef destColorSpace, CGColorSpaceRef sourceCol
             }
             CGColorSpaceRelease(rec2020);
         }
+        
+        if (@available(iOS 13.4, tvOS 13.4, *)) {
+            NSLog(@"");
+            CGColorSpaceRef hlg = CGColorSpaceCreateWithName(kCGColorSpaceITUR_2020_HLG);
+            for (int i=0; i<n; i++) {
+                simd_float4 color = colors[i];
+                simd_float4 color_srgb = ColorMatch(extendedSRGB, hlg, color);
+                NSLog(@"rec2020_HLG(%f,%f,%f) ==> extendedSRGB(%f,%f,%f)",
+                      color.r, color.g, color.b,
+                      color_srgb.r, color_srgb.g, color_srgb.b);
+            }
+            CGColorSpaceRelease(hlg);
+        }
     }
 
     CGFloat space_x = width / 32;
@@ -721,8 +765,8 @@ simd_float4 ColorMatch(CGColorSpaceRef destColorSpace, CGColorSpaceRef sourceCol
     y += space_y;
     [self setShader:ShaderCopy];
     for (int i=0; i<n; i++) {
-        simd_float4 color0 = colors[i];
-        simd_float4 color1 = ColorMatch(extendedSRGB, displayP3, color0);
+        simd_float4 color0 = ColorMatch(self.colorSpace, extendedSRGB, colors[i]);
+        simd_float4 color1 = ColorMatch(self.colorSpace, displayP3, colors[i]);
         [self drawRect:CGRectMake(x,y,w,h) color:color0 * brightness];
         [self drawRect:CGRectMake(x+w/3,y+h/3,w/3,h/3) color:color1];
         x += w + space_x;
@@ -761,7 +805,7 @@ simd_float4 ColorMatch(CGColorSpaceRef destColorSpace, CGColorSpaceRef sourceCol
             texture.label = @"TestP3";
         }];
 
-        [self drawRect:CGRectMake(x,y,w,h) color:ColorMatch(extendedSRGB, displayP3, simd_make_float4(1, 1, 1, 1))];
+        [self drawRect:CGRectMake(x,y,w,h) color:simd_make_float4(1, 1, 1, 1)];
         x += w + space_x;
     }
     y += h;
@@ -773,9 +817,9 @@ simd_float4 ColorMatch(CGColorSpaceRef destColorSpace, CGColorSpaceRef sourceCol
     y += space_y;
     [self setShader:ShaderCopy];
     for (int i=0; i<sizeof(colors)/sizeof(colors[0]); i++) {
-        simd_float4 color0 = colors[i];
-        simd_float4 color1 = ColorMatch(extendedSRGB, displayP3, color0);
-        [self drawGradientRect:CGRectMake(x,y,w,h)   color:VertexColor(0, 0, 0, 1) color:color0 * brightness orientation:UIImageOrientationRight];
+        simd_float4 color0 = ColorMatch(self.colorSpace, extendedSRGB, colors[i]) * brightness;
+        simd_float4 color1 = ColorMatch(self.colorSpace, displayP3, colors[i]);
+        [self drawGradientRect:CGRectMake(x,y,w,h)   color:VertexColor(0, 0, 0, 1) color:color0 orientation:UIImageOrientationRight];
         [self drawGradientRect:CGRectMake(x+w,y,w,h) color:VertexColor(0, 0, 0, 1) color:color1 orientation:UIImageOrientationLeft];
         y += h;
     }
@@ -787,13 +831,24 @@ simd_float4 ColorMatch(CGColorSpaceRef destColorSpace, CGColorSpaceRef sourceCol
     y += space_y;
     [self setShader:ShaderCopy];
     for (int i=0; i<sizeof(colors)/sizeof(colors[0]); i++) {
-        simd_float4 color0 = colors[i];
-        simd_float4 color1 = color0 * brightness;
-        [self drawGradientRect:CGRectMake(x,y,w,h) color:color0 color:color0 orientation:UIImageOrientationRight];
-        [self drawGradientRect:CGRectMake(x,y+h/2,w,h/2) color:color0 color:color1 orientation:UIImageOrientationRight];
+        simd_float4 color0 = ColorMatch(self.colorSpace, extendedSRGB, colors[i]) * brightness;
+        simd_float4 color1 = ColorMatch(self.colorSpace, displayP3, colors[i]);
+        [self drawGradientRect:CGRectMake(x,y,w,h)       color:color0 * 0.5 color:color0 steps:16];
+        [self drawGradientRect:CGRectMake(x,y+h/2,w,h/2) color:color1 * 0.5 color:color1 steps:16];
         y += h;
     }
 
+    // draw some text
+    h = width/32;
+    w = width;
+    x = 0;
+    y += space_y;
+    for (int i=0; i<sizeof(colors)/sizeof(colors[0]); i++) {
+        simd_float4 color = ColorMatch(self.colorSpace, extendedSRGB, colors[i]) * brightness;
+        NSString* text = @"ABCabc123";
+        [self drawText:text at:CGPointMake(x, y) height:h color:color];
+        x += [self sizeText:text height:h].width;
+    }
 }
 #endif
 
@@ -962,6 +1017,10 @@ simd_float4 ColorMatch(CGColorSpaceRef destColorSpace, CGColorSpaceRef sourceCol
     
     static char* texture_format_name[] = {"UNDEFINED", "PAL16", "PALA16", "555", "RGB", "ARGB", "YUV16"};
     static char* blend_mode_name[] = {"NONE", "ALPHA", "MUL", "ADD"};
+    
+    // DUMP TIMERS....
+    TIMER_DUMP();
+    TIMER_RESET();
     
     NSLog(@"Draw Screen: %dx%d", myosd_video_width, myosd_video_height);
     

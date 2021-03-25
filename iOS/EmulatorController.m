@@ -77,6 +77,7 @@
 #import "SkinManager.h"
 #import "CloudSync.h"
 #import "InfoHUD.h"
+#import "AVPlayerView.h"
 
 #import "Timer.h"
 TIMER_INIT_BEGIN
@@ -123,13 +124,6 @@ TIMER_INIT_END
 #if DebugLog == 0 || DEBUG == 0
 #define NSLog(...) (void)0
 #endif
-
-#ifdef DEBUG
-#define UPDATE_FPS_EVERY    1
-#else
-#define UPDATE_FPS_EVERY    60
-#endif
-#define OPAQUE_FPS          FALSE
 
 static int myosd_exitGame = 0;      // set this to cause MAME to exit.
 
@@ -301,7 +295,7 @@ void iphone_DrawScreen(myosd_render_primitive* prim_list) {
         
         #pragma clang diagnostic push
         #pragma clang diagnostic ignored "-Wundeclared-selector"
-        if (g_pref_showFPS && (screenView.frameCount % UPDATE_FPS_EVERY) == 0)
+        if (g_pref_showFPS && g_pref_showHUD == HudSizeInfo)
             [sharedInstance performSelectorOnMainThread:@selector(updateFrameRate) withObject:nil waitUntilDone:NO];
         #pragma clang diagnostic pop
     }
@@ -460,6 +454,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     CGPoint touchDirectionalMoveInitialLocation;
     CGSize  layoutSize;
     SkinManager* skinManager;
+    AVPlayerView* avPlayer;
 }
 @end
 
@@ -1505,9 +1500,24 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
 
     screenView.alpha = alpha;
     imageOverlay.alpha = alpha;
-    fpsView.alpha = alpha;
     imageLogo.alpha = (1.0 - alpha);
     hudView.alpha *= alpha;
+}
+
+// if we are on a device that does wideColor then "play" a HDR video to enable HDR output.
+-(void)enableHDR {
+
+    if (TARGET_OS_MACCATALYST || self.view.window.screen.traitCollection.displayGamut != UIDisplayGamutP3)
+        return;
+
+    if (avPlayer == nil) {
+        NSURL* url = [NSBundle.mainBundle URLForResource:@"whiteHDR" withExtension:@"mp4"];
+        avPlayer = [[AVPlayerView alloc] initWithURL:url];
+        [self.view addSubview:avPlayer];
+    }
+    avPlayer.frame = CGRectMake(0, 0, 16, 9);
+    avPlayer.center = self.view.center;
+    [self.view sendSubviewToBack:avPlayer];
 }
 
 -(void)buildLogoView {
@@ -1536,89 +1546,20 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
     [screenView.superview insertSubview:imageLogo aboveSubview:screenView];
 }
 
--(void)buildFrameRateView {
-    
-    BOOL showFPS = g_pref_showFPS && (g_pref_showHUD != HudSizeInfo);
-
-    myosd_fps = showFPS;
-
-    if (!showFPS)
-        return;
-    
-    // create a frame rate/info view and put it in the upper left corner of the screenView
-    
-    fpsView = [[UILabel alloc] init];
-    fpsView.userInteractionEnabled = NO;
-    fpsView.numberOfLines = 2;
-    fpsView.font = [UIFont monospacedDigitSystemFontOfSize:(TARGET_OS_IOS ? 16.0 : 32.0) weight:UIFontWeightMedium];
-    fpsView.textColor = UIColor.whiteColor; // self.view.tintColor;
-#if OPAQUE_FPS
-    fpsView.backgroundColor = UIColor.blackColor;
-#else
-    fpsView.backgroundColor = [UIColor.blackColor colorWithAlphaComponent:0.333];
-#endif
-    fpsView.shadowColor = UIColor.blackColor;
-    fpsView.shadowOffset = CGSizeMake(1.0,1.0);
-#if UPDATE_FPS_EVERY == 1
-    fpsView.text = @"000:00:00\n0000.00fps";
-#else
-    fpsView.text = @"000.00fps";
-#endif
-    
-    CGPoint pos = screenView.frame.origin;
-
-    // if we have room above, go single line.
-    if (pos.y - fpsView.font.pointSize > screenView.superview.safeAreaInsets.top) {
-        fpsView.numberOfLines = 1;
-        fpsView.text =[fpsView.text stringByReplacingOccurrencesOfString:@"\n" withString:@" "];
-    }
-    
-    // put label in upper-left of screenView, or just above if room...
-    CGSize size = [fpsView sizeThatFits:CGSizeZero];
-    
-    if (pos.y - (size.height+4) >= screenView.superview.safeAreaInsets.top)
-        pos.y -= size.height+4;
-    else if (pos.x - (size.width+4) >= screenView.superview.safeAreaInsets.left)
-        pos.x -= size.width+4;
-    else {
-        pos.x += 4; pos.y += 4;
-    }
-    
-    fpsView.frame = (CGRect){pos, size};
-    [screenView.superview addSubview:fpsView];
-}
-
-int gcd(int a, int b) {
-    int c;
-    while (a != 0) {
-       c = a; a = b%a; b = c;
-    }
-    return b;
-}
-
 -(void)updateFrameRate {
     NSParameterAssert([NSThread isMainThread]);
 
     NSUInteger frame_count = screenView.frameCount;
 
-    if (frame_count == 0)
+    if (frame_count == 0 || g_pref_showHUD != HudSizeInfo)
         return;
 
-#if UPDATE_FPS_EVERY == 1
     // get the timecode assuming 60fps
     NSUInteger frame = frame_count % 60;
     NSUInteger sec = (frame_count / 60) % 60;
     NSUInteger min = (frame_count / 3600) % 60;
     NSString* fps = [NSString stringWithFormat:@"%02d:%02d:%02d %.2ffps", (int)min, (int)sec, (int)frame, screenView.frameRateAverage];
-#else
-    NSString* fps = [NSString stringWithFormat:@"%.2ffps", screenView.frameRateAverage];
-#endif
     
-    fpsView.text = fps;
-    
-    if (hudView == nil)
-        return;
-
 #ifdef DEBUG
     CGSize size = screenView.bounds.size;
     CGFloat scale = screenView.window.screen.scale;
@@ -1626,9 +1567,6 @@ int gcd(int a, int b) {
 
     NSString* str = [NSString stringWithFormat:@" • %dx%d@%dx %@", (int)size.width, (int)size.height, (int)scale, wide];
     fps = [fps stringByAppendingString:str];
-//    int n = gcd((int)(size.width * scale), (int)(size.height * scale));
-//    str = [NSString stringWithFormat:@" [%d:%d]", (int)(size.width * scale) / n,  (int)(size.height * scale) / n];
-//    fps = [fps stringByAppendingString:str];
 #endif
 
     [hudView setValue:fps forKey:@"FPS"];
@@ -1753,6 +1691,8 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
 
 -(void)buildHUD {
+    
+    myosd_fps = g_pref_showFPS && (g_pref_showHUD != HudSizeInfo);
 
     if (g_pref_showHUD == HudSizeZero) {
         [self saveHUD];
@@ -1874,16 +1814,13 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     }
     
     if (g_pref_showHUD == HudSizeInfo) {
-        // add FPS display
-        if (g_pref_showFPS) {
-            NSString* fps = UPDATE_FPS_EVERY == 1 ? @"00.00.00 000.00fps" : @"000.00fps";
-            [hudView addValue:fps forKey:@"FPS"];
-        }
-
         // add game info
-        if (g_mame_game_info != nil && g_mame_game_info[kGameInfoName] != nil) {
+        if (g_mame_game_info != nil && g_mame_game_info[kGameInfoName] != nil)
             [hudView addValue:[ChooseGameController getGameText:g_mame_game_info]];
-        }
+        
+        // add FPS display
+        if (g_pref_showFPS)
+            [hudView addValue:@"00.00.00 000.00fps" forKey:@"FPS"];
     }
     
     if (g_pref_showHUD == HudSizeLarge) {
@@ -2035,7 +1972,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     }
     
     // reset the frame count when you first turn on/off
-    if (g_pref_showFPS != (fpsView != nil))
+    if (g_pref_showHUD != HudSizeInfo && g_pref_showFPS != myosd_fps)
         screenView.frameCount = 0;
     if ((g_pref_showHUD != 0) != (hudView != nil))
         screenView.frameCount = 0;
@@ -2049,9 +1986,6 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     [imageLogo removeFromSuperview];
     imageLogo = nil;
     
-    [fpsView removeFromSuperview];
-    fpsView = nil;
-
     [imageExternalDisplay removeFromSuperview];
     imageExternalDisplay = nil;
     
@@ -2063,10 +1997,10 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
     [self buildScreenView];
     [self buildLogoView];
-    [self buildFrameRateView];
     [self buildHUD];
+    [self enableHDR];
     [self updateScreenView];
-
+    
     if ( g_joy_used ) {
         [hideShowControlsForLightgun setImage:[UIImage imageNamed:@"menu"] forState:UIControlStateNormal];
     } else {
