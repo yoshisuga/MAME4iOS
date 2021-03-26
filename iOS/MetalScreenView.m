@@ -123,7 +123,8 @@ TIMER_INIT_END
                             Curvature Strength = 0.25 0.0 1.0 0.05,\
                             Light Boost = 1.3 0.1 3.0 0.1, \
                             Vignette Strength = 0.05 0.0 1.0 0.05,\
-                            Zoom Factor = 1.0 0.01 5.0 0.1",
+                            Zoom Factor = 1.0 0.01 5.0 0.1,\
+                            Brightness Factor = 1.0 0.666 1.333 0.1",
              @"megaTron : megaTron, mame-screen-src-rect, mame-screen-dst-rect,\
                             Shadow Mask Type = 3.0 0.0 3.0 1.0,\
                             Shadow Mask Intensity = 0.5 0.0 1.0 0.05,\
@@ -651,11 +652,11 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
             NSString* fps = [NSString stringWithFormat:@"%02d:%02d:%02d %.2ffps", (int)min, (int)sec, (int)frame, self.frameRateAverage];
             
             CGFloat screen_scale = self.drawableSize.width / self.boundsSize.width;
-            CGFloat f = (1.0 / scale_x) * screen_scale;
+            CGFloat f = (1.0 / scale_y) * screen_scale;
             CGFloat x = 8.0 * f;
             CGFloat y = 8.0 * f;
             CGFloat h = 16.0 * f;
-            [self drawText:fps at:CGPointMake(x + f,y + f) height:h color:VertexColor(0,0,0,1)];
+            [self drawText:fps at:CGPointMake(x + f*2,y + f*2) height:h color:VertexColor(0,0,0,0.5)];
             [self drawText:fps at:CGPointMake(x,y) height:h color:VertexColor(1,1,1,1)];
         }
         TIMER_STOP(draw_fps);
