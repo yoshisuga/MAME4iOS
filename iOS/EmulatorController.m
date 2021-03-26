@@ -1505,13 +1505,16 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
 }
 
 // if we are on a device that does wideColor then "play" a HDR video to enable HDR output.
+// idea from https://kidi.ng/wanna-see-a-whiter-white/
 -(void)enableHDR {
 
+    // no HDR on macOS, at least not yet
     if (TARGET_OS_MACCATALYST || self.view.window.screen.traitCollection.displayGamut != UIDisplayGamutP3)
         return;
 
     if (avPlayer == nil) {
         NSURL* url = [NSBundle.mainBundle URLForResource:@"whiteHDR" withExtension:@"mp4"];
+        NSAssert(url != nil, @"missing whiteHDR resource");
         avPlayer = [[AVPlayerView alloc] initWithURL:url];
         [self.view addSubview:avPlayer];
     }

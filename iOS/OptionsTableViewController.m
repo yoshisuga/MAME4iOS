@@ -177,9 +177,7 @@
     [[UISwitch appearance] setOnTintColor:self.view.tintColor];
     // only show the Done button on the root
     if (self.emuController != nil && self.navigationController.viewControllers.firstObject == self) {
-        UIBarButtonItem *done = [[UIBarButtonItem alloc] initWithTitle:@"Done"
-                                                                       style:UIBarButtonItemStyleDone
-                                                                      target:self.emuController action:@selector(done:)];
+        UIBarButtonItem* done = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self.emuController action:@selector(done:)];
         self.navigationItem.rightBarButtonItem = done;
     }
 #else
@@ -188,6 +186,13 @@
 #endif
     [self.tableView reloadData];
 }
+// weird bug on macOS - if we dont un-set our navigationItem DONE button ==> BOOM!
+#if TARGET_OS_MACCATALYST
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    self.navigationItem.rightBarButtonItem = nil;
+}
+#endif
 
 #pragma mark Table view delegate
 

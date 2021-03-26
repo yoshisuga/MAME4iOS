@@ -13,7 +13,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface AVPlayerView : UIView
 
 - (instancetype)initWithURL:(NSURL*)url;
-- (void)play;
+
+@property (nonatomic, readonly) AVPlayer* player;
 
 @end
 

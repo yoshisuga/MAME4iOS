@@ -10,7 +10,6 @@
 #import "AVPlayerView.h"
 
 @implementation AVPlayerView {
-    AVPlayer* _player;
     AVPlayerLayer* _layer;
 }
 
@@ -38,16 +37,8 @@
     return self;
 }
 
-- (void)didMoveToWindow {
-    
-}
-
 - (void)layoutSubviews {
     _layer.frame = self.bounds;
-}
-
-- (void)play {
-    [_player play];
 }
 
 @end
