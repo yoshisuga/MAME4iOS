@@ -36,7 +36,7 @@
 #endif
 
 #define CELL_IDENTIFIER   @"GameInfoCell"
-#if TARGET_OS_IOS
+#if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST)
 #define CELL_TINY_WIDTH    100.0
 #define CELL_SMALL_WIDTH   200.0
 #define CELL_LARGE_WIDTH   400.0
@@ -74,7 +74,7 @@
 #define CELL_TEXT_ALIGN         NSTextAlignmentCenter
 #endif
 
-#if TARGET_OS_IOS
+#if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST)
 #define CELL_TITLE_FONT         [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
 #define CELL_TITLE_COLOR        [UIColor whiteColor]
 #define CELL_DETAIL_FONT        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote]
@@ -91,7 +91,7 @@
 #define INFO_INSET_X            8.0
 #define INFO_INSET_Y            8.0
 
-#if TARGET_OS_IOS
+#if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST)
 #define INFO_TITLE_FONT_SIZE    [UIFont preferredFontForTextStyle:UIFontTextStyleLargeTitle].pointSize
 #else
 #define INFO_TITLE_FONT_SIZE    [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].pointSize * 2.0
@@ -790,14 +790,16 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 -(void)updateLayout
 {
     UICollectionViewFlowLayout* layout = (UICollectionViewFlowLayout*)self.collectionView.collectionViewLayout;
-    CGFloat space = TARGET_OS_IOS ? 8.0 : 32.0;
+    CGFloat space = (TARGET_OS_IOS && !TARGET_OS_MACCATALYST) ? 8.0 : 32.0;
     layout.scrollDirection = UICollectionViewScrollDirectionVertical;
     layout.sectionInset = UIEdgeInsetsMake(space, space, space, space);
     layout.minimumLineSpacing = space;
     layout.minimumInteritemSpacing = space;
     layout.sectionHeadersPinToVisibleBounds = YES;
     
-#if TARGET_OS_IOS
+#if TARGET_OS_MACCATALYST
+    CGFloat height = [UIFont preferredFontForTextStyle:UIFontTextStyleLargeTitle].pointSize * 1.5;
+#elif TARGET_OS_IOS
     CGFloat height = [UIFont preferredFontForTextStyle:UIFontTextStyleLargeTitle].pointSize;
 #else
     CGFloat height = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].pointSize * 1.5;
@@ -2412,7 +2414,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     _layoutWidth = self.view.bounds.size.width;
     
     UICollectionViewFlowLayout* layout = (UICollectionViewFlowLayout*)self.collectionView.collectionViewLayout;
-    CGFloat space = TARGET_OS_IOS ? 8.0 : 32.0;
+    CGFloat space = (TARGET_OS_IOS && !TARGET_OS_MACCATALYST) ? 8.0 : 32.0;
     layout.sectionInset = UIEdgeInsetsMake(space, space, space, space);
     layout.minimumLineSpacing = space;
     layout.minimumInteritemSpacing = space;

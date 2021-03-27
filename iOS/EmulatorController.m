@@ -117,6 +117,7 @@ TIMER_INIT_END
 @interface NSObject()
 -(void)hide;
 -(void)unhide;
+-(void)toggleFullScreen:(id)sender;
 @end
 #endif
 
@@ -672,7 +673,7 @@ HUDViewController* g_menu;
 
     HUDViewController* menu = [[HUDViewController alloc] init];
 
-#if TARGET_OS_IOS
+#if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST)
     menu.font = nil;
     menu.blurBackground = YES;
 #else
@@ -1706,7 +1707,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     
     if (hudView == nil) {
         hudView = [[InfoHUD alloc] init];
-#ifdef TARGET_OS_IOS
+#if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST)
         hudView.font = [UIFont monospacedDigitSystemFontOfSize:hudView.font.pointSize weight:UIFontWeightRegular];
         hudView.layoutMargins = UIEdgeInsetsMake(8, 8, 8, 8);
 #else
@@ -2695,11 +2696,11 @@ void myosd_poll_input(void) {
 
 #pragma mark - SCREEN VIEW SETUP
 
+#if TARGET_OS_MACCATALYST
 -(BOOL)isFullscreenWindow {
     if (self.view.window == nil)
         return TRUE;
     
-#if TARGET_OS_MACCATALYST
     CGSize windowSize = self.view.window.bounds.size;
     CGSize screenSize = self.view.window.screen.bounds.size;
     
@@ -2720,10 +2721,8 @@ void myosd_poll_input(void) {
     NSLog(@"windowSize: %@", NSStringFromSize(windowSize));
 
     return (windowSize.width >= screenSize.width && windowSize.height >= screenSize.height);
-#else
-    return TRUE;
-#endif
 }
+#endif
 
 - (void)buildScreenView {
     
@@ -3040,12 +3039,7 @@ void myosd_poll_input(void) {
         case '\r':
             {
                 Options* op = [[Options alloc] init];
-
-                if (g_device_is_landscape)
-                    op.fullscreenLandscape = g_pref_full_screen_land = !g_device_is_fullscreen;
-                else
-                    op.fullscreenPortrait = g_pref_full_screen_port = !g_device_is_fullscreen;
-
+                
                 // if user is manualy controling fullscreen, then turn off fullscreen joy.
                 op.fullscreenJoystick = g_pref_full_screen_joy = FALSE;
                 
@@ -3055,12 +3049,21 @@ void myosd_poll_input(void) {
                 // the game SCREEN fills our window, and a macApp's window can be fullscreen
                 op.fullscreenLandscape = g_pref_full_screen_land = !g_device_is_fullscreen;
                 op.fullscreenPortrait = g_pref_full_screen_port = !g_device_is_fullscreen;
+                
+                if (g_device_is_fullscreen)
+                    [[[[NSClassFromString(@"NSApplication") sharedApplication] windows] firstObject] performSelector:@selector(toggleFullScreen:) withObject:nil];
+#else
+                if (g_device_is_landscape)
+                    op.fullscreenLandscape = g_pref_full_screen_land = !g_device_is_fullscreen;
+                else
+                    op.fullscreenPortrait = g_pref_full_screen_port = !g_device_is_fullscreen;
 #endif
                 [op saveOptions];
                 [self changeUI];
                 break;
             }
             break;
+
         case '1':
         case '2':
             [self startPlayer:(key - '1')];
