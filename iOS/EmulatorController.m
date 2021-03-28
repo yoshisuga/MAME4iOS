@@ -1015,11 +1015,12 @@ HUDViewController* g_menu;
     
     g_pref_keep_aspect_ratio = [op keepAspectRatio];
     
-    g_pref_filter = [Options.arrayFilter optionData:op.filter];
-    g_pref_screen_shader = [Options.arrayScreenShader optionData:op.screenShader];
-    g_pref_line_shader = [Options.arrayLineShader optionData:op.lineShader];
+    g_pref_filter = [Options.arrayFilter optionName:op.filter];
+    g_pref_screen_shader = [Options.arrayScreenShader optionName:op.screenShader];
+    g_pref_line_shader = [Options.arrayLineShader optionName:op.lineShader];
+    [self loadShader];
 
-    g_pref_skin = [Options.arraySkin optionData:op.skin];
+    g_pref_skin = [Options.arraySkin optionName:op.skin];
     [skinManager setCurrentSkin:g_pref_skin];
 
     g_pref_integer_scale_only = op.integerScalingOnly;
@@ -1596,7 +1597,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
 // load the shader variables from disk
 +(NSString*)shaderFile {
-    return @"iOS/ShaderOptions.json";
+    return @"iOS/ShaderSettings.json";
 }
 
 // load the shader variables from disk
@@ -1610,12 +1611,17 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         return;
 
     NSDictionary* shader_variables = [(MetalScreenView*)screenView getShaderVariables];
-    NSMutableDictionary* shader_dict = [[NSMutableDictionary alloc] init];
     
-    // walk over *all* screen and line shaders and save any non-default values...
-    for (NSString* shader in [Options.arrayScreenShader arrayByAddingObjectsFromArray:Options.arrayLineShader]) {
+    NSData* data = [NSData dataWithContentsOfFile:self.shaderPath];
+    NSDictionary* shader_dict_current = data ? [NSJSONSerialization JSONObjectWithData:data options:0 error:nil] : @{};
+    NSMutableDictionary* shader_dict = [shader_dict_current mutableCopy];
+
+    // walk over the current screen *and* line shader and save variables.
+    for (NSString* shader_name in @[g_pref_screen_shader, g_pref_line_shader]) {
+        NSArray* shader_list = (shader_name == g_pref_screen_shader) ? Options.arrayScreenShader : Options.arrayLineShader;
+        NSString* shader =  [shader_list optionData:shader_name];
+        
         NSMutableArray* arr = [split(shader, @",") mutableCopy];
-        NSString* shaderName = split(arr[0], @":").firstObject;
         NSMutableDictionary* dict = [[NSMutableDictionary alloc] init];
         
         for (int i=0; i<arr.count; i++) {
@@ -1624,24 +1630,16 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
             NSString* key = split(arr[i], @"=").firstObject;
             float default_value = [split(arr[i], @"=").lastObject floatValue];
             float current_value = [(shader_variables[key] ?: @(default_value)) floatValue];
-            
-            if (fabs(current_value - default_value) > 0.00001)
-                dict[key] = @(current_value);
+            dict[key] = @(current_value);
         }
         
-        if ([dict count] != 0)
-            shader_dict[shaderName] = dict;
+        shader_dict[shader_name] = ([dict count] != 0) ? dict : nil;
     }
     
     // write the shader data to disk
-    if ([shader_dict count] == 0) {
-        [NSFileManager.defaultManager removeItemAtPath:self.shaderPath error:nil];
-    }
-    else {
-        NSData* data = [NSJSONSerialization dataWithJSONObject:shader_dict options:NSJSONWritingPrettyPrinted error:nil];
-        [data writeToFile:self.shaderPath atomically:NO];
-        NSLog(@"SAVE SHADER: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-    }
+    data = [NSJSONSerialization dataWithJSONObject:shader_dict options:NSJSONWritingPrettyPrinted error:nil];
+    [data writeToFile:self.shaderPath atomically:NO];
+    NSLog(@"SAVE SHADER: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
 }
 
 // load the shader variables from disk
@@ -1650,7 +1648,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         return;
     NSData* data = [NSData dataWithContentsOfFile:self.shaderPath];
     NSDictionary* dict = data ? [NSJSONSerialization JSONObjectWithData:data options:0 error:nil] : @{};
-    for (NSString* key in dict.allKeys) {
+    for (NSString* key in @[g_pref_screen_shader, g_pref_line_shader]) {
         id val = dict[key];
         if ([val isKindOfClass:[NSDictionary class]])
             [(MetalScreenView*)screenView setShaderVariables:val];
@@ -1726,7 +1724,8 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     EmulatorController* _self = self;
 
     BOOL is_vector_game = [screenView isKindOfClass:[MetalScreenView class]] ? [(MetalScreenView*)screenView numScreens] == 0 : FALSE;
-    NSString* shader = is_vector_game ? g_pref_line_shader : g_pref_screen_shader;
+    NSString* shader_name = is_vector_game ? g_pref_line_shader : g_pref_screen_shader;
+    NSString* shader = is_vector_game ? [Options.arrayLineShader optionData:shader_name] : [Options.arrayScreenShader optionData:shader_name];
     BOOL can_edit_shader = [[shader stringByReplacingOccurrencesOfString:@"blend=" withString:@""] componentsSeparatedByString:@"="].count > 1;
     
     if (g_pref_showHUD == HudSizeEditor && !can_edit_shader)
@@ -1874,14 +1873,14 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         NSDictionary* shader_variables = ([screenView isKindOfClass:[MetalScreenView class]]) ? [(MetalScreenView*)screenView getShaderVariables] : nil;
         NSArray* shader_arr = split(shader, @",");
         
-        [hudView addTitle:shader_arr.firstObject];
+        [hudView addTitle:shader_name];
 
         for (NSString* str in shader_arr) {
             NSArray* arr = split(str, @"=");
             if (arr.count < 2 || [arr[0] isEqualToString:@"blend"])
                 continue;
 
-            // TODO: allow Shader string to contain a "Friendly Name" for the parameter, so the key name can be unique
+            // TODO: allow Shader string to contain a "Friendly Name" for the parameter, so the key name can be unique/terse?
             NSString* name = arr[0];
             arr = split(arr[1], @" ");
             NSNumber* value = shader_variables[name] ?: @([arr[0] floatValue]);
@@ -1963,7 +1962,6 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         g_pref_showHUD = HudSizeLarge;
     
     [self changeUI];
-    [self loadShader];
 }
 
 - (void)changeUI { @autoreleasepool {
@@ -2872,16 +2870,18 @@ void myosd_poll_input(void) {
     
     NSDictionary* options = @{
         kScreenViewFilter: g_pref_filter,
-        kScreenViewScreenShader: g_pref_screen_shader,
-        kScreenViewLineShader: g_pref_line_shader,
+        kScreenViewScreenShader: [Options.arrayScreenShader optionData:g_pref_screen_shader],
+        kScreenViewLineShader: [Options.arrayLineShader optionData:g_pref_line_shader],
     };
     
     // the reason we dont re-create screenView each time is because we access screenView from background threads
     // (iPhone_DrawScreen) and we dont want to risk race condition on release.
     // and not creating/destroying the ScreenView on a simple size change or rotation, is good too.
-    if (screenView == nil)
+    if (screenView == nil) {
         screenView = [[MetalScreenView alloc] init];
-        
+        [self loadShader];
+    }
+
     screenView.frame = r;
     screenView.userInteractionEnabled = NO;
     [screenView setOptions:options];
@@ -3051,7 +3051,7 @@ void myosd_poll_input(void) {
                 op.fullscreenPortrait = g_pref_full_screen_port = !g_device_is_fullscreen;
                 
                 if (g_device_is_fullscreen)
-                    [[[[NSClassFromString(@"NSApplication") sharedApplication] windows] firstObject] performSelector:@selector(toggleFullScreen:) withObject:nil];
+                    [[[[NSClassFromString(@"NSApplication") sharedApplication] windows] firstObject] toggleFullScreen:nil];
 #else
                 if (g_device_is_landscape)
                     op.fullscreenLandscape = g_pref_full_screen_land = !g_device_is_fullscreen;

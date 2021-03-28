@@ -120,6 +120,8 @@ __attribute__((objc_direct_members))
         self.clearsContextBeforeDrawing = NO;
         _draw_lock = [[NSLock alloc] init];
         
+        _shader_variables = [[NSMutableDictionary alloc] init];
+        
         _colorSpaceDevice = CGColorSpaceCreateDeviceRGB();
         _colorSpaceSRGB = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
         _colorSpaceExtendedSRGB = CGColorSpaceCreateWithName(kCGColorSpaceExtendedSRGB);
@@ -285,11 +287,10 @@ __attribute__((objc_direct_members))
     [_vertex_buffer_cache_lock lock];
     _vertex_buffer_cache = [[NSMutableArray alloc] init];
     [_vertex_buffer_cache_lock unlock];
-    
+
     // shader cache
     _shader_state = [[NSMutableDictionary alloc] init];
     _shader_params = [[NSMutableDictionary alloc] init];
-    _shader_variables = [[NSMutableDictionary alloc] init];
     _shader_current = nil;
     
     // texture cache
@@ -1037,15 +1038,19 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 - (void)setShaderVariablesInternal:(NSDictionary *)variables {
     
 #ifdef DEBUG
-    NSParameterAssert(variables != nil);
-    for (NSString* key in variables.allKeys) {
-        NSParameterAssert([key isKindOfClass:[NSString class]]);
-        NSParameterAssert([variables[key] isKindOfClass:[NSValue class]]);
+    if (variables != nil) {
+        for (NSString* key in variables.allKeys) {
+            NSParameterAssert([key isKindOfClass:[NSString class]]);
+            NSParameterAssert([variables[key] isKindOfClass:[NSValue class]]);
+        }
     }
 #endif
     
-    [_shader_variables addEntriesFromDictionary:variables];
-    
+    if (variables == nil)
+        [_shader_variables removeAllObjects];
+    else
+        [_shader_variables addEntriesFromDictionary:variables];
+
     // if the currently set shader has params, re-set the render state
     if (_encoder != nil && _shader_params[_shader_current] != nil)
         [self setShader:nil];
@@ -1053,10 +1058,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
 /// add to the dictionary used to resolve named shader variables
 - (void)setShaderVariables:(NSDictionary *)variables {
-    if (variables == nil) {
-        _resetDevice = TRUE;
-    }
-    else if ([NSThread currentThread] == _draw_thread) {
+    if ([NSThread currentThread] == _draw_thread) {
         [self setShaderVariablesInternal:variables];
     }
     else {

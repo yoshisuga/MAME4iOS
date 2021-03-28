@@ -124,7 +124,7 @@ TIMER_INIT_END
                             Light Boost = 1.3 0.1 3.0 0.1, \
                             Vignette Strength = 0.05 0.0 1.0 0.05,\
                             Zoom Factor = 1.0 0.01 5.0 0.1,\
-                            Brightness Factor = 1.0 0.666 1.333 0.1",
+                            Brightness Factor = 1.0 0.0 2.0",
              @"megaTron : megaTron, mame-screen-src-rect, mame-screen-dst-rect,\
                             Shadow Mask Type = 3.0 0.0 3.0 1.0,\
                             Shadow Mask Intensity = 0.5 0.0 1.0 0.05,\
