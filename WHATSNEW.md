@@ -6,6 +6,8 @@
 * Option to turn ON/OFF haptic feedback.
 * New in-game menu using InfoHUD technology.
 * New Game Controller `MENU` modifiers. 
+    - `MENU+A` Show or hide `HUD` 
+    - `MENU+B` Pause `MAME`
 * Remove ColorSpace choices from the UI.
 * Remember changes made in Shader parameter editor.
 * `HUD` Info mode.
