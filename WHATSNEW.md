@@ -1,9 +1,19 @@
-# Version 2021.7
+# Version 2021.6
+* `Mouse` device support.
+* `MAME` full keyboard support.
+* Remove `Netplay`
+* `OSD` cleanup.
+* Option to turn ON/OFF haptic feedback.
 * New in-game menu using InfoHUD technology.
-* New Game Controller MENU modifiers. 
+* New Game Controller `MENU` modifiers. 
 * Remove ColorSpace choices from the UI.
 * Remember changes made in Shader parameter editor.
-* HUD can be used on tvOS, but only with SiriRemote.
+* `HUD` Info mode.
+* Native `Metal` FPS display.
+* Support extra brightness on `HDR` displays.
+* **tvOS** `HUD` can be used on tvOS, but only with SiriRemote.
+* **macOS** use larger fonts for `MENU` and ChooseGameUI (like tvOS).
+* **macOS** ⌘+ENTER will cycle through `FULLSCREEN` modes.
 
 ## Game controller MENU combos
 
@@ -23,13 +33,6 @@ MENU+UP        |Load State ①
 MENU+LEFT     |Save State ②                
 MENU+RIGHT  |Load State ②               
 
-
-# Version 2021.6
-* `Mouse` device support.
-* `MAME` full keyboard support.
-* Remove `Netplay`
-* `OSD` cleanup.
-* add an Option to turn ON/OFF haptic feedback.
 
 # Version 2021.5
 * Metal only, remove support for a software renderer.
