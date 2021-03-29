@@ -1520,7 +1520,7 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
         avPlayer = [[AVPlayerView alloc] initWithURL:url];
         [self.view addSubview:avPlayer];
     }
-    avPlayer.frame = CGRectMake(0, 0, 16, 9);
+    avPlayer.frame = CGRectMake(0, 0, 1, 1);
     avPlayer.center = self.view.center;
     [self.view sendSubviewToBack:avPlayer];
 }

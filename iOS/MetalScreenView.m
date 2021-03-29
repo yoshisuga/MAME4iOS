@@ -848,7 +848,7 @@ simd_float4 ColorMatch(CGColorSpaceRef destColorSpace, CGColorSpaceRef sourceCol
     y += space_y;
     for (int i=0; i<sizeof(colors)/sizeof(colors[0]); i++) {
         simd_float4 color = ColorMatch(self.colorSpace, extendedSRGB, colors[i]) * brightness;
-        NSString* text = @"ABCabc123";
+        NSString* text = @"ABCabc ";
         [self drawText:text at:CGPointMake(x, y) height:h color:color];
         x += [self sizeText:text height:h].width;
     }
