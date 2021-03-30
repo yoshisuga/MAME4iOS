@@ -410,23 +410,6 @@
     return seg;
 }
 
-#if TARGET_OS_TV
-// HACK *HACK* **HACK**
-// the Focus Engine can leave "focus turds" if the focus changes *too fast*
-// ....this can easily happen by swiping the SiriRemote
-// ....this is probably specific to our nested UIStackViews and UISegmentedControls
-// ....so we limit focus changes to 10Hz
-// HACK *HACK* **HACK**
-- (BOOL)shouldUpdateFocusInContext:(UIFocusUpdateContext *)context {
-    static NSTimeInterval g_last_focus_time;
-    NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
-    if (now - g_last_focus_time < 0.100)
-        return NO;
-    g_last_focus_time = now;
-    return YES;
-}
-#endif
-
 - (void)addToolbar:(NSArray*)items handler:(void (^)(NSUInteger button))handler {
 #if TARGET_OS_TV
     [self addButtons:items handler:handler];
@@ -755,6 +738,21 @@
 
 - (BOOL) canBecomeFocused {
     return NO;
+}
+
+// HACK *HACK* **HACK**
+// the Focus Engine can leave "focus turds" if the focus changes *too fast*
+// ....this can easily happen by swiping the SiriRemote
+// ....this is probably specific to our nested UIStackViews and UISegmentedControls
+// ....so we limit focus changes to 10Hz
+// HACK *HACK* **HACK**
+- (BOOL)shouldUpdateFocusInContext:(UIFocusUpdateContext *)context {
+    static NSTimeInterval g_last_focus_time;
+    NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
+    if (now - g_last_focus_time < 0.100)
+        return NO;
+    g_last_focus_time = now;
+    return YES;
 }
 
 #endif
