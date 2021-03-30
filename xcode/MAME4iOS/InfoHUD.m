@@ -240,7 +240,7 @@
         value = [self separatorViewWithHeight:1.0 color:UIColor.clearColor];
     }
     if ([value isKindOfClass:[NSString class]] && [value isEqualToString:@" "]) {
-        value = [self separatorViewWithHeight:3.0 color:UIColor.clearColor];
+        value = [self separatorViewWithHeight:(_font.pointSize / 2.0) color:UIColor.clearColor];
     }
     if ([value isKindOfClass:[UIImage class]]) {
         value = [[UIImageView alloc] initWithImage:value];
@@ -376,7 +376,7 @@
 
 - (UISegmentedControl*)makeSegmentedControl:(NSArray*)items color:(UIColor*)color handler:(void (^)(NSUInteger button))handler {
     UISegmentedControl* seg = [[UISegmentedControl alloc] initWithItems:[self convertItems:items]];
-    seg.momentary = YES;
+    seg.momentary = TARGET_OS_IOS ? YES : NO;
 #if TARGET_OS_TV
     // default color (nil) on tvOS is not same as iOS so use an explicit one
     color = color ?: [UIColor colorWithWhite:0.222 alpha:1.0];
@@ -409,6 +409,23 @@
     
     return seg;
 }
+
+#if TARGET_OS_TV
+// HACK *HACK* **HACK**
+// the Focus Engine can leave "focus turds" if the focus changes *too fast*
+// ....this can easily happen by swiping the SiriRemote
+// ....this is probably specific to our nested UIStackViews and UISegmentedControls
+// ....so we limit focus changes to 10Hz
+// HACK *HACK* **HACK**
+- (BOOL)shouldUpdateFocusInContext:(UIFocusUpdateContext *)context {
+    static NSTimeInterval g_last_focus_time;
+    NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
+    if (now - g_last_focus_time < 0.100)
+        return NO;
+    g_last_focus_time = now;
+    return YES;
+}
+#endif
 
 - (void)addToolbar:(NSArray*)items handler:(void (^)(NSUInteger button))handler {
 #if TARGET_OS_TV
@@ -675,15 +692,16 @@
     static CGFloat g_start_value;
 
     CGPoint delta = [pan translationInView:pan.view];
-    delta.x = delta.x / pan.view.bounds.size.width;
-    delta.y = delta.y / pan.view.bounds.size.height;
+    // map delta to [-1, +1]
+    delta.x = delta.x / pan.view.bounds.size.width * 2.0;
+    delta.y = delta.y / pan.view.bounds.size.height * 2.0;
     CGFloat mag = sqrtf(delta.x * delta.x + delta.y * delta.y);
     UIGestureRecognizerState state = pan.state;
 
     // check for a PAN in Y
     if (fabs(delta.y) > 2*fabs(delta.x)) {
         delta.x = 0.0;
-        if (mag > 0.15) {
+        if (mag > 0.666) {
             [self handleButtonPress:delta.y > 0 ? UIPressTypeDownArrow : UIPressTypeUpArrow];
             state = UIGestureRecognizerStateBegan;
             [pan setTranslation:CGPointZero inView:pan.view];
@@ -710,7 +728,14 @@
     }
     else if (state == UIGestureRecognizerStateChanged) {
         //NSLog(@"REMOTE PAN: (%0.3f, %0.3f) mag=%0.3f", delta.x, delta.y, mag);
-        CGFloat value = g_start_value + delta.x;
+        CGFloat value;
+        
+        // value = g_start_value + delta.x;
+        if (delta.x > 0)
+            value = g_start_value + delta.x * (1.0 - g_start_value);
+        else
+            value = g_start_value + delta.x * g_start_value;
+
         value = MAX(0.0, MIN(1.0, value));
         if ([item isKindOfClass:[UISlider class]]) {
             UISlider* slider = (UISlider*)item;

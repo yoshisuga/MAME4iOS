@@ -679,6 +679,7 @@ HUDViewController* g_menu;
 #else
     menu.font = [UIFont systemFontOfSize:42.0 weight:UIFontWeightRegular];
     menu.blurBackground = NO;
+    menu.dimBackground = 0.8;
 #endif
     
 #if TARGET_OS_IOS
@@ -1892,6 +1893,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         }
         
         __unsafe_unretained typeof(self) _self = self;
+        [hudView addText:@" "];
         [hudView addButton:@"Restore Defaults" color:UIColor.systemPurpleColor handler:^{
             NSLog(@"RESTORE DEFAULTS");
             for (NSString* str in shader_arr) {
@@ -5309,13 +5311,17 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
         // TODO: detect when this press is coming from a controller
         // NOTE we can get a press without a controller in the SIMULATOR or from an IR remote
 
-        // dont handle MENU here, we do it in handleMenuButton
+        // dont handle MENU here, we do it in handleMenuButton (except for no controllers)
         if (type == UIPressTypeMenu && g_controllers.count == 0)
             [self toggleMenu:nil];
         
-        // but handle UP/DOWN/LEFT/RIGHT.
-        if (g_pref_showHUD && type >= UIPressTypeUpArrow && type <= UIPressTypeSelect && self.presentedViewController == nil)
-            [hudView handleButtonPress:type];
+        // but handle UP/DOWN/LEFT/RIGHT, and PLAY/PAUSE for the HUD
+        if (g_pref_showHUD && self.presentedViewController == nil) {
+            if (type >= UIPressTypeUpArrow && type <= UIPressTypeSelect)
+                [hudView handleButtonPress:type];
+            if (type == UIPressTypePlayPause)
+                push_mame_key(MYOSD_KEY_P);
+        }
     }
     [super pressesBegan:presses withEvent:event];
 }

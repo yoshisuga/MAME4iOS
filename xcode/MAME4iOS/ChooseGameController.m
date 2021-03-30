@@ -2251,7 +2251,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         [self setBackgroundColor:selected ? CELL_SELECTED_COLOR : CELL_BACKGROUND_COLOR];
     [self setShadowColor:selected ? CELL_SELECTED_COLOR : CELL_SHADOW_COLOR];
     CGFloat scale = selected ? _scale : self.highlighted ? (2.0 - _scale) : 1.0;
-    self.transform = CGAffineTransformMakeScale(scale, scale);
+    _stackView.transform = CGAffineTransformMakeScale(scale, scale);
 #if TARGET_OS_TV
     if (selected)
         [self.superview bringSubviewToFront:self];
@@ -2276,12 +2276,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 - (void)didHintFocusMovement:(UIFocusMovementHint *)hint {
     NSLog(@"didHintFocusMovement(%@): dir=%@", [self.text.text stringByReplacingOccurrencesOfString:@"\n" withString:@" • "],
           NSStringFromCGVector(hint.movementDirection));
-//    BOOL selected = self.selected || self.focused;
-//    CGFloat scale = selected ? _scale : self.highlighted ? (2.0 - _scale) : 1.0;
-//    self.transform = CGAffineTransformConcat(
-//        CGAffineTransformMakeTranslation(hint.translation.dx, hint.translation.dy),
-//        CGAffineTransformMakeScale(scale, scale)
-//    );
+    [self updateSelected];
+    _stackView.transform = CGAffineTransformConcat(CGAffineTransformMakeTranslation(hint.translation.dx, hint.translation.dy), _stackView.transform);
 }
 - (void)didUpdateFocusInContext:(UIFocusUpdateContext *)context withAnimationCoordinator:(UIFocusAnimationCoordinator *)coordinator
 {
