@@ -128,16 +128,20 @@ __attribute__((objc_direct_members))
 
         _colorSpace2020 = CGColorSpaceCreateWithName(kCGColorSpaceITUR_2020);
 
+#ifdef __IPHONE_14_0
         if (@available(iOS 14.0, tvOS 14.0, *)) {
             _colorSpaceExtended2020 = CGColorSpaceCreateWithName(kCGColorSpaceExtendedITUR_2020);
             _colorSpace2020_PQ = CGColorSpaceCreateWithName(kCGColorSpaceITUR_2100_PQ);
             _colorSpace2020_HLG = CGColorSpaceCreateWithName(kCGColorSpaceITUR_2100_HLG);
         }
-        else if (@available(iOS 13.4, tvOS 13.4, *)) {
+        else
+#endif
+#ifdef __IPHONE_13_4
+        if (@available(iOS 13.4, tvOS 13.4, *)) {
             _colorSpace2020_PQ = CGColorSpaceCreateWithName(kCGColorSpaceITUR_2020_PQ);
             _colorSpace2020_HLG = CGColorSpaceCreateWithName(kCGColorSpaceITUR_2020_HLG);
         }
-
+#endif
         _pixelFormat = MTLPixelFormatBGRA8Unorm;
         _colorSpace = _colorSpaceDevice;
 
