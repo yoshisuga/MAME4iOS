@@ -2276,6 +2276,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 - (void)didHintFocusMovement:(UIFocusMovementHint *)hint {
     NSLog(@"didHintFocusMovement(%@): dir=%@", [self.text.text stringByReplacingOccurrencesOfString:@"\n" withString:@" • "],
           NSStringFromCGVector(hint.movementDirection));
+    if (_image.image == nil)
+        return;
     [self updateSelected];
     _stackView.transform = CGAffineTransformConcat(CGAffineTransformMakeTranslation(hint.translation.dx, hint.translation.dy), _stackView.transform);
 }
