@@ -3119,6 +3119,12 @@ void myosd_poll_input(void) {
         case 'P':
             push_mame_key(MYOSD_KEY_P);
             break;
+        case 'S':   // Speed 2x
+            if (myosd_speed != -1)
+                myosd_speed = -1;
+            else
+                myosd_speed = 200;
+            break;
         case 'M':
             g_direct_mouse_enable = !g_direct_mouse_enable;
             [self updatePointerLocked];
