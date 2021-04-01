@@ -679,7 +679,7 @@
 
 // called when the user does a pan on the Siri Remote
 - (void)handleRemotePan:(UIPanGestureRecognizer*)pan {
-    
+    static int g_direction; // 0 = Unknown, -1 = y, +1 = X
     static CGFloat g_start_value;
 
     CGPoint delta = [pan translationInView:pan.view];
@@ -687,16 +687,25 @@
     delta.x = delta.x / pan.view.bounds.size.width * 2.0;
     delta.y = delta.y / pan.view.bounds.size.height * 2.0;
     CGFloat mag = sqrtf(delta.x * delta.x + delta.y * delta.y);
-    UIGestureRecognizerState state = pan.state;
+
+    if (pan.state == UIGestureRecognizerStateBegan)
+        g_direction = 0;
+    
+    // lock direction to X or Y
+    if (g_direction == 0 && mag > 0.100) {
+        if (fabs(delta.y) > 2*fabs(delta.x))
+            g_direction = -1;
+        else
+            g_direction = +1;
+    }
 
     // check for a PAN in Y
-    if (fabs(delta.y) > 2*fabs(delta.x)) {
-        delta.x = 0.0;
-        if (mag > 0.666) {
+    if (g_direction == -1) {
+        if (fabs(delta.y) > 0.333) {
             [self handleButtonPress:delta.y > 0 ? UIPressTypeDownArrow : UIPressTypeUpArrow];
-            state = UIGestureRecognizerStateBegan;
             [pan setTranslation:CGPointZero inView:pan.view];
         }
+        return;
     }
     
     if (_selected < 0)
@@ -707,7 +716,7 @@
     if (item == nil)
         return;
 
-    if (state == UIGestureRecognizerStateBegan) {
+    if (pan.state == UIGestureRecognizerStateBegan) {
         //NSLog(@"REMOTE PAN START");
         if ([item isKindOfClass:[UISlider class]]) {
             UISlider* slider = (UISlider*)item;
@@ -716,7 +725,7 @@
         else
             g_start_value = (CGFloat)MAX(0,[self selectedSegmentIndex]) / MAX(1,[self numberOfSegments]);
     }
-    else if (state == UIGestureRecognizerStateChanged) {
+    else if (pan.state == UIGestureRecognizerStateChanged) {
         //NSLog(@"REMOTE PAN: (%0.3f, %0.3f) mag=%0.3f", delta.x, delta.y, mag);
         CGFloat value;
         
@@ -735,9 +744,6 @@
         }
         else
             [self setSelectedSegmentIndex:(value * [self numberOfSegments])];
-    }
-    else { // UIGestureRecognizerStateEnded or Canceled
-        //NSLog(@"REMOTE PAN END");
     }
 }
 
