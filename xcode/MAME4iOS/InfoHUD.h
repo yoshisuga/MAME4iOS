@@ -49,6 +49,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (id)valueForKey:(NSString *)key;
 - (NSDictionary*)getValues;
 
+- (NSInteger)selectedSegmentIndex;
+- (void)setSelectedSegmentIndex:(NSInteger)index;
 - (void)handleButtonPress:(UIPressType)type;
 
 #if TARGET_OS_TV

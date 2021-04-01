@@ -546,7 +546,13 @@
     return items;
 }
 
-- (NSUInteger)getNumberOfSegments:(UIView*)view {
+- (UIView*)selectedItem {
+    NSArray* items = [self getSelectableItems];
+    return  (_selected >= 0 && _selected < items.count) ? items[_selected] : nil;
+}
+
+- (NSUInteger)numberOfSegments {
+    UIView* view = [self selectedItem];
     if ([view isKindOfClass:[UISegmentedControl class]])
         return [(UISegmentedControl*)view numberOfSegments];
     else if ([view isKindOfClass:[UISlider class]])
@@ -555,7 +561,8 @@
         return view.subviews.count;
 }
 
-- (NSInteger)getSelectedSegmentIndex:(UIView*)view {
+- (NSInteger)selectedSegmentIndex {
+    UIView* view = [self selectedItem];
     
     if ([view isKindOfClass:[UISegmentedControl class]]) {
         UISegmentedControl* seg = (UISegmentedControl*)view;
@@ -577,8 +584,9 @@
     return UISegmentedControlNoSegment;
 }
 
-- (void)setSelectedSegmentIndex:(UIView*)view index:(NSInteger)index {
-    
+- (void)setSelectedSegmentIndex:(NSInteger)index {
+    UIView* view = [self selectedItem];
+
     if ([view isKindOfClass:[UISegmentedControl class]]) {
         UISegmentedControl* seg = (UISegmentedControl*)view;
         seg.selectedSegmentIndex = MIN(index, (NSInteger)seg.numberOfSegments-1);
@@ -609,7 +617,7 @@
 // move current selection and perfom action, used with input from a game controller, keyboard, or remote.
 - (void)handleButtonPress:(UIPressType)type {
     NSArray* items = [self getSelectableItems];
-    UIView* item = (_selected >= 0 && _selected < items.count) ? items[_selected] : nil;
+    UIView* item = [self selectedItem];
     
     switch (type) {
         case UIPressTypeUpArrow:
@@ -619,10 +627,10 @@
             NSInteger n = _selected + dir;
             
             if (n >= 0 && n < items.count) {
-                NSInteger index = MAX(0, [self getSelectedSegmentIndex:item]) * [self getNumberOfSegments:items[n]] / MAX(1, [self getNumberOfSegments:item]);
-                [self setSelectedSegmentIndex:items[n] index:index];
-                [self setSelectedSegmentIndex:item index:UISegmentedControlNoSegment];
+                CGFloat f = (CGFloat)MAX(0,[self selectedSegmentIndex]) / MAX(1,[self numberOfSegments]);
+                [self setSelectedSegmentIndex:UISegmentedControlNoSegment];
                 _selected = n;
+                [self setSelectedSegmentIndex:(f * [self numberOfSegments])];
             }
             break;
         }
@@ -634,9 +642,9 @@
                 _selected = 0;
                 item = items[_selected];
             }
-            NSInteger n = [self getSelectedSegmentIndex:item] + dir;
-            n = MIN(MAX(0,n), [self getNumberOfSegments:item]-1);
-            [self setSelectedSegmentIndex:item index:n];
+            NSInteger n = [self selectedSegmentIndex] + dir;
+            n = MIN(MAX(0,n), [self numberOfSegments]-1);
+            [self setSelectedSegmentIndex:n];
             if ([item isKindOfClass:[UISlider class]]) {
                 UISlider* slider = (UISlider*)item;
                 NSString* key = (__bridge NSString*)(void*)slider.tag;
@@ -655,7 +663,7 @@
             if ([item isKindOfClass:[UISegmentedControl class]])
                 [self buttonPress:(UISegmentedControl*)item];
             if ([item isKindOfClass:[UIStackView class]]) {
-                NSInteger n = [self getSelectedSegmentIndex:item];
+                NSInteger n = [self selectedSegmentIndex];
                 if (n >= 0 && n < item.subviews.count)
                     [self buttonPress:(UISegmentedControl*)item.subviews[n]];
             }
@@ -694,8 +702,7 @@
     if (_selected < 0)
         [self handleButtonPress:UIPressTypeDownArrow];
     
-    NSArray* items = [self getSelectableItems];
-    UIView* item = (_selected >= 0 && _selected < items.count) ? items[_selected] : nil;
+    UIView* item = [self selectedItem];
     
     if (item == nil)
         return;
@@ -707,7 +714,7 @@
             g_start_value = (slider.value - slider.minimumValue) / (slider.maximumValue - slider.minimumValue);
         }
         else
-            g_start_value = (CGFloat)[self getSelectedSegmentIndex:item] / (CGFloat)[self getNumberOfSegments:item];
+            g_start_value = (CGFloat)MAX(0,[self selectedSegmentIndex]) / MAX(1,[self numberOfSegments]);
     }
     else if (state == UIGestureRecognizerStateChanged) {
         //NSLog(@"REMOTE PAN: (%0.3f, %0.3f) mag=%0.3f", delta.x, delta.y, mag);
@@ -727,7 +734,7 @@
             [self slide:slider];
         }
         else
-            [self setSelectedSegmentIndex:item index:value * [self getNumberOfSegments:item]];
+            [self setSelectedSegmentIndex:(value * [self numberOfSegments])];
     }
     else { // UIGestureRecognizerStateEnded or Canceled
         //NSLog(@"REMOTE PAN END");
@@ -744,12 +751,12 @@
 // the Focus Engine can leave "focus turds" if the focus changes *too fast*
 // ....this can easily happen by swiping the SiriRemote
 // ....this is probably specific to our nested UIStackViews and UISegmentedControls
-// ....so we limit focus changes to 10Hz
+// ....so we limit focus changes to 20Hz
 // HACK *HACK* **HACK**
 - (BOOL)shouldUpdateFocusInContext:(UIFocusUpdateContext *)context {
     static NSTimeInterval g_last_focus_time;
     NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
-    if (now - g_last_focus_time < 0.100)
+    if (now - g_last_focus_time < (1.0 / 20.0))
         return NO;
     g_last_focus_time = now;
     return YES;

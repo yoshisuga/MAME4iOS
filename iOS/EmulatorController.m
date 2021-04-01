@@ -1721,6 +1721,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         [self.view bringSubviewToFront:hudView];
     }
     
+    NSInteger selectedIndex = [hudView selectedSegmentIndex];
     [hudView removeAll];
     EmulatorController* _self = self;
 
@@ -1946,6 +1947,10 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     rect.origin.x = MAX(safe.left + 8, MIN(self.view.bounds.size.width  - safe.right  - w - 8, rect.origin.x));
     rect.origin.y = MAX(safe.top + 8,  MIN(self.view.bounds.size.height - safe.bottom - h - 8, rect.origin.y));
     [self saveHUD];
+    if (selectedIndex != -1) {
+        [hudView handleButtonPress:UIPressTypeDownArrow];
+        [hudView setSelectedSegmentIndex:selectedIndex];
+    }
 
     [UIView animateWithDuration:0.250 animations:^{
         self->hudView.frame = rect;
