@@ -757,12 +757,12 @@
 // the Focus Engine can leave "focus turds" if the focus changes *too fast*
 // ....this can easily happen by swiping the SiriRemote
 // ....this is probably specific to our nested UIStackViews and UISegmentedControls
-// ....so we limit focus changes to 20Hz
+// ....so we limit focus changes to 60Hz
 // HACK *HACK* **HACK**
 - (BOOL)shouldUpdateFocusInContext:(UIFocusUpdateContext *)context {
     static NSTimeInterval g_last_focus_time;
     NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
-    if (now - g_last_focus_time < (1.0 / 20.0))
+    if (now - g_last_focus_time < (1.0 / 60.0))
         return NO;
     g_last_focus_time = now;
     return YES;
