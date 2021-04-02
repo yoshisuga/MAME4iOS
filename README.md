@@ -166,7 +166,7 @@ The right stick on the extended controller profile is fully supported, with supp
 The trigger buttons are mapped to analog controls and should be useful in assigning for pedal controls, for example.
 
 ## Siri Remote
-MAME4iOS is now usable on a AppleTV using only the stock Siri Remote. You can only play games that use only the A and X buttons.
+MAME4iOS is now usable on a AppleTV using only the stock Siri Remote. You can only play games that use only the A and B buttons.
 
 to start playing a game, hit MENU and select "Coin + Start" from the list.
 
