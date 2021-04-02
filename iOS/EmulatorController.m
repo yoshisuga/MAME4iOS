@@ -1750,17 +1750,12 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         // add a toolbar of quick actions.
         NSArray* items = @[
             @"Coin", @"Start",
-#if TARGET_OS_IOS
-            @":rectangle.and.arrow.up.right.and.arrow.down.left:⤢:",
-#endif
+            TARGET_OS_IOS ? @":rectangle.and.arrow.up.right.and.arrow.down.left:⤢:" : @":stopwatch:⏱:",
             @":gear:#:",
             g_pref_showHUD <= HudSizeNormal ? @":info.circle:ⓘ:" : (g_pref_showHUD >= HudSizeLarge && can_edit_shader) ? @":slider.horizontal.3:☰:" : @":list.dash:☷:",
             TARGET_OS_IOS ? @":command:⌘:" : @":xmark.circle:ⓧ:"
         ];
         [hudView addToolbar:items handler:^(NSUInteger button) {
-#if !TARGET_OS_IOS
-            if (button >= 2) button++;
-#endif
             switch (button) {
                 case 0:
                     push_mame_button(0, MYOSD_SELECT);
@@ -1769,7 +1764,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
                     push_mame_button(0, MYOSD_START);
                     break;
                 case 2:
-                    [_self commandKey:'\r'];
+                    [_self commandKey: TARGET_OS_IOS ? '\r' : 'Z'];
                     break;
                 case 3:
                     [_self runSettings];
