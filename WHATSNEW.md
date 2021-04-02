@@ -6,7 +6,7 @@
 * Option to turn ON/OFF haptic feedback.
 * New in-game menu using InfoHUD technology.
 * New Game Controller `MENU` modifiers. 
-    - `MENU+A` Show or hide `HUD` 
+    - `MENU+A` Speed 2x 
     - `MENU+B` Pause `MAME`
 * Remove ColorSpace choices from the UI.
 * Remember changes made in Shader parameter editor.
@@ -26,7 +26,7 @@ MENU+L1       |Player Coin
 MENU+R1       |Player Start               
 MENU+L2       |Player 2 Coin                
 MENU+R2       |Player 2 Start               
-MENU+A          |Show or hide HUD                 
+MENU+A          |Speed 2x              
 MENU+B          |Pause MAME   
 MENU+X          |Exit Game                 
 MENU+Y          |Open MAME menu   

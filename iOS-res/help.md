@@ -215,6 +215,7 @@ These keys are specific to `MAME4iOS`
      ⌘+A                  | TOGGLE `Keep Aspect Ratio`
      ⌘+X                  | TOGGLE `Force Pixel Aspect`
      ⌘+M                  | TOGGLE `Mouse Capture`
+     ⌘+S           | TOGGLE SPEED 2X
      ⌘+1               | Player 1 COIN+START
      ⌘+2               | Player 2 COIN+START
 
@@ -302,7 +303,7 @@ MENU+L1     |Player Coin
 MENU+R1     |Player Start               
 MENU+L2     |Player 2 Coin                
 MENU+R2     |Player 2 Start               
-MENU+A       |Show or hide HUD                 
+MENU+A       |Speed 2x            
 MENU+B       |Pause MAME   
 MENU+X       |Exit Game                 
 MENU+Y       |Open MAME Configure menu   

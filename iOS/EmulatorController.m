@@ -751,12 +751,12 @@ HUDViewController* g_menu;
             // EXIT and MAME MENU
             [menu addButtons:@[
                 [NSString stringWithFormat:@":%@:Exit Game", getGamepadSymbol(gamepad, gamepad.buttonX)],
-                [NSString stringWithFormat:@":%@:HUD", getGamepadSymbol(gamepad, gamepad.buttonA)],
+                [NSString stringWithFormat:@":%@:Speed 2x", getGamepadSymbol(gamepad, gamepad.buttonA)],
             ] style:HUDButtonStylePlain handler:^(NSUInteger button) {
                 if (button == 0)
                     [self runExit:NO];
                 else
-                    [self commandKey:'H'];
+                    [self commandKey:'S'];
             }];
 
             // HUD and PAUSE
@@ -4666,7 +4666,7 @@ static unsigned long g_device_has_input[NUM_DEV];   // TRUE if device needs to b
 //      MENU+R1     = Pn START
 //      MENU+L2     = P2 COIN/SELECT
 //      MENU+R2     = P2 START
-//      MENU+A      = HUD
+//      MENU+A      = Speed
 //      MENU+B      = PAUSE
 //      MENU+X      = EXIT
 //      MENU+Y      = MAME MENU
@@ -4720,8 +4720,8 @@ static unsigned long g_device_has_input[NUM_DEV];   // TRUE if device needs to b
     }
 
     if (changed_state & MYOSD_A) {
-        NSLog(@"...MENU+A => HUD");
-        [self commandKey:'H'];
+        NSLog(@"...MENU+A => SPEED");
+        [self commandKey:'S'];
     }
     if (changed_state & MYOSD_B) {
         NSLog(@"...MENU+B => PAUSE");
