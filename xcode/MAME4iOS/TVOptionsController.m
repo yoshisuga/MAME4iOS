@@ -167,7 +167,7 @@
             cell.textLabel.text = @"Keep Aspect Ratio";
             cell.accessoryView = [self optionSwitchForKey:@"keepAspectRatio"];
         } else if ( indexPath.row == 5 ) {
-            cell.textLabel.text = @"Integer Scaling Only";
+            cell.textLabel.text = @"Force Integer Scaling";
             cell.accessoryView = [self optionSwitchForKey:@"integerScalingOnly"];
         } else if ( indexPath.row == 6 ) {
             cell.textLabel.text   = @"Force Pixel Aspect";
