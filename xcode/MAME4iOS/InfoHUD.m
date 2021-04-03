@@ -14,7 +14,18 @@
 + (UIImage*)imageWithText:(NSString*)textLeft image:(UIImage*)image text:(NSString*)textRight font:(UIFont*)font;
 @end
 
-#define HUD_BLUR    TRUE
+#if TARGET_OS_TV
+@interface TVSlider : UIControl
+@property(nonatomic) float value;                                 // default 0.0. this value will be pinned to min/max
+@property(nonatomic) float minimumValue;                          // default 0.0. the current value may change if outside new min value
+@property(nonatomic) float maximumValue;                          // default 1.0. the current value may change if outside new max value
+- (void)setThumbImage:(nullable UIImage *)image forState:(UIControlState)state;
+@end
+#define UISlider TVSlider
+#endif
+
+// TODO: why does UIBlurEffect not work on tvOS?
+#define HUD_BLUR    (TARGET_OS_IOS ? TRUE : FALSE)
 
 @implementation InfoHUD {
     UIStackView* _stack;
@@ -69,7 +80,11 @@
     [self addGestureRecognizer:pinch];
 #endif
 
-    self.backgroundColor = HUD_BLUR ? nil : [UIColor.darkGrayColor colorWithAlphaComponent:0.8];
+#if HUD_BLUR
+    self.backgroundColor = nil;
+#else
+    self.backgroundColor = [UIColor colorWithWhite:0.222 alpha:0.6];
+#endif
     
     return self;
 }
@@ -101,6 +116,7 @@
 }
 - (void)setFont:(UIFont *)font {
     _font = font ?: [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+    _stack.spacing = floor(_font.lineHeight / 8.0);
 }
 
 - (void)addBlur:(UIBlurEffectStyle)style {
@@ -145,13 +161,6 @@
     self.transform = CGAffineTransformScale(self.transform, pinch.scale, pinch.scale);
     pinch.scale = 1.0;
 }
-
-- (void)slide:(UISlider*)slider {
-    NSString* key = (__bridge NSString*)(void*)slider.tag;
-    [self setValue:@(slider.value) forKey:key];
-    _changedKey = key;
-    [self sendActionsForControlEvents:UIControlEventValueChanged];
-}
 - (void)switch:(UISwitch*)sender {
     NSString* key = (__bridge NSString*)(void*)sender.tag;
     [self setValue:@(sender.isOn ? 1.0 : 0.0) forKey:key];
@@ -159,6 +168,12 @@
     [self sendActionsForControlEvents:UIControlEventValueChanged];
 }
 #endif
+- (void)slide:(UISlider*)slider {
+    NSString* key = (__bridge NSString*)(void*)slider.tag;
+    [self setValue:@(slider.value) forKey:key];
+    _changedKey = key;
+    [self sendActionsForControlEvents:UIControlEventValueChanged];
+}
 
 - (void)setLayoutMargins:(UIEdgeInsets)layoutMargins {
     [super setLayoutMargins:layoutMargins];
@@ -199,20 +214,24 @@
 
     key = key ?: @"";
     
-    if (format.length == 0) {
+    if ([value isKindOfClass:[NSNumber class]] && [format rangeOfString:@"%"].length == 0) {
+        NSString* fmt = @"%0.3f";
+        
         if ([step floatValue] >= 1)
-            format = @"%0.0f";
+            fmt = @"%0.0f";
         else if ([step floatValue] >= 0.1)
-            format = @"%0.1f";
+            fmt = @"%0.1f";
         else if ([step floatValue] >= 0.01)
-            format = @"%0.2f";
+            fmt = @"%0.2f";
+
+        if ([format length] != 0)
+            format = [NSString stringWithFormat:@"%@: %@", format, fmt];
+        else if ([key length] != 0)
+            format = [NSString stringWithFormat:@"%@: %@", key, fmt];
         else
-            format = @"%0.3f";
+            format = fmt;
     }
     
-    if ([format hasPrefix:@"%"] && key.length != 0)
-        format = [NSString stringWithFormat:@"%@: %@", key, format];
-
     if ([value isKindOfClass:[NSString class]] && [value isEqualToString:@"---"]) {
         value = [self separatorViewWithHeight:1.0 color:UIColor.clearColor];
         [_stack addArrangedSubview:value];
@@ -221,7 +240,7 @@
         value = [self separatorViewWithHeight:1.0 color:UIColor.clearColor];
     }
     if ([value isKindOfClass:[NSString class]] && [value isEqualToString:@" "]) {
-        value = [self separatorViewWithHeight:3.0 color:UIColor.clearColor];
+        value = [self separatorViewWithHeight:(_font.pointSize / 2.0) color:UIColor.clearColor];
     }
     if ([value isKindOfClass:[UIImage class]]) {
         value = [[UIImageView alloc] initWithImage:value];
@@ -237,6 +256,7 @@
     UILabel* label = [[UILabel alloc] init];
     label.font = _font;
     label.textColor = [UIColor.whiteColor colorWithAlphaComponent:0.75];
+    label.adjustsFontSizeToFitWidth = YES;
     _views[key] = label;
     _format[key] = format;
     _step[key] = step;
@@ -266,9 +286,14 @@
         UIStackView* stack = [[UIStackView alloc] initWithArrangedSubviews:@[label, sw]];
         [_stack addArrangedSubview:stack];
     }
-    else if ([value isKindOfClass:[NSNumber class]] && min != nil && max != nil) {
+    else
+#endif
+    if ([value isKindOfClass:[NSNumber class]] && min != nil && max != nil) {
         UISlider* slider = [[UISlider alloc] init];
-        CGFloat h = _font.lineHeight;
+
+        CGFloat h = _font.lineHeight * (TARGET_OS_IOS ? 1.0 : 0.5);
+        slider.contentMode = UIViewContentModeTop;
+
         [slider addConstraint:[NSLayoutConstraint constraintWithItem:slider attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:h]];
         [slider addTarget:self action:@selector(slide:) forControlEvents:UIControlEventValueChanged];
         slider.minimumValue = [min floatValue];
@@ -286,12 +311,9 @@
             slider.tintColor = UIColor.systemGreenColor;
         if ([key hasSuffix:@"_b"] || [key hasSuffix:@"_blue"]  || [key hasSuffix:@"-b"] || [key hasSuffix:@"-blue"])
             slider.tintColor = UIColor.systemBlueColor;
-        if ([key hasSuffix:@"_a"] || [key hasSuffix:@"_alpha"]  || [key hasSuffix:@"-a"] || [key hasSuffix:@"-alpha"])
-            slider.minimumTrackTintColor = UIColor.darkGrayColor;
-
-        [slider setThumbImage:[self dotWithColor:(slider.minimumTrackTintColor ?: slider.tintColor) size:CGSizeMake(12,12)] forState:UIControlStateNormal];
+        
+        [slider setThumbImage:[self dotWithColor:(slider.tintColor ?: self.tintColor) size:CGSizeMake(12,12)] forState:UIControlStateNormal];
     }
-#endif
     
     [self setValue:value forKey:key];
 }
@@ -348,59 +370,68 @@
     void (^handler)(NSUInteger) = objc_getAssociatedObject(seg, @selector(buttonPress:));
     handler(seg.selectedSegmentIndex);
 }
-- (UISegmentedControl*)makeSegmentedControl:(NSArray*)items handler:(void (^)(NSUInteger button))handler {
+- (void)buttonTap:(UITapGestureRecognizer*)tap {
+    [self buttonPress:(UISegmentedControl*)tap.view];
+}
+
+- (UISegmentedControl*)makeSegmentedControl:(NSArray*)items color:(UIColor*)color handler:(void (^)(NSUInteger button))handler {
     UISegmentedControl* seg = [[UISegmentedControl alloc] initWithItems:[self convertItems:items]];
     seg.momentary = TARGET_OS_IOS ? YES : NO;
-    [seg setTitleTextAttributes:@{NSFontAttributeName:_font} forState:UIControlStateNormal];
-    
+#if TARGET_OS_TV
+    // default color (nil) on tvOS is not same as iOS so use an explicit one
+    color = color ?: [UIColor colorWithWhite:0.222 alpha:1.0];
+#endif
+    seg.backgroundColor = color;
+    if (color == UIColor.clearColor)
+        [seg setBackgroundImage:[[UIImage alloc] init] forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
+
+    UIColor* fgcolor = (color == UIColor.clearColor) ? self.tintColor : UIColor.whiteColor;
+    [seg setTitleTextAttributes:@{NSFontAttributeName:_font,
+        NSForegroundColorAttributeName:fgcolor,
+        @"hud.info.color": color ?: [UIColor colorWithWhite:0.222 alpha:1.0],
+    } forState:UIControlStateNormal];
+    [seg setTitleTextAttributes:@{NSFontAttributeName:_font,
+        NSForegroundColorAttributeName:TARGET_OS_TV ? fgcolor : UIColor.whiteColor
+    } forState:UIControlStateSelected];
+
     CGFloat h = _font.lineHeight * 1.5;
     [seg addConstraint:[NSLayoutConstraint constraintWithItem:seg attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:h]];
 #if TARGET_OS_IOS
     [seg addTarget:self action:@selector(buttonPress:) forControlEvents:UIControlEventValueChanged];
+#else
+    [seg addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(buttonTap:)]];
 #endif
     objc_setAssociatedObject(seg, @selector(buttonPress:), handler, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     if (@available(iOS 13.0, tvOS 13.0, *))
-         seg.selectedSegmentTintColor = self.tintColor;
+        seg.selectedSegmentTintColor = (color == nil || color == UIColor.clearColor || TARGET_OS_TV) ? self.tintColor : color;
     if (items.firstObject == (id)@"")
         seg.alpha = 0.0;
+    
     return seg;
 }
 
 - (void)addToolbar:(NSArray*)items handler:(void (^)(NSUInteger button))handler {
-    UISegmentedControl* seg = [self makeSegmentedControl:items handler:handler];
+#if TARGET_OS_TV
+    [self addButtons:items handler:handler];
+    UIStackView* stack = (UIStackView*)_stack.subviews.lastObject;
+    stack.distribution = UIStackViewDistributionFillProportionally;
+#else
+    UISegmentedControl* seg = [self makeSegmentedControl:items color:nil handler:handler];
     seg.apportionsSegmentWidthsByContent = YES;
     [self addView:seg];
+#endif
 }
 - (void)addButtons:(NSArray*)items color:(UIColor*)color handler:(void (^)(NSUInteger button))handler {
     UIStackView* stack = [[UIStackView alloc] init];
     stack.spacing = self.spacing;
     stack.distribution = UIStackViewDistributionFillEqually;
     
-#if TARGET_OS_TV
-    color = color ?: [UIColor colorWithWhite:0.222 alpha:1.0];
-#endif
-
     for (NSUInteger i = 0; i<items.count; i++) {
         id item = items[i];
         if (![item isKindOfClass:[UIView class]]) {
-            UISegmentedControl* seg = item = [self makeSegmentedControl:@[item] handler:^(NSUInteger button) {
+            item = [self makeSegmentedControl:@[item] color:color handler:^(NSUInteger button) {
                 handler(i);
             }];
-            seg.backgroundColor = color;
-            if (@available(iOS 13.0, tvOS 13.0, *))
-                seg.selectedSegmentTintColor = (color == nil || color == UIColor.clearColor || TARGET_OS_TV) ? self.tintColor : color;
-            if (color == UIColor.clearColor)
-                [seg setBackgroundImage:[[UIImage alloc] init] forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
-#if TARGET_OS_TV
-            [seg setTitleTextAttributes:@{NSFontAttributeName:_font,
-                NSForegroundColorAttributeName: color == UIColor.clearColor ? self.tintColor : UIColor.whiteColor,
-                NSBackgroundColorAttributeName: color
-            } forState:UIControlStateNormal];
-            [seg setTitleTextAttributes:@{NSFontAttributeName:_font,
-                NSForegroundColorAttributeName: UIColor.whiteColor,
-                NSBackgroundColorAttributeName: self.tintColor
-            } forState:UIControlStateSelected];
-#endif
         }
         [stack addArrangedSubview:item];
     }
@@ -434,10 +465,10 @@
             val = round(val / step) * step;
         if (format != nil)
             label.text = [NSString stringWithFormat:format, val];
-#if TARGET_OS_IOS
         UISlider* slider = (__bridge UISlider*)(void*)label.tag;
         if ([slider isKindOfClass:[UISlider class]] && !slider.isTracking)
             slider.value = val;
+#if TARGET_OS_IOS
         if ([slider isKindOfClass:[UISwitch class]])
             [(UISwitch*)slider setOn:val != 0.0];
 #endif
@@ -464,12 +495,12 @@
     UILabel* label = _views[key];
     if (![label isKindOfClass:[UILabel class]])
         return label;
-#if TARGET_OS_IOS
     UISlider* slider = (__bridge UISlider*)(void*)label.tag;
     float step = [_step[key] floatValue];
     if (([slider isKindOfClass:[UISlider class]]))
         return @((step != 0.0) ? round(slider.value / step) * step : slider.value);
-    else if (([slider isKindOfClass:[UISwitch class]]))
+#if TARGET_OS_IOS
+    if (([slider isKindOfClass:[UISwitch class]]))
         return [(UISwitch*)slider isOn] ? @(1) : @(0);
 #endif
     if ([label.text containsString:@": "])
@@ -508,25 +539,38 @@
             [items addObject:view];
         if ([view isKindOfClass:[UIStackView class]] && [view.subviews.firstObject isKindOfClass:[UISegmentedControl class]])
             [items addObject:view];
+        if ([view isKindOfClass:[UISlider class]])
+            [items addObject:view];
     }
     
     return items;
 }
 
-- (NSUInteger)getNumberOfSegments:(UIView*)view {
+- (UIView*)selectedItem {
+    NSArray* items = [self getSelectableItems];
+    return  (_selected >= 0 && _selected < items.count) ? items[_selected] : nil;
+}
+
+- (NSUInteger)numberOfSegments {
+    UIView* view = [self selectedItem];
     if ([view isKindOfClass:[UISegmentedControl class]])
         return [(UISegmentedControl*)view numberOfSegments];
+    else if ([view isKindOfClass:[UISlider class]])
+        return 1;
     else
         return view.subviews.count;
 }
 
-- (NSInteger)getSelectedSegmentIndex:(UIView*)view {
+- (NSInteger)selectedSegmentIndex {
+    UIView* view = [self selectedItem];
     
     if ([view isKindOfClass:[UISegmentedControl class]]) {
         UISegmentedControl* seg = (UISegmentedControl*)view;
         return seg.selectedSegmentIndex;
     }
-    
+    if ([view isKindOfClass:[UISlider class]]) {
+        return 0;
+    }
     if ([view isKindOfClass:[UIStackView class]]) {
         UIStackView* stack = (UIStackView*)view;
         for (NSInteger i=0; i<stack.subviews.count; i++) {
@@ -540,29 +584,31 @@
     return UISegmentedControlNoSegment;
 }
 
-- (void)setSelectedSegmentIndex:(UIView*)view index:(NSInteger)index {
-    
+- (void)setSelectedSegmentIndex:(NSInteger)index {
+    UIView* view = [self selectedItem];
+
     if ([view isKindOfClass:[UISegmentedControl class]]) {
         UISegmentedControl* seg = (UISegmentedControl*)view;
-        seg.selectedSegmentIndex = index;
+        seg.selectedSegmentIndex = MIN(index, (NSInteger)seg.numberOfSegments-1);
+        seg.selected = (index != UISegmentedControlNoSegment);
     }
-    
+    if ([view isKindOfClass:[UISlider class]]) {
+        UISlider* slider = (UISlider*)view;
+        slider.selected = (index != UISegmentedControlNoSegment);
+    }
     if ([view isKindOfClass:[UIStackView class]]) {
         UIStackView* stack = (UIStackView*)view;
+        index = MIN(index, (NSInteger)stack.subviews.count-1);
         for (NSInteger i=0; i<stack.subviews.count; i++) {
             UISegmentedControl* seg = (UISegmentedControl*)stack.subviews[i];
             if ([seg isKindOfClass:[UISegmentedControl class]]) {
                 seg.selectedSegmentIndex = (i == index) ? 0 : UISegmentedControlNoSegment;
+                seg.selected = (i == index);
 #if TARGET_OS_TV
-                if (seg.selectedSegmentIndex == 0)
-                    seg.backgroundColor = [seg titleTextAttributesForState:UIControlStateSelected][NSBackgroundColorAttributeName];
-                else
-                    seg.backgroundColor = [seg titleTextAttributesForState:UIControlStateNormal][NSBackgroundColorAttributeName];
+                seg.backgroundColor = seg.selected ? self.tintColor : [seg titleTextAttributesForState:UIControlStateNormal][@"hud.info.color"];
 #endif
-                if (seg.backgroundColor == UIColor.clearColor && seg.selectedSegmentIndex == UISegmentedControlNoSegment)
-                    [seg setBackgroundImage:[[UIImage alloc] init] forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
-                else
-                    [seg setBackgroundImage:nil forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
+                if (seg.backgroundColor == UIColor.clearColor)
+                    [seg setBackgroundImage:(seg.selected ? nil : [[UIImage alloc] init]) forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
             }
         }
     }
@@ -571,7 +617,7 @@
 // move current selection and perfom action, used with input from a game controller, keyboard, or remote.
 - (void)handleButtonPress:(UIPressType)type {
     NSArray* items = [self getSelectableItems];
-    UIView* item = (_selected >= 0 && _selected < items.count) ? items[_selected] : nil;
+    UIView* item = [self selectedItem];
     
     switch (type) {
         case UIPressTypeUpArrow:
@@ -581,10 +627,10 @@
             NSInteger n = _selected + dir;
             
             if (n >= 0 && n < items.count) {
-                NSInteger index = MAX(0, [self getSelectedSegmentIndex:item]) * [self getNumberOfSegments:items[n]] / MAX(1, [self getNumberOfSegments:item]);
-                [self setSelectedSegmentIndex:items[n] index:index];
-                [self setSelectedSegmentIndex:item index:UISegmentedControlNoSegment];
+                CGFloat f = (CGFloat)MAX(0,[self selectedSegmentIndex]) / MAX(1,[self numberOfSegments]);
+                [self setSelectedSegmentIndex:UISegmentedControlNoSegment];
                 _selected = n;
+                [self setSelectedSegmentIndex:(f * [self numberOfSegments])];
             }
             break;
         }
@@ -596,16 +642,28 @@
                 _selected = 0;
                 item = items[_selected];
             }
-            NSInteger n = [self getSelectedSegmentIndex:item] + dir;
-            n = MIN(MAX(0,n), [self getNumberOfSegments:item]-1);
-            [self setSelectedSegmentIndex:item index:n];
+            NSInteger n = [self selectedSegmentIndex] + dir;
+            n = MIN(MAX(0,n), [self numberOfSegments]-1);
+            [self setSelectedSegmentIndex:n];
+            if ([item isKindOfClass:[UISlider class]]) {
+                UISlider* slider = (UISlider*)item;
+                NSString* key = (__bridge NSString*)(void*)slider.tag;
+                
+                float step = [_step[key] floatValue];
+                
+                if (step == 0.0)
+                    step = (slider.maximumValue - slider.minimumValue)  / 10;
+
+                slider.value = slider.value + (dir * step);
+                [self slide:slider];
+            }
             break;
         }
         case UIPressTypeSelect:
             if ([item isKindOfClass:[UISegmentedControl class]])
                 [self buttonPress:(UISegmentedControl*)item];
             if ([item isKindOfClass:[UIStackView class]]) {
-                NSInteger n = [self getSelectedSegmentIndex:item];
+                NSInteger n = [self selectedSegmentIndex];
                 if (n >= 0 && n < item.subviews.count)
                     [self buttonPress:(UISegmentedControl*)item.subviews[n]];
             }
@@ -614,6 +672,104 @@
             break;
     }
 }
+
+#if TARGET_OS_TV
+
+#pragma mark - siri remote pan
+
+// called when the user does a pan on the Siri Remote
+- (void)handleRemotePan:(UIPanGestureRecognizer*)pan {
+    static int g_direction; // 0 = Unknown, -1 = y, +1 = X
+    static CGFloat g_start_value;
+
+    CGPoint delta = [pan translationInView:pan.view];
+    // map delta to [-1, +1]
+    delta.x = delta.x / pan.view.bounds.size.width * 2.0;
+    delta.y = delta.y / pan.view.bounds.size.height * 2.0;
+    CGFloat mag = sqrtf(delta.x * delta.x + delta.y * delta.y);
+
+    if (pan.state == UIGestureRecognizerStateBegan)
+        g_direction = 0;
+    
+    // lock direction to X or Y
+    if (g_direction == 0 && mag > 0.100) {
+        if (fabs(delta.y) > 2*fabs(delta.x))
+            g_direction = -1;
+        else
+            g_direction = +1;
+    }
+
+    // check for a PAN in Y
+    if (g_direction == -1) {
+        if (fabs(delta.y) > 0.333) {
+            [self handleButtonPress:delta.y > 0 ? UIPressTypeDownArrow : UIPressTypeUpArrow];
+            [pan setTranslation:CGPointZero inView:pan.view];
+        }
+        return;
+    }
+    
+    if (_selected < 0)
+        [self handleButtonPress:UIPressTypeDownArrow];
+    
+    UIView* item = [self selectedItem];
+    
+    if (item == nil)
+        return;
+
+    if (pan.state == UIGestureRecognizerStateBegan) {
+        //NSLog(@"REMOTE PAN START");
+        if ([item isKindOfClass:[UISlider class]]) {
+            UISlider* slider = (UISlider*)item;
+            g_start_value = (slider.value - slider.minimumValue) / (slider.maximumValue - slider.minimumValue);
+        }
+        else
+            g_start_value = (CGFloat)MAX(0,[self selectedSegmentIndex]) / MAX(1,[self numberOfSegments]);
+    }
+    else if (pan.state == UIGestureRecognizerStateChanged) {
+        //NSLog(@"REMOTE PAN: (%0.3f, %0.3f) mag=%0.3f", delta.x, delta.y, mag);
+        CGFloat value;
+        
+        // value = g_start_value + delta.x;
+        if (delta.x > 0)
+            value = g_start_value + delta.x * (1.0 - g_start_value);
+        else
+            value = g_start_value + delta.x * g_start_value;
+
+        value = MAX(0.0, MIN(1.0, value));
+        if ([item isKindOfClass:[UISlider class]]) {
+            UISlider* slider = (UISlider*)item;
+            value = slider.minimumValue + value * (slider.maximumValue - slider.minimumValue);
+            [slider setValue:value];
+            [self slide:slider];
+        }
+        else
+            [self setSelectedSegmentIndex:(value * [self numberOfSegments])];
+    }
+}
+
+#pragma mark - focus
+
+- (BOOL) canBecomeFocused {
+    return NO;
+}
+
+// HACK *HACK* **HACK**
+// the Focus Engine can leave "focus turds" if the focus changes *too fast*
+// ....this can easily happen by swiping the SiriRemote
+// ....this is probably specific to our nested UIStackViews and UISegmentedControls
+// ....so we limit focus changes to 60Hz
+// HACK *HACK* **HACK**
+- (BOOL)shouldUpdateFocusInContext:(UIFocusUpdateContext *)context {
+    static NSTimeInterval g_last_focus_time;
+    NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
+    if (now - g_last_focus_time < (1.0 / 60.0))
+        return NO;
+    g_last_focus_time = now;
+    return YES;
+}
+
+#endif
+
 @end
 
 #pragma mark - InfoHUD ViewController
@@ -631,7 +787,7 @@
 - (instancetype)init {
     self = [super init];
     
-    _blurBackground = TARGET_OS_IOS ? YES : NO;
+    _blurBackground = YES;
     _dimBackground = 0.5;
     
     _hud = [[InfoHUD alloc] init];
@@ -647,6 +803,13 @@
         [_hud addTitle:self.title];
         [_hud addSeparator];
     }
+}
+
+- (void)setFont:(UIFont *)font {
+    [_hud setFont:font];
+}
+- (UIFont*)font {
+    return [_hud font];
 }
 
 - (void)setModalPresentationStyle:(UIModalPresentationStyle)style {
@@ -676,6 +839,19 @@
     }
 #endif
 }
+
+- (void)addToolbar:(NSArray*)items handler:(void (^)(NSUInteger button))handler {
+    
+    // we want to dismiss the ViewController *before* we call any callbacks
+    __unsafe_unretained typeof(self) _self = self;
+    [_hud addToolbar:items handler:^(NSUInteger button) {
+        _self->_cancelHandler = nil;    // no need to call cancel handler now.
+        [_self.presentingViewController dismissViewControllerAnimated:YES completion:^{
+            handler(button);
+        }];
+    }];
+}
+
 
 - (void)addButtons:(NSArray*)items style:(HUDButtonStyle)style handler:(void (^)(NSUInteger button))handler {
     
@@ -740,7 +916,7 @@
     [self.view addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapBackgroundToDismiss)]];
 #else
     UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(ignoreMenu)];
-    tap.allowedPressTypes = @[[NSNumber numberWithInteger:UIPressTypeMenu]];
+    tap.allowedPressTypes = @[@(UIPressTypeMenu)];
     [self.view addGestureRecognizer:tap];
 #endif
     [self.view addSubview:_hud];
@@ -756,8 +932,7 @@
 
     if (self.modalPresentationStyle != UIModalPresentationPopover) {
 
-        // TODO: change the font on tvOS instead
-        CGFloat scale = TARGET_OS_TV ? 1.5 : 1.0;
+        CGFloat scale = 1.0;
         
         if (size.width * scale > self.view.bounds.size.width * 0.95)
             scale = self.view.bounds.size.width * 0.95 / size.width;
@@ -870,4 +1045,54 @@
 }
 
 @end
+
+#pragma mark - TVSlider
+
+#if TARGET_OS_TV
+@implementation TVSlider {
+    UIProgressView* _progress;
+}
+-(instancetype)initWithFrame:(CGRect)frame {
+    self = [super initWithFrame:frame];
+    self.minimumValue = 0.0;
+    self.maximumValue = 1.0;
+    _progress = [[UIProgressView alloc] init];
+    _progress.tintColor = UIColor.whiteColor;
+    [self addSubview:_progress];
+    return self;
+}
+- (BOOL) canBecomeFocused {
+    return TRUE;
+}
+-(float) value {
+    return _minimumValue + _progress.progress * (_maximumValue - _minimumValue);
+}
+-(void)setValue:(float)value {
+    value = (value - _minimumValue) / (_maximumValue - _minimumValue);
+    _progress.progress = MAX(0.0, MIN(1.0, value));
+}
+-(void)setThumbImage:(nullable UIImage *)image forState:(UIControlState)state {
+}
+- (void)setSelected:(BOOL)selected {
+    _progress.progressTintColor = (selected || self.focused) ? self.tintColor : UIColor.whiteColor;
+    _progress.trackTintColor = (selected || self.focused) ? [self.tintColor colorWithAlphaComponent:0.2] : nil;
+}
+- (void)didUpdateFocusInContext:(UIFocusUpdateContext *)context withAnimationCoordinator:(UIFocusAnimationCoordinator *)coordinator {
+    [super didUpdateFocusInContext:context withAnimationCoordinator:coordinator];
+    [coordinator addCoordinatedAnimations:^{
+        self.selected = self.selected;
+    } completion:nil];
+}
+
+- (void)layoutSubviews {
+    CGFloat h = [_progress sizeThatFits:CGSizeZero].height;
+    CGFloat w = self.bounds.size.width;
+    if (self.contentMode == UIViewContentModeTop)
+        _progress.frame = CGRectMake(0, 0, w, h);
+    else
+        _progress.frame = CGRectMake(0, (self.bounds.size.height - h)/2, w, h);
+}
+@end
+#endif
+
 

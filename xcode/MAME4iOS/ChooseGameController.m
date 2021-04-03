@@ -36,7 +36,7 @@
 #endif
 
 #define CELL_IDENTIFIER   @"GameInfoCell"
-#if TARGET_OS_IOS
+#if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST)
 #define CELL_TINY_WIDTH    100.0
 #define CELL_SMALL_WIDTH   200.0
 #define CELL_LARGE_WIDTH   400.0
@@ -53,7 +53,6 @@
 #endif
 
 #define USE_TITLE_IMAGE         TRUE
-#define TVOS_PARALLAX           FALSE
 #define TITLE_COLOR             [UIColor whiteColor]
 #define HEADER_TEXT_COLOR       [UIColor whiteColor]
 #define HEADER_BACKGROUND_COLOR [UIColor clearColor]
@@ -75,7 +74,7 @@
 #define CELL_TEXT_ALIGN         NSTextAlignmentCenter
 #endif
 
-#if TARGET_OS_IOS
+#if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST)
 #define CELL_TITLE_FONT         [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
 #define CELL_TITLE_COLOR        [UIColor whiteColor]
 #define CELL_DETAIL_FONT        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote]
@@ -92,7 +91,7 @@
 #define INFO_INSET_X            8.0
 #define INFO_INSET_Y            8.0
 
-#if TARGET_OS_IOS
+#if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST)
 #define INFO_TITLE_FONT_SIZE    [UIFont preferredFontForTextStyle:UIFontTextStyleLargeTitle].pointSize
 #else
 #define INFO_TITLE_FONT_SIZE    [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].pointSize * 2.0
@@ -791,14 +790,16 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 -(void)updateLayout
 {
     UICollectionViewFlowLayout* layout = (UICollectionViewFlowLayout*)self.collectionView.collectionViewLayout;
-    CGFloat space = TARGET_OS_IOS ? 8.0 : 16.0;
+    CGFloat space = (TARGET_OS_IOS && !TARGET_OS_MACCATALYST) ? 8.0 : 32.0;
     layout.scrollDirection = UICollectionViewScrollDirectionVertical;
     layout.sectionInset = UIEdgeInsetsMake(space, space, space, space);
     layout.minimumLineSpacing = space;
     layout.minimumInteritemSpacing = space;
     layout.sectionHeadersPinToVisibleBounds = YES;
     
-#if TARGET_OS_IOS
+#if TARGET_OS_MACCATALYST
+    CGFloat height = [UIFont preferredFontForTextStyle:UIFontTextStyleLargeTitle].pointSize * 1.5;
+#elif TARGET_OS_IOS
     CGFloat height = [UIFont preferredFontForTextStyle:UIFontTextStyleLargeTitle].pointSize;
 #else
     CGFloat height = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].pointSize * 1.5;
@@ -2244,15 +2245,14 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 - (void)updateSelected
 {
     BOOL selected = self.selected || self.focused;
-#if TARGET_OS_IOS || !TVOS_PARALLAX
     if (_image.image == nil)
         return;
     if (!(CELL_BACKGROUND_COLOR == UIColor.clearColor))
         [self setBackgroundColor:selected ? CELL_SELECTED_COLOR : CELL_BACKGROUND_COLOR];
     [self setShadowColor:selected ? CELL_SELECTED_COLOR : CELL_SHADOW_COLOR];
-    self.transform = selected ? CGAffineTransformMakeScale(_scale, _scale) : (self.highlighted ? CGAffineTransformMakeScale(2.0 - _scale, 2.0 - _scale) : CGAffineTransformIdentity);
-#endif
-#if TARGET_OS_TV && TVOS_PARALLAX
+    CGFloat scale = selected ? _scale : self.highlighted ? (2.0 - _scale) : 1.0;
+    _stackView.transform = CGAffineTransformMakeScale(scale, scale);
+#if TARGET_OS_TV
     if (selected)
         [self.superview bringSubviewToFront:self];
     else
@@ -2272,33 +2272,15 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     [self updateSelected];
 }
 
-#if TARGET_OS_TV && TVOS_PARALLAX
--(void)drawRect:(CGRect)rect
-{
-    // on tvOS we flatten the cell into a single image so the parallax selection works.
-    // NOTE we do this in drawRect so we know the cell is ready to be displayed, passing afterScreenUpdates:YES is crazy slow.
-    if (_image.image != nil && !_image.adjustsImageWhenAncestorFocused && _image.subviews.count == 0 && self.bounds.size.height < self.window.bounds.size.height) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if (!self.image.adjustsImageWhenAncestorFocused && self.image.subviews.count == 0) {
-                CGRect rect = self.bounds;
-                UIImage* image = [[[UIGraphicsImageRenderer alloc] initWithSize:rect.size] imageWithActions:^(UIGraphicsImageRendererContext * context) {
-                    [self drawViewHierarchyInRect:rect afterScreenUpdates:NO];
-                }];
-                self.image.adjustsImageWhenAncestorFocused = YES;
-                self.image.image = image;
-                self.text.text = nil;
-                [self setTextInsets:UIEdgeInsetsZero];
-                [self setImageAspect:0.0];
-                [self setBorderWidth:0.0];
-                self.contentView.clipsToBounds = NO;
-                self.image.clipsToBounds = NO;
-            }
-        });
-    }
-}
-#endif
-
 #if TARGET_OS_TV
+- (void)didHintFocusMovement:(UIFocusMovementHint *)hint {
+    NSLog(@"didHintFocusMovement(%@): dir=%@", [self.text.text stringByReplacingOccurrencesOfString:@"\n" withString:@" • "],
+          NSStringFromCGVector(hint.movementDirection));
+    if (_image.image == nil)
+        return;
+    [self updateSelected];
+    _stackView.transform = CGAffineTransformConcat(CGAffineTransformMakeTranslation(hint.translation.dx, hint.translation.dy), _stackView.transform);
+}
 - (void)didUpdateFocusInContext:(UIFocusUpdateContext *)context withAnimationCoordinator:(UIFocusAnimationCoordinator *)coordinator
 {
     [super didUpdateFocusInContext:context withAnimationCoordinator:coordinator];
@@ -2430,7 +2412,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     _layoutWidth = self.view.bounds.size.width;
     
     UICollectionViewFlowLayout* layout = (UICollectionViewFlowLayout*)self.collectionView.collectionViewLayout;
-    CGFloat space = TARGET_OS_IOS ? 8.0 : 32.0;
+    CGFloat space = (TARGET_OS_IOS && !TARGET_OS_MACCATALYST) ? 8.0 : 32.0;
     layout.sectionInset = UIEdgeInsetsMake(space, space, space, space);
     layout.minimumLineSpacing = space;
     layout.minimumInteritemSpacing = space;

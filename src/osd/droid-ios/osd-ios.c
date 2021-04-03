@@ -55,8 +55,7 @@ int myosd_hiscore=1;
 
 int  myosd_speed = 100;
 
-float joy_analog_x[NUM_JOY][4];
-float joy_analog_y[NUM_JOY][2];
+float myosd_joy_analog[NUM_JOY][MYOSD_AXIS_NUM];
 
 float lightgun_x[NUM_JOY];
 float lightgun_y[NUM_JOY];
@@ -125,18 +124,9 @@ unsigned long myosd_joystick_read(int n)
     return myosd_joy_status[n];
 }
 
-float myosd_joystick_read_analog(int n, char axis)
+float myosd_joystick_read_analog(int n, int axis)
 {
-    float res = 0.0;
-    
-    if(axis=='x') res = joy_analog_x[n][0];
-    else if (axis=='y') res = joy_analog_y[n][0];
-    else if(axis=='X') res = joy_analog_x[n][1];
-    else if (axis=='Y') res = joy_analog_y[n][1];
-    else if(axis=='z') res = joy_analog_x[n][2];
-    else if(axis=='Z') res = joy_analog_x[n][3];
-    
-    return res;
+    return myosd_joy_analog[n][axis];
 }
 
 // output channel callback, send output "up" to the app via myosd_output

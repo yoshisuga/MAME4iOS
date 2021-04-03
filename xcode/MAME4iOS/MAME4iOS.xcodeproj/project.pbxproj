@@ -138,6 +138,14 @@
 		EF67E11624B8972100AFF489 /* MacMenu.m in Sources */ = {isa = PBXBuildFile; fileRef = EF67E11524B8972100AFF489 /* MacMenu.m */; };
 		EF7B232C23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
 		EF7B232D23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
+		EF8409A2260CEFAB00FAC3CF /* AVPlayerView.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8409A1260CEFAB00FAC3CF /* AVPlayerView.m */; };
+		EF8409A3260CEFAB00FAC3CF /* AVPlayerView.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8409A1260CEFAB00FAC3CF /* AVPlayerView.m */; };
+		EF8409A9260CF3F200FAC3CF /* whiteHDR.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = EF8409A8260CF3F200FAC3CF /* whiteHDR.mp4 */; };
+		EF8409AA260CF3F200FAC3CF /* whiteHDR.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = EF8409A8260CF3F200FAC3CF /* whiteHDR.mp4 */; };
+		EF8409B5260CF66500FAC3CF /* MetalViewText.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8409B4260CF66500FAC3CF /* MetalViewText.m */; };
+		EF8409B6260CF66500FAC3CF /* MetalViewText.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8409B4260CF66500FAC3CF /* MetalViewText.m */; };
+		EF8409B7260CF66500FAC3CF /* MetalViewText.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8409B4260CF66500FAC3CF /* MetalViewText.m */; };
+		EF8409C0260D281000FAC3CF /* AVPlayerView.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8409A1260CEFAB00FAC3CF /* AVPlayerView.m */; };
 		EF8E427D249348220049C84C /* megaTron.metal in Sources */ = {isa = PBXBuildFile; fileRef = EF8E427C249348220049C84C /* megaTron.metal */; };
 		EF8E427E249348220049C84C /* megaTron.metal in Sources */ = {isa = PBXBuildFile; fileRef = EF8E427C249348220049C84C /* megaTron.metal */; };
 		EF8E4283249915F30049C84C /* lineTron.metal in Sources */ = {isa = PBXBuildFile; fileRef = EF8E4282249915F20049C84C /* lineTron.metal */; };
@@ -513,6 +521,11 @@
 		EF55DE5A2534C304004E37EF /* TVServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = TVServices.framework; path = Library/Frameworks/TVServices.framework; sourceTree = DEVELOPER_DIR; };
 		EF55DE722534C3AB004E37EF /* MAME4tvOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MAME4tvOS.entitlements; sourceTree = "<group>"; };
 		EF67E11524B8972100AFF489 /* MacMenu.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MacMenu.m; sourceTree = "<group>"; };
+		EF8409A0260CEFAB00FAC3CF /* AVPlayerView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVPlayerView.h; sourceTree = "<group>"; };
+		EF8409A1260CEFAB00FAC3CF /* AVPlayerView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AVPlayerView.m; sourceTree = "<group>"; };
+		EF8409A8260CF3F200FAC3CF /* whiteHDR.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; name = whiteHDR.mp4; path = "../../iOS-res/whiteHDR.mp4"; sourceTree = "<group>"; };
+		EF8409B3260CF66500FAC3CF /* MetalViewText.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MetalViewText.h; sourceTree = "<group>"; };
+		EF8409B4260CF66500FAC3CF /* MetalViewText.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MetalViewText.m; sourceTree = "<group>"; };
 		EF8E427C249348220049C84C /* megaTron.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = megaTron.metal; sourceTree = "<group>"; };
 		EF8E4282249915F20049C84C /* lineTron.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = lineTron.metal; sourceTree = "<group>"; };
 		EF8E428A249FE5410049C84C /* ulTron.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = ulTron.metal; sourceTree = "<group>"; };
@@ -786,6 +799,7 @@
 		CEBFBC0E163C5BD300A05CD0 /* resources */ = {
 			isa = PBXGroup;
 			children = (
+				EF8409A8260CF3F200FAC3CF /* whiteHDR.mp4 */,
 				EF1C941B24C2552800749C69 /* gitinfo.json.sh */,
 				EF1C941624C2544A00749C69 /* content */,
 				EF1C941524C253EE00749C69 /* images */,
@@ -958,11 +972,15 @@
 		EF8E427B24900FE40049C84C /* UIKit Classes */ = {
 			isa = PBXGroup;
 			children = (
+				EF8409A0260CEFAB00FAC3CF /* AVPlayerView.h */,
+				EF8409A1260CEFAB00FAC3CF /* AVPlayerView.m */,
 				EF06A576248064AC00A974B8 /* Timer.h */,
 				EFB7B2162479FBD900AD96A4 /* MetalView.h */,
 				EFB7B2132479FBD800AD96A4 /* MetalView.m */,
 				EFB7B2142479FBD800AD96A4 /* MetalViewShaders.h */,
 				EFB7B2152479FBD900AD96A4 /* MetalViewShaders.metal */,
+				EF8409B3260CF66500FAC3CF /* MetalViewText.h */,
+				EF8409B4260CF66500FAC3CF /* MetalViewText.m */,
 				EF249337236264DA00DD0A6C /* ImageCache.h */,
 				EF249336236264D900DD0A6C /* ImageCache.m */,
 				EF301CEF240460C5000510FD /* Alert.h */,
@@ -1195,6 +1213,7 @@
 				EF1C93EE24C252C600749C69 /* SKIN_1 in Resources */,
 				EFA757222408488D00A02AAB /* iCadeControls.png in Resources */,
 				EF1C93F424C252C600749C69 /* help.md in Resources */,
+				EF8409A9260CF3F200FAC3CF /* whiteHDR.mp4 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1206,6 +1225,7 @@
 				EF24BB0024C7894700D9C55A /* skins_tvOS in Resources */,
 				EF26AE09241848800078FD30 /* mame_logo.png in Resources */,
 				EF1C940424C252C600749C69 /* Category.ini in Resources */,
+				EF8409AA260CF3F200FAC3CF /* whiteHDR.mp4 in Resources */,
 				EF1C93F824C252C600749C69 /* LICENSE in Resources */,
 				EFA757002405585D00A02AAB /* mameui.png in Resources */,
 				EFA7570624057FD800A02AAB /* default_game_icon.png in Resources */,
@@ -1319,6 +1339,7 @@
 				92A533B721EBDBAD0089FBB9 /* GCDWebServerFileResponse.m in Sources */,
 				EF941F0024427D1200D58F7F /* OptionsTableViewController.m in Sources */,
 				92A533D321EBDDF20089FBB9 /* GCDWebUploader.m in Sources */,
+				EF8409A2260CEFAB00FAC3CF /* AVPlayerView.m in Sources */,
 				92A533C921EBDBAD0089FBB9 /* GCDWebServerFileRequest.m in Sources */,
 				925ABCA81E46DCC500997182 /* ListOptionController.m in Sources */,
 				92A533C621EBDBAD0089FBB9 /* GCDWebServerDataRequest.m in Sources */,
@@ -1327,6 +1348,7 @@
 				92A533A821EBDBAD0089FBB9 /* GCDWebServerRequest.m in Sources */,
 				EFB7B21C247ACFE300AD96A4 /* MameShaders.metal in Sources */,
 				925ABCA91E46DCC500997182 /* OptionsController.m in Sources */,
+				EF8409B5260CF66500FAC3CF /* MetalViewText.m in Sources */,
 				EF8EAA8A244F7F5D00DA02BB /* SteamControllerExtendedGamepad.m in Sources */,
 				EF8EAA8C244F7F5D00DA02BB /* SteamControllerInput.m in Sources */,
 				92A533C021EBDBAD0089FBB9 /* GCDWebServerURLEncodedFormRequest.m in Sources */,
@@ -1400,6 +1422,7 @@
 				92A533D421EBDDF20089FBB9 /* GCDWebUploader.m in Sources */,
 				92ECB91221EAA1B700D1E3D0 /* EmulatorController.m in Sources */,
 				EF8EAA87244F7F5D00DA02BB /* SteamControllerManager.m in Sources */,
+				EF8409B6260CF66500FAC3CF /* MetalViewText.m in Sources */,
 				EF24BAFD24C786A900D9C55A /* SkinManager.m in Sources */,
 				92A533AC21EBDBAD0089FBB9 /* GCDWebServerFunctions.m in Sources */,
 				EF7B232D23FD0469001FF51D /* (null) in Sources */,
@@ -1412,6 +1435,7 @@
 				92A5332421EB57F00089FBB9 /* Options.m in Sources */,
 				EF301CF2240460C5000510FD /* Alert.m in Sources */,
 				92A533CA21EBDBAD0089FBB9 /* GCDWebServerFileRequest.m in Sources */,
+				EF8409A3260CEFAB00FAC3CF /* AVPlayerView.m in Sources */,
 				92A533BB21EBDBAD0089FBB9 /* GCDWebServerDataResponse.m in Sources */,
 				EF941F0124427D1200D58F7F /* OptionsTableViewController.m in Sources */,
 				926C771D21F5034100103EDE /* TVInputOptionsController.m in Sources */,
@@ -1430,6 +1454,7 @@
 				EFA7A0E124B65C020009CF88 /* MetalViewShaders.metal in Sources */,
 				EFA7A0E224B65C020009CF88 /* KeyboardView.m in Sources */,
 				EFA7A0E324B65C020009CF88 /* GCDWebServerFileResponse.m in Sources */,
+				EF8409C0260D281000FAC3CF /* AVPlayerView.m in Sources */,
 				EFA7A0E424B65C020009CF88 /* OptionsTableViewController.m in Sources */,
 				EFA7A0E524B65C020009CF88 /* GCDWebUploader.m in Sources */,
 				EFA7A0E624B65C020009CF88 /* GCDWebServerFileRequest.m in Sources */,
@@ -1438,6 +1463,7 @@
 				EFA7A0E924B65C020009CF88 /* ulTron.metal in Sources */,
 				EFA7A0EA24B65C020009CF88 /* lineTron.metal in Sources */,
 				EFA7A0EB24B65C020009CF88 /* GCDWebServerRequest.m in Sources */,
+				EF8409B7260CF66500FAC3CF /* MetalViewText.m in Sources */,
 				EFA7A0EC24B65C020009CF88 /* MameShaders.metal in Sources */,
 				EFA7A0ED24B65C020009CF88 /* OptionsController.m in Sources */,
 				EFA7A0EE24B65C020009CF88 /* SteamControllerExtendedGamepad.m in Sources */,

@@ -46,7 +46,7 @@
     } else if ( section == kVectorSection ) {
         return 2;
     } else if ( section == kMiscSection ) {
-        return 5;
+        return 6;
     } else if ( section == kInputSection ) {
         return 1;
     } else if ( section == kImportSection ) {
@@ -186,15 +186,18 @@
             cell.textLabel.text   = @"Show FPS";
             cell.accessoryView = [self optionSwitchForKey:@"showFPS"];
         } else if ( indexPath.row == 1 ) {
+            cell.textLabel.text   = @"Show HUD";
+            cell.accessoryView = [self optionSwitchForKey:@"showHUD"];
+        } else if ( indexPath.row == 2 ) {
             cell.textLabel.text   = @"Show Info/Warnings";
             cell.accessoryView = [self optionSwitchForKey:@"showINFO"];
-        } else if ( indexPath.row == 2 ) {
+        } else if ( indexPath.row == 3 ) {
             cell.textLabel.text = @"Cheats";
             cell.accessoryView = [self optionSwitchForKey:@"cheats"];
-        } else if ( indexPath.row == 3 ) {
+        } else if ( indexPath.row == 4 ) {
             cell.textLabel.text   = @"Save Hiscores";
             cell.accessoryView = [self optionSwitchForKey:@"hiscore"];
-        } else if ( indexPath.row == 4 ) {
+        } else if ( indexPath.row == 5 ) {
             cell.textLabel.text   = @"Emulated Speed";
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
             cell.detailTextLabel.text = [Options.arrayEmuSpeed optionAtIndex:op.emuspeed];
@@ -254,7 +257,7 @@
             [[self navigationController] pushViewController:listController animated:YES];
         }
     } else if ( indexPath.section == kMiscSection ) {
-        if ( indexPath.row == 4 ) {
+        if ( indexPath.row == 5 ) {
             ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"emuspeed" list:Options.arrayEmuSpeed title:cell.textLabel.text];
             [[self navigationController] pushViewController:listController animated:YES];
         }

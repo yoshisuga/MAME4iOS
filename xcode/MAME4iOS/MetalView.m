@@ -45,7 +45,8 @@ __attribute__((objc_direct_members))
     NSUInteger _maximumFramesPerSecond;
     UIWindow* _window;
     BOOL _externalDisplay;      // we are on an external display
-    BOOL _wideColor;            // display supports wide-color
+    BOOL _wideColor;            // display supports wide-color (P3)
+    BOOL _hdr;                  // display supports HDR (HDR10 or Dolby Vision)
     BOOL _textureCacheFlush;
     BOOL _resetDevice;
 
@@ -115,6 +116,8 @@ __attribute__((objc_direct_members))
         self.clearsContextBeforeDrawing = NO;
         _draw_lock = [[NSLock alloc] init];
         
+        _shader_variables = [[NSMutableDictionary alloc] init];
+        
         _colorSpaceDevice = CGColorSpaceCreateDeviceRGB();
         _colorSpaceSRGB = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
         _colorSpaceExtendedSRGB = CGColorSpaceCreateWithName(kCGColorSpaceExtendedSRGB);
@@ -147,16 +150,61 @@ __attribute__((objc_direct_members))
     [super didMoveToWindow];
     _window = self.window;
     if (_window != nil) {
+#if defined(DEBUG) && DebugLog != 0
+        if (_window.screen != nil) {
+            NSLog(@"SCREEN: %@", _window.screen);
+            NSLog(@"MODE: %@", _window.screen.currentMode);
+
+            #pragma clang diagnostic push
+            #pragma clang diagnostic ignored "-Wundeclared-selector"
+            if ([_window.screen respondsToSelector:@selector(displayConfiguration)])
+                NSLog(@"CONFIG: %@", [_window.screen valueForKey:@"displayConfiguration"]);
+            #pragma clang diagnostic pop
+
+            @try {
+                NSLog(@"CURRENT MODE: %@", [_window.screen valueForKeyPath:@"displayConfiguration.currentMode"]);
+                NSLog(@" refreshRate: %@", [_window.screen valueForKeyPath:@"displayConfiguration.currentMode.refreshRate"]);
+                NSLog(@"  colorGamut: %@", [_window.screen valueForKeyPath:@"displayConfiguration.currentMode.colorGamut"]);
+                NSLog(@"     hdrMode: %@", [_window.screen valueForKeyPath:@"displayConfiguration.currentMode.hdrMode"]);
+            }
+            @catch (id exception) {
+            }
+        }
+#endif
         _layer.contentsScale = _window.screen.scale;
         _maximumFramesPerSecond = _window.screen.maximumFramesPerSecond;
         _externalDisplay = (_window.screen != UIScreen.mainScreen);
-        // TODO: wideColor on macCatalyst!
-        _wideColor = _window.screen.traitCollection.displayGamut == UIDisplayGamutP3 && !(TARGET_OS_SIMULATOR || TARGET_OS_MACCATALYST);
+        
+        _wideColor = _window.screen.traitCollection.displayGamut == UIDisplayGamutP3;
+        
+        @try {
+            _hdr = [[_window.screen valueForKeyPath:@"displayConfiguration.currentMode.hdrMode"] intValue] != 0;
+        }
+        @catch (id exception) {
+            _hdr = FALSE;
+        }
+        
         if (_wideColor) {
+#if TARGET_OS_TV
+            if (_hdr) {
+                _colorSpace = _colorSpaceExtendedSRGB;
+                _pixelFormat = MTLPixelFormatBGR10_XR;
+
+                if (@available(iOS 14.0, tvOS 14.0, *)) {
+                    //_colorSpace = _colorSpaceExtended2020;
+                    //_pixelFormat = MTLPixelFormatRGBA16Float;
+                }
+            }
+            else {
+                _colorSpace = _colorSpaceExtendedSRGB;
+                _pixelFormat = MTLPixelFormatBGR10_XR;
+            }
+#elif TARGET_OS_MACCATALYST
+            // TODO: wideColor on macCatalyst!
+            _colorSpace = _colorSpaceSRGB;
+            _pixelFormat = MTLPixelFormatBGRA8Unorm;
+#else // TARGET_OS_IOS
             _colorSpace = _colorSpaceExtendedSRGB;
-#if TARGET_OS_MACCATALYST
-            _pixelFormat = MTLPixelFormatRGBA16Float;
-#else
             _pixelFormat = MTLPixelFormatBGR10_XR;
 #endif
         }
@@ -197,10 +245,19 @@ __attribute__((objc_direct_members))
     _resetDevice = FALSE;
     
     _layer.device = _device;
-    _layer.pixelFormat = _pixelFormat;
-    //_layer.colorspace = _colorSpace;
     _layer.framebufferOnly = TRUE;
     _layer.maximumDrawableCount = 3;    // TODO: !
+
+    @try {
+        _layer.pixelFormat = _pixelFormat;
+        _layer.colorspace = _colorSpace;
+    }
+    @catch (id exception) {
+        _colorSpace = _colorSpaceSRGB;
+        _pixelFormat = MTLPixelFormatBGRA8Unorm;
+        _layer.pixelFormat = _pixelFormat;
+        _layer.colorspace = _colorSpace;
+    }
 
     _library = [_device newDefaultLibrary];
     _queue = [_device newCommandQueue];
@@ -210,11 +267,10 @@ __attribute__((objc_direct_members))
     [_vertex_buffer_cache_lock lock];
     _vertex_buffer_cache = [[NSMutableArray alloc] init];
     [_vertex_buffer_cache_lock unlock];
-    
+
     // shader cache
     _shader_state = [[NSMutableDictionary alloc] init];
     _shader_params = [[NSMutableDictionary alloc] init];
-    _shader_variables = [[NSMutableDictionary alloc] init];
     _shader_current = nil;
     
     // texture cache
@@ -228,6 +284,8 @@ __attribute__((objc_direct_members))
     // init sampler state(s)
     _texture_address_mode = MTLSamplerAddressModeClampToEdge;
     _texture_filter = MTLSamplerMinMagFilterNearest;
+    for (int i=0; i<sizeof(_texture_sampler)/sizeof(_texture_sampler[0]); i++)
+        _texture_sampler[i] = nil;
 }
 
 #pragma mark - vertex buffers
@@ -342,10 +400,12 @@ __attribute__((objc_direct_members))
     [self updateSamplerState];
 
     // set default (frame based) shader variables
+    int depth = _pixelFormat == MTLPixelFormatRGBA16Float ? 16 : (_pixelFormat == MTLPixelFormatBGRA8Unorm ? 8 : 10);
     [self setShaderVariables:@{
         @"frame-count": @(_frameCount),
         @"render-target-size": @(size),
-        @"render-target-depth": @(_wideColor ? 10 : 8),
+        @"render-target-depth": @(depth),
+        @"render-target-hdr": @(_hdr),
     }];
     
     return TRUE;
@@ -956,31 +1016,21 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
 /// add to the dictionary used to resolve named shader variables
 - (void)setShaderVariablesInternal:(NSDictionary *)variables {
+    
 #ifdef DEBUG
-    for (NSString* key in variables.allKeys) {
-        NSParameterAssert([key isKindOfClass:[NSString class]]);
-        NSParameterAssert([variables[key] isKindOfClass:[NSValue class]]);
+    if (variables != nil) {
+        for (NSString* key in variables.allKeys) {
+            NSParameterAssert([key isKindOfClass:[NSString class]]);
+            NSParameterAssert([variables[key] isKindOfClass:[NSValue class]]);
+        }
     }
 #endif
     
-#if DebugLog
-    BOOL change = FALSE;
-    for (NSString* key in variables.allKeys) {
-        if ([key isEqualToString:@"frame-count"])
-            continue;
-        if (_shader_variables[key] == nil || ![_shader_variables[key] isEqual:variables[key]])
-             change = TRUE;
-    }
-#endif
+    if (variables == nil)
+        [_shader_variables removeAllObjects];
+    else
+        [_shader_variables addEntriesFromDictionary:variables];
 
-    [_shader_variables addEntriesFromDictionary:variables];
-    
-#if DebugLog
-    if (change) {
-        NSLog(@"SHADER VARIABLES CHANGE: %@", _shader_variables);
-    }
-#endif
-    
     // if the currently set shader has params, re-set the render state
     if (_encoder != nil && _shader_params[_shader_current] != nil)
         [self setShader:nil];

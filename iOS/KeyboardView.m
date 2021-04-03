@@ -93,6 +93,10 @@
     return YES;
 }
 
+- (BOOL)canBecomeFocused {
+    return YES;
+}
+
 - (void)setActive:(BOOL)value {
     _active = value;
     if (_active) {

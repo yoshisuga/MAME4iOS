@@ -47,6 +47,7 @@
         return;
     
     [builder removeMenuForIdentifier:UIMenuEdit];
+    [builder removeMenuForIdentifier:UIMenuView];
     [builder removeMenuForIdentifier:UIMenuFormat];
     [builder removeMenuForIdentifier:UIMenuServices];
     [builder removeMenuForIdentifier:UIMenuToolbar];
@@ -92,7 +93,7 @@
         [UIKeyCommand commandWithTitle:@"Reset"     image:[UIImage systemImageNamed:@"power"]               action:@selector(mameReset)     input:keyF3 modifierFlags:0 propertyList:nil],
         [UIKeyCommand commandWithTitle:@"Exit"      image:[UIImage systemImageNamed:@"x.circle"]            action:@selector(mameExit)      input:UIKeyInputEscape modifierFlags:0  propertyList:nil],
     ]];
-    [builder insertSiblingMenu:mame afterMenuForIdentifier:UIMenuView];
+    [builder insertSiblingMenu:mame afterMenuForIdentifier:UIMenuFile];
     
 #if TARGET_OS_MACCATALYST
     UIWindowScene* scene = deviceWindow.windowScene;

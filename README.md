@@ -148,7 +148,7 @@ MENU+L1       |Player Coin
 MENU+R1       |Player Start               
 MENU+L2       |Player 2 Coin                
 MENU+R2       |Player 2 Start               
-MENU+A          |Show or hide HUD                 
+MENU+A          |Speed 2x                
 MENU+B          |Pause MAME   
 MENU+X          |Exit Game                 
 MENU+Y          |Open MAME menu   
@@ -166,7 +166,7 @@ The right stick on the extended controller profile is fully supported, with supp
 The trigger buttons are mapped to analog controls and should be useful in assigning for pedal controls, for example.
 
 ## Siri Remote
-MAME4iOS is now usable on a AppleTV using only the stock Siri Remote. You can only play games that use only the A and X buttons.
+MAME4iOS is now usable on a AppleTV using only the stock Siri Remote. You can only play games that use only the A and B buttons.
 
 to start playing a game, hit MENU and select "Coin + Start" from the list.
 

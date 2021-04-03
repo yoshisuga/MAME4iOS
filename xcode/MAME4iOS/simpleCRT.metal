@@ -25,6 +25,7 @@ struct simpleCrtUniforms {
     float light_boost;  // 1.3 default 0.1, 3.0
     float vign_strength;// 0.05 default 0.0, 1.0
     float zoom_out;     // 1.1 default 0.01, 5.0
+    float brightness;   // 1.0 default 0.666, 1.333
 };
 #pragma pack(pop)
 
@@ -42,7 +43,8 @@ simpleCRT(VertexOutput v [[stage_in]],
     float light_boost   = uniforms.light_boost;
     float vign_strength = uniforms.vign_strength;
     float zoom_out      = uniforms.zoom_out;
-    
+    float brightness    = uniforms.brightness;
+
     float2 uv = ((v.tex - float2(0.5))*2.0)*zoom_out;  // add in simple curvature to uv's
     uv.x *= (1.0 + pow(abs(uv.y) / curv_vert, 2.0)); // tweak vertical curvature
     uv.y *= (1.0 + pow(abs(uv.x) / curv_horiz, 2.0)); // tweak horizontal curvature
@@ -54,5 +56,5 @@ simpleCRT(VertexOutput v [[stage_in]],
     float4 colmod = ((col*col)*evenLines)*light_boost; // simple gamma boost in linear to compensate for darkening due to scanlines
     float vign = pow((0.0 + 1.0*16.0*uv.x*uv.y*(1.0-uv.x)*(1.0-uv.y)), vign_strength); // create simple soft vignette and apply it across screen
     float4 simple_crt = (sqrt(colmod*vign)); // reapply gamma and vignette treatment
-    return simple_crt;
+    return simple_crt * brightness;
 }

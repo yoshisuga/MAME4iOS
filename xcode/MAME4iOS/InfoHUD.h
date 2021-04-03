@@ -49,7 +49,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (id)valueForKey:(NSString *)key;
 - (NSDictionary*)getValues;
 
+- (NSInteger)selectedSegmentIndex;
+- (void)setSelectedSegmentIndex:(NSInteger)index;
 - (void)handleButtonPress:(UIPressType)type;
+
+#if TARGET_OS_TV
+- (void)handleRemotePan:(UIPanGestureRecognizer*)pan;
+#endif
 
 @end
 
@@ -66,7 +72,9 @@ typedef NS_ENUM(NSInteger, HUDButtonStyle) {
 
 @property (nonatomic, readwrite) BOOL blurBackground;
 @property (nonatomic, readwrite) CGFloat dimBackground;
+@property(null_resettable,nonatomic,strong) UIFont* font;
 
+- (void)addToolbar:(NSArray*)items handler:(void (^)(NSUInteger button))handler;
 - (void)addButtons:(NSArray*)items style:(HUDButtonStyle)style handler:(void (^)(NSUInteger button))handler;
 - (void)addButton:(id)item style:(HUDButtonStyle)style handler:(void (^)(void))handler;
 - (void)onCancel:(void (^)(void))handler;

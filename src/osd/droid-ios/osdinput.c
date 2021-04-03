@@ -254,12 +254,12 @@ void droid_ios_poll_input(running_machine *machine)
     {
         long _pad_status = myosd_joystick_read(i);
 
-        joy_axis[i][0] = (int)(myosd_joystick_read_analog(i, 'x') *  32767 *  2 );
-        joy_axis[i][1] = (int)(myosd_joystick_read_analog(i, 'y') *  32767 * -2 );
-        joy_axis[i][2] = (int)(myosd_joystick_read_analog(i, 'X') *  32767 *  2 );
-        joy_axis[i][3] = (int)(myosd_joystick_read_analog(i, 'Y') *  32767 * -2 );
-        joy_axis[i][4] = (int)(myosd_joystick_read_analog(i, 'z') *  32767 *  2 );
-        joy_axis[i][5] = (int)(myosd_joystick_read_analog(i, 'Z') *  32767 *  2 );
+        joy_axis[i][0] = (int)(myosd_joystick_read_analog(i, MYOSD_AXIS_LX) *  32767 *  2 );
+        joy_axis[i][1] = (int)(myosd_joystick_read_analog(i, MYOSD_AXIS_LY) *  32767 * -2 );
+        joy_axis[i][2] = (int)(myosd_joystick_read_analog(i, MYOSD_AXIS_RX) *  32767 *  2 );
+        joy_axis[i][3] = (int)(myosd_joystick_read_analog(i, MYOSD_AXIS_RY) *  32767 * -2 );
+        joy_axis[i][4] = (int)(myosd_joystick_read_analog(i, MYOSD_AXIS_LZ) *  32767 *  2 );
+        joy_axis[i][5] = (int)(myosd_joystick_read_analog(i, MYOSD_AXIS_RZ) *  32767 *  2 );
         
         joy_hats[i][0] = ((_pad_status & MYOSD_UP) != 0) ? 0x80 : 0;
         joy_hats[i][1] = ((_pad_status & MYOSD_DOWN) != 0) ? 0x80 : 0;
