@@ -19,7 +19,7 @@ to build it for macOS.
 Compiling and installing the app bundle.
 4. Xcode will open automatically upon completion.
 5. Select the RELEASE branch of the target that you would like to build.
-6. Change the Code Signing Identity and Product Bundle Identifier accordingly. 
+6. Update the MAME4iOS.xcconfig at the top of the Xcode file explorer in the project with your Code Signing Identity and Product Bundle Identifier accordingly. 
 7. Build and install to your device.
 
 Use the built-in WebServer or AirDrop to load up the Rom Sets (NOT INCLUDED).
