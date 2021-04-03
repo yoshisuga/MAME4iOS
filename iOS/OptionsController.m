@@ -157,7 +157,7 @@
                }
                case 5:
                {
-                   cell.textLabel.text   = @"Integer Scaling Only";
+                   cell.textLabel.text   = @"Force Integer Scaling";
                    cell.accessoryView = [self optionSwitchForKey:@"integerScalingOnly"];
                    break;
                }
