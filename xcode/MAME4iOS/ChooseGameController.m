@@ -9,6 +9,7 @@
 #import <GameController/GameController.h>
 #import "ChooseGameController.h"
 #import "PopupSegmentedControl.h"
+#import "GameInfo.h"
 #import "ImageCache.h"
 #import "SystemImage.h"
 #import "InfoDatabase.h"
@@ -481,46 +482,6 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 #pragma mark - game images
 
-+(NSURL*)getGameImageURL:(NSDictionary*)info
-{
-    NSString* name = info[kGameInfoDescription];
-    
-    if (name == nil)
-        return nil;
-
-#if 0
-    NSString* titleURL = @"http://thumbnails.libretro.com/MAME/Named_Titles";
-#else
-    NSString* titleURL = @"https://raw.githubusercontent.com/libretro-thumbnails/MAME/master/Named_Titles";
-#endif
-    
-    /// from [libretro docs](https://docs.libretro.com/guides/roms-playlists-thumbnails/)
-    /// The following characters in titles must be replaced with _ in the corresponding filename: &*/:`<>?\|
-    for (NSString* str in @[@"&", @"*", @"/", @":", @"`", @"<", @">", @"?", @"\\", @"|"])
-        name = [name stringByReplacingOccurrencesOfString:str withString:@"_"];
-    
-    return [NSURL URLWithString:[NSString stringWithFormat:@"%@/%@.png", titleURL,
-                                 [name stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLPathAllowedCharacterSet]]]];
-}
--(NSURL*)getGameImageURL:(NSDictionary*)info
-{
-    return [[self class] getGameImageURL:info];
-}
-
-
--(NSURL*)getGameImageLocalURL:(NSDictionary*)info
-{
-    NSString* name = info[kGameInfoName];
-    
-    if (name == nil)
-        return nil;
-    
-    if ([self isSystem:info])
-        return [[NSBundle mainBundle] URLForResource:name withExtension:@"png"];
-    
-    return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%s/%@.png", get_documents_path("titles"), name] isDirectory:NO];
-}
-
 -(CGSize)getGameImageSize:(NSDictionary*)info
 {
     NSString* name = info[kGameInfoName];
@@ -535,10 +496,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         return [val CGSizeValue];
     
     // Apple has a special [PNG format](http://fileformats.archiveteam.org/wiki/CgBI), and Xcode converts all resources!
-    if ([self isSystem:info])
+    if (info.gameIsSystem)
         return CGSizeMake(640, 480);
     
-    NSURL* url = [self getGameImageLocalURL:info];
+    NSURL* url = info.gameLocalImageURL;
     
     if (url == nil)
         return size;
@@ -855,13 +816,6 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     }
 }
 
-#pragma mark System
-
-- (BOOL)isSystem:(NSDictionary*)game
-{
-    return [@[kGameInfoNameMameMenu, kGameInfoNameSettings] containsObject:game[kGameInfoName]];
-}
-
 #pragma mark Favorites
 
 - (BOOL)isFavorite:(NSDictionary*)game
@@ -952,8 +906,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     
     for (NSDictionary* game in games) {
         NSString* type = [NSString stringWithFormat:@"%@.%@", NSBundle.mainBundle.bundleIdentifier, @"play"];
-        NSString* name = game[kGameInfoDescription] ?: game[kGameInfoName];
-        NSString* title = [NSString stringWithFormat:@"%@", [[name componentsSeparatedByString:@" ("] firstObject]];
+        NSString* title = game.gameTitle;
         UIApplicationShortcutIcon* icon = [UIApplicationShortcutIcon iconWithType:UIApplicationShortcutIconTypePlay];
         
         if (@available(iOS 13.0, *))
@@ -996,7 +949,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     
     for (NSIndexPath* indexPath in vis_items) {
         NSDictionary* game = [self getGameInfo:indexPath];
-        NSURL* url = [self getGameImageURL:game];
+        NSURL* url = game.gameImageURL;
         if (![_updated_urls containsObject:url])
             continue;
 
@@ -1086,12 +1039,15 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     NSString* title;
     NSString* detail;
     NSString* str;
+    
+    if (info[kGameInfoName] == nil || info[kGameInfoDescription] == nil)
+        return nil;
 
     if (layoutMode == LayoutTiny) {
         title = info[kGameInfoName];
     }
     else if (layoutMode == LayoutSmall) {
-        title = [[info[kGameInfoDescription] componentsSeparatedByString:@" ("] firstObject];
+        title = info.gameTitle;
         detail = [NSString stringWithFormat:@"%@ • %@",
                     [[info[kGameInfoManufacturer] componentsSeparatedByString:@" ("] firstObject],
                     info[kGameInfoYear]];
@@ -1137,9 +1093,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 +(NSAttributedString*)getGameText:(NSDictionary*)game
 {
-    if (game[kGameInfoName] == nil || game[kGameInfoDescription] == nil)
-        return nil;
-    return [self getGameText:game layoutMode:LayoutLarge textAlignment:CELL_TEXT_ALIGN];
+    return [self getGameText:game layoutMode:LayoutLarge textAlignment:NSTextAlignmentCenter];
 }
 
 -(NSAttributedString*)getGameText:(NSDictionary*)game
@@ -1247,8 +1201,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         [cell setHeight:(row_height.x + row_height.y)];
     }
 
-    NSURL* url = [self getGameImageURL:info];
-    NSURL* local = [self getGameImageLocalURL:info];
+    NSURL* url = info.gameImageURL;
+    NSURL* local = info.gameLocalImageURL;
 
     cell.tag = url.hash;
     [[ImageCache sharedInstance] getImage:url size:CGSizeZero localURL:local completionHandler:^(UIImage *image) {
@@ -1363,7 +1317,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if (cell.image.image == _loadingImage)
     {
         NSDictionary* game = [self getGameInfo:indexPath];
-        NSURL* url = [self getGameImageURL:game];
+        NSURL* url = game.gameImageURL;
 
         if (url != nil)
             [self updateImage:url];
@@ -1380,7 +1334,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if (cell.image.image == _loadingImage)
     {
         NSDictionary* game = [self getGameInfo:indexPath];
-        NSURL* url = [self getGameImageURL:game];
+        NSURL* url = game.gameImageURL;
     
         if (url != nil)
             [[ImageCache sharedInstance] cancelImage:url];
@@ -1431,7 +1385,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
             [[NSFileManager defaultManager] removeItemAtPath:delete_path error:nil];
         }
         
-        [[ImageCache sharedInstance] flush:[self getGameImageURL:game] size:CGSizeZero];
+        [ImageCache.sharedInstance flush:game.gameImageURL size:CGSizeZero];
         
         if (allFiles) {
             [self setRecent:game isRecent:FALSE];
@@ -1453,7 +1407,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 // NOTE we specificaly *dont* export CHDs because they are huge
 -(void)share:(NSDictionary*)game
 {
-    NSString* title = [NSString stringWithFormat:@"%@ (%@)",[[game[kGameInfoDescription] componentsSeparatedByString:@" ("] firstObject], game[kGameInfoName]];
+    NSString* title = [NSString stringWithFormat:@"%@ (%@)",game.gameTitle, game.gameName];
     
     FileItemProvider* item = [[FileItemProvider alloc] initWithTitle:title typeIdentifier:@"public.zip-archive" saveHandler:^BOOL(NSURL* url, FileItemProviderProgressHandler progressHandler) {
         NSString *rootPath = [NSString stringWithUTF8String:get_documents_path("")];
@@ -1524,8 +1478,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     }
     
     NSString* type = [NSString stringWithFormat:@"%@.%@", NSBundle.mainBundle.bundleIdentifier, @"play"];
-    NSString* description = game[kGameInfoDescription];
-    NSString* title = [NSString stringWithFormat:@"Play %@", [[description componentsSeparatedByString:@" ("] firstObject]];
+    NSString* title = [NSString stringWithFormat:@"Play %@", game.gameTitle];
     
     NSUserActivity* activity = [[NSUserActivity alloc] initWithActivityType:type];
     
@@ -1626,7 +1579,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         return nil;
 
     // prime the image cache, in case any menu items ask for the image later.
-    [[ImageCache sharedInstance] getImage:[self getGameImageURL:game] size:CGSizeZero localURL:[self getGameImageLocalURL:game] completionHandler:^(UIImage *image) {}];
+    [ImageCache.sharedInstance getImage:game.gameImageURL size:CGSizeZero localURL:game.gameLocalImageURL completionHandler:^(UIImage *image) {}];
 
     NSLog(@"menuActionsForItemAtIndexPath: [%d.%d] %@ %@", (int)indexPath.section, (int)indexPath.row, game[kGameInfoName], game);
     
@@ -1668,7 +1621,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     }
 #endif
 
-    if (![self isSystem:game]) {
+    if (!game.gameIsSystem) {
         actions = [actions arrayByAddingObjectsFromArray:@[
 #if TARGET_OS_IOS
             [self actionWithTitle:@"Share" image:[UIImage systemImageNamed:@"square.and.arrow.up"] destructive:NO handler:^(id action) {
@@ -1685,19 +1638,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 // get the title for the ContextMenu
 - (NSString*)menuTitleForGame:(NSDictionary *)game {
-
-    if (game == nil || [game[kGameInfoName] length] == 0)
-        return nil;
-    
-    return [NSString stringWithFormat:@"%@\n%@ • %@\n%@%@",
-            game[kGameInfoDescription],
-            game[kGameInfoManufacturer],
-            game[kGameInfoYear],
-            (game[kGameInfoDriver] == nil || [game[kGameInfoDriver] isEqualToString:game[kGameInfoName]]) ? @"" : [game[kGameInfoDriver] stringByAppendingString:@" • "],
-            ([game[kGameInfoParent] length] > 1) ?
-                [NSString stringWithFormat:@"%@ [%@]", game[kGameInfoName], game[kGameInfoParent]] :
-                game[kGameInfoName]
-            ];
+    return [ChooseGameController getGameText:game layoutMode:LayoutLarge textAlignment:NSTextAlignmentLeft].string;
 }
 - (NSString*)menuTitleForItemAtIndexPath:(NSIndexPath *)indexPath {
     return [self menuTitleForGame:[self getGameInfo:indexPath]];
@@ -2422,7 +2363,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     rect.size.height -= self.collectionView.safeAreaInsets.top;
     rect.size.width  -= self.collectionView.safeAreaInsets.left + self.collectionView.safeAreaInsets.right;
     
-    NSURL* url = [ChooseGameController getGameImageURL:_game];
+    NSURL* url = _game.gameImageURL;
     UIImage* image = [[ImageCache sharedInstance] getImage:url size:CGSizeZero];
     CGFloat aspect = image.size.width > image.size.height ? 4.0/3.0 : 3.0/4.0;
 

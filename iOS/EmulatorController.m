@@ -59,6 +59,7 @@
 #endif
 
 #import "ChooseGameController.h"
+#import "GameInfo.h"
 
 #if TARGET_OS_TV
 #import "TVOptionsController.h"
@@ -121,7 +122,7 @@ TIMER_INIT_END
 @end
 #endif
 
-#define DebugLog 0
+#define DebugLog 1
 #if DebugLog == 0 || DEBUG == 0
 #define NSLog(...) (void)0
 #endif
@@ -218,8 +219,6 @@ float g_pref_touch_analog_sensitivity = 500.0;
 
 int g_pref_touch_directional_enabled = 0;
 
-int g_skin_data = 1;
-
 float g_buttons_size = 1.0f;
 float g_stick_size = 1.0f;
 
@@ -228,6 +227,8 @@ int prev_myosd_mouse = 0;
         
 static int ways_auto = 0;
 static int change_layout=0;
+
+static NSDictionary* g_category_dict;
 
 #define kHUDPositionLandKey  @"hud_rect_land"
 #define kHUDScaleLandKey     @"hud_scale_land"
@@ -374,7 +375,8 @@ void* app_Thread_Start(void* args)
 // load Category.ini (a copy of a similar function from uimenu.c)
 NSDictionary* load_category_ini(void)
 {
-    FILE* file = fopen(get_documents_path("Category.ini"), "r");
+    //FILE* file = fopen(get_documents_path("Category.ini"), "r");
+    FILE* file = fopen(get_resource_path("Category.ini"), "r");
     NSCParameterAssert(file != NULL);
     
     if (file == NULL)
@@ -395,22 +397,29 @@ NSDictionary* load_category_ini(void)
         if (line[0] == '[')
         {
             line[strlen(line) - 1] = '\0';
-            curcat = [NSString stringWithUTF8String:line+1];
+            curcat = @(line+1);
+            // TODO: use only the top-level Category?
+            curcat = [curcat componentsSeparatedByString:@" / "].firstObject;
             continue;
         }
         
-        [category_dict setObject:curcat forKey:[NSString stringWithUTF8String:line]];
+        if (category_dict[@(line)] != nil) {
+            // TODO: Merge Categories?
+            NSLog(@"%@ is in multiple categories %@ and %@", @(line),category_dict[@(line)], curcat);
+            continue;
+        }
+        
+        if (curcat.length != 0)
+            [category_dict setObject:curcat forKey:@(line)];
     }
     fclose(file);
-    return category_dict;
+    return [category_dict copy];
 }
 
 // find the category for a game/rom using Category.ini
-NSString* find_category(NSString* name)
+NSString* find_category(NSString* name, NSString* parent)
 {
-    static NSDictionary* g_category_dict = nil;
-    g_category_dict = g_category_dict ?: load_category_ini();
-    return g_category_dict[name] ?: @"Unkown";
+    return g_category_dict[name] ?: g_category_dict[parent] ?: @"Unkown";
 }
 
 // called from deep inside MAME select_game menu, to give us the valid list of games/drivers
@@ -424,13 +433,13 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
             if (game_info[i] == NULL)
                 continue;
             [games addObject:@{
-                kGameInfoDriver:      [[NSString stringWithUTF8String:game_info[i]->source_file ?: ""].lastPathComponent stringByDeletingPathExtension],
-                kGameInfoParent:      [NSString stringWithUTF8String:game_info[i]->parent ?: ""],
-                kGameInfoName:        [NSString stringWithUTF8String:game_info[i]->name],
-                kGameInfoDescription: [NSString stringWithUTF8String:game_info[i]->description],
-                kGameInfoYear:        [NSString stringWithUTF8String:game_info[i]->year],
-                kGameInfoManufacturer:[NSString stringWithUTF8String:game_info[i]->manufacturer],
-                kGameInfoCategory:    find_category([NSString stringWithUTF8String:game_info[i]->name]),
+                kGameInfoName:        @(game_info[i]->name),
+                kGameInfoDescription: @(game_info[i]->description),
+                kGameInfoYear:        @(game_info[i]->year),
+                kGameInfoParent:      @(game_info[i]->parent ?: ""),
+                kGameInfoManufacturer:@(game_info[i]->manufacturer),
+                kGameInfoCategory:    find_category(@(game_info[i]->name), @(game_info[i]->parent ?: "")),
+                kGameInfoDriver:      [@(game_info[i]->source_file ?: "").lastPathComponent stringByDeletingPathExtension],
             }];
         }
         
@@ -506,8 +515,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
 #endif
 
 + (NSArray*)romList {
-    // NOTE we cant just use g_category_dict, because that is accessed on the MAME background thread.
-    return [load_category_ini() allKeys];
+    return [g_category_dict allKeys];
 }
 
 + (void)setCurrentGame:(NSDictionary*)game {
@@ -527,9 +535,11 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     if (g_emulation_initiated == 1)
         return;
     [self updateOptions];
-    
+
     sharedInstance = self;
-    
+
+    g_category_dict = load_category_ini();
+
     g_mame_game_info = [EmulatorController getCurrentGame];
     NSString* name = g_mame_game_info[kGameInfoName] ?: @"";
     if ([name isEqualToString:kGameInfoNameMameMenu])
