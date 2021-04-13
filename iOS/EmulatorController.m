@@ -158,7 +158,9 @@ unsigned long myosd_pad_status;
 unsigned long myosd_pad_status_2;
 float myosd_pad_x;
 float myosd_pad_y;
-uint8_t g_keyboard_state[256];
+
+uint8_t myosd_keyboard[NUM_KEYS];
+int     myosd_keyboard_changed;
 
 // input profile for current machine (see poll_input)
 int myosd_num_buttons;
@@ -2434,8 +2436,11 @@ static void handle_device_input(myosd_input_state* myosd)
     TIMER_START(timer_read_input);
     
     // read/copy the keyboard
-    _Static_assert(sizeof(myosd->keyboard) == sizeof(g_keyboard_state), "");
-    memcpy(myosd->keyboard, g_keyboard_state, sizeof(g_keyboard_state));
+    if (myosd_keyboard_changed) {
+        _Static_assert(sizeof(myosd->keyboard) == sizeof(myosd_keyboard), "");
+        memcpy(myosd->keyboard, myosd_keyboard, sizeof(myosd_keyboard));
+        myosd_keyboard_changed = 0;
+    }
 
     // poll each controller to get state of device *right* now
     TIMER_START(timer_read_controllers);

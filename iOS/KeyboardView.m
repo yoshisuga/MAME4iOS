@@ -84,7 +84,8 @@
 - (void)didBecomeActive {
     if (self.active)
     {
-        memset(g_keyboard_state, 0, sizeof(g_keyboard_state));
+        myosd_keyboard_changed = 1;
+        memset(myosd_keyboard, 0, sizeof(myosd_keyboard));
         [self becomeFirstResponder];
     }
 }
@@ -777,7 +778,8 @@ int hid_to_mame(int keyCode) {
         return;
 
     // send the key to MAME via myosd_keyboard
-    g_keyboard_state[mame_key] = isKeyDown ? 0x80 : 0x00;
+    myosd_keyboard_changed = 1;
+    myosd_keyboard[mame_key] = isKeyDown ? 0x80 : 0x00;
     
     // only treat as a controler when arrow keys used for first time.
     if (g_joy_used == 0 && (mame_key >= MYOSD_KEY_LEFT && mame_key <= MYOSD_KEY_DOWN))
@@ -788,12 +790,12 @@ int hid_to_mame(int keyCode) {
     
     if (!(g_device_is_fullscreen && g_joy_used) || emuController.presentedViewController != nil) {
         unsigned long kbd_status =
-            (g_keyboard_state[MYOSD_KEY_ENTER]    ? MYOSD_A : 0)    | (g_keyboard_state[MYOSD_KEY_ESC]   ? MYOSD_B : 0) |
-            (g_keyboard_state[MYOSD_KEY_LCONTROL] ? MYOSD_A : 0)    | (g_keyboard_state[MYOSD_KEY_LALT]  ? MYOSD_B : 0) |
-            (g_keyboard_state[MYOSD_KEY_LSHIFT]   ? MYOSD_X : 0)    | (g_keyboard_state[MYOSD_KEY_SPACE] ? MYOSD_Y : 0) |
-            (g_keyboard_state[MYOSD_KEY_Z]        ? MYOSD_L1 : 0)   | (g_keyboard_state[MYOSD_KEY_X]     ? MYOSD_R1 : 0) |
-            (g_keyboard_state[MYOSD_KEY_LEFT]     ? MYOSD_LEFT : 0) | (g_keyboard_state[MYOSD_KEY_RIGHT] ? MYOSD_RIGHT : 0) |
-            (g_keyboard_state[MYOSD_KEY_UP]       ? MYOSD_UP : 0)   | (g_keyboard_state[MYOSD_KEY_DOWN]  ? MYOSD_DOWN : 0) ;
+            (myosd_keyboard[MYOSD_KEY_ENTER]    ? MYOSD_A : 0)    | (myosd_keyboard[MYOSD_KEY_ESC]   ? MYOSD_B : 0) |
+            (myosd_keyboard[MYOSD_KEY_LCONTROL] ? MYOSD_A : 0)    | (myosd_keyboard[MYOSD_KEY_LALT]  ? MYOSD_B : 0) |
+            (myosd_keyboard[MYOSD_KEY_LSHIFT]   ? MYOSD_X : 0)    | (myosd_keyboard[MYOSD_KEY_SPACE] ? MYOSD_Y : 0) |
+            (myosd_keyboard[MYOSD_KEY_Z]        ? MYOSD_L1 : 0)   | (myosd_keyboard[MYOSD_KEY_X]     ? MYOSD_R1 : 0) |
+            (myosd_keyboard[MYOSD_KEY_LEFT]     ? MYOSD_LEFT : 0) | (myosd_keyboard[MYOSD_KEY_RIGHT] ? MYOSD_RIGHT : 0) |
+            (myosd_keyboard[MYOSD_KEY_UP]       ? MYOSD_UP : 0)   | (myosd_keyboard[MYOSD_KEY_DOWN]  ? MYOSD_DOWN : 0) ;
 
         [emuController handle_INPUT:kbd_status stick:CGPointZero];
     }
@@ -839,19 +841,20 @@ int hid_to_mame(int keyCode) {
     }
 #endif
     
-    static BOOL g_keyboard_state[256];
+    // This gets called twice with the same timestamp, so filter out duplicate event
+    static NSTimeInterval last_time_stamp;
+    if (last_time_stamp == event.timestamp)
+        return nil;
+    last_time_stamp = event.timestamp;
     
     int keyCode = [[event valueForKey:@"_keyCode"] intValue];
     BOOL isKeyDown = [[event valueForKey:@"_isKeyDown"] boolValue];
     int modifierFlags = [[event valueForKey:@"_modifierFlags"] intValue];
     NSString* key = [event valueForKey:@"_unmodifiedInput"];
 
-    if (keyCode <= 0 || keyCode > 255 || g_keyboard_state[keyCode] == isKeyDown)
-        return nil;
+    if (keyCode > 0 && keyCode <= 255)
+        [self hardwareKey:key keyCode:keyCode isKeyDown:isKeyDown modifierFlags:modifierFlags];
     
-    g_keyboard_state[keyCode] = isKeyDown;
-
-    [self hardwareKey:key keyCode:keyCode isKeyDown:isKeyDown modifierFlags:modifierFlags];
     return nil;
 }
 

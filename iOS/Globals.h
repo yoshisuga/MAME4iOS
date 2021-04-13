@@ -85,7 +85,9 @@ extern unsigned long myosd_pad_status;
 extern unsigned long myosd_pad_status_2;
 extern float myosd_pad_x;
 extern float myosd_pad_y;
-extern uint8_t g_keyboard_state[256];
+
+extern uint8_t myosd_keyboard[256];
+extern int     myosd_keyboard_changed;
 
 // input profile for current machine
 extern int myosd_num_buttons;
