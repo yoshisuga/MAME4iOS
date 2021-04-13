@@ -42,8 +42,6 @@
  * under a MAME license, as set out in http://mamedev.org/
  */
 
-#include "myosd.h"
-
 #import "Options.h"
 #import "OptionsController.h"
 #import "Globals.h"

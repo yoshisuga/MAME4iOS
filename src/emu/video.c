@@ -1080,29 +1080,28 @@ static void update_refresh_speed(running_machine *machine)
 static void recompute_speed(running_machine *machine, attotime emutime)
 {
 	attoseconds_t delta_emutime;
+    osd_ticks_t realtime = osd_ticks();
+    osd_ticks_t tps = osd_ticks_per_second();
 
 	/* if we don't have a starting time yet, or if we're paused, reset our starting point */
 	if (global.speed_last_realtime == 0 || machine->paused())
 	{
-		global.speed_last_realtime = osd_ticks();
+		global.speed_last_realtime = realtime;
 		global.speed_last_emutime = emutime;
 	}
-
-	if(myosd_exitPause)
-	{
-		//global.frameskip_level = 0;
-		global.speed_last_realtime = osd_ticks();
-		global.speed_last_emutime = emutime;
-		myosd_exitPause = 0;
-	}
+    
+    // if we have been *paused* for more than 1sec reset
+    if (realtime - global.speed_last_realtime > tps)
+    {
+        global.speed_last_realtime = realtime;
+        global.speed_last_emutime = emutime;
+    }
 
 	/* if it has been more than the update interval, update the time */
 	delta_emutime = attotime_to_attoseconds(attotime_sub(emutime, global.speed_last_emutime));
 	if (delta_emutime > SUBSECONDS_PER_SPEED_UPDATE)
 	{
-		osd_ticks_t realtime = osd_ticks();
 		osd_ticks_t delta_realtime = realtime - global.speed_last_realtime;
-		osd_ticks_t tps = osd_ticks_per_second();
 
 		/* convert from ticks to attoseconds */
 		global.speed_percent = (double)delta_emutime * (double)tps / ((double)delta_realtime * (double)ATTOSECONDS_PER_SECOND);

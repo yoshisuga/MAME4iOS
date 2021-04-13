@@ -1,3 +1,6 @@
+# Version 2021.7
+* `OSD` changes.
+
 # Version 2021.6
 * `Mouse` device support.
 * `MAME` full keyboard support.

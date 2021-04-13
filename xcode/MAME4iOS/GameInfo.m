@@ -47,6 +47,12 @@
 }
 -(NSURL*)gameImageURL
 {
+    /// libretro title url
+    /// https://raw.githubusercontent.com/libretro-thumbnails/MAME/master/Named_Titles/pacman.png
+
+    /// MESS style title url
+    /// http://adb.arcadeitalia.net/media/mess.current/titles/a2600/adventur.png
+    
     NSString* name = self.gameDescription;
     NSString* base = @"https://raw.githubusercontent.com/libretro-thumbnails/MAME/master/Named_Titles";
     

@@ -128,6 +128,8 @@ TIMER_INIT_END
 #endif
 
 static int myosd_exitGame = 0;      // set this to cause MAME to exit.
+static int myosd_vis_video_width;   // MAME video/screen width
+static int myosd_vis_video_height;  // MAME video/screen height
 
 // Game Controllers
 NSArray * g_controllers;
@@ -135,9 +137,14 @@ NSArray * g_keyboards;
 NSArray * g_mice;
 
 NSLock* mouse_lock;
+unsigned long mouse_status[NUM_JOY];
 float mouse_delta_x[NUM_JOY];
 float mouse_delta_y[NUM_JOY];
 float mouse_delta_z[NUM_JOY];
+
+unsigned long lightgun_status;
+float lightgun_x;
+float lightgun_y;
 
 // Turbo and Autofire functionality
 int cyclesAfterButtonPressed[NUM_JOY][NUM_BUTTONS];
@@ -148,15 +155,29 @@ int g_pref_autofire = 0;
 unsigned long buttonState;      // on-screen button state, MYOSD_*
 int buttonMask[NUM_BUTTONS];    // map a button index to a button MYOSD_* mask
 unsigned long myosd_pad_status;
+unsigned long myosd_pad_status_2;
 float myosd_pad_x;
 float myosd_pad_y;
+uint8_t g_keyboard_state[256];
+
+// input profile for current machine (see poll_input)
+int myosd_num_buttons;
+int myosd_num_ways;
+int myosd_num_players;
+int myosd_num_coins;
+int myosd_num_inputs;
+int myosd_mouse;
+int myosd_light_gun;
+int myosd_num_keyboard;
 
 // Touch Directional Input tracking
 int touchDirectionalCyclesAfterMoved = 0;
 
 int g_emulation_paused = 0;
 int g_emulation_initiated=0;
+NSCondition* g_emulation_paused_cond;
 
+int g_joy_ways = 0;
 int g_joy_used = 0;
 
 int g_enable_debug_view = 0;
@@ -174,6 +195,7 @@ NSString* g_pref_skin;
 
 int g_pref_integer_scale_only = 0;
 int g_pref_showFPS = 0;
+int g_pref_showINFO = 0;
 
 enum {
     HudSizeZero = 0,        // HUD is not visible at all.
@@ -257,13 +279,13 @@ static BOOL g_video_reset = FALSE;
 
 // called by the OSD layer when redner target changes size
 // **NOTE** this is called on the MAME background thread, dont do anything stupid.
-void iphone_Reset_Views(void)
+void iphone_Reset_Views(int width, int height)
 {
-    NSLog(@"iphone_Reset_Views: %dx%d [%dx%d] %f",
-          myosd_vis_video_width, myosd_vis_video_height,
-          myosd_video_width, myosd_video_height,
-          (double)myosd_vis_video_width / myosd_vis_video_height);
+    NSLog(@"iphone_Reset_Views: %dx%d", width, height);
     
+    myosd_vis_video_width = width;
+    myosd_vis_video_height = height;
+
     if (sharedInstance == nil)
         return;
     
@@ -279,21 +301,21 @@ void iphone_Reset_Views(void)
 // called by the OSD layer to render the current frame
 // **NOTE** this is called on the MAME background thread, dont do anything stupid.
 // ...not doing something stupid includes not leaking autoreleased objects! use a autorelease pool if you need to!
-void iphone_DrawScreen(myosd_render_primitive* prim_list) {
+void iphone_DrawScreen(myosd_render_primitive* prim_list, int width, int height) {
 
     if (sharedInstance == nil || g_emulation_paused)
         return;
 
     @autoreleasepool {
         UIView<ScreenView>* screenView = sharedInstance->screenView;
-
+        
 #ifdef DEBUG
         if (g_debug_dump_screen) {
-            [screenView dumpScreen:prim_list];
+            [screenView dumpScreen:prim_list size:CGSizeMake(width, height)];
             g_debug_dump_screen = FALSE;
         }
 #endif
-        [screenView drawScreen:prim_list];
+        [screenView drawScreen:prim_list size:CGSizeMake(width, height)];
         
         #pragma clang diagnostic push
         #pragma clang diagnostic ignored "-Wundeclared-selector"
@@ -326,12 +348,14 @@ void myosd_output(int channel, const char* text)
 int run_mame(char* game)
 {
     // TODO: hiscore?
+    // TODO: speed?
     char* argv[] = {"mame4ios", game ?: "",
         g_pref_cheat ? "-cheat" : "-nocheat",
         g_pref_autosave ? "-autosave" : "-noautosave",
+        g_pref_showINFO ? "-noskip_gameinfo" : "-skip_gameinfo",
         "-flicker", g_pref_vector_flicker ? "0.4" : "0.0",
         "-beam", g_pref_vector_bean2x ? "2.5" : "1.0",          // TODO: -beam_width_min and -beam_width_max on latest MAME
-        "-pause_brightness", "1.0",     // to debug shaders
+        "-pause_brightness", "1.0", "-update_in_pause",  // to debug shaders
         };
     
     int argc = sizeof(argv) / sizeof(argv[0]);
@@ -339,8 +363,31 @@ int run_mame(char* game)
     return iOS_main(argc,argv);
 }
 
+static void init_pause()
+{
+    g_emulation_paused_cond = [[NSCondition alloc] init];
+}
+
+static void change_pause(int pause)
+{
+    NSLog(@"change_pause: %d => %d", g_emulation_paused, pause);
+    [g_emulation_paused_cond lock];
+    g_emulation_paused = pause;
+    [g_emulation_paused_cond signal];
+    [g_emulation_paused_cond unlock];
+}
+
+static void check_pause()
+{
+    [g_emulation_paused_cond lock];
+    while (g_emulation_paused)
+        [g_emulation_paused_cond wait];
+    [g_emulation_paused_cond unlock];
+}
+
 void* app_Thread_Start(void* args)
 {
+    init_pause();
     g_emulation_initiated = 1;
     
     while (g_emulation_initiated) {
@@ -567,7 +614,7 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
     NSLog(@"stopEmulation: START");
     
     if (g_emulation_paused)
-        change_pause(g_emulation_paused = 0);
+        change_pause(0);
     
     g_emulation_initiated = 0;
     while (g_emulation_initiated == 0) {
@@ -581,7 +628,6 @@ void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
 
 - (void)startMenu
 {
-    g_emulation_paused = 1;
     change_pause(1);
     [UIApplication sharedApplication].idleTimerDisabled = NO;
     [self updatePointerLocked];
@@ -986,7 +1032,6 @@ HUDViewController* g_menu;
 }
 
 - (void)endMenu{
-    g_emulation_paused = 0;
     change_pause(0);
     
     // always enable Keyboard so we can get input from a Hardware keyboard.
@@ -1037,8 +1082,8 @@ HUDViewController* g_menu;
     g_pref_integer_scale_only = op.integerScalingOnly;
     g_pref_showFPS = [op showFPS];
     g_pref_showHUD = [op showHUD];
+    g_pref_showINFO = [op showINFO];
 
-    myosd_showinfo =  [op showINFO];
     g_pref_animated_DPad  = [op animatedButtons];
     g_pref_full_screen_land  = [op fullscreenLandscape];
     g_pref_full_screen_port  = [op fullscreenPortrait];
@@ -1067,24 +1112,23 @@ HUDViewController* g_menu;
         g_pref_BplusX = 0;
     }
         
-    //////
     ways_auto = 0;
     if([op sticktype]==0)
     {
         ways_auto = 1;
-        myosd_waysStick = myosd_num_ways;
+        g_joy_ways = myosd_num_ways;
     }
     else if([op sticktype]==1)
     {
-        myosd_waysStick = 2;
+        g_joy_ways = 2;
     }
     else if([op sticktype]==2)
     {
-        myosd_waysStick = 4;
+        g_joy_ways = 4;
     }
     else
     {
-        myosd_waysStick = 8;
+        g_joy_ways = 8;
     }
     
     myosd_force_pxaspect = [op forcepxa];
@@ -1705,7 +1749,10 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
 -(void)buildHUD {
     
-    myosd_fps = g_pref_showFPS && (g_pref_showHUD != HudSizeInfo);
+    BOOL showFPS = g_pref_showFPS && (g_pref_showHUD != HudSizeInfo);
+
+    myosd_fps = showFPS;
+    [(MetalView*)screenView setShowFPS:showFPS];
 
     if (g_pref_showHUD == HudSizeZero) {
         [self saveHUD];
@@ -1980,10 +2027,8 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
     int prev_emulation_paused = g_emulation_paused;
    
-    if (g_emulation_paused == 0) {
-        g_emulation_paused = 1;
+    if (g_emulation_paused == 0)
         change_pause(1);
-    }
     
     // reset the frame count when you first turn on/off
     if (g_pref_showHUD != HudSizeInfo && g_pref_showFPS != myosd_fps)
@@ -2021,31 +2066,29 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         [hideShowControlsForLightgun setImage:[UIImage imageNamed:@"dpad"] forState:UIControlStateNormal];
     }
     
-    if (prev_emulation_paused != 1) {
-        g_emulation_paused = 0;
+    if (prev_emulation_paused != 1)
         change_pause(0);
-    }
     
     [UIApplication sharedApplication].idleTimerDisabled = (myosd_inGame || g_joy_used) ? YES : NO;//so atract mode dont sleep
 
     if ( prev_myosd_light_gun == 0 && myosd_light_gun == 1 && g_pref_lightgun_enabled ) {
-        lightgun_x[0] = 0.0;
-        lightgun_y[0] = 0.0;
+        lightgun_x = 0.0;
+        lightgun_y = 0.0;
         [self.view makeToast:@"Touch Lightgun Mode Enabled!" duration:2.0 position:CSToastPositionCenter
                        title:nil image:[UIImage systemImageNamed:@"target"] style:toastStyle completion:nil];
     }
     prev_myosd_light_gun = myosd_light_gun;
     
-    if ( prev_myosd_mouse == 0 && myosd_mouse == 1 && g_pref_touch_analog_enabled ) {
-        mouse_x[0] = mouse_delta_x[0] = 0.0;
-        mouse_y[0] = mouse_delta_y[0] = 0.0;
+    if (prev_myosd_mouse == 0 && myosd_mouse == 1 && g_pref_touch_analog_enabled ) {
+        mouse_delta_x[0] = 0.0;
+        mouse_delta_y[0] = 0.0;
         [self.view makeToast:@"Touch Mouse Mode Enabled!" duration:2.0 position:CSToastPositionCenter
                        title:nil image:[UIImage systemImageNamed:@"cursorarrow.motionlines"] style:toastStyle completion:nil];
     }
     prev_myosd_mouse = myosd_mouse;
 
     // Show a WARNING toast, but only once, and only if MAME did not show it already
-    if (myosd_showinfo == 0 && g_mame_warning == 0 && g_mame_output_text[0] && strstr(g_mame_output_text, "WARNING") != NULL) {
+    if (g_pref_showINFO == 0 && g_mame_warning == 0 && g_mame_output_text[0] && strstr(g_mame_output_text, "WARNING") != NULL) {
         [self.view makeToast:@"⚠️Game might not run correctly." duration:3.0 position:CSToastPositionBottom style:toastStyle];
         g_mame_warning = 1;
     }
@@ -2103,7 +2146,7 @@ static void push_mame_keys(NSUInteger key1, NSUInteger key2, NSUInteger key3, NS
 // ...and we are sure MAME is in a state to accept input, and not waking up from being paused or loading a ROM
 // ...we hold a button DOWN for 2 frames (buttonPressReleaseCycles) and wait (buttonNextPressCycles) frames.
 // ...these are *magic* numbers that seam to work good. if we hold a key down too long, games may ignore it. if we send too fast bad too.
-static int handle_buttons()
+static int handle_buttons(myosd_input_state* myosd)
 {
     // check for exit (we cound just do this with push_mame_key...)
     if (myosd_exitGame) {
@@ -2116,14 +2159,14 @@ static int handle_buttons()
     if (g_mame_key != 0) {
         int key = g_mame_key & 0xFF;
 
-        if (myosd_keyboard[key] == 0) {
-            myosd_keyboard[key] = 0x80;
+        if (myosd->keyboard[key] == 0) {
+            myosd->keyboard[key] = 0x80;
         }
         else {
             if (key != MYOSD_KEY_LSHIFT && key != MYOSD_KEY_LCONTROL) {
-                myosd_keyboard[key] = 0;
-                myosd_keyboard[MYOSD_KEY_LSHIFT] = 0;
-                myosd_keyboard[MYOSD_KEY_LCONTROL] = 0;
+                myosd->keyboard[key] = 0;
+                myosd->keyboard[MYOSD_KEY_LSHIFT] = 0;
+                myosd->keyboard[MYOSD_KEY_LCONTROL] = 0;
             }
             g_mame_key = g_mame_key >> 8;
         }
@@ -2144,22 +2187,22 @@ static int handle_buttons()
     unsigned long player = (button & MYOSD_PLAYER_MASK) >> MYOSD_PLAYER_SHIFT;
     button = button & ~MYOSD_PLAYER_MASK;
     
-    if ((myosd_joy_status[player] & button) == button) {
+    if ((myosd->joy_status[player] & button) == button) {
         [g_mame_buttons removeObjectAtIndex:0];
         if (g_mame_buttons.count > 0)
             g_mame_buttons_tick = buttonNextPressCycles;  // wait this long before next button
-        myosd_joy_status[player] &= ~button;
+        myosd->joy_status[player] &= ~button;
     }
     else {
         g_mame_buttons_tick = buttonPressReleaseCycles;  // keep button DOWN for this long.
-        myosd_joy_status[player] |= button;
+        myosd->joy_status[player] |= button;
     }
     [g_mame_buttons_lock unlock];
     return 1;
 }
 
 // handle any TURBO mode buttons.
-static void handle_turbo() {
+static void handle_turbo(myosd_input_state* myosd) {
     
     // dont do turbo mode in MAME menus.
     if (!(myosd_inGame && myosd_in_menu == 0))
@@ -2175,10 +2218,10 @@ static void handle_turbo() {
     for (int button=0; button<NUM_BUTTONS; button++) {
         for (int i = 0; i < NUM_JOY; i++) {
             if (turboBtnEnabled[button]) {
-                if (myosd_joy_status[i] & buttonMask[button]) {
+                if (myosd->joy_status[i] & buttonMask[button]) {
                     // toggle the button every `buttonPressReleaseCycles`
                     if ((cyclesAfterButtonPressed[i][button] / buttonPressReleaseCycles) & 1)
-                        myosd_joy_status[i] &= ~buttonMask[button];
+                        myosd->joy_status[i] &= ~buttonMask[button];
                     cyclesAfterButtonPressed[i][button]++;
                 }
                 else {
@@ -2189,7 +2232,7 @@ static void handle_turbo() {
     }
 }
 
-void handle_autofire(void)
+void handle_autofire(myosd_input_state* myosd)
 {
     if (!g_pref_autofire || !myosd_inGame || myosd_in_menu)
         return;
@@ -2202,7 +2245,7 @@ void handle_autofire(void)
     for(int i=0; i<NUM_JOY; i++)
     {
         old_A_pressed[i] = A_pressed[i];
-        A_pressed[i] = (myosd_joy_status[i] & MYOSD_A) != 0;
+        A_pressed[i] = (myosd->joy_status[i] & MYOSD_A) != 0;
         
         if (!old_A_pressed[i] && A_pressed[i])
            enabled_autofire[i] = !enabled_autofire[i];
@@ -2224,9 +2267,9 @@ void handle_autofire(void)
             }
                  
             if (fire[i]++ >=value)
-                myosd_joy_status[i] |= MYOSD_A;
+                myosd->joy_status[i] |= MYOSD_A;
             else
-                myosd_joy_status[i] &= ~MYOSD_A;
+                myosd->joy_status[i] &= ~MYOSD_A;
 
             if (fire[i] >= value*2)
                 fire[i] = 0;
@@ -2237,13 +2280,14 @@ void handle_autofire(void)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpartial-availability"
 // handle input from a mouse for a specific player (mouse will only be non-nil on iOS 14)
-static void read_mouse(GCMouse* mouse, int player)
+static void read_mouse(GCMouse* mouse, myosd_input_state* myosd, int player)
 {
     // read the accumulated movement
     [mouse_lock lock];
-    mouse_x[player] = mouse_delta_x[player];
-    mouse_y[player] = mouse_delta_y[player];
-    mouse_z[player] = mouse_delta_z[player];
+    myosd->mouse_status[player] = mouse_status[player];
+    myosd->mouse_x[player] = mouse_delta_x[player];
+    myosd->mouse_y[player] = mouse_delta_y[player];
+    myosd->mouse_z[player] = mouse_delta_z[player];
     mouse_delta_x[player] = 0.0;
     mouse_delta_y[player] = 0.0;
     mouse_delta_z[player] = 0.0;
@@ -2353,7 +2397,7 @@ static unsigned long read_controller(GCController *controller, float* axis)
 }
 
 // handle input from a game controller for a specific player
-static void read_player_controller(GCController *controller, int index, int player)
+static void read_player_controller(GCController *controller, myosd_input_state* myosd, int index, int player)
 {
     // if the controller is in MENU mode, dont let MAME see any input
     if (g_menuButtonMode[index] != 0)
@@ -2361,7 +2405,7 @@ static void read_player_controller(GCController *controller, int index, int play
     
 #if DIRECT_CONTROLLER_READ
     // read controller directly into player data
-    myosd_joy_status[player] = read_controller(controller, myosd_joy_analog[player]);
+    myosd->joy_status[player] = read_controller(controller, myosd->joy_analog[player]);
 #else
     // do a *lazy* read, only read if the updateHandler set the device dirty
     static unsigned long g_device_status[NUM_DEV];
@@ -2371,23 +2415,27 @@ static void read_player_controller(GCController *controller, int index, int play
         g_device_status[index] = read_controller(controller, g_device_analog[index]);
         g_device_has_input[index] = 0;
     }
-    myosd_joy_status[player] = g_device_status[index];
-    _Static_assert(sizeof(myosd_joy_analog[0]) == MYOSD_AXIS_NUM * sizeof(float), "");
-    memcpy(myosd_joy_analog[player], g_device_analog[index], sizeof(g_device_analog[0]));
+    myosd->joy_status[player] = g_device_status[index];
+    _Static_assert(sizeof(myosd->joy_analog[0]) == MYOSD_AXIS_NUM * sizeof(float), "");
+    memcpy(myosd->joy_analog[player], g_device_analog[index], sizeof(g_device_analog[0]));
 #endif
 }
 
-static BOOL controller_is_zero(int player) {
-    return myosd_joy_status[player] == 0 &&
-        myosd_joy_analog[player][MYOSD_AXIS_LX] == 0.0 && myosd_joy_analog[player][MYOSD_AXIS_RX] == 0.0 &&
-        myosd_joy_analog[player][MYOSD_AXIS_LY] == 0.0 && myosd_joy_analog[player][MYOSD_AXIS_RY] == 0.0 &&
-        myosd_joy_analog[player][MYOSD_AXIS_LZ] == 0.0 && myosd_joy_analog[player][MYOSD_AXIS_RZ] == 0.0 ;
+static BOOL controller_is_zero(myosd_input_state* myosd, int player) {
+    return myosd->joy_status[player] == 0 &&
+        myosd->joy_analog[player][MYOSD_AXIS_LX] == 0.0 && myosd->joy_analog[player][MYOSD_AXIS_RX] == 0.0 &&
+        myosd->joy_analog[player][MYOSD_AXIS_LY] == 0.0 && myosd->joy_analog[player][MYOSD_AXIS_RY] == 0.0 &&
+        myosd->joy_analog[player][MYOSD_AXIS_LZ] == 0.0 && myosd->joy_analog[player][MYOSD_AXIS_RZ] == 0.0 ;
 }
 
 // handle any input from *all* game controllers
-static void handle_device_input()
+static void handle_device_input(myosd_input_state* myosd)
 {
     TIMER_START(timer_read_input);
+    
+    // read/copy the keyboard
+    _Static_assert(sizeof(myosd->keyboard) == sizeof(g_keyboard_state), "");
+    memcpy(myosd->keyboard, g_keyboard_state, sizeof(g_keyboard_state));
 
     // poll each controller to get state of device *right* now
     TIMER_START(timer_read_controllers);
@@ -2396,9 +2444,15 @@ static void handle_device_input()
     
     if (controllers_count == 0) {
         // read only the on-screen controlls
-        myosd_joy_status[0] = myosd_pad_status;
-        myosd_joy_analog[0][MYOSD_AXIS_LX] = myosd_pad_x;
-        myosd_joy_analog[0][MYOSD_AXIS_LY] = myosd_pad_y;
+        myosd->joy_status[0] = myosd_pad_status;
+        myosd->joy_analog[0][MYOSD_AXIS_LX] = myosd_pad_x;
+        myosd->joy_analog[0][MYOSD_AXIS_LY] = myosd_pad_y;
+
+        myosd->joy_status[1] = myosd_pad_status_2;  // iMpulse
+        myosd->joy_analog[1][MYOSD_AXIS_LX] = 0;
+        myosd->joy_analog[1][MYOSD_AXIS_LY] = 0;
+        
+        controllers_count = 2;
     }
     else {
         for (int index = 0; index < controllers_count; index++) {
@@ -2408,16 +2462,21 @@ static void handle_device_input()
             if (myosd_inGame == 0 || myosd_in_menu == 1)
                 player = 0;
             // dont overwrite a lower index controller, unless....
-            if (player == index || controller_is_zero(player))
-                read_player_controller(controller, index, player);
+            if (player == index || controller_is_zero(myosd, player))
+                read_player_controller(controller, myosd, index, player);
         }
 
         // read the on-screen controls if no game controller input
-        if (controller_is_zero(0)) {
-            myosd_joy_status[0] = myosd_pad_status;
-            myosd_joy_analog[0][MYOSD_AXIS_LX] = myosd_pad_x;
-            myosd_joy_analog[0][MYOSD_AXIS_LY] = myosd_pad_y;
+        if (controller_is_zero(myosd, 0)) {
+            myosd->joy_status[0] = myosd_pad_status;
+            myosd->joy_analog[0][MYOSD_AXIS_LX] = myosd_pad_x;
+            myosd->joy_analog[0][MYOSD_AXIS_LY] = myosd_pad_y;
         }
+    }
+    // set all other controllers to ZERO
+    for (int index = (int)controllers_count; index < NUM_JOY; index++) {
+        myosd->joy_status[index] = 0;
+        memset(myosd->joy_analog[index], 0, sizeof(myosd->joy_analog[0]));
     }
     TIMER_STOP(timer_read_controllers);
 
@@ -2426,60 +2485,80 @@ static void handle_device_input()
     NSArray* mice = g_mice;
     if (mice.count != 0 && g_direct_mouse_enable) {
         for (int i = 0; i < MIN(NUM_JOY, mice.count); i++) {
-            read_mouse(mice[i], i);
+            read_mouse(mice[i], myosd, i);
         }
     }
     // if no HW mice, get input from the on-screen touch mouse
     else if (myosd_mouse == 1 && g_pref_touch_analog_enabled) {
-        read_mouse(nil, 0);
+        read_mouse(nil, myosd, 0);
     }
     TIMER_STOP(timer_read_mice);
+    
+    // read our on-screen emulated LIGHTGUN
+    myosd->lightgun_status[0] = lightgun_status;
+    myosd->lightgun_x[0] = lightgun_x;
+    myosd->lightgun_y[0] = lightgun_y;
 
     TIMER_STOP(timer_read_input);
 }
 
 // handle p1aspx (P1 as P2, P3, P4)
-static void handle_p1aspx(void) {
+static void handle_p1aspx(myosd_input_state* myosd) {
     
     if (g_pref_p1aspx == 0 || myosd_in_menu != 0)
         return;
-
     
     for (int i=1; i<NUM_JOY; i++) {
-        myosd_joy_status[i] = myosd_joy_status[0];
-        memcpy(myosd_joy_analog[i], myosd_joy_analog[0], sizeof(myosd_joy_analog[0]));
+        myosd->joy_status[i] = myosd->joy_status[0];
+        memcpy(myosd->joy_analog[i], myosd->joy_analog[0], sizeof(myosd->joy_analog[0]));
     }
 }
 
 // called from inside MAME droid_ios_poll_input
-void myosd_poll_input(void) {
-
+void myosd_poll_input(myosd_input_state* myosd) {
+    
     // this is called on the MAME thread, need to be carefull and clean up!
     @autoreleasepool {
-        // g_video_reset is set when iphone_Reset_Views is called, and we need to configure the UI fresh
+        
+        // g_video_reset is set when iphone_Reset_Views is called
+        // we have input on a brand new machine, and we need to configure the UI fresh
         if (g_video_reset) {
+
+            // get the input profile for this machine (copy into globals)
+            myosd_num_buttons   = myosd->num_buttons;
+            myosd_num_ways      = myosd->num_ways;
+            myosd_num_players   = myosd->num_players;
+            myosd_num_coins     = myosd->num_coins;
+            myosd_num_inputs    = myosd->num_inputs;
+            myosd_mouse         = myosd->num_mouse;
+            myosd_light_gun     = myosd->num_lightgun;
+            myosd_num_keyboard  = myosd->num_keyboard;
+            
+            // keep myosd_waysStick uptodate
+            if (ways_auto)
+                g_joy_ways = myosd_num_ways;
+            
             g_video_reset = FALSE;
             [sharedInstance performSelectorOnMainThread:@selector(resetUI) withObject:nil waitUntilDone:NO];
         }
         
-        // keep myosd_waysStick uptodate
-        if (ways_auto)
-            myosd_waysStick = myosd_num_ways;
-        
         // read any "fake" buttons, and get out now if there is one
-        if (handle_buttons())
+        if (handle_buttons(myosd))
             return;
         
         // read input direct from game controller(s)
-        handle_device_input();
+        handle_device_input(myosd);
         
         // handle TURBO and AUTOFIRE
-        handle_turbo();
-        handle_autofire();
+        handle_turbo(myosd);
+        handle_autofire(myosd);
         
         // handle P1 as P2,P3,P4
-        handle_p1aspx();
+        handle_p1aspx(myosd);
     }
+    
+    // PAUSE the MAME thread (maybe)
+    check_pause();
 }
 
 #pragma mark - view layout
@@ -3302,13 +3381,13 @@ void myosd_poll_input(void) {
     
     // light gun release?
     if ( myosd_light_gun == 1 && g_pref_lightgun_enabled ) {
-        myosd_pad_status &= ~MYOSD_A;
-        myosd_pad_status &= ~MYOSD_B;
+        lightgun_status &= ~MYOSD_A;
+        lightgun_status &= ~MYOSD_B;
     }
     
     if ( g_pref_touch_analog_enabled && myosd_mouse == 1 ) {
-        mouse_x[0] = 0.0f;
-        mouse_y[0] = 0.0f;
+        mouse_delta_x[0] = 0.0f;
+        mouse_delta_y[0] = 0.0f;
     }
     
     if ( g_pref_touch_directional_enabled ) {
@@ -3540,16 +3619,16 @@ void myosd_poll_input(void) {
         } else if ( touchcount > 1 ) {
             // more than one touch means secondary button press
             NSLog(@"LIGHTGUN: B");
-            myosd_pad_status |= MYOSD_B;
+            lightgun_status |= MYOSD_B;
         } else if ( touchcount == 1 ) {
-            myosd_pad_status |= MYOSD_A;
+            lightgun_status |= MYOSD_A;
             if ( g_pref_lightgun_bottom_reload && newY < -0.80 ) {
                 NSLog(@"LIGHTGUN: RELOAD");
                 newY = -12.1f;
             }
             NSLog(@"LIGHTGUN: %f,%f",newX,newY);
-            lightgun_x[0] = newX;
-            lightgun_y[0] = newY;
+            lightgun_x = newX;
+            lightgun_y = newY;
         }
     }
 }
@@ -4399,8 +4478,8 @@ static unsigned long g_device_has_input[NUM_DEV];   // TRUE if device needs to b
     }
 
     // reset current input state
-    memset(myosd_joy_status, 0, sizeof(myosd_joy_status));
-    memset(myosd_joy_analog, 0, sizeof(myosd_joy_analog));
+    // memset(myosd_joy_status, 0, sizeof(myosd_joy_status));
+    // memset(myosd_joy_analog, 0, sizeof(myosd_joy_analog));
 
     // cancel menu mode on all (current) controllers, this is needed when a controller disconects in menu mode.
     memset(g_menuButtonMode, 0, sizeof(g_menuButtonMode));
@@ -4978,8 +5057,8 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
             mouse_delta_x[i] += deltaX * g_pref_touch_analog_sensitivity * scale;
             mouse_delta_y[i] += deltaY * g_pref_touch_analog_sensitivity * scale;
             // make sure on-screen touch lightgun and mouse can coexit
-            lightgun_x[0] = 0.0;
-            lightgun_y[0] = 0.0;
+            lightgun_x = 0.0;
+            lightgun_y = 0.0;
             [mouse_lock unlock];
         }];
         [mouse.mouseInput.scroll setValueChangedHandler:^(GCControllerDirectionPad* dpad, float xValue, float yValue) {
@@ -4995,6 +5074,7 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
             [mouse_lock unlock];
         }];
     }
+    [self updatePointerLocked];
 }
 
 -(void)keyboardConnected:(NSNotification*)note API_AVAILABLE(ios(14.0)) {
@@ -5177,8 +5257,7 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
         g_mame_game[0] = 0;     // run the MENU
     }
 
-    g_emulation_paused = 0;
-    change_pause(g_emulation_paused);
+    change_pause(0);
     myosd_exitGame = 1; // exit menu mode and start game or menu.
 }
 
@@ -5275,8 +5354,7 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
     ChooseGameController* choose = [[ChooseGameController alloc] init];
     [choose setGameList:games];
     choose.backgroundImage = [self loadTileImage:@"ui-background.png"];
-    g_emulation_paused = 1;
-    change_pause(g_emulation_paused);
+    change_pause(1);
     choose.selectGameCallback = ^(NSDictionary* game) {
         if ([game[kGameInfoName] isEqualToString:kGameInfoNameSettings]) {
             [self runSettings];

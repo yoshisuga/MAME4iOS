@@ -1,22 +1,23 @@
 //============================================================
 //
-//  myosd.c - Implementation of osd stuff
+//  myosd.h - PUBLIC interface to the LIBMAME core/library
 //
 //  Copyright (c) 1996-2007, Nicola Salmoria and the MAME Team.
 //  Visit http://mamedev.org for licensing and usage restrictions.
 //
 //  MAME4DROID MAME4iOS by David Valdeita (Seleuco)
 //
+//  FUNCTIONS:
+//      myosd_main()
+//
+//
+//
+//
+//
+//
 //============================================================
 
-#include <fcntl.h>
-#include <pthread.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/time.h>
-#include <unistd.h>
-#include <stdarg.h>
+#include <stdint.h>
 
 #ifndef __MYOSD_H__
 #define __MYOSD_H__
@@ -25,12 +26,44 @@
 extern "C" {
 #endif
 
-enum  { MYOSD_UP=0x1,       MYOSD_LEFT=0x4,       MYOSD_DOWN=0x10,   MYOSD_RIGHT=0x40,
-        MYOSD_START=1<<8,   MYOSD_SELECT=1<<9,    MYOSD_L1=1<<10,    MYOSD_R1=1<<11,
-        MYOSD_A=1<<12,      MYOSD_B=1<<13,        MYOSD_X=1<<14,     MYOSD_Y=1<<15,
-        MYOSD_L3=1<<16,     MYOSD_R3=1<<17,       MYOSD_L2=1<<18,    MYOSD_R2=1<<19,
-        MYOSD_EXIT=1<<20,   MYOSD_OPTION=1<<21,   MYOSD_HOME=1<<22,  MYOSD_MENU=1<<23,
+/*
+typedef struct {
+    void iphone_Reset_Views(void);
+    int  iphone_DrawScreen(void*);
+    void myosd_poll_input(void);
+    void myosd_output(int channel, const char* text);
+    void myosd_set_game_info(myosd_game_info *info[], int game_count);
+}   myosd_callbacks;
+
+typedef struct {
+    unsigned char myosd_keyboard[NUM_KEYS];
+
+    unsigned long myosd_joy_status[NUM_JOY];
+    float myosd_joy_analog[NUM_JOY][MYOSD_AXIS_NUM];
+
+    unsigned long mouse_status[NUM_JOY];
+    float mouse_x[NUM_JOY];
+    float mouse_y[NUM_JOY];
+    float mouse_z[NUM_JOY];
+
+    unsigned long lightgun_status[NUM_JOY];
+    float lightgun_x[NUM_JOY];
+    float lightgun_y[NUM_JOY];
+}   myosd_input;
+
+extern int myosd_main(int argc, char** argv, myosd_callbacks* callbacks);
+extern int myosd_get(int value)
+extern void myosd_set(int value, void* buffer, size_t size);
+*/
+
+enum MYOSD_STATUS {
+    MYOSD_UP=0x1,       MYOSD_LEFT=0x4,       MYOSD_DOWN=0x10,   MYOSD_RIGHT=0x40,
+    MYOSD_START=1<<8,   MYOSD_SELECT=1<<9,    MYOSD_L1=1<<10,    MYOSD_R1=1<<11,
+    MYOSD_A=1<<12,      MYOSD_B=1<<13,        MYOSD_X=1<<14,     MYOSD_Y=1<<15,
+    MYOSD_L3=1<<16,     MYOSD_R3=1<<17,       MYOSD_L2=1<<18,    MYOSD_R2=1<<19,
+    MYOSD_EXIT=1<<20,   MYOSD_OPTION=1<<21,   MYOSD_HOME=1<<22,  MYOSD_MENU=1<<23,
 };
+
 enum MYOSD_AXIS {
     MYOSD_AXIS_LX,
     MYOSD_AXIS_LY,
@@ -46,17 +79,13 @@ enum MYOSD_AXIS {
 
 extern const char * myosd_version;
 extern int  myosd_fps;
-extern int  myosd_showinfo;
-extern int  myosd_pause;
-extern int  myosd_exitPause;
-extern int  myosd_waysStick;
-extern int  myosd_video_width;
-extern int  myosd_video_height;
-extern int  myosd_vis_video_width;
-extern int  myosd_vis_video_height;
 extern int  myosd_display_width;        // display width,height is the screen output resolution
 extern int  myosd_display_height;       // ...set in the iOS app, to pick a good default render target size.
 extern int  myosd_force_pxaspect;
+extern int  myosd_hiscore;
+extern int  myosd_speed;
+extern int  myosd_filter_clones;
+extern int  myosd_filter_not_working;
 
 //
 // inGame   in_menu
@@ -70,47 +99,38 @@ extern int  myosd_force_pxaspect;
 extern int  myosd_inGame;
 extern int  myosd_in_menu;
 
-extern unsigned long myosd_joy_status[NUM_JOY];
-extern unsigned char myosd_keyboard[NUM_KEYS];
+// entire app input state
+typedef struct {
+    // keyboard
+    unsigned char keyboard[NUM_KEYS];
 
-extern float myosd_joy_analog[NUM_JOY][MYOSD_AXIS_NUM];
+    // joystick(s)
+    unsigned long joy_status[NUM_JOY];
+    float joy_analog[NUM_JOY][MYOSD_AXIS_NUM];
 
-extern float lightgun_x[NUM_JOY];
-extern float lightgun_y[NUM_JOY];
+    // mice
+    unsigned long mouse_status[NUM_JOY];
+    float mouse_x[NUM_JOY];
+    float mouse_y[NUM_JOY];
+    float mouse_z[NUM_JOY];
 
-extern float mouse_x[NUM_JOY];
-extern float mouse_y[NUM_JOY];
-extern float mouse_z[NUM_JOY];
-extern unsigned long mouse_status[NUM_JOY];
-
-extern int myosd_mouse;
-extern int myosd_light_gun;
-
-extern int myosd_last_game_selected;
-
-extern int myosd_filter_clones;
-extern int myosd_filter_not_working;
-
-extern int myosd_num_buttons;
-extern int myosd_num_ways;
-extern int myosd_num_players;
-extern int myosd_num_coins;
-extern int myosd_num_inputs;
-
-extern int myosd_hiscore;
-extern int myosd_speed;
+    // lightgun(s)
+    unsigned long lightgun_status[NUM_JOY];
+    float lightgun_x[NUM_JOY];
+    float lightgun_y[NUM_JOY];
     
-extern void myosd_init(void);
-extern void myosd_deinit(void);
-extern unsigned long myosd_joystick_read(int n);
-extern float myosd_joystick_read_analog(int n, int axis);
-extern void myosd_set_video_mode(int width,int height,int vis_width, int vis_height);
-extern void myosd_video_draw(void*);
-extern void myosd_closeSound(void);
-extern void myosd_openSound(int rate,int stereo);
-extern void myosd_sound_play(void *buff, int len);
-extern void myosd_check_pause(void);
-    
+    // input profile for current machine
+    int num_buttons;
+    int num_ways;
+    int num_players;
+    int num_coins;
+    int num_inputs;
+    int num_mouse;
+    int num_lightgun;
+    int num_keyboard;
+
+}   myosd_input_state;
+
 // myosd output
 enum myosd_output_channel
 {
@@ -120,7 +140,6 @@ enum myosd_output_channel
     MYOSD_OUTPUT_DEBUG,
     MYOSD_OUTPUT_VERBOSE,
 };
-extern void myosd_output(int channel, const char* text);
 #ifdef __MACHINE_H__
 _Static_assert(MYOSD_OUTPUT_ERROR == OUTPUT_CHANNEL_ERROR);
 _Static_assert(MYOSD_OUTPUT_WARNING == OUTPUT_CHANNEL_WARNING);
@@ -139,7 +158,6 @@ typedef struct
     const char *        year;                       /* year the game was released */
     const char *        manufacturer;               /* manufacturer of the game */
 } myosd_game_info;
-extern void myosd_set_game_info(myosd_game_info *info[], int game_count);
 
 #ifdef __DRIVER_H__
 // fail to compile if these structures get out of sync.
@@ -367,6 +385,17 @@ _Static_assert(MYOSD_KEY_ESC == ITEM_ID_ESC);
 _Static_assert(MYOSD_KEY_LCMD == ITEM_ID_LWIN);
 _Static_assert(MYOSD_KEY_CANCEL == ITEM_ID_CANCEL);
 #endif
+
+// OSD functions located in the iOS/tvOS app
+extern void iphone_Reset_Views(int width, int height);
+extern void iphone_DrawScreen(myosd_render_primitive* prim_list, int width, int height);
+extern void myosd_poll_input(myosd_input_state* input);
+
+extern void myosd_output(int channel, const char* text);
+extern void myosd_set_game_info(myosd_game_info *info[], int game_count);
+
+// main entry point
+extern int iOS_main(int argc, char** argv);
 
 #if defined(__cplusplus)
 }

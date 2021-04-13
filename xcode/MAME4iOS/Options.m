@@ -6,7 +6,6 @@
 //  Copyright © 2019 Seleuco. All rights reserved.
 //
 
-#include "myosd.h"
 #import "Options.h"
 #import "Globals.h"
 #import "SkinManager.h"         // for skinList

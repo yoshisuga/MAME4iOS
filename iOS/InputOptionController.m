@@ -49,8 +49,6 @@
 #import "ListOptionController.h"
 #import "EmulatorController.h"
 
-#include "myosd.h"
-
 @implementation InputOptionController
 
 - (id)init {

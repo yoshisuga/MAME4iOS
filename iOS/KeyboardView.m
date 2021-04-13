@@ -84,7 +84,7 @@
 - (void)didBecomeActive {
     if (self.active)
     {
-        memset(myosd_keyboard, 0, sizeof(myosd_keyboard));
+        memset(g_keyboard_state, 0, sizeof(g_keyboard_state));
         [self becomeFirstResponder];
     }
 }
@@ -245,10 +245,10 @@
             {
                if(STICK4WAY)
                {
-                   myosd_joy_status[1] &= ~MYOSD_UP;
-                   myosd_joy_status[1] &= ~MYOSD_DOWN;
+                   myosd_pad_status_2 &= ~MYOSD_UP;
+                   myosd_pad_status_2 &= ~MYOSD_DOWN;
                }
-               myosd_joy_status[1] |= MYOSD_RIGHT;
+               myosd_pad_status_2 |= MYOSD_RIGHT;
                right2 = 1;
                joy2 = 1;
             }
@@ -263,10 +263,10 @@
             {
                 if(STICK4WAY)
                 {
-                    if(up2)myosd_joy_status[1] |= MYOSD_UP;
-                    if(down2)myosd_joy_status[1] |= MYOSD_DOWN;
+                    if(up2)myosd_pad_status_2 |= MYOSD_UP;
+                    if(down2)myosd_pad_status_2 |= MYOSD_DOWN;
                 }
-                myosd_joy_status[1] &= ~MYOSD_RIGHT;
+                myosd_pad_status_2 &= ~MYOSD_RIGHT;
                 right2 = 0;
                 joy2 = 1;
             }
@@ -379,10 +379,10 @@
             else if (g_pref_ext_control_type == EXT_CONTROL_IMPULSE) {
                 if(STICK4WAY)
                 {
-                    myosd_joy_status[1] &= ~MYOSD_UP;
-                    myosd_joy_status[1] &= ~MYOSD_DOWN;
+                    myosd_pad_status_2 &= ~MYOSD_UP;
+                    myosd_pad_status_2 &= ~MYOSD_DOWN;
                 }
-                myosd_joy_status[1] |= MYOSD_LEFT;
+                myosd_pad_status_2 |= MYOSD_LEFT;
                 left2 = 1;
                 joy2 = 1;
             }
@@ -400,10 +400,10 @@
             else if (g_pref_ext_control_type == EXT_CONTROL_IMPULSE) {
                 if(STICK4WAY)
                 {
-                    if(up2)myosd_joy_status[1] |= MYOSD_UP;
-                    if(down2)myosd_joy_status[1] |= MYOSD_DOWN;
+                    if(up2)myosd_pad_status_2 |= MYOSD_UP;
+                    if(down2)myosd_pad_status_2 |= MYOSD_DOWN;
                 }
-                myosd_joy_status[1] &= ~MYOSD_LEFT;
+                myosd_pad_status_2 &= ~MYOSD_LEFT;
                 left2 = 0;
                 joy2 = 1;
             }
@@ -472,21 +472,21 @@
         case '[':
             if(STICK4WAY)
             {
-                myosd_joy_status[1] &= ~MYOSD_LEFT;
-                myosd_joy_status[1] &= ~MYOSD_RIGHT;
+                myosd_pad_status_2 &= ~MYOSD_LEFT;
+                myosd_pad_status_2 &= ~MYOSD_RIGHT;
             }
             if(!STICK2WAY || g_emulation_paused)
-                myosd_joy_status[1] |= MYOSD_UP;
+                myosd_pad_status_2 |= MYOSD_UP;
             up2 = 1;
             joy2 = 1;
             break;
         case ']':
             if(STICK4WAY)
             {
-                if(left)myosd_joy_status[1] |= MYOSD_LEFT;
-                if(right)myosd_joy_status[1] |= MYOSD_RIGHT;
+                if(left)myosd_pad_status_2 |= MYOSD_LEFT;
+                if(right)myosd_pad_status_2 |= MYOSD_RIGHT;
             }
-            myosd_joy_status[1] &= ~MYOSD_UP;
+            myosd_pad_status_2 &= ~MYOSD_UP;
             up2 = 0;
             joy2 = 1;
             break;
@@ -495,82 +495,82 @@
         case 's':
             if(STICK4WAY)
             {
-                myosd_joy_status[1] &= ~MYOSD_LEFT;
-                myosd_joy_status[1] &= ~MYOSD_RIGHT;
+                myosd_pad_status_2 &= ~MYOSD_LEFT;
+                myosd_pad_status_2 &= ~MYOSD_RIGHT;
             }
             if(!STICK2WAY || g_emulation_paused)
-                myosd_joy_status[1] |= MYOSD_DOWN;
+                myosd_pad_status_2 |= MYOSD_DOWN;
             down2 = 1;
             joy2 = 1;
             break;
         case 'b':
             if(STICK4WAY)
             {
-                if(left)myosd_joy_status[1] |= MYOSD_LEFT;
-                if(right)myosd_joy_status[1] |= MYOSD_RIGHT;
+                if(left)myosd_pad_status_2 |= MYOSD_LEFT;
+                if(right)myosd_pad_status_2 |= MYOSD_RIGHT;
             }
-            myosd_joy_status[1] &= ~MYOSD_DOWN;
+            myosd_pad_status_2 &= ~MYOSD_DOWN;
             down2 = 0;
             joy2 = 1;
             break;
             
             // B / RIGHT
         case '3':
-            myosd_joy_status[1] |= MYOSD_B;
+            myosd_pad_status_2 |= MYOSD_B;
             joy2 = 1;
             break;
         case '4':
-            myosd_joy_status[1] &= ~MYOSD_B;
+            myosd_pad_status_2 &= ~MYOSD_B;
             joy2 = 1;
             break;
             
             // X / DOWN
         case '1':
-            myosd_joy_status[1] |= MYOSD_X;
+            myosd_pad_status_2 |= MYOSD_X;
             joy2 = 1;
             break;
         case '2':
-            myosd_joy_status[1] &= ~MYOSD_X;
+            myosd_pad_status_2 &= ~MYOSD_X;
             joy2 = 1;
             break;
             
             // A / LEFT
         case '5':
-            myosd_joy_status[1] |= MYOSD_A;
+            myosd_pad_status_2 |= MYOSD_A;
             joy2 = 1;
             break;
         case '6':
-            myosd_joy_status[1] &= ~MYOSD_A;
+            myosd_pad_status_2 &= ~MYOSD_A;
             joy2 = 1;
             break;
             
             //Y / UP
         case '7':
-            myosd_joy_status[1] |= MYOSD_Y;
+            myosd_pad_status_2 |= MYOSD_Y;
             joy2 = 1;
             break;
         case '8':
-            myosd_joy_status[1] &= ~MYOSD_Y;
+            myosd_pad_status_2 &= ~MYOSD_Y;
             joy2 = 1;
             break;
             
             // SELECT / COIN
         case '9': //button down
-            myosd_joy_status[1] |= MYOSD_SELECT;
+            myosd_pad_status_2 |= MYOSD_SELECT;
             joy2 = 1;
             break;
         case '0': //button up
-            myosd_joy_status[1] &= ~MYOSD_SELECT;
+            myosd_pad_status_2 &= ~MYOSD_SELECT;
             joy2 = 1;
             break;
             
             //START
         case '-':   //button down
-            myosd_joy_status[1] |= MYOSD_START;
+            myosd_pad_status_2 |= MYOSD_START;
             joy2 = 1;
             break;
         case '=':   //button up
-            myosd_joy_status[1] &= ~MYOSD_START;
+            myosd_pad_status_2 &= ~MYOSD_START;
             joy2 = 1;
             break;
             
@@ -644,7 +644,7 @@ int hid_to_mame(int keyCode) {
         mame_map[UIKeyboardHIDUsageKeyboardInsert       ] = MYOSD_KEY_INSERT;
         mame_map[UIKeyboardHIDUsageKeyboardHome         ] = MYOSD_KEY_HOME;
         mame_map[UIKeyboardHIDUsageKeyboardPageUp       ] = MYOSD_KEY_PGUP;
-        mame_map[UIKeyboardHIDUsageKeyboardDeleteForward] = MYOSD_KEY_DEL;          // TODO: check
+        mame_map[UIKeyboardHIDUsageKeyboardDeleteForward] = MYOSD_KEY_DEL_PAD;          // TODO: check
         mame_map[UIKeyboardHIDUsageKeyboardEnd          ] = MYOSD_KEY_END;
         mame_map[UIKeyboardHIDUsageKeyboardPageDown     ] = MYOSD_KEY_PGDN;
         mame_map[UIKeyboardHIDUsageKeyboardRightArrow   ] = MYOSD_KEY_RIGHT;
@@ -777,7 +777,7 @@ int hid_to_mame(int keyCode) {
         return;
 
     // send the key to MAME via myosd_keyboard
-    myosd_keyboard[mame_key] = isKeyDown ? 0x80 : 0x00;
+    g_keyboard_state[mame_key] = isKeyDown ? 0x80 : 0x00;
     
     // only treat as a controler when arrow keys used for first time.
     if (g_joy_used == 0 && (mame_key >= MYOSD_KEY_LEFT && mame_key <= MYOSD_KEY_DOWN))
@@ -788,12 +788,12 @@ int hid_to_mame(int keyCode) {
     
     if (!(g_device_is_fullscreen && g_joy_used) || emuController.presentedViewController != nil) {
         unsigned long kbd_status =
-            (myosd_keyboard[MYOSD_KEY_ENTER]    ? MYOSD_A : 0)    | (myosd_keyboard[MYOSD_KEY_ESC]   ? MYOSD_B : 0) |
-            (myosd_keyboard[MYOSD_KEY_LCONTROL] ? MYOSD_A : 0)    | (myosd_keyboard[MYOSD_KEY_LALT]  ? MYOSD_B : 0) |
-            (myosd_keyboard[MYOSD_KEY_LSHIFT]   ? MYOSD_X : 0)    | (myosd_keyboard[MYOSD_KEY_SPACE] ? MYOSD_Y : 0) |
-            (myosd_keyboard[MYOSD_KEY_Z]        ? MYOSD_L1 : 0)   | (myosd_keyboard[MYOSD_KEY_X]     ? MYOSD_R1 : 0) |
-            (myosd_keyboard[MYOSD_KEY_LEFT]     ? MYOSD_LEFT : 0) | (myosd_keyboard[MYOSD_KEY_RIGHT] ? MYOSD_RIGHT : 0) |
-            (myosd_keyboard[MYOSD_KEY_UP]       ? MYOSD_UP : 0)   | (myosd_keyboard[MYOSD_KEY_DOWN]  ? MYOSD_DOWN : 0) ;
+            (g_keyboard_state[MYOSD_KEY_ENTER]    ? MYOSD_A : 0)    | (g_keyboard_state[MYOSD_KEY_ESC]   ? MYOSD_B : 0) |
+            (g_keyboard_state[MYOSD_KEY_LCONTROL] ? MYOSD_A : 0)    | (g_keyboard_state[MYOSD_KEY_LALT]  ? MYOSD_B : 0) |
+            (g_keyboard_state[MYOSD_KEY_LSHIFT]   ? MYOSD_X : 0)    | (g_keyboard_state[MYOSD_KEY_SPACE] ? MYOSD_Y : 0) |
+            (g_keyboard_state[MYOSD_KEY_Z]        ? MYOSD_L1 : 0)   | (g_keyboard_state[MYOSD_KEY_X]     ? MYOSD_R1 : 0) |
+            (g_keyboard_state[MYOSD_KEY_LEFT]     ? MYOSD_LEFT : 0) | (g_keyboard_state[MYOSD_KEY_RIGHT] ? MYOSD_RIGHT : 0) |
+            (g_keyboard_state[MYOSD_KEY_UP]       ? MYOSD_UP : 0)   | (g_keyboard_state[MYOSD_KEY_DOWN]  ? MYOSD_DOWN : 0) ;
 
         [emuController handle_INPUT:kbd_status stick:CGPointZero];
     }

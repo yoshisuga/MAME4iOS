@@ -245,7 +245,9 @@ static const char priortext[] = "Return to Prior Menu";
 static const char backtext[] = "Return to " CAPSTARTGAMENOUN;
 static const char exittext[] = "Exit";
 
-
+//DAV HACK
+static int myosd_last_game_selected = 0;
+//DAV HACK
 
 /***************************************************************************
     FUNCTION PROTOTYPES
