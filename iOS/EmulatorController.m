@@ -1146,7 +1146,7 @@ HUDViewController* g_menu;
     }
     
     myosd_set(MYOSD_FORCE_PIXEL_ASPECT, op.forcepxa);
-    myosd_set(MYOSD_GAME_FILTER, (op.filterClones ? MYOSD_FILTER_CLONES : 0) | (op.filterClones ? MYOSD_FILTER_NOTWORKING : 0));
+    myosd_set(MYOSD_GAME_FILTER, (op.filterClones ? MYOSD_FILTER_CLONES : 0) | (op.filterNotWorking ? MYOSD_FILTER_NOTWORKING : 0));
     myosd_set(MYOSD_HISCORE, op.hiscore);
 
     g_pref_autofire = [op autofire];
