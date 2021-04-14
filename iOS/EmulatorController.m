@@ -122,7 +122,7 @@ TIMER_INIT_END
 @end
 #endif
 
-#define DebugLog 1
+#define DebugLog 0
 #if DebugLog == 0 || DEBUG == 0
 #define NSLog(...) (void)0
 #endif
@@ -1145,13 +1145,11 @@ HUDViewController* g_menu;
         g_joy_ways = 8;
     }
     
-    myosd_force_pxaspect = [op forcepxa];
-    
-    myosd_filter_clones = op.filterClones;
-    myosd_filter_not_working = op.filterNotWorking;
-    
+    myosd_set(MYOSD_FORCE_PIXEL_ASPECT, op.forcepxa);
+    myosd_set(MYOSD_GAME_FILTER, (op.filterClones ? MYOSD_FILTER_CLONES : 0) | (op.filterClones ? MYOSD_FILTER_NOTWORKING : 0));
+    myosd_set(MYOSD_HISCORE, op.hiscore);
+
     g_pref_autofire = [op autofire];
-    myosd_hiscore = [op hiscore];
     
     switch ([op buttonSize]) {
         case 0: g_buttons_size = 0.8; break;
@@ -1172,24 +1170,25 @@ HUDViewController* g_menu;
     g_pref_vector_bean2x = [op vbean2x];
     g_pref_vector_flicker = [op vflicker];
 
+    int speed = -1;
     switch ([op emuspeed]) {
-        case 0: myosd_speed = -1; break;
-        case 1: myosd_speed = 50; break;
-        case 2: myosd_speed = 60; break;
-        case 3: myosd_speed = 70; break;
-        case 4: myosd_speed = 80; break;
-        case 5: myosd_speed = 85; break;
-        case 6: myosd_speed = 90; break;
-        case 7: myosd_speed = 95; break;
-        case 8: myosd_speed = 100; break;
-        case 9: myosd_speed = 105; break;
-        case 10: myosd_speed = 110; break;
-        case 11: myosd_speed = 115; break;
-        case 12: myosd_speed = 120; break;
-        case 13: myosd_speed = 130; break;
-        case 14: myosd_speed = 140; break;
-        case 15: myosd_speed = 150; break;
+        case 1: speed = 50; break;
+        case 2: speed = 60; break;
+        case 3: speed = 70; break;
+        case 4: speed = 80; break;
+        case 5: speed = 85; break;
+        case 6: speed = 90; break;
+        case 7: speed = 95; break;
+        case 8: speed = 100; break;
+        case 9: speed = 105; break;
+        case 10: speed = 110; break;
+        case 11: speed = 115; break;
+        case 12: speed = 120; break;
+        case 13: speed = 130; break;
+        case 14: speed = 140; break;
+        case 15: speed = 150; break;
     }
+    myosd_set(MYOSD_SPEED, speed);
     
     turboBtnEnabled[BTN_X] = [op turboXEnabled];
     turboBtnEnabled[BTN_Y] = [op turboYEnabled];
@@ -1326,7 +1325,7 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
 #endif
     
     // exit MAME MENU with B (but only if we are not mapping a input)
-    if (myosd_in_menu == 1 && (input_debounce(pad_status, stick) == UIPressTypeMenu))
+    if ((myosd_state & (MYOSD_STATE_INMENU | MYOSD_STATE_CONFIGURE_INPUT)) == MYOSD_STATE_INMENU && (input_debounce(pad_status, stick) == UIPressTypeMenu))
     {
         [self runExit];
     }
@@ -1765,7 +1764,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     
     BOOL showFPS = g_pref_showFPS && (g_pref_showHUD != HudSizeInfo);
 
-    myosd_fps = showFPS;
+    myosd_set(MYOSD_FPS, showFPS);
     [(MetalView*)screenView setShowFPS:showFPS];
 
     if (g_pref_showHUD == HudSizeZero) {
@@ -2044,8 +2043,8 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     if (g_emulation_paused == 0)
         change_pause(1);
     
-    // reset the frame count when you first turn on/off
-    if (g_pref_showHUD != HudSizeInfo && g_pref_showFPS != myosd_fps)
+    // reset the frame count when you first turn on/off HUD
+    if (g_pref_showHUD != HudSizeInfo && g_pref_showFPS != myosd_get(MYOSD_FPS))
         screenView.frameCount = 0;
     if ((g_pref_showHUD != 0) != (hudView != nil))
         screenView.frameCount = 0;
@@ -2472,11 +2471,12 @@ static void handle_device_input(myosd_input_state* myosd)
         controllers_count = 2;
     }
     else {
+        unsigned long state = myosd_state;
         for (int index = 0; index < controllers_count; index++) {
             GCController *controller = controllers[index];
             int player = (int)controller.playerIndex;
             // when in a MAME menu (or the root) let any controller work the UI
-            if (myosd_inGame == 0 || myosd_in_menu == 1)
+            if ((!(state & MYOSD_STATE_INGAME) || (state & MYOSD_STATE_INMENU)) && !(state & MYOSD_STATE_CONFIGURE_INPUT))
                 player = 0;
             // dont overwrite a lower index controller, unless....
             if (player == index || controller_is_zero(myosd, player))
@@ -2903,13 +2903,10 @@ void m4i_poll_input(myosd_input_state* myosd, size_t input_size) {
     // NOTE: view.window may be nil use mainScreen.scale in this case.
     if (scale == 0.0)
         scale = UIScreen.mainScreen.scale;
-
+    
     // tell the OSD how big the screen is, so it can optimize texture sizes.
-    if (myosd_display_width != (r.size.width * scale) || myosd_display_height != (r.size.height * scale)) {
-        NSLog(@"DISPLAY SIZE CHANGE: %dx%d", (int)(r.size.width * scale), (int)(r.size.height * scale));
-        myosd_display_width = (r.size.width * scale);
-        myosd_display_height = (r.size.height * scale);
-    }
+    myosd_set(MYOSD_DISPLAY_WIDTH, (int)(r.size.width * scale));
+    myosd_set(MYOSD_DISPLAY_HEIGHT, (int)(r.size.height * scale));
     
     // set the rect to use for Toast
     toastStyle.toastRect = r;
@@ -3032,7 +3029,7 @@ void m4i_poll_input(myosd_input_state* myosd, size_t input_size) {
 - (void)handle_INPUT:(unsigned long)pad_status stick:(CGPoint)stick {
 
 #if defined(DEBUG) && DebugLog
-    NSLog(@"handle_INPUT: %s%s%s%s (%+1.3f,%+1.3f) %s%s%s%s %s%s%s%s%s%s %s%s%s%s %s%s inGame=%d, inMenu=%d",
+    NSLog(@"handle_INPUT: %s%s%s%s (%+1.3f,%+1.3f) %s%s%s%s %s%s%s%s%s%s %s%s%s%s %s%s inGame=%ld, inMenu=%ld",
           (pad_status & MYOSD_UP) ?   "U" : "-", (pad_status & MYOSD_DOWN) ?  "D" : "-",
           (pad_status & MYOSD_LEFT) ? "L" : "-", (pad_status & MYOSD_RIGHT) ? "R" : "-",
           
@@ -3213,7 +3210,7 @@ void m4i_poll_input(myosd_input_state* myosd, size_t input_size) {
             break;
         }
         case 'X':
-            myosd_force_pxaspect = !myosd_force_pxaspect;
+            myosd_set(MYOSD_FORCE_PIXEL_ASPECT, !myosd_get(MYOSD_FORCE_PIXEL_ASPECT));
             [self changeUI];
             break;
         case 'A':
@@ -3224,11 +3221,15 @@ void m4i_poll_input(myosd_input_state* myosd, size_t input_size) {
             push_mame_key(MYOSD_KEY_P);
             break;
         case 'S':   // Speed 2x
-            if (myosd_speed != -1)
-                myosd_speed = -1;
+        {
+            int speed = (int)myosd_get(MYOSD_SPEED);
+            if (speed != -1)
+                speed = -1;
             else
-                myosd_speed = 200;
+                speed = 200;
+            myosd_set(MYOSD_SPEED, speed);
             break;
+        }
         case 'M':
             g_direct_mouse_enable = !g_direct_mouse_enable;
             [self updatePointerLocked];

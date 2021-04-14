@@ -75,6 +75,68 @@ int myosd_main(int argc, char** argv, myosd_callbacks* callbacks, size_t callbac
     return ios_main(argc, argv);
 }
 
+// myosd_get
+intptr_t myosd_get(int var)
+{
+    switch (var)
+    {
+        case MYOSD_VERSION:
+            return 139;
+            
+        case MYOSD_VERSION_STRING:
+            return (intptr_t)(void*)build_version;
+            
+        case MYOSD_STATE:
+            return (myosd_inGame  ? MYOSD_STATE_INGAME : 0) |
+                   (myosd_in_menu ? MYOSD_STATE_INMENU : 0) |
+                   ((myosd_in_menu==2) ? MYOSD_STATE_CONFIGURE_INPUT : 0);
+            
+        case MYOSD_FPS:
+            return myosd_fps;
+            
+        case MYOSD_SPEED:
+            return myosd_speed;
+            
+        case MYOSD_HISCORE:
+            return myosd_hiscore;
+
+        case MYOSD_FORCE_PIXEL_ASPECT:
+            return myosd_force_pxaspect;
+    }
+    return 0;
+}
+
+// myosd_set
+void myosd_set(int var, intptr_t value)
+{
+    switch (var)
+    {
+        case MYOSD_DISPLAY_WIDTH:
+            myosd_display_width = value;
+            break;
+        case MYOSD_DISPLAY_HEIGHT:
+            myosd_display_height = value;
+            break;
+        case MYOSD_GAME_FILTER:
+            myosd_filter_not_working = (value & MYOSD_FILTER_NOTWORKING) != 0;
+            myosd_filter_clones = (value & MYOSD_FILTER_CLONES) != 0;
+            break;
+        case MYOSD_FPS:
+            myosd_fps = value;
+            break;
+        case MYOSD_SPEED:
+            myosd_speed = value;
+            break;
+        case MYOSD_HISCORE:
+            myosd_hiscore = value;
+            break;
+        case MYOSD_FORCE_PIXEL_ASPECT:
+            myosd_force_pxaspect = value;
+            break;
+    }
+}
+
+
 void myosd_set_video_mode(int width,int height)
 {
     mame_printf_debug("myosd_set_video_mode: %dx%d\n",width,height);

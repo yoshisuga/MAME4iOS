@@ -71,6 +71,10 @@
 
 #define absf(x)			    ((x >= 0) ? (x) : (x * -1.0f))
 
+#define myosd_state myosd_get(MYOSD_STATE)
+#define myosd_inGame (myosd_state & MYOSD_STATE_INGAME)
+#define myosd_in_menu (myosd_state & MYOSD_STATE_INMENU)
+
 #define STICK4WAY (g_joy_ways == 4 || !myosd_inGame || myosd_in_menu)
 #define STICK2WAY (g_joy_ways == 2 && myosd_inGame && !myosd_in_menu)
 

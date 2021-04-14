@@ -17,6 +17,18 @@
 extern "C" {
 #endif
 
+// globals in osd-ios.c
+extern int  myosd_inGame;
+extern int  myosd_in_menu;
+extern int  myosd_fps;
+extern int  myosd_display_width;        // display width,height is the screen output resolution
+extern int  myosd_display_height;       // ...set in the iOS app, to pick a good default render target size.
+extern int  myosd_force_pxaspect;
+extern int  myosd_hiscore;
+extern int  myosd_speed;
+extern int  myosd_filter_clones;
+extern int  myosd_filter_not_working;
+
 extern void myosd_init(void);
 extern void myosd_deinit(void);
 extern void myosd_set_video_mode(int width,int height);
@@ -26,7 +38,6 @@ extern void myosd_set_game_info(const game_driver *info[], int game_count);
 extern void myosd_openSound(int rate,int stereo);
 extern void myosd_closeSound(void);
 extern void myosd_sound_play(void *buff, int len);
-
 
 #ifdef __MACHINE_H__
 _Static_assert(MYOSD_OUTPUT_ERROR == OUTPUT_CHANNEL_ERROR);

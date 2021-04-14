@@ -48,7 +48,6 @@
 #import "Bootstrapper.h"
 #import "Globals.h"
 
-#import "libmame.h"
 #import "EmulatorController.h"
 #import <GameController/GameController.h>
 #import "Alert.h"
@@ -300,8 +299,6 @@ const char* get_documents_path(const char* file)
                     g_alert = nil;
                     [externalScreen setCurrentMode:mode];
                     [self setupScreen:externalScreen];
-                    if (!myosd_inGame)
-                        [self->hrViewController reload];
                 }]];
                 if (mode == externalScreen.preferredMode)
                     [g_alert setPreferredAction:g_alert.actions.lastObject];
@@ -309,8 +306,6 @@ const char* get_documents_path(const char* file)
             [g_alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
                 g_alert = nil;
                 [self setupScreen:nil];
-                if (!myosd_inGame)
-                    [self->hrViewController reload];
             }]];
              
             [hrViewController.topViewController presentViewController:g_alert animated:YES completion:nil];

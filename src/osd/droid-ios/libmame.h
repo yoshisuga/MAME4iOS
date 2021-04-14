@@ -46,42 +46,8 @@ enum MYOSD_AXIS {
     MYOSD_AXIS_NUM
 };
 
-enum MYOSD_STATE {
-    MYOSD_STATE_INGAME  = 1<<0,             // running a machine/game
-    MYOSD_STATE_INMENU  = 1<<1,             // a mame configure menu is active
-    MYOSD_STATE_INPUT   = 1<<2,             // configure input menu is active
-};
-
-enum MYOSD_FILTER {
-    MYOSD_FILTER_AVAILABLE  = 1<<0,         // show available games
-    MYOSD_FILTER_WORKING    = 1<<1,         // show working games
-    MYOSD_FILTER_CLONES     = 1<<2,         // show clones
-};
-
 #define NUM_JOY 4
 #define NUM_KEYS 256
-
-extern const char * myosd_version;
-extern int  myosd_fps;
-extern int  myosd_display_width;        // display width,height is the screen output resolution
-extern int  myosd_display_height;       // ...set in the iOS app, to pick a good default render target size.
-extern int  myosd_force_pxaspect;
-extern int  myosd_hiscore;
-extern int  myosd_speed;
-extern int  myosd_filter_clones;
-extern int  myosd_filter_not_working;
-
-//
-// inGame   in_menu
-//    0        0        - at top level select game menu (exit will quit app)
-//    0        1        - in a menu (exit will exit menu)
-//    0        2        - in configure input menu
-//    1        0        - running a machine/game no menu is up (exit will quit app)
-//    1        1        - running a machine/game with menu up (exit will exit menu)
-//    1        2        - running a machine/game with configure input menu up
-//
-extern int  myosd_inGame;
-extern int  myosd_in_menu;
 
 // MYOSD INPUT STATE
 typedef struct {
@@ -328,6 +294,34 @@ enum myosd_keycode
     MYOSD_KEY_MENU,
     MYOSD_KEY_CANCEL
 };
+
+// myosd_get and myosd_set - get and set global state from the MAME driver.
+
+enum MYOSD_STATE {
+    MYOSD_STATE_INGAME  = 1<<0,             // running a machine/game
+    MYOSD_STATE_INMENU  = 1<<1,             // a mame configure menu is active
+    MYOSD_STATE_CONFIGURE_INPUT = 1<<2,     // configure input menu is active
+};
+
+enum MYOSD_FILTER {
+    MYOSD_FILTER_NOTWORKING = 1<<0,         // filter (dont show) non-working machines
+    MYOSD_FILTER_CLONES     = 1<<1,         // filter (dont show) clones
+};
+
+enum {
+    MYOSD_VERSION,              // GET: MAME version number (ie 139 or 229)
+    MYOSD_VERSION_STRING,       // GET: MAME version string (ie "0.139u1 (date)")
+    MYOSD_STATE,                // GET: APP STATE (inGame, inMenu, inInput)
+    MYOSD_DISPLAY_WIDTH,        // SET: maximum width and height of "screen" to display
+    MYOSD_DISPLAY_HEIGHT,
+    MYOSD_GAME_FILTER,          // SET: game driver filter (Available, Working, or Clones)
+    MYOSD_FPS,                  // GET, SET: show framerate
+    MYOSD_SPEED,                // GET, SET: emulation speed (100 = 100%)
+    MYOSD_HISCORE,              // GET, SET: HISCORE system enabled
+    MYOSD_FORCE_PIXEL_ASPECT,   // GET, SET: if TRUE will always use "Pixel Aspect"
+};
+extern intptr_t myosd_get(int var);
+extern void myosd_set(int var, intptr_t value);
 
 // MYOSD app callback functions
 // video_init, video_draw, and input_poll are required, others can be NULL
