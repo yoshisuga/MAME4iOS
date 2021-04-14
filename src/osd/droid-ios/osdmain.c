@@ -61,8 +61,7 @@ static void osd_exit(running_machine &machine);
 extern "C"
 int android_main  (int argc, char **argv)
 #elif defined(IOS)
-extern "C"
-int iOS_main  (int argc, char **argv)
+int ios_main(int argc, char **argv)
 #else
 int main(int argc, char **argv)
 #endif

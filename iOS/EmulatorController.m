@@ -281,9 +281,9 @@ static BOOL g_video_reset = FALSE;
 
 // called by the OSD layer when redner target changes size
 // **NOTE** this is called on the MAME background thread, dont do anything stupid.
-void iphone_Reset_Views(int width, int height)
+void m4i_video_init(int width, int height)
 {
-    NSLog(@"iphone_Reset_Views: %dx%d", width, height);
+    NSLog(@"m4i_video_init: %dx%d", width, height);
     
     myosd_vis_video_width = width;
     myosd_vis_video_height = height;
@@ -303,7 +303,7 @@ void iphone_Reset_Views(int width, int height)
 // called by the OSD layer to render the current frame
 // **NOTE** this is called on the MAME background thread, dont do anything stupid.
 // ...not doing something stupid includes not leaking autoreleased objects! use a autorelease pool if you need to!
-void iphone_DrawScreen(myosd_render_primitive* prim_list, int width, int height) {
+void m4i_video_draw(myosd_render_primitive* prim_list, int width, int height) {
 
     if (sharedInstance == nil || g_emulation_paused)
         return;
@@ -330,7 +330,7 @@ void iphone_DrawScreen(myosd_render_primitive* prim_list, int width, int height)
 // called by the OSD layer with MAME output
 // **NOTE** this is called on the MAME background thread, dont do anything stupid.
 // ...not doing something stupid includes not leaking autoreleased objects! use a autorelease pool if you need to!
-void iphone_output(int channel, const char* text)
+void m4i_output(int channel, const char* text)
 {
 #if DEBUG
     // output to stderr/stdout just like normal, in a DEBUG build.
@@ -345,6 +345,9 @@ void iphone_output(int channel, const char* text)
         g_video_reset = TRUE;   // force UI reset if we get a error or warning message.
     }
 }
+
+void m4i_poll_input(myosd_input_state* myosd, size_t input_size);
+void m4i_set_game_info(myosd_game_info* game_info[], int game_count);
 
 // run MAME (or pass NULL for main menu)
 int run_mame(char* game)
@@ -362,8 +365,16 @@ int run_mame(char* game)
         };
     
     int argc = sizeof(argv) / sizeof(argv[0]);
+    
+    myosd_callbacks callbacks = {
+        .video_init = m4i_video_init,
+        .video_draw = m4i_video_draw,
+        .input_poll = m4i_poll_input,
+        .output_text= m4i_output,
+        .set_game_info = m4i_set_game_info
+    };
 
-    return iOS_main(argc,argv);
+    return myosd_main(argc,argv,&callbacks,sizeof(callbacks));
 }
 
 static void init_pause()
@@ -473,7 +484,7 @@ NSString* find_category(NSString* name, NSString* parent)
 }
 
 // called from deep inside MAME select_game menu, to give us the valid list of games/drivers
-void myosd_set_game_info(myosd_game_info* game_info[], int game_count)
+void m4i_set_game_info(myosd_game_info* game_info[], int game_count)
 {
     @autoreleasepool {
         NSMutableArray* games = [[NSMutableArray alloc] init];
@@ -2521,7 +2532,7 @@ static void handle_p1aspx(myosd_input_state* myosd) {
 }
 
 // called from inside MAME droid_ios_poll_input
-void iphone_poll_input(myosd_input_state* myosd, size_t input_size) {
+void m4i_poll_input(myosd_input_state* myosd, size_t input_size) {
     
     // make sure libmame is the right version
     NSCParameterAssert(input_size == sizeof(myosd_input_state));

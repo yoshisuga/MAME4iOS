@@ -42,6 +42,7 @@ static int soundInit = 0;
 
 const char * myosd_version = build_version;
 
+
 typedef struct AQCallbackStruct {
     AudioQueueRef queue;
     UInt32 frameCount;
@@ -63,28 +64,48 @@ void queue(unsigned char *p,unsigned size);
 unsigned short dequeue(unsigned char *p,unsigned size);
 inline int emptyQueue(void);
 
+static myosd_callbacks host_callbacks;
+extern int ios_main(int argc, char**argv);  // in osdmain.c
+
+// main LIBMAIN entry point, setup callbacks and then call main in osdmain
+int myosd_main(int argc, char** argv, myosd_callbacks* callbacks, size_t callbacks_size)
+{
+    // video_init, video_draw, and input_poll are required
+    memcpy(&host_callbacks, callbacks, sizeof(host_callbacks));
+    return ios_main(argc, argv);
+}
+
 void myosd_set_video_mode(int width,int height)
 {
     mame_printf_debug("myosd_set_video_mode: %dx%d\n",width,height);
-    iphone_Reset_Views(width,height);
+    host_callbacks.video_init(width,height);
 }
 
 void myosd_video_draw(render_primitive* prims, int width, int height)
 {
-    iphone_DrawScreen((myosd_render_primitive*)prims, width, height);
+    host_callbacks.video_draw((myosd_render_primitive*)prims, width, height);
 }
 
 // output channel callback, send output "up" to the app via myosd_output
 static void myosd_output(void *param, const char *format, va_list argptr)
 {
-    char buffer[1204];
-    vsnprintf(buffer, sizeof(buffer)-1, format, argptr);
-    iphone_output((int)(intptr_t)param, buffer);
+    if (host_callbacks.output_text != NULL)
+    {
+        char buffer[1204];
+        vsnprintf(buffer, sizeof(buffer)-1, format, argptr);
+        host_callbacks.output_text((int)(intptr_t)param, buffer);
+    }
 }
 
 void myosd_poll_input(myosd_input_state* input)
 {
-    iphone_poll_input(input, sizeof(myosd_input_state));
+    host_callbacks.input_poll(input, sizeof(myosd_input_state));
+}
+
+extern void myosd_set_game_info(const game_driver *info[], int game_count)
+{
+    if (host_callbacks.set_game_info != NULL)
+        host_callbacks.set_game_info((myosd_game_info**)info, game_count);
 }
 
 void myosd_init(void)
@@ -114,6 +135,10 @@ void myosd_deinit(void)
 }
 
 void myosd_closeSound(void) {
+    
+    if (host_callbacks.sound_exit != NULL)
+        return host_callbacks.sound_exit();
+    
 	if( soundInit == 1 )
 	{
         mame_printf_debug("myosd_closeSound\n");
@@ -129,6 +154,10 @@ void myosd_closeSound(void) {
 }
 
 void myosd_openSound(int rate,int stereo) {
+    
+    if (host_callbacks.sound_init != NULL)
+        return host_callbacks.sound_init(rate, stereo);
+    
 	if( soundInit == 0)
 	{
         if(global_low_latency_sound)
@@ -148,6 +177,9 @@ void myosd_openSound(int rate,int stereo) {
 
 void myosd_sound_play(void *buff, int len)
 {
+    if (host_callbacks.sound_play != NULL)
+        return host_callbacks.sound_play(buff, len);
+
 	queue((unsigned char *)buff,len);
 }
 

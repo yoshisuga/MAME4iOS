@@ -28,20 +28,6 @@
 extern "C" {
 #endif
 
-/*
-typedef struct {
-    void iphone_Reset_Views(void);
-    int  iphone_DrawScreen(void*);
-    void myosd_poll_input(void);
-    void myosd_output(int channel, const char* text);
-    void myosd_set_game_info(myosd_game_info *info[], int game_count);
-}   myosd_callbacks;
-
-extern int myosd_main(int argc, char** argv, myosd_callbacks* callbacks);
-extern int myosd_get(int value)
-extern void myosd_set(int value, void* buffer, size_t size);
-*/
-
 enum MYOSD_STATUS {
     MYOSD_UP=0x1,       MYOSD_LEFT=0x4,       MYOSD_DOWN=0x10,   MYOSD_RIGHT=0x40,
     MYOSD_START=1<<8,   MYOSD_SELECT=1<<9,    MYOSD_L1=1<<10,    MYOSD_R1=1<<11,
@@ -343,15 +329,23 @@ enum myosd_keycode
     MYOSD_KEY_CANCEL
 };
 
-// OSD functions located in the iOS/tvOS app
-extern void iphone_Reset_Views(int width, int height);
-extern void iphone_DrawScreen(myosd_render_primitive* prim_list, int width, int height);
-extern void iphone_poll_input(myosd_input_state* input, size_t state_size);
-extern void iphone_set_game_info(myosd_game_info *info[], int game_count);
-extern void iphone_output(int channel, const char* text);
+// MYOSD app callback functions
+// video_init, video_draw, and input_poll are required, others can be NULL
+typedef struct {
+    void (*video_init)(int width, int height);
+    void (*video_draw)(myosd_render_primitive* prim_list, int width, int height);
+
+    void (*sound_init)(int rate, int stereo);
+    void (*sound_play)(void *buff, int len);
+    void (*sound_exit)(void);
+
+    void (*input_poll)(myosd_input_state* input, size_t state_size);
+    void (*output_text)(int channel, const char* text);
+    void (*set_game_info)(myosd_game_info *info[], int game_count);
+}   myosd_callbacks;
 
 // main entry point
-extern int iOS_main(int argc, char** argv);
+extern int myosd_main(int argc, char** argv, myosd_callbacks* callbacks, size_t callbacks_size);
 
 #if defined(__cplusplus)
 }
