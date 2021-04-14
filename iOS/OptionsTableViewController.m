@@ -44,7 +44,7 @@
 
 #import "OptionsTableViewController.h"
 #import "Options.h"
-#import "myosd.h"
+#import "libmame.h"     // to get the MAME version
 
 @implementation OptionsTableViewController
 

@@ -14,7 +14,7 @@
 #include "rendlay.h"
 #include "osdvideo.h"
 
-#include "myosd-internal.h"
+#include "myosd.h"
 
 static int screen_width;
 static int screen_height;

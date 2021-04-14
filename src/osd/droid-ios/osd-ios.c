@@ -10,7 +10,7 @@
 //============================================================
 
 #include "emu.h"
-#include "myosd-internal.h"
+#include "myosd.h"
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -75,11 +75,16 @@ void myosd_video_draw(render_primitive* prims, int width, int height)
 }
 
 // output channel callback, send output "up" to the app via myosd_output
-static void mame_output(void *param, const char *format, va_list argptr)
+static void myosd_output(void *param, const char *format, va_list argptr)
 {
     char buffer[1204];
     vsnprintf(buffer, sizeof(buffer)-1, format, argptr);
-    myosd_output((int)(intptr_t)param, buffer);
+    iphone_output((int)(intptr_t)param, buffer);
+}
+
+void myosd_poll_input(myosd_input_state* input)
+{
+    iphone_poll_input(input, sizeof(myosd_input_state));
 }
 
 void myosd_init(void)
@@ -88,7 +93,7 @@ void myosd_init(void)
     
     // capture all MAME output so we can send it to the app.
     for (int n=0; n<OUTPUT_CHANNEL_COUNT; n++)
-        mame_set_output_channel((output_channel)n, mame_output, (void*)n, NULL, NULL);
+        mame_set_output_channel((output_channel)n, myosd_output, (void*)n, NULL, NULL);
 
 	if (!lib_inited )
     {

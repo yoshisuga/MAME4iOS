@@ -13,7 +13,7 @@
 #include "emu.h"
 #include "uimenu.h"
 
-#include "myosd-internal.h"
+#include "myosd.h"
 
 // the states
 static int joy_buttons[NUM_JOY][12];

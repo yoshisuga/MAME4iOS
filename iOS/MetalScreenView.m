@@ -43,7 +43,7 @@
  */
 #import <Metal/Metal.h>
 #import "MetalScreenView.h"
-#import "myosd.h"
+#import "libmame.h"
 
 #define DebugLog 0
 #if DebugLog == 0 || !defined(DEBUG)

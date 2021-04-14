@@ -455,7 +455,6 @@
 		CE6D6E1216D8CADF00F265B7 /* LayoutView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LayoutView.h; path = ../../iOS/LayoutView.h; sourceTree = "<group>"; };
 		CE6D6E1316D8CADF00F265B7 /* LayoutView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LayoutView.m; path = ../../iOS/LayoutView.m; sourceTree = "<group>"; };
 		CE87C2FE16F5C21A00ABE4F6 /* MAME4iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = MAME4iOS.entitlements; sourceTree = "<group>"; };
-		CE8A4192170F41FC001ADFA4 /* myosd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = myosd.h; path = "../../../src/osd/droid-ios/myosd.h"; sourceTree = "<group>"; };
 		CE8D87DB1653121100685BC4 /* KeyboardView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = KeyboardView.h; path = ../../iOS/KeyboardView.h; sourceTree = "<group>"; };
 		CE8D87DC1653121200685BC4 /* KeyboardView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = KeyboardView.m; path = ../../iOS/KeyboardView.m; sourceTree = "<group>"; };
 		CE8D87DF16541AC400685BC4 /* Globals.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Globals.h; path = ../../iOS/Globals.h; sourceTree = "<group>"; };
@@ -489,6 +488,7 @@
 		E9856CEF23C9A7C50071666D /* MultipeerConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MultipeerConnectivity.framework; path = System/Library/Frameworks/MultipeerConnectivity.framework; sourceTree = SDKROOT; };
 		EF06A576248064AC00A974B8 /* Timer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Timer.h; sourceTree = "<group>"; };
 		EF1628122624ACC800E2B2AB /* libmame-ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libmame-ios.a"; path = "../../libmame-ios.a"; sourceTree = "<group>"; };
+		EF16284F2627433300E2B2AB /* libmame.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = libmame.h; path = "../../../src/osd/droid-ios/libmame.h"; sourceTree = "<group>"; };
 		EF1741D4261BB2D600DE8386 /* GameInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GameInfo.h; sourceTree = "<group>"; };
 		EF1741D5261BB2D600DE8386 /* GameInfo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GameInfo.m; sourceTree = "<group>"; };
 		EF19F229235D1BDF00C8EE7F /* ChooseGameController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ChooseGameController.m; sourceTree = "<group>"; };
@@ -922,7 +922,7 @@
 		CEE680C51635BB8500051BC2 /* Includes */ = {
 			isa = PBXGroup;
 			children = (
-				CE8A4192170F41FC001ADFA4 /* myosd.h */,
+				EF16284F2627433300E2B2AB /* libmame.h */,
 			);
 			name = Includes;
 			path = MAME4iOS;

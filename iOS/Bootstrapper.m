@@ -48,7 +48,7 @@
 #import "Bootstrapper.h"
 #import "Globals.h"
 
-#import "myosd.h"
+#import "libmame.h"
 #import "EmulatorController.h"
 #import <GameController/GameController.h>
 #import "Alert.h"

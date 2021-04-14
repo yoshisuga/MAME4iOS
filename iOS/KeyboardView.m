@@ -44,7 +44,7 @@
 
 #import "KeyboardView.h"
 #import "EmulatorController.h"
-#include "myosd.h"
+#include "libmame.h"
 
 #define DebugLog 0
 #if DebugLog == 0

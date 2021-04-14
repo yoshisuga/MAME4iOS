@@ -42,7 +42,7 @@
  * under a MAME license, as set out in http://mamedev.org/
  */
 
-#include "myosd.h"
+#include "libmame.h"
 #import "EmulatorController.h"
 #import <GameController/GameController.h>
 #import <AVFoundation/AVFoundation.h>
@@ -330,7 +330,7 @@ void iphone_DrawScreen(myosd_render_primitive* prim_list, int width, int height)
 // called by the OSD layer with MAME output
 // **NOTE** this is called on the MAME background thread, dont do anything stupid.
 // ...not doing something stupid includes not leaking autoreleased objects! use a autorelease pool if you need to!
-void myosd_output(int channel, const char* text)
+void iphone_output(int channel, const char* text)
 {
 #if DEBUG
     // output to stderr/stdout just like normal, in a DEBUG build.
@@ -352,6 +352,7 @@ int run_mame(char* game)
     // TODO: hiscore?
     // TODO: speed?
     char* argv[] = {"mame4ios", game ?: "",
+        "-nocoinlock",
         g_pref_cheat ? "-cheat" : "-nocheat",
         g_pref_autosave ? "-autosave" : "-noautosave",
         g_pref_showINFO ? "-noskip_gameinfo" : "-skip_gameinfo",
@@ -2520,7 +2521,10 @@ static void handle_p1aspx(myosd_input_state* myosd) {
 }
 
 // called from inside MAME droid_ios_poll_input
-void myosd_poll_input(myosd_input_state* myosd) {
+void iphone_poll_input(myosd_input_state* myosd, size_t input_size) {
+    
+    // make sure libmame is the right version
+    NSCParameterAssert(input_size == sizeof(myosd_input_state));
     
     // this is called on the MAME thread, need to be carefull and clean up!
     @autoreleasepool {

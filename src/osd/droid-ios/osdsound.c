@@ -18,7 +18,7 @@
 #include "osdepend.h"
 
 #include "osdsound.h"
-#include "myosd-internal.h"
+#include "myosd.h"
 
 static int attenuation = 0;
 
