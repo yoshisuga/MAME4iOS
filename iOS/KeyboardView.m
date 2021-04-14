@@ -84,8 +84,8 @@
 - (void)didBecomeActive {
     if (self.active)
     {
-        myosd_keyboard_changed = 1;
         memset(myosd_keyboard, 0, sizeof(myosd_keyboard));
+        myosd_keyboard_changed = 1;
         [self becomeFirstResponder];
     }
 }
@@ -778,9 +778,9 @@ int hid_to_mame(int keyCode) {
         return;
 
     // send the key to MAME via myosd_keyboard
-    myosd_keyboard_changed = 1;
     myosd_keyboard[mame_key] = isKeyDown ? 0x80 : 0x00;
-    
+    myosd_keyboard_changed = 1;
+
     // only treat as a controler when arrow keys used for first time.
     if (g_joy_used == 0 && (mame_key >= MYOSD_KEY_LEFT && mame_key <= MYOSD_KEY_DOWN))
     {
