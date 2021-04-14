@@ -766,7 +766,7 @@ int hid_to_mame(int keyCode) {
         if (isKeyDown && mame_key >= MYOSD_KEY_A && mame_key <= MYOSD_KEY_Z)
             return [emuController commandKey:'A' + (mame_key - MYOSD_KEY_A)];
         if (isKeyDown && mame_key >= MYOSD_KEY_0 && mame_key <= MYOSD_KEY_9)
-            return [emuController commandKey:'1' + (mame_key - MYOSD_KEY_0)];
+            return [emuController commandKey:'0' + (mame_key - MYOSD_KEY_0)];
     }
     
     // handle ESC key without sending to MAME, so we can present UI
