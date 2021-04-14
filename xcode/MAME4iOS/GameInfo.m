@@ -9,6 +9,10 @@
 #import "GameInfo.h"
 
 @implementation NSDictionary (GameInfo)
+-(NSString*)gameSystem
+{
+    return self[kGameInfoSystem] ?: @"";
+}
 -(NSString*)gameName
 {
     return self[kGameInfoName] ?: @"";
@@ -37,7 +41,7 @@
 {
     return self[kGameInfoCategory] ?: @"";
 }
-- (BOOL)gameIsSystem
+- (BOOL)gameIsFake
 {
     return [@[kGameInfoNameMameMenu, kGameInfoNameSettings] containsObject:self[kGameInfoName]];
 }
@@ -71,7 +75,7 @@
     if (name == nil)
         return nil;
     
-    if (self.gameIsSystem)
+    if (self.gameIsFake)
         return [[NSBundle mainBundle] URLForResource:name withExtension:@"png"];
     
 #if TARGET_OS_IOS

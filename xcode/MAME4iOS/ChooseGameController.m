@@ -496,7 +496,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         return [val CGSizeValue];
     
     // Apple has a special [PNG format](http://fileformats.archiveteam.org/wiki/CgBI), and Xcode converts all resources!
-    if (info.gameIsSystem)
+    if (info.gameIsFake)
         return CGSizeMake(640, 480);
     
     NSURL* url = info.gameLocalImageURL;
@@ -581,9 +581,11 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         key = kGameInfoDriver;
     if ([_gameFilterScope isEqualToString:@"Parent"])
         key = kGameInfoParent;
+    if ([_gameFilterScope isEqualToString:@"System"])
+        key = kGameInfoSystem;
 
     for (NSDictionary* game in filteredGames) {
-        NSString* section = key ? (game[key] ?: @"Unknown") : @"Arcade";
+        NSString* section = game[key];
         
         // a UICollectionView will scroll like crap if we have too many sections, so try to filter/combine similar ones.
         section = [[section componentsSeparatedByString:@" ("] firstObject];
@@ -595,6 +597,12 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         // if we dont have a parent, we are our own parent!
         if (key == (void*)kGameInfoParent && [section length] <= 1)
             section = game[kGameInfoName];
+
+        if ([section length] == 0 && key == (void*)kGameInfoSystem)
+            section = @"Arcade";
+
+        if ([section length] == 0)
+            section = @"Unknown";
 
         if (gameData[section] == nil)
             gameData[section] = [[NSMutableArray alloc] init];
@@ -1621,7 +1629,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     }
 #endif
 
-    if (!game.gameIsSystem) {
+    if (!game.gameIsFake) {
         actions = [actions arrayByAddingObjectsFromArray:@[
 #if TARGET_OS_IOS
             [self actionWithTitle:@"Share" image:[UIImage systemImageNamed:@"square.and.arrow.up"] destructive:NO handler:^(id action) {
