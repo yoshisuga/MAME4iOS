@@ -101,21 +101,60 @@ For now I'm writing this function with a command basis so I can work better with
 #include "emu.h"
 #include "stvprot.h"
 
+
+UINT32 m_abus_protenable;
+UINT32 m_abus_prot_addr;
+UINT32 m_abus_protkey;
+
 static UINT32 a_bus[4];
 static UINT32 ctrl_index;
 static UINT32 internal_counter;
 static UINT8 char_offset; //helper to jump the decoding of the NULL chars.
-
+static UINT32 (*prot_readback)(address_space*,int,UINT32);
 /************************
 *
 * Tecmo World Cup '98
 *
 ************************/
 
+UINT32 tw_readback( address_space* space, int protaddr, UINT32 key )
+{
+	UINT32 *ROM = (UINT32 *)memory_region(space->machine, "user1");
+	UINT32 res = 0;
+
+	UINT32 twcup_prot_data[8] =
+	{
+		0x23232323, 0x23232323, 0x4c4c4c4c, 0x4c156301
+	};
+
+	switch(key >> 16)
+	{
+		case 0x1212:
+			if(protaddr & 2)
+			{
+				res = (ROM[protaddr / 4] & 0xffff) << 16;
+				res |= (ROM[(protaddr+4) / 4] & 0xffff0000) >> 16;
+			}
+			else
+			{
+				res = ROM[protaddr / 4] & 0xffff0000;
+				res |= ROM[protaddr / 4] & 0xffff;
+			}
+
+			if(protaddr >= 0xD215A4+0x100c && protaddr < 0xD215A4+0x100c+8*4)
+				res = twcup_prot_data[(protaddr-(0xD215A4+0x100c))/4];
+
+			return res;
+	}
+
+	return 0;
+}
+
+
 static READ32_HANDLER( twcup98_prot_r )
 {
 	UINT32 *ROM = (UINT32 *)memory_region(space->machine, "user1");
-
+	//printf("MAIN : %08x  DATA : %08x %08x %08x\n",a_bus[3],a_bus[2],a_bus[1],a_bus[0]);
 	if(a_bus[0] & 0x00010000)//protection calculation is activated
 	{
 		if(offset == 3)
@@ -124,10 +163,10 @@ static READ32_HANDLER( twcup98_prot_r )
 			#ifdef MAME_DEBUG
 			popmessage("Prot read at %06x with data = %08x",cpu_get_pc(space->cpu),a_bus[3]);
 			#endif
-			switch(a_bus[3])
-			{
+			UINT32 retdata = prot_readback((address_space *)space, ctrl_index, m_abus_protkey);
 
-			}
+			ctrl_index += 4;
+			return retdata;
 		}
 		return a_bus[offset];
 	}
@@ -141,27 +180,42 @@ static READ32_HANDLER( twcup98_prot_r )
 static WRITE32_HANDLER ( twcup98_prot_w )
 {
 	COMBINE_DATA(&a_bus[offset]);
-	logerror("A-Bus control protection write at %06x: [%02x] <- %08x\n",cpu_get_pc(space->cpu),offset,data);
-	if(offset == 3)
-	{
-		printf("MAIN : %08x  DATA : %08x\n",a_bus[3],a_bus[2]);
+	//printf("A-Bus control protection write at %06x: [%02x] <- %08x\n",space.device().safe_pc(),offset,data);
 
-		//MAIN : 12120000  DATA : 0ad20069 Tecmo logo
-		if(a_bus[3] == 0x12120000 && a_bus[2] == 0x0ad20069)
-		{
-			// ...
-		}
-		//MAIN : 12120000  DATA : e332006b title screen
-		if(a_bus[3] == 0x12120000 && a_bus[2] == 0xe332006b)
-		{
-			// ...
-		}
+	if (offset == 0)
+	{
+		COMBINE_DATA(&m_abus_protenable);
 	}
-	//popmessage("%04x %04x",data,offset/4);
+	else if(offset == 2)
+	{
+		COMBINE_DATA(&m_abus_prot_addr);
+	}
+	else if(offset == 3)
+	{
+		COMBINE_DATA(&m_abus_protkey);
+		int a_bus_vector;
+		a_bus_vector = m_abus_prot_addr >> 16;
+		a_bus_vector|= (m_abus_prot_addr & 0xffff) << 16;
+		a_bus_vector<<= 1;
+		//printf("MAIN : %08x  DATA : %08x %08x\n",m_abus_protkey,m_abus_prot_addr,a_bus_vector);
+
+		// if you look at the first transfer in ffreveng this is clearly a ROM address from a table |  MAIN : 10d70000  DATA : 0b780013 002616f0
+		// (opr21872.7, offset 0x616f0, which happens to be 0x2616f0 in the ROM region "game0")
+		// the values sent by the CPU are plucked from a table above where the data is, located at 0x60000
+		// Offset      0  1  2  3  4  5  6  7   8  9  A  B  C  D  E  F
+		// 00060000   00 00 16 F0 00 00 2F A0  00 00 46 90 00 00 4D 04
+		// this is the first entry in the table, 0x16f0 is the address, 0x2fa0 is the length.
+		// the next entry is address 0x4690, length 0x4d04.  0x16f0 + 0x2fa0 == 0x4690 so that entry is located straight after the first one
+		// the game reads the number of bytes specified in the length via the protection device, writing them to RAM.  This suggests there
+		// is no compression going on, only some form of encryption.
+
+		ctrl_index = a_bus_vector;
+	}
 }
 
 void install_twcup98_protection(running_machine *machine)
 {
+	prot_readback = tw_readback;
 	memory_install_readwrite32_handler(cputag_get_address_space(machine, "maincpu", ADDRESS_SPACE_PROGRAM), 0x4fffff0, 0x4ffffff, 0, 0, twcup98_prot_r, twcup98_prot_w);
 }
 
