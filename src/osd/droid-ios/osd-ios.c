@@ -72,6 +72,11 @@ int myosd_main(int argc, char** argv, myosd_callbacks* callbacks, size_t callbac
 {
     // video_init, video_draw, and input_poll are required
     memcpy(&host_callbacks, callbacks, sizeof(host_callbacks));
+    if (argc == 0) {
+        static char* args[] = {"libmame"};
+        argc = 1;
+        argv = args;
+    }
     return ios_main(argc, argv);
 }
 
