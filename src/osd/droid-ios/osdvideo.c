@@ -60,10 +60,10 @@ void droid_ios_video_draw(const render_primitive_list *currlist)
 		vis_area_screen_width = curr_vis_area_screen_width;
 		vis_area_screen_height = curr_vis_area_screen_height;
 
-		myosd_set_video_mode(screen_width,screen_height,vis_area_screen_width,vis_area_screen_height);
+		myosd_set_video_mode(vis_area_screen_width,vis_area_screen_height);
 	}
 
-    myosd_video_draw(currlist->head);
+    myosd_video_draw(currlist->head, screen_width, screen_height);
 }
 
 // HACK function to get current view from render target

@@ -44,7 +44,7 @@
 
 #import "OptionsTableViewController.h"
 #import "Options.h"
-#import "myosd.h"
+#import "libmame.h"     // to get the MAME version
 
 @implementation OptionsTableViewController
 
@@ -81,6 +81,7 @@
     version = [NSString stringWithFormat:@"%@ • DEBUG", version];
 #endif
     
+    const char * myosd_version = (const char *)myosd_get(MYOSD_VERSION_STRING) ?: "";
     // get the mame version from MYOSD, and remove any date in ()s
     NSString* mame_version = [[NSString stringWithUTF8String:myosd_version] componentsSeparatedByString:@" ("].firstObject;
     

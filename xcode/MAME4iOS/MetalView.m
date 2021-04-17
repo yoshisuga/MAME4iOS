@@ -21,7 +21,7 @@
 
 #define NUM_VERTEX (8*1024)       // number of vertices in a vertex buffer.
 
-#define RESET_AVERAGE_EVERY 120   // reset averages every this many frames
+#define RESET_AVERAGE_EVERY (120 * 30)   // reset averages every this many frames
 
 // Direct method and property calls with Xcode 12 and above.
 #if defined(__IPHONE_14_0)
@@ -124,6 +124,9 @@ __attribute__((objc_direct_members))
 
         _pixelFormat = MTLPixelFormatBGRA8Unorm;
         _colorSpace = _colorSpaceDevice;
+        
+        _showFPS = FALSE;
+        _sizeFPS = 16.0;    // size in points
 
         // CAMetalLayer avalibility is wrong in the iOS 11.3.4 sdk???
         #pragma clang diagnostic push
@@ -212,9 +215,9 @@ __attribute__((objc_direct_members))
             _colorSpace = _colorSpaceSRGB;
             _pixelFormat = MTLPixelFormatBGRA8Unorm;
         }
-        _textureCacheFlush = TRUE;
-        _resetDevice = TRUE;
     }
+    _textureCacheFlush = TRUE;
+    _resetDevice = TRUE;
 }
 - (void)didMoveToSuperview {
     [super didMoveToSuperview];
@@ -226,6 +229,10 @@ __attribute__((objc_direct_members))
 
 - (CGSize) drawableSize {
     return _layer.drawableSize;
+}
+
+- (void)textureCacheFlush {
+    _textureCacheFlush = TRUE;
 }
 
 #pragma mark - device init
@@ -413,6 +420,11 @@ __attribute__((objc_direct_members))
 
 -(void)drawEnd {
     NSParameterAssert(_drawable != nil);
+
+    // draw the frame rate if enabled
+    if (_showFPS)
+        [self drawFPS];
+    
     NSArray* buffers = _vertex_buffer_list;
     __weak typeof(self) _self = self;
     BOOL externalDisplay = _externalDisplay;
@@ -458,9 +470,11 @@ __attribute__((objc_direct_members))
     [_draw_lock unlock];
 }
 
+
+
 #pragma mark - draw primitives
 
--(void)drawPrim:(MTLPrimitiveType)type vertices:(Vertex2D*)vertices count:(NSUInteger)count {
+-(void)drawPrim:(MTLPrimitiveType)type vertices:(const Vertex2D*)vertices count:(NSUInteger)count {
     NSParameterAssert(_encoder != nil);
 
     // if our buffer is full, get a new one.
@@ -726,7 +740,7 @@ __attribute__((objc_direct_members))
     };
     [self drawPrim:MTLPrimitiveTypeTriangleStrip vertices:vertices count:sizeof(vertices)/sizeof(vertices[0])];
 }
--(void)drawTriangle:(CGPoint*)points color:(VertexColor)color {
+-(void)drawTriangle:(const CGPoint*)points color:(VertexColor)color {
     Vertex2D vertices[] = {
         Vertex2D(points[0].x,points[0].y,0.0,0.0,color),
         Vertex2D(points[1].x,points[1].y,0.0,0.0,color),
@@ -754,6 +768,28 @@ __attribute__((objc_direct_members))
             _frameRateAverage = _frameRate;
     }
     _lastDrawTime = drawTime;
+}
+
+// draw the frame rate
+-(void)drawFPS {
+
+    NSUInteger frame_count = _frameCount;
+
+    if (frame_count == 0)
+        return;
+    
+    // get the timecode assuming 60fps
+    NSUInteger frame = frame_count % 60;
+    NSUInteger sec = (frame_count / 60) % 60;
+    NSUInteger min = (frame_count / 3600) % 60;
+    NSString* fps = [NSString stringWithFormat:@"%02d:%02d:%02d %.2ffps", (int)min, (int)sec, (int)frame, _frameRateAverage];
+
+    CGFloat f = (-2.0 / _matrix_view.columns[1][1]) / _layer.bounds.size.height;
+    CGFloat h = _sizeFPS * f;
+    CGFloat x = 0.0;
+    CGFloat y = (h / 4);
+    [self drawText:fps at:CGPointMake(x + h/8,y + h/8) height:h color:VertexColor(0,0,0,0.5)];
+    [self drawText:fps at:CGPointMake(x,y) height:h color:VertexColor(1,1,1,1)];
 }
 
 #pragma mark - transforms
@@ -973,34 +1009,36 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         }
         NSParameterAssert([val isKindOfClass:[NSValue class]]);
 
+        const char* type = [val objCType];
+        
         if ([val isKindOfClass:[NSNumber class]]) {
             float_params[count++] = [(id)val floatValue];
         }
-        else if (strcmp([val objCType], @encode(CGRect)) == 0) {
+        else if (strcmp(type, @encode(CGRect)) == 0) {
             CGRect rect = [val CGRectValue];
             float_params[count++] = rect.origin.x;
             float_params[count++] = rect.origin.y;
             float_params[count++] = rect.size.width;
             float_params[count++] = rect.size.height;
         }
-        else if (strcmp([val objCType], @encode(CGSize)) == 0) {
+        else if (strcmp(type, @encode(CGSize)) == 0) {
             CGSize size = [val CGSizeValue];
             float_params[count++] = size.width;
             float_params[count++] = size.height;
         }
-        else if (strcmp([val objCType], @encode(float[2])) == 0) {
+        else if (strcmp(type, @encode(float[2])) == 0) {
             [val getValue:float_params+count size:2*sizeof(float)];
             count += 2;
         }
-        else if (strcmp([val objCType], @encode(float[4])) == 0) {
+        else if (strcmp(type, @encode(float[4])) == 0) {
             [val getValue:float_params+count size:4*sizeof(float)];
             count += 4;
         }
-        else if (strcmp([val objCType], @encode(float[2][2])) == 0) {
+        else if (strcmp(type, @encode(float[2][2])) == 0) {
             [val getValue:float_params+count size:4*sizeof(float)];
             count += 4;
         }
-        else if (strcmp([val objCType], @encode(float[4][4])) == 0) {
+        else if (strcmp(type, @encode(float[4][4])) == 0) {
             [val getValue:float_params+count size:16*sizeof(float)];
             count += 16;
         }
@@ -1278,6 +1316,88 @@ static void texture_load_uiimage(id<MTLTexture> texture, UIImage* image) {
     }];
 }
 
+#pragma mark - draw text
+
+static uint64_t g_font[128];
+
+-(void)drawText:(NSString*)text at:(CGPoint)xy height:(CGFloat)height color:(VertexColor)color {
+    
+    [self setShader:ShaderTextureAlpha];
+    [self setTextureFilter:MTLSamplerMinMagFilterNearest];
+    
+    CGFloat x = xy.x;
+    CGFloat y = xy.y;
+    CGFloat w = height;
+    CGFloat h = height;
+
+    for (const char* pch = text.UTF8String; *pch; pch++) {
+        uint8_t ch = *pch;
+        
+        if (ch > 127)
+            continue;
+        
+        void* ident = (void*)(g_font + ch); // use address of glyph data as unique identifier
+        [self setTexture:0 texture:ident hash:0 width:8 height:8 format:MTLPixelFormatBGRA8Unorm texture_load:^(id<MTLTexture> texture) {
+            uint64_t mask = g_font[ch];
+            uint32_t rgb[8*8];
+            for (int i=0; i<8*8; i++) {
+                if (mask & 0x8000000000000000)
+                    rgb[i] = 0xFFFFFFFF;
+                else
+                    rgb[i] = 0x00000000;
+                mask = mask << 1;
+            }
+            [texture replaceRegion:MTLRegionMake2D(0, 0, 8, 8) mipmapLevel:0 withBytes:rgb bytesPerRow:8*4];
+            texture.label = [NSString stringWithFormat:@"Char%c", ch];
+        }];
+        [self drawRect:CGRectMake(x,y,w,h) color:color];
+        x += w;
+    }
+}
+
+-(CGSize)sizeText:(NSString*)text height:(CGFloat)height {
+    int n = 0;
+    for (const char* pch = text.UTF8String; *pch; pch++) {
+        if (*pch <= 127)
+            n++;
+    }
+    return CGSizeMake(n * height, height);
+}
+
+// 8x8 Arcade font, only for ASCII 0-127
+static uint64_t g_font[128] = {
+    0x0000000000000000,0xE080EA2AEE0A0A00,0xE080EA2AE40A0A00,0xE080CA8AE40A0A00,
+    0xE080CE84E4040400,0xE080CE8AEA0E0400,0xE0A0EAAAAC0A0A00,0xC0A0C8A8C8080E00,
+    0xC0A0CEA8CE020E00,0xA0A0EEA4A4040400,0x80808E88EC080800,0xA0A0AEA444040400,
+    0xE080CE888C080800,0xE0808E8AEE0C0A00,0xE080EE2AEA0A0E00,0xE080EE24E4040E00,
+    0xC0A0A8A8C8080E00,0xC0A0A4ACC4040E00,0xC0A0AEA2CE080E00,0xC0A0AEA2C6020E00,
+    0xC0A0AAAACE020200,0xE0A0AAAAAC0A0A00,0xE080EA2AEE040400,0xE080CC8AEC0A0C00,
+    0xE0808E8AEA0A0A00,0xE080CA8EEA0A0A00,0x3C66663018001800,0xE080CE88E8080E00,
+    0xE080CE888E020E00,0xE080AEA8EE020E00,0xE0A0EEC8AE020E00,0xA0A0AEA8EE020E00,
+    0x0000000000000000,0x1818181818001800,0x6666660000000000,0x6C6CFE6CFE6C6C00,
+    0x183E603C067C1800,0x00C6CC183066C600,0x386C3876DCCC7600,0x1818300000000000,
+    0x0C18303030180C00,0x30180C0C0C183000,0x00663CFF3C660000,0x0018187E18180000,
+    0x0000000000181830,0x0000007E00000000,0x0000000000181800,0x03060C183060C000,
+    0x3C666E7666663C00,0x1838181818187E00,0x3C660C1830607E00,0x3C66061C06663C00,
+    0x1C3C6CCCFE0C0C00,0x7E607C0606663C00,0x1C30607C66663C00,0x7E06060C18181800,
+    0x3C66663C66663C00,0x3C66663E060C3800,0x0018180000181800,0x0018180000181830,
+    0x0C18306030180C00,0x00007E007E000000,0x6030180C18306000,0x3C66060C18001800,
+    0x7CC6DEDEDEC07C00,0x183C66667E666600,0x7C66667C66667C00,0x3C66606060663C00,
+    0x786C6666666C7800,0x7E60607C60607E00,0x7E60607C60606000,0x3C66606E66663E00,
+    0x6666667E66666600,0x7E18181818187E00,0x0606060606663C00,0xC6CCD8F0D8CCC600,
+    0x6060606060607E00,0xC6EEFED6C6C6C600,0xC6E6F6DECEC6C600,0x3C66666666663C00,
+    0x7C66667C60606000,0x3C666666666C3600,0x7C66667C6C666600,0x3C66603C06663C00,
+    0x7E18181818181800,0x6666666666663C00,0x66666666663C1800,0xC6C6C6D6FEEEC600,
+    0xC3663C183C66C300,0xC3663C1818181800,0x7E060C1830607E00,0x3C30303030303C00,
+    0xC06030180C060300,0x3C0C0C0C0C0C3C00,0x10386CC600000000,0x00000000000000FF,
+    0x180C060000000000,0x00003C063E663E00,0x60607C6666667C00,0x00003C6060603C00,
+    0x06063E6666663E00,0x00003C667E603C00,0x1C307C3030303000,0x00003E66663E067C,
+    0x60607C6666666600,0x1800381818181E00,0x0C000C0C0C0C0C78,0x6060666C786C6600,
+    0x3818181818181E00,0x0000CCFED6D6C600,0x00007C6666666600,0x00003C6666663C00,
+    0x00007C66667C6060,0x00003E66663E0606,0x00007C6660606000,0x00003E603C067C00,
+    0x30307E3030301E00,0x0000666666663E00,0x00006666663C1800,0x0000C6C6D67C6C00,
+    0x0000C66C386CC600,0x00006666663E063C,0x00007E0C18307E00,0x0E18187018180E00,
+    0x1818181818181800,0x7018180E18187000,0x76DC000000000000,0xC0A0AEA4C4040400,
+};
+
 @end
-
-

@@ -6,58 +6,7 @@
 //  Copyright © 2021 Seleuco. All rights reserved.
 //
 #import "ContentProvider.h"
-
-#pragma mark game info
-// TODO: move these into a GameInfo.m file and share with ChooseGameController?
-
-// keys used in a NSUserDefaults (from ChooseGameController.h)
-#define FAVORITE_GAMES_KEY      @"FavoriteGames"
-#define FAVORITE_GAMES_TITLE    @"Favorite Games"
-#define RECENT_GAMES_KEY        @"RecentGames"
-#define RECENT_GAMES_TITLE      @"Recently Played"
-#define kGameInfoName           @"name"
-#define kGameInfoDescription    @"description"
-#define kGameInfoNameMameMenu   @"mameui"
-
-@interface NSDictionary(GameInfo)
-@property (nonatomic, strong, readonly) NSString* gameName;
-@property (nonatomic, strong, readonly) NSString* gameDescription;
-@property (nonatomic, strong, readonly) NSString* gameTitle;
-@property (nonatomic, strong, readonly) NSURL* gameImageURL;
-@property (nonatomic, strong, readonly) NSURL* gamePlayURL;
-@end
-
-@implementation NSDictionary(GameInfo)
--(NSString*)gameName
-{
-    return self[kGameInfoName] ?: @"";
-}
--(NSString*)gameDescription
-{
-    return self[kGameInfoDescription] ?: @"";
-}
--(NSString*)gameTitle
-{
-    return [self.gameDescription componentsSeparatedByString:@" ("].firstObject;
-}
--(NSURL*)gameImageURL
-{
-    NSString* name = self.gameDescription;
-    NSString* base = @"https://raw.githubusercontent.com/libretro-thumbnails/MAME/master/Named_Titles";
-    
-    /// from [libretro docs](https://docs.libretro.com/guides/roms-playlists-thumbnails/)
-    /// The following characters in titles must be replaced with _ in the corresponding filename: &*/:`<>?\|
-    for (NSString* str in @[@"&", @"*", @"/", @":", @"`", @"<", @">", @"?", @"\\", @"|"])
-        name = [name stringByReplacingOccurrencesOfString:str withString:@"_"];
-    
-    name = [name stringByAddingPercentEncodingWithAllowedCharacters:NSCharacterSet.URLPathAllowedCharacterSet];
-    return [NSURL URLWithString:[NSString stringWithFormat:@"%@/%@.png", base, name]];
-}
--(NSURL*)gamePlayURL
-{
-    return [NSURL URLWithString:[NSString stringWithFormat:@"mame4ios://%@", self.gameName]];
-}
-@end
+#import "GameInfo.h"
 
 #pragma mark tvOS TopShelf ContentProvider
 

@@ -20,10 +20,13 @@ static int joy_buttons[NUM_JOY][12];
 static int joy_axis[NUM_JOY][6];
 static int joy_hats[NUM_JOY][4];
 
+static int lightgun_buttons[NUM_JOY][2];
 static int lightgun_axis[NUM_JOY][2];
 
 static int mouse_buttons[NUM_JOY][3];   // L,R,M
 static int mouse_axis[NUM_JOY][3];      // x,y,z
+
+static myosd_input_state myosd_input;
 
 static int poll_ports = 0;
 
@@ -31,11 +34,9 @@ static void my_poll_ports(running_machine *machine);
 static INT32 my_get_state(void *device_internal, void *item_internal);
 static INT32 my_axis_get_state(void *device_internal, void *item_internal);
 
-extern "C" void myosd_poll_input(void);
-
 void droid_ios_init_input(running_machine *machine)
 {
-	memset(myosd_keyboard,0,sizeof(myosd_keyboard));
+    memset(&myosd_input,0,sizeof(myosd_input));
 	memset(joy_buttons,0,sizeof(joy_buttons));
 	memset(joy_axis,0,sizeof(joy_axis));
 	memset(joy_hats,0,sizeof(joy_hats));
@@ -102,7 +103,7 @@ void droid_ios_init_input(running_machine *machine)
             pch++;
         *pch = 0;
         
-        input_device_item_add(keyboard_device, name, &myosd_keyboard[key], key, my_get_state);
+        input_device_item_add(keyboard_device, name, &myosd_input.keyboard[key], key, my_get_state);
     }
 
     for (int i = 0; i < NUM_JOY; i++)
@@ -116,6 +117,8 @@ void droid_ios_init_input(running_machine *machine)
 
        input_device_item_add(lightgun_device, "X Axis", &lightgun_axis[i][0], ITEM_ID_XAXIS, my_axis_get_state);
        input_device_item_add(lightgun_device, "Y Axis", &lightgun_axis[i][1], ITEM_ID_YAXIS, my_axis_get_state);
+       input_device_item_add(lightgun_device, "A", &lightgun_buttons[i][0], ITEM_ID_BUTTON1, my_get_state);
+       input_device_item_add(lightgun_device, "B", &lightgun_buttons[i][1], ITEM_ID_BUTTON2, my_get_state);
 
 	   char mouse_name[10];
 	   snprintf(mouse_name, 10, "Mouse %d", i + 1);
@@ -140,13 +143,14 @@ void my_poll_ports(running_machine *machine)
 	const input_port_config *port;
     if(poll_ports)
     {
-        int way8 = 0;
-        myosd_num_buttons = 0;
-        myosd_light_gun = 0;
-        myosd_mouse = 0;
-        myosd_num_players = 1;
-        myosd_num_coins = 1;
-        myosd_num_inputs = 1;
+        myosd_input.num_buttons = 0;
+        myosd_input.num_lightgun = 0;
+        myosd_input.num_mouse = 0;
+        myosd_input.num_keyboard = 0;
+        myosd_input.num_players = 1;
+        myosd_input.num_coins = 1;
+        myosd_input.num_inputs = 1;
+        myosd_input.num_ways = 2;
         for (port = machine->m_portlist.first(); port != NULL; port = port->next())
         {
             for (field = port->fieldlist; field != NULL; field = field->next)
@@ -166,89 +170,100 @@ void my_poll_ports(running_machine *machine)
                     for (int i=0; i<ARRAY_LENGTH(seq->code) && seq->code[i] != SEQCODE_END; i++)
                     {
                         input_code code = seq->code[i];
-                        if (INPUT_CODE_DEVINDEX(code) >= myosd_num_inputs)
-                            myosd_num_inputs = INPUT_CODE_DEVINDEX(code)+1;
+                        if (INPUT_CODE_DEVINDEX(code) >= myosd_input.num_inputs)
+                            myosd_input.num_inputs = INPUT_CODE_DEVINDEX(code)+1;
                     }
                 }
                 
                 // count the number of COIN buttons.
-                if (field->type == IPT_COIN2 && myosd_num_coins < 2)
-                    myosd_num_coins = 2;
-                if (field->type == IPT_COIN3 && myosd_num_coins < 3)
-                    myosd_num_coins = 3;
-                if (field->type == IPT_COIN4 && myosd_num_coins < 4)
-                    myosd_num_coins = 4;
+                if (field->type == IPT_COIN2 && myosd_input.num_coins < 2)
+                    myosd_input.num_coins = 2;
+                if (field->type == IPT_COIN3 && myosd_input.num_coins < 3)
+                    myosd_input.num_coins = 3;
+                if (field->type == IPT_COIN4 && myosd_input.num_coins < 4)
+                    myosd_input.num_coins = 4;
                 
                 // count the number of players, by looking at the types of START buttons.
-                if (field->type == IPT_START2 && myosd_num_players < 2)
-                    myosd_num_players = 2;
-                if (field->type == IPT_START3 && myosd_num_players < 3)
-                    myosd_num_players = 3;
-                if (field->type == IPT_START4 && myosd_num_players < 4)
-                    myosd_num_players = 4;
-                if (field->player >= myosd_num_players)
-                    myosd_num_players = field->player+1;
+                if (field->type == IPT_START2 && myosd_input.num_players < 2)
+                    myosd_input.num_players = 2;
+                if (field->type == IPT_START3 && myosd_input.num_players < 3)
+                    myosd_input.num_players = 3;
+                if (field->type == IPT_START4 && myosd_input.num_players < 4)
+                    myosd_input.num_players = 4;
+                if (field->player >= myosd_input.num_players)
+                    myosd_input.num_players = field->player+1;
                 
                 if (field->player!=0)
                     continue;   // only count ways and buttons for Player 1
                 
                 // count the number of buttons
                 if(field->type == IPT_BUTTON1)
-                    if(myosd_num_buttons<1)myosd_num_buttons=1;
+                    if(myosd_input.num_buttons<1)myosd_input.num_buttons=1;
                 if(field->type == IPT_BUTTON2)
-                    if(myosd_num_buttons<2)myosd_num_buttons=2;
+                    if(myosd_input.num_buttons<2)myosd_input.num_buttons=2;
                 if(field->type == IPT_BUTTON3)
-                    if(myosd_num_buttons<3)myosd_num_buttons=3;
+                    if(myosd_input.num_buttons<3)myosd_input.num_buttons=3;
                 if(field->type == IPT_BUTTON4)
-                    if(myosd_num_buttons<4)myosd_num_buttons=4;
+                    if(myosd_input.num_buttons<4)myosd_input.num_buttons=4;
                 if(field->type == IPT_BUTTON5)
-                    if(myosd_num_buttons<5)myosd_num_buttons=5;
+                    if(myosd_input.num_buttons<5)myosd_input.num_buttons=5;
                 if(field->type == IPT_BUTTON6)
-                    if(myosd_num_buttons<6)myosd_num_buttons=6;
+                    if(myosd_input.num_buttons<6)myosd_input.num_buttons=6;
                 if(field->type == IPT_JOYSTICKRIGHT_UP)//dual stick is mapped as buttons
-                    if(myosd_num_buttons<4)myosd_num_buttons=4;
+                    if(myosd_input.num_buttons<4)myosd_input.num_buttons=4;
                 if(field->type == IPT_POSITIONAL)//positional is mapped with two last buttons
-                    if(myosd_num_buttons<6)myosd_num_buttons=6;
+                    if(myosd_input.num_buttons<6)myosd_input.num_buttons=6;
                 
                 // count the number of ways (joystick directions)
-                if(field->type == IPT_JOYSTICK_UP || field->type == IPT_JOYSTICK_DOWN || field->type == IPT_JOYSTICKLEFT_UP || field->type == IPT_JOYSTICKLEFT_DOWN)
-                    way8= 1;
+                if(field->type == IPT_JOYSTICK_UP || field->type == IPT_JOYSTICK_DOWN)
+                    if(myosd_input.num_ways<4)myosd_input.num_ways=4;
+                if(field->type == IPT_JOYSTICKLEFT_UP  || field->type == IPT_JOYSTICKLEFT_DOWN ||
+                   field->type == IPT_JOYSTICKRIGHT_UP || field->type == IPT_JOYSTICKRIGHT_DOWN)
+                    if(myosd_input.num_ways<8)myosd_input.num_ways=8;
                 if(field->type == IPT_AD_STICK_X || field->type == IPT_LIGHTGUN_X || field->type == IPT_MOUSE_X ||
                    field->type == IPT_TRACKBALL_X || field->type == IPT_PEDAL)
-                    way8= 1;
+                    if(myosd_input.num_ways<8)myosd_input.num_ways=8;
                 
                 // detect if mouse or lightgun input is wanted.
                 if(field->type == IPT_DIAL   || field->type == IPT_PADDLE   || field->type == IPT_POSITIONAL   || field->type == IPT_TRACKBALL_X ||
                    field->type == IPT_DIAL_V || field->type == IPT_PADDLE_V || field->type == IPT_POSITIONAL_V || field->type == IPT_TRACKBALL_Y)
-                    myosd_mouse = 1;
+                    myosd_input.num_mouse = 1;
+                if(field->type == IPT_MOUSE_X)
+                    myosd_input.num_mouse = 1;
                 if(field->type == IPT_LIGHTGUN_X)
-                   myosd_light_gun = 1;                
+                    myosd_input.num_lightgun = 1;
+                if(field->type == IPT_KEYBOARD || field->type == IPT_KEYPAD)
+                    myosd_input.num_keyboard = 1;
             }
         }
         poll_ports=0;
         
-        //8 si analog o lightgun o up o down
-        if (myosd_num_ways!=4){
-            if(way8)
-                myosd_num_ways = 8;
-            else
-                myosd_num_ways = 2;
-        }
-        mame_printf_debug("Num Buttons %d\n",myosd_num_buttons);
-        mame_printf_debug("Num WAYS %d\n",myosd_num_ways);
-        mame_printf_debug("Num PLAYERS %d\n",myosd_num_players);
-        mame_printf_debug("Num COINS %d\n",myosd_num_coins);
-        mame_printf_debug("Num INPUTS %d\n",myosd_num_inputs);
-        mame_printf_debug("Num MOUSE %d\n",myosd_mouse);
-        mame_printf_debug("Num GUN %d\n",myosd_light_gun);
+        mame_printf_debug("Num Buttons %d\n",myosd_input.num_buttons);
+        mame_printf_debug("Num WAYS %d\n",myosd_input.num_ways);
+        mame_printf_debug("Num PLAYERS %d\n",myosd_input.num_players);
+        mame_printf_debug("Num COINS %d\n",myosd_input.num_coins);
+        mame_printf_debug("Num INPUTS %d\n",myosd_input.num_inputs);
+        mame_printf_debug("Num MOUSE %d\n",myosd_input.num_mouse);
+        mame_printf_debug("Num GUN %d\n",myosd_input.num_lightgun);
+        mame_printf_debug("Num KEYBOARD %d\n",myosd_input.num_keyboard);
     }
     
+}
+
+static unsigned long myosd_joystick_read(int n)
+{
+    return myosd_input.joy_status[n];
+}
+
+static float myosd_joystick_read_analog(int n, int axis)
+{
+    return myosd_input.joy_analog[n][axis];
 }
 
 void droid_ios_poll_input(running_machine *machine)
 {    
     my_poll_ports(machine);
-    myosd_poll_input();
+    myosd_poll_input(&myosd_input);
     
     for(int i=0; i<NUM_JOY; i++)
     {
@@ -269,12 +284,12 @@ void droid_ios_poll_input(running_machine *machine)
         // ignore lightgun and mouse, if we have any joystick input. (why?)
         if(joy_axis[i][0] == 0 && joy_axis[i][1] == 0 && joy_axis[i][2] == 0 && joy_axis[i][3] == 0)
         {
-            lightgun_axis[i][0] = (int)(lightgun_x[i] *  32767 *  2 );
-            lightgun_axis[i][1] = (int)(lightgun_y[i] *  32767 *  -2 );
+            lightgun_axis[i][0] = (int)(myosd_input.lightgun_x[i] * 32767 *  2);
+            lightgun_axis[i][1] = (int)(myosd_input.lightgun_y[i] * 32767 * -2);
 
-            mouse_axis[i][0] = (int)mouse_x[i];
-            mouse_axis[i][1] = (int)mouse_y[i];
-            mouse_axis[i][2] = (int)mouse_z[i];
+            mouse_axis[i][0] = (int)myosd_input.mouse_x[i];
+            mouse_axis[i][1] = (int)myosd_input.mouse_y[i];
+            mouse_axis[i][2] = (int)myosd_input.mouse_z[i];
         }
         else
         {
@@ -285,10 +300,15 @@ void droid_ios_poll_input(running_machine *machine)
             mouse_axis[i][1] = 0;
             mouse_axis[i][2] = 0;
         }
-        
-        mouse_buttons[i][0] = (mouse_status[i] & MYOSD_A) ? 0x80 : 0x00;
-        mouse_buttons[i][1] = (mouse_status[i] & MYOSD_Y) ? 0x80 : 0x00;
-        mouse_buttons[i][2] = (mouse_status[i] & MYOSD_B) ? 0x80 : 0x00;
+
+        long lightgun_status = myosd_input.lightgun_status[i];
+        lightgun_buttons[i][0] = (lightgun_status & MYOSD_A) ? 0x80 : 0x00;
+        lightgun_buttons[i][1] = (lightgun_status & MYOSD_B) ? 0x80 : 0x00;
+
+        long mouse_status = myosd_input.mouse_status[i];
+        mouse_buttons[i][0] = (mouse_status & MYOSD_A) ? 0x80 : 0x00;
+        mouse_buttons[i][1] = (mouse_status & MYOSD_Y) ? 0x80 : 0x00;
+        mouse_buttons[i][2] = (mouse_status & MYOSD_B) ? 0x80 : 0x00;
 
         joy_buttons[i][0]  = ((_pad_status & MYOSD_A) != 0) ? 0x80 : 0;
         joy_buttons[i][1]  = ((_pad_status & MYOSD_B) != 0) ? 0x80 : 0;

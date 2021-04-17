@@ -245,7 +245,9 @@ static const char priortext[] = "Return to Prior Menu";
 static const char backtext[] = "Return to " CAPSTARTGAMENOUN;
 static const char exittext[] = "Exit";
 
-
+//DAV HACK
+static int myosd_last_game_selected = 0;
+//DAV HACK
 
 /***************************************************************************
     FUNCTION PROTOTYPES
@@ -3914,7 +3916,7 @@ static void menu_select_game_build_driver_list(ui_menu *menu, select_game_state 
 	qsort((void *)menustate->driverlist, listnum, sizeof(menustate->driverlist[0]), menu_select_game_driver_compare_2);
     
     // pass driver list to myosd so it can create a custom GUI selection UI....
-    myosd_set_game_info((myosd_game_info**)menustate->driverlist, listnum);
+    myosd_set_game_info(menustate->driverlist, listnum);
 //DAV HACK
 }
 

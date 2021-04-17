@@ -51,7 +51,6 @@ static const options_entry droid_mame_options[] =
 //  FUNCTION PROTOTYPES
 //============================================================
 
-//void osd_exit(running_machine *machine);
 static void osd_exit(running_machine &machine);
 
 //============================================================
@@ -62,56 +61,16 @@ static void osd_exit(running_machine &machine);
 extern "C"
 int android_main  (int argc, char **argv)
 #elif defined(IOS)
-extern "C"
-int iOS_main  (int argc, char **argv)
+int ios_main(int argc, char **argv)
 #else
 int main(int argc, char **argv)
 #endif
 {
-	static char *args[255];	int n=0;
-	int ret;
-	FILE *f;
-    
-	//printf("Iniciando\n");
-    
 	myosd_init();
 
-    // the iOS app will "re-run" MAME by calling into main again, dont loop here
-	//while(1)
-	{
-		droid_ios_setup_video();
-        
-        // cli_execute does the heavy lifting; if we have osd-specific options, we
-        // would pass them as the third parameter here
-		n=0;
-        if (argc == 0) {
-            args[n]= (char *)"mame4x";n++;
-        }
-        else {
-            while (n < argc) {
-                args[n]= argv[n];n++;
-            }
-        }
+    droid_ios_setup_video();
 
-		//args[n]= (char *)"starforc"; n++;
-		//args[n]= (char *)"1944"; n++;
-		//args[n]= (char *)"mslug3"; n++;
-        //args[n]= (char *)"dino"; n++;
-		//args[n]= (char *)"outrun"; n++;
-		//args[n]= (char *)"-autoframeskip"; n++;
-		//args[n]= (char *)"-noautoframeskip"; n++;
-		//args[n]= (char *)"-nosound"; n++;
-		//args[n]= (char *)"-novideo"; n++;
-		//args[n]= (char *)"-nosleep"; n++;
-        //args[n]= (char *)"-autosave"; n++;
-		//args[n]= (char *)"-sleep"; n++;
-		//args[n]= (char *)"-jdz"; n++;args[n]= (char *)"0.0"; n++;
-		//args[n]= (char *)"-jsat"; n++;args[n]= (char *)"1.0"; n++;
-		//args[n]= (char *)"-joystick_deadzone"; n++;args[n]= (char *)"0.0"; n++;
-		args[n]= (char *)"-nocoinlock"; n++;
-        
-        ret = cli_execute(n, args, droid_mame_options);
-	}
+    int ret = cli_execute(argc, argv, droid_mame_options);
     
 	myosd_deinit();
     
@@ -149,21 +108,17 @@ static void osd_exit(running_machine &machine)
 
 void osd_update(running_machine *machine, int skip_redraw)
 {
-    
     if (!skip_redraw && our_target!=NULL)
 	{
 		droid_ios_video_render(our_target);
 	}
     
-    attotime current_time = timer_get_time(machine);
-    
+    //attotime current_time = timer_get_time(machine);
     //char m[256];
     //sprintf(m,"fr: %d emutime sec:%d ms: %d\n",fr,current_time.seconds,(int)(current_time.attoseconds / ATTOSECONDS_PER_MILLISECOND));
     //mylog(m);
             
 	droid_ios_poll_input(machine);
-
-	myosd_check_pause();
 }
 
 //============================================================

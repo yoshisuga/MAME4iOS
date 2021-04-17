@@ -43,8 +43,7 @@
  */
 #import <Metal/Metal.h>
 #import "MetalScreenView.h"
-#import "MetalViewText.h"
-#import "myosd.h"
+#import "libmame.h"
 
 #define DebugLog 0
 #if DebugLog == 0 || !defined(DEBUG)
@@ -64,7 +63,6 @@ TIMER_INIT(texture_load_rgb32)
 TIMER_INIT(texture_load_rgb15)
 TIMER_INIT(line_prim)
 TIMER_INIT(quad_prim)
-TIMER_INIT(draw_fps)
 TIMER_INIT_END
 
 #pragma mark - MetalScreenView
@@ -463,7 +461,7 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
 
 // return 1 if you handled the draw, 0 for a software render
 // NOTE this is called on MAME background thread, dont do anything stupid.
-- (void)drawScreen:(void*)prim_list {
+- (void)drawScreen:(void*)prim_list size:(CGSize)size {
     static Shader shader_map[] = {ShaderNone, ShaderAlpha, ShaderMultiply, ShaderAdd};
     static Shader shader_tex_map[]  = {ShaderTexture, ShaderTextureAlpha, ShaderTextureMultiply, ShaderTextureAdd};
 
@@ -480,10 +478,10 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
 
     NSUInteger num_screens = 0;
     
-    [self setViewRect:CGRectMake(0, 0, myosd_video_width, myosd_video_height)];
+    [self setViewRect:CGRectMake(0, 0, size.width, size.height)];
     
-    CGFloat scale_x = self.drawableSize.width  / myosd_video_width;
-    CGFloat scale_y = self.drawableSize.height / myosd_video_height;
+    CGFloat scale_x = self.drawableSize.width  / size.width;
+    CGFloat scale_y = self.drawableSize.height / size.height;
     CGFloat scale   = MIN(scale_x, scale_y);
     
     // get the line width scale for this frame, if it is variable.
@@ -635,32 +633,9 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
     
 #ifdef DEBUG
     if ([_screen_shader containsString:@"color-test-pattern"] && [(id)self.getShaderVariables[@"color-test-pattern"] boolValue]) {
-        [self drawTestPattern:CGRectMake(0, 0, myosd_video_width, myosd_video_height)];
+        [self drawTestPattern:CGRectMake(0, 0, size.width, size.height)];
     }
 #endif
-    
-    // draw the frame rate if enabled
-    
-    if (myosd_fps != 0) {
-        TIMER_START(draw_fps);
-        NSUInteger frame_count = self.frameCount;
-        if (frame_count != 0) {
-            // get the timecode assuming 60fps
-            NSUInteger frame = frame_count % 60;
-            NSUInteger sec = (frame_count / 60) % 60;
-            NSUInteger min = (frame_count / 3600) % 60;
-            NSString* fps = [NSString stringWithFormat:@"%02d:%02d:%02d %.2ffps", (int)min, (int)sec, (int)frame, self.frameRateAverage];
-
-            CGFloat screen_scale = self.drawableSize.width / self.boundsSize.width;
-            CGFloat f = (1.0 / scale_y) * screen_scale; // 1pt in current units.
-            CGFloat x = 0.0 * f;
-            CGFloat y = 8.0 * f;
-            CGFloat h = 16.0 * f;
-            [self drawText:fps at:CGPointMake(x + f*2,y + f*2) height:h color:VertexColor(0,0,0,0.5)];
-            [self drawText:fps at:CGPointMake(x,y) height:h color:VertexColor(1,1,1,1)];
-        }
-        TIMER_STOP(draw_fps);
-    }
     
     [self drawEnd];
     TIMER_STOP(draw_screen);
@@ -1016,7 +991,7 @@ simd_float4 ColorMatch(CGColorSpaceRef destColorSpace, CGColorSpaceRef sourceCol
 #ifdef DEBUG
 #undef NSLog
 
-- (void)dumpScreen:(void*)primitives {
+- (void)dumpScreen:(void*)primitives size:(CGSize)size {
     
     static char* texture_format_name[] = {"UNDEFINED", "PAL16", "PALA16", "555", "RGB", "ARGB", "YUV16"};
     static char* blend_mode_name[] = {"NONE", "ALPHA", "MUL", "ADD"};
@@ -1025,7 +1000,7 @@ simd_float4 ColorMatch(CGColorSpaceRef destColorSpace, CGColorSpaceRef sourceCol
     TIMER_DUMP();
     TIMER_RESET();
     
-    NSLog(@"Draw Screen: %dx%d", myosd_video_width, myosd_video_height);
+    NSLog(@"Draw Screen: %dx%d",(int)size.width,(int)size.height);
     
     for (myosd_render_primitive* prim = primitives; prim != NULL; prim = prim->next) {
         

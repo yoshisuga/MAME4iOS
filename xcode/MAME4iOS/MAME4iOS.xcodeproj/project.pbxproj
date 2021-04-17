@@ -27,7 +27,6 @@
 		925ABCC01E46DCC500997182 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE6808B1635BA7000051BC2 /* Foundation.framework */; };
 		925ABCC11E46DCC500997182 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE6808D1635BA7000051BC2 /* CoreGraphics.framework */; };
 		925ABCC21E46DCC500997182 /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE9454C7172BB23100B81C32 /* GameKit.framework */; };
-		925ABCE51E46DD6E00997182 /* libmame.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 925ABCE41E46DD6E00997182 /* libmame.a */; };
 		926C76FF21F1C87700103EDE /* TVOptionsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 926C76FE21F1C87700103EDE /* TVOptionsController.m */; };
 		926C770A21F271A700103EDE /* ListOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE90575B166A89D000653872 /* ListOptionController.m */; };
 		926C771D21F5034100103EDE /* TVInputOptionsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 926C771C21F5034100103EDE /* TVInputOptionsController.m */; };
@@ -85,6 +84,11 @@
 		92ECB91921EAD57900D1E3D0 /* UIView+Toast.m in Sources */ = {isa = PBXBuildFile; fileRef = 92B99F0D2022706600CC44E3 /* UIView+Toast.m */; };
 		B5FAE31921FCE64D003F44D0 /* MAME_tvOS.lsr in Resources */ = {isa = PBXBuildFile; fileRef = B5FAE31821FCE64D003F44D0 /* MAME_tvOS.lsr */; };
 		E9856CF023C9A7C50071666D /* MultipeerConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E9856CEF23C9A7C50071666D /* MultipeerConnectivity.framework */; };
+		EF1628712627A5A800E2B2AB /* libmame-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EF1628122624ACC800E2B2AB /* libmame-ios.a */; };
+		EF1741D6261BB2D600DE8386 /* GameInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = EF1741D5261BB2D600DE8386 /* GameInfo.m */; };
+		EF1741D7261BB2D600DE8386 /* GameInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = EF1741D5261BB2D600DE8386 /* GameInfo.m */; };
+		EF1741D8261BB2D600DE8386 /* GameInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = EF1741D5261BB2D600DE8386 /* GameInfo.m */; };
+		EF1741D9261BB2D600DE8386 /* GameInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = EF1741D5261BB2D600DE8386 /* GameInfo.m */; };
 		EF19F22C235D1BDF00C8EE7F /* ChooseGameController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF19F229235D1BDF00C8EE7F /* ChooseGameController.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		EF19F22D235D1BDF00C8EE7F /* ChooseGameController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF19F229235D1BDF00C8EE7F /* ChooseGameController.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		EF1C93EE24C252C600749C69 /* SKIN_1 in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E124C252C400749C69 /* SKIN_1 */; };
@@ -142,9 +146,6 @@
 		EF8409A3260CEFAB00FAC3CF /* AVPlayerView.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8409A1260CEFAB00FAC3CF /* AVPlayerView.m */; };
 		EF8409A9260CF3F200FAC3CF /* whiteHDR.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = EF8409A8260CF3F200FAC3CF /* whiteHDR.mp4 */; };
 		EF8409AA260CF3F200FAC3CF /* whiteHDR.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = EF8409A8260CF3F200FAC3CF /* whiteHDR.mp4 */; };
-		EF8409B5260CF66500FAC3CF /* MetalViewText.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8409B4260CF66500FAC3CF /* MetalViewText.m */; };
-		EF8409B6260CF66500FAC3CF /* MetalViewText.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8409B4260CF66500FAC3CF /* MetalViewText.m */; };
-		EF8409B7260CF66500FAC3CF /* MetalViewText.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8409B4260CF66500FAC3CF /* MetalViewText.m */; };
 		EF8409C0260D281000FAC3CF /* AVPlayerView.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8409A1260CEFAB00FAC3CF /* AVPlayerView.m */; };
 		EF8E427D249348220049C84C /* megaTron.metal in Sources */ = {isa = PBXBuildFile; fileRef = EF8E427C249348220049C84C /* megaTron.metal */; };
 		EF8E427E249348220049C84C /* megaTron.metal in Sources */ = {isa = PBXBuildFile; fileRef = EF8E427C249348220049C84C /* megaTron.metal */; };
@@ -454,7 +455,6 @@
 		CE6D6E1216D8CADF00F265B7 /* LayoutView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LayoutView.h; path = ../../iOS/LayoutView.h; sourceTree = "<group>"; };
 		CE6D6E1316D8CADF00F265B7 /* LayoutView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LayoutView.m; path = ../../iOS/LayoutView.m; sourceTree = "<group>"; };
 		CE87C2FE16F5C21A00ABE4F6 /* MAME4iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = MAME4iOS.entitlements; sourceTree = "<group>"; };
-		CE8A4192170F41FC001ADFA4 /* myosd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = myosd.h; path = "../../../src/osd/droid-ios/myosd.h"; sourceTree = "<group>"; };
 		CE8D87DB1653121100685BC4 /* KeyboardView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = KeyboardView.h; path = ../../iOS/KeyboardView.h; sourceTree = "<group>"; };
 		CE8D87DC1653121200685BC4 /* KeyboardView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = KeyboardView.m; path = ../../iOS/KeyboardView.m; sourceTree = "<group>"; };
 		CE8D87DF16541AC400685BC4 /* Globals.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Globals.h; path = ../../iOS/Globals.h; sourceTree = "<group>"; };
@@ -487,6 +487,10 @@
 		CEE680D1163BE5C400051BC2 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		E9856CEF23C9A7C50071666D /* MultipeerConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MultipeerConnectivity.framework; path = System/Library/Frameworks/MultipeerConnectivity.framework; sourceTree = SDKROOT; };
 		EF06A576248064AC00A974B8 /* Timer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Timer.h; sourceTree = "<group>"; };
+		EF1628122624ACC800E2B2AB /* libmame-ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libmame-ios.a"; path = "../../libmame-ios.a"; sourceTree = "<group>"; };
+		EF16284F2627433300E2B2AB /* libmame.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = libmame.h; path = "../../../src/osd/droid-ios/libmame.h"; sourceTree = "<group>"; };
+		EF1741D4261BB2D600DE8386 /* GameInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GameInfo.h; sourceTree = "<group>"; };
+		EF1741D5261BB2D600DE8386 /* GameInfo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GameInfo.m; sourceTree = "<group>"; };
 		EF19F229235D1BDF00C8EE7F /* ChooseGameController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ChooseGameController.m; sourceTree = "<group>"; };
 		EF19F22E235D1C0300C8EE7F /* ChooseGameController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ChooseGameController.h; sourceTree = "<group>"; };
 		EF1C93E124C252C400749C69 /* SKIN_1 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SKIN_1; path = "../../iOS-res/SKIN_1"; sourceTree = "<group>"; };
@@ -524,8 +528,6 @@
 		EF8409A0260CEFAB00FAC3CF /* AVPlayerView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVPlayerView.h; sourceTree = "<group>"; };
 		EF8409A1260CEFAB00FAC3CF /* AVPlayerView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AVPlayerView.m; sourceTree = "<group>"; };
 		EF8409A8260CF3F200FAC3CF /* whiteHDR.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; name = whiteHDR.mp4; path = "../../iOS-res/whiteHDR.mp4"; sourceTree = "<group>"; };
-		EF8409B3260CF66500FAC3CF /* MetalViewText.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MetalViewText.h; sourceTree = "<group>"; };
-		EF8409B4260CF66500FAC3CF /* MetalViewText.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MetalViewText.m; sourceTree = "<group>"; };
 		EF8E427C249348220049C84C /* megaTron.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = megaTron.metal; sourceTree = "<group>"; };
 		EF8E4282249915F20049C84C /* lineTron.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = lineTron.metal; sourceTree = "<group>"; };
 		EF8E428A249FE5410049C84C /* ulTron.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = ulTron.metal; sourceTree = "<group>"; };
@@ -597,6 +599,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EF1628712627A5A800E2B2AB /* libmame-ios.a in Frameworks */,
 				E9856CF023C9A7C50071666D /* MultipeerConnectivity.framework in Frameworks */,
 				EF27F36A23F7475100B1E50A /* libcompression.tbd in Frameworks */,
 				EFF9F82D24707EEA00DDA88C /* Metal.framework in Frameworks */,
@@ -604,7 +607,6 @@
 				EFF9F827246EE30200DDA88C /* IntentsUI.framework in Frameworks */,
 				92A533DB21EEFDE20089FBB9 /* CFNetwork.framework in Frameworks */,
 				92D96574215B03E100EFE3AE /* libc++.tbd in Frameworks */,
-				925ABCE51E46DD6E00997182 /* libmame.a in Frameworks */,
 				EFF9F825246EE2F800DDA88C /* Intents.framework in Frameworks */,
 				925ABCB91E46DCC500997182 /* GameController.framework in Frameworks */,
 				925ABCBA1E46DCC500997182 /* CoreBluetooth.framework in Frameworks */,
@@ -774,6 +776,8 @@
 				CEE680AC1635BB2700051BC2 /* Bootstrapper.h */,
 				CEE680AD1635BB2700051BC2 /* Bootstrapper.m */,
 				EF67E11524B8972100AFF489 /* MacMenu.m */,
+				EF1741D4261BB2D600DE8386 /* GameInfo.h */,
+				EF1741D5261BB2D600DE8386 /* GameInfo.m */,
 				EF19F22E235D1C0300C8EE7F /* ChooseGameController.h */,
 				EF19F229235D1BDF00C8EE7F /* ChooseGameController.m */,
 				CEE680B41635BB4900051BC2 /* EmulatorController.h */,
@@ -847,6 +851,7 @@
 		CEE680881635BA7000051BC2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				EF1628122624ACC800E2B2AB /* libmame-ios.a */,
 				EF286D5A253CF18D007DA6D3 /* CloudKit.framework */,
 				EF286D58253CF171007DA6D3 /* CloudKit.framework */,
 				EF950BAC24B1239F00DC9A47 /* MetalPerformanceShaders.framework */,
@@ -917,7 +922,7 @@
 		CEE680C51635BB8500051BC2 /* Includes */ = {
 			isa = PBXGroup;
 			children = (
-				CE8A4192170F41FC001ADFA4 /* myosd.h */,
+				EF16284F2627433300E2B2AB /* libmame.h */,
 			);
 			name = Includes;
 			path = MAME4iOS;
@@ -979,8 +984,6 @@
 				EFB7B2132479FBD800AD96A4 /* MetalView.m */,
 				EFB7B2142479FBD800AD96A4 /* MetalViewShaders.h */,
 				EFB7B2152479FBD900AD96A4 /* MetalViewShaders.metal */,
-				EF8409B3260CF66500FAC3CF /* MetalViewText.h */,
-				EF8409B4260CF66500FAC3CF /* MetalViewText.m */,
 				EF249337236264DA00DD0A6C /* ImageCache.h */,
 				EF249336236264D900DD0A6C /* ImageCache.m */,
 				EF301CEF240460C5000510FD /* Alert.h */,
@@ -1348,7 +1351,6 @@
 				92A533A821EBDBAD0089FBB9 /* GCDWebServerRequest.m in Sources */,
 				EFB7B21C247ACFE300AD96A4 /* MameShaders.metal in Sources */,
 				925ABCA91E46DCC500997182 /* OptionsController.m in Sources */,
-				EF8409B5260CF66500FAC3CF /* MetalViewText.m in Sources */,
 				EF8EAA8A244F7F5D00DA02BB /* SteamControllerExtendedGamepad.m in Sources */,
 				EF8EAA8C244F7F5D00DA02BB /* SteamControllerInput.m in Sources */,
 				92A533C021EBDBAD0089FBB9 /* GCDWebServerURLEncodedFormRequest.m in Sources */,
@@ -1359,6 +1361,7 @@
 				EF24933A236264DA00DD0A6C /* ImageCache.m in Sources */,
 				92B99F0F2022706600CC44E3 /* UIView+Toast.m in Sources */,
 				925ABCAD1E46DCC500997182 /* EmulatorController.m in Sources */,
+				EF1741D6261BB2D600DE8386 /* GameInfo.m in Sources */,
 				925ABCAE1E46DCC500997182 /* HelpController.m in Sources */,
 				EF286D34253CA930007DA6D3 /* CloudSync.m in Sources */,
 				925ABCAF1E46DCC500997182 /* AnalogStick.m in Sources */,
@@ -1422,7 +1425,6 @@
 				92A533D421EBDDF20089FBB9 /* GCDWebUploader.m in Sources */,
 				92ECB91221EAA1B700D1E3D0 /* EmulatorController.m in Sources */,
 				EF8EAA87244F7F5D00DA02BB /* SteamControllerManager.m in Sources */,
-				EF8409B6260CF66500FAC3CF /* MetalViewText.m in Sources */,
 				EF24BAFD24C786A900D9C55A /* SkinManager.m in Sources */,
 				92A533AC21EBDBAD0089FBB9 /* GCDWebServerFunctions.m in Sources */,
 				EF7B232D23FD0469001FF51D /* (null) in Sources */,
@@ -1435,6 +1437,7 @@
 				92A5332421EB57F00089FBB9 /* Options.m in Sources */,
 				EF301CF2240460C5000510FD /* Alert.m in Sources */,
 				92A533CA21EBDBAD0089FBB9 /* GCDWebServerFileRequest.m in Sources */,
+				EF1741D7261BB2D600DE8386 /* GameInfo.m in Sources */,
 				EF8409A3260CEFAB00FAC3CF /* AVPlayerView.m in Sources */,
 				92A533BB21EBDBAD0089FBB9 /* GCDWebServerDataResponse.m in Sources */,
 				EF941F0124427D1200D58F7F /* OptionsTableViewController.m in Sources */,
@@ -1463,7 +1466,6 @@
 				EFA7A0E924B65C020009CF88 /* ulTron.metal in Sources */,
 				EFA7A0EA24B65C020009CF88 /* lineTron.metal in Sources */,
 				EFA7A0EB24B65C020009CF88 /* GCDWebServerRequest.m in Sources */,
-				EF8409B7260CF66500FAC3CF /* MetalViewText.m in Sources */,
 				EFA7A0EC24B65C020009CF88 /* MameShaders.metal in Sources */,
 				EFA7A0ED24B65C020009CF88 /* OptionsController.m in Sources */,
 				EFA7A0EE24B65C020009CF88 /* SteamControllerExtendedGamepad.m in Sources */,
@@ -1476,6 +1478,7 @@
 				EFA7A0F624B65C020009CF88 /* ImageCache.m in Sources */,
 				EFA7A0F724B65C020009CF88 /* UIView+Toast.m in Sources */,
 				EFA7A0F824B65C020009CF88 /* EmulatorController.m in Sources */,
+				EF1741D8261BB2D600DE8386 /* GameInfo.m in Sources */,
 				EFA7A0F924B65C020009CF88 /* HelpController.m in Sources */,
 				EF286D36253CA930007DA6D3 /* CloudSync.m in Sources */,
 				EFA7A0FA24B65C020009CF88 /* AnalogStick.m in Sources */,
@@ -1512,6 +1515,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				EFEEA4CA25C9D4B700314132 /* ContentProvider.m in Sources */,
+				EF1741D9261BB2D600DE8386 /* GameInfo.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1544,10 +1548,7 @@
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = "MAME4iOS/MAME4iOS-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../..",
@@ -1581,10 +1582,7 @@
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = "MAME4iOS/MAME4iOS-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../..",
@@ -1646,10 +1644,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				INFOPLIST_FILE = MAME4tvOS/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(SRCROOT)/../..",
 					"$(inherited)",
@@ -1711,10 +1706,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				INFOPLIST_FILE = MAME4tvOS/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(SRCROOT)/../..",
 					"$(inherited)",
@@ -1925,11 +1917,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				INFOPLIST_FILE = TopShelf/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(inherited).$(TARGET_NAME:lower)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1962,11 +1950,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				INFOPLIST_FILE = TopShelf/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "$(inherited).$(TARGET_NAME:lower)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;

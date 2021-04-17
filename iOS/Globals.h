@@ -71,9 +71,12 @@
 
 #define absf(x)			    ((x >= 0) ? (x) : (x * -1.0f))
 
-//#define STICK4WAY (myosd_waysStick == 4 && myosd_inGame)
-#define STICK4WAY (myosd_waysStick == 4 || !myosd_inGame || myosd_in_menu)
-#define STICK2WAY (myosd_waysStick == 2 && myosd_inGame && !myosd_in_menu)
+#define myosd_state myosd_get(MYOSD_STATE)
+#define myosd_inGame (myosd_state & MYOSD_STATE_INGAME)
+#define myosd_in_menu (myosd_state & MYOSD_STATE_INMENU)
+
+#define STICK4WAY (g_joy_ways == 4 || !myosd_inGame || myosd_in_menu)
+#define STICK2WAY (g_joy_ways == 2 && myosd_inGame && !myosd_in_menu)
 
 #define MyCGRectContainsPoint(rect, point)						\
 (((point.x >= rect.origin.x) &&								\
@@ -81,22 +84,29 @@
 (point.x <= rect.origin.x + rect.size.width) &&			\
 (point.y <= rect.origin.y + rect.size.height)) ? 1 : 0)
 
-extern int myosd_video_width;
-extern int myosd_video_height;
-extern int myosd_waysStick;
-extern int myosd_inGame;
-
-extern void change_pause(int value);
-extern int iOS_main (int argc, char **argv);
-
 // these are the current status of the onscreen touch controls (or iCade)
 extern unsigned long myosd_pad_status;
+extern unsigned long myosd_pad_status_2;
 extern float myosd_pad_x;
 extern float myosd_pad_y;
+
+extern uint8_t myosd_keyboard[256];
+extern int     myosd_keyboard_changed;
+
+// input profile for current machine
+extern int myosd_num_buttons;
+extern int myosd_num_ways;
+extern int myosd_num_players;
+extern int myosd_num_coins;
+extern int myosd_num_inputs;
+extern int myosd_mouse;
+extern int myosd_light_gun;
+extern int myosd_num_keyboard;
 
 extern int g_emulation_initiated;
 extern int g_emulation_paused;
 
+extern int g_joy_ways;
 extern int g_joy_used;
 
 extern int g_controller_opacity;

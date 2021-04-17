@@ -25,54 +25,23 @@
 #define AUDIO_BUFFERS 3
 
 int  myosd_fps = 1;
-int  myosd_showinfo = 0;
 int  myosd_inGame = 0;
-int  myosd_pause = 0;
-int  myosd_exitPause = 0;
-int  myosd_last_game_selected = 0;
-int  myosd_waysStick = 8;
-int  myosd_video_width = 320;
-int  myosd_video_height = 240;
-int  myosd_vis_video_width = 320;
-int  myosd_vis_video_height = 240;
 int  myosd_display_width;
 int  myosd_display_height;
 int  myosd_in_menu = 0;
 int  myosd_force_pxaspect = 0;
 
-int myosd_mouse = 0;
-int myosd_light_gun = 0;
+int  myosd_filter_clones = 0;
+int  myosd_filter_not_working = 0;
 
-int myosd_filter_clones = 0;
-int myosd_filter_not_working = 0;
-int myosd_num_buttons = 0;
-int myosd_num_ways = 8;
-int myosd_num_players = 0;
-int myosd_num_coins = 0;
-int myosd_num_inputs = 0;
-
-int myosd_hiscore=1;
-
+int  myosd_hiscore=1;
 int  myosd_speed = 100;
-
-float myosd_joy_analog[NUM_JOY][MYOSD_AXIS_NUM];
-
-float lightgun_x[NUM_JOY];
-float lightgun_y[NUM_JOY];
-
-float mouse_x[NUM_JOY];
-float mouse_y[NUM_JOY];
-float mouse_z[NUM_JOY];
-unsigned long mouse_status[NUM_JOY];
 
 static int lib_inited = 0;
 static int soundInit = 0;
-static int isPause = 0;
-
-unsigned char myosd_keyboard[NUM_KEYS];
-unsigned long myosd_joy_status[NUM_JOY];
 
 const char * myosd_version = build_version;
+
 
 typedef struct AQCallbackStruct {
     AudioQueueRef queue;
@@ -83,17 +52,10 @@ typedef struct AQCallbackStruct {
 
 AQCallbackStruct in;
 
-static pthread_mutex_t cond_mutex     = PTHREAD_MUTEX_INITIALIZER;
-static pthread_cond_t  condition_var   = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t sound_mutex     = PTHREAD_MUTEX_INITIALIZER;
 
 static int global_low_latency_sound  = 1;
 
-// OSD functions located in the iOS/tvOS app
-extern "C" void iphone_Reset_Views(void);
-extern "C" int  iphone_DrawScreen(void*);
-
-extern "C" void change_pause(int value);
 int sound_close_AudioQueue(void);
 int sound_open_AudioQueue(int rate, int bits, int stereo);
 int sound_close_AudioUnit(void);
@@ -102,39 +64,115 @@ void queue(unsigned char *p,unsigned size);
 unsigned short dequeue(unsigned char *p,unsigned size);
 inline int emptyQueue(void);
 
-void myosd_set_video_mode(int width,int height,int vis_width,int vis_height)
+static myosd_callbacks host_callbacks;
+extern int ios_main(int argc, char**argv);  // in osdmain.c
+
+// main LIBMAIN entry point, setup callbacks and then call main in osdmain
+int myosd_main(int argc, char** argv, myosd_callbacks* callbacks, size_t callbacks_size)
 {
-     mame_printf_debug("myosd_set_video_mode: %dx%d [%dx%d]\n",width,height,vis_width,vis_height);
-
-     myosd_video_width = width;
-     myosd_video_height = height;
-     myosd_vis_video_width = vis_width;
-     myosd_vis_video_height = vis_height;
-
-     iphone_Reset_Views();
+    // video_init, video_draw, and input_poll are required
+    memcpy(&host_callbacks, callbacks, sizeof(host_callbacks));
+    if (argc == 0) {
+        static char* args[] = {"libmame"};
+        argc = 1;
+        argv = args;
+    }
+    return ios_main(argc, argv);
 }
 
-void myosd_video_draw(void* prims)
+// myosd_get
+intptr_t myosd_get(int var)
 {
-    iphone_DrawScreen(prims);
+    switch (var)
+    {
+        case MYOSD_VERSION:
+            return 139;
+            
+        case MYOSD_VERSION_STRING:
+            return (intptr_t)(void*)build_version;
+            
+        case MYOSD_STATE:
+            return (myosd_inGame  ? MYOSD_STATE_INGAME : 0) |
+                   (myosd_in_menu ? MYOSD_STATE_INMENU : 0) |
+                   ((myosd_in_menu==2) ? MYOSD_STATE_CONFIGURE_INPUT : 0);
+            
+        case MYOSD_FPS:
+            return myosd_fps;
+            
+        case MYOSD_SPEED:
+            return myosd_speed;
+            
+        case MYOSD_HISCORE:
+            return myosd_hiscore;
+
+        case MYOSD_FORCE_PIXEL_ASPECT:
+            return myosd_force_pxaspect;
+    }
+    return 0;
 }
 
-unsigned long myosd_joystick_read(int n)
+// myosd_set
+void myosd_set(int var, intptr_t value)
 {
-    return myosd_joy_status[n];
+    switch (var)
+    {
+        case MYOSD_DISPLAY_WIDTH:
+            myosd_display_width = value;
+            break;
+        case MYOSD_DISPLAY_HEIGHT:
+            myosd_display_height = value;
+            break;
+        case MYOSD_GAME_FILTER:
+            myosd_filter_not_working = (value & MYOSD_FILTER_NOTWORKING) != 0;
+            myosd_filter_clones = (value & MYOSD_FILTER_CLONES) != 0;
+            break;
+        case MYOSD_FPS:
+            myosd_fps = value;
+            break;
+        case MYOSD_SPEED:
+            myosd_speed = value;
+            break;
+        case MYOSD_HISCORE:
+            myosd_hiscore = value;
+            break;
+        case MYOSD_FORCE_PIXEL_ASPECT:
+            myosd_force_pxaspect = value;
+            break;
+    }
 }
 
-float myosd_joystick_read_analog(int n, int axis)
+
+void myosd_set_video_mode(int width,int height)
 {
-    return myosd_joy_analog[n][axis];
+    mame_printf_debug("myosd_set_video_mode: %dx%d\n",width,height);
+    host_callbacks.video_init(width,height);
+}
+
+void myosd_video_draw(render_primitive* prims, int width, int height)
+{
+    host_callbacks.video_draw((myosd_render_primitive*)prims, width, height);
 }
 
 // output channel callback, send output "up" to the app via myosd_output
-static void mame_output(void *param, const char *format, va_list argptr)
+static void myosd_output(void *param, const char *format, va_list argptr)
 {
-    char buffer[1204];
-    vsnprintf(buffer, sizeof(buffer)-1, format, argptr);
-    myosd_output((int)(intptr_t)param, buffer);
+    if (host_callbacks.output_text != NULL)
+    {
+        char buffer[1204];
+        vsnprintf(buffer, sizeof(buffer)-1, format, argptr);
+        host_callbacks.output_text((int)(intptr_t)param, buffer);
+    }
+}
+
+void myosd_poll_input(myosd_input_state* input)
+{
+    host_callbacks.input_poll(input, sizeof(myosd_input_state));
+}
+
+extern void myosd_set_game_info(const game_driver *info[], int game_count)
+{
+    if (host_callbacks.set_game_info != NULL)
+        host_callbacks.set_game_info((myosd_game_info**)info, game_count);
 }
 
 void myosd_init(void)
@@ -143,7 +181,7 @@ void myosd_init(void)
     
     // capture all MAME output so we can send it to the app.
     for (int n=0; n<OUTPUT_CHANNEL_COUNT; n++)
-        mame_set_output_channel((output_channel)n, mame_output, (void*)n, NULL, NULL);
+        mame_set_output_channel((output_channel)n, myosd_output, (void*)n, NULL, NULL);
 
 	if (!lib_inited )
     {
@@ -164,6 +202,10 @@ void myosd_deinit(void)
 }
 
 void myosd_closeSound(void) {
+    
+    if (host_callbacks.sound_exit != NULL)
+        return host_callbacks.sound_exit();
+    
 	if( soundInit == 1 )
 	{
         mame_printf_debug("myosd_closeSound\n");
@@ -179,6 +221,10 @@ void myosd_closeSound(void) {
 }
 
 void myosd_openSound(int rate,int stereo) {
+    
+    if (host_callbacks.sound_init != NULL)
+        return host_callbacks.sound_init(rate, stereo);
+    
 	if( soundInit == 0)
 	{
         if(global_low_latency_sound)
@@ -198,35 +244,10 @@ void myosd_openSound(int rate,int stereo) {
 
 void myosd_sound_play(void *buff, int len)
 {
+    if (host_callbacks.sound_play != NULL)
+        return host_callbacks.sound_play(buff, len);
+
 	queue((unsigned char *)buff,len);
-}
-
-void change_pause(int value){
-	pthread_mutex_lock( &cond_mutex );
-
-	isPause = value;
-
-    if(!isPause)
-    {
-		myosd_exitPause = 1;
-        pthread_cond_signal( &condition_var );
-    }
-
-	pthread_mutex_unlock( &cond_mutex );
-}
-
-void myosd_check_pause(void){
-
-	pthread_mutex_lock( &cond_mutex );
-
-	while(isPause)
-	{
-		myosd_pause = 1;
-        pthread_cond_wait( &condition_var, &cond_mutex );
-	}
-    myosd_pause = 0;
-
-	pthread_mutex_unlock( &cond_mutex );
 }
 
 //SQ buffers for sound between MAME and iOS AudioQueue. AudioQueue

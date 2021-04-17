@@ -81,10 +81,10 @@
 @property(readonly)  CGFloat    renderTimeAverage;  // average renderTime
 
 // NOTE this is called on MAME background thread, dont do anything stupid.
-- (void)drawScreen:(void*)primitives;
+- (void)drawScreen:(void*)primitives size:(CGSize)size;
 
 #ifdef DEBUG
-- (void)dumpScreen:(void*)primitives;
+- (void)dumpScreen:(void*)primitives size:(CGSize)size;
 #endif
 
 @end

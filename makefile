@@ -299,7 +299,7 @@ EMULATOR = libmame-tvos.a
 else ifdef macCatalyst
 EMULATOR = libmame-mac-$(ARCH).a
 else
-EMULATOR = libmame.a
+EMULATOR = libmame-ios.a
 endif
 
 #-------------------------------------------------

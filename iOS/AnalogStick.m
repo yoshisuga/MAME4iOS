@@ -45,7 +45,7 @@
 #import "AnalogStick.h"
 #import "Globals.h"
 
-#include "myosd.h"
+#include "libmame.h"
 
 @implementation AnalogStickView
 
