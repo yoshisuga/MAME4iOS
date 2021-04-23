@@ -94,13 +94,36 @@ enum myosd_output_channel
 // subset of a internal game_driver structure we pass up to the UI/OSD layer
 typedef struct
 {
+    unsigned int        type;                       /* game type */
+    unsigned int        flags;                      /* MYOSD_GAME_INFO_ flags */
     const char *        source_file;                /* set this to __FILE__ */
     const char *        parent;                     /* if this is a clone, the name of the parent */
-    const char *        name;                       /* short (8-character) name of the game */
+    const char *        name;                       /* short (16-character) name of the game */
     const char *        description;                /* full name of the game */
     const char *        year;                       /* year the game was released */
     const char *        manufacturer;               /* manufacturer of the game */
+    const void *        rom_list;                   /* list of ROMs */
+    const void *        input_list;                 /* machine input */
+    const char *        software_list;              /* list of software */
 } myosd_game_info;
+
+enum MYOSD_GAME_TYPE
+{
+    MYOSD_GAME_TYPE_ARCADE,       // coin-operated machine for public use
+    MYOSD_GAME_TYPE_CONSOLE,      // console system
+    MYOSD_GAME_TYPE_COMPUTER,     // any kind of computer including home computers, minis, calculators, ...
+    MYOSD_GAME_TYPE_OTHER,        // any other emulated system (e.g. clock, satellite receiver, ...)
+};
+
+enum MYOSD_GAME_INFO
+{
+    MYOSD_GAME_INFO_VERTICAL            = 1<<0,     // vertical video (aka TATE)
+    MYOSD_GAME_INFO_NOT_WORKING         = 1<<1,     // not working
+    MYOSD_GAME_INFO_IMPERFECT_GRAPHICS  = 1<<2,     // imperfect video
+    MYOSD_GAME_INFO_IMPERFECT_SOUND     = 1<<3,     // imperfect sound
+    MYOSD_GAME_INFO_BIOS                = 1<<4,     // this driver entry is a BIOS root
+    MYOSD_GAME_INFO_SUPPORTS_SAVE       = 1<<5,     // system supports save states
+};
 
 // this is copy/clone of the render_primitive in render.h passed up to UI/OSD layer in myosd_video_draw
 typedef struct _myosd_render_primitive myosd_render_primitive;
@@ -139,7 +162,7 @@ struct _myosd_render_primitive
     struct {float u,v;}   texcoords[4];
 };
 
-#ifndef __RENDER_H__
+#ifndef ORIENTATION_FLIP_X
 /* render primitive types */
 enum
 {
@@ -303,18 +326,12 @@ enum MYOSD_STATE {
     MYOSD_STATE_CONFIGURE_INPUT = 1<<2,     // configure input menu is active
 };
 
-enum MYOSD_FILTER {
-    MYOSD_FILTER_NOTWORKING = 1<<0,         // filter (dont show) non-working machines
-    MYOSD_FILTER_CLONES     = 1<<1,         // filter (dont show) clones
-};
-
 enum {
     MYOSD_VERSION,              // GET: MAME version number (ie 139 or 229)
     MYOSD_VERSION_STRING,       // GET: MAME version string (ie "0.139u1 (date)")
     MYOSD_STATE,                // GET: APP STATE (inGame, inMenu, inInput)
     MYOSD_DISPLAY_WIDTH,        // SET: maximum width and height of "screen" to display
     MYOSD_DISPLAY_HEIGHT,
-    MYOSD_GAME_FILTER,          // SET: game driver filter (Available, Working, or Clones)
     MYOSD_FPS,                  // GET, SET: show framerate
     MYOSD_SPEED,                // GET, SET: emulation speed (100 = 100%)
     MYOSD_HISCORE,              // GET, SET: HISCORE system enabled
@@ -335,7 +352,8 @@ typedef struct {
 
     void (*input_poll)(myosd_input_state* input, size_t state_size);
     void (*output_text)(int channel, const char* text);
-    void (*set_game_info)(myosd_game_info *info[], int game_count);
+    
+    void (*set_game_info)(myosd_game_info *games, int count);
 }   myosd_callbacks;
 
 // main entry point

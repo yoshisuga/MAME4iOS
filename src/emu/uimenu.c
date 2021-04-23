@@ -3885,16 +3885,8 @@ static void menu_select_game_build_driver_list(ui_menu *menu, select_game_state 
 			found_driver = (const game_driver **)bsearch(&tempdriver_ptr, menustate->driverlist, driver_count, sizeof(*menustate->driverlist), menu_select_game_driver_compare);
             
             int skip = found_driver == NULL;
- 
-//DAV HACK
-            if(!skip && myosd_filter_clones)
-            {
-                const game_driver *cloneof = driver_get_clone(*found_driver);
-                skip = cloneof!=NULL && !(cloneof->flags & GAME_IS_BIOS_ROOT);
-            }
-            if(!skip) skip = myosd_filter_not_working && (*found_driver)->flags & GAME_NOT_WORKING;
-//DAV HACK
-			/* if found, mark the corresponding entry in the array */
+
+            /* if found, mark the corresponding entry in the array */
 			if (!skip)
 			{                
                 int index = found_driver - menustate->driverlist;
