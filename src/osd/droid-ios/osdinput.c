@@ -87,6 +87,14 @@ void droid_ios_init_input(running_machine *machine)
 	if (keyboard_device == NULL)
 		fatalerror("Error creating keyboard device");
     
+    // make sure MYOSD_KEY enum matches ITEM_ID enum
+    _Static_assert(MYOSD_KEY_A == ITEM_ID_A);
+    _Static_assert(MYOSD_KEY_0 == ITEM_ID_0);
+    _Static_assert(MYOSD_KEY_F1 == ITEM_ID_F1);
+    _Static_assert(MYOSD_KEY_ESC == ITEM_ID_ESC);
+    _Static_assert(MYOSD_KEY_LCMD == ITEM_ID_LWIN);
+    _Static_assert(MYOSD_KEY_CANCEL == ITEM_ID_CANCEL);
+    
     // add a key for every MAME key
     for (input_item_id key=ITEM_ID_A; key<=ITEM_ID_CANCEL; key++) {
         astring token;

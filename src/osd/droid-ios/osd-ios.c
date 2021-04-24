@@ -31,17 +31,11 @@ int  myosd_display_height;
 int  myosd_in_menu = 0;
 int  myosd_force_pxaspect = 0;
 
-int  myosd_filter_clones = 0;
-int  myosd_filter_not_working = 0;
-
-int  myosd_hiscore=1;
+int  myosd_hiscore = 1;
 int  myosd_speed = 100;
 
 static int lib_inited = 0;
 static int soundInit = 0;
-
-const char * myosd_version = build_version;
-
 
 typedef struct AQCallbackStruct {
     AudioQueueRef queue;
@@ -122,10 +116,6 @@ void myosd_set(int var, intptr_t value)
         case MYOSD_DISPLAY_HEIGHT:
             myosd_display_height = value;
             break;
-        case MYOSD_GAME_FILTER:
-            myosd_filter_not_working = (value & MYOSD_FILTER_NOTWORKING) != 0;
-            myosd_filter_clones = (value & MYOSD_FILTER_CLONES) != 0;
-            break;
         case MYOSD_FPS:
             myosd_fps = value;
             break;
@@ -150,12 +140,31 @@ void myosd_set_video_mode(int width,int height)
 
 void myosd_video_draw(render_primitive* prims, int width, int height)
 {
+    // myosd struct **must** match the internal render.h version.
+    _Static_assert(sizeof(myosd_render_primitive) == sizeof(render_primitive), "");
+    _Static_assert(offsetof(myosd_render_primitive, bounds_x0)    == offsetof(render_primitive, bounds), "");
+    _Static_assert(offsetof(myosd_render_primitive, color_a)      == offsetof(render_primitive, color), "");
+    _Static_assert(offsetof(myosd_render_primitive, texture_base) == offsetof(render_primitive, texture), "");
+    _Static_assert(offsetof(myosd_render_primitive, texcoords)    == offsetof(render_primitive, texcoords), "");
+    _Static_assert(PRIMFLAG_TEXORIENT_MASK == 0x000F);
+    _Static_assert(PRIMFLAG_TEXFORMAT_MASK == 0x00F0);
+    _Static_assert(PRIMFLAG_BLENDMODE_MASK == 0x0F00);
+    _Static_assert(PRIMFLAG_ANTIALIAS_MASK == 0x1000);
+    _Static_assert(PRIMFLAG_SCREENTEX_MASK == 0x2000);
+    _Static_assert(PRIMFLAG_TEXWRAP_MASK   == 0x4000);
+
     host_callbacks.video_draw((myosd_render_primitive*)prims, width, height);
 }
 
 // output channel callback, send output "up" to the app via myosd_output
 static void myosd_output(void *param, const char *format, va_list argptr)
 {
+    _Static_assert(MYOSD_OUTPUT_ERROR == OUTPUT_CHANNEL_ERROR);
+    _Static_assert(MYOSD_OUTPUT_WARNING == OUTPUT_CHANNEL_WARNING);
+    _Static_assert(MYOSD_OUTPUT_INFO == OUTPUT_CHANNEL_INFO);
+    _Static_assert(MYOSD_OUTPUT_DEBUG == OUTPUT_CHANNEL_DEBUG);
+    _Static_assert(MYOSD_OUTPUT_VERBOSE == OUTPUT_CHANNEL_VERBOSE);
+
     if (host_callbacks.output_text != NULL)
     {
         char buffer[1204];
@@ -169,10 +178,50 @@ void myosd_poll_input(myosd_input_state* input)
     host_callbacks.input_poll(input, sizeof(myosd_input_state));
 }
 
-extern void myosd_set_game_info(const game_driver *info[], int game_count)
+void myosd_set_game_info(const game_driver *info[], int count)
 {
-    if (host_callbacks.set_game_info != NULL)
-        host_callbacks.set_game_info((myosd_game_info**)info, game_count);
+    if (host_callbacks.set_game_info == NULL)
+        return;
+
+    myosd_game_info* myosd_games = (myosd_game_info*)malloc(sizeof(myosd_game_info) * count);
+
+    // convert game_driver(s) to myosd_game_info(s)
+    for (int i=0; i<count; i++)
+    {
+        memset(&myosd_games[i], 0, sizeof(myosd_games[i]));
+        myosd_games[i].type         = MYOSD_GAME_TYPE_ARCADE;
+        myosd_games[i].source_file  = info[i]->source_file;
+        myosd_games[i].parent       = info[i]->parent;
+        myosd_games[i].name         = info[i]->name;
+        myosd_games[i].description  = info[i]->description;
+        myosd_games[i].year         = info[i]->year;
+        myosd_games[i].manufacturer = info[i]->manufacturer;
+        
+        if (myosd_games[i].parent != NULL && myosd_games[i].parent[0] == '0' && myosd_games[i].parent[1] == 0)
+            myosd_games[i].parent = "";
+        
+        if (info[i]->flags & (GAME_NOT_WORKING|GAME_UNEMULATED_PROTECTION))
+            myosd_games[i].flags |= MYOSD_GAME_INFO_NOT_WORKING;
+
+        if ((info[i]->flags & ORIENTATION_MASK) == ROT90 || (info[i]->flags & ORIENTATION_MASK) == ROT270)
+            myosd_games[i].flags |= MYOSD_GAME_INFO_VERTICAL;
+        
+        if (info[i]->flags & (GAME_IS_BIOS_ROOT | GAME_NO_STANDALONE))
+            myosd_games[i].flags |= MYOSD_GAME_INFO_BIOS;
+        
+        if (info[i]->flags & (GAME_WRONG_COLORS | GAME_IMPERFECT_COLORS | GAME_IMPERFECT_GRAPHICS | GAME_NO_COCKTAIL))
+            myosd_games[i].flags |= MYOSD_GAME_INFO_IMPERFECT_GRAPHICS;
+
+        if (info[i]->flags & (GAME_NO_SOUND | GAME_IMPERFECT_SOUND | GAME_NO_SOUND_HW))
+            myosd_games[i].flags |= MYOSD_GAME_INFO_IMPERFECT_SOUND;
+
+        if (info[i]->flags & GAME_SUPPORTS_SAVE)
+            myosd_games[i].flags |= MYOSD_GAME_INFO_SUPPORTS_SAVE;
+    }
+
+    host_callbacks.set_game_info(myosd_games, count);
+    
+    free(myosd_games);
 }
 
 void myosd_init(void)

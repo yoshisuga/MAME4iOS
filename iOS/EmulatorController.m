@@ -198,6 +198,8 @@ NSString* g_pref_skin;
 int g_pref_integer_scale_only = 0;
 int g_pref_showFPS = 0;
 int g_pref_showINFO = 0;
+int g_pref_filter_clones;
+int g_pref_filter_not_working;
 
 enum {
     HudSizeZero = 0,        // HUD is not visible at all.
@@ -347,7 +349,7 @@ void m4i_output(int channel, const char* text)
 }
 
 void m4i_poll_input(myosd_input_state* myosd, size_t input_size);
-void m4i_set_game_info(myosd_game_info* game_info[], int game_count);
+void m4i_set_game_info(myosd_game_info* game_info, int game_count);
 
 // run MAME (or pass NULL for main menu)
 int run_mame(char* game)
@@ -484,23 +486,32 @@ NSString* find_category(NSString* name, NSString* parent)
 }
 
 // called from deep inside MAME select_game menu, to give us the valid list of games/drivers
-void m4i_set_game_info(myosd_game_info* game_info[], int game_count)
+void m4i_set_game_info(myosd_game_info* game_info, int game_count)
 {
     @autoreleasepool {
         NSMutableArray* games = [[NSMutableArray alloc] init];
         
         for (int i=0; i<game_count; i++)
         {
-            if (game_info[i] == NULL)
+            if (game_info[i].name == NULL || game_info[i].name[0] == 0)
                 continue;
+            if (game_info[i].type != MYOSD_GAME_TYPE_ARCADE)
+                continue;
+            if (game_info[i].flags & MYOSD_GAME_INFO_BIOS)
+                continue;
+            if (g_pref_filter_not_working && (game_info[i].flags & MYOSD_GAME_INFO_NOT_WORKING))
+                continue;
+            if (g_pref_filter_clones && game_info[i].parent != NULL && game_info[i].parent[0] != 0 && game_info[i].parent[0] != '0')
+                continue;
+
             [games addObject:@{
-                kGameInfoName:        @(game_info[i]->name),
-                kGameInfoDescription: @(game_info[i]->description),
-                kGameInfoYear:        @(game_info[i]->year),
-                kGameInfoParent:      @(game_info[i]->parent ?: ""),
-                kGameInfoManufacturer:@(game_info[i]->manufacturer),
-                kGameInfoCategory:    find_category(@(game_info[i]->name), @(game_info[i]->parent ?: "")),
-                kGameInfoDriver:      [@(game_info[i]->source_file ?: "").lastPathComponent stringByDeletingPathExtension],
+                kGameInfoName:        @(game_info[i].name),
+                kGameInfoDescription: @(game_info[i].description),
+                kGameInfoYear:        @(game_info[i].year),
+                kGameInfoParent:      @(game_info[i].parent ?: ""),
+                kGameInfoManufacturer:@(game_info[i].manufacturer),
+                kGameInfoCategory:    find_category(@(game_info[i].name), @(game_info[i].parent ?: "")),
+                kGameInfoDriver:      [@(game_info[i].source_file ?: "").lastPathComponent stringByDeletingPathExtension],
             }];
         }
         
@@ -1146,9 +1157,10 @@ HUDViewController* g_menu;
     }
     
     myosd_set(MYOSD_FORCE_PIXEL_ASPECT, op.forcepxa);
-    myosd_set(MYOSD_GAME_FILTER, (op.filterClones ? MYOSD_FILTER_CLONES : 0) | (op.filterNotWorking ? MYOSD_FILTER_NOTWORKING : 0));
     myosd_set(MYOSD_HISCORE, op.hiscore);
 
+    g_pref_filter_clones = op.filterClones;
+    g_pref_filter_not_working = op.filterNotWorking;
     g_pref_autofire = [op autofire];
     
     switch ([op buttonSize]) {
