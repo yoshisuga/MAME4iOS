@@ -18,7 +18,9 @@ NOWERROR = 1
 ########## iOS/tvOS specific settings
 
 # set minimum tvOS and iOS version for the SDK to use
+ifndef OSVERSION
 OSVERSION = 12.4
+endif
 
 iOS = 1
 
