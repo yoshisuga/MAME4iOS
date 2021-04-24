@@ -273,6 +273,12 @@
                    cell.accessoryView = [self optionSwitchForKey:@"filterNotWorking"];
                    break;
                }
+               case 2:
+               {
+                   cell.textLabel.text   = @"Hide BIOS";
+                   cell.accessoryView = [self optionSwitchForKey:@"filterBIOS"];
+                   break;
+               }
            }
            break;
         }
@@ -412,7 +418,7 @@
           case kVideoSection: return 7;
           case kVectorSection: return 2;
           case kMiscSection: return 6;
-          case kFilterSection: return 2;
+          case kFilterSection: return 3;
           case kImportSection: return 3;
           case kCloudImportSection:
               if (CloudSync.status == CloudSyncStatusAvailable)

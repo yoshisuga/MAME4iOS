@@ -200,6 +200,7 @@ int g_pref_showFPS = 0;
 int g_pref_showINFO = 0;
 int g_pref_filter_clones;
 int g_pref_filter_not_working;
+int g_pref_filter_bios;
 
 enum {
     HudSizeZero = 0,        // HUD is not visible at all.
@@ -495,9 +496,9 @@ void m4i_set_game_info(myosd_game_info* game_info, int game_count)
         {
             if (game_info[i].name == NULL || game_info[i].name[0] == 0)
                 continue;
-            if (game_info[i].type != MYOSD_GAME_TYPE_ARCADE)
+            if (!(game_info[i].type == MYOSD_GAME_TYPE_ARCADE || game_info[i].type == MYOSD_GAME_TYPE_CONSOLE))
                 continue;
-            if (game_info[i].flags & MYOSD_GAME_INFO_BIOS)
+            if (g_pref_filter_bios && (game_info[i].flags & MYOSD_GAME_INFO_BIOS))
                 continue;
             if (g_pref_filter_not_working && (game_info[i].flags & MYOSD_GAME_INFO_NOT_WORKING))
                 continue;
@@ -1161,6 +1162,7 @@ HUDViewController* g_menu;
 
     g_pref_filter_clones = op.filterClones;
     g_pref_filter_not_working = op.filterNotWorking;
+    g_pref_filter_bios = op.filterBIOS;
     g_pref_autofire = [op autofire];
     
     switch ([op buttonSize]) {

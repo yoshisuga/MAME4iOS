@@ -59,6 +59,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readwrite,assign) int filterClones;
 @property (readwrite,assign) int filterNotWorking;
+@property (readwrite,assign) int filterBIOS;
 
 @property (readwrite,assign) int autofire;
 @property (readwrite,assign) int hiscore;
