@@ -135,7 +135,8 @@
         
         _filterClones=0;
         _filterNotWorking=1;
-        
+        _filterBIOS=1;
+
         _autofire = 0;
         _hiscore = 1;
         
@@ -226,7 +227,8 @@
         
         _filterClones  =  [[optionsDict objectForKey:@"filterClones"] intValue];
         _filterNotWorking  =  [[optionsDict objectForKey:@"filterNotWorking"] intValue];
-        
+        _filterBIOS  =  [([optionsDict objectForKey:@"filterBIOS"] ?: @(1)) intValue];
+
         _autofire =  [[optionsDict objectForKey:@"autofire"] intValue];
         _hiscore  =  [[optionsDict objectForKey:@"hiscore"] intValue];
         
@@ -298,7 +300,7 @@
                              
                              [NSString stringWithFormat:@"%d", _filterClones], @"filterClones",
                              [NSString stringWithFormat:@"%d", _filterNotWorking], @"filterNotWorking",
-                                 
+                             [NSString stringWithFormat:@"%d", _filterBIOS], @"filterBIOS",
                              
                              [NSString stringWithFormat:@"%d", _autofire], @"autofire",
                              [NSString stringWithFormat:@"%d", _hiscore], @"hiscore",

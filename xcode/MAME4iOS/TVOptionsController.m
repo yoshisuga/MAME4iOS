@@ -40,7 +40,7 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     if ( section == kFilterSection ) {
-        return 2;
+        return 3;
     } else if ( section == kScreenSection ) {
         return 7;
     } else if ( section == kVectorSection ) {
@@ -119,6 +119,9 @@
         } else if ( indexPath.row == 1 ) {
             cell.textLabel.text   = @"Hide Not Working";
             cell.accessoryView = [self optionSwitchForKey:@"filterNotWorking"];
+        } else if ( indexPath.row == 2 ) {
+            cell.textLabel.text   = @"Hide BIOS";
+            cell.accessoryView = [self optionSwitchForKey:@"filterBIOS"];
         }
     } else if ( indexPath.section == kImportSection ) {
         if ( indexPath.row == 0 ) {
