@@ -2501,9 +2501,13 @@ static void handle_device_input(myosd_input_state* myosd)
         for (int index = 0; index < controllers_count; index++) {
             GCController *controller = controllers[index];
             int player = (int)controller.playerIndex;
+            
+            // TODO: this prevents mapping buttons for player 2,3,4
+            // TODO: ...so until we handle native input mapping dont do this.
             // when in a MAME menu (or the root) let any controller work the UI
-            if (myosd->input_mode == MYOSD_INPUT_MODE_UI)
-                player = 0;
+            //if (myosd->input_mode == MYOSD_INPUT_MODE_UI)
+            //    player = 0;
+            
             // dont overwrite a lower index controller, unless....
             if (player == index || controller_is_zero(myosd, player))
                 read_player_controller(controller, myosd, index, player);
