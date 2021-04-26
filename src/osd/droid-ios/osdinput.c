@@ -11,6 +11,7 @@
 
 #include "osdepend.h"
 #include "emu.h"
+#include "ui.h"
 #include "uimenu.h"
 
 #include "myosd.h"
@@ -254,6 +255,8 @@ void my_poll_ports(running_machine *machine)
         mame_printf_debug("Num MOUSE %d\n",myosd_input.num_mouse);
         mame_printf_debug("Num GUN %d\n",myosd_input.num_lightgun);
         mame_printf_debug("Num KEYBOARD %d\n",myosd_input.num_keyboard);
+        
+        myosd_poll_input_init(&myosd_input);
     }
     
 }
@@ -270,6 +273,9 @@ static float myosd_joystick_read_analog(int n, int axis)
 
 void droid_ios_poll_input(running_machine *machine)
 {    
+    myosd_input.input_mode = ui_is_menu_active() ? MYOSD_INPUT_MODE_UI : MYOSD_INPUT_MODE_NORMAL;
+    myosd_input.keyboard_mode = MYOSD_KEYBOARD_MODE_NORMAL;
+
     my_poll_ports(machine);
     myosd_poll_input(&myosd_input);
     

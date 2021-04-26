@@ -68,8 +68,6 @@ int main(int argc, char **argv)
 {
 	myosd_init();
 
-    droid_ios_setup_video();
-
     int ret = cli_execute(argc, argv, droid_mame_options);
     
 	myosd_deinit();
@@ -83,16 +81,13 @@ int main(int argc, char **argv)
 
 void osd_init(running_machine *machine)
 {
-
-	//add_exit_callback(machine, osd_exit);
 	machine->add_notifier(MACHINE_NOTIFY_EXIT, osd_exit);
 
 	our_target = render_target_alloc(machine, NULL, 0);
 	if (our_target == NULL)
 		fatalerror("Error creating render target");
 
-	myosd_inGame = !(machine->gamedrv == &GAME_NAME(empty));
-    
+    myosd_machine_init(machine);
 	droid_ios_init_input(machine);
 	droid_ios_init_sound(machine);
 	droid_ios_init_video(machine);
@@ -104,6 +99,7 @@ static void osd_exit(running_machine &machine)
 	if (our_target != NULL)
 		render_target_free(our_target);
 	our_target = NULL;
+    myosd_machine_exit(&machine);
 }
 
 void osd_update(running_machine *machine, int skip_redraw)

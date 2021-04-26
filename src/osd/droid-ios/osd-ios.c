@@ -24,11 +24,9 @@
 
 #define AUDIO_BUFFERS 3
 
-int  myosd_fps = 1;
-int  myosd_inGame = 0;
+int  myosd_fps = 0;
 int  myosd_display_width;
 int  myosd_display_height;
-int  myosd_in_menu = 0;
 int  myosd_force_pxaspect = 0;
 
 int  myosd_hiscore = 1;
@@ -64,8 +62,7 @@ extern int ios_main(int argc, char**argv);  // in osdmain.c
 // main LIBMAIN entry point, setup callbacks and then call main in osdmain
 int myosd_main(int argc, char** argv, myosd_callbacks* callbacks, size_t callbacks_size)
 {
-    // video_init, video_draw, and input_poll are required
-    memcpy(&host_callbacks, callbacks, sizeof(host_callbacks));
+    memcpy(&host_callbacks, callbacks, MIN(sizeof(host_callbacks), callbacks_size));
     if (argc == 0) {
         static char* args[] = {"libmame"};
         argc = 1;
@@ -81,14 +78,9 @@ intptr_t myosd_get(int var)
     {
         case MYOSD_VERSION:
             return 139;
-            
+
         case MYOSD_VERSION_STRING:
             return (intptr_t)(void*)build_version;
-            
-        case MYOSD_STATE:
-            return (myosd_inGame  ? MYOSD_STATE_INGAME : 0) |
-                   (myosd_in_menu ? MYOSD_STATE_INMENU : 0) |
-                   ((myosd_in_menu==2) ? MYOSD_STATE_CONFIGURE_INPUT : 0);
             
         case MYOSD_FPS:
             return myosd_fps;
@@ -131,11 +123,11 @@ void myosd_set(int var, intptr_t value)
     }
 }
 
-
 void myosd_set_video_mode(int width,int height)
 {
     mame_printf_debug("myosd_set_video_mode: %dx%d\n",width,height);
-    host_callbacks.video_init(width,height);
+    if (host_callbacks.video_init != NULL)
+        host_callbacks.video_init(width,height);
 }
 
 void myosd_video_draw(render_primitive* prims, int width, int height)
@@ -153,7 +145,8 @@ void myosd_video_draw(render_primitive* prims, int width, int height)
     _Static_assert(PRIMFLAG_SCREENTEX_MASK == 0x2000);
     _Static_assert(PRIMFLAG_TEXWRAP_MASK   == 0x4000);
 
-    host_callbacks.video_draw((myosd_render_primitive*)prims, width, height);
+    if (host_callbacks.video_draw != NULL)
+        host_callbacks.video_draw((myosd_render_primitive*)prims, width, height);
 }
 
 // output channel callback, send output "up" to the app via myosd_output
@@ -173,12 +166,53 @@ static void myosd_output(void *param, const char *format, va_list argptr)
     }
 }
 
-void myosd_poll_input(myosd_input_state* input)
+void myosd_poll_input_init(myosd_input_state* input)
 {
-    host_callbacks.input_poll(input, sizeof(myosd_input_state));
+    if (host_callbacks.input_init != NULL)
+        host_callbacks.input_init(input, sizeof(myosd_input_state));
 }
 
-void myosd_set_game_info(const game_driver *info[], int count)
+void myosd_poll_input(myosd_input_state* input)
+{
+    if (host_callbacks.input_poll != NULL)
+        host_callbacks.input_poll(input, sizeof(myosd_input_state));
+}
+
+// convert game_driver to a myosd_game_info
+static void get_game_info(myosd_game_info* info, const game_driver *driver)
+{
+    memset(info, 0, sizeof(myosd_game_info));
+    info->type         = MYOSD_GAME_TYPE_ARCADE;
+    info->source_file  = driver->source_file;
+    info->parent       = driver->parent;
+    info->name         = driver->name;
+    info->description  = driver->description;
+    info->year         = driver->year;
+    info->manufacturer = driver->manufacturer;
+    
+    if (info->parent != NULL && info->parent[0] == '0' && info->parent[1] == 0)
+        info->parent = "";
+    
+    if (driver->flags & (GAME_NOT_WORKING|GAME_UNEMULATED_PROTECTION))
+        info->flags |= MYOSD_GAME_INFO_NOT_WORKING;
+
+    if ((driver->flags & ORIENTATION_MASK) == ROT90 || (driver->flags & ORIENTATION_MASK) == ROT270)
+        info->flags |= MYOSD_GAME_INFO_VERTICAL;
+    
+    if (driver->flags & (GAME_IS_BIOS_ROOT | GAME_NO_STANDALONE))
+        info->flags |= MYOSD_GAME_INFO_BIOS;
+    
+    if (driver->flags & (GAME_WRONG_COLORS | GAME_IMPERFECT_COLORS | GAME_IMPERFECT_GRAPHICS | GAME_NO_COCKTAIL))
+        info->flags |= MYOSD_GAME_INFO_IMPERFECT_GRAPHICS;
+
+    if (driver->flags & (GAME_NO_SOUND | GAME_IMPERFECT_SOUND | GAME_NO_SOUND_HW))
+        info->flags |= MYOSD_GAME_INFO_IMPERFECT_SOUND;
+
+    if (driver->flags & GAME_SUPPORTS_SAVE)
+        info->flags |= MYOSD_GAME_INFO_SUPPORTS_SAVE;
+}
+
+void myosd_set_game_info(const game_driver *driver_list[], int count)
 {
     if (host_callbacks.set_game_info == NULL)
         return;
@@ -187,40 +221,9 @@ void myosd_set_game_info(const game_driver *info[], int count)
 
     // convert game_driver(s) to myosd_game_info(s)
     for (int i=0; i<count; i++)
-    {
-        memset(&myosd_games[i], 0, sizeof(myosd_games[i]));
-        myosd_games[i].type         = MYOSD_GAME_TYPE_ARCADE;
-        myosd_games[i].source_file  = info[i]->source_file;
-        myosd_games[i].parent       = info[i]->parent;
-        myosd_games[i].name         = info[i]->name;
-        myosd_games[i].description  = info[i]->description;
-        myosd_games[i].year         = info[i]->year;
-        myosd_games[i].manufacturer = info[i]->manufacturer;
-        
-        if (myosd_games[i].parent != NULL && myosd_games[i].parent[0] == '0' && myosd_games[i].parent[1] == 0)
-            myosd_games[i].parent = "";
-        
-        if (info[i]->flags & (GAME_NOT_WORKING|GAME_UNEMULATED_PROTECTION))
-            myosd_games[i].flags |= MYOSD_GAME_INFO_NOT_WORKING;
-
-        if ((info[i]->flags & ORIENTATION_MASK) == ROT90 || (info[i]->flags & ORIENTATION_MASK) == ROT270)
-            myosd_games[i].flags |= MYOSD_GAME_INFO_VERTICAL;
-        
-        if (info[i]->flags & (GAME_IS_BIOS_ROOT | GAME_NO_STANDALONE))
-            myosd_games[i].flags |= MYOSD_GAME_INFO_BIOS;
-        
-        if (info[i]->flags & (GAME_WRONG_COLORS | GAME_IMPERFECT_COLORS | GAME_IMPERFECT_GRAPHICS | GAME_NO_COCKTAIL))
-            myosd_games[i].flags |= MYOSD_GAME_INFO_IMPERFECT_GRAPHICS;
-
-        if (info[i]->flags & (GAME_NO_SOUND | GAME_IMPERFECT_SOUND | GAME_NO_SOUND_HW))
-            myosd_games[i].flags |= MYOSD_GAME_INFO_IMPERFECT_SOUND;
-
-        if (info[i]->flags & GAME_SUPPORTS_SAVE)
-            myosd_games[i].flags |= MYOSD_GAME_INFO_SUPPORTS_SAVE;
-    }
+        get_game_info(&myosd_games[i], driver_list[i]);
 
     host_callbacks.set_game_info(myosd_games, count);
-    
     free(myosd_games);
 }
 
@@ -235,7 +238,6 @@ void myosd_init(void)
 	if (!lib_inited )
     {
        mame_printf_debug("myosd_init\n");
-
        lib_inited = 1;
     }
 }
@@ -250,6 +252,34 @@ void myosd_deinit(void)
     }
 }
 
+void myosd_machine_init(running_machine *machine)
+{
+    int in_game = !(machine->gamedrv == &GAME_NAME(empty));
+    
+    if (host_callbacks.game_init != NULL && in_game)
+    {
+        myosd_game_info info;
+        get_game_info(&info, machine->gamedrv);
+        host_callbacks.game_init(&info);
+    }
+}
+
+void myosd_machine_exit(running_machine *machine)
+{
+    int in_game = !(machine->gamedrv == &GAME_NAME(empty));
+
+    if (host_callbacks.game_exit != NULL && in_game)
+        host_callbacks.game_exit();
+    
+    if (host_callbacks.video_exit != NULL)
+        host_callbacks.video_exit();
+
+    if (host_callbacks.input_exit != NULL)
+        host_callbacks.input_exit();
+    
+    // sound_exit is called in myosd_closeSound
+}
+
 void myosd_closeSound(void) {
     
     if (host_callbacks.sound_exit != NULL)
@@ -259,7 +289,6 @@ void myosd_closeSound(void) {
 	{
         mame_printf_debug("myosd_closeSound\n");
 
-		
         if(global_low_latency_sound)
            sound_close_AudioUnit();
         else

@@ -255,6 +255,9 @@ int prev_myosd_mouse = 0;
 static int ways_auto = 0;
 static int change_layout=0;
 
+static int myosd_inGame = 0;    // TRUE if MAME is running a game
+static int myosd_in_menu = 0;   // TRUE if MAME has UI active (or is at the root aka no game)
+
 static NSDictionary* g_category_dict;
 
 #define kHUDPositionLandKey  @"hud_rect_land"
@@ -351,6 +354,8 @@ void m4i_output(int channel, const char* text)
 
 void m4i_poll_input(myosd_input_state* myosd, size_t input_size);
 void m4i_set_game_info(myosd_game_info* game_info, int game_count);
+void m4i_game_start(myosd_game_info* game_info);
+void m4i_game_stop(void);
 
 // run MAME (or pass NULL for main menu)
 int run_mame(char* game)
@@ -374,7 +379,9 @@ int run_mame(char* game)
         .video_draw = m4i_video_draw,
         .input_poll = m4i_poll_input,
         .output_text= m4i_output,
-        .set_game_info = m4i_set_game_info
+        .set_game_info = m4i_set_game_info,
+        .game_init = m4i_game_start,
+        .game_exit = m4i_game_stop,
     };
 
     return myosd_main(argc,argv,&callbacks,sizeof(callbacks));
@@ -518,6 +525,18 @@ void m4i_set_game_info(myosd_game_info* game_info, int game_count)
         
         [sharedInstance performSelectorOnMainThread:@selector(chooseGame:) withObject:games waitUntilDone:FALSE];
     }
+}
+
+void m4i_game_start(myosd_game_info* info)
+{
+    NSLog(@"GAME START: %-16s %s", info->name, info->description);
+    myosd_inGame = 1;
+}
+
+void m4i_game_stop()
+{
+    NSLog(@"GAME STOP");
+    myosd_inGame = 0;
 }
 
 @implementation UINavigationController(KeyboardDismiss)
@@ -958,7 +977,7 @@ HUDViewController* g_menu;
 
 - (void)runExit:(BOOL)ask_user from:(UIView*)view
 {
-    if (myosd_in_menu == 0 && ask_user && self.presentedViewController == nil)
+    if ((!myosd_inGame || myosd_in_menu == 0) && ask_user && self.presentedViewController == nil)
     {
         NSString* yes = (g_controllers.count > 0 && TARGET_OS_IOS) ? @"Ⓐ Yes" : @"Yes";
         NSString* no  = (g_controllers.count > 0 && TARGET_OS_IOS) ? @"Ⓑ No" : @"No";
@@ -1299,9 +1318,9 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
     return UIPressTypeNone;
 }
 
+#if TARGET_OS_IOS   // NOT needed on tvOS it handles it with the focus engine
 - (void)handle_MENU:(unsigned long)pad_status stick:(CGPoint)stick
 {
-#if TARGET_OS_IOS   // NOT needed on tvOS it handles it with the focus engine
     UIResponder* target = [self presentedViewController];
     
     // if a viewController or menu is up send the input to it.
@@ -1336,14 +1355,7 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
     {
         [self runMenu:0 from:buttonViews[BTN_OPTION]];
     }
-#endif
     
-    // exit MAME MENU with B (but only if we are not mapping a input)
-    if ((myosd_state & (MYOSD_STATE_INMENU | MYOSD_STATE_CONFIGURE_INPUT)) == MYOSD_STATE_INMENU && (input_debounce(pad_status, stick) == UIPressTypeMenu))
-    {
-        [self runExit];
-    }
-
     // SELECT and START at the same time (iCade)
     if ((pad_status & MYOSD_SELECT) && (pad_status & MYOSD_START))
     {
@@ -1352,6 +1364,7 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
         [self runMenu];
     }
 }
+#endif
 
 -(void)viewDidLoad{
     
@@ -2232,7 +2245,7 @@ static int handle_buttons(myosd_input_state* myosd)
 static void handle_turbo(myosd_input_state* myosd) {
     
     // dont do turbo mode in MAME menus.
-    if (!(myosd_inGame && myosd_in_menu == 0))
+    if (myosd->input_mode != MYOSD_INPUT_MODE_NORMAL)
         return;
     
     // also dont do turbo mode if all checks are off
@@ -2261,7 +2274,7 @@ static void handle_turbo(myosd_input_state* myosd) {
 
 void handle_autofire(myosd_input_state* myosd)
 {
-    if (!g_pref_autofire || !myosd_inGame || myosd_in_menu)
+    if (!g_pref_autofire || myosd->input_mode != MYOSD_INPUT_MODE_NORMAL)
         return;
 
     static int A_pressed[NUM_JOY];
@@ -2351,7 +2364,7 @@ static unsigned long read_remote(GCMicroGamepad *gamepad, float *axis)
     }
     
     // READ DPAD as a ANALOG STICK, except when in a menu
-    if (!(myosd_inGame && !myosd_in_menu))
+    if (myosd_in_menu)
         analog_x = analog_y = 0.0;
 
     if (axis != NULL) {
@@ -2417,7 +2430,7 @@ static unsigned long read_controller(GCController *controller, float* axis)
         return read_gamepad(gamepad, axis);
     
     // dont let MAME see the Siri Remote if the HUD is active
-    if (TARGET_OS_TV && g_pref_showHUD && (myosd_inGame && !myosd_in_menu))
+    if (TARGET_OS_TV && g_pref_showHUD && (myosd_inGame && myosd_in_menu==0))
         return 0;
 
     return read_remote(controller.microGamepad, axis);
@@ -2485,12 +2498,11 @@ static void handle_device_input(myosd_input_state* myosd)
         controllers_count = 2;
     }
     else {
-        unsigned long state = myosd_state;
         for (int index = 0; index < controllers_count; index++) {
             GCController *controller = controllers[index];
             int player = (int)controller.playerIndex;
             // when in a MAME menu (or the root) let any controller work the UI
-            if ((!(state & MYOSD_STATE_INGAME) || (state & MYOSD_STATE_INMENU)) && !(state & MYOSD_STATE_CONFIGURE_INPUT))
+            if (myosd->input_mode == MYOSD_INPUT_MODE_UI)
                 player = 0;
             // dont overwrite a lower index controller, unless....
             if (player == index || controller_is_zero(myosd, player))
@@ -2536,7 +2548,7 @@ static void handle_device_input(myosd_input_state* myosd)
 // handle p1aspx (P1 as P2, P3, P4)
 static void handle_p1aspx(myosd_input_state* myosd) {
     
-    if (g_pref_p1aspx == 0 || myosd_in_menu != 0)
+    if (g_pref_p1aspx == 0 || myosd->input_mode != MYOSD_INPUT_MODE_NORMAL)
         return;
     
     for (int i=1; i<NUM_JOY; i++) {
@@ -2568,13 +2580,16 @@ void m4i_poll_input(myosd_input_state* myosd, size_t input_size) {
             myosd_light_gun     = myosd->num_lightgun;
             myosd_num_keyboard  = myosd->num_keyboard;
             
-            // keep myosd_waysStick uptodate
-            if (ways_auto)
-                g_joy_ways = myosd_num_ways;
-            
             g_video_reset = FALSE;
             [sharedInstance performSelectorOnMainThread:@selector(resetUI) withObject:nil waitUntilDone:NO];
         }
+        
+        // set global menu state
+        myosd_in_menu = myosd->input_mode == MYOSD_INPUT_MODE_UI;
+        
+        // keep myosd_waysStick uptodate
+        if (ways_auto)
+            g_joy_ways = myosd_in_menu ? 4 : myosd_num_ways;
         
         // read any "fake" buttons, and get out now if there is one
         if (handle_buttons(myosd))
@@ -3065,9 +3080,9 @@ void m4i_poll_input(myosd_input_state* myosd, size_t input_size) {
           );
 #endif
 
+#if TARGET_OS_IOS
     // call handle_MENU first so it can use buttonState to see key up.
     [self handle_MENU:pad_status stick:stick];
-#if TARGET_OS_IOS
     [self handle_DPAD:pad_status stick:stick];
 #endif
 }
@@ -4607,7 +4622,7 @@ static unsigned long g_device_has_input[NUM_DEV];   // TRUE if device needs to b
             return [self handleMenuButton:controller];
 
         // no need to call handle_INPUT unless onscreen controls are visible *or* we have some UI/Alert up.
-        if ((g_device_is_fullscreen && g_joy_used) && self.presentedViewController == nil && myosd_in_menu == 0)
+        if ((g_device_is_fullscreen && g_joy_used) && self.presentedViewController == nil)
             return;
 
         // update the UI if this is the first controller input

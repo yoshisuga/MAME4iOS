@@ -26,14 +26,6 @@ static int curr_screen_height;
 static int curr_vis_area_screen_width;
 static int curr_vis_area_screen_height;
 
-void droid_ios_setup_video()
-{
-}
-
-static void droid_ios_video_cleanup(running_machine &machine)
-{
-}
-
 void droid_ios_init_video(running_machine *machine)
 {
 	curr_screen_width = 1;
@@ -45,8 +37,6 @@ void droid_ios_init_video(running_machine *machine)
 	screen_height = 1;
 	vis_area_screen_width = 1;
 	vis_area_screen_height = 1;
-
-	machine->add_notifier(MACHINE_NOTIFY_EXIT, droid_ios_video_cleanup);
 }
 
 void droid_ios_video_draw(const render_primitive_list *currlist)
