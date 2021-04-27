@@ -15,6 +15,7 @@
 #define RECENT_GAMES_TITLE      @"Recently Played"
 
 // keys used in a GameInfo dictionary
+#define kGameInfoType           @"type"
 #define kGameInfoSystem         @"system"
 #define kGameInfoName           @"name"
 #define kGameInfoParent         @"parent"
@@ -26,6 +27,10 @@
 #define kGameInfoHistory        @"history"
 #define kGameInfoMameInfo       @"mameinfo"
 
+#define kGameInfoTypeArcade     @"Arcade"
+#define kGameInfoTypeConsole    @"Console"
+#define kGameInfoTypeComputer   @"Computer"
+
 // special "fake" (aka built-in) games
 #define kGameInfoNameSettings   @"settings"
 #define kGameInfoNameMameMenu   @"mameui"
@@ -34,6 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NSDictionary (GameInfo)
 
+@property (nonatomic, strong, readonly) NSString* gameType;
 @property (nonatomic, strong, readonly) NSString* gameSystem;
 @property (nonatomic, strong, readonly) NSString* gameName;
 @property (nonatomic, strong, readonly) NSString* gameParent;

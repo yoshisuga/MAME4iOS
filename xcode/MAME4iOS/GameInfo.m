@@ -9,6 +9,10 @@
 #import "GameInfo.h"
 
 @implementation NSDictionary (GameInfo)
+-(NSString*)gameType
+{
+    return self[kGameInfoType] ?: kGameInfoTypeArcade;
+}
 -(NSString*)gameSystem
 {
     return self[kGameInfoSystem] ?: @"";
@@ -51,22 +55,30 @@
 }
 -(NSURL*)gameImageURL
 {
-    /// libretro title url
-    /// https://raw.githubusercontent.com/libretro-thumbnails/MAME/master/Named_Titles/pacman.png
-
-    /// MESS style title url
-    /// http://adb.arcadeitalia.net/media/mess.current/titles/a2600/adventur.png
-    
-    NSString* name = self.gameDescription;
-    NSString* base = @"https://raw.githubusercontent.com/libretro-thumbnails/MAME/master/Named_Titles";
-    
-    /// from [libretro docs](https://docs.libretro.com/guides/roms-playlists-thumbnails/)
-    /// The following characters in titles must be replaced with _ in the corresponding filename: &*/:`<>?\|
-    for (NSString* str in @[@"&", @"*", @"/", @":", @"`", @"<", @">", @"?", @"\\", @"|"])
-        name = [name stringByReplacingOccurrencesOfString:str withString:@"_"];
-    
-    name = [name stringByAddingPercentEncodingWithAllowedCharacters:NSCharacterSet.URLPathAllowedCharacterSet];
-    return [NSURL URLWithString:[NSString stringWithFormat:@"%@/%@.png", base, name]];
+    if (self.gameSystem.length != 0)
+    {
+        /// MESS style title url
+        /// http://adb.arcadeitalia.net/media/mess.current/titles/a2600/adventur.png
+        
+        NSString* base = @"http://adb.arcadeitalia.net/media/mess.current/titles";
+        return [NSURL URLWithString:[NSString stringWithFormat:@"%@/%@/%@.png", base, self.gameSystem, self.gameName]];
+    }
+    else
+    {
+        /// libretro title url
+        /// https://raw.githubusercontent.com/libretro-thumbnails/MAME/master/Named_Titles/pacman.png
+        
+        NSString* name = self.gameDescription;
+        NSString* base = @"https://raw.githubusercontent.com/libretro-thumbnails/MAME/master/Named_Titles";
+        
+        /// from [libretro docs](https://docs.libretro.com/guides/roms-playlists-thumbnails/)
+        /// The following characters in titles must be replaced with _ in the corresponding filename: &*/:`<>?\|
+        for (NSString* str in @[@"&", @"*", @"/", @":", @"`", @"<", @">", @"?", @"\\", @"|"])
+            name = [name stringByReplacingOccurrencesOfString:str withString:@"_"];
+        
+        name = [name stringByAddingPercentEncodingWithAllowedCharacters:NSCharacterSet.URLPathAllowedCharacterSet];
+        return [NSURL URLWithString:[NSString stringWithFormat:@"%@/%@.png", base, name]];
+    }
 }
 -(NSURL*)gameLocalImageURL
 {
@@ -87,6 +99,9 @@
 }
 -(NSURL*)gamePlayURL
 {
-    return [NSURL URLWithString:[NSString stringWithFormat:@"mame4ios://%@", self.gameName]];
+    if (self.gameSystem.length != 0)
+        return [NSURL URLWithString:[NSString stringWithFormat:@"mame4ios://%@/%@", self.gameSystem, self.gameName]];
+    else
+        return [NSURL URLWithString:[NSString stringWithFormat:@"mame4ios://%@", self.gameName]];
 }
 @end
