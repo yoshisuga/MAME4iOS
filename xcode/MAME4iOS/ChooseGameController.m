@@ -65,26 +65,22 @@
 #define CELL_CORNER_RADIUS      16.0
 #define CELL_BORDER_WIDTH       2.0
 
-#if 0
-#define BACKGROUND_COLOR        [UIColor blackColor]
-#define CELL_BACKGROUND_COLOR   [UIColor colorWithWhite:0.222 alpha:1.0]
-#define CELL_TEXT_ALIGN         NSTextAlignmentLeft
-#else
 #define BACKGROUND_COLOR        [UIColor colorWithWhite:0.066 alpha:1.0]
 #define CELL_BACKGROUND_COLOR   UIColor.clearColor
 #define CELL_TEXT_ALIGN         NSTextAlignmentCenter
-#endif
 
 #if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST)
 #define CELL_TITLE_FONT         [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
 #define CELL_TITLE_COLOR        [UIColor whiteColor]
 #define CELL_DETAIL_FONT        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote]
 #define CELL_DETAIL_COLOR       [UIColor lightGrayColor]
-#else
-#define CELL_TITLE_FONT         [UIFont boldSystemFontOfSize:24.0]
+#define CELL_MAX_LINES          3
+#else   // tvOS and mac
+#define CELL_TITLE_FONT         [UIFont boldSystemFontOfSize:20.0]
 #define CELL_TITLE_COLOR        [UIColor whiteColor]
 #define CELL_DETAIL_FONT        [UIFont systemFontOfSize:20.0]
 #define CELL_DETAIL_COLOR       [UIColor lightGrayColor]
+#define CELL_MAX_LINES          3
 #endif
 
 #define INFO_BACKGROUND_COLOR   [UIColor colorWithWhite:0.111 alpha:1.0]
@@ -1037,10 +1033,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 //  get the text based on the LayoutMode
 //
-//  TINY        SMALL                       LARGE or LIST
-//  ----        -----                       -------------
-//  romname     short Description           full Description
-//              short Manufacturer • Year   full Manufacturer • Year  • romname [parent-rom]
+//  TINY        SMALL               LARGE                       LIST
+//  ----        -----               -----                       ----
+//  romname     short Description   Description                 Description
+//                                  short Manufacturer • Year   Manufacturer • Year  • romname [parent-rom]
 //
 +(NSAttributedString*)getGameText:(NSDictionary*)info layoutMode:(LayoutMode)layoutMode textAlignment:(NSTextAlignment)textAlignment
 {
@@ -1056,11 +1052,15 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     }
     else if (layoutMode == LayoutSmall) {
         title = info.gameTitle;
-        detail = [NSString stringWithFormat:@"%@ • %@",
-                    [[info[kGameInfoManufacturer] componentsSeparatedByString:@" ("] firstObject],
-                    info[kGameInfoYear]];
     }
-    else { // LayoutLarge and LayoutList
+    else if (layoutMode == LayoutLarge) {
+        title = info[kGameInfoDescription];
+        detail = [info[kGameInfoManufacturer] componentsSeparatedByString:@" ("].firstObject;
+
+        if ((str = info[kGameInfoYear]) && [str length] > 1)
+            detail = [NSString stringWithFormat:@"%@ • %@", detail, str];
+    }
+    else { // LayoutList
         title = info[kGameInfoDescription];
         detail = info[kGameInfoManufacturer];
 
@@ -1073,6 +1073,11 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         if ((str = info[kGameInfoParent]) && [str length] > 1)
             detail = [NSString stringWithFormat:@"%@ [%@]", detail, str];
     }
+    
+#ifdef XDEBUG
+    if (layoutMode != LayoutTiny)
+        title = [NSString stringWithFormat:@" Blah Blah Blah %@ Blah Blah Blah Blah Blah Blah", title];
+#endif
     
     NSMutableAttributedString* text = [[NSMutableAttributedString alloc] initWithString:title attributes:@{
         NSFontAttributeName:CELL_TITLE_FONT,
@@ -1128,10 +1133,17 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     else
         image_height = ceil(item_width * 4.0 / 3.0);
 
-    // get the text height, in LayoutTiny we only show one line.
+    // get the text height
     CGSize textSize = CGSizeMake(item_width - CELL_INSET_X*2, 9999.0);
+    
+    // in LayoutTiny we only show one line.
     if (_layoutMode == LayoutTiny)
         textSize.width = 9999.0;
+    
+    // in LayoutSmall we only show `CELL_MAX_LINES` lines
+    if (_layoutMode == LayoutSmall)
+        textSize.height = CELL_TITLE_FONT.lineHeight * CELL_MAX_LINES;
+    
     textSize = [text boundingRectWithSize:textSize options:NSStringDrawingUsesLineFragmentOrigin context:nil].size;
     
     text_height = CELL_INSET_Y + ceil(textSize.height) + CELL_INSET_Y;
@@ -1190,7 +1202,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         cell.text.numberOfLines = 1;
         cell.text.adjustsFontSizeToFitWidth = TRUE;
     }
-    
+    if (_layoutMode == LayoutSmall) {
+        cell.text.numberOfLines = CELL_MAX_LINES;
+        cell.text.lineBreakMode = NSLineBreakByTruncatingTail;
+    }
     if (_layoutMode == LayoutTiny || _layoutMode == LayoutList) {
         [cell setCornerRadius:CELL_CORNER_RADIUS / 2];
     }
@@ -2009,6 +2024,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     _text.font = nil;
     _text.textColor = nil;
     _text.numberOfLines = 0;
+    _text.lineBreakMode = NSLineBreakByTruncatingTail;
     _text.adjustsFontSizeToFitWidth = FALSE;
     _text.textAlignment = NSTextAlignmentLeft;
     
@@ -2418,7 +2434,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     [title.layer addAnimation:animation forKey:kCATransitionPush];
     title.superview.clipsToBounds = YES;
  
-    title.attributedText = [ChooseGameController getGameText:_game layoutMode:LayoutSmall textAlignment:NSTextAlignmentCenter];
+    title.attributedText = [ChooseGameController getGameText:_game layoutMode:LayoutLarge textAlignment:NSTextAlignmentCenter];
     [title sizeToFit];
     if (scrollView.contentOffset.y <= _titleSwitchOffset) {
         title.text = self.title;
@@ -2436,7 +2452,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 - (NSAttributedString*)getText:(NSIndexPath*)indexPath {
     
     if (indexPath.item == 0)
-        return [ChooseGameController getGameText:_game layoutMode:LayoutLarge textAlignment:NSTextAlignmentCenter];
+        return [ChooseGameController getGameText:_game layoutMode:LayoutList textAlignment:NSTextAlignmentCenter];
     
     NSAttributedString* text = _game[indexPath.item == 1 ? kGameInfoHistory : kGameInfoMameInfo];
     
