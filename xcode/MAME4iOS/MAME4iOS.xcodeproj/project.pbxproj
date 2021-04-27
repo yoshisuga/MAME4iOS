@@ -266,6 +266,9 @@
 		EFB7B21A2479FBD900AD96A4 /* MetalViewShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B2152479FBD900AD96A4 /* MetalViewShaders.metal */; };
 		EFB7B21C247ACFE300AD96A4 /* MameShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B21B247ACFE300AD96A4 /* MameShaders.metal */; };
 		EFB7B21D247ACFE300AD96A4 /* MameShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B21B247ACFE300AD96A4 /* MameShaders.metal */; };
+		EFE003382638ACA000E42246 /* XmlFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE003362638ACA000E42246 /* XmlFile.m */; };
+		EFE003392638ACA000E42246 /* XmlFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE003362638ACA000E42246 /* XmlFile.m */; };
+		EFE0033A2638ACA000E42246 /* XmlFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE003362638ACA000E42246 /* XmlFile.m */; };
 		EFE4B6AB2453D7F80009A6F1 /* InfoDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE4B6AA2453D7F80009A6F1 /* InfoDatabase.m */; };
 		EFE4B6AC2453D7F80009A6F1 /* InfoDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE4B6AA2453D7F80009A6F1 /* InfoDatabase.m */; };
 		EFEEA4B225C9D41E00314132 /* TVServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF55DE5A2534C304004E37EF /* TVServices.framework */; };
@@ -576,6 +579,8 @@
 		EFB7B21B247ACFE300AD96A4 /* MameShaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = MameShaders.metal; sourceTree = "<group>"; };
 		EFD2DC3B252FC1BB00E7CE89 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		EFD2DC3D252FC1BB00E7CE89 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		EFE003362638ACA000E42246 /* XmlFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XmlFile.m; sourceTree = "<group>"; };
+		EFE003372638ACA000E42246 /* XmlFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XmlFile.h; sourceTree = "<group>"; };
 		EFE1D707242C05CE0081EEC6 /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = System/Library/Frameworks/CoreImage.framework; sourceTree = SDKROOT; };
 		EFE1D709242C1D840081EEC6 /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS13.2.sdk/System/Library/Frameworks/CoreImage.framework; sourceTree = DEVELOPER_DIR; };
 		EFE4B6A92453D7F80009A6F1 /* InfoDatabase.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InfoDatabase.h; sourceTree = "<group>"; };
@@ -990,6 +995,8 @@
 				EF301CF0240460C5000510FD /* Alert.m */,
 				EFA7570C2406D64600A02AAB /* SystemImage.h */,
 				EFA7570B2406D64600A02AAB /* SystemImage.m */,
+				EFE003372638ACA000E42246 /* XmlFile.h */,
+				EFE003362638ACA000E42246 /* XmlFile.m */,
 				EF27F36423F73CD400B1E50A /* ZipFile.h */,
 				EF27F36323F73CD400B1E50A /* ZipFile.m */,
 				EF26AE0A241AA6900078FD30 /* FileItemProvider.h */,
@@ -1351,6 +1358,7 @@
 				92A533A821EBDBAD0089FBB9 /* GCDWebServerRequest.m in Sources */,
 				EFB7B21C247ACFE300AD96A4 /* MameShaders.metal in Sources */,
 				925ABCA91E46DCC500997182 /* OptionsController.m in Sources */,
+				EFE003382638ACA000E42246 /* XmlFile.m in Sources */,
 				EF8EAA8A244F7F5D00DA02BB /* SteamControllerExtendedGamepad.m in Sources */,
 				EF8EAA8C244F7F5D00DA02BB /* SteamControllerInput.m in Sources */,
 				92A533C021EBDBAD0089FBB9 /* GCDWebServerURLEncodedFormRequest.m in Sources */,
@@ -1432,6 +1440,7 @@
 				EF8EAA8D244F7F5D00DA02BB /* SteamControllerInput.m in Sources */,
 				EFA7570E2406D64600A02AAB /* SystemImage.m in Sources */,
 				92A533B521EBDBAD0089FBB9 /* GCDWebServerErrorResponse.m in Sources */,
+				EFE003392638ACA000E42246 /* XmlFile.m in Sources */,
 				EFE4B6AC2453D7F80009A6F1 /* InfoDatabase.m in Sources */,
 				EF24933B236264DA00DD0A6C /* ImageCache.m in Sources */,
 				92A5332421EB57F00089FBB9 /* Options.m in Sources */,
@@ -1468,6 +1477,7 @@
 				EFA7A0EB24B65C020009CF88 /* GCDWebServerRequest.m in Sources */,
 				EFA7A0EC24B65C020009CF88 /* MameShaders.metal in Sources */,
 				EFA7A0ED24B65C020009CF88 /* OptionsController.m in Sources */,
+				EFE0033A2638ACA000E42246 /* XmlFile.m in Sources */,
 				EFA7A0EE24B65C020009CF88 /* SteamControllerExtendedGamepad.m in Sources */,
 				EFA7A0EF24B65C020009CF88 /* SteamControllerInput.m in Sources */,
 				EFA7A0F024B65C020009CF88 /* GCDWebServerURLEncodedFormRequest.m in Sources */,
