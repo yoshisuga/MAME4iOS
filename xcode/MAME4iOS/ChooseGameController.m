@@ -83,6 +83,19 @@
 #define CELL_MAX_LINES          3
 #endif
 
+// Section insets and spacing
+#if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST)
+#define SECTION_INSET_X         8.0
+#define SECTION_INSET_Y         8.0
+#define SECTION_LINE_SPACING    8.0
+#define SECTION_ITEM_SPACING    8.0
+#else   // tvOS or mac
+#define SECTION_INSET_X         32.0
+#define SECTION_INSET_Y         32.0
+#define SECTION_LINE_SPACING    32.0
+#define SECTION_ITEM_SPACING    32.0
+#endif
+
 #define INFO_BACKGROUND_COLOR   [UIColor colorWithWhite:0.111 alpha:1.0]
 #define INFO_IMAGE_WIDTH        (TARGET_OS_IOS ? 260.0 : 580.0)
 #define INFO_INSET_X            8.0
@@ -755,11 +768,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 -(void)updateLayout
 {
     UICollectionViewFlowLayout* layout = (UICollectionViewFlowLayout*)self.collectionView.collectionViewLayout;
-    CGFloat space = (TARGET_OS_IOS && !TARGET_OS_MACCATALYST) ? 8.0 : 32.0;
     layout.scrollDirection = UICollectionViewScrollDirectionVertical;
-    layout.sectionInset = UIEdgeInsetsMake(space, space, space, space);
-    layout.minimumLineSpacing = space;
-    layout.minimumInteritemSpacing = space;
+    layout.sectionInset = UIEdgeInsetsMake(SECTION_INSET_Y, SECTION_INSET_X, SECTION_INSET_Y, SECTION_INSET_X);
+    layout.minimumLineSpacing = SECTION_LINE_SPACING;
+    layout.minimumInteritemSpacing = SECTION_ITEM_SPACING;
     layout.sectionHeadersPinToVisibleBounds = YES;
     
 #if TARGET_OS_MACCATALYST
@@ -1033,10 +1045,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 //  get the text based on the LayoutMode
 //
-//  TINY        SMALL               LARGE                       LIST
-//  ----        -----               -----                       ----
-//  romname     short Description   Description                 Description
-//                                  short Manufacturer • Year   Manufacturer • Year  • romname [parent-rom]
+//  TINY        SMALL                       LARGE                       LIST
+//  ----        -----                       -----                       ----
+//  romname     short Description           Description                 Description
+//              short Manufacturer • Year   short Manufacturer • Year   Manufacturer • Year  • romname [parent-rom]
 //
 +(NSAttributedString*)getGameText:(NSDictionary*)info layoutMode:(LayoutMode)layoutMode textAlignment:(NSTextAlignment)textAlignment
 {
@@ -1052,6 +1064,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     }
     else if (layoutMode == LayoutSmall) {
         title = info.gameTitle;
+        detail = [info[kGameInfoManufacturer] componentsSeparatedByString:@" ("].firstObject;
+
+        if ((str = info[kGameInfoYear]) && [str length] > 1)
+            detail = [NSString stringWithFormat:@"%@ • %@", detail, str];
     }
     else if (layoutMode == LayoutLarge) {
         title = info[kGameInfoDescription];
@@ -1074,11 +1090,11 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
             detail = [NSString stringWithFormat:@"%@ [%@]", detail, str];
     }
     
-#ifdef XDEBUG
+#ifdef XXDEBUG
     if (layoutMode != LayoutTiny)
         title = [NSString stringWithFormat:@" Blah Blah Blah %@ Blah Blah Blah Blah Blah Blah", title];
 #endif
-    
+
     NSMutableAttributedString* text = [[NSMutableAttributedString alloc] initWithString:title attributes:@{
         NSFontAttributeName:CELL_TITLE_FONT,
         NSForegroundColorAttributeName:CELL_TITLE_COLOR
@@ -1140,8 +1156,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if (_layoutMode == LayoutTiny)
         textSize.width = 9999.0;
     
-    // in LayoutSmall we only show `CELL_MAX_LINES` lines
-    if (_layoutMode == LayoutSmall)
+    // in Layout Small or Large  we only show `CELL_MAX_LINES` lines
+    if (CELL_MAX_LINES != 0 && (_layoutMode == LayoutSmall || _layoutMode == LayoutLarge) && _layoutCollums > 1)
         textSize.height = CELL_TITLE_FONT.lineHeight * CELL_MAX_LINES;
     
     textSize = [text boundingRectWithSize:textSize options:NSStringDrawingUsesLineFragmentOrigin context:nil].size;
@@ -1202,7 +1218,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         cell.text.numberOfLines = 1;
         cell.text.adjustsFontSizeToFitWidth = TRUE;
     }
-    if (_layoutMode == LayoutSmall) {
+    if ((_layoutMode == LayoutSmall || _layoutMode == LayoutLarge) && _layoutCollums > 1) {
         cell.text.numberOfLines = CELL_MAX_LINES;
         cell.text.lineBreakMode = NSLineBreakByTruncatingTail;
     }
@@ -2033,7 +2049,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     _image.image = nil;
     _image.highlightedImage = nil;
     _image.contentMode = UIViewContentModeScaleAspectFit;
-    _image.layer.minificationFilter = kCAFilterLinear;
+    _image.layer.minificationFilter = kCAFilterTrilinear;
+    _image.layer.minificationFilterBias = 0.0;
     ((ImageView*)_image).aspect = 0.0;
     [_image setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
     [_image setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
@@ -2263,6 +2280,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 @property(nonatomic) CGFloat preferredMaxLayoutWidth;
 @property(nonatomic) NSInteger numberOfLines;
 @property(nonatomic) BOOL adjustsFontSizeToFitWidth;
+@property(nonatomic) NSLineBreakMode lineBreakMode;
 @end
 
 @implementation TextLabel
@@ -2377,10 +2395,9 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     _layoutWidth = self.view.bounds.size.width;
     
     UICollectionViewFlowLayout* layout = (UICollectionViewFlowLayout*)self.collectionView.collectionViewLayout;
-    CGFloat space = (TARGET_OS_IOS && !TARGET_OS_MACCATALYST) ? 8.0 : 32.0;
-    layout.sectionInset = UIEdgeInsetsMake(space, space, space, space);
-    layout.minimumLineSpacing = space;
-    layout.minimumInteritemSpacing = space;
+    layout.sectionInset = UIEdgeInsetsMake(SECTION_INSET_Y, SECTION_INSET_X, SECTION_INSET_Y, SECTION_INSET_X);
+    layout.minimumLineSpacing = SECTION_LINE_SPACING;
+    layout.minimumInteritemSpacing = SECTION_ITEM_SPACING;
        
     CGRect rect = self.collectionView.bounds;
     rect = UIEdgeInsetsInsetRect(rect, layout.sectionInset);
@@ -2405,12 +2422,12 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     self.collectionView.alwaysBounceHorizontal = landscape;
 
     if (landscape)
-        rect.size.width -= image_size.width + space;
+        rect.size.width -= image_size.width + SECTION_ITEM_SPACING;
 
     layout.itemSize = rect.size;
 
     CGFloat firstItemHeight = [self collectionView:self.collectionView layout:layout sizeForItemAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]].height;
-    _titleSwitchOffset= firstItemHeight + space - self.collectionView.adjustedContentInset.top;
+    _titleSwitchOffset= firstItemHeight + SECTION_INSET_Y - self.collectionView.adjustedContentInset.top;
     
     [self.collectionView reloadData];
 }
@@ -2434,7 +2451,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     [title.layer addAnimation:animation forKey:kCATransitionPush];
     title.superview.clipsToBounds = YES;
  
-    title.attributedText = [ChooseGameController getGameText:_game layoutMode:LayoutLarge textAlignment:NSTextAlignmentCenter];
+    title.attributedText = [ChooseGameController getGameText:_game layoutMode:LayoutSmall textAlignment:NSTextAlignmentCenter];
     [title sizeToFit];
     if (scrollView.contentOffset.y <= _titleSwitchOffset) {
         title.text = self.title;

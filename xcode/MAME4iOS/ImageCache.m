@@ -413,7 +413,7 @@ static UIImage* resizeImage(UIImage* image, CGFloat aspect, CGFloat width, CGFlo
         alphaInfo = kCGImageAlphaPremultipliedFirst;
 
     CGContextRef bitmap = CGBitmapContextCreate(NULL, width, height, 8, 4 * width, colorSpace, alphaInfo);
-    //CGContextSetInterpolationQuality(bitmap, kCGInterpolationHigh);
+    CGContextSetInterpolationQuality(bitmap, kCGInterpolationMedium);
     
     if (mode == UIViewContentModeScaleAspectFill && !CGRectEqualToRect(src, CGRectMake(0,0,image_width,image_height)))
     {
