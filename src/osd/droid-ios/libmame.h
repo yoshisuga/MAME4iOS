@@ -78,8 +78,25 @@ typedef struct {
     int num_mouse;
     int num_lightgun;
     int num_keyboard;
+    
+    // current input mode
+    int input_mode;
+    int keyboard_mode;
 
 }   myosd_input_state;
+
+// myosd input mode
+enum myosd_input_mode
+{
+    MYOSD_INPUT_MODE_NORMAL,
+    MYOSD_INPUT_MODE_UI
+};
+
+// myosd keyboard mode
+enum myosd_keyboard_mode
+{
+    MYOSD_KEYBOARD_MODE_NORMAL
+};
 
 // myosd output
 enum myosd_output_channel
@@ -89,6 +106,7 @@ enum myosd_output_channel
     MYOSD_OUTPUT_INFO,
     MYOSD_OUTPUT_DEBUG,
     MYOSD_OUTPUT_VERBOSE,
+    MYOSD_OUTPUT_LOG,
 };
 
 // subset of a internal game_driver structure we pass up to the UI/OSD layer
@@ -162,7 +180,7 @@ struct _myosd_render_primitive
     struct {float u,v;}   texcoords[4];
 };
 
-#ifndef ORIENTATION_FLIP_X
+#if !defined(MAME_EMU_RENDER_H) && !defined(ORIENTATION_FLIP_X)
 /* render primitive types */
 enum
 {
@@ -320,16 +338,9 @@ enum myosd_keycode
 
 // myosd_get and myosd_set - get and set global state from the MAME driver.
 
-enum MYOSD_STATE {
-    MYOSD_STATE_INGAME  = 1<<0,             // running a machine/game
-    MYOSD_STATE_INMENU  = 1<<1,             // a mame configure menu is active
-    MYOSD_STATE_CONFIGURE_INPUT = 1<<2,     // configure input menu is active
-};
-
 enum {
     MYOSD_VERSION,              // GET: MAME version number (ie 139 or 229)
     MYOSD_VERSION_STRING,       // GET: MAME version string (ie "0.139u1 (date)")
-    MYOSD_STATE,                // GET: APP STATE (inGame, inMenu, inInput)
     MYOSD_DISPLAY_WIDTH,        // SET: maximum width and height of "screen" to display
     MYOSD_DISPLAY_HEIGHT,
     MYOSD_FPS,                  // GET, SET: show framerate
@@ -341,19 +352,26 @@ extern intptr_t myosd_get(int var);
 extern void myosd_set(int var, intptr_t value);
 
 // MYOSD app callback functions
-// video_init, video_draw, and input_poll are required, others can be NULL
 typedef struct {
+    
+    void (*game_init)(myosd_game_info *info);
+    void (*game_exit)(void);
+    
     void (*video_init)(int width, int height);
     void (*video_draw)(myosd_render_primitive* prim_list, int width, int height);
+    void (*video_exit)(void);
 
     void (*sound_init)(int rate, int stereo);
     void (*sound_play)(void *buff, int len);
     void (*sound_exit)(void);
 
+    void (*input_init)(myosd_input_state* input, size_t state_size);
     void (*input_poll)(myosd_input_state* input, size_t state_size);
-    void (*output_text)(int channel, const char* text);
+    void (*input_exit)(void);
     
+    void (*output_text)(int channel, const char* text);
     void (*set_game_info)(myosd_game_info *games, int count);
+
 }   myosd_callbacks;
 
 // main entry point

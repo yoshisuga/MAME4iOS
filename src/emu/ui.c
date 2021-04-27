@@ -180,7 +180,6 @@ static INT32 slider_crossoffset(running_machine *machine, void *arg, astring *st
 
 INLINE UINT32 ui_set_handler(UINT32 (*callback)(running_machine *, render_container *, UINT32), UINT32 param)
 {
-    myosd_in_menu = callback != handler_ingame;
 	ui_handler_callback = callback;
 	ui_handler_param = param;
 	return param;

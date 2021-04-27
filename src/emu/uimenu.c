@@ -1919,7 +1919,6 @@ static void menu_input_common(running_machine *machine, ui_menu *menu, void *par
 		/* if UI_CANCEL is pressed, abort */
 		if (ui_input_pressed(machine, IPT_UI_CANCEL))
 		{
-            myosd_in_menu = 1;
 			menustate->pollingitem = NULL;
 			menustate->record_next = FALSE;
 			toggle_none_default(&item->seq, &menustate->starting_seq, item->defseq);
@@ -1931,7 +1930,6 @@ static void menu_input_common(running_machine *machine, ui_menu *menu, void *par
 		/* poll again; if finished, update the sequence */
 		if (input_seq_poll(machine, &newseq))
 		{
-            myosd_in_menu = 1;
 			menustate->pollingitem = NULL;
 			menustate->record_next = TRUE;
 
@@ -1953,7 +1951,6 @@ static void menu_input_common(running_machine *machine, ui_menu *menu, void *par
 		{
 			/* an item was selected: begin polling */
 			case IPT_UI_SELECT:
-                myosd_in_menu = 2;
 				menustate->pollingitem = item;
 				menustate->last_sortorder = item->sortorder;
 
@@ -3599,10 +3596,6 @@ static void menu_select_game(running_machine *machine, ui_menu *menu, void *para
 	select_game_state *menustate;
 	const ui_menu_event *event;
 
-//DAV HACK
-	myosd_in_menu =  0;
-//DAV HACK
-
 	/* if no state, allocate some */
 	if (state == NULL)
 	{
@@ -3656,9 +3649,6 @@ static void menu_select_game(running_machine *machine, ui_menu *menu, void *para
 			/* special case for configure inputs */
 			if ((FPTR)driver == 1)
 			{
-				//DAV HACK
-				myosd_in_menu =  1;
-				//DAV HACK
 				ui_menu_stack_push(ui_menu_alloc(menu->machine, menu->container, menu_input_groups, NULL));
 			}
 			/* anything else is a driver */
