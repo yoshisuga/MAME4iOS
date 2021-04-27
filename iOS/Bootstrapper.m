@@ -82,7 +82,7 @@ const char* get_documents_path(const char* file)
     chdir (get_documents_path(""));
     
     // create directories
-    for (NSString* dir in @[@"iOS", @"artwork", @"titles", @"cfg", @"nvram", @"ini", @"snap", @"sta", @"hi", @"inp", @"memcard", @"samples", @"roms", @"dats", @"cheat", @"skins"])
+    for (NSString* dir in @[@"iOS", @"artwork", @"titles", @"cfg", @"nvram", @"ini", @"snap", @"sta", @"hi", @"inp", @"memcard", @"samples", @"roms", @"dats", @"cheat", @"skins", @"hash"])
     {
         NSString* dirPath = [NSString stringWithUTF8String:get_documents_path(dir.UTF8String)];
         
