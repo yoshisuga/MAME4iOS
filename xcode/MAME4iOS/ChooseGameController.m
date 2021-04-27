@@ -586,7 +586,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         NSString* section = game[key];
         
         // a UICollectionView will scroll like crap if we have too many sections, so try to filter/combine similar ones.
-        section = [[section componentsSeparatedByString:@" ("] firstObject];
+        if (key != (void*)kGameInfoCategory)
+            section = [[section componentsSeparatedByString:@" ("] firstObject];
         section = [section stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
         
         if (key != (void*)kGameInfoYear)
@@ -601,10 +602,18 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
         if ([section length] == 0)
             section = @"Unknown";
+        
+        NSArray* sections;
+        if (key == (void*)kGameInfoCategory)
+            sections = [section componentsSeparatedByString:@","];
+        else
+            sections = @[section];
 
-        if (gameData[section] == nil)
-            gameData[section] = [[NSMutableArray alloc] init];
-        [gameData[section] addObject:game];
+        for (NSString* section in sections) {
+            if (gameData[section] == nil)
+                gameData[section] = [[NSMutableArray alloc] init];
+            [gameData[section] addObject:game];
+        }
     }
 
     // and sort section names
