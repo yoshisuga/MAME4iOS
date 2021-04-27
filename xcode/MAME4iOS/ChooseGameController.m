@@ -579,6 +579,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         key = kGameInfoParent;
     if ([_gameFilterScope isEqualToString:@"System"])
         key = kGameInfoSystem;
+    if ([_gameFilterScope isEqualToString:@"Type"])
+        key = kGameInfoType;
 
     for (NSDictionary* game in filteredGames) {
         NSString* section = game[key];
@@ -592,10 +594,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         
         // if we dont have a parent, we are our own parent!
         if (key == (void*)kGameInfoParent && [section length] <= 1)
-            section = game[kGameInfoName];
+            section = game.gameName;
 
         if ([section length] == 0 && key == (void*)kGameInfoSystem)
-            section = @"Arcade";
+            section = game.gameType;
 
         if ([section length] == 0)
             section = @"Unknown";

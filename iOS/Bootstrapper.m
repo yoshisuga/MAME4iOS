@@ -169,13 +169,19 @@ const char* get_documents_path(const char* file)
 {
     NSLog(@"OPEN URL: %@ %@", url, options);
     
-    // handle our own scheme mame4ios://name
-    if ([url.scheme isEqualToString:@"mame4ios"] && [url.host length] != 0 && [url.path length] == 0 && [url.query length] == 0) {
-        NSDictionary* game = @{@"name":url.host};
+    // handle our own scheme mame4ios://game OR mame4ios://system/game
+    if ([url.scheme isEqualToString:@"mame4ios"] && [url.host length] != 0 && [url.query length] == 0) {
+        NSDictionary* game;
+        
+        if ([url.path length] != 0)
+            game = @{@"name":url.path, @"system":url.host};
+        else
+            game = @{@"name":url.host};
+        
         [hrViewController performSelectorOnMainThread:@selector(playGame:) withObject:game waitUntilDone:NO];
         return TRUE;
     }
-
+    
     // copy a ZIP file to document root, and then let moveROMS take care of it....
     // only handle .zip files
     if (!url.fileURL || ![url.pathExtension.lowercaseString isEqualToString:@"zip"])

@@ -496,14 +496,20 @@ NSString* find_category(NSString* name, NSString* parent)
 // called from deep inside MAME select_game menu, to give us the valid list of games/drivers
 void m4i_set_game_info(myosd_game_info* game_info, int game_count)
 {
+    static NSString* types[] = {kGameInfoTypeArcade, kGameInfoTypeConsole, kGameInfoTypeComputer};
+    _Static_assert(MYOSD_GAME_TYPE_ARCADE == 0, "");
+    _Static_assert(MYOSD_GAME_TYPE_CONSOLE == 1, "");
+    _Static_assert(MYOSD_GAME_TYPE_COMPUTER == 2, "");
+
     @autoreleasepool {
+        
         NSMutableArray* games = [[NSMutableArray alloc] init];
         
         for (int i=0; i<game_count; i++)
         {
             if (game_info[i].name == NULL || game_info[i].name[0] == 0)
                 continue;
-            if (!(game_info[i].type == MYOSD_GAME_TYPE_ARCADE || game_info[i].type == MYOSD_GAME_TYPE_CONSOLE))
+            if (game_info[i].type < 0 || game_info[i].type >= sizeof(types)/sizeof(types[0]))
                 continue;
             if (g_pref_filter_bios && (game_info[i].flags & MYOSD_GAME_INFO_BIOS))
                 continue;
@@ -513,6 +519,7 @@ void m4i_set_game_info(myosd_game_info* game_info, int game_count)
                 continue;
 
             [games addObject:@{
+                kGameInfoType:        types[game_info[i].type],
                 kGameInfoName:        @(game_info[i].name),
                 kGameInfoDescription: @(game_info[i].description),
                 kGameInfoYear:        @(game_info[i].year),
