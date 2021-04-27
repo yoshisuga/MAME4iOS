@@ -85,6 +85,7 @@ TIMER_INIT_BEGIN
 TIMER_INIT(timer_read_input)
 TIMER_INIT(timer_read_controllers)
 TIMER_INIT(timer_read_mice)
+TIMER_INIT(load_cat)
 TIMER_INIT_END
 
 // declare "safe" properties for buttonHome, buttonMenu, buttonsOptions that work on pre-iOS 13,14
@@ -267,8 +268,9 @@ static NSDictionary* g_category_dict;
 #define kSelectedGameInfoKey @"selected_game_info"
 static NSDictionary* g_mame_game_info;
 static BOOL g_mame_reset = FALSE;           // do a full reset (delete cfg files) before running MAME
-static char g_mame_game[16];                // game MAME should run (or empty is menu)
-static char g_mame_game_error[16];
+static char g_mame_system[16+1];            // system MAME should run
+static char g_mame_game[16+1];              // game MAME should run (or empty is menu)
+static char g_mame_game_error[16+16+1+1];
 static char g_mame_output_text[4096];
 static BOOL g_mame_warning = FALSE;
 static BOOL g_no_roms_found = FALSE;
@@ -358,11 +360,14 @@ void m4i_game_start(myosd_game_info* game_info);
 void m4i_game_stop(void);
 
 // run MAME (or pass NULL for main menu)
-int run_mame(char* game)
+int run_mame(char* system, char* game)
 {
     // TODO: hiscore?
     // TODO: speed?
-    char* argv[] = {"mame4ios", game ?: "",
+    char* argv[] = {"mame4ios",
+        // use -nocoinlock as a do-nothing option
+        (system && system[0] != 0) ? system : "-nocoinlock",
+        (game && game[0] != 0 && game[0] != ' ') ? game : "-nocoinlock",
         "-nocoinlock",
         g_pref_cheat ? "-cheat" : "-nocheat",
         g_pref_autosave ? "-autosave" : "-noautosave",
@@ -433,9 +438,14 @@ void* app_Thread_Start(void* args)
         if (g_mame_game[0] != 0)
             g_mame_output_text[0] = 0;
         
-        if (run_mame(g_mame_game) != 0 && g_mame_game[0]) {
-            strncpy(g_mame_game_error, g_mame_game, sizeof(g_mame_game_error));
-            g_mame_game[0] = 0;
+        if (run_mame(g_mame_system, g_mame_game) != 0 && g_mame_game[0] != 0) {
+            
+            if (g_mame_system[0] == 0)
+                strncpy(g_mame_game_error, g_mame_game, sizeof(g_mame_game_error));
+            else
+                snprintf(g_mame_game_error, sizeof(g_mame_game_error), "%s.%s", g_mame_system, g_mame_game);
+            
+            g_mame_game[0] = g_mame_system[0] = 0;
         }
     }
     NSLog(@"thread exit");
@@ -467,23 +477,37 @@ NSDictionary* load_category_ini(void)
         
         if (line[0] == '[')
         {
+            NSCParameterAssert(line[strlen(line) - 1] == ']');
+            NSCParameterAssert(![@(line) containsString:@","]);
             line[strlen(line) - 1] = '\0';
             curcat = @(line+1);
-            // TODO: use only the top-level Category?
-            curcat = [curcat componentsSeparatedByString:@" / "].firstObject;
             continue;
         }
         
-        if (category_dict[@(line)] != nil) {
-            // TODO: Merge Categories?
-            NSLog(@"%@ is in multiple categories %@ and %@", @(line),category_dict[@(line)], curcat);
+        if (curcat.length == 0)
+            continue;
+        
+        NSString* key = @(line);
+        NSString* cat = category_dict[key];
+        if (cat != nil) {
+            NSLog(@"%@ is in multiple categories \"%@\" and \"%@\"", key, cat, curcat);
+            if (![cat containsString:curcat]) {
+                cat = [cat stringByAppendingFormat:@",%@", curcat];
+                [category_dict setObject:cat forKey:key];
+            }
             continue;
         }
         
-        if (curcat.length != 0)
-            [category_dict setObject:curcat forKey:@(line)];
+        [category_dict setObject:curcat forKey:key];
     }
     fclose(file);
+    
+    // de-dup all the categories we had to merge
+    NSSet* set = [NSSet setWithArray:category_dict.allValues];
+    for (NSString* key in category_dict.allKeys)
+        category_dict[key] = [set member:category_dict[key]];
+    
+    NSLog(@"CATEGORY.INI: %d ROMs in %d categories", (int)category_dict.allKeys.count, (int)[NSSet setWithArray:category_dict.allValues].allObjects.count);
     return [category_dict copy];
 }
 
@@ -563,7 +587,7 @@ void m4i_game_stop()
     CGPoint touchDirectionalMoveInitialLocation;
     CGSize  layoutSize;
     SkinManager* skinManager;
-    AVPlayerView* avPlayer;
+    AVPlayer_View* avPlayer;
 }
 @end
 
@@ -637,12 +661,16 @@ void m4i_game_stop()
 
     sharedInstance = self;
 
+    TIMER_START(load_cat);
     g_category_dict = load_category_ini();
+    TIMER_STOP(load_cat);
+    NSLog(@"load_category_ini took %0.3fsec", TIMER_TIME(load_cat));
 
     g_mame_game_info = [EmulatorController getCurrentGame];
     NSString* name = g_mame_game_info[kGameInfoName] ?: @"";
     if ([name isEqualToString:kGameInfoNameMameMenu])
         name = @" ";
+    strncpy(g_mame_system, [(g_mame_game_info[kGameInfoSystem] ?: @"") cStringUsingEncoding:NSUTF8StringEncoding], sizeof(g_mame_system));
     strncpy(g_mame_game, [name cStringUsingEncoding:NSUTF8StringEncoding], sizeof(g_mame_game));
     g_mame_game_error[0] = 0;
     
@@ -1010,7 +1038,7 @@ HUDViewController* g_menu;
     else if (myosd_inGame && myosd_in_menu == 0)
     {
         if (g_mame_game[0] != ' ') {
-            g_mame_game[0] = 0;
+            g_mame_game[0] = g_mame_system[0] = 0;
             g_mame_game_info = nil;
         }
         myosd_exitGame = 1;
@@ -1021,7 +1049,7 @@ HUDViewController* g_menu;
     }
     else
     {
-        g_mame_game[0] = 0;
+        g_mame_game[0] = g_mame_system[0] = 0;
         g_mame_game_info = nil;
         myosd_exitGame = 1;
     }
@@ -1619,7 +1647,7 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
     if (avPlayer == nil) {
         NSURL* url = [NSBundle.mainBundle URLForResource:@"whiteHDR" withExtension:@"mp4"];
         NSAssert(url != nil, @"missing whiteHDR resource");
-        avPlayer = [[AVPlayerView alloc] initWithURL:url];
+        avPlayer = [[AVPlayer_View alloc] initWithURL:url];
         [self.view addSubview:avPlayer];
     }
     avPlayer.frame = CGRectMake(0, 0, 1, 1);
@@ -2097,7 +2125,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     
     // load the skin based on <ROMNAME>,<PARENT>,<MACHINE>,<USER PREF>
     if (g_mame_game[0] && g_mame_game[0] != ' ' && g_mame_game_info != nil)
-        [skinManager setCurrentSkin:[NSString stringWithFormat:@"%s,%@,%@,%@", g_mame_game, g_mame_game_info[kGameInfoParent], g_mame_game_info[kGameInfoDriver], g_pref_skin]];
+        [skinManager setCurrentSkin:[NSString stringWithFormat:@"%s,%@,%@,%@", g_mame_game, (g_mame_game_info[kGameInfoParent] ?: @""), (g_mame_game_info[kGameInfoDriver] ?: @""), g_pref_skin]];
     else if (g_mame_game[0])
         [skinManager setCurrentSkin:g_pref_skin];
 
@@ -5304,18 +5332,19 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
     }
     
     NSString* name = game[kGameInfoName];
-    
+
     if ([name isEqualToString:kGameInfoNameMameMenu])
         name = @" ";
 
     if (name != nil) {
         g_mame_game_info = game;
+        strncpy(g_mame_system, [(game[kGameInfoSystem] ?: @"") cStringUsingEncoding:NSUTF8StringEncoding], sizeof(g_mame_system));
         strncpy(g_mame_game, [name cStringUsingEncoding:NSUTF8StringEncoding], sizeof(g_mame_game));
         [self updateUserActivity:game];
     }
     else {
         g_mame_game_info = nil;
-        g_mame_game[0] = 0;     // run the MENU
+        g_mame_game[0] = g_mame_system[0] = 0;     // run the MENU
     }
 
     change_pause(0);
@@ -5385,7 +5414,7 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
         if ([msg length] == 0)
             msg = [NSString stringWithFormat:@"ERROR RUNNING GAME %s", g_mame_game_error];
         g_mame_game_error[0] = 0;
-        g_mame_game[0] = 0;
+        g_mame_game[0] = g_mame_system[0] = 0;
         g_mame_game_info = nil;
         
         [self showAlertWithTitle:@PRODUCT_NAME message:msg buttons:@[@"Ok"] handler:^(NSUInteger button) {
@@ -5398,7 +5427,7 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
         return;
     }
     if (g_mame_game[0] != 0) {
-        NSLog(@"RUNNING %s, DONT BRING UP UI.", g_mame_game);
+        NSLog(@"RUNNING %s.%s, DONT BRING UP UI.", g_mame_system, g_mame_game);
         return;
     }
     
