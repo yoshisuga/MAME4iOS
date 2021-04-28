@@ -26,11 +26,15 @@
 #define kGameInfoCategory       @"category"
 #define kGameInfoHistory        @"history"
 #define kGameInfoMameInfo       @"mameinfo"
+#define kGameInfoSoftwareList   @"softlist"
 
 #define kGameInfoTypeArcade     @"Arcade"
 #define kGameInfoTypeConsole    @"Console"
 #define kGameInfoTypeComputer   @"Computer"
 #define kGameInfoTypeBIOS       @"BIOS"
+#define kGameInfoTypeCART       @"Cartridge"
+#define kGameInfoTypeFLOP       @"Floppy"
+#define kGameInfoTypeCASS       @"Cassette"
 
 // special "fake" (aka built-in) games
 #define kGameInfoNameSettings   @"settings"
@@ -42,6 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong, readonly) NSString* gameType;
 @property (nonatomic, strong, readonly) NSString* gameSystem;
+@property (nonatomic, strong, readonly) NSString* gameSoftwareList;
 @property (nonatomic, strong, readonly) NSString* gameName;
 @property (nonatomic, strong, readonly) NSString* gameParent;
 @property (nonatomic, strong, readonly) NSString* gameYear;

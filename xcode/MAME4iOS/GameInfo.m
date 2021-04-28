@@ -17,6 +17,10 @@
 {
     return self[kGameInfoSystem] ?: @"";
 }
+-(NSString*)gameSoftwareList
+{
+    return self[kGameInfoSoftwareList] ?: self[kGameInfoSystem] ?: @"";
+}
 -(NSString*)gameName
 {
     return self[kGameInfoName] ?: @"";
@@ -69,13 +73,15 @@
         /// http://adb.arcadeitalia.net/media/mess.current/ingames/a2600/pitfall.png
         
         NSString* base = @"http://adb.arcadeitalia.net/media/mess.current/titles";
+        NSString* list = self.gameSoftwareList;
+        NSString* name = self.gameName.lowercaseString;
 
         // TODO: HACK!
-        if ([self.gameSystem isEqualToString:@"a2600"])
+        if ([list isEqualToString:@"a2600"])
             base = @"http://adb.arcadeitalia.net/media/mess.current/ingames";
         // TODO: HACK!
 
-        return [NSURL URLWithString:[NSString stringWithFormat:@"%@/%@/%@.png", base, self.gameSystem, self.gameName.lowercaseString]];
+        return [NSURL URLWithString:[NSString stringWithFormat:@"%@/%@/%@.png", base, list, name]];
     }
     else if ([self.gameType isEqualToString:kGameInfoTypeConsole])
     {
@@ -83,7 +89,9 @@
         /// http://adb.arcadeitalia.net/media/mame.current/titles/n64.png
                            
         NSString* base = @"http://adb.arcadeitalia.net/media/mame.current/titles";
-        return [NSURL URLWithString:[NSString stringWithFormat:@"%@/%@.png", base, self.gameName.lowercaseString]];
+        NSString* name = self.gameName.lowercaseString;
+
+        return [NSURL URLWithString:[NSString stringWithFormat:@"%@/%@.png", base, name];
     }
     else
     {
@@ -120,8 +128,8 @@
     NSString *path = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES).firstObject;
 #endif
     
-    if (self.gameSystem.length != 0)
-        return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/titles/%@-%@.png", path, self.gameSystem, name] isDirectory:NO];
+    if (self.gameSoftwareList.length != 0)
+        return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/titles/%@-%@.png", path, self.gameSoftwareList, name] isDirectory:NO];
     else
         return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/titles/%@.png", path, name] isDirectory:NO];
 }

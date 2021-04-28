@@ -533,6 +533,9 @@ void m4i_set_game_info(myosd_game_info* game_info, int game_count)
         
         for (int i=0; i<game_count; i++)
         {
+            // TODO: MYOSD_GAME_INFO_RUNNABLE
+            // TODO: MYOSD_GAME_INFO_MECHANICAL
+
             if (game_info[i].name == NULL || game_info[i].name[0] == 0)
                 continue;
             if (game_info[i].type < 0 || game_info[i].type >= sizeof(types)/sizeof(types[0]))
@@ -545,7 +548,7 @@ void m4i_set_game_info(myosd_game_info* game_info, int game_count)
                 continue;
 
             [games addObject:@{
-                kGameInfoType:        types[game_info[i].type],
+                kGameInfoType:        (game_info[i].flags & MYOSD_GAME_INFO_BIOS) ? kGameInfoTypeBIOS : types[game_info[i].type],
                 kGameInfoName:        @(game_info[i].name),
                 kGameInfoDescription: @(game_info[i].description),
                 kGameInfoYear:        @(game_info[i].year),
@@ -558,6 +561,7 @@ void m4i_set_game_info(myosd_game_info* game_info, int game_count)
         
 // add some *fake* data to test UI
 #ifdef DEBUG
+        // TODO: "Atari 2600 (NTSC)" and "Atari 2600 (PAL)" show both?
         if ([games filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"%K = %@", kGameInfoName, @"a2600"]].count == 0) {
             [games addObject:@{
                 kGameInfoType:        types[MYOSD_GAME_TYPE_CONSOLE],
@@ -567,9 +571,23 @@ void m4i_set_game_info(myosd_game_info* game_info, int game_count)
                 kGameInfoManufacturer:@"Atari",
                 kGameInfoCategory:    find_category(@"a2600", @""),
                 kGameInfoDriver:      @"a2600.cpp",
+                kGameInfoSoftwareList:@"a2600",
             }];
+            [games addObjectsFromArray:[g_softlist getGamesForSystem:@"a2600" fromList:@"a2600"]];
+
+            [games addObject:@{
+                kGameInfoType:        types[MYOSD_GAME_TYPE_CONSOLE],
+                kGameInfoName:        @"a2600p",
+                kGameInfoDescription: @"Atari 2600 (PAL)",
+                kGameInfoYear:        @"1979",
+                kGameInfoManufacturer:@"Atari",
+                kGameInfoCategory:    find_category(@"a2600p", @""),
+                kGameInfoParent:      @"a2600",
+                kGameInfoDriver:      @"a2600.cpp",
+                kGameInfoSoftwareList:@"a2600",
+            }];
+            [games addObjectsFromArray:[g_softlist getGamesForSystem:@"a2600p" fromList:@"a2600"]];
         }
-        [games addObjectsFromArray:[g_softlist getGamesForSystem:@"a2600" fromList:@"a2600"]];
         
         if ([games filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"%K = %@", kGameInfoName, @"n64"]].count == 0) {
             [games addObject:@{
@@ -581,9 +599,8 @@ void m4i_set_game_info(myosd_game_info* game_info, int game_count)
                 kGameInfoCategory:    find_category(@"n64", @""),
                 kGameInfoDriver:      @"n64.cpp",
             }];
+            [games addObjectsFromArray:[g_softlist getGamesForSystem:@"n64" fromList:@"n64"]];
         }
-        [games addObjectsFromArray:[g_softlist getGamesForSystem:@"n64" fromList:@"n64"]];
-
 #endif
         
         [sharedInstance performSelectorOnMainThread:@selector(chooseGame:) withObject:games waitUntilDone:FALSE];

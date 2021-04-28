@@ -14,6 +14,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithPath:(NSString*)root;
 
+// get names of all installed softlists
+- (NSArray<NSString*>*)getNames;
+
 // get full softlist data
 - (NSArray<NSDictionary*>*)getList:(NSString*)name;
 
@@ -27,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)installFile:(NSString*)file;
 
 // discard any cached data, forcing a re-load from disk.
-- (void)flush:(BOOL)all;
+- (void)flush;
 
 @end
 

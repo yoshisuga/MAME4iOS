@@ -355,7 +355,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     [self.navigationController.view addGestureRecognizer:tap];
 #endif
     
-#ifdef XDEBUG
+#ifdef DEBUG
     // delete all the cached TITLE images.
     NSString* titles_path = [NSString stringWithUTF8String:get_documents_path("titles")];
     [[NSFileManager defaultManager] removeItemAtPath:titles_path error:nil];

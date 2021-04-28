@@ -40,6 +40,15 @@
 
 #pragma mark Public methods
 
+// get names of all installed softlists
+- (NSArray<NSString*>*)getNames {
+// add some *fake* data for testing....
+#ifdef DEBUG
+    return @[@"a2600",@"n64"];
+#endif
+    return @[];
+}
+
 // get full software list
 - (NSArray<NSDictionary*>*)getList:(NSString*)name {
     return @[];
@@ -52,11 +61,15 @@
 
 // get games for a system
 - (NSArray<NSDictionary*>*)getGamesForSystem:(NSString*)system fromList:(NSString*)list {
+    NSParameterAssert(![list containsString:@" "]);
+    // TODO: handle multiple lists
 // add some *fake* data for testing....
 #ifdef DEBUG
     if ([list isEqualToString:@"a2600"]) {
         return @[
             @{
+                kGameInfoType:        kGameInfoTypeCART,
+                kGameInfoSoftwareList:list,
                 kGameInfoSystem:      system,
                 kGameInfoName:        @"pitfall",
                 kGameInfoDescription: @"Pitfall! - Pitfall Harry's Jungle Adventure",
@@ -64,6 +77,8 @@
                 kGameInfoManufacturer:@"Activision",
             },
             @{
+                kGameInfoType:        kGameInfoTypeCART,
+                kGameInfoSoftwareList:list,
                 kGameInfoSystem:      system,
                 kGameInfoName:        @"ET",
                 kGameInfoDescription: @"E.T. - The Extra-Terrestrial",
@@ -71,6 +86,8 @@
                 kGameInfoManufacturer:@"Atari",
             },
             @{
+                kGameInfoType:        kGameInfoTypeCART,
+                kGameInfoSoftwareList:list,
                 kGameInfoSystem:      system,
                 kGameInfoName:        @"ADVENTP",
                 kGameInfoDescription: @"Adventure +",
@@ -78,6 +95,8 @@
                 kGameInfoManufacturer:@"Homebrew",
             },
             @{
+                kGameInfoType:        kGameInfoTypeCART,
+                kGameInfoSoftwareList:list,
                 kGameInfoSystem:      system,
                 kGameInfoName:        @"COMBAT",
                 kGameInfoDescription: @"Combat - Tank-Plus",
@@ -89,6 +108,7 @@
     if ([list isEqualToString:@"n64"]) {
         return @[
             @{
+                kGameInfoType:        kGameInfoTypeCART,
                 kGameInfoSystem:      system,
                 kGameInfoName:        @"007GOLDNU",
                 kGameInfoDescription: @"007 - GoldenEye (USA)",
@@ -96,6 +116,7 @@
                 kGameInfoManufacturer:@"Nintendo",
             },
             @{
+                kGameInfoType:        kGameInfoTypeCART,
                 kGameInfoSystem:      system,
                 kGameInfoName:        @"MARIOKRTJ1",
                 kGameInfoDescription: @"Mario Kart 64 (Japan)",
@@ -103,6 +124,7 @@
                 kGameInfoManufacturer:@"Nintendo",
             },
             @{
+                kGameInfoType:        kGameInfoTypeCART,
                 kGameInfoSystem:      system,
                 kGameInfoName:        @"ZELDAOOTMQD",
                 kGameInfoDescription: @"The Legend of Zelda - Ocarina of Time - Master Quest (USA, Debug Edition, Ripped from GC)",
@@ -110,6 +132,7 @@
                 kGameInfoManufacturer:@"Nintendo",
             },
             @{
+                kGameInfoType:        kGameInfoTypeCART,
                 kGameInfoSystem:      system,
                 kGameInfoName:        @"MADDN2K2",
                 kGameInfoDescription: @"Madden NFL 2002 (USA)",
@@ -136,7 +159,7 @@
 }
 
 // discard any cached data, forcing a re-load from disk.
-- (void)flush:(BOOL)all {
+- (void)flush {
 
 }
 
