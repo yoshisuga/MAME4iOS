@@ -14,9 +14,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithPath:(NSString*)root;
 
-// return list of installed softlists
-- (NSArray<NSString*>*)getListNames;
-
 // get full softlist data
 - (NSArray<NSDictionary*>*)getList:(NSString*)name;
 
@@ -24,13 +21,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray<NSDictionary*>*)getInstalledList:(NSString*)name;
 
 // get games for a system
-- (NSArray<NSDictionary*>*)getGamesForSystem:(NSString*)system from:(NSString*)list;
+- (NSArray<NSDictionary*>*)getGamesForSystem:(NSString*)system fromList:(NSString*)list;
 
 // install a XML or ZIP file
 - (BOOL)installFile:(NSString*)file;
 
 // discard any cached data, forcing a re-load from disk.
-- (void)flush;
+- (void)flush:(BOOL)all;
 
 @end
 

@@ -40,12 +40,7 @@
 
 #pragma mark Public methods
 
-// return list of installed softlists
-- (NSArray<NSString*>*)getListNames {
-    return @[];
-}
-
-// get full softlist data
+// get full software list
 - (NSArray<NSDictionary*>*)getList:(NSString*)name {
     return @[];
 }
@@ -56,21 +51,77 @@
 }
 
 // get games for a system
-- (NSArray<NSDictionary*>*)getGamesForSystem:(NSString*)system from:(NSString*)list {
+- (NSArray<NSDictionary*>*)getGamesForSystem:(NSString*)system fromList:(NSString*)list {
+// add some *fake* data for testing....
+#ifdef DEBUG
+    if ([list isEqualToString:@"a2600"]) {
+        return @[
+            @{
+                kGameInfoSystem:      system,
+                kGameInfoName:        @"pitfall",
+                kGameInfoDescription: @"Pitfall! - Pitfall Harry's Jungle Adventure",
+                kGameInfoYear:        @"1982",
+                kGameInfoManufacturer:@"Activision",
+            },
+            @{
+                kGameInfoSystem:      system,
+                kGameInfoName:        @"ET",
+                kGameInfoDescription: @"E.T. - The Extra-Terrestrial",
+                kGameInfoYear:        @"1982",
+                kGameInfoManufacturer:@"Atari",
+            },
+        ];
+    }
+    if ([list isEqualToString:@"n64"]) {
+        return @[
+            @{
+                kGameInfoSystem:      system,
+                kGameInfoName:        @"007GOLDNU",
+                kGameInfoDescription: @"007 - GoldenEye (USA)",
+                kGameInfoYear:        @"1997",
+                kGameInfoManufacturer:@"Nintendo",
+            },
+            @{
+                kGameInfoSystem:      system,
+                kGameInfoName:        @"MARIOKRTJ1",
+                kGameInfoDescription: @"Mario Kart 64 (Japan)",
+                kGameInfoYear:        @"1996",
+                kGameInfoManufacturer:@"Nintendo",
+            },
+        ];
+    }
+
+#endif
     return @[];
 }
 
 // install a XML or ZIP file
 - (BOOL)installFile:(NSString*)file {
+    
+    if ([file.pathExtension.uppercaseString isEqualToString:@"ZIP"] || [file.pathExtension.uppercaseString isEqualToString:@"7Z"])
+        return [self installZIP:file];
+
+    if ([file.pathExtension.uppercaseString isEqualToString:@"XML"])
+        return [self installXML:file];
+
     return FALSE;
 }
 
 // discard any cached data, forcing a re-load from disk.
-- (void)flush {
-    
+- (void)flush:(BOOL)all {
+
 }
 
 #pragma mark Private methods
 
+// install a XML file
+- (BOOL)installXML:(NSString*)file {
+    return FALSE;
+}
+
+// install a ZIP file
+- (BOOL)installZIP:(NSString*)file {
+    return FALSE;
+}
 
 @end

@@ -115,7 +115,11 @@ static ImageCache* sharedInstance = nil;
 
 - (NSString*)getKey:(NSURL*)url size:(CGSize)size
 {
-    return [NSString stringWithFormat:@"%@[%f,%f]", url.path, size.width, size.height];
+    NSParameterAssert(url != nil);
+    if (size.width == 0.0 && size.height == 0.0)
+        return url.path;
+    else
+        return [NSString stringWithFormat:@"%@[%f,%f]", url.path, size.width, size.height];
 }
 
 - (void)getImage:(NSURL*)url size:(CGSize)size localURL:(NSURL*)localURL completionHandler:(ImageCacheCallback)handler
@@ -413,7 +417,7 @@ static UIImage* resizeImage(UIImage* image, CGFloat aspect, CGFloat width, CGFlo
         alphaInfo = kCGImageAlphaPremultipliedFirst;
 
     CGContextRef bitmap = CGBitmapContextCreate(NULL, width, height, 8, 4 * width, colorSpace, alphaInfo);
-    //CGContextSetInterpolationQuality(bitmap, kCGInterpolationHigh);
+    CGContextSetInterpolationQuality(bitmap, kCGInterpolationHigh);
     
     if (mode == UIViewContentModeScaleAspectFill && !CGRectEqualToRect(src, CGRectMake(0,0,image_width,image_height)))
     {

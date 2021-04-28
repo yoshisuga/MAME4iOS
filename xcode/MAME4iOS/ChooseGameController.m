@@ -529,6 +529,14 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 #pragma mark - game filter
 
+- (NSString*)getSystemDescription:(NSString*)system {
+    // TODO: cache the result?
+    
+    // find the system in the gameList and return description
+    NSDictionary* game = [_gameList filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"%K = %@", kGameInfoName, system]].firstObject;
+    return game.gameDescription ?: system;
+}
+
 - (void)filterGameList
 {
     NSArray* filteredGames = _gameList;
@@ -596,6 +604,9 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         // if we dont have a parent, we are our own parent!
         if (key == (void*)kGameInfoParent && [section length] <= 1)
             section = game.gameName;
+        
+        if ([section length] != 0 && key == (void*)kGameInfoSystem)
+            section = [self getSystemDescription:section];
 
         if ([section length] == 0 && key == (void*)kGameInfoSystem)
             section = game.gameType;
@@ -2044,7 +2055,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     _image.image = nil;
     _image.highlightedImage = nil;
     _image.contentMode = UIViewContentModeScaleAspectFit;
-    _image.layer.minificationFilter = kCAFilterLinear;
+    _image.layer.minificationFilter = kCAFilterTrilinear;
     ((ImageView*)_image).aspect = 0.0;
     [_image setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
     [_image setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];

@@ -55,16 +55,40 @@
 }
 -(NSURL*)gameImageURL
 {
+    /// TODO: find a better Title image url source!!
+    /// TODO: handle multiple url sources??
+
+    NSParameterAssert(self.gameName.length != 0);
+    NSParameterAssert(![self.gameName containsString:@" "]);
+    NSParameterAssert(![self.gameSystem containsString:@" "]);
+
     if (self.gameSystem.length != 0)
     {
         /// MESS style title url
         /// http://adb.arcadeitalia.net/media/mess.current/titles/a2600/adventur.png
+        /// http://adb.arcadeitalia.net/media/mess.current/ingames/a2600/pitfall.png
         
         NSString* base = @"http://adb.arcadeitalia.net/media/mess.current/titles";
-        return [NSURL URLWithString:[NSString stringWithFormat:@"%@/%@/%@.png", base, self.gameSystem, self.gameName]];
+
+        // TODO: HACK!
+        if ([self.gameSystem isEqualToString:@"a2600"])
+            base = @"http://adb.arcadeitalia.net/media/mess.current/ingames";
+        // TODO: HACK!
+
+        return [NSURL URLWithString:[NSString stringWithFormat:@"%@/%@/%@.png", base, self.gameSystem, self.gameName.lowercaseString]];
+    }
+    else if ([self.gameType isEqualToString:kGameInfoTypeConsole])
+    {
+        /// MAME title url
+        /// http://adb.arcadeitalia.net/media/mame.current/titles/n64.png
+                           
+        NSString* base = @"http://adb.arcadeitalia.net/media/mame.current/titles";
+        return [NSURL URLWithString:[NSString stringWithFormat:@"%@/%@.png", base, self.gameName.lowercaseString]];
     }
     else
     {
+        NSParameterAssert(self.gameDescription.length != 0);
+
         /// libretro title url
         /// https://raw.githubusercontent.com/libretro-thumbnails/MAME/master/Named_Titles/pacman.png
         
@@ -82,9 +106,9 @@
 }
 -(NSURL*)gameLocalImageURL
 {
-    NSString* name = self[kGameInfoName];
+    NSString* name = self.gameName;
     
-    if (name == nil)
+    if (name.length == 0)
         return nil;
     
     if (self.gameIsFake)
@@ -95,7 +119,11 @@
 #elif TARGET_OS_TV
     NSString *path = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES).firstObject;
 #endif
-    return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/titles/%@.png", path, name] isDirectory:NO];
+    
+    if (self.gameSystem.length != 0)
+        return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/titles/%@-%@.png", path, self.gameSystem, name] isDirectory:NO];
+    else
+        return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/titles/%@.png", path, name] isDirectory:NO];
 }
 -(NSURL*)gamePlayURL
 {

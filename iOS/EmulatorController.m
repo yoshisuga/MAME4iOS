@@ -556,6 +556,36 @@ void m4i_set_game_info(myosd_game_info* game_info, int game_count)
             }];
         }
         
+// add some *fake* data to test UI
+#ifdef DEBUG
+        if ([games filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"%K = %@", kGameInfoName, @"a2600"]].count == 0) {
+            [games addObject:@{
+                kGameInfoType:        types[MYOSD_GAME_TYPE_CONSOLE],
+                kGameInfoName:        @"a2600",
+                kGameInfoDescription: @"Atari 2600 (NTSC)",
+                kGameInfoYear:        @"1979",
+                kGameInfoManufacturer:@"Atari",
+                kGameInfoCategory:    find_category(@"a2600", @""),
+                kGameInfoDriver:      @"a2600.cpp",
+            }];
+        }
+        [games addObjectsFromArray:[g_softlist getGamesForSystem:@"a2600" fromList:@"a2600"]];
+        
+        if ([games filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"%K = %@", kGameInfoName, @"n64"]].count == 0) {
+            [games addObject:@{
+                kGameInfoType:        types[MYOSD_GAME_TYPE_CONSOLE],
+                kGameInfoName:        @"n64",
+                kGameInfoDescription: @"Nintendo 64",
+                kGameInfoYear:        @"1996",
+                kGameInfoManufacturer:@"Nintendo",
+                kGameInfoCategory:    find_category(@"n64", @""),
+                kGameInfoDriver:      @"n64.cpp",
+            }];
+        }
+        [games addObjectsFromArray:[g_softlist getGamesForSystem:@"n64" fromList:@"n64"]];
+
+#endif
+        
         [sharedInstance performSelectorOnMainThread:@selector(chooseGame:) withObject:games waitUntilDone:FALSE];
     }
 }
