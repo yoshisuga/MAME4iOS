@@ -269,6 +269,9 @@
 		EFE003382638ACA000E42246 /* XmlFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE003362638ACA000E42246 /* XmlFile.m */; };
 		EFE003392638ACA000E42246 /* XmlFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE003362638ACA000E42246 /* XmlFile.m */; };
 		EFE0033A2638ACA000E42246 /* XmlFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE003362638ACA000E42246 /* XmlFile.m */; };
+		EFE0033D2638D97E00E42246 /* SoftwareList.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE0033C2638D97E00E42246 /* SoftwareList.m */; };
+		EFE0033E2638D97E00E42246 /* SoftwareList.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE0033C2638D97E00E42246 /* SoftwareList.m */; };
+		EFE0033F2638D97E00E42246 /* SoftwareList.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE0033C2638D97E00E42246 /* SoftwareList.m */; };
 		EFE4B6AB2453D7F80009A6F1 /* InfoDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE4B6AA2453D7F80009A6F1 /* InfoDatabase.m */; };
 		EFE4B6AC2453D7F80009A6F1 /* InfoDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE4B6AA2453D7F80009A6F1 /* InfoDatabase.m */; };
 		EFEEA4B225C9D41E00314132 /* TVServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF55DE5A2534C304004E37EF /* TVServices.framework */; };
@@ -581,6 +584,8 @@
 		EFD2DC3D252FC1BB00E7CE89 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		EFE003362638ACA000E42246 /* XmlFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XmlFile.m; sourceTree = "<group>"; };
 		EFE003372638ACA000E42246 /* XmlFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XmlFile.h; sourceTree = "<group>"; };
+		EFE0033B2638D97E00E42246 /* SoftwareList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoftwareList.h; sourceTree = "<group>"; };
+		EFE0033C2638D97E00E42246 /* SoftwareList.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SoftwareList.m; sourceTree = "<group>"; };
 		EFE1D707242C05CE0081EEC6 /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = System/Library/Frameworks/CoreImage.framework; sourceTree = SDKROOT; };
 		EFE1D709242C1D840081EEC6 /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS13.2.sdk/System/Library/Frameworks/CoreImage.framework; sourceTree = DEVELOPER_DIR; };
 		EFE4B6A92453D7F80009A6F1 /* InfoDatabase.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InfoDatabase.h; sourceTree = "<group>"; };
@@ -796,6 +801,8 @@
 				EF926C9A24BA36980048392B /* SkinManager.m */,
 				EFE4B6A92453D7F80009A6F1 /* InfoDatabase.h */,
 				EFE4B6AA2453D7F80009A6F1 /* InfoDatabase.m */,
+				EFE0033B2638D97E00E42246 /* SoftwareList.h */,
+				EFE0033C2638D97E00E42246 /* SoftwareList.m */,
 				92A533D521EE601D0089FBB9 /* WebServer.h */,
 				92A533D621EE601D0089FBB9 /* WebServer.m */,
 				EF286D32253CA930007DA6D3 /* CloudSync.h */,
@@ -1375,6 +1382,7 @@
 				925ABCAF1E46DCC500997182 /* AnalogStick.m in Sources */,
 				925ABCB01E46DCC500997182 /* Bootstrapper.m in Sources */,
 				EFA7570D2406D64600A02AAB /* SystemImage.m in Sources */,
+				EFE0033D2638D97E00E42246 /* SoftwareList.m in Sources */,
 				92A533AB21EBDBAD0089FBB9 /* GCDWebServerFunctions.m in Sources */,
 				92A533BD21EBDBAD0089FBB9 /* GCDWebServerStreamedResponse.m in Sources */,
 				EFB7B2172479FBD900AD96A4 /* MetalView.m in Sources */,
@@ -1429,6 +1437,7 @@
 				EF8EAA89244F7F5D00DA02BB /* SteamController.m in Sources */,
 				92A533A621EBDBAD0089FBB9 /* GCDWebServerResponse.m in Sources */,
 				92A533D921EE601D0089FBB9 /* WebServer.m in Sources */,
+				EFE0033E2638D97E00E42246 /* SoftwareList.m in Sources */,
 				EFB7B21D247ACFE300AD96A4 /* MameShaders.metal in Sources */,
 				92A533D421EBDDF20089FBB9 /* GCDWebUploader.m in Sources */,
 				92ECB91221EAA1B700D1E3D0 /* EmulatorController.m in Sources */,
@@ -1494,6 +1503,7 @@
 				EFA7A0FA24B65C020009CF88 /* AnalogStick.m in Sources */,
 				EFA7A0FB24B65C020009CF88 /* Bootstrapper.m in Sources */,
 				EFA7A0FD24B65C020009CF88 /* SystemImage.m in Sources */,
+				EFE0033F2638D97E00E42246 /* SoftwareList.m in Sources */,
 				EFA7A0FE24B65C020009CF88 /* GCDWebServerFunctions.m in Sources */,
 				EFA7A0FF24B65C020009CF88 /* GCDWebServerStreamedResponse.m in Sources */,
 				EFA7A10024B65C020009CF88 /* MetalView.m in Sources */,

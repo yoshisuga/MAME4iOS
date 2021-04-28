@@ -79,6 +79,7 @@
 #import "CloudSync.h"
 #import "InfoHUD.h"
 #import "AVPlayerView.h"
+#import "SoftwareList.h"
 
 #import "Timer.h"
 TIMER_INIT_BEGIN
@@ -260,6 +261,7 @@ static int myosd_inGame = 0;    // TRUE if MAME is running a game
 static int myosd_in_menu = 0;   // TRUE if MAME has UI active (or is at the root aka no game)
 
 static NSDictionary* g_category_dict;
+static SoftwareList* g_softlist;
 
 #define kHUDPositionLandKey  @"hud_rect_land"
 #define kHUDScaleLandKey     @"hud_scale_land"
@@ -660,6 +662,8 @@ void m4i_game_stop()
     [self updateOptions];
 
     sharedInstance = self;
+    
+    g_softlist = [[SoftwareList alloc] initWithPath:@(get_documents_path(""))];
 
     TIMER_START(load_cat);
     g_category_dict = load_category_ini();
@@ -4278,6 +4282,8 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 // get a list of all the important files in our documents directory
 // this is more than just "ROMs" it saves *all* important files, kind of like an archive or backup.
 +(NSArray<NSString*>*)getROMS {
+    
+    // TODO: get software and softlists
 
     NSString *rootPath = [NSString stringWithUTF8String:get_documents_path("")];
     NSString *romsPath = [NSString stringWithUTF8String:get_documents_path("roms")];
@@ -4457,6 +4463,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         [self done:self];
     }]];
     [alert addAction:[UIAlertAction actionWithTitle:@"Delete All ROMs" style:UIAlertActionStyleDestructive handler:^(UIAlertAction* action) {
+        // TODO: delete all software and softlists
         for (NSString* file in [EmulatorController getROMS]) {
             NSString* path = [NSString stringWithUTF8String:get_documents_path(file.UTF8String)];
             if (![NSFileManager.defaultManager removeItemAtPath:path error:nil])
