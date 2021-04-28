@@ -1188,14 +1188,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if (_layoutMode == LayoutTiny)
         textSize.width = 9999.0;
     
-    // in Layout Small or Large  we only show `CELL_MAX_LINES` lines
-    if (CELL_MAX_LINES != 0 && (_layoutMode == LayoutSmall || _layoutMode == LayoutLarge) && _layoutCollums > 1)
-        textSize.height = CELL_TITLE_FONT.lineHeight * CELL_MAX_LINES;
-    
     textSize = [text boundingRectWithSize:textSize options:NSStringDrawingUsesLineFragmentOrigin context:nil].size;
 
     // in LayoutSmall we only show `CELL_MAX_LINES` lines
-    if ((_layoutMode == LayoutSmall || _layoutMode == LayoutLarge) && _layoutCollums > 1)
+    if (CELL_MAX_LINES != 0 && (_layoutMode == LayoutSmall || _layoutMode == LayoutLarge) && _layoutCollums > 1)
         textSize.height = MIN(textSize.height, ceil(CELL_TITLE_FONT.lineHeight) * CELL_MAX_LINES);
 
     text_height = CELL_INSET_Y + ceil(textSize.height) + CELL_INSET_Y;
