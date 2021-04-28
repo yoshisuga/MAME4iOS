@@ -30,6 +30,7 @@
 #define kGameInfoTypeArcade     @"Arcade"
 #define kGameInfoTypeConsole    @"Console"
 #define kGameInfoTypeComputer   @"Computer"
+#define kGameInfoTypeBIOS       @"BIOS"
 
 // special "fake" (aka built-in) games
 #define kGameInfoNameSettings   @"settings"

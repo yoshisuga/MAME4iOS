@@ -629,6 +629,14 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
     // and sort section names
     NSArray* gameSectionTitles = [gameData.allKeys sortedArrayUsingSelector:@selector(localizedCompare:)];
+    
+    // move Computer(s) and Console(s) etc to the end
+    for (NSString* title in @[kGameInfoTypeConsole, kGameInfoTypeComputer, kGameInfoTypeBIOS, @"Unknown"]) {
+        if ([gameSectionTitles containsObject:title]) {
+            gameSectionTitles = [gameSectionTitles filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF != %@", title]];
+            gameSectionTitles = [gameSectionTitles arrayByAddingObject:title];
+        }
+    }
 
     // a UICollectionView will scroll like crap if we have too many sections. go through and merge a few
     if ([gameSectionTitles count] > 200) {

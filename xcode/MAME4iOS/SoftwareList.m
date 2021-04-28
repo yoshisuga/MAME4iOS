@@ -70,6 +70,20 @@
                 kGameInfoYear:        @"1982",
                 kGameInfoManufacturer:@"Atari",
             },
+            @{
+                kGameInfoSystem:      system,
+                kGameInfoName:        @"ADVENTP",
+                kGameInfoDescription: @"Adventure +",
+                kGameInfoYear:        @"2003",
+                kGameInfoManufacturer:@"Homebrew",
+            },
+            @{
+                kGameInfoSystem:      system,
+                kGameInfoName:        @"COMBAT",
+                kGameInfoDescription: @"Combat - Tank-Plus",
+                kGameInfoYear:        @"1977",
+                kGameInfoManufacturer:@"Atari",
+            },
         ];
     }
     if ([list isEqualToString:@"n64"]) {
@@ -87,6 +101,20 @@
                 kGameInfoDescription: @"Mario Kart 64 (Japan)",
                 kGameInfoYear:        @"1996",
                 kGameInfoManufacturer:@"Nintendo",
+            },
+            @{
+                kGameInfoSystem:      system,
+                kGameInfoName:        @"ZELDAOOTMQD",
+                kGameInfoDescription: @"The Legend of Zelda - Ocarina of Time - Master Quest (USA, Debug Edition, Ripped from GC)",
+                kGameInfoYear:        @"2003",
+                kGameInfoManufacturer:@"Nintendo",
+            },
+            @{
+                kGameInfoSystem:      system,
+                kGameInfoName:        @"MADDN2K2",
+                kGameInfoDescription: @"Madden NFL 2002 (USA)",
+                kGameInfoYear:        @"2001",
+                kGameInfoManufacturer:@"Electronic Arts",
             },
         ];
     }
