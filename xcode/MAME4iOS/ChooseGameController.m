@@ -90,9 +90,9 @@
 #define SECTION_LINE_SPACING    8.0
 #define SECTION_ITEM_SPACING    8.0
 #else   // tvOS or mac
-#define SECTION_INSET_X         32.0
-#define SECTION_INSET_Y         32.0
-#define SECTION_LINE_SPACING    32.0
+#define SECTION_INSET_X         8.0
+#define SECTION_INSET_Y         8.0
+#define SECTION_LINE_SPACING    48.0
 #define SECTION_ITEM_SPACING    32.0
 #endif
 
@@ -368,7 +368,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     [self.navigationController.view addGestureRecognizer:tap];
 #endif
     
-#ifdef DEBUG
+#ifdef XDEBUG
     // delete all the cached TITLE images.
     NSString* titles_path = [NSString stringWithUTF8String:get_documents_path("titles")];
     [[NSFileManager defaultManager] removeItemAtPath:titles_path error:nil];
