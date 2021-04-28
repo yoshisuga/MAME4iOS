@@ -9,6 +9,7 @@
 #import "GameInfo.h"
 
 @implementation NSDictionary (GameInfo)
+
 -(NSString*)gameType
 {
     return self[kGameInfoType] ?: kGameInfoTypeArcade;
@@ -76,7 +77,7 @@
         NSString* list = self.gameSoftwareList;
         NSString* name = self.gameName.lowercaseString;
 
-        // TODO: HACK!
+        // TODO: HACK! - fix with multiple URLs
         if ([list isEqualToString:@"a2600"])
             base = @"http://adb.arcadeitalia.net/media/mess.current/ingames";
         // TODO: HACK!
@@ -91,7 +92,7 @@
         NSString* base = @"http://adb.arcadeitalia.net/media/mame.current/titles";
         NSString* name = self.gameName.lowercaseString;
 
-        return [NSURL URLWithString:[NSString stringWithFormat:@"%@/%@.png", base, name];
+        return [NSURL URLWithString:[NSString stringWithFormat:@"%@/%@.png", base, name]];
     }
     else
     {

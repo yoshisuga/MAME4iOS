@@ -1078,7 +1078,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         return nil;
 
     if (layoutMode == LayoutTiny) {
-        title = info[kGameInfoName];
+        title = @"";
+        detail = info[kGameInfoName];
     }
     else if (layoutMode == LayoutSmall) {
         title = info.gameTitle;
@@ -1116,7 +1117,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
     if (detail != nil)
     {
-        detail = [@"\n" stringByAppendingString:detail];
+        if (text.length != 0)
+            detail = [@"\n" stringByAppendingString:detail];
 
         [text appendAttributedString:[[NSAttributedString alloc] initWithString:detail attributes:@{
             NSFontAttributeName:CELL_DETAIL_FONT,
@@ -1170,12 +1172,12 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if (_layoutMode == LayoutTiny)
         textSize.width = 9999.0;
     
-    // in LayoutSmall we only show `CELL_MAX_LINES` lines
-    if (_layoutMode == LayoutSmall)
-        textSize.height = CELL_TITLE_FONT.lineHeight * CELL_MAX_LINES;
-    
     textSize = [text boundingRectWithSize:textSize options:NSStringDrawingUsesLineFragmentOrigin context:nil].size;
-    
+
+    // in LayoutSmall we only show `CELL_MAX_LINES` lines
+    if ((_layoutMode == LayoutSmall || _layoutMode == LayoutLarge) && _layoutCollums > 1)
+        textSize.height = MIN(textSize.height, ceil(CELL_TITLE_FONT.lineHeight) * CELL_MAX_LINES);
+
     text_height = CELL_INSET_Y + ceil(textSize.height) + CELL_INSET_Y;
     
     NSLog(@"heightForItemAtIndexPath: %d.%d %@ -> %@", (int)indexPath.section, (int)indexPath.item, info[kGameInfoName], NSStringFromCGSize(CGSizeMake(image_height, text_height)));
@@ -1231,8 +1233,9 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if (_layoutMode == LayoutTiny) {
         cell.text.numberOfLines = 1;
         cell.text.adjustsFontSizeToFitWidth = TRUE;
+        cell.text.lineBreakMode = NSLineBreakByTruncatingTail;
     }
-    if (_layoutMode == LayoutSmall) {
+    if ((_layoutMode == LayoutSmall || _layoutMode == LayoutLarge) && _layoutCollums > 1) {
         cell.text.numberOfLines = CELL_MAX_LINES;
         cell.text.lineBreakMode = NSLineBreakByTruncatingTail;
     }
@@ -1691,7 +1694,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 // get the title for the ContextMenu
 - (NSString*)menuTitleForGame:(NSDictionary *)game {
-    return [ChooseGameController getGameText:game layoutMode:LayoutLarge textAlignment:NSTextAlignmentLeft].string;
+    return [ChooseGameController getGameText:game].string;
 }
 - (NSString*)menuTitleForItemAtIndexPath:(NSIndexPath *)indexPath {
     return [self menuTitleForGame:[self getGameInfo:indexPath]];
@@ -2057,7 +2060,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     _text.lineBreakMode = NSLineBreakByTruncatingTail;
     _text.adjustsFontSizeToFitWidth = FALSE;
     _text.textAlignment = NSTextAlignmentLeft;
-    
+#ifdef XDEBUG
+    _text.backgroundColor = UIColor.systemPinkColor;
+#endif
+
     _height = 0.0;
 
     _image.image = nil;
@@ -2293,6 +2299,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 @property(nonatomic) CGFloat preferredMaxLayoutWidth;
 @property(nonatomic) NSInteger numberOfLines;
 @property(nonatomic) BOOL adjustsFontSizeToFitWidth;
+@property(nonatomic) NSLineBreakMode lineBreakMode;
 @end
 
 @implementation TextLabel
@@ -2464,7 +2471,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     [title.layer addAnimation:animation forKey:kCATransitionPush];
     title.superview.clipsToBounds = YES;
  
-    title.attributedText = [ChooseGameController getGameText:_game layoutMode:LayoutLarge textAlignment:NSTextAlignmentCenter];
+    title.attributedText = [ChooseGameController getGameText:_game];
     [title sizeToFit];
     if (scrollView.contentOffset.y <= _titleSwitchOffset) {
         title.text = self.title;
