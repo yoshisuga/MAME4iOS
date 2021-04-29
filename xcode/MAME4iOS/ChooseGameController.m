@@ -1200,7 +1200,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     return CGPointMake(image_height, text_height);
 }
 
-// compute (or return from cache) the height(s) of a single row. the height of a row is the maximum of all items in that row.
+// compute (or return from cache) the height(s) of a single row.
 // returns: (x = image_height, y = text_height)
 - (CGPoint)heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
@@ -1221,11 +1221,12 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if (val != nil)
         return [val CGPointValue];
 
-    // go over each item in the row and compute the max image_height and max text_height
+    // go over each item in the row and compute the MIN image_height and MAX text_height
+    // the idea is if all the items in the row are 3:4 then go with that, else use 4:3
     CGPoint row_height = CGPointZero;
     for (NSUInteger item = row_start; item < row_end; item++) {
         CGPoint item_height = [self heightForItemAtIndexPath:[NSIndexPath indexPathForItem:item inSection:section]];
-        row_height.x = MAX(row_height.x, item_height.x);
+        row_height.x = (row_height.x == 0.0) ? item_height.x : MIN(row_height.x, item_height.x);
         row_height.y = MAX(row_height.y, item_height.y);
     }
     
@@ -1291,26 +1292,24 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
             // MAME games always ran on horz or vertical CRTs so it does not matter what the PAR of
             // the title image is force a aspect of 3:4 or 4:3
             
-            if (image.size.width < image.size.height) {
-                // image is a portrait (3:4) image
-                CGFloat aspect = 3.0/4.0;
-                
-                if (self->_layoutMode == LayoutList)
-                    image = [image scaledToSize:CGSizeMake(cell.bounds.size.height / aspect, cell.bounds.size.height) aspect:aspect mode:UIViewContentModeScaleAspectFit];
-                else
-                    [cell setImageAspect:aspect];
+            if (self->_layoutMode == LayoutList) {
+                CGFloat aspect = 4.0 / 3.0;
+                [cell setImageAspect:aspect];
+                if (image.size.width < image.size.height)
+                    cell.image.contentMode = UIViewContentModeScaleAspectFill;
+            }
+            else if (row_height.x != 0.0) {
+                CGFloat aspect = (cell.bounds.size.width / row_height.x);
+                [cell setImageAspect:aspect];
+                if (image.size.width < image.size.height && aspect > 1.0)
+                    cell.image.contentMode = UIViewContentModeScaleAspectFill;
             }
             else {
-                // image is a landscape (4:3) image
-                CGFloat aspect = 4.0/3.0;
-                
-                if (self->_layoutMode == LayoutList || self->_layoutCollums <= 1 || row_height.x <= ceil(cell.bounds.size.width * 3.0 / 4.0))
-                    [cell setImageAspect:aspect];
-                else
-                    image = [image scaledToSize:CGSizeMake(cell.bounds.size.width, cell.bounds.size.width * aspect) aspect:aspect mode:UIViewContentModeScaleAspectFit];
+                CGFloat aspect = (image.size.width < image.size.height) ? (3.0 / 4.0) : (4.0 / 3.0);
+                [cell setImageAspect:aspect];
             }
-
-            cell.image.image = image ?: self->_defaultImage;
+ 
+            cell.image.image = image;
             return;
         }
         
@@ -2265,7 +2264,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     BOOL selected = self.selected || self.focused;
     if (_image.image == nil)
         return;
-    if (!(CELL_BACKGROUND_COLOR == UIColor.clearColor))
+    if (!(CELL_BACKGROUND_COLOR == UIColor.clearColor) && ![CELL_BACKGROUND_COLOR isEqual:BACKGROUND_COLOR])
         [self setBackgroundColor:selected ? CELL_SELECTED_COLOR : CELL_BACKGROUND_COLOR];
     [self setShadowColor:selected ? CELL_SELECTED_COLOR : CELL_SHADOW_COLOR];
     CGFloat scale = selected ? _scale : self.highlighted ? (2.0 - _scale) : 1.0;
