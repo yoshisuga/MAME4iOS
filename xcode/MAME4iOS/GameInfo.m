@@ -7,7 +7,6 @@
 //
 
 #import "GameInfo.h"
-#import "ImageCache.h"
 
 @implementation NSDictionary (GameInfo)
 
