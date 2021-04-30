@@ -202,7 +202,7 @@
         return FALSE;
     }]];
 
-#ifdef DEBUG
+#if DebugLog != 0
     if (list.count != 0) {
         NSLog(@"LOADING SOFTWARE LIST: %@ \"%@\"", [dict valueForKeyPath:@"softwarelist.name"], [dict valueForKeyPath:@"softwarelist.description"]);
         for (NSDictionary* software in list)
