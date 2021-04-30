@@ -4189,7 +4189,6 @@ BOOL is_roms_dir(NSString* dir) {
     NSString* toPath = nil;
     
     // dont barf on a 7z file, just pretend enumeration worked, and found nothing interesting inside
-    // TODO: need to handle 7Z file, at least enumerate (only to see if it is ARTWORK or SAMPLES)
     if (!result && [romName.pathExtension.lowercaseString isEqualToString:@"7z"]) {
         result = TRUE;
     }
@@ -4424,8 +4423,6 @@ BOOL is_roms_dir(NSString* dir) {
 // this is more than just "ROMs" it saves *all* important files, kind of like an archive or backup.
 +(NSArray<NSString*>*)getROMS {
     
-    // TODO: get software and softlists
-
     NSString *rootPath = [NSString stringWithUTF8String:get_documents_path("")];
     NSString *romsPath = [NSString stringWithUTF8String:get_documents_path("roms")];
     NSString *skinPath = [NSString stringWithUTF8String:get_documents_path("skins")];
