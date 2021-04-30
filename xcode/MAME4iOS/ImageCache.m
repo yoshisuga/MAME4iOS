@@ -100,8 +100,14 @@ static ImageCache* sharedInstance = nil;
                 data = nil;
             }
 
-            if (localURL != nil && data != nil && error == nil)
-                [data writeToURL:localURL atomically:YES];
+            if (localURL != nil && data != nil && error == nil) {
+                if (![data writeToURL:localURL atomically:YES]) {
+                    // if we failed to write data, create directory and try again.
+                    [NSFileManager.defaultManager createDirectoryAtURL:localURL.URLByDeletingLastPathComponent withIntermediateDirectories:YES attributes:nil error:nil];
+                    if (![data writeToURL:localURL atomically:YES])
+                        NSLog(@"ERROR WRITING LOCAL IMAGE DATA: %@", localURL.path);
+                }
+            }
 
             handler(data, error);
         }];
