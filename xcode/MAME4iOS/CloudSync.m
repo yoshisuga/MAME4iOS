@@ -368,7 +368,7 @@ static UIAlertController *progressAlert = nil;
     
     // dont re-copy ZIP files.
     // TODO: should this only apply to the ROMs directory?
-    if ([file.pathExtension.uppercaseString isEqualToString:@"ZIP"])
+    if ([ZIP_FILE_TYPES containsObject:file.pathExtension.lowercaseString])
         return NSOrderedSame;
     
     NSDate* date = [NSFileManager.defaultManager attributesOfItemAtPath:path error:nil].fileModificationDate;

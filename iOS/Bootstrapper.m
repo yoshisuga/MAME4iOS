@@ -82,7 +82,7 @@ const char* get_documents_path(const char* file)
     chdir (get_documents_path(""));
     
     // create directories
-    for (NSString* dir in @[@"iOS", @"artwork", @"titles", @"cfg", @"nvram", @"ini", @"snap", @"sta", @"hi", @"inp", @"memcard", @"samples", @"roms", @"dats", @"cheat", @"skins", @"hash"])
+    for (NSString* dir in MAME_ROOT_DIRS)
     {
         NSString* dirPath = [NSString stringWithUTF8String:get_documents_path(dir.UTF8String)];
         
@@ -182,9 +182,9 @@ const char* get_documents_path(const char* file)
         return TRUE;
     }
     
-    // copy a ZIP file to document root, and then let moveROMS take care of it....
-    // only handle .zip files
-    if (!url.fileURL || ![url.pathExtension.lowercaseString isEqualToString:@"zip"])
+    // copy a file to document root, and then let moveROMS take care of it....
+    // ...only handle certain files
+    if (!url.fileURL || ![IMPORT_FILE_TYPES containsObject:url.pathExtension.lowercaseString])
         return FALSE;
     
     // dont share with myself
