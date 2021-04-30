@@ -8,29 +8,37 @@
 
 #import <Foundation/Foundation.h>
 
+// keys used in a software list xml
+#define kSoftwareListName           @"name"
+#define kSoftwareListYear           @"year"
+#define kSoftwareListDescription    @"description"
+#define kSoftwareListPublisher      @"publisher"
+#define kSoftwareListSoftwareList   @"softwarelist"
+#define kSoftwareListSoftware       @"software"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface SoftwareList : NSObject
 
 - (instancetype)initWithPath:(NSString*)root;
 
-// get names of all installed softlists
-- (NSArray<NSString*>*)getNames;
+// get software list names
+- (NSArray<NSString*>*)getSoftwareListNames;
 
-// get full softlist data
-- (NSArray<NSDictionary*>*)getList:(NSString*)name;
-
-// get installed software list
-- (NSArray<NSDictionary*>*)getInstalledList:(NSString*)name;
+// get software list
+- (NSArray<NSDictionary*>*)getSoftwareList:(NSString*)name;
 
 // get games for a system
 - (NSArray<NSDictionary*>*)getGamesForSystem:(NSString*)system fromList:(NSString*)list;
 
 // install a XML or ZIP file
-- (BOOL)installFile:(NSString*)file;
+- (BOOL)installFile:(NSString*)path;
 
 // discard any cached data, forcing a re-load from disk.
-- (void)flush;
+- (void)reload;
+
+// delete all software lists
+- (void)reset;
 
 @end
 
