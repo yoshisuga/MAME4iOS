@@ -59,14 +59,16 @@
 #define HEADER_BACKGROUND_COLOR [UIColor clearColor]
 #define HEADER_PINNED_COLOR     [BACKGROUND_COLOR colorWithAlphaComponent:0.8]
 
-#define CELL_SELECTED_COLOR     [self.tintColor colorWithAlphaComponent:1.0]
+#define BACKGROUND_COLOR        [UIColor colorWithWhite:0.066 alpha:1.0]
+
 #define CELL_SHADOW_COLOR       UIColor.clearColor
+#define CELL_BACKGROUND_COLOR   UIColor.clearColor
+
+#define CELL_SELECTED_SHADOW_COLOR       self.tintColor
+#define CELL_SELECTED_BACKGROUND_COLOR   UIColor.clearColor
 
 #define CELL_CORNER_RADIUS      16.0
-#define CELL_BORDER_WIDTH       2.0
-
-#define BACKGROUND_COLOR        [UIColor colorWithWhite:0.066 alpha:1.0]
-#define CELL_BACKGROUND_COLOR   UIColor.clearColor
+#define CELL_BORDER_WIDTH       0.0
 #define CELL_TEXT_ALIGN         NSTextAlignmentCenter
 
 #if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST)
@@ -197,6 +199,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     NSMutableDictionary* _gameImageSize;
     InfoDatabase* _history;
     InfoDatabase* _mameinfo;
+    NSCache* _system_description;
 }
 @end
 
@@ -543,11 +546,20 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 #pragma mark - game filter
 
 - (NSString*)getSystemDescription:(NSString*)system {
-    // TODO: cache the result?
     
-    // find the system in the gameList and return description
-    NSDictionary* game = [_gameList filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"%K = %@", kGameInfoName, system]].firstObject;
-    return game.gameDescription ?: system;
+    NSParameterAssert(system.length != 0);
+    
+    _system_description = _system_description ?: [[NSCache alloc] init];
+    NSString* description = [_system_description objectForKey:system];
+
+    if (description == nil) {
+        // find the system in the gameList
+        NSDictionary* game = [_gameList filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"%K = %@", kGameInfoName, system]].firstObject;
+        description = game[kGameInfoDescription] ?: system;
+        [_system_description setObject:description forKey:system];
+    }
+    
+    return description;
 }
 
 - (void)filterGameList
@@ -995,8 +1007,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     
     for (NSIndexPath* indexPath in vis_items) {
         NSDictionary* game = [self getGameInfo:indexPath];
-        NSURL* url = game.gameImageURL;
-        if (![_updated_urls containsObject:url])
+        if (![_updated_urls containsObject:game.gameLocalImageURL])
             continue;
 
         [self invalidateRowHeight:indexPath];
@@ -1236,6 +1247,20 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     return row_height;
 }
 
+// load image from *one* of a list of urls
+-(void)getImage:(NSArray*)urls localURL:(NSURL*)localURL completionHandler:(void (^)(UIImage* image))handler
+{
+    if (urls.count == 0)
+        return handler(nil);
+    
+    [ImageCache.sharedInstance getImage:urls.firstObject size:CGSizeZero localURL:localURL completionHandler:^(UIImage *image) {
+        if (image != nil)
+           return handler(image);
+        else
+           [self getImage:[urls subarrayWithRange:NSMakeRange(1, urls.count-1)] localURL:localURL completionHandler:handler];
+    }];
+}
+
 // create a cell for an item.
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
 {
@@ -1274,14 +1299,14 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         [cell setHeight:(row_height.x + row_height.y)];
     }
 
-    NSURL* url = info.gameImageURL;
-    NSURL* local = info.gameLocalImageURL;
+    NSArray* urls = info.gameImageURLs;
+    NSURL* localURL = info.gameLocalImageURL;
 
-    cell.tag = url.hash;
-    [[ImageCache sharedInstance] getImage:url size:CGSizeZero localURL:local completionHandler:^(UIImage *image) {
+    cell.tag = localURL.hash;
+    [self getImage:urls localURL:localURL completionHandler:^(UIImage *image) {
         
         // cell has been re-used bail
-        if (cell.tag != url.hash)
+        if (cell.tag != localURL.hash)
             return;
         
         // if this is syncronous set image and be done
@@ -1314,7 +1339,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         }
         
         NSLog(@"CELL ASYNC LOAD: %@ %d:%d", info[kGameInfoName], (int)indexPath.section, (int)indexPath.item);
-        [self updateImage:url];
+        [self updateImage:localURL];
         [self invalidateRowHeight:indexPath];
     }];
     
@@ -1388,7 +1413,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if (cell.image.image == _loadingImage)
     {
         NSDictionary* game = [self getGameInfo:indexPath];
-        NSURL* url = game.gameImageURL;
+        NSURL* url = game.gameLocalImageURL;
 
         if (url != nil)
             [self updateImage:url];
@@ -1405,10 +1430,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if (cell.image.image == _loadingImage)
     {
         NSDictionary* game = [self getGameInfo:indexPath];
-        NSURL* url = game.gameImageURL;
-    
-        if (url != nil)
-            [[ImageCache sharedInstance] cancelImage:url];
+        for (NSURL* url in game.gameImageURLs)
+            [ImageCache.sharedInstance cancelImage:url];
     }
 }
 
@@ -1418,7 +1441,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 // file paths are relative to our document root.
 -(NSArray*)getGameFiles:(NSDictionary*)game allFiles:(BOOL)all
 {
-    NSString* name = game[kGameInfoName];
+    NSString* name = game.gameName;
+    
+    if (game.gameSoftwareList.length != 0)
+        name = [game.gameSoftwareList stringByAppendingPathComponent:name];
     
     NSMutableArray* files = [[NSMutableArray alloc] init];
     
@@ -1427,7 +1453,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         [files addObject:[NSString stringWithFormat:file, name]];
     
     if (all) {
-        for (NSString* file in @[@"roms/%@.zip", @"roms/%@/", @"artwork/%@.zip", @"samples/%@.zip"])
+        for (NSString* file in @[@"roms/%@.zip", @"roms/%@.7z", @"roms/%@/", @"artwork/%@.zip", @"samples/%@.zip"])
             [files addObject:[NSString stringWithFormat:file, name]];
     }
     
@@ -1439,7 +1465,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     NSString* title = [self menuTitleForGame:game];
     NSString* message = nil;
 
-    [self showAlertWithTitle:title message:message buttons:@[@"Delete All Settings", @"Delete Everything", @"Cancel"] handler:^(NSUInteger button) {
+    [self showAlertWithTitle:title message:message buttons:@[@"Delete Settings", @"Delete Everything", @"Cancel"] handler:^(NSUInteger button) {
         
         // cancel get out!
         if (button == 2)
@@ -1456,7 +1482,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
             [[NSFileManager defaultManager] removeItemAtPath:delete_path error:nil];
         }
         
-        [ImageCache.sharedInstance flush:game.gameImageURL size:CGSizeZero];
+        for (NSURL* url in game.gameImageURLs)
+            [ImageCache.sharedInstance flush:url size:CGSizeZero];
         
         if (allFiles) {
             [self setRecent:game isRecent:FALSE];
@@ -1650,7 +1677,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         return nil;
 
     // prime the image cache, in case any menu items ask for the image later.
-    [ImageCache.sharedInstance getImage:game.gameImageURL size:CGSizeZero localURL:game.gameLocalImageURL completionHandler:^(UIImage *image) {}];
+    [self getImage:game.gameImageURLs localURL:game.gameLocalImageURL completionHandler:^(UIImage *image) {}];
 
     NSLog(@"menuActionsForItemAtIndexPath: [%d.%d] %@ %@", (int)indexPath.section, (int)indexPath.row, game[kGameInfoName], game);
     
@@ -2169,15 +2196,18 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 -(void)setCornerRadius:(CGFloat)radius
 {
     if (self.contentView.backgroundColor == UIColor.clearColor) {
+        self.layer.cornerRadius = 0.0;
+        self.contentView.layer.cornerRadius = 0.0;
+        self.contentView.clipsToBounds = NO;
         _image.layer.cornerRadius = radius;
-        _image.clipsToBounds = radius != 0.0;
+        _image.clipsToBounds = YES; // radius != 0.0;
     }
     else {
         self.layer.cornerRadius = radius;
         self.contentView.layer.cornerRadius = radius;
         self.contentView.clipsToBounds = radius != 0.0;
         _image.layer.cornerRadius = 0.0;
-        _image.clipsToBounds = NO;
+        _image.clipsToBounds = YES; // NO;
     }
 }
 -(void)setBackgroundColor:(UIColor*)color
@@ -2264,9 +2294,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     BOOL selected = self.selected || self.focused;
     if (_image.image == nil)
         return;
-    if (!(CELL_BACKGROUND_COLOR == UIColor.clearColor) && ![CELL_BACKGROUND_COLOR isEqual:BACKGROUND_COLOR])
-        [self setBackgroundColor:selected ? CELL_SELECTED_COLOR : CELL_BACKGROUND_COLOR];
-    [self setShadowColor:selected ? CELL_SELECTED_COLOR : CELL_SHADOW_COLOR];
+    [self setBackgroundColor:selected ? CELL_SELECTED_BACKGROUND_COLOR : CELL_BACKGROUND_COLOR];
+    [self setShadowColor:selected ? CELL_SELECTED_SHADOW_COLOR : CELL_SHADOW_COLOR];
     CGFloat scale = selected ? _scale : self.highlighted ? (2.0 - _scale) : 1.0;
     _stackView.transform = CGAffineTransformMakeScale(scale, scale);
 #if TARGET_OS_TV
@@ -2439,8 +2468,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     rect.size.height -= self.collectionView.safeAreaInsets.top;
     rect.size.width  -= self.collectionView.safeAreaInsets.left + self.collectionView.safeAreaInsets.right;
     
-    NSURL* url = _game.gameImageURL;
-    UIImage* image = [[ImageCache sharedInstance] getImage:url size:CGSizeZero];
+    UIImage* image = [[ImageCache sharedInstance] getImage:_game.gameImageURLs.firstObject size:CGSizeZero];
     CGFloat aspect = image.size.width > image.size.height ? 4.0/3.0 : 3.0/4.0;
 
     CGSize image_size = CGSizeMake(INFO_IMAGE_WIDTH, INFO_IMAGE_WIDTH / aspect);
