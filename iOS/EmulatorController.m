@@ -1121,6 +1121,9 @@ HUDViewController* g_menu;
     
     // also save the position of the HUD
     [self saveHUD];
+
+    // get the state of our ROMs
+    [self checkForNewRomsInit];
     
     if (self.presentedViewController == nil && g_emulation_paused == 0)
         [self startMenu];
@@ -1129,6 +1132,9 @@ HUDViewController* g_menu;
 - (void)enterForeground {
     if (self.presentedViewController == nil && g_emulation_paused == 1)
         [self endMenu];
+    
+    // check for any ROMs changes, for example from Files.app
+    [self checkForNewRoms];
 
     // use the touch ui, until a countroller is used.
     if (g_joy_used) {
@@ -1137,11 +1143,36 @@ HUDViewController* g_menu;
     }
 }
 
-- (void)runSettings {
-    
+- (void)checkForNewRomsInit {
     g_settings_file_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:getDocumentPath(@"") error:nil] count];
     g_settings_roms_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:getDocumentPath(@"roms") error:nil] count];
     g_settings_hash_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:getDocumentPath(@"hash") error:nil] count];
+}
+
+- (void)checkForNewRoms {
+    NSInteger file_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:getDocumentPath(@"") error:nil] count];
+    NSInteger roms_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:getDocumentPath(@"roms") error:nil] count];
+    NSInteger hash_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:getDocumentPath(@"hash") error:nil] count];
+
+    if (file_count != g_settings_file_count)
+        NSLog(@"FILES added to root %ld => %ld", g_settings_file_count, file_count);
+    if (roms_count != g_settings_roms_count)
+        NSLog(@"FILES added to roms %ld => %ld", g_settings_roms_count, roms_count);
+    if (hash_count != g_settings_hash_count)
+        NSLog(@"FILES added to hash %ld => %ld", g_settings_hash_count, hash_count);
+
+    if (g_settings_hash_count != hash_count)
+        [g_softlist reload];
+
+    if (g_settings_file_count != file_count)
+        [self performSelector:@selector(moveROMS) withObject:nil afterDelay:0.0];
+    else if ((g_settings_roms_count != roms_count) || (g_settings_hash_count != hash_count) || (g_mame_reset && myosd_inGame == 0))
+        [self reload];
+}
+
+- (void)runSettings {
+    
+    [self checkForNewRomsInit];
 
     [self startMenu];
     
@@ -1348,27 +1379,8 @@ HUDViewController* g_menu;
 
         [self updateOptions];
         [self changeUI];
+        [self checkForNewRoms];
         
-        NSInteger file_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:getDocumentPath(@"") error:nil] count];
-        NSInteger roms_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:getDocumentPath(@"roms") error:nil] count];
-        NSInteger hash_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:getDocumentPath(@"hash") error:nil] count];
-
-        // TODO: maybe we should check for new ROMs in enterForeground too
-        if (file_count != g_settings_file_count)
-            NSLog(@"SETTINGS DONE: files added to root %ld => %ld", g_settings_file_count, file_count);
-        if (roms_count != g_settings_roms_count)
-            NSLog(@"SETTINGS DONE: files added to roms %ld => %ld", g_settings_roms_count, roms_count);
-        if (hash_count != g_settings_hash_count)
-            NSLog(@"SETTINGS DONE: files added to hash %ld => %ld", g_settings_hash_count, hash_count);
-
-        if (g_settings_hash_count != hash_count)
-            [g_softlist reload];
-
-        if (g_settings_file_count != file_count)
-            [self performSelector:@selector(moveROMS) withObject:nil afterDelay:0.0];
-        else if ((g_settings_roms_count != roms_count) || (g_settings_hash_count != hash_count) || (g_mame_reset && myosd_inGame == 0))
-            [self reload];
-
         // dont call endMenu (and unpause MAME) if we still have a dialog up.
         if (self.presentedViewController == nil)
             [self endMenu];
