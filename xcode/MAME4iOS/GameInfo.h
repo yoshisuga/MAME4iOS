@@ -32,12 +32,7 @@
 #define kGameInfoTypeArcade     @"Arcade"
 #define kGameInfoTypeConsole    @"Console"
 #define kGameInfoTypeComputer   @"Computer"
-
-// TODO: are these needed?
 #define kGameInfoTypeBIOS       @"BIOS"
-#define kGameInfoTypeCART       @"Cartridge"
-#define kGameInfoTypeFLOP       @"Floppy"
-#define kGameInfoTypeCASS       @"Cassette"
 
 // special "fake" (aka built-in) games
 #define kGameInfoNameSettings   @"settings"

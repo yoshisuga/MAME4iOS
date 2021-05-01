@@ -77,7 +77,6 @@
     for (NSString* list in [lists componentsSeparatedByString:@","]) {
         for (NSDictionary* software in [self getSoftwareList:list]) {
             [games addObject:@{
-                //kGameInfoType:        kGameInfoTypeCART,  // TODO: get the right software type?
                 kGameInfoSoftwareList:list,
                 kGameInfoSystem:      system,
                 kGameInfoName:        STR(software[kSoftwareListName]),
