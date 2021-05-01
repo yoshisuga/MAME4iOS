@@ -1255,7 +1255,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     
     [ImageCache.sharedInstance getImage:urls.firstObject size:CGSizeZero localURL:localURL completionHandler:^(UIImage *image) {
         if (image != nil)
-           return handler(image);
+           handler(image);
         else
            [self getImage:[urls subarrayWithRange:NSMakeRange(1, urls.count-1)] localURL:localURL completionHandler:handler];
     }];
@@ -2468,7 +2468,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     rect.size.height -= self.collectionView.safeAreaInsets.top;
     rect.size.width  -= self.collectionView.safeAreaInsets.left + self.collectionView.safeAreaInsets.right;
     
-    UIImage* image = [[ImageCache sharedInstance] getImage:_game.gameImageURLs.firstObject size:CGSizeZero];
+    UIImage* image = [[ImageCache sharedInstance] getImage:_game.gameImageURL size:CGSizeZero];
     CGFloat aspect = image.size.width > image.size.height ? 4.0/3.0 : 3.0/4.0;
 
     CGSize image_size = CGSizeMake(INFO_IMAGE_WIDTH, INFO_IMAGE_WIDTH / aspect);

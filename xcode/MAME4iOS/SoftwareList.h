@@ -13,8 +13,6 @@
 #define kSoftwareListYear           @"year"
 #define kSoftwareListDescription    @"description"
 #define kSoftwareListPublisher      @"publisher"
-#define kSoftwareListSoftwareList   @"softwarelist"
-#define kSoftwareListSoftware       @"software"
 
 NS_ASSUME_NONNULL_BEGIN
 
