@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface AVPlayerView : UIView
+@interface AVPlayer_View : UIView
 
 - (instancetype)initWithURL:(NSURL*)url;
 

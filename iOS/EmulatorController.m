@@ -79,12 +79,14 @@
 #import "CloudSync.h"
 #import "InfoHUD.h"
 #import "AVPlayerView.h"
+#import "SoftwareList.h"
 
 #import "Timer.h"
 TIMER_INIT_BEGIN
 TIMER_INIT(timer_read_input)
 TIMER_INIT(timer_read_controllers)
 TIMER_INIT(timer_read_mice)
+TIMER_INIT(load_cat)
 TIMER_INIT_END
 
 // declare "safe" properties for buttonHome, buttonMenu, buttonsOptions that work on pre-iOS 13,14
@@ -259,6 +261,7 @@ static int myosd_inGame = 0;    // TRUE if MAME is running a game
 static int myosd_in_menu = 0;   // TRUE if MAME has UI active (or is at the root aka no game)
 
 static NSDictionary* g_category_dict;
+static SoftwareList* g_softlist;
 
 #define kHUDPositionLandKey  @"hud_rect_land"
 #define kHUDScaleLandKey     @"hud_scale_land"
@@ -267,14 +270,16 @@ static NSDictionary* g_category_dict;
 #define kSelectedGameInfoKey @"selected_game_info"
 static NSDictionary* g_mame_game_info;
 static BOOL g_mame_reset = FALSE;           // do a full reset (delete cfg files) before running MAME
-static char g_mame_game[16];                // game MAME should run (or empty is menu)
-static char g_mame_game_error[16];
+static char g_mame_system[16+1];            // system MAME should run
+static char g_mame_game[16+1];              // game MAME should run (or empty is menu)
+static char g_mame_game_error[16+16+1+1];
 static char g_mame_output_text[4096];
 static BOOL g_mame_warning = FALSE;
 static BOOL g_no_roms_found = FALSE;
 
 static NSInteger g_settings_roms_count;
 static NSInteger g_settings_file_count;
+static NSInteger g_settings_hash_count;
 
 static BOOL g_bluetooth_enabled;
 
@@ -358,11 +363,14 @@ void m4i_game_start(myosd_game_info* game_info);
 void m4i_game_stop(void);
 
 // run MAME (or pass NULL for main menu)
-int run_mame(char* game)
+int run_mame(char* system, char* game)
 {
     // TODO: hiscore?
     // TODO: speed?
-    char* argv[] = {"mame4ios", game ?: "",
+    char* argv[] = {"mame4ios",
+        // use -nocoinlock as a do-nothing option
+        (system && system[0] != 0) ? system : "-nocoinlock",
+        (game && game[0] != 0 && game[0] != ' ') ? game : "-nocoinlock",
         "-nocoinlock",
         g_pref_cheat ? "-cheat" : "-nocheat",
         g_pref_autosave ? "-autosave" : "-noautosave",
@@ -433,9 +441,14 @@ void* app_Thread_Start(void* args)
         if (g_mame_game[0] != 0)
             g_mame_output_text[0] = 0;
         
-        if (run_mame(g_mame_game) != 0 && g_mame_game[0]) {
-            strncpy(g_mame_game_error, g_mame_game, sizeof(g_mame_game_error));
-            g_mame_game[0] = 0;
+        if (run_mame(g_mame_system, g_mame_game) != 0 && g_mame_game[0] != 0) {
+            
+            if (g_mame_system[0] == 0)
+                strncpy(g_mame_game_error, g_mame_game, sizeof(g_mame_game_error));
+            else
+                snprintf(g_mame_game_error, sizeof(g_mame_game_error), "%s/%s", g_mame_system, g_mame_game);
+            
+            g_mame_game[0] = g_mame_system[0] = 0;
         }
     }
     NSLog(@"thread exit");
@@ -467,23 +480,37 @@ NSDictionary* load_category_ini(void)
         
         if (line[0] == '[')
         {
+            NSCParameterAssert(line[strlen(line) - 1] == ']');
+            NSCParameterAssert(![@(line) containsString:@","]);
             line[strlen(line) - 1] = '\0';
             curcat = @(line+1);
-            // TODO: use only the top-level Category?
-            curcat = [curcat componentsSeparatedByString:@" / "].firstObject;
             continue;
         }
         
-        if (category_dict[@(line)] != nil) {
-            // TODO: Merge Categories?
-            NSLog(@"%@ is in multiple categories %@ and %@", @(line),category_dict[@(line)], curcat);
+        if (curcat.length == 0)
+            continue;
+        
+        NSString* key = @(line);
+        NSString* cat = category_dict[key];
+        if (cat != nil) {
+            NSLog(@"%@ is in multiple categories \"%@\" and \"%@\"", key, cat, curcat);
+            if (![cat containsString:curcat]) {
+                cat = [cat stringByAppendingFormat:@",%@", curcat];
+                [category_dict setObject:cat forKey:key];
+            }
             continue;
         }
         
-        if (curcat.length != 0)
-            [category_dict setObject:curcat forKey:@(line)];
+        [category_dict setObject:curcat forKey:key];
     }
     fclose(file);
+    
+    // de-dup all the categories we had to merge
+    NSSet* set = [NSSet setWithArray:category_dict.allValues];
+    for (NSString* key in category_dict.allKeys)
+        category_dict[key] = [set member:category_dict[key]];
+    
+    NSLog(@"CATEGORY.INI: %d ROMs in %d categories", (int)category_dict.allKeys.count, (int)[NSSet setWithArray:category_dict.allValues].allObjects.count);
     return [category_dict copy];
 }
 
@@ -496,14 +523,23 @@ NSString* find_category(NSString* name, NSString* parent)
 // called from deep inside MAME select_game menu, to give us the valid list of games/drivers
 void m4i_set_game_info(myosd_game_info* game_info, int game_count)
 {
+    static NSString* types[] = {kGameInfoTypeArcade, kGameInfoTypeConsole, kGameInfoTypeComputer};
+    _Static_assert(MYOSD_GAME_TYPE_ARCADE == 0, "");
+    _Static_assert(MYOSD_GAME_TYPE_CONSOLE == 1, "");
+    _Static_assert(MYOSD_GAME_TYPE_COMPUTER == 2, "");
+
     @autoreleasepool {
+        
         NSMutableArray* games = [[NSMutableArray alloc] init];
         
         for (int i=0; i<game_count; i++)
         {
+            // TODO: MYOSD_GAME_INFO_RUNNABLE
+            // TODO: MYOSD_GAME_INFO_MECHANICAL
+
             if (game_info[i].name == NULL || game_info[i].name[0] == 0)
                 continue;
-            if (!(game_info[i].type == MYOSD_GAME_TYPE_ARCADE || game_info[i].type == MYOSD_GAME_TYPE_CONSOLE))
+            if (game_info[i].type < 0 || game_info[i].type >= sizeof(types)/sizeof(types[0]))
                 continue;
             if (g_pref_filter_bios && (game_info[i].flags & MYOSD_GAME_INFO_BIOS))
                 continue;
@@ -513,6 +549,7 @@ void m4i_set_game_info(myosd_game_info* game_info, int game_count)
                 continue;
 
             [games addObject:@{
+                kGameInfoType:        (game_info[i].flags & MYOSD_GAME_INFO_BIOS) ? kGameInfoTypeBIOS : types[game_info[i].type],
                 kGameInfoName:        @(game_info[i].name),
                 kGameInfoDescription: @(game_info[i].description),
                 kGameInfoYear:        @(game_info[i].year),
@@ -522,6 +559,48 @@ void m4i_set_game_info(myosd_game_info* game_info, int game_count)
                 kGameInfoDriver:      [@(game_info[i].source_file ?: "").lastPathComponent stringByDeletingPathExtension],
             }];
         }
+        
+// add some *fake* data to test UI
+#ifdef DEBUG
+        // TODO: "Atari 2600 (NTSC)" and "Atari 2600 (PAL)" show both?
+        if ([games filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"%K = %@", kGameInfoName, @"a2600"]].count == 0) {
+            [games addObject:@{
+                kGameInfoType:        types[MYOSD_GAME_TYPE_CONSOLE],
+                kGameInfoName:        @"a2600",
+                kGameInfoDescription: @"Atari 2600 (NTSC)",
+                kGameInfoYear:        @"1979",
+                kGameInfoManufacturer:@"Atari",
+                kGameInfoCategory:    find_category(@"a2600", @""),
+                kGameInfoDriver:      @"a2600.cpp",
+            }];
+            [games addObjectsFromArray:[g_softlist getGamesForSystem:@"a2600" fromList:@"a2600,a2600_cass"]];
+
+            [games addObject:@{
+                kGameInfoType:        types[MYOSD_GAME_TYPE_CONSOLE],
+                kGameInfoName:        @"a2600p",
+                kGameInfoDescription: @"Atari 2600 (PAL)",
+                kGameInfoYear:        @"1979",
+                kGameInfoManufacturer:@"Atari",
+                kGameInfoCategory:    find_category(@"a2600p", @""),
+                kGameInfoParent:      @"a2600",
+                kGameInfoDriver:      @"a2600.cpp",
+            }];
+            [games addObjectsFromArray:[g_softlist getGamesForSystem:@"a2600p" fromList:@"a2600,a2600_cass"]];
+        }
+        
+        if ([games filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"%K = %@", kGameInfoName, @"n64"]].count == 0) {
+            [games addObject:@{
+                kGameInfoType:        types[MYOSD_GAME_TYPE_CONSOLE],
+                kGameInfoName:        @"n64",
+                kGameInfoDescription: @"Nintendo 64",
+                kGameInfoYear:        @"1996",
+                kGameInfoManufacturer:@"Nintendo",
+                kGameInfoCategory:    find_category(@"n64", @""),
+                kGameInfoDriver:      @"n64.cpp",
+            }];
+            [games addObjectsFromArray:[g_softlist getGamesForSystem:@"n64" fromList:@"n64"]];
+        }
+#endif
         
         [sharedInstance performSelectorOnMainThread:@selector(chooseGame:) withObject:games waitUntilDone:FALSE];
     }
@@ -556,7 +635,7 @@ void m4i_game_stop()
     CGPoint touchDirectionalMoveInitialLocation;
     CGSize  layoutSize;
     SkinManager* skinManager;
-    AVPlayerView* avPlayer;
+    AVPlayer_View* avPlayer;
 }
 @end
 
@@ -629,13 +708,19 @@ void m4i_game_stop()
     [self updateOptions];
 
     sharedInstance = self;
+    
+    g_softlist = [[SoftwareList alloc] initWithPath:@(get_documents_path(""))];
 
+    TIMER_START(load_cat);
     g_category_dict = load_category_ini();
+    TIMER_STOP(load_cat);
+    NSLog(@"load_category_ini took %0.3fsec", TIMER_TIME(load_cat));
 
     g_mame_game_info = [EmulatorController getCurrentGame];
     NSString* name = g_mame_game_info[kGameInfoName] ?: @"";
     if ([name isEqualToString:kGameInfoNameMameMenu])
         name = @" ";
+    strncpy(g_mame_system, [(g_mame_game_info[kGameInfoSystem] ?: @"") cStringUsingEncoding:NSUTF8StringEncoding], sizeof(g_mame_system));
     strncpy(g_mame_game, [name cStringUsingEncoding:NSUTF8StringEncoding], sizeof(g_mame_game));
     g_mame_game_error[0] = 0;
     
@@ -1003,7 +1088,7 @@ HUDViewController* g_menu;
     else if (myosd_inGame && myosd_in_menu == 0)
     {
         if (g_mame_game[0] != ' ') {
-            g_mame_game[0] = 0;
+            g_mame_game[0] = g_mame_system[0] = 0;
             g_mame_game_info = nil;
         }
         myosd_exitGame = 1;
@@ -1014,7 +1099,7 @@ HUDViewController* g_menu;
     }
     else
     {
-        g_mame_game[0] = 0;
+        g_mame_game[0] = g_mame_system[0] = 0;
         g_mame_game_info = nil;
         myosd_exitGame = 1;
     }
@@ -1036,6 +1121,9 @@ HUDViewController* g_menu;
     
     // also save the position of the HUD
     [self saveHUD];
+
+    // get the state of our ROMs
+    [self checkForNewRomsInit];
     
     if (self.presentedViewController == nil && g_emulation_paused == 0)
         [self startMenu];
@@ -1044,6 +1132,9 @@ HUDViewController* g_menu;
 - (void)enterForeground {
     if (self.presentedViewController == nil && g_emulation_paused == 1)
         [self endMenu];
+    
+    // check for any ROMs changes, for example from Files.app
+    [self checkForNewRoms];
 
     // use the touch ui, until a countroller is used.
     if (g_joy_used) {
@@ -1052,10 +1143,36 @@ HUDViewController* g_menu;
     }
 }
 
+- (void)checkForNewRomsInit {
+    g_settings_file_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:getDocumentPath(@"") error:nil] count];
+    g_settings_roms_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:getDocumentPath(@"roms") error:nil] count];
+    g_settings_hash_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:getDocumentPath(@"hash") error:nil] count];
+}
+
+- (void)checkForNewRoms {
+    NSInteger file_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:getDocumentPath(@"") error:nil] count];
+    NSInteger roms_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:getDocumentPath(@"roms") error:nil] count];
+    NSInteger hash_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:getDocumentPath(@"hash") error:nil] count];
+
+    if (file_count != g_settings_file_count)
+        NSLog(@"FILES added to root %ld => %ld", g_settings_file_count, file_count);
+    if (roms_count != g_settings_roms_count)
+        NSLog(@"FILES added to roms %ld => %ld", g_settings_roms_count, roms_count);
+    if (hash_count != g_settings_hash_count)
+        NSLog(@"FILES added to hash %ld => %ld", g_settings_hash_count, hash_count);
+
+    if (g_settings_hash_count != hash_count)
+        [g_softlist reload];
+
+    if (g_settings_file_count != file_count)
+        [self performSelector:@selector(moveROMS) withObject:nil afterDelay:0.0];
+    else if ((g_settings_roms_count != roms_count) || (g_settings_hash_count != hash_count) || (g_mame_reset && myosd_inGame == 0))
+        [self reload];
+}
+
 - (void)runSettings {
     
-    g_settings_file_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:[NSString stringWithUTF8String:get_documents_path("")] error:nil] count];
-    g_settings_roms_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:[NSString stringWithUTF8String:get_documents_path("roms")] error:nil] count];
+    [self checkForNewRomsInit];
 
     [self startMenu];
     
@@ -1262,19 +1379,7 @@ HUDViewController* g_menu;
 
         [self updateOptions];
         [self changeUI];
-        
-        NSInteger file_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:[NSString stringWithUTF8String:get_documents_path("")] error:nil] count];
-        NSInteger roms_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:[NSString stringWithUTF8String:get_documents_path("roms")] error:nil] count];
-
-        if (file_count != g_settings_file_count)
-            NSLog(@"SETTINGS DONE: files added to root %ld => %ld", g_settings_file_count, file_count);
-        if (roms_count != g_settings_roms_count)
-            NSLog(@"SETTINGS DONE: files added to roms %ld => %ld", g_settings_roms_count, roms_count);
-
-        if (g_settings_file_count != file_count)
-            [self performSelector:@selector(moveROMS) withObject:nil afterDelay:0.0];
-        else if (g_settings_roms_count != roms_count || (g_mame_reset && myosd_inGame == 0))
-            [self reload];
+        [self checkForNewRoms];
         
         // dont call endMenu (and unpause MAME) if we still have a dialog up.
         if (self.presentedViewController == nil)
@@ -1612,7 +1717,7 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
     if (avPlayer == nil) {
         NSURL* url = [NSBundle.mainBundle URLForResource:@"whiteHDR" withExtension:@"mp4"];
         NSAssert(url != nil, @"missing whiteHDR resource");
-        avPlayer = [[AVPlayerView alloc] initWithURL:url];
+        avPlayer = [[AVPlayer_View alloc] initWithURL:url];
         [self.view addSubview:avPlayer];
     }
     avPlayer.frame = CGRectMake(0, 0, 1, 1);
@@ -2090,7 +2195,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     
     // load the skin based on <ROMNAME>,<PARENT>,<MACHINE>,<USER PREF>
     if (g_mame_game[0] && g_mame_game[0] != ' ' && g_mame_game_info != nil)
-        [skinManager setCurrentSkin:[NSString stringWithFormat:@"%s,%@,%@,%@", g_mame_game, g_mame_game_info[kGameInfoParent], g_mame_game_info[kGameInfoDriver], g_pref_skin]];
+        [skinManager setCurrentSkin:[NSString stringWithFormat:@"%s,%@,%@,%@", g_mame_game, (g_mame_game_info[kGameInfoParent] ?: @""), (g_mame_game_info[kGameInfoDriver] ?: @""), g_pref_skin]];
     else if (g_mame_game[0])
         [skinManager setCurrentSkin:g_pref_skin];
 
@@ -2190,7 +2295,7 @@ static int handle_buttons(myosd_input_state* myosd)
 {
     // check for exit (we cound just do this with push_mame_key...)
     if (myosd_exitGame) {
-        NSCParameterAssert(g_mame_key == 0);
+        NSCParameterAssert(g_mame_key == 0 || g_mame_key == MYOSD_KEY_ESC);
         g_mame_key = MYOSD_KEY_ESC;
         myosd_exitGame = 0;
     }
@@ -3062,7 +3167,7 @@ void m4i_poll_input(myosd_input_state* myosd, size_t input_size) {
 - (void)handle_INPUT:(unsigned long)pad_status stick:(CGPoint)stick {
 
 #if defined(DEBUG) && DebugLog
-    NSLog(@"handle_INPUT: %s%s%s%s (%+1.3f,%+1.3f) %s%s%s%s %s%s%s%s%s%s %s%s%s%s %s%s inGame=%ld, inMenu=%ld",
+    NSLog(@"handle_INPUT: %s%s%s%s (%+1.3f,%+1.3f) %s%s%s%s %s%s%s%s%s%s %s%s%s%s %s%s inGame=%d, inMenu=%d",
           (pad_status & MYOSD_UP) ?   "U" : "-", (pad_status & MYOSD_DOWN) ?  "D" : "-",
           (pad_status & MYOSD_LEFT) ? "L" : "-", (pad_status & MYOSD_RIGHT) ? "R" : "-",
           
@@ -3975,6 +4080,41 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 
 #pragma MOVE ROMs
 
+// return TRUE if `dir` is one of our toplevel dirs (like `roms`, `ini`, etc...)
+BOOL is_root_dir(NSString* dir) {
+    if (dir.length == 0)
+        return FALSE;
+    else
+        return [MAME_ROOT_DIRS containsObject:dir];
+}
+
+// return TRUE if `dir` is a subdir of `roms` *OR* is the basename of a romset in `roms` *OR* is name of a softlist
+BOOL is_roms_dir(NSString* dir) {
+    
+    if (dir.length == 0)
+        return FALSE;
+    
+    BOOL is_dir = FALSE;
+    NSString* path = [getDocumentPath(@"roms") stringByAppendingPathComponent:dir];
+    
+    // check for subdir of roms
+    if ([NSFileManager.defaultManager fileExistsAtPath:path isDirectory:&is_dir] && is_dir)
+        return TRUE;
+    
+    // check for romset basename
+    for (NSString* ext in ZIP_FILE_TYPES) {
+        if ([NSFileManager.defaultManager fileExistsAtPath:[path stringByAppendingPathExtension:ext]])
+            return TRUE;
+    }
+    
+    // check for softlist name
+    path = [[getDocumentPath(@"hash") stringByAppendingPathComponent:dir] stringByAppendingPathExtension:@"xml"];
+    if ([NSFileManager.defaultManager fileExistsAtPath:path])
+        return TRUE;
+    
+    return FALSE;
+}
+
 // move a single ZIP file from the document root into where it belongs.
 //
 // we handle three kinds of ZIP files...
@@ -3992,9 +4132,13 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 //  we will move a romset zip file to the roms directory
 //  we will unzip (in place) a zipset or chdset
 //
--(BOOL)moveROM:(NSString*)romName progressBlock:(void (^)(double progress))block {
+//  NOTE
+//  it is very important that moveROM either move or (copy and remove) the file (aka rom)
+//  otherwise we keep trying to import the file over and over and over....
+//
+-(BOOL)moveROM:(NSString*)romName progressBlock:(void (^)(double progress, NSString* text))block {
 
-    if (![[romName.pathExtension uppercaseString] isEqualToString:@"ZIP"])
+    if (![IMPORT_FILE_TYPES containsObject:romName.pathExtension.lowercaseString])
         return FALSE;
     
     NSError *error = nil;
@@ -4012,10 +4156,15 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     // this most likley came when a user downloaded the zip and a foobar.zip already existed, MAME ROMs are <=20 char and no spaces.
     NSArray* words = [[romName stringByDeletingPathExtension] componentsSeparatedByString:@" "];
     if (words.count == 2 && [words.lastObject stringByTrimmingCharactersInSet:[NSCharacterSet punctuationCharacterSet]].intValue != 0)
-        romName = [words.firstObject stringByAppendingPathExtension:@"zip"];
+        romName = [words.firstObject stringByAppendingPathExtension:romName.pathExtension];
 
-    NSLog(@"ROM NAME: '%@' PATH:%@", romName, romPath);
-
+    NSLog(@"ROM NAME: '%@' PATH:%@", romName, [romPath stringByReplacingOccurrencesOfString:rootPath withString:@"~/"]);
+    
+    // import a XML file, currently a XML file is assumed to be a SoftwareList
+    if ([romName.pathExtension.lowercaseString isEqualToString:@"xml"]) {
+        return [g_softlist installFile:romPath];
+    }
+    
     //
     // scan the ZIP file to see what kind it is.
     //
@@ -4039,6 +4188,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     int __block numSKIN = 0;
     int __block numLAY = 0;
     int __block numZIP = 0;
+    int __block numXML = 0;
     int __block numCHD = 0;
     int __block numWAV = 0;
     int __block numDAT = 0;
@@ -4048,12 +4198,14 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         numFiles++;
         if ([ext isEqualToString:@"LAY"])
             numLAY++;
-        if ([ext isEqualToString:@"ZIP"])
+        if ([ZIP_FILE_TYPES containsObject:ext.lowercaseString])
             numZIP++;
         if ([ext isEqualToString:@"WAV"])
             numWAV++;
         if ([ext isEqualToString:@"CHD"])
             numCHD++;
+        if ([ext isEqualToString:@"XML"])
+            numXML++;
         if ([dat_files containsObject:info.name.lastPathComponent.uppercaseString])
             numDAT++;
         for (int i=0; i<NUM_BUTTONS; i++)
@@ -4063,40 +4215,64 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     }];
 
     NSString* toPath = nil;
+    
+    // dont barf on a 7z file, just pretend enumeration worked, and found nothing interesting inside
+    if (!result && [romName.pathExtension.lowercaseString isEqualToString:@"7z"]) {
+        result = TRUE;
+    }
 
     if (!result)
     {
         NSLog(@"%@ is a CORRUPT ZIP (deleting)", romPath);
     }
-    else if (numZIP != 0 || numCHD != 0 || numDAT != 0)
+    else if (numZIP != 0 || numCHD != 0 || numDAT != 0 || numXML != 0)
     {
         NSLog(@"%@ is a ZIPSET", [romPath lastPathComponent]);
         int maxFiles = numFiles;
         numFiles = 0;
         [ZipFile enumerate:romPath withOptions:(ZipFileEnumFiles + ZipFileEnumLoadData) usingBlock:^(ZipFileInfo* info) {
             
-            if (info.data == nil)
+            if (info.data == nil || info.name.length == 0)
                 return;
             
             NSString* toPath = nil;
-            NSString* ext  = info.name.pathExtension.uppercaseString;
+            NSString* ext  = info.name.pathExtension.lowercaseString;
             NSString* name = info.name.lastPathComponent;
+            NSArray*  dirs = info.name.stringByDeletingLastPathComponent.pathComponents;
             
-            // only UNZIP files to specific directories, send a ZIP file with a unspecifed directory to roms/
-            if ([info.name hasPrefix:@"roms/"] || [info.name hasPrefix:@"artwork/"] || [info.name hasPrefix:@"titles/"] || [info.name hasPrefix:@"samples/"] || [info.name hasPrefix:@"iOS/"] ||
-                [info.name hasPrefix:@"cfg/"] || [info.name hasPrefix:@"ini/"] || [info.name hasPrefix:@"sta/"] || [info.name hasPrefix:@"hi/"] || [info.name hasPrefix:@"skins/"])
+            // only UNZIP files to specific directories, a known root dir or subdir of `roms`
+
+            // check for dir/XXX/YYY/ZZZ, where dir is a known root folder
+            if (is_root_dir(dirs.firstObject))
                 toPath = [rootPath stringByAppendingPathComponent:info.name];
-            else if ([name.uppercaseString isEqualToString:@"CHEAT.ZIP"])
+
+            // check for XXX/dir/YYY/ZZZ, where dir is a known root folder
+            else if (dirs.count > 1 && is_root_dir(dirs[1]))
+                toPath = [rootPath stringByAppendingPathComponent:[info.name substringFromIndex:[dirs[0] length]+1]];
+
+            // check for dir/XXX/YYY/ZZZ, where dir is a subdir of roms, or name of romset
+            else if (is_roms_dir(dirs.firstObject))
+                toPath = [romsPath stringByAppendingPathComponent:info.name];
+
+            // check for XXX/dir/YYY/ZZZ, where dir is a subdir of roms, or name of romset
+            else if (dirs.count > 1 && is_roms_dir(dirs[1]))
+                toPath = [romsPath stringByAppendingPathComponent:[info.name substringFromIndex:[dirs[0] length]+1]];
+            
+            // check for XXXX/dir/file.chd
+            if (toPath == nil && dirs.count > 0 && [ext isEqualToString:@"chd"])
+                toPath = [romsPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@/%@", dirs.lastObject, name]];
+
+            // if it is just a file (no dir) check the name of the containing zip file
+            if (toPath == nil && dirs.count == 0 && is_roms_dir(romName.stringByDeletingPathExtension))
+                toPath = [romsPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@/%@", romName.stringByDeletingPathExtension, name]];
+            
+            // if it is a zip or xml and we dont know where to put it drop it in the root to get re-imported
+            if (toPath == nil && [IMPORT_FILE_TYPES containsObject:ext])
                 toPath = [rootPath stringByAppendingPathComponent:name];
-            else if ([ext isEqualToString:@"DAT"])
+            
+            // drop DAT files in `dats`
+            if (toPath == nil && [ext isEqualToString:@"dat"])
                 toPath = [datsPath stringByAppendingPathComponent:name];
-            else if ([ext isEqualToString:@"ZIP"])
-                toPath = [romsPath stringByAppendingPathComponent:name];
-            else if ([ext isEqualToString:@"CHD"] && [info.name containsString:@"/"]) {
-                // CHD will be of the form XXXXXXX/ROMNAME/file.chd, so move to roms/ROMNAME/file.chd
-                NSString* romname = info.name.stringByDeletingLastPathComponent.lastPathComponent;
-                toPath = [[romsPath stringByAppendingPathComponent:romname] stringByAppendingPathComponent:info.name.lastPathComponent];
-            }
 
             if (toPath != nil)
                 NSLog(@"...UNZIP: %@ => %@", info.name, [toPath stringByReplacingOccurrencesOfString:rootPath withString:@"~/"]);
@@ -4118,7 +4294,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
             }
             
             numFiles++;
-            block((double)numFiles / maxFiles);
+            block((double)numFiles / maxFiles, name);
         }];
         toPath = nil;   // nothing to move, we unziped the file "in place"
     }
@@ -4137,6 +4313,9 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         NSLog(@"%@ is a SKIN file", romName);
         toPath = [skinPath stringByAppendingPathComponent:romName];
     }
+    else if ([g_softlist installFile:romPath]) {
+        NSLog(@"%@ is a SOFTWARE ROMSET", romName);
+    }
     else if ([romName length] <= 20 && ![romName containsString:@" "])
     {
         NSLog(@"%@ is a ROMSET", romName);
@@ -4147,7 +4326,7 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         NSLog(@"%@ is a NOT a ROMSET (deleting)", romName);
     }
 
-    // move file to either ROMS, ARTWORK or SAMPLES
+    // move file to either ROMS, ARTWORK or SAMPLES (or delete it)
     if (toPath)
     {
         //first attemp to delete de old one
@@ -4171,79 +4350,107 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
     return result;
 }
 
--(void)moveROMS {
+// look in the root and get any files that need to be imported
+-(NSArray*)getFilesToImport {
     
-    NSArray *filelist;
-    NSUInteger count;
-    NSUInteger i;
-    static int g_move_roms = 0;
+    NSArray* files = [NSFileManager.defaultManager contentsOfDirectoryAtPath:getDocumentPath(@"") error:nil];
     
-    NSString *fromPath = [NSString stringWithUTF8String:get_documents_path("")];
-    filelist = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:fromPath error:nil];
-    count = [filelist count];
+    NSMutableArray *list = [[NSMutableArray alloc] init];
     
-    NSMutableArray *romlist = [[NSMutableArray alloc] init];
-    for (i = 0; i < count; i++)
+    // add all the XML files first, so we have SoftwareList info for the later files (if needed)
+    for (NSString* file in files)
     {
-        NSString *file = [filelist objectAtIndex: i];
-        if([file isEqualToString:@"cheat.zip"])
-            continue;
-        if(![file hasSuffix:@".zip"])
-            continue;
-        [romlist addObject: file];
+        if ([file.pathExtension.lowercaseString isEqualToString:@"xml"])
+            [list addObject:file];
     }
-    count = [romlist count];
     
-    // on the first-boot cheat.zip will not exist, we want to be silent in this case.
-    BOOL first_boot = [filelist containsObject:@"cheat0139.zip"];
+    // now add ZIP files.
+    for (NSString* file in files)
+    {
+        if ([file isEqualToString:@"cheat.zip"])
+            continue;
+        if ([file.pathExtension.lowercaseString isEqualToString:@"xml"])
+            continue;
+        if ([IMPORT_FILE_TYPES containsObject:file.pathExtension.lowercaseString])
+            [list addObject: file];
+    }
     
-    if(count != 0)
-        NSLog(@"found (%d) ROMs to move....", (int)count);
-    if(count != 0 && g_move_roms != 0)
+    return [list copy];
+}
+
+// look in the root and see if any files need to be imported
+-(void)moveROMS {
+
+    static int g_move_roms = 0;
+
+    NSArray* files_to_import = [self getFilesToImport];
+    
+    if (files_to_import.count != 0)
+        NSLog(@"found (%d) ROMs to move....", (int)files_to_import.count);
+    if (files_to_import.count != 0 && g_move_roms != 0)
         NSLog(@"....cant moveROMs now");
     
-    if(count != 0 && g_move_roms++ == 0)
-    {
-        UIAlertController *progressAlert = nil;
+    if (files_to_import.count == 0 || g_move_roms != 0)
+        return;
 
-        if (!first_boot) {
-            progressAlert = [UIAlertController alertControllerWithTitle:@"Moving ROMs" message:@"Please wait..." preferredStyle:UIAlertControllerStyleAlert];
-            [progressAlert setProgress:0.0];
-            [self.topViewController presentViewController:progressAlert animated:YES completion:nil];
+    UIAlertController *progressAlert = nil;
+
+    // on the first-boot cheat.zip will not exist, we want to be silent in this case.
+    BOOL first_boot = [files_to_import containsObject:@"cheat0139.zip"];
+
+    if (!first_boot) {
+        progressAlert = [UIAlertController alertControllerWithTitle:@"Moving ROMs" message:@"Please wait..." preferredStyle:UIAlertControllerStyleAlert];
+        [progressAlert setProgress:0.0 text:@""];
+        [self.topViewController presentViewController:progressAlert animated:YES completion:nil];
+    }
+    
+    g_move_roms = 1;
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        NSArray* files = files_to_import;
+        
+        while (files.count != 0) {
+            for (int i = 0; i < files.count; i++)
+            {
+                NSString* file = [files objectAtIndex:i];
+                BOOL result = [self moveROM:file progressBlock:^(double progress, NSString* text) {
+                    [progressAlert setProgress:((double)i / files.count) + progress * (1.0 / files.count) text:text];
+                }];
+                if (result == FALSE) {
+                    NSLog(@"moveROM(%@) FAILED, DELETING", file);
+                    [NSFileManager.defaultManager removeItemAtPath:getDocumentPath(file) error:nil];
+                }
+                [progressAlert setProgress:(double)(i+1) / files.count text:file];
+            }
+            // moveROM might have expanded a zip, rinse and repeat
+            files = [self getFilesToImport];
+            if (files.count != 0)
+                NSLog(@"found (%d) *more* ROMs to move....", (int)files.count);
         }
         
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            BOOL result = FALSE;
-            for (int i = 0; i < count; i++)
-            {
-                result = result | [self moveROM:[romlist objectAtIndex: i] progressBlock:^(double progress) {
-                    [progressAlert setProgress:((double)i / count) + progress * (1.0 / count)];
-                }];
-                [progressAlert setProgress:(double)(i+1) / count];
-            }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (progressAlert == nil)
+                g_move_roms = 0;
+            [progressAlert.presentingViewController dismissViewControllerAnimated:YES completion:^{
+                
+                // tell the SkinManager new files have arived.
+                [self->skinManager reload];
 
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if (progressAlert == nil)
-                    g_move_roms = 0;
-                [progressAlert.presentingViewController dismissViewControllerAnimated:YES completion:^{
-                    
-                    // tell the SkinManager new files have arived.
-                    [self->skinManager reload];
-                    
-                    // reload the MAME menu....
-                    [self reload];
-                    
-                    g_move_roms = 0;
-                }];
-            });
+                // tell SoftwareList that new files might be here too.
+                [g_softlist reload];
+                
+                // reload the MAME menu....
+                [self reload];
+                
+                g_move_roms = 0;
+            }];
         });
-    }
+    });
 }
 
 // get a list of all the important files in our documents directory
 // this is more than just "ROMs" it saves *all* important files, kind of like an archive or backup.
 +(NSArray<NSString*>*)getROMS {
-
+    
     NSString *rootPath = [NSString stringWithUTF8String:get_documents_path("")];
     NSString *romsPath = [NSString stringWithUTF8String:get_documents_path("roms")];
     NSString *skinPath = [NSString stringWithUTF8String:get_documents_path("skins")];
@@ -4256,12 +4463,16 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
             [files addObject:file];
     }
     
-    NSArray* roms = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:romsPath error:nil];
+    NSArray* roms = [[NSFileManager.defaultManager enumeratorAtPath:romsPath] allObjects];
     for (NSString* rom in roms) {
-        if (![rom.pathExtension.uppercaseString isEqualToString:@"ZIP"])
+        
+        if (![ZIP_FILE_TYPES containsObject:rom.pathExtension.lowercaseString])
             continue;
         
-        NSArray* paths = @[@"roms/%@.zip", @"artwork/%@.zip", @"titles/%@.png", @"samples/%@.zip", @"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@/1.sta", @"sta/%@/2.sta", @"hi/%@.hi"];
+        // TODO: 7z for artwork and samples?
+        NSArray* paths = @[@"artwork/%@.zip", @"samples/%@.zip", @"titles/%@.png", @"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@/1.sta", @"sta/%@/2.sta", @"hi/%@.hi"];
+
+        [files addObject:rom];
         for (NSString* path in paths) {
             NSString* file = [NSString stringWithFormat:path, rom.stringByDeletingPathExtension];
             if ([NSFileManager.defaultManager fileExistsAtPath:[rootPath stringByAppendingPathComponent:file]])
@@ -4321,7 +4532,8 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
 }
 
 - (void)runImport {
-    UIDocumentPickerViewController* documentPicker = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:@[@"public.zip-archive"] inMode:UIDocumentPickerModeImport];
+    // TODO: we might need to export the `org.7-zip.7-zip-archive` type in Info.plist??
+    UIDocumentPickerViewController* documentPicker = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:@[@"public.zip-archive", @"org.7-zip.7-zip-archive", @"public.xml"] inMode:UIDocumentPickerModeImport];
     documentPicker.modalPresentationStyle = UIModalPresentationFormSheet;
     documentPicker.delegate = self;
     documentPicker.allowsMultipleSelection = YES;
@@ -4421,16 +4633,23 @@ CGRect scale_rect(CGRect rect, CGFloat scale) {
         [self reset];
         [self done:self];
     }]];
+    if ([g_softlist getSoftwareListNames].count != 0) {
+        [alert addAction:[UIAlertAction actionWithTitle:@"Delete Software" style:UIAlertActionStyleDestructive handler:^(UIAlertAction* action) {
+            [g_softlist reset];
+            [self done:self];
+        }]];
+    }
     [alert addAction:[UIAlertAction actionWithTitle:@"Delete All ROMs" style:UIAlertActionStyleDestructive handler:^(UIAlertAction* action) {
         for (NSString* file in [EmulatorController getROMS]) {
             NSString* path = [NSString stringWithUTF8String:get_documents_path(file.UTF8String)];
             if (![NSFileManager.defaultManager removeItemAtPath:path error:nil])
                 NSLog(@"ERROR DELETING ROM: %@", file);
         }
+        [g_softlist reset];
         [self reset];
         [self done:self];
     }]];
-    
+
     [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
     [self.topViewController presentViewController:alert animated:YES completion:nil];
 }
@@ -5297,18 +5516,19 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
     }
     
     NSString* name = game[kGameInfoName];
-    
+
     if ([name isEqualToString:kGameInfoNameMameMenu])
         name = @" ";
 
     if (name != nil) {
         g_mame_game_info = game;
+        strncpy(g_mame_system, [(game[kGameInfoSystem] ?: @"") cStringUsingEncoding:NSUTF8StringEncoding], sizeof(g_mame_system));
         strncpy(g_mame_game, [name cStringUsingEncoding:NSUTF8StringEncoding], sizeof(g_mame_game));
         [self updateUserActivity:game];
     }
     else {
         g_mame_game_info = nil;
-        g_mame_game[0] = 0;     // run the MENU
+        g_mame_game[0] = g_mame_system[0] = 0;     // run the MENU
     }
 
     change_pause(0);
@@ -5374,14 +5594,16 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
     if (g_mame_game_error[0] != 0) {
         NSLog(@"ERROR RUNNING GAME %s", g_mame_game_error);
         
-        NSString* msg = [[NSString stringWithUTF8String:g_mame_output_text] stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
+        NSString* title = @(g_mame_game_error);
+        NSString* msg = [@(g_mame_output_text) stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
         if ([msg length] == 0)
-            msg = [NSString stringWithFormat:@"ERROR RUNNING GAME %s", g_mame_game_error];
+            msg = @"ERROR RUNNING GAME";
+        
         g_mame_game_error[0] = 0;
-        g_mame_game[0] = 0;
+        g_mame_game[0] = g_mame_system[0] = 0;
         g_mame_game_info = nil;
         
-        [self showAlertWithTitle:@PRODUCT_NAME message:msg buttons:@[@"Ok"] handler:^(NSUInteger button) {
+        [self showAlertWithTitle:title message:msg buttons:@[@"Ok"] handler:^(NSUInteger button) {
             [self performSelectorOnMainThread:@selector(chooseGame:) withObject:games waitUntilDone:FALSE];
         }];
         return;
@@ -5391,7 +5613,7 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
         return;
     }
     if (g_mame_game[0] != 0) {
-        NSLog(@"RUNNING %s, DONT BRING UP UI.", g_mame_game);
+        NSLog(@"RUNNING %s.%s, DONT BRING UP UI.", g_mame_system, g_mame_game);
         return;
     }
     

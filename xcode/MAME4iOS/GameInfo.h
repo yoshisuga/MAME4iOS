@@ -15,6 +15,7 @@
 #define RECENT_GAMES_TITLE      @"Recently Played"
 
 // keys used in a GameInfo dictionary
+#define kGameInfoType           @"type"
 #define kGameInfoSystem         @"system"
 #define kGameInfoName           @"name"
 #define kGameInfoParent         @"parent"
@@ -25,6 +26,13 @@
 #define kGameInfoCategory       @"category"
 #define kGameInfoHistory        @"history"
 #define kGameInfoMameInfo       @"mameinfo"
+#define kGameInfoSoftware       @"software"         // list of supported software for system
+#define kGameInfoSoftwareList   @"softlist"         // this game is *from* a software list
+
+#define kGameInfoTypeArcade     @"Arcade"
+#define kGameInfoTypeConsole    @"Console"
+#define kGameInfoTypeComputer   @"Computer"
+#define kGameInfoTypeBIOS       @"BIOS"
 
 // special "fake" (aka built-in) games
 #define kGameInfoNameSettings   @"settings"
@@ -34,6 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NSDictionary (GameInfo)
 
+@property (nonatomic, strong, readonly) NSString* gameType;
 @property (nonatomic, strong, readonly) NSString* gameSystem;
 @property (nonatomic, strong, readonly) NSString* gameName;
 @property (nonatomic, strong, readonly) NSString* gameParent;
@@ -42,11 +51,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) NSString* gameManufacturer;
 @property (nonatomic, strong, readonly) NSString* gameDriver;
 @property (nonatomic, strong, readonly) NSString* gameCategory;
+@property (nonatomic, strong, readonly) NSString* gameSoftware;
+@property (nonatomic, strong, readonly) NSString* gameSoftwareList;
 
 @property (nonatomic, strong, readonly) NSString* gameTitle;
 @property (nonatomic, strong, readonly) NSURL* gameImageURL;
 @property (nonatomic, strong, readonly) NSURL* gameLocalImageURL;
 @property (nonatomic, strong, readonly) NSURL* gamePlayURL;
+@property (nonatomic, strong, readonly) NSArray<NSURL*>* gameImageURLs;
 
 @property (nonatomic, readonly) BOOL gameIsFake;
 

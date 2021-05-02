@@ -59,14 +59,16 @@
 #define HEADER_BACKGROUND_COLOR [UIColor clearColor]
 #define HEADER_PINNED_COLOR     [BACKGROUND_COLOR colorWithAlphaComponent:0.8]
 
-#define CELL_SELECTED_COLOR     [self.tintColor colorWithAlphaComponent:1.0]
+#define BACKGROUND_COLOR        [UIColor colorWithWhite:0.066 alpha:1.0]
+
 #define CELL_SHADOW_COLOR       UIColor.clearColor
+#define CELL_BACKGROUND_COLOR   UIColor.clearColor
+
+#define CELL_SELECTED_SHADOW_COLOR       self.tintColor
+#define CELL_SELECTED_BACKGROUND_COLOR   UIColor.clearColor
 
 #define CELL_CORNER_RADIUS      16.0
-#define CELL_BORDER_WIDTH       2.0
-
-#define BACKGROUND_COLOR        [UIColor colorWithWhite:0.066 alpha:1.0]
-#define CELL_BACKGROUND_COLOR   UIColor.clearColor
+#define CELL_BORDER_WIDTH       0.0
 #define CELL_TEXT_ALIGN         NSTextAlignmentCenter
 
 #if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST)
@@ -81,6 +83,19 @@
 #define CELL_DETAIL_FONT        [UIFont systemFontOfSize:20.0]
 #define CELL_DETAIL_COLOR       [UIColor lightGrayColor]
 #define CELL_MAX_LINES          3
+#endif
+
+// Section insets and spacing
+#if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST)
+#define SECTION_INSET_X         8.0
+#define SECTION_INSET_Y         8.0
+#define SECTION_LINE_SPACING    8.0
+#define SECTION_ITEM_SPACING    8.0
+#else   // tvOS or mac
+#define SECTION_INSET_X         8.0
+#define SECTION_INSET_Y         8.0
+#define SECTION_LINE_SPACING    48.0
+#define SECTION_ITEM_SPACING    32.0
 #endif
 
 #define INFO_BACKGROUND_COLOR   [UIColor colorWithWhite:0.111 alpha:1.0]
@@ -184,6 +199,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     NSMutableDictionary* _gameImageSize;
     InfoDatabase* _history;
     InfoDatabase* _mameinfo;
+    NSCache* _system_description;
 }
 @end
 
@@ -529,6 +545,23 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 #pragma mark - game filter
 
+- (NSString*)getSystemDescription:(NSString*)system {
+    
+    NSParameterAssert(system.length != 0);
+    
+    _system_description = _system_description ?: [[NSCache alloc] init];
+    NSString* description = [_system_description objectForKey:system];
+
+    if (description == nil) {
+        // find the system in the gameList
+        NSDictionary* game = [_gameList filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"%K = %@", kGameInfoName, system]].firstObject;
+        description = game[kGameInfoDescription] ?: system;
+        [_system_description setObject:description forKey:system];
+    }
+    
+    return description;
+}
+
 - (void)filterGameList
 {
     NSArray* filteredGames = _gameList;
@@ -579,12 +612,15 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         key = kGameInfoParent;
     if ([_gameFilterScope isEqualToString:@"System"])
         key = kGameInfoSystem;
+    if ([_gameFilterScope isEqualToString:@"Type"])
+        key = kGameInfoType;
 
     for (NSDictionary* game in filteredGames) {
         NSString* section = game[key];
         
         // a UICollectionView will scroll like crap if we have too many sections, so try to filter/combine similar ones.
-        section = [[section componentsSeparatedByString:@" ("] firstObject];
+        if (key != (void*)kGameInfoCategory)
+            section = [[section componentsSeparatedByString:@" ("] firstObject];
         section = [section stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
         
         if (key != (void*)kGameInfoYear)
@@ -592,21 +628,40 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         
         // if we dont have a parent, we are our own parent!
         if (key == (void*)kGameInfoParent && [section length] <= 1)
-            section = game[kGameInfoName];
+            section = game.gameName;
+        
+        if ([section length] != 0 && key == (void*)kGameInfoSystem)
+            section = [self getSystemDescription:section];
 
         if ([section length] == 0 && key == (void*)kGameInfoSystem)
-            section = @"Arcade";
+            section = game.gameType;
 
         if ([section length] == 0)
             section = @"Unknown";
+        
+        NSArray* sections;
+        if (key == (void*)kGameInfoCategory)
+            sections = [section componentsSeparatedByString:@","];
+        else
+            sections = @[section];
 
-        if (gameData[section] == nil)
-            gameData[section] = [[NSMutableArray alloc] init];
-        [gameData[section] addObject:game];
+        for (NSString* section in sections) {
+            if (gameData[section] == nil)
+                gameData[section] = [[NSMutableArray alloc] init];
+            [gameData[section] addObject:game];
+        }
     }
 
     // and sort section names
     NSArray* gameSectionTitles = [gameData.allKeys sortedArrayUsingSelector:@selector(localizedCompare:)];
+    
+    // move Computer(s) and Console(s) etc to the end
+    for (NSString* title in @[kGameInfoTypeConsole, kGameInfoTypeComputer, kGameInfoTypeBIOS, @"Unknown"]) {
+        if ([gameSectionTitles containsObject:title]) {
+            gameSectionTitles = [gameSectionTitles filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF != %@", title]];
+            gameSectionTitles = [gameSectionTitles arrayByAddingObject:title];
+        }
+    }
 
     // a UICollectionView will scroll like crap if we have too many sections. go through and merge a few
     if ([gameSectionTitles count] > 200) {
@@ -755,11 +810,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 -(void)updateLayout
 {
     UICollectionViewFlowLayout* layout = (UICollectionViewFlowLayout*)self.collectionView.collectionViewLayout;
-    CGFloat space = (TARGET_OS_IOS && !TARGET_OS_MACCATALYST) ? 8.0 : 32.0;
     layout.scrollDirection = UICollectionViewScrollDirectionVertical;
-    layout.sectionInset = UIEdgeInsetsMake(space, space, space, space);
-    layout.minimumLineSpacing = space;
-    layout.minimumInteritemSpacing = space;
+    layout.sectionInset = UIEdgeInsetsMake(SECTION_INSET_Y, SECTION_INSET_X, SECTION_INSET_Y, SECTION_INSET_X);
+    layout.minimumLineSpacing = SECTION_LINE_SPACING;
+    layout.minimumInteritemSpacing = SECTION_ITEM_SPACING;
     layout.sectionHeadersPinToVisibleBounds = YES;
     
 #if TARGET_OS_MACCATALYST
@@ -953,8 +1007,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     
     for (NSIndexPath* indexPath in vis_items) {
         NSDictionary* game = [self getGameInfo:indexPath];
-        NSURL* url = game.gameImageURL;
-        if (![_updated_urls containsObject:url])
+        if (![_updated_urls containsObject:game.gameLocalImageURL])
             continue;
 
         [self invalidateRowHeight:indexPath];
@@ -1033,10 +1086,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 //  get the text based on the LayoutMode
 //
-//  TINY        SMALL               LARGE                       LIST
-//  ----        -----               -----                       ----
-//  romname     short Description   Description                 Description
-//                                  short Manufacturer • Year   Manufacturer • Year  • romname [parent-rom]
+//  TINY        SMALL                       LARGE                       LIST
+//  ----        -----                       -----                       ----
+//  romname     short Description           Description                 Description
+//              short Manufacturer • Year   short Manufacturer • Year   Manufacturer • Year  • romname [parent-rom]
 //
 +(NSAttributedString*)getGameText:(NSDictionary*)info layoutMode:(LayoutMode)layoutMode textAlignment:(NSTextAlignment)textAlignment
 {
@@ -1048,10 +1101,15 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         return nil;
 
     if (layoutMode == LayoutTiny) {
-        title = info[kGameInfoName];
+        title = @"";
+        detail = info[kGameInfoName];
     }
     else if (layoutMode == LayoutSmall) {
         title = info.gameTitle;
+        detail = [info[kGameInfoManufacturer] componentsSeparatedByString:@" ("].firstObject;
+
+        if ((str = info[kGameInfoYear]) && [str length] > 1)
+            detail = [NSString stringWithFormat:@"%@ • %@", detail, str];
     }
     else if (layoutMode == LayoutLarge) {
         title = info[kGameInfoDescription];
@@ -1074,11 +1132,11 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
             detail = [NSString stringWithFormat:@"%@ [%@]", detail, str];
     }
     
-#ifdef XDEBUG
+#ifdef XXDEBUG
     if (layoutMode != LayoutTiny)
         title = [NSString stringWithFormat:@" Blah Blah Blah %@ Blah Blah Blah Blah Blah Blah", title];
 #endif
-    
+
     NSMutableAttributedString* text = [[NSMutableAttributedString alloc] initWithString:title attributes:@{
         NSFontAttributeName:CELL_TITLE_FONT,
         NSForegroundColorAttributeName:CELL_TITLE_COLOR
@@ -1086,7 +1144,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
     if (detail != nil)
     {
-        detail = [@"\n" stringByAppendingString:detail];
+        if (text.length != 0)
+            detail = [@"\n" stringByAppendingString:detail];
 
         [text appendAttributedString:[[NSAttributedString alloc] initWithString:detail attributes:@{
             NSFontAttributeName:CELL_DETAIL_FONT,
@@ -1140,19 +1199,19 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if (_layoutMode == LayoutTiny)
         textSize.width = 9999.0;
     
-    // in LayoutSmall we only show `CELL_MAX_LINES` lines
-    if (_layoutMode == LayoutSmall)
-        textSize.height = CELL_TITLE_FONT.lineHeight * CELL_MAX_LINES;
-    
     textSize = [text boundingRectWithSize:textSize options:NSStringDrawingUsesLineFragmentOrigin context:nil].size;
-    
+
+    // in LayoutSmall we only show `CELL_MAX_LINES` lines
+    if (CELL_MAX_LINES != 0 && (_layoutMode == LayoutSmall || _layoutMode == LayoutLarge) && _layoutCollums > 1)
+        textSize.height = MIN(textSize.height, ceil(CELL_TITLE_FONT.lineHeight) * CELL_MAX_LINES);
+
     text_height = CELL_INSET_Y + ceil(textSize.height) + CELL_INSET_Y;
     
     NSLog(@"heightForItemAtIndexPath: %d.%d %@ -> %@", (int)indexPath.section, (int)indexPath.item, info[kGameInfoName], NSStringFromCGSize(CGSizeMake(image_height, text_height)));
     return CGPointMake(image_height, text_height);
 }
 
-// compute (or return from cache) the height(s) of a single row. the height of a row is the maximum of all items in that row.
+// compute (or return from cache) the height(s) of a single row.
 // returns: (x = image_height, y = text_height)
 - (CGPoint)heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
@@ -1173,11 +1232,12 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if (val != nil)
         return [val CGPointValue];
 
-    // go over each item in the row and compute the max image_height and max text_height
+    // go over each item in the row and compute the MIN image_height and MAX text_height
+    // the idea is if all the items in the row are 3:4 then go with that, else use 4:3
     CGPoint row_height = CGPointZero;
     for (NSUInteger item = row_start; item < row_end; item++) {
         CGPoint item_height = [self heightForItemAtIndexPath:[NSIndexPath indexPathForItem:item inSection:section]];
-        row_height.x = MAX(row_height.x, item_height.x);
+        row_height.x = (row_height.x == 0.0) ? item_height.x : MIN(row_height.x, item_height.x);
         row_height.y = MAX(row_height.y, item_height.y);
     }
     
@@ -1185,6 +1245,20 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     _layoutRowHeightCache = _layoutRowHeightCache ?: [[NSMutableDictionary alloc] init];
     _layoutRowHeightCache[indexPath] = [NSValue valueWithCGPoint:row_height];
     return row_height;
+}
+
+// load image from *one* of a list of urls
+-(void)getImage:(NSArray*)urls localURL:(NSURL*)localURL completionHandler:(void (^)(UIImage* image))handler
+{
+    if (urls.count == 0)
+        return handler(nil);
+    
+    [ImageCache.sharedInstance getImage:urls.firstObject size:CGSizeZero localURL:localURL completionHandler:^(UIImage *image) {
+        if (image != nil)
+           handler(image);
+        else
+           [self getImage:[urls subarrayWithRange:NSMakeRange(1, urls.count-1)] localURL:localURL completionHandler:handler];
+    }];
 }
 
 // create a cell for an item.
@@ -1201,8 +1275,9 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if (_layoutMode == LayoutTiny) {
         cell.text.numberOfLines = 1;
         cell.text.adjustsFontSizeToFitWidth = TRUE;
+        cell.text.lineBreakMode = NSLineBreakByTruncatingTail;
     }
-    if (_layoutMode == LayoutSmall) {
+    if ((_layoutMode == LayoutSmall || _layoutMode == LayoutLarge) && _layoutCollums > 1) {
         cell.text.numberOfLines = CELL_MAX_LINES;
         cell.text.lineBreakMode = NSLineBreakByTruncatingTail;
     }
@@ -1224,14 +1299,14 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         [cell setHeight:(row_height.x + row_height.y)];
     }
 
-    NSURL* url = info.gameImageURL;
-    NSURL* local = info.gameLocalImageURL;
+    NSArray* urls = info.gameImageURLs;
+    NSURL* localURL = info.gameLocalImageURL;
 
-    cell.tag = url.hash;
-    [[ImageCache sharedInstance] getImage:url size:CGSizeZero localURL:local completionHandler:^(UIImage *image) {
+    cell.tag = localURL.hash;
+    [self getImage:urls localURL:localURL completionHandler:^(UIImage *image) {
         
         // cell has been re-used bail
-        if (cell.tag != url.hash)
+        if (cell.tag != localURL.hash)
             return;
         
         // if this is syncronous set image and be done
@@ -1242,31 +1317,29 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
             // MAME games always ran on horz or vertical CRTs so it does not matter what the PAR of
             // the title image is force a aspect of 3:4 or 4:3
             
-            if (image.size.width < image.size.height) {
-                // image is a portrait (3:4) image
-                CGFloat aspect = 3.0/4.0;
-                
-                if (self->_layoutMode == LayoutList)
-                    image = [image scaledToSize:CGSizeMake(cell.bounds.size.height / aspect, cell.bounds.size.height) aspect:aspect mode:UIViewContentModeScaleAspectFit];
-                else
-                    [cell setImageAspect:aspect];
+            if (self->_layoutMode == LayoutList) {
+                CGFloat aspect = 4.0 / 3.0;
+                [cell setImageAspect:aspect];
+                if (image.size.width < image.size.height)
+                    cell.image.contentMode = UIViewContentModeScaleAspectFill;
+            }
+            else if (row_height.x != 0.0) {
+                CGFloat aspect = (cell.bounds.size.width / row_height.x);
+                [cell setImageAspect:aspect];
+                if (image.size.width < image.size.height && aspect > 1.0)
+                    cell.image.contentMode = UIViewContentModeScaleAspectFill;
             }
             else {
-                // image is a landscape (4:3) image
-                CGFloat aspect = 4.0/3.0;
-                
-                if (self->_layoutMode == LayoutList || self->_layoutCollums <= 1 || row_height.x <= ceil(cell.bounds.size.width * 3.0 / 4.0))
-                    [cell setImageAspect:aspect];
-                else
-                    image = [image scaledToSize:CGSizeMake(cell.bounds.size.width, cell.bounds.size.width * aspect) aspect:aspect mode:UIViewContentModeScaleAspectFit];
+                CGFloat aspect = (image.size.width < image.size.height) ? (3.0 / 4.0) : (4.0 / 3.0);
+                [cell setImageAspect:aspect];
             }
-
-            cell.image.image = image ?: self->_defaultImage;
+ 
+            cell.image.image = image;
             return;
         }
         
         NSLog(@"CELL ASYNC LOAD: %@ %d:%d", info[kGameInfoName], (int)indexPath.section, (int)indexPath.item);
-        [self updateImage:url];
+        [self updateImage:localURL];
         [self invalidateRowHeight:indexPath];
     }];
     
@@ -1340,7 +1413,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if (cell.image.image == _loadingImage)
     {
         NSDictionary* game = [self getGameInfo:indexPath];
-        NSURL* url = game.gameImageURL;
+        NSURL* url = game.gameLocalImageURL;
 
         if (url != nil)
             [self updateImage:url];
@@ -1357,10 +1430,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if (cell.image.image == _loadingImage)
     {
         NSDictionary* game = [self getGameInfo:indexPath];
-        NSURL* url = game.gameImageURL;
-    
-        if (url != nil)
-            [[ImageCache sharedInstance] cancelImage:url];
+        for (NSURL* url in game.gameImageURLs)
+            [ImageCache.sharedInstance cancelImage:url];
     }
 }
 
@@ -1370,7 +1441,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 // file paths are relative to our document root.
 -(NSArray*)getGameFiles:(NSDictionary*)game allFiles:(BOOL)all
 {
-    NSString* name = game[kGameInfoName];
+    NSString* name = game.gameName;
+    
+    if (game.gameSoftwareList.length != 0)
+        name = [game.gameSoftwareList stringByAppendingPathComponent:name];
     
     NSMutableArray* files = [[NSMutableArray alloc] init];
     
@@ -1379,7 +1453,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         [files addObject:[NSString stringWithFormat:file, name]];
     
     if (all) {
-        for (NSString* file in @[@"roms/%@.zip", @"roms/%@/", @"artwork/%@.zip", @"samples/%@.zip"])
+        for (NSString* file in @[@"roms/%@.zip", @"roms/%@.7z", @"roms/%@/", @"artwork/%@.zip", @"samples/%@.zip"])
             [files addObject:[NSString stringWithFormat:file, name]];
     }
     
@@ -1391,7 +1465,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     NSString* title = [self menuTitleForGame:game];
     NSString* message = nil;
 
-    [self showAlertWithTitle:title message:message buttons:@[@"Delete All Settings", @"Delete Everything", @"Cancel"] handler:^(NSUInteger button) {
+    [self showAlertWithTitle:title message:message buttons:@[@"Delete Settings", @"Delete Everything", @"Cancel"] handler:^(NSUInteger button) {
         
         // cancel get out!
         if (button == 2)
@@ -1408,7 +1482,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
             [[NSFileManager defaultManager] removeItemAtPath:delete_path error:nil];
         }
         
-        [ImageCache.sharedInstance flush:game.gameImageURL size:CGSizeZero];
+        for (NSURL* url in game.gameImageURLs)
+            [ImageCache.sharedInstance flush:url size:CGSizeZero];
         
         if (allFiles) {
             [self setRecent:game isRecent:FALSE];
@@ -1602,7 +1677,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         return nil;
 
     // prime the image cache, in case any menu items ask for the image later.
-    [ImageCache.sharedInstance getImage:game.gameImageURL size:CGSizeZero localURL:game.gameLocalImageURL completionHandler:^(UIImage *image) {}];
+    [self getImage:game.gameImageURLs localURL:game.gameLocalImageURL completionHandler:^(UIImage *image) {}];
 
     NSLog(@"menuActionsForItemAtIndexPath: [%d.%d] %@ %@", (int)indexPath.section, (int)indexPath.row, game[kGameInfoName], game);
     
@@ -1661,7 +1736,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 // get the title for the ContextMenu
 - (NSString*)menuTitleForGame:(NSDictionary *)game {
-    return [ChooseGameController getGameText:game layoutMode:LayoutLarge textAlignment:NSTextAlignmentLeft].string;
+    return [ChooseGameController getGameText:game].string;
 }
 - (NSString*)menuTitleForItemAtIndexPath:(NSIndexPath *)indexPath {
     return [self menuTitleForGame:[self getGameInfo:indexPath]];
@@ -2027,13 +2102,17 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     _text.lineBreakMode = NSLineBreakByTruncatingTail;
     _text.adjustsFontSizeToFitWidth = FALSE;
     _text.textAlignment = NSTextAlignmentLeft;
-    
+#ifdef XDEBUG
+    _text.backgroundColor = UIColor.systemPinkColor;
+#endif
+
     _height = 0.0;
 
     _image.image = nil;
     _image.highlightedImage = nil;
     _image.contentMode = UIViewContentModeScaleAspectFit;
-    _image.layer.minificationFilter = kCAFilterLinear;
+    _image.layer.minificationFilter = kCAFilterTrilinear;
+    _image.layer.minificationFilterBias = 0.0;
     ((ImageView*)_image).aspect = 0.0;
     [_image setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
     [_image setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
@@ -2117,15 +2196,18 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 -(void)setCornerRadius:(CGFloat)radius
 {
     if (self.contentView.backgroundColor == UIColor.clearColor) {
+        self.layer.cornerRadius = 0.0;
+        self.contentView.layer.cornerRadius = 0.0;
+        self.contentView.clipsToBounds = NO;
         _image.layer.cornerRadius = radius;
-        _image.clipsToBounds = radius != 0.0;
+        _image.clipsToBounds = YES; // radius != 0.0;
     }
     else {
         self.layer.cornerRadius = radius;
         self.contentView.layer.cornerRadius = radius;
         self.contentView.clipsToBounds = radius != 0.0;
         _image.layer.cornerRadius = 0.0;
-        _image.clipsToBounds = NO;
+        _image.clipsToBounds = YES; // NO;
     }
 }
 -(void)setBackgroundColor:(UIColor*)color
@@ -2212,9 +2294,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     BOOL selected = self.selected || self.focused;
     if (_image.image == nil)
         return;
-    if (!(CELL_BACKGROUND_COLOR == UIColor.clearColor))
-        [self setBackgroundColor:selected ? CELL_SELECTED_COLOR : CELL_BACKGROUND_COLOR];
-    [self setShadowColor:selected ? CELL_SELECTED_COLOR : CELL_SHADOW_COLOR];
+    [self setBackgroundColor:selected ? CELL_SELECTED_BACKGROUND_COLOR : CELL_BACKGROUND_COLOR];
+    [self setShadowColor:selected ? CELL_SELECTED_SHADOW_COLOR : CELL_SHADOW_COLOR];
     CGFloat scale = selected ? _scale : self.highlighted ? (2.0 - _scale) : 1.0;
     _stackView.transform = CGAffineTransformMakeScale(scale, scale);
 #if TARGET_OS_TV
@@ -2263,6 +2344,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 @property(nonatomic) CGFloat preferredMaxLayoutWidth;
 @property(nonatomic) NSInteger numberOfLines;
 @property(nonatomic) BOOL adjustsFontSizeToFitWidth;
+@property(nonatomic) NSLineBreakMode lineBreakMode;
 @end
 
 @implementation TextLabel
@@ -2377,18 +2459,16 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     _layoutWidth = self.view.bounds.size.width;
     
     UICollectionViewFlowLayout* layout = (UICollectionViewFlowLayout*)self.collectionView.collectionViewLayout;
-    CGFloat space = (TARGET_OS_IOS && !TARGET_OS_MACCATALYST) ? 8.0 : 32.0;
-    layout.sectionInset = UIEdgeInsetsMake(space, space, space, space);
-    layout.minimumLineSpacing = space;
-    layout.minimumInteritemSpacing = space;
+    layout.sectionInset = UIEdgeInsetsMake(SECTION_INSET_Y, SECTION_INSET_X, SECTION_INSET_Y, SECTION_INSET_X);
+    layout.minimumLineSpacing = SECTION_LINE_SPACING;
+    layout.minimumInteritemSpacing = SECTION_ITEM_SPACING;
        
     CGRect rect = self.collectionView.bounds;
     rect = UIEdgeInsetsInsetRect(rect, layout.sectionInset);
     rect.size.height -= self.collectionView.safeAreaInsets.top;
     rect.size.width  -= self.collectionView.safeAreaInsets.left + self.collectionView.safeAreaInsets.right;
     
-    NSURL* url = _game.gameImageURL;
-    UIImage* image = [[ImageCache sharedInstance] getImage:url size:CGSizeZero];
+    UIImage* image = [[ImageCache sharedInstance] getImage:_game.gameImageURL size:CGSizeZero];
     CGFloat aspect = image.size.width > image.size.height ? 4.0/3.0 : 3.0/4.0;
 
     CGSize image_size = CGSizeMake(INFO_IMAGE_WIDTH, INFO_IMAGE_WIDTH / aspect);
@@ -2405,12 +2485,12 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     self.collectionView.alwaysBounceHorizontal = landscape;
 
     if (landscape)
-        rect.size.width -= image_size.width + space;
+        rect.size.width -= image_size.width + SECTION_ITEM_SPACING;
 
     layout.itemSize = rect.size;
 
     CGFloat firstItemHeight = [self collectionView:self.collectionView layout:layout sizeForItemAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]].height;
-    _titleSwitchOffset= firstItemHeight + space - self.collectionView.adjustedContentInset.top;
+    _titleSwitchOffset= firstItemHeight + SECTION_INSET_Y - self.collectionView.adjustedContentInset.top;
     
     [self.collectionView reloadData];
 }
@@ -2434,7 +2514,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     [title.layer addAnimation:animation forKey:kCATransitionPush];
     title.superview.clipsToBounds = YES;
  
-    title.attributedText = [ChooseGameController getGameText:_game layoutMode:LayoutLarge textAlignment:NSTextAlignmentCenter];
+    title.attributedText = [ChooseGameController getGameText:_game];
     [title sizeToFit];
     if (scrollView.contentOffset.y <= _titleSwitchOffset) {
         title.text = self.title;

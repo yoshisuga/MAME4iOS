@@ -9,9 +9,22 @@
 #import "GameInfo.h"
 
 @implementation NSDictionary (GameInfo)
+
+-(NSString*)gameType
+{
+    return self[kGameInfoType] ?: kGameInfoTypeArcade;
+}
 -(NSString*)gameSystem
 {
     return self[kGameInfoSystem] ?: @"";
+}
+-(NSString*)gameSoftware
+{
+    return self[kGameInfoSoftware] ?: @"";
+}
+-(NSString*)gameSoftwareList
+{
+    return self[kGameInfoSoftwareList] ?: self[kGameInfoSystem] ?: @"";
 }
 -(NSString*)gameName
 {
@@ -49,30 +62,71 @@
 {
     return [(self[kGameInfoDescription] ?: self[kGameInfoName] ?: @"") componentsSeparatedByString:@" ("].firstObject;
 }
+-(NSArray<NSURL*>*)gameImageURLs
+{
+    /// TODO: find a better Title image url source!!
+    NSParameterAssert(self.gameName.length != 0);
+    NSParameterAssert(![self.gameName containsString:@" "]);
+    NSParameterAssert(![self.gameSystem containsString:@" "]);
+
+    if (self.gameSoftwareList.length != 0)
+    {
+        /// MESS style title url
+        /// http://adb.arcadeitalia.net/media/mess.current/titles/a2600/adventur.png
+        /// http://adb.arcadeitalia.net/media/mess.current/ingames/a2600/pitfall.png
+        
+        NSString* base = @"http://adb.arcadeitalia.net/media/mess.current";
+        NSString* list = self.gameSoftwareList;
+        NSString* name = self.gameName.lowercaseString;
+        
+        return @[
+            [NSURL URLWithString:[NSString stringWithFormat:@"%@/titles/%@/%@.png", base, list, name]],
+            [NSURL URLWithString:[NSString stringWithFormat:@"%@/ingames/%@/%@.png", base, list, name]],
+        ];
+    }
+    else
+    {
+        NSParameterAssert(self.gameDescription.length != 0);
+
+        /// libretro title url
+        /// https://raw.githubusercontent.com/libretro-thumbnails/MAME/master/Named_Titles/pacman.png
+        
+        NSString* name = self.gameDescription;
+        NSString* base = @"https://raw.githubusercontent.com/libretro-thumbnails/MAME/master/Named_Titles";
+        
+        /// from [libretro docs](https://docs.libretro.com/guides/roms-playlists-thumbnails/)
+        /// The following characters in titles must be replaced with _ in the corresponding filename: &*/:`<>?\|
+        for (NSString* str in @[@"&", @"*", @"/", @":", @"`", @"<", @">", @"?", @"\\", @"|"])
+            name = [name stringByReplacingOccurrencesOfString:str withString:@"_"];
+        
+        name = [name stringByAddingPercentEncodingWithAllowedCharacters:NSCharacterSet.URLPathAllowedCharacterSet];
+        
+        NSURL* libretro_url = [NSURL URLWithString:[NSString stringWithFormat:@"%@/%@.png", base, name]];
+        
+        /// MAME title url
+        /// http://adb.arcadeitalia.net/media/mame.current/titles/n64.png
+        
+        base = @"http://adb.arcadeitalia.net/media/mame.current/titles";
+        name = self.gameName.lowercaseString;
+        NSURL* arcadeitalia_url = [NSURL URLWithString:[NSString stringWithFormat:@"%@/%@.png", base, name]];
+
+        return @[libretro_url, arcadeitalia_url];
+    }
+}
+// only the tvOS TopShelf should use this, use gameImageURLs
 -(NSURL*)gameImageURL
 {
-    /// libretro title url
-    /// https://raw.githubusercontent.com/libretro-thumbnails/MAME/master/Named_Titles/pacman.png
+    // HACK for tvOS TopShelf and Atari 2600
+    if ([self.gameSoftwareList hasPrefix:@"a2600"])
+        return [self gameImageURLs].lastObject;
 
-    /// MESS style title url
-    /// http://adb.arcadeitalia.net/media/mess.current/titles/a2600/adventur.png
-    
-    NSString* name = self.gameDescription;
-    NSString* base = @"https://raw.githubusercontent.com/libretro-thumbnails/MAME/master/Named_Titles";
-    
-    /// from [libretro docs](https://docs.libretro.com/guides/roms-playlists-thumbnails/)
-    /// The following characters in titles must be replaced with _ in the corresponding filename: &*/:`<>?\|
-    for (NSString* str in @[@"&", @"*", @"/", @":", @"`", @"<", @">", @"?", @"\\", @"|"])
-        name = [name stringByReplacingOccurrencesOfString:str withString:@"_"];
-    
-    name = [name stringByAddingPercentEncodingWithAllowedCharacters:NSCharacterSet.URLPathAllowedCharacterSet];
-    return [NSURL URLWithString:[NSString stringWithFormat:@"%@/%@.png", base, name]];
+    return [self gameImageURLs].firstObject;
 }
 -(NSURL*)gameLocalImageURL
 {
-    NSString* name = self[kGameInfoName];
+    NSString* name = self.gameName;
     
-    if (name == nil)
+    if (name.length == 0)
         return nil;
     
     if (self.gameIsFake)
@@ -83,10 +137,17 @@
 #elif TARGET_OS_TV
     NSString *path = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES).firstObject;
 #endif
-    return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/titles/%@.png", path, name] isDirectory:NO];
+    
+    if (self.gameSoftwareList.length != 0)
+        return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/titles/%@/%@.png", path, self.gameSoftwareList, name] isDirectory:NO];
+    else
+        return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/titles/%@.png", path, name] isDirectory:NO];
 }
 -(NSURL*)gamePlayURL
 {
-    return [NSURL URLWithString:[NSString stringWithFormat:@"mame4ios://%@", self.gameName]];
+    if (self.gameSystem.length != 0)
+        return [NSURL URLWithString:[NSString stringWithFormat:@"mame4ios://%@/%@", self.gameSystem, self.gameName]];
+    else
+        return [NSURL URLWithString:[NSString stringWithFormat:@"mame4ios://%@", self.gameName]];
 }
 @end

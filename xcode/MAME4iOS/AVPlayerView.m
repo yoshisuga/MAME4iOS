@@ -9,7 +9,7 @@
 #import <AVFoundation/AVFoundation.h>
 #import "AVPlayerView.h"
 
-@implementation AVPlayerView {
+@implementation AVPlayer_View {
     AVPlayerLayer* _layer;
 }
 
