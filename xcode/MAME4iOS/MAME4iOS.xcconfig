@@ -23,12 +23,14 @@ MARKETING_VERSION       = 2021.6
 // 2. enable or disable entitlements
 //    tvOS TopShelf and iCloud import/export require special app entitlements
 
-// UN-COMMENT NEXT LINE if you want a build with entitlements
-// CODE_SIGN_ENTITLEMENTS = $(TARGET_NAME)/$(TARGET_NAME).entitlements
-// UN-COMMENT PREV LINE if you want a build with entitlements
+ENTITLEMENTS_TYPE = -Base
+// UN-COMMENT NEXT LINE if you want a build with full entitlements
+// ENTITLEMENTS_TYPE = -Full
+// UN-COMMENT PREV LINE if you want a build with full entitlements
 
 // these should not be changed.
 PRODUCT_BUNDLE_IDENTIFIER   = $(ORG_IDENTIFIER).$(PROJECT_NAME:lower)
 APP_GROUP_IDENTIFIER        = group.$(ORG_IDENTIFIER).$(PROJECT_NAME:lower)
 ICLOUD_CONTAINER_IDENTIFIER = iCloud.$(ORG_IDENTIFIER).$(PROJECT_NAME:lower)
+CODE_SIGN_ENTITLEMENTS      = $(TARGET_NAME)/$(TARGET_NAME)$(ENTITLEMENTS_TYPE).entitlements
 
