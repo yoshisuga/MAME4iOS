@@ -460,7 +460,6 @@
 		B5FAE31821FCE64D003F44D0 /* MAME_tvOS.lsr */ = {isa = PBXFileReference; lastKnownFileType = file; path = MAME_tvOS.lsr; sourceTree = "<group>"; };
 		CE6D6E1216D8CADF00F265B7 /* LayoutView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LayoutView.h; path = ../../iOS/LayoutView.h; sourceTree = "<group>"; };
 		CE6D6E1316D8CADF00F265B7 /* LayoutView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LayoutView.m; path = ../../iOS/LayoutView.m; sourceTree = "<group>"; };
-		CE87C2FE16F5C21A00ABE4F6 /* MAME4iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = MAME4iOS.entitlements; sourceTree = "<group>"; };
 		CE8D87DB1653121100685BC4 /* KeyboardView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = KeyboardView.h; path = ../../iOS/KeyboardView.h; sourceTree = "<group>"; };
 		CE8D87DC1653121200685BC4 /* KeyboardView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = KeyboardView.m; path = ../../iOS/KeyboardView.m; sourceTree = "<group>"; };
 		CE8D87DF16541AC400685BC4 /* Globals.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Globals.h; path = ../../iOS/Globals.h; sourceTree = "<group>"; };
@@ -529,7 +528,6 @@
 		EF301CF0240460C5000510FD /* Alert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Alert.m; sourceTree = "<group>"; };
 		EF55DE312533C21E004E37EF /* MAME4iOS.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = MAME4iOS.xcconfig; sourceTree = "<group>"; };
 		EF55DE5A2534C304004E37EF /* TVServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = TVServices.framework; path = Library/Frameworks/TVServices.framework; sourceTree = DEVELOPER_DIR; };
-		EF55DE722534C3AB004E37EF /* MAME4tvOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MAME4tvOS.entitlements; sourceTree = "<group>"; };
 		EF67E11524B8972100AFF489 /* MacMenu.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MacMenu.m; sourceTree = "<group>"; };
 		EF8409A0260CEFAB00FAC3CF /* AVPlayerView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVPlayerView.h; sourceTree = "<group>"; };
 		EF8409A1260CEFAB00FAC3CF /* AVPlayerView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AVPlayerView.m; sourceTree = "<group>"; };
@@ -564,14 +562,12 @@
 		EFA7A0DC24B61E6C0009CF88 /* libmame-mac.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libmame-mac.a"; path = "../../libmame-mac.a"; sourceTree = "<group>"; };
 		EFA7A15E24B65C020009CF88 /* MAME4mac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MAME4mac.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EFA7A16124B65FCC0009CF88 /* MAME4mac-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "MAME4mac-Info.plist"; sourceTree = "<group>"; };
-		EFA7A16224B65FCC0009CF88 /* MAME4mac.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = MAME4mac.entitlements; sourceTree = "<group>"; };
 		EFA7A16524B792CE0009CF88 /* MetalPerformanceShaders.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalPerformanceShaders.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/System/Library/Frameworks/MetalPerformanceShaders.framework; sourceTree = DEVELOPER_DIR; };
 		EFA7A16A24B7A38E0009CF88 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		EFA7A16C24B7A40F0009CF88 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		EFA98FAE24A4CC49007B6689 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		EFA98FB224A4E2D5007B6689 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS14.0.sdk/System/Library/Frameworks/CoreServices.framework; sourceTree = DEVELOPER_DIR; };
 		EFA98FB424A4F810007B6689 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
-		EFAD7C1925670DB000993921 /* MAME4mac.sandbox.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MAME4mac.sandbox.entitlements; sourceTree = "<group>"; };
 		EFB3C6D524890F6200F44780 /* simpleCRT.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = simpleCRT.metal; sourceTree = "<group>"; };
 		EFB3C6DB248C33DF00F44780 /* InfoHUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = InfoHUD.m; sourceTree = "<group>"; };
 		EFB3C6DC248C33DF00F44780 /* InfoHUD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InfoHUD.h; sourceTree = "<group>"; };
@@ -586,6 +582,12 @@
 		EFE003372638ACA000E42246 /* XmlFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XmlFile.h; sourceTree = "<group>"; };
 		EFE0033B2638D97E00E42246 /* SoftwareList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoftwareList.h; sourceTree = "<group>"; };
 		EFE0033C2638D97E00E42246 /* SoftwareList.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SoftwareList.m; sourceTree = "<group>"; };
+		EFE00340263EF5AA00E42246 /* MAME4iOS-Full.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "MAME4iOS-Full.entitlements"; sourceTree = "<group>"; };
+		EFE00341263EF83D00E42246 /* MAME4tvOS-Full.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "MAME4tvOS-Full.entitlements"; sourceTree = "<group>"; };
+		EFE00342263EF83D00E42246 /* MAME4tvOS-Base.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "MAME4tvOS-Base.entitlements"; sourceTree = "<group>"; };
+		EFE00343263EF84F00E42246 /* MAME4mac-Base.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "MAME4mac-Base.entitlements"; sourceTree = "<group>"; };
+		EFE00344263EF84F00E42246 /* MAME4mac-Full.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "MAME4mac-Full.entitlements"; sourceTree = "<group>"; };
+		EFE00345263EF86400E42246 /* MAME4iOS-Base.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "MAME4iOS-Base.entitlements"; sourceTree = "<group>"; };
 		EFE1D707242C05CE0081EEC6 /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = System/Library/Frameworks/CoreImage.framework; sourceTree = SDKROOT; };
 		EFE1D709242C1D840081EEC6 /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS13.2.sdk/System/Library/Frameworks/CoreImage.framework; sourceTree = DEVELOPER_DIR; };
 		EFE4B6A92453D7F80009A6F1 /* InfoDatabase.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InfoDatabase.h; sourceTree = "<group>"; };
@@ -768,8 +770,9 @@
 		92ECB8EC21EA984E00D1E3D0 /* MAME4tvOS */ = {
 			isa = PBXGroup;
 			children = (
+				EFE00342263EF83D00E42246 /* MAME4tvOS-Base.entitlements */,
+				EFE00341263EF83D00E42246 /* MAME4tvOS-Full.entitlements */,
 				92ECB8F621EA985000D1E3D0 /* Assets.xcassets */,
-				EF55DE722534C3AB004E37EF /* MAME4tvOS.entitlements */,
 				B5FAE31821FCE64D003F44D0 /* MAME_tvOS.lsr */,
 				92ECB8F821EA985000D1E3D0 /* Info.plist */,
 			);
@@ -923,7 +926,8 @@
 			isa = PBXGroup;
 			children = (
 				EFA7A16A24B7A38E0009CF88 /* Assets.xcassets */,
-				CE87C2FE16F5C21A00ABE4F6 /* MAME4iOS.entitlements */,
+				EFE00340263EF5AA00E42246 /* MAME4iOS-Full.entitlements */,
+				EFE00345263EF86400E42246 /* MAME4iOS-Base.entitlements */,
 				EF29C8802401C73900AFFA4E /* Launch Screen.storyboard */,
 				CEE680911635BA7000051BC2 /* MAME4iOS-Info.plist */,
 				CEE680971635BA7000051BC2 /* MAME4iOS-Prefix.pch */,
@@ -1047,10 +1051,10 @@
 		EFA7A16024B65E7F0009CF88 /* MAME4mac */ = {
 			isa = PBXGroup;
 			children = (
+				EFE00343263EF84F00E42246 /* MAME4mac-Base.entitlements */,
+				EFE00344263EF84F00E42246 /* MAME4mac-Full.entitlements */,
 				EFA7A16C24B7A40F0009CF88 /* Assets.xcassets */,
 				EFA7A16124B65FCC0009CF88 /* MAME4mac-Info.plist */,
-				EFAD7C1925670DB000993921 /* MAME4mac.sandbox.entitlements */,
-				EFA7A16224B65FCC0009CF88 /* MAME4mac.entitlements */,
 			);
 			path = MAME4mac;
 			sourceTree = "<group>";
@@ -1857,7 +1861,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = MacIcon;
 				CLANG_ENABLE_OBJC_ARC = YES;
-				CODE_SIGN_ENTITLEMENTS = "$(CODE_SIGN_ENTITLEMENTS:default=MAME4mac/MAME4mac.sandbox.entitlements)";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				ENABLE_BITCODE = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -1891,7 +1894,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = MacIcon;
 				CLANG_ENABLE_OBJC_ARC = YES;
-				CODE_SIGN_ENTITLEMENTS = "$(CODE_SIGN_ENTITLEMENTS:default=MAME4mac/MAME4mac.sandbox.entitlements)";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				ENABLE_BITCODE = NO;
