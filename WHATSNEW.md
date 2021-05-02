@@ -1,5 +1,6 @@
 # Version 2021.7
 * `OSD` changes.
+* New `Category.ini` from `MAME` 230
 
 # Version 2021.6
 * `Mouse` device support.
