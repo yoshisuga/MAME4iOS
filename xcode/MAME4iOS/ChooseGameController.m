@@ -899,6 +899,11 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 #pragma mark Recent Games
 
+- (BOOL)isRecent:(NSDictionary*)game
+{
+    NSArray* recentGames = [NSUserDefaults.standardUserDefaults objectForKey:RECENT_GAMES_KEY] ?: @[];
+    return [recentGames containsObject:game];
+}
 - (void)setRecent:(NSDictionary*)game isRecent:(BOOL)flag
 {
     if (game == nil || [game[kGameInfoName] length] == 0)
@@ -1696,6 +1701,15 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
             [self filterGameList];
         }],
     ];
+    
+    if ([self isRecent:game]) {
+        actions = [actions arrayByAddingObjectsFromArray:@[
+            [self actionWithTitle:@"Remove from Recently Played" image:[UIImage systemImageNamed:@"minus.circle"] destructive:NO handler:^(id action) {
+                [self setRecent:game isRecent:NO];
+                [self filterGameList];
+            }]
+        ]];
+    }
     
     if ([_history boolForKey:name] || [_mameinfo boolForKey:name]) {
         actions = [actions arrayByAddingObjectsFromArray:@[
