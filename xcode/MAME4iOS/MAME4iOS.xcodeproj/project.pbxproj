@@ -588,6 +588,8 @@
 		EFE00343263EF84F00E42246 /* MAME4mac-Base.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "MAME4mac-Base.entitlements"; sourceTree = "<group>"; };
 		EFE00344263EF84F00E42246 /* MAME4mac-Full.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "MAME4mac-Full.entitlements"; sourceTree = "<group>"; };
 		EFE00345263EF86400E42246 /* MAME4iOS-Base.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "MAME4iOS-Base.entitlements"; sourceTree = "<group>"; };
+		EFE003462640472100E42246 /* TopShelf-Full.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "TopShelf-Full.entitlements"; sourceTree = "<group>"; };
+		EFE003472640472100E42246 /* TopShelf-Base.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "TopShelf-Base.entitlements"; sourceTree = "<group>"; };
 		EFE1D707242C05CE0081EEC6 /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = System/Library/Frameworks/CoreImage.framework; sourceTree = SDKROOT; };
 		EFE1D709242C1D840081EEC6 /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS13.2.sdk/System/Library/Frameworks/CoreImage.framework; sourceTree = DEVELOPER_DIR; };
 		EFE4B6A92453D7F80009A6F1 /* InfoDatabase.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InfoDatabase.h; sourceTree = "<group>"; };
@@ -596,7 +598,6 @@
 		EFEEA4C625C9D4B700314132 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		EFEEA4C725C9D4B700314132 /* ContentProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ContentProvider.m; sourceTree = "<group>"; };
 		EFEEA4C825C9D4B700314132 /* ContentProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ContentProvider.h; sourceTree = "<group>"; };
-		EFEEA4CF25C9D4FE00314132 /* TopShelf.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TopShelf.entitlements; sourceTree = "<group>"; };
 		EFF9F824246EE2F800DDA88C /* Intents.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Intents.framework; path = System/Library/Frameworks/Intents.framework; sourceTree = SDKROOT; };
 		EFF9F826246EE30200DDA88C /* IntentsUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IntentsUI.framework; path = System/Library/Frameworks/IntentsUI.framework; sourceTree = SDKROOT; };
 		EFF9F8282470755800DDA88C /* MetalScreenView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MetalScreenView.h; path = ../../iOS/MetalScreenView.h; sourceTree = "<group>"; };
@@ -1080,7 +1081,8 @@
 				EFEEA4C825C9D4B700314132 /* ContentProvider.h */,
 				EFEEA4C725C9D4B700314132 /* ContentProvider.m */,
 				EFEEA4C625C9D4B700314132 /* Info.plist */,
-				EFEEA4CF25C9D4FE00314132 /* TopShelf.entitlements */,
+				EFE003472640472100E42246 /* TopShelf-Base.entitlements */,
+				EFE003462640472100E42246 /* TopShelf-Full.entitlements */,
 			);
 			path = TopShelf;
 			sourceTree = "<group>";
