@@ -449,16 +449,14 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         games = [games arrayByAddingObject:@{
             kGameInfoName:kGameInfoNameMameMenu,
             kGameInfoParent:@"",
-            kGameInfoDescription:@"MAME UI",
-            kGameInfoYear:@"2010",
-            kGameInfoManufacturer:@"MAME 0.139u1",
+            kGameInfoDescription:@"MAME",
+            kGameInfoYear:@"2010",              // TODO: use the correct MAME core year
+            kGameInfoManufacturer:@"0.139u1",   // TODO: use the correct MAME core version
         }];
-        
-        // then (re)sort the list by description
-        games = [games sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:kGameInfoDescription ascending:TRUE]]];
     }
     
-    _gameList = games;
+    // sort the list by description
+    _gameList = [games sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:kGameInfoDescription ascending:TRUE]]];
     [self filterGameList];
 }
 
@@ -564,7 +562,14 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 - (void)filterGameList
 {
+    BOOL search_active = _searchController.isActive;
+
     NSArray* filteredGames = _gameList;
+    
+    // when search is active, empty search string will find zero games
+    // TODO: only do this on tvOS?
+    if (search_active && [_gameFilterText length] == 0)
+        filteredGames = @[];
     
     // filter all games, multiple keywords will be treated as AND, and #### <#### >#### <=#### >=#### will compare years
     if ([_gameFilterText length] > 0)
@@ -688,27 +693,31 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         NSLog(@"SECTIONS AFTER MERGE: %d!", (int)[gameSectionTitles count]);
     }
     
-    // add favorite games
-    NSArray* favoriteGames = [[NSUserDefaults.standardUserDefaults objectForKey:FAVORITE_GAMES_KEY]
-        filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF IN %@", filteredGames]];
-    
-    if ([favoriteGames count] > 0) {
-        //NSLog(@"FAVORITE GAMES: %@", favoriteGames);
-        gameSectionTitles = [@[FAVORITE_GAMES_TITLE] arrayByAddingObjectsFromArray:gameSectionTitles];
-        gameData[FAVORITE_GAMES_TITLE] = favoriteGames;
-    }
+    // dont add Recents or Favorites when we are searching
+    if (!search_active) {
 
-    // load recent games and put them at the top
-    NSArray* recentGames = [[NSUserDefaults.standardUserDefaults objectForKey:RECENT_GAMES_KEY]
-        filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF IN %@", filteredGames]];
+        // add favorite games
+        NSArray* favoriteGames = [[NSUserDefaults.standardUserDefaults objectForKey:FAVORITE_GAMES_KEY]
+            filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF IN %@", filteredGames]];
+        
+        if ([favoriteGames count] > 0) {
+            //NSLog(@"FAVORITE GAMES: %@", favoriteGames);
+            gameSectionTitles = [@[FAVORITE_GAMES_TITLE] arrayByAddingObjectsFromArray:gameSectionTitles];
+            gameData[FAVORITE_GAMES_TITLE] = favoriteGames;
+        }
 
-    if ([recentGames count] > RECENT_GAMES_MAX)
-        recentGames = [recentGames subarrayWithRange:NSMakeRange(0, RECENT_GAMES_MAX)];
+        // load recent games and put them at the top
+        NSArray* recentGames = [[NSUserDefaults.standardUserDefaults objectForKey:RECENT_GAMES_KEY]
+            filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF IN %@", filteredGames]];
 
-    if ([recentGames count] > 0) {
-        //NSLog(@"RECENT GAMES: %@", recentGames);
-        gameSectionTitles = [@[RECENT_GAMES_TITLE] arrayByAddingObjectsFromArray:gameSectionTitles];
-        gameData[RECENT_GAMES_TITLE] = recentGames;
+        if ([recentGames count] > RECENT_GAMES_MAX)
+            recentGames = [recentGames subarrayWithRange:NSMakeRange(0, RECENT_GAMES_MAX)];
+
+        if ([recentGames count] > 0) {
+            //NSLog(@"RECENT GAMES: %@", recentGames);
+            gameSectionTitles = [@[RECENT_GAMES_TITLE] arrayByAddingObjectsFromArray:gameSectionTitles];
+            gameData[RECENT_GAMES_TITLE] = recentGames;
+        }
     }
     
     _gameSectionTitles = gameSectionTitles;
@@ -765,10 +774,6 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 {
     NSLog(@"searchBarCancelButtonClicked: active=%d", _searchController.active);
     _searchCancel = TRUE;
-    
-    if (!_searchController.active) {
-        [self showSettings];
-    }
 }
 #endif
 
@@ -777,10 +782,12 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 - (void)didPresentSearchController:(UISearchController *)searchController
 {
     NSLog(@"didPresentSearchController: active=%d", searchController.active);
+    [self filterGameList];
 }
 - (void)didDismissSearchController:(UISearchController *)searchController
 {
     NSLog(@"didDismissSearchController: active=%d", searchController.active);
+    [self filterGameList];
 }
 
 #pragma mark - UICollectionView
@@ -1768,6 +1775,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
     if ([actions count] == 0)
         return nil;
+    
+    self.view.window.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
     
     return [UIContextMenuConfiguration configurationWithIdentifier:indexPath
             previewProvider:^UIViewController* () {
