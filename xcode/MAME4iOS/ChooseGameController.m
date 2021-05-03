@@ -67,6 +67,9 @@
 #define CELL_SELECTED_SHADOW_COLOR       self.tintColor
 #define CELL_SELECTED_BACKGROUND_COLOR   UIColor.clearColor
 
+#define CELL_HEADER_SELECTED_SHADOW_COLOR       UIColor.clearColor
+#define CELL_HEADER_SELECTED_BACKGROUND_COLOR   self.tintColor
+
 #define CELL_CORNER_RADIUS      16.0
 #define CELL_BORDER_WIDTH       0.0
 #define CELL_TEXT_ALIGN         NSTextAlignmentCenter
@@ -1434,6 +1437,27 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     else
         return layout.headerReferenceSize;
 }
+
+// make an attributed string, replaceing any :symbol: with an SF Symbol
+NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* color) {
+    NSDictionary* attributes = @{NSFontAttributeName:font,NSForegroundColorAttributeName:color};
+    
+    NSArray* arr = [text componentsSeparatedByString:@":"];
+    
+    if (arr.count != 3)
+        return [[NSAttributedString alloc] initWithString:text attributes:attributes];
+    
+    NSMutableAttributedString* result = [[NSMutableAttributedString alloc] initWithString:arr[0] attributes:attributes];
+    
+    NSTextAttachment* att = [[NSTextAttachment alloc] init];
+    att.image = [[UIImage systemImageNamed:arr[1] withFont:font] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    [result appendAttributedString:[NSAttributedString attributedStringWithAttachment:att]];
+
+    [result appendAttributedString:[[NSAttributedString alloc] initWithString:arr[2] attributes:attributes]];
+
+    return [result copy];
+}
+
 - (UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath
 {
     GameCell* cell = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:HEADER_IDENTIFIER forIndexPath:indexPath];
@@ -1446,9 +1470,22 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     [cell setCornerRadius:0.0];
     [cell setBorderWidth:0.0];
     
-    cell.tag = indexPath.section;
-    [cell addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(headerTap:)]];
-
+    BOOL is_collapsed = [self isCollapsed:indexPath.section];
+    
+    // dont allow collapse if we only have a single (+MAME) section
+    if (_gameSectionTitles.count >= 2 || is_collapsed)
+    {
+        // only show a chevron if collapsed
+        if (is_collapsed)
+        {
+            NSString* str = [NSString stringWithFormat:@"%@ :%@:", cell.text.text, is_collapsed ? @"chevron.right" : @"chevron.down"];
+            cell.text.attributedText = attributedString(str, cell.text.font, cell.text.textColor);
+        }
+        // install tap handler to toggle collapsed
+        cell.tag = indexPath.section;
+        [cell addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(headerTap:)]];
+    }
+        
     return cell;
 }
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath
@@ -2370,8 +2407,16 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 - (void)updateSelected
 {
     BOOL selected = self.selected || self.focused;
-    if (_image.image == nil)
+    if (_image.image == nil) {
+#if TARGET_OS_TV
+        UIColor* color = selected ? CELL_SELECTED_SHADOW_COLOR : CELL_SHADOW_COLOR;
+        _stackText.layer.borderColor = color.CGColor;
+        _stackText.layer.borderWidth = 4.0;
+        _stackText.layer.cornerRadius = 8.0;
+        _stackText.backgroundColor = color;
+#endif
         return;
+    }
     [self setBackgroundColor:selected ? CELL_SELECTED_BACKGROUND_COLOR : CELL_BACKGROUND_COLOR];
     [self setShadowColor:selected ? CELL_SELECTED_SHADOW_COLOR : CELL_SHADOW_COLOR];
     CGFloat scale = selected ? _scale : self.highlighted ? (2.0 - _scale) : 1.0;
@@ -2385,18 +2430,24 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 }
 - (void)setHighlighted:(BOOL)highlighted
 {
-    NSLog(@"setHighlighted(%@): %@", self.text.text, highlighted ? @"YES" : @"NO");
+    NSLog(@"setHighlighted(%@): %@", [self.text.text stringByReplacingOccurrencesOfString:@"\n" withString:@" • "], highlighted ? @"YES" : @"NO");
     [super setHighlighted:highlighted];
     [self updateSelected];
 }
 - (void)setSelected:(BOOL)selected
 {
-    NSLog(@"setSelected(%@): %@", self.text.text, selected ? @"YES" : @"NO");
+    NSLog(@"setSelected(%@): %@", [self.text.text stringByReplacingOccurrencesOfString:@"\n" withString:@" • "] , selected ? @"YES" : @"NO");
     [super setSelected:selected];
     [self updateSelected];
 }
 
 #if TARGET_OS_TV
+- (BOOL)canBecomeFocused {
+    // we want headers with a tap GR to get the focus
+    if (self.gestureRecognizers.count != 0)
+        return YES;
+    return [super canBecomeFocused];
+}
 - (void)didHintFocusMovement:(UIFocusMovementHint *)hint {
     NSLog(@"didHintFocusMovement(%@): dir=%@", [self.text.text stringByReplacingOccurrencesOfString:@"\n" withString:@" • "],
           NSStringFromCGVector(hint.movementDirection));
