@@ -447,16 +447,18 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if ([games filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"%K = %@", kGameInfoName, kGameInfoNameMameMenu]].count == 0)
     {
         games = [games arrayByAddingObject:@{
+            kGameInfoType:kGameInfoTypeComputer,
             kGameInfoName:kGameInfoNameMameMenu,
             kGameInfoParent:@"",
-            kGameInfoDescription:@"MAME",
+            kGameInfoDescription:@"MAME 139u1", // TODO: use the correct MAME core version
             kGameInfoYear:@"2010",              // TODO: use the correct MAME core year
-            kGameInfoManufacturer:@"0.139u1",   // TODO: use the correct MAME core version
+            kGameInfoManufacturer:@"MAMEDev and contributors",
         }];
     }
     
     // sort the list by description
     _gameList = [games sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:kGameInfoDescription ascending:TRUE]]];
+    
     [self filterGameList];
 }
 
