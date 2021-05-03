@@ -568,7 +568,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 {
 #if TARGET_OS_TV
     // in tvOS we push a whole new ChooseGameController (without a nav) to do a search
-    BOOL search_active = self.navigationController == nil;
+    BOOL search_active = self.isViewLoaded && self.navigationController == nil;
 #else
     // in iOS the search bar is always at top of our scroll view.
     BOOL search_active = _searchController.isActive;
@@ -1097,6 +1097,21 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     [NSUserDefaults.standardUserDefaults setObject:sections forKey:SECTIONS_COLLAPSED_KEY];
 }
 
+-(void)headerTap:(UITapGestureRecognizer*)sender
+{
+    NSLog(@"HEADER TAP: %d", (int)sender.view.tag);
+    NSInteger section = sender.view.tag;
+    if (section >= 0 && section < _gameSectionTitles.count)
+    {
+        [self setCollapsed:section isCollapsed:![self isCollapsed:section]];
+        [self.collectionView performBatchUpdates:^{
+            [self.collectionView reloadSections:[NSIndexSet indexSetWithIndex:section]];
+        } completion:^(BOOL finished){
+            [self kickLayout];
+        }];
+    }
+}
+
 #pragma mark UICollectionView data source
 
 - (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView
@@ -1430,6 +1445,9 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     [cell setTextInsets:UIEdgeInsetsMake(2.0, self.view.safeAreaInsets.left + 2.0, 2.0, self.view.safeAreaInsets.right + 2.0)];
     [cell setCornerRadius:0.0];
     [cell setBorderWidth:0.0];
+    
+    cell.tag = indexPath.section;
+    [cell addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(headerTap:)]];
 
     return cell;
 }
@@ -2193,6 +2211,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     _stackText.layoutMargins = UIEdgeInsetsMake(4.0, 8.0, 4.0, 8.0);
     _stackText.layoutMarginsRelativeArrangement = YES;
     _stackText.insetsLayoutMarginsFromSafeArea = NO;
+    
+    // remove any GRs
+    while (self.gestureRecognizers.firstObject != nil)
+        [self removeGestureRecognizer:self.gestureRecognizers.firstObject];
 }
 
 - (void)updateConstraints
