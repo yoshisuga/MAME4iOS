@@ -93,7 +93,7 @@
 #define SECTION_ITEM_SPACING    8.0
 #else   // tvOS or mac
 #define SECTION_INSET_X         8.0
-#define SECTION_INSET_Y         8.0
+#define SECTION_INSET_Y         32.0
 #define SECTION_LINE_SPACING    48.0
 #define SECTION_ITEM_SPACING    32.0
 #endif
@@ -123,6 +123,8 @@
 #define SCOPE_MODE_DEFAULT  @"System"
 #define ALL_SCOPES          @[@"System", @"Manufacturer", @"Year", @"Genre", @"Driver"]
 #define RECENT_GAMES_MAX    8
+
+#define SECTIONS_COLLAPSED_KEY    @"CollapsedSections"
 
 #define CLAMP(x, num) MIN(MAX(x,0), (num)-1)
 
@@ -206,7 +208,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 @implementation ChooseGameController
 
 + (NSArray<NSString*>*) allSettingsKeys {
-    return @[LAYOUT_MODE_KEY, SCOPE_MODE_KEY, RECENT_GAMES_KEY, FAVORITE_GAMES_KEY];
+    return @[LAYOUT_MODE_KEY, SCOPE_MODE_KEY, RECENT_GAMES_KEY, FAVORITE_GAMES_KEY, SECTIONS_COLLAPSED_KEY];
 }
 
 - (instancetype)init
@@ -343,7 +345,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         
         UIBarButtonItem* search = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSearch target:self action:@selector(showSearch)];
         self.navigationItem.rightBarButtonItems = [@[search] arrayByAddingObjectsFromArray:self.navigationItem.rightBarButtonItems];
-}
+    }
 #endif
     
     // attach long press gesture to collectionView (only on pre-iOS 13, and tvOS)
@@ -564,7 +566,13 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 - (void)filterGameList
 {
+#if TARGET_OS_TV
+    // in tvOS we push a whole new ChooseGameController (without a nav) to do a search
+    BOOL search_active = self.navigationController == nil;
+#else
+    // in iOS the search bar is always at top of our scroll view.
     BOOL search_active = _searchController.isActive;
+#endif
 
     NSArray* filteredGames = _gameList;
     
@@ -1068,6 +1076,27 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 }
 
 
+#pragma mark Section collapse
+
+-(BOOL)isCollapsed:(NSInteger)section
+{
+    NSString* title = _gameSectionTitles[section];
+    NSArray* sections = [NSUserDefaults.standardUserDefaults objectForKey:SECTIONS_COLLAPSED_KEY] ?: @[];
+    return [sections containsObject:title];
+}
+- (void)setCollapsed:(NSInteger)section isCollapsed:(BOOL)flag
+{
+    NSString* title = _gameSectionTitles[section];
+    NSMutableArray* sections = [([NSUserDefaults.standardUserDefaults objectForKey:SECTIONS_COLLAPSED_KEY] ?: @[]) mutableCopy];
+
+    [sections removeObject:title];
+
+    if (flag)
+        [sections addObject:title];
+    
+    [NSUserDefaults.standardUserDefaults setObject:sections forKey:SECTIONS_COLLAPSED_KEY];
+}
+
 #pragma mark UICollectionView data source
 
 - (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView
@@ -1077,6 +1106,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
 {
     if (section >= _gameSectionTitles.count)
+        return 0;
+    if ([self isCollapsed:section])
         return 0;
     NSString* title = _gameSectionTitles[section];
     NSInteger num = [_gameData[title] count];
