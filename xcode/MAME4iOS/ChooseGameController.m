@@ -788,12 +788,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 - (void)didPresentSearchController:(UISearchController *)searchController
 {
     NSLog(@"didPresentSearchController: active=%d", searchController.active);
-    [self filterGameList];
 }
 - (void)didDismissSearchController:(UISearchController *)searchController
 {
     NSLog(@"didDismissSearchController: active=%d", searchController.active);
-    [self filterGameList];
 }
 
 #pragma mark - UICollectionView
@@ -873,16 +871,18 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     CGFloat yTop = scrollView.contentOffset.y + scrollView.adjustedContentInset.top;
     for (GameCell* cell in [self.collectionView visibleSupplementaryViewsOfKind:UICollectionElementKindSectionHeader]) {
         if (yTop > 0.5 && fabs(yTop - cell.frame.origin.y) <= cell.frame.size.height) {
+#if TARGET_OS_IOS
             if (@available(iOS 13.0, *))
                 [cell addBlur:UIBlurEffectStyleDark];
             else
                 cell.contentView.backgroundColor = HEADER_PINNED_COLOR;
+#else
+            cell.contentView.backgroundColor = HEADER_PINNED_COLOR;
+#endif
         }
         else {
-            if (@available(iOS 13.0, *))
-                cell.backgroundView = nil;
-            else
-                cell.contentView.backgroundColor = HEADER_BACKGROUND_COLOR;
+            cell.backgroundView = nil;
+            cell.contentView.backgroundColor = HEADER_BACKGROUND_COLOR;
         }
     }
 }
