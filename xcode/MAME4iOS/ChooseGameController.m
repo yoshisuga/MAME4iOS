@@ -57,6 +57,7 @@
 #define TITLE_COLOR             [UIColor whiteColor]
 #define HEADER_TEXT_COLOR       [UIColor whiteColor]
 #define HEADER_BACKGROUND_COLOR [UIColor clearColor]
+#define HEADER_SELECTED_COLOR   self.tintColor
 #define HEADER_PINNED_COLOR     [BACKGROUND_COLOR colorWithAlphaComponent:0.8]
 
 #define BACKGROUND_COLOR        [UIColor colorWithWhite:0.066 alpha:1.0]
@@ -66,9 +67,6 @@
 
 #define CELL_SELECTED_SHADOW_COLOR       self.tintColor
 #define CELL_SELECTED_BACKGROUND_COLOR   UIColor.clearColor
-
-#define CELL_HEADER_SELECTED_SHADOW_COLOR       UIColor.clearColor
-#define CELL_HEADER_SELECTED_BACKGROUND_COLOR   self.tintColor
 
 #define CELL_CORNER_RADIUS      16.0
 #define CELL_BORDER_WIDTH       0.0
@@ -195,6 +193,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     LayoutMode _layoutMode;
     CGFloat _layoutWidth;
     UISearchController* _searchController;
+    BOOL _isSearchResults;      // TRUE when we are used as a search results controller on tvOS
     NSArray* _key_commands;
     BOOL _searchCancel;
     NSIndexPath* _currentlyFocusedIndexPath;
@@ -403,9 +402,12 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 -(void)showSearch
 {
     ChooseGameController* resultsController = [[ChooseGameController alloc] init];
+    resultsController->_isSearchResults = TRUE;
+    // search results are always grouped by `System`
+    resultsController->_gameFilterScope = SCOPE_MODE_DEFAULT;
     [resultsController setGameList:_gameList];
     resultsController.selectGameCallback = _selectGameCallback;
-    
+
     _searchController = [[UISearchController alloc] initWithSearchResultsController:resultsController];
     _searchController.searchResultsUpdater = resultsController;
     _searchController.searchBar.delegate = resultsController;
@@ -569,19 +571,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 - (void)filterGameList
 {
-#if TARGET_OS_TV
-    // in tvOS we push a whole new ChooseGameController (without a nav) to do a search
-    BOOL search_active = self.isViewLoaded && self.navigationController == nil;
-#else
-    // in iOS the search bar is always at top of our scroll view.
-    BOOL search_active = _searchController.isActive;
-#endif
-
     NSArray* filteredGames = _gameList;
     
     // when search is active, empty search string will find zero games
-    // TODO: only do this on tvOS?
-    if (search_active && [_gameFilterText length] == 0)
+    if (_isSearchResults && [_gameFilterText length] == 0)
         filteredGames = @[];
     
     // filter all games, multiple keywords will be treated as AND, and #### <#### >#### <=#### >=#### will compare years
@@ -707,7 +700,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     }
     
     // dont add Recents or Favorites when we are searching
-    if (!search_active) {
+    if (!_isSearchResults) {
 
         // add favorite games
         NSArray* favoriteGames = [[NSUserDefaults.standardUserDefaults objectForKey:FAVORITE_GAMES_KEY]
@@ -1083,6 +1076,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 -(BOOL)isCollapsed:(NSInteger)section
 {
+    if (_isSearchResults)
+        return FALSE;
     NSString* title = _gameSectionTitles[section];
     NSArray* sections = [NSUserDefaults.standardUserDefaults objectForKey:SECTIONS_COLLAPSED_KEY] ?: @[];
     return [sections containsObject:title];
@@ -1441,16 +1436,16 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 // make an attributed string, replaceing any :symbol: with an SF Symbol
 NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* color) {
     NSDictionary* attributes = @{NSFontAttributeName:font,NSForegroundColorAttributeName:color};
-    
+    UIImage* image = nil;
     NSArray* arr = [text componentsSeparatedByString:@":"];
     
-    if (arr.count != 3)
+    if (arr.count != 3 || (image = [UIImage systemImageNamed:arr[1] withFont:font]) == nil)
         return [[NSAttributedString alloc] initWithString:text attributes:attributes];
     
     NSMutableAttributedString* result = [[NSMutableAttributedString alloc] initWithString:arr[0] attributes:attributes];
     
     NSTextAttachment* att = [[NSTextAttachment alloc] init];
-    att.image = [[UIImage systemImageNamed:arr[1] withFont:font] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    att.image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     [result appendAttributedString:[NSAttributedString attributedStringWithAttachment:att]];
 
     [result appendAttributedString:[[NSAttributedString alloc] initWithString:arr[2] attributes:attributes]];
@@ -1470,20 +1465,23 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     [cell setCornerRadius:0.0];
     [cell setBorderWidth:0.0];
     
-    BOOL is_collapsed = [self isCollapsed:indexPath.section];
-    
-    // dont allow collapse if we only have a single (+MAME) section
-    if (_gameSectionTitles.count >= 2 || is_collapsed)
-    {
-        // only show a chevron if collapsed
-        if (is_collapsed)
+    // make the section title tappable to toggle collapse/expand section
+    if (@available(iOS 13.0, tvOS 13.0, *)) {
+        BOOL is_collapsed = [self isCollapsed:indexPath.section];
+        
+        // dont allow collapse if we only have a single (+MAME) section
+        if (!_isSearchResults && (_gameSectionTitles.count >= 2 || is_collapsed))
         {
-            NSString* str = [NSString stringWithFormat:@"%@ :%@:", cell.text.text, is_collapsed ? @"chevron.right" : @"chevron.down"];
-            cell.text.attributedText = attributedString(str, cell.text.font, cell.text.textColor);
+            // only show a chevron if collapsed
+            if (is_collapsed)
+            {
+                NSString* str = [NSString stringWithFormat:@"%@ :%@:", cell.text.text, is_collapsed ? @"chevron.right" : @"chevron.down"];
+                cell.text.attributedText = attributedString(str, cell.text.font, cell.text.textColor);
+            }
+            // install tap handler to toggle collapsed
+            cell.tag = indexPath.section;
+            [cell addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(headerTap:)]];
         }
-        // install tap handler to toggle collapsed
-        cell.tag = indexPath.section;
-        [cell addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(headerTap:)]];
     }
         
     return cell;
@@ -1928,6 +1926,14 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
         NSLog(@"didUpdateFocusInContext: %@", NSStringFromClass(context.nextFocusedItem.class));
 
     _currentlyFocusedIndexPath = context.nextFocusedIndexPath;
+}
+
+- (BOOL)collectionView:(UICollectionView *)collectionView canFocusItemAtIndexPath:(NSIndexPath *)indexPath {
+    // always set focus to the first collum when jumping from non indexPath to indexPath focus item
+    if (_currentlyFocusedIndexPath == nil && _layoutCollums > 1)
+        return (indexPath.item % _layoutCollums) == 0;
+    else
+        return TRUE;
 }
 
 -(void)handleLongPress:(UIGestureRecognizer*)sender {
@@ -2409,11 +2415,18 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     BOOL selected = self.selected || self.focused;
     if (_image.image == nil) {
 #if TARGET_OS_TV
-        UIColor* color = selected ? CELL_SELECTED_SHADOW_COLOR : CELL_SHADOW_COLOR;
-        _stackText.layer.borderColor = color.CGColor;
-        _stackText.layer.borderWidth = 4.0;
-        _stackText.layer.cornerRadius = 8.0;
-        _stackText.backgroundColor = color;
+        UIColor* color = selected ? HEADER_SELECTED_COLOR : HEADER_BACKGROUND_COLOR;
+ 
+        if (@available(tvOS 14.0, *))
+        {
+            _stackText.backgroundColor = color;
+            _stackText.layer.cornerRadius = selected ? 16.0 : 0.0;
+        }
+        else
+        {
+            self.contentView.backgroundColor = color;
+            self.contentView.layer.cornerRadius = selected ? 16.0 : 0.0;
+        }
 #endif
         return;
     }
