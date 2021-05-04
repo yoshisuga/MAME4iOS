@@ -517,7 +517,7 @@ NSDictionary* load_category_ini(void)
 // find the category for a game/rom using Category.ini
 NSString* find_category(NSString* name, NSString* parent)
 {
-    return g_category_dict[name] ?: g_category_dict[parent] ?: @"Unkown";
+    return g_category_dict[name] ?: g_category_dict[parent] ?: @"Unknown";
 }
 
 // called from deep inside MAME select_game menu, to give us the valid list of games/drivers
