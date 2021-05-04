@@ -57,7 +57,7 @@
 #define TITLE_COLOR             [UIColor whiteColor]
 #define HEADER_TEXT_COLOR       [UIColor whiteColor]
 #define HEADER_BACKGROUND_COLOR [UIColor clearColor]
-#define HEADER_SELECTED_COLOR   self.tintColor
+#define HEADER_SELECTED_COLOR   [self.tintColor colorWithAlphaComponent:0.5]
 #define HEADER_PINNED_COLOR     [BACKGROUND_COLOR colorWithAlphaComponent:0.8]
 
 #define BACKGROUND_COLOR        [UIColor colorWithWhite:0.066 alpha:1.0]
@@ -1433,7 +1433,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         return layout.headerReferenceSize;
 }
 
-// make an attributed string, replaceing any :symbol: with an SF Symbol
+// make an attributed string, replacing any :symbol: with an SF Symbol
 NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* color) {
     NSDictionary* attributes = @{NSFontAttributeName:font,NSForegroundColorAttributeName:color};
     UIImage* image = nil;
@@ -1472,7 +1472,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
         // dont allow collapse if we only have a single (+MAME) section
         if (!_isSearchResults && (_gameSectionTitles.count >= 2 || is_collapsed))
         {
-            // only show a chevron if collapsed
+            // only show a chevron if collapsed?
             if (is_collapsed)
             {
                 NSString* str = [NSString stringWithFormat:@"%@ :%@:", cell.text.text, is_collapsed ? @"chevron.right" : @"chevron.down"];
@@ -2018,13 +2018,20 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     if (item < 0 && section > 0)
     {
         section--;
+        while ([self.collectionView numberOfItemsInSection:section] == 0 && section > 0)
+            section--;
         item = (([self.collectionView numberOfItemsInSection:section] + _layoutCollums-1) / _layoutCollums - 1) * _layoutCollums + col;
     }
     else if (new_row >= num_rows && section+1 < self.collectionView.numberOfSections)
     {
         section++;
+        while ([self.collectionView numberOfItemsInSection:section] == 0 && section+1 < self.collectionView.numberOfSections)
+            section++;
         item = col;
     }
+    
+    if ([self.collectionView numberOfItemsInSection:section] == 0)
+        return;
     
     section = CLAMP(section, self.collectionView.numberOfSections);
     item = CLAMP(item, [self.collectionView numberOfItemsInSection:section]);
