@@ -2030,14 +2030,12 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
         item = col;
     }
     
-    if ([self.collectionView numberOfItemsInSection:section] == 0)
-        return;
-    
     section = CLAMP(section, self.collectionView.numberOfSections);
     item = CLAMP(item, [self.collectionView numberOfItemsInSection:section]);
 
     indexPath = [NSIndexPath indexPathForItem:item inSection:section];
-    [self.collectionView selectItemAtIndexPath:indexPath animated:YES scrollPosition:UICollectionViewScrollPositionCenteredVertically];
+    if ([self.collectionView numberOfItemsInSection:section] != 0)
+        [self.collectionView selectItemAtIndexPath:indexPath animated:YES scrollPosition:UICollectionViewScrollPositionCenteredVertically];
 }
 
 // called when input happens on a gamecontroller, keyboard, or touch screen
