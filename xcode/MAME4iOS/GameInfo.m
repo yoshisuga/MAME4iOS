@@ -50,6 +50,10 @@
 {
     return self[kGameInfoDriver] ?: @"";
 }
+-(NSString*)gameScreen
+{
+    return self[kGameInfoScreen] ?: kGameInfoScreenHorizontal;
+}
 -(NSString*)gameCategory
 {
     return self[kGameInfoCategory] ?: @"";

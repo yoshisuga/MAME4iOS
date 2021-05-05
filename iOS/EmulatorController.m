@@ -555,6 +555,7 @@ void m4i_set_game_info(myosd_game_info* game_info, int game_count)
                 kGameInfoYear:        @(game_info[i].year),
                 kGameInfoParent:      @(game_info[i].parent ?: ""),
                 kGameInfoManufacturer:@(game_info[i].manufacturer),
+                kGameInfoScreen:      (game_info[i].flags & MYOSD_GAME_INFO_VERTICAL) ? kGameInfoScreenVertical : kGameInfoScreenHorizontal,
                 kGameInfoCategory:    find_category(@(game_info[i].name), @(game_info[i].parent ?: "")),
                 kGameInfoDriver:      [@(game_info[i].source_file ?: "").lastPathComponent stringByDeletingPathExtension],
             }];

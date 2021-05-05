@@ -22,6 +22,7 @@
 #define kGameInfoYear           @"year"
 #define kGameInfoDescription    @"description"
 #define kGameInfoManufacturer   @"manufacturer"
+#define kGameInfoScreen         @"screen"
 #define kGameInfoDriver         @"driver"
 #define kGameInfoCategory       @"category"
 #define kGameInfoHistory        @"history"
@@ -33,6 +34,9 @@
 #define kGameInfoTypeConsole    @"Console"
 #define kGameInfoTypeComputer   @"Computer"
 #define kGameInfoTypeBIOS       @"BIOS"
+
+#define kGameInfoScreenHorizontal   @"Horizontal"
+#define kGameInfoScreenVertical     @"Vertical"
 
 // special "fake" (aka built-in) games
 #define kGameInfoNameSettings   @"settings"
@@ -50,6 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) NSString* gameDescription;
 @property (nonatomic, strong, readonly) NSString* gameManufacturer;
 @property (nonatomic, strong, readonly) NSString* gameDriver;
+@property (nonatomic, strong, readonly) NSString* gameScreen;
 @property (nonatomic, strong, readonly) NSString* gameCategory;
 @property (nonatomic, strong, readonly) NSString* gameSoftware;
 @property (nonatomic, strong, readonly) NSString* gameSoftwareList;
