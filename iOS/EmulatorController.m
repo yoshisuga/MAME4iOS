@@ -259,6 +259,8 @@ static int change_layout=0;
 
 static int myosd_inGame = 0;    // TRUE if MAME is running a game
 static int myosd_in_menu = 0;   // TRUE if MAME has UI active (or is at the root aka no game)
+static int myosd_isVector = 0;  // TRUE if running a VECTOR game
+static int myosd_isVertical = 0;// TRUE if running a Vertical game
 
 static NSDictionary* g_category_dict;
 static SoftwareList* g_softlist;
@@ -534,8 +536,7 @@ void m4i_set_game_info(myosd_game_info* game_info, int game_count)
         
         for (int i=0; i<game_count; i++)
         {
-            // TODO: MYOSD_GAME_INFO_RUNNABLE
-            // TODO: MYOSD_GAME_INFO_MECHANICAL
+            // TODO: MYOSD_GAME_INFO_VECTOR
 
             if (game_info[i].name == NULL || game_info[i].name[0] == 0)
                 continue;
@@ -609,8 +610,13 @@ void m4i_set_game_info(myosd_game_info* game_info, int game_count)
 
 void m4i_game_start(myosd_game_info* info)
 {
-    NSLog(@"GAME START: %-16s %s", info->name, info->description);
+    NSLog(@"GAME START: %s \"%s\"%s%s", info->name, info->description,
+          (info->flags & MYOSD_GAME_INFO_VERTICAL) ? " VERTICAL" : "",
+          (info->flags & MYOSD_GAME_INFO_VECTOR) ? " VECTOR" : "");
+    
     myosd_inGame = 1;
+    myosd_isVector = (info->flags & MYOSD_GAME_INFO_VECTOR);
+    myosd_isVertical = (info->flags & MYOSD_GAME_INFO_VERTICAL);
 }
 
 void m4i_game_stop()
@@ -1928,7 +1934,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     [hudView removeAll];
     EmulatorController* _self = self;
 
-    BOOL is_vector_game = [screenView isKindOfClass:[MetalScreenView class]] ? [(MetalScreenView*)screenView numScreens] == 0 : FALSE;
+    BOOL is_vector_game = myosd_isVector;
     NSString* shader_name = is_vector_game ? g_pref_line_shader : g_pref_screen_shader;
     NSString* shader = is_vector_game ? [Options.arrayLineShader optionData:shader_name] : [Options.arrayScreenShader optionData:shader_name];
     BOOL can_edit_shader = [[shader stringByReplacingOccurrencesOfString:@"blend=" withString:@""] componentsSeparatedByString:@"="].count > 1;
@@ -2161,11 +2167,6 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
 - (void)resetUI {
     NSLog(@"RESET UI (MAME VIDEO MODE CHANGE)");
-    
-    // we dont know (yet) raster/vector game, so take down any HUD Editor so it wont be wrong.
-    if (g_pref_showHUD == HudSizeEditor)
-        g_pref_showHUD = HudSizeLarge;
-    
     [self changeUI];
 }
 

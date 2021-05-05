@@ -210,6 +210,17 @@ static void get_game_info(myosd_game_info* info, const game_driver *driver)
 
     if (driver->flags & GAME_SUPPORTS_SAVE)
         info->flags |= MYOSD_GAME_INFO_SUPPORTS_SAVE;
+
+    // check for a vector game
+    {
+        machine_config *config = global_alloc(machine_config(driver->machine_config));
+        for (const screen_device_config *devconfig = screen_first(*config); devconfig != NULL; devconfig = screen_next(devconfig))
+        {
+            if (devconfig->screen_type() == SCREEN_TYPE_VECTOR)
+                info->flags |= MYOSD_GAME_INFO_VECTOR;
+        }
+        global_free(config);
+    }
 }
 
 void myosd_set_game_info(const game_driver *driver_list[], int count)

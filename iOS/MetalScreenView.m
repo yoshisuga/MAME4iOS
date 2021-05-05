@@ -476,8 +476,6 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
     _drawScreenStart = CACurrentMediaTime();
     TIMER_START(draw_screen);
 
-    NSUInteger num_screens = 0;
-    
     [self setViewRect:CGRectMake(0, 0, size.width, size.height)];
     
     CGFloat scale_x = self.drawableSize.width  / size.width;
@@ -546,7 +544,6 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
                 }];
                 [self setTextureFilter:_filter];
                 [self setShader:_screen_shader];
-                num_screens++;
             }
             else {
                 // render of artwork (or mame text). use normal shader with no filtering
@@ -639,9 +636,6 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
     
     [self drawEnd];
     TIMER_STOP(draw_screen);
-    
-    // set the number of SCREENs we rendered, so the app can detect RASTER vs VECTOR game.
-    _numScreens = num_screens;
 }
 
 #pragma mark - TEST PATTERN
