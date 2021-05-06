@@ -619,14 +619,16 @@ void m4i_game_start(myosd_game_info* info)
           (info->flags & MYOSD_GAME_INFO_VECTOR) ? " VECTOR" : "");
     
     myosd_inGame = 1;
-    myosd_isVector = (info->flags & MYOSD_GAME_INFO_VECTOR);
-    myosd_isVertical = (info->flags & MYOSD_GAME_INFO_VERTICAL);
+    myosd_isVector = (info->flags & MYOSD_GAME_INFO_VECTOR) != 0;
+    myosd_isVertical = (info->flags & MYOSD_GAME_INFO_VERTICAL) != 0;
 }
 
 void m4i_game_stop()
 {
     NSLog(@"GAME STOP");
     myosd_inGame = 0;
+    myosd_isVector = NO;
+    myosd_isVertical = NO;
 }
 
 @implementation UINavigationController(KeyboardDismiss)
@@ -1816,6 +1818,38 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     return @(get_documents_path(self.class.shaderFile.UTF8String));
 }
 
+// get the current shader (friendly) name
+-(NSString*)getShaderName {
+    NSString* shader_name = myosd_isVector ? g_pref_line_shader : g_pref_screen_shader;
+    NSArray* shader_list = myosd_isVector ? Options.arrayLineShader : Options.arrayScreenShader;
+
+    // HACK: assume the 3rd shader is the actual default, None is 2nd
+    if (([shader_name isEqualToString:kScreenViewShaderDefault] || shader_name.length == 0) && shader_list.count >= 3) {
+        NSParameterAssert([shader_list[0] isEqualToString:kScreenViewShaderDefault]);
+        NSParameterAssert([shader_list[1] isEqualToString:kScreenViewShaderNone]);
+        shader_name =  [NSString stringWithFormat:@"%@ (%@)", kScreenViewShaderDefault, split(shader_list[2],@":").firstObject];
+    }
+
+   return shader_name;
+}
+
+// get the current shader, maping Default to the actual shader
+-(NSString*)getShader {
+    
+    NSString* shader_name = myosd_isVector ? g_pref_line_shader : g_pref_screen_shader;
+    NSArray* shader_list = myosd_isVector ? Options.arrayLineShader : Options.arrayScreenShader;
+    NSString* shader = [shader_list optionData:shader_name];
+    
+    // HACK: assume the 3rd shader is the actual default, None is 2nd
+    if (([shader_name isEqualToString:kScreenViewShaderDefault] || shader_name.length == 0) && shader_list.count >= 3) {
+        NSParameterAssert([shader_list[0] isEqualToString:kScreenViewShaderDefault]);
+        NSParameterAssert([shader_list[1] isEqualToString:kScreenViewShaderNone]);
+        shader = split(shader_list[2],@":").lastObject;
+    }
+    
+    return shader;
+}
+
 // save the current shader variables to disk
 -(void)saveShader {
     if (![screenView isKindOfClass:[MetalScreenView class]])
@@ -1827,25 +1861,23 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     NSDictionary* shader_dict_current = data ? [NSJSONSerialization JSONObjectWithData:data options:0 error:nil] : @{};
     NSMutableDictionary* shader_dict = [shader_dict_current mutableCopy];
 
-    // walk over the current screen *and* line shader and save variables.
-    for (NSString* shader_name in @[g_pref_screen_shader, g_pref_line_shader]) {
-        NSArray* shader_list = (shader_name == g_pref_screen_shader) ? Options.arrayScreenShader : Options.arrayLineShader;
-        NSString* shader =  [shader_list optionData:shader_name];
+    // walk over the current shader and save variables.
+    NSString* shader_name = [self getShaderName];
+    NSString* shader = [self getShader];
         
-        NSMutableArray* arr = [split(shader, @",") mutableCopy];
-        NSMutableDictionary* dict = [[NSMutableDictionary alloc] init];
-        
-        for (int i=0; i<arr.count; i++) {
-            if ([arr[i] hasPrefix:@"blend="] || ![arr[i] containsString:@"="])
-                continue;
-            NSString* key = split(arr[i], @"=").firstObject;
-            float default_value = [split(arr[i], @"=").lastObject floatValue];
-            float current_value = [(shader_variables[key] ?: @(default_value)) floatValue];
-            dict[key] = @(current_value);
-        }
-        
-        shader_dict[shader_name] = ([dict count] != 0) ? dict : nil;
+    NSMutableArray* arr = [split(shader, @",") mutableCopy];
+    NSMutableDictionary* dict = [[NSMutableDictionary alloc] init];
+    
+    for (int i=0; i<arr.count; i++) {
+        if ([arr[i] hasPrefix:@"blend="] || ![arr[i] containsString:@"="])
+            continue;
+        NSString* key = split(arr[i], @"=").firstObject;
+        float default_value = [split(arr[i], @"=").lastObject floatValue];
+        float current_value = [(shader_variables[key] ?: @(default_value)) floatValue];
+        dict[key] = @(current_value);
     }
+    
+    shader_dict[shader_name] = ([dict count] != 0) ? dict : nil;
     
     // write the shader data to disk
     data = [NSJSONSerialization dataWithJSONObject:shader_dict options:NSJSONWritingPrettyPrinted error:nil];
@@ -1859,11 +1891,10 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         return;
     NSData* data = [NSData dataWithContentsOfFile:self.shaderPath];
     NSDictionary* dict = data ? [NSJSONSerialization JSONObjectWithData:data options:0 error:nil] : @{};
-    for (NSString* key in @[g_pref_screen_shader, g_pref_line_shader]) {
-        id val = dict[key];
-        if ([val isKindOfClass:[NSDictionary class]])
-            [(MetalScreenView*)screenView setShaderVariables:val];
-    }
+    NSString* shader_name = [self getShaderName];
+    id val = dict[shader_name];
+    if ([val isKindOfClass:[NSDictionary class]])
+        [(MetalScreenView*)screenView setShaderVariables:val];
 }
 
 // reset *all* shader variables to default
@@ -1938,9 +1969,8 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     [hudView removeAll];
     EmulatorController* _self = self;
 
-    BOOL is_vector_game = myosd_isVector;
-    NSString* shader_name = is_vector_game ? g_pref_line_shader : g_pref_screen_shader;
-    NSString* shader = is_vector_game ? [Options.arrayLineShader optionData:shader_name] : [Options.arrayScreenShader optionData:shader_name];
+    NSString* shader_name = [self getShaderName];
+    NSString* shader = [self getShader];
     BOOL can_edit_shader = [[shader stringByReplacingOccurrencesOfString:@"blend=" withString:@""] componentsSeparatedByString:@"="].count > 1;
     
     if (g_pref_showHUD == HudSizeEditor && !can_edit_shader)
