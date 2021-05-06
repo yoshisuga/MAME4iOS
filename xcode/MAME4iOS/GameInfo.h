@@ -37,6 +37,7 @@
 
 #define kGameInfoScreenHorizontal   @"Horizontal"
 #define kGameInfoScreenVertical     @"Vertical"
+#define kGameInfoScreenVector       @"Vector"
 
 // special "fake" (aka built-in) games
 #define kGameInfoNameSettings   @"settings"

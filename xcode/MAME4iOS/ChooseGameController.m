@@ -57,7 +57,7 @@
 #define TITLE_COLOR             [UIColor whiteColor]
 #define HEADER_TEXT_COLOR       [UIColor whiteColor]
 #define HEADER_BACKGROUND_COLOR [UIColor clearColor]
-#define HEADER_SELECTED_COLOR   [self.tintColor colorWithAlphaComponent:0.5]
+#define HEADER_SELECTED_COLOR   [self.tintColor colorWithAlphaComponent:0.333]
 #define HEADER_PINNED_COLOR     [BACKGROUND_COLOR colorWithAlphaComponent:0.8]
 
 #define BACKGROUND_COLOR        [UIColor colorWithWhite:0.066 alpha:1.0]
@@ -1193,7 +1193,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     CGFloat image_height, text_height;
     
     // get the screen, assume the game is 4:3 if we dont know.
-    BOOL is_vert = [info.gameScreen isEqualToString:kGameInfoScreenVertical];
+    BOOL is_vert = [info.gameScreen containsString:kGameInfoScreenVertical];
 
     if (is_vert)
         image_height = ceil(item_width * 4.0 / 3.0);
@@ -1325,7 +1325,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
             // MAME games always ran on horz or vertical CRTs so it does not matter what the PAR of
             // the title image is force a aspect of 3:4 or 4:3
             
-            BOOL is_vert = [info.gameScreen isEqualToString:kGameInfoScreenVertical];
+            BOOL is_vert = [info.gameScreen containsString:kGameInfoScreenVertical];
             
             if (self->_layoutMode == LayoutList) {
                 CGFloat aspect = 4.0 / 3.0;
@@ -2568,7 +2568,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     rect.size.width  -= self.collectionView.safeAreaInsets.left + self.collectionView.safeAreaInsets.right;
     
     UIImage* image = [[ImageCache sharedInstance] getImage:_game.gameImageURL size:CGSizeZero];
-    CGFloat aspect = [_game.gameScreen isEqualToString:kGameInfoScreenVertical] ? 3.0/4.0 : 4.0/3.0;
+    CGFloat aspect = [_game.gameScreen containsString:kGameInfoScreenVertical] ? 3.0/4.0 : 4.0/3.0;
 
     CGSize image_size = CGSizeMake(INFO_IMAGE_WIDTH, INFO_IMAGE_WIDTH / aspect);
     image_size.height = MIN(image_size.height, rect.size.height * 0.60);

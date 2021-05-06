@@ -525,6 +525,9 @@ NSString* find_category(NSString* name, NSString* parent)
 // called from deep inside MAME select_game menu, to give us the valid list of games/drivers
 void m4i_set_game_info(myosd_game_info* game_info, int game_count)
 {
+    static NSString* screens[] = {kGameInfoScreenHorizontal, kGameInfoScreenVertical,
+        kGameInfoScreenHorizontal @", " kGameInfoScreenVector, kGameInfoScreenVertical @", " kGameInfoScreenVector};
+    
     static NSString* types[] = {kGameInfoTypeArcade, kGameInfoTypeConsole, kGameInfoTypeComputer};
     _Static_assert(MYOSD_GAME_TYPE_ARCADE == 0, "");
     _Static_assert(MYOSD_GAME_TYPE_CONSOLE == 1, "");
@@ -556,9 +559,10 @@ void m4i_set_game_info(myosd_game_info* game_info, int game_count)
                 kGameInfoYear:        @(game_info[i].year),
                 kGameInfoParent:      @(game_info[i].parent ?: ""),
                 kGameInfoManufacturer:@(game_info[i].manufacturer),
-                kGameInfoScreen:      (game_info[i].flags & MYOSD_GAME_INFO_VERTICAL) ? kGameInfoScreenVertical : kGameInfoScreenHorizontal,
                 kGameInfoCategory:    find_category(@(game_info[i].name), @(game_info[i].parent ?: "")),
                 kGameInfoDriver:      [@(game_info[i].source_file ?: "").lastPathComponent stringByDeletingPathExtension],
+                kGameInfoScreen:      screens[(game_info[i].flags & MYOSD_GAME_INFO_VERTICAL) ? 1 : 0 +
+                                              (game_info[i].flags & MYOSD_GAME_INFO_VECTOR)   ? 2 : 0 ]
             }];
         }
         
