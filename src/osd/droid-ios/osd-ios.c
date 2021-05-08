@@ -113,9 +113,8 @@ void myosd_set_video_mode(int screen_width,int screen_height,int target_width,in
 {
     mame_printf_debug("myosd_set_video_mode: %dx%d [%dx%d]\n",screen_width,screen_height,target_width,target_height);
 
-    if (host_callbacks.video_init != NULL) {
-        host_callbacks.video_init(screen_width,screen_height,target_width,target_height);
-    }
+    if (host_callbacks.video_init != NULL)
+        host_callbacks.video_init(screen_width,screen_height);
 }
 
 void myosd_video_draw(render_primitive* prims, int width, int height)

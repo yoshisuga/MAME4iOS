@@ -368,7 +368,7 @@ typedef struct {
     void (*game_list)(myosd_game_info *games, int count);
     void (*game_exit)(void);
     
-    void (*video_init)(int screen_width, int screen_height, int render_width, int render_height);
+    void (*video_init)(int screen_width, int screen_height);
     void (*video_draw)(myosd_render_primitive* prim_list, int render_width, int render_height);
     void (*video_exit)(void);
 

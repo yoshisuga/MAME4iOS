@@ -205,6 +205,7 @@ int g_pref_showINFO = 0;
 int g_pref_filter_clones;
 int g_pref_filter_not_working;
 int g_pref_filter_bios;
+int g_pref_speed;
 
 enum {
     HudSizeZero = 0,        // HUD is not visible at all.
@@ -298,14 +299,12 @@ static BOOL g_video_reset = FALSE;
 
 // called by the OSD layer when redner target changes size
 // **NOTE** this is called on the MAME background thread, dont do anything stupid.
-void m4i_video_init(int screen_width, int screen_height, int render_width, int render_height)
+void m4i_video_init(int width, int height)
 {
-    NSLog(@"m4i_video_init: %dx%d [%dx%d]", screen_width, screen_height, render_width, render_height);
+    NSLog(@"m4i_video_init: %dx%d", width, height);
     
-    myosd_screen_width = screen_width;
-    myosd_screen_height = screen_height;
-    myosd_render_width = render_width;
-    myosd_render_height = render_height;
+    myosd_screen_width = width;
+    myosd_screen_height = height;
     
     if (sharedInstance == nil)
         return;
@@ -324,8 +323,10 @@ void m4i_video_init(int screen_width, int screen_height, int render_width, int r
 // ...not doing something stupid includes not leaking autoreleased objects! use a autorelease pool if you need to!
 void m4i_video_draw(myosd_render_primitive* prim_list, int width, int height) {
 
-    NSCParameterAssert(width == myosd_render_width && height == myosd_render_height);
-    
+    // set these globals for `force pixel aspect`
+    myosd_render_width = width;
+    myosd_render_height = height;
+
     if (sharedInstance == nil || g_emulation_paused)
         return;
 
@@ -375,8 +376,9 @@ void m4i_game_stop(void);
 // run MAME (or pass NULL for main menu)
 int run_mame(char* system, char* game)
 {
-    // TODO: hiscore?
-    // TODO: speed?
+    char speed[16];
+    snprintf(speed, sizeof(speed), "%0.2f", (float)g_pref_speed / 100.0);
+    
     char* argv[] = {"mame4ios",
         // use -nocoinlock as a do-nothing option
         (system && system[0] != 0) ? system : "-nocoinlock",
@@ -386,6 +388,7 @@ int run_mame(char* system, char* game)
         g_pref_autosave ? "-autosave" : "-noautosave",
         g_pref_hiscore ? "-hiscore" : "-nohiscore",
         g_pref_showINFO ? "-noskip_gameinfo" : "-skip_gameinfo",
+        "-speed", speed,
         "-flicker", g_pref_vector_flicker ? "0.4" : "0.0",
         "-beam", g_pref_vector_bean2x ? "2.5" : "1.0",          // TODO: -beam_width_min and -beam_width_max on latest MAME
         "-pause_brightness", "1.0", "-update_in_pause",  // to debug shaders
@@ -727,6 +730,7 @@ void m4i_game_stop()
 - (void)startEmulation {
     if (g_emulation_initiated == 1)
         return;
+    // we must do this early to set all the g_pref_ globals
     [self updateOptions];
 
     sharedInstance = self;
@@ -1342,7 +1346,7 @@ HUDViewController* g_menu;
     g_pref_vector_bean2x = [op vbean2x];
     g_pref_vector_flicker = [op vflicker];
 
-    int speed = -1;
+    int speed = 100;
     switch ([op emuspeed]) {
         case 1: speed = 50; break;
         case 2: speed = 60; break;
@@ -1360,7 +1364,8 @@ HUDViewController* g_menu;
         case 14: speed = 140; break;
         case 15: speed = 150; break;
     }
-    myosd_set(MYOSD_SPEED, speed);
+    g_pref_speed = speed;
+    myosd_set(MYOSD_SPEED, g_pref_speed);
     
     turboBtnEnabled[BTN_X] = [op turboXEnabled];
     turboBtnEnabled[BTN_Y] = [op turboYEnabled];
@@ -2221,8 +2226,6 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         change_pause(1);
     
     // reset the frame count when you first turn on/off HUD
-    if (g_pref_showHUD != HudSizeInfo && g_pref_showFPS != myosd_get(MYOSD_FPS))
-        screenView.frameCount = 0;
     if ((g_pref_showHUD != 0) != (hudView != nil))
         screenView.frameCount = 0;
     
@@ -3408,12 +3411,11 @@ void m4i_poll_input(myosd_input_state* myosd, size_t input_size) {
             break;
         case 'S':   // Speed 2x
         {
-            int speed = (int)myosd_get(MYOSD_SPEED);
-            if (speed != -1)
-                speed = -1;
+            if (g_pref_speed != 100)
+                g_pref_speed = 100;
             else
-                speed = 200;
-            myosd_set(MYOSD_SPEED, speed);
+                g_pref_speed = 200;
+            myosd_set(MYOSD_SPEED, g_pref_speed);
             break;
         }
         case 'M':
