@@ -304,7 +304,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 #pragma mark - LINE BUFFER
 
 - (void)saveLine:(myosd_render_primitive*) line {
-    NSParameterAssert(line->type == RENDER_PRIMITIVE_LINE);
+    NSParameterAssert(line->type == MYOSD_RENDER_PRIMITIVE_LINE);
     
     if (_line_buffer == NULL)
         _line_buffer = malloc(LINE_BUFFER_SIZE * sizeof(_line_buffer[0]));
@@ -366,7 +366,7 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
     TIMER_START(texture_load);
 
     switch (prim->texformat) {
-        case TEXFORMAT_RGB15:
+        case MYOSD_TEXFORMAT_RGB15:
         {
             // map 0-31 -> 0-255
             static uint32_t pal_ident[32] = {0,8,16,24,32,41,49,57,65,74,82,90,98,106,115,123,131,139,148,156,164,172,180,189,197,205,213,222,230,238,246,255};
@@ -388,8 +388,8 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
             [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:temp_buffer bytesPerRow:width*4];
             break;
         }
-        case TEXFORMAT_RGB32:
-        case TEXFORMAT_ARGB32:
+        case MYOSD_TEXFORMAT_RGB32:
+        case MYOSD_TEXFORMAT_ARGB32:
         {
             TIMER_START(texture_load_rgb32);
             if (prim->texture_palette == NULL) {
@@ -414,8 +414,8 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
             TIMER_STOP(texture_load_rgb32);
             break;
         }
-        case TEXFORMAT_PALETTE16:
-        case TEXFORMAT_PALETTEA16:
+        case MYOSD_TEXFORMAT_PALETTE16:
+        case MYOSD_TEXFORMAT_PALETTEA16:
         {
             TIMER_START(texture_load_pal16);
             uint16_t* src = prim->texture_base;
@@ -444,7 +444,7 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
             [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:temp_buffer bytesPerRow:width*4];
             break;
         }
-        case TEXFORMAT_YUY16:
+        case MYOSD_TEXFORMAT_YUY16:
         {
             // this texture format is only used for AVI files and LaserDisc player!
             NSCParameterAssert(FALSE);
@@ -494,7 +494,7 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
     // walk the primitive list and render
     for (myosd_render_primitive* prim = prim_list; prim != NULL; prim = prim->next) {
         
-        if (prim->type == RENDER_PRIMITIVE_QUAD)
+        if (prim->type == MYOSD_RENDER_PRIMITIVE_QUAD)
             TIMER_START(quad_prim);
         else
             TIMER_START(line_prim);
@@ -505,7 +505,7 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
                                  floor(prim->bounds_x1 + 0.5) - floor(prim->bounds_x0 + 0.5),
                                  floor(prim->bounds_y1 + 0.5) - floor(prim->bounds_y0 + 0.5));
 
-        if (prim->type == RENDER_PRIMITIVE_QUAD && prim->texture_base != NULL) {
+        if (prim->type == MYOSD_RENDER_PRIMITIVE_QUAD && prim->texture_base != NULL) {
             
             // set the texture
             [self setTexture:0 texture:prim->texture_base hash:prim->texture_seqid
@@ -523,15 +523,15 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
                 //      mame-screen-size     - the size (in pixels) of the input texture
                 //      mame-screen-matrix   - matrix to convert texture coordinates (u,v) to crt (x,scanline)
                 //
-                CGSize src_size = CGSizeMake((prim->texorient & ORIENTATION_SWAP_XY) ? prim->texture_height : prim->texture_width,
-                                             (prim->texorient & ORIENTATION_SWAP_XY) ? prim->texture_width : prim->texture_height);
+                CGSize src_size = CGSizeMake((prim->texorient & MYOSD_ORIENTATION_SWAP_XY) ? prim->texture_height : prim->texture_width,
+                                             (prim->texorient & MYOSD_ORIENTATION_SWAP_XY) ? prim->texture_width : prim->texture_height);
                 
                 CGRect src_rect = CGRectMake(0, 0, src_size.width, src_size.height);
                 CGRect dst_rect = CGRectMake(rect.origin.x * scale_x, rect.origin.y * scale_y, rect.size.width * scale_x, rect.size.height * scale_y);
                 
                 // create a matrix to convert texture coordinates (u,v) to crt scanlines (x,y)
                 simd_float2x2 mame_screen_matrix;
-                if (prim->texorient & ORIENTATION_SWAP_XY)
+                if (prim->texorient & MYOSD_ORIENTATION_SWAP_XY)
                     mame_screen_matrix = (matrix_float2x2){{ {0,prim->texture_width}, {prim->texture_height,0} }};
                 else
                     mame_screen_matrix = (matrix_float2x2){{ {prim->texture_width,0}, {0,prim->texture_height} }};
@@ -565,10 +565,10 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
                 Vertex2D(rect.origin.x + rect.size.width,rect.origin.y + rect.size.height,prim->texcoords[3].u,prim->texcoords[3].v,color),
             } count:4];
         }
-        else if (prim->type == RENDER_PRIMITIVE_QUAD) {
+        else if (prim->type == MYOSD_RENDER_PRIMITIVE_QUAD) {
             // solid color quad. only ALPHA or NONE blend mode.
             
-            if (prim->blendmode != BLENDMODE_ALPHA || prim->color_a == 1.0) {
+            if (prim->blendmode != MYOSD_BLENDMODE_ALPHA || prim->color_a == 1.0) {
                 [self setShader:ShaderNone];
                 [self drawRect:rect color:color];
             }
@@ -577,14 +577,14 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
                 [self drawRect:rect color:color];
             }
         }
-        else if (prim->type == RENDER_PRIMITIVE_LINE && (prim->width * scale) <= 1.0) {
+        else if (prim->type == MYOSD_RENDER_PRIMITIVE_LINE && (prim->width * scale) <= 1.0) {
             // single pixel line.
             [self setShader:shader_map[prim->blendmode]];
             [self drawLine:CGPointMake(prim->bounds_x0, prim->bounds_y0) to:CGPointMake(prim->bounds_x1, prim->bounds_y1) color:color];
         }
-        else if (prim->type == RENDER_PRIMITIVE_LINE) {
+        else if (prim->type == MYOSD_RENDER_PRIMITIVE_LINE) {
             // wide line, if the blendmode is ADD this is a VECTOR line, else a UI line.
-            if (prim->blendmode == BLENDMODE_ADD && _line_shader != nil) {
+            if (prim->blendmode == MYOSD_BLENDMODE_ADD && _line_shader != nil) {
                 // this line is a vector line, use a special shader
 
                 // pre-multiply color, so shader has non-iterated color
@@ -611,7 +611,7 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
                 // this line is from MAME UI, draw normal
                 [self setShader:shader_map[prim->blendmode]];
                 
-                if (prim->blendmode == BLENDMODE_NONE)
+                if (prim->blendmode == MYOSD_BLENDMODE_NONE)
                     [self drawLine:CGPointMake(prim->bounds_x0, prim->bounds_y0) to:CGPointMake(prim->bounds_x1, prim->bounds_y1) width:prim->width color:color];
                 else
                     [self drawLine:CGPointMake(prim->bounds_x0, prim->bounds_y0) to:CGPointMake(prim->bounds_x1, prim->bounds_y1) width:prim->width color:color edgeAlpha:0.0];
@@ -622,7 +622,7 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
             NSParameterAssert(FALSE);  // bad primitive
         }
         
-        if (prim->type == RENDER_PRIMITIVE_QUAD)
+        if (prim->type == MYOSD_RENDER_PRIMITIVE_QUAD)
             TIMER_STOP(quad_prim);
         else
             TIMER_STOP(line_prim);
@@ -881,10 +881,10 @@ simd_float4 ColorMatch(CGColorSpaceRef destColorSpace, CGColorSpaceRef sourceCol
     
     for (myosd_render_primitive* prim = prim_list; prim != NULL; prim = prim->next) {
         
-        assert(prim->type == RENDER_PRIMITIVE_LINE || prim->type == RENDER_PRIMITIVE_QUAD);
-        assert(prim->blendmode <= BLENDMODE_ADD);
-        assert(prim->texformat <= TEXFORMAT_YUY16);
-        assert(prim->texture_base == NULL || prim->texformat != TEXFORMAT_UNDEFINED);
+        assert(prim->type == MYOSD_RENDER_PRIMITIVE_LINE || prim->type == MYOSD_RENDER_PRIMITIVE_QUAD);
+        assert(prim->blendmode <= MYOSD_BLENDMODE_ADD);
+        assert(prim->texformat <= MYOSD_TEXFORMAT_YUY16);
+        assert(prim->texture_base == NULL || prim->texformat != MYOSD_TEXFORMAT_UNDEFINED);
         assert(prim->unused == 0);
 
         float width = prim->width;
@@ -894,7 +894,7 @@ simd_float4 ColorMatch(CGColorSpaceRef destColorSpace, CGColorSpaceRef sourceCol
         int orient = prim->texorient;
         int wrap = prim->texwrap;
 
-        if (prim->type == RENDER_PRIMITIVE_LINE) {
+        if (prim->type == MYOSD_RENDER_PRIMITIVE_LINE) {
             if (width <= 1.0 && !aa)
                 assert(TRUE);
             if (width  > 1.0 && !aa)
@@ -903,51 +903,51 @@ simd_float4 ColorMatch(CGColorSpaceRef destColorSpace, CGColorSpaceRef sourceCol
                 assert(TRUE);
             if (width  > 1.0 && aa)
                 assert(TRUE);
-            if (blend == BLENDMODE_NONE)
+            if (blend == MYOSD_BLENDMODE_NONE)
                 assert(FALSE);
-            if (blend == BLENDMODE_ALPHA)
+            if (blend == MYOSD_BLENDMODE_ALPHA)
                 assert(TRUE);
-            if (blend == BLENDMODE_RGB_MULTIPLY)
+            if (blend == MYOSD_BLENDMODE_RGB_MULTIPLY)
                 assert(FALSE);
-            if (blend == BLENDMODE_ADD)
+            if (blend == MYOSD_BLENDMODE_ADD)
                 assert(TRUE);
         }
-        else if (prim->type == RENDER_PRIMITIVE_QUAD && prim->texture_base == NULL) {
-            if (blend == BLENDMODE_NONE)
+        else if (prim->type == MYOSD_RENDER_PRIMITIVE_QUAD && prim->texture_base == NULL) {
+            if (blend == MYOSD_BLENDMODE_NONE)
                 assert(TRUE);
-            if (blend == BLENDMODE_ALPHA)
+            if (blend == MYOSD_BLENDMODE_ALPHA)
                 assert(TRUE);
-            if (blend == BLENDMODE_RGB_MULTIPLY)
+            if (blend == MYOSD_BLENDMODE_RGB_MULTIPLY)
                 assert(TRUE);
-            if (blend == BLENDMODE_ADD)
+            if (blend == MYOSD_BLENDMODE_ADD)
                 assert(TRUE);
         }
-        else if (prim->type == RENDER_PRIMITIVE_QUAD) {
-            if (blend == BLENDMODE_NONE)
+        else if (prim->type == MYOSD_RENDER_PRIMITIVE_QUAD) {
+            if (blend == MYOSD_BLENDMODE_NONE)
                 assert(TRUE);
-            if (blend == BLENDMODE_ALPHA)
+            if (blend == MYOSD_BLENDMODE_ALPHA)
                 assert(TRUE);
-            if (blend == BLENDMODE_RGB_MULTIPLY)
+            if (blend == MYOSD_BLENDMODE_RGB_MULTIPLY)
                 assert(TRUE);
-            if (blend == BLENDMODE_ADD)
-                assert(TRUE);
-            
-            if (orient == ORIENTATION_ROT0)
-                assert(TRUE);
-            if (orient == ORIENTATION_ROT90)
-                assert(TRUE);
-            if (orient == ORIENTATION_ROT180)
-                assert(TRUE);
-            if (orient == ORIENTATION_ROT270)
+            if (blend == MYOSD_BLENDMODE_ADD)
                 assert(TRUE);
             
-            if (orient == ORIENTATION_FLIP_X)
+            if (orient == MYOSD_ORIENTATION_ROT0)
                 assert(TRUE);
-            if (orient == ORIENTATION_FLIP_Y)
+            if (orient == MYOSD_ORIENTATION_ROT90)
                 assert(TRUE);
-            if (orient == ORIENTATION_SWAP_XY)
+            if (orient == MYOSD_ORIENTATION_ROT180)
                 assert(TRUE);
-            if (orient == (ORIENTATION_SWAP_XY | ORIENTATION_FLIP_X | ORIENTATION_FLIP_Y))
+            if (orient == MYOSD_ORIENTATION_ROT270)
+                assert(TRUE);
+            
+            if (orient == MYOSD_ORIENTATION_FLIP_X)
+                assert(TRUE);
+            if (orient == MYOSD_ORIENTATION_FLIP_Y)
+                assert(TRUE);
+            if (orient == MYOSD_ORIENTATION_SWAP_XY)
+                assert(TRUE);
+            if (orient == (MYOSD_ORIENTATION_SWAP_XY | MYOSD_ORIENTATION_FLIP_X | MYOSD_ORIENTATION_FLIP_Y))
                 assert(FALSE);
 
             if (wrap == 0)
@@ -955,26 +955,26 @@ simd_float4 ColorMatch(CGColorSpaceRef destColorSpace, CGColorSpaceRef sourceCol
             if (wrap == 1)
                 assert(TRUE);
 
-            if (fmt == TEXFORMAT_RGB15 && prim->texture_palette == NULL)
+            if (fmt == MYOSD_TEXFORMAT_RGB15 && prim->texture_palette == NULL)
                 assert(TRUE);
-            if (fmt == TEXFORMAT_RGB32 && prim->texture_palette == NULL)
+            if (fmt == MYOSD_TEXFORMAT_RGB32 && prim->texture_palette == NULL)
                 assert(TRUE);
-            if (fmt == TEXFORMAT_ARGB32 && prim->texture_palette == NULL)
+            if (fmt == MYOSD_TEXFORMAT_ARGB32 && prim->texture_palette == NULL)
                 assert(TRUE);
-            if (fmt == TEXFORMAT_YUY16 && prim->texture_palette == NULL)
+            if (fmt == MYOSD_TEXFORMAT_YUY16 && prim->texture_palette == NULL)
                 assert(FALSE);
 
-            if (fmt == TEXFORMAT_PALETTE16 && prim->texture_palette != NULL)
+            if (fmt == MYOSD_TEXFORMAT_PALETTE16 && prim->texture_palette != NULL)
                 assert(TRUE);
-            if (fmt == TEXFORMAT_PALETTEA16 && prim->texture_palette != NULL)
+            if (fmt == MYOSD_TEXFORMAT_PALETTEA16 && prim->texture_palette != NULL)
                 assert(FALSE);
-            if (fmt == TEXFORMAT_RGB15 && prim->texture_palette != NULL)
+            if (fmt == MYOSD_TEXFORMAT_RGB15 && prim->texture_palette != NULL)
                 assert(TRUE);
-            if (fmt == TEXFORMAT_RGB32 && prim->texture_palette != NULL)
+            if (fmt == MYOSD_TEXFORMAT_RGB32 && prim->texture_palette != NULL)
                 assert(TRUE);
-            if (fmt == TEXFORMAT_ARGB32 && prim->texture_palette != NULL)
+            if (fmt == MYOSD_TEXFORMAT_ARGB32 && prim->texture_palette != NULL)
                 assert(TRUE);
-            if (fmt == TEXFORMAT_YUY16 && prim->texture_palette != NULL)
+            if (fmt == MYOSD_TEXFORMAT_YUY16 && prim->texture_palette != NULL)
                 assert(FALSE);
         }
     }
@@ -998,9 +998,9 @@ simd_float4 ColorMatch(CGColorSpaceRef destColorSpace, CGColorSpaceRef sourceCol
     
     for (myosd_render_primitive* prim = primitives; prim != NULL; prim = prim->next) {
         
-        NSParameterAssert(prim->type == RENDER_PRIMITIVE_LINE || prim->type == RENDER_PRIMITIVE_QUAD);
-        NSParameterAssert(prim->blendmode <= BLENDMODE_ADD);
-        NSParameterAssert(prim->texformat <= TEXFORMAT_YUY16);
+        NSParameterAssert(prim->type == MYOSD_RENDER_PRIMITIVE_LINE || prim->type == MYOSD_RENDER_PRIMITIVE_QUAD);
+        NSParameterAssert(prim->blendmode <= MYOSD_BLENDMODE_ADD);
+        NSParameterAssert(prim->texformat <= MYOSD_TEXFORMAT_YUY16);
         NSParameterAssert(prim->unused == 0);
         
         int blend = prim->blendmode;
@@ -1010,19 +1010,19 @@ simd_float4 ColorMatch(CGColorSpaceRef destColorSpace, CGColorSpaceRef sourceCol
         int orient = prim->texorient;
         int wrap = prim->texwrap;
         
-        if (prim->type == RENDER_PRIMITIVE_LINE) {
+        if (prim->type == MYOSD_RENDER_PRIMITIVE_LINE) {
             NSLog(@"    LINE (%.0f,%.0f) -> (%.0f,%.0f) (%0.2f,%0.2f,%0.2f,%0.2f) %f %s%s%s",
                   prim->bounds_x0, prim->bounds_y0, prim->bounds_x1, prim->bounds_y1,
                   prim->color_r, prim->color_g, prim->color_b, prim->color_a,
                   prim->width, blend_mode_name[blend], aa ? " AA" : "", screen ? " SCREEN" : "");
         }
-        else if (prim->type == RENDER_PRIMITIVE_QUAD && prim->texture_base == NULL) {
+        else if (prim->type == MYOSD_RENDER_PRIMITIVE_QUAD && prim->texture_base == NULL) {
             NSLog(@"    QUAD [%.0f,%.0f,%.0f,%.0f] (%0.2f,%0.2f,%0.2f,%0.2f) %s%s",
                   prim->bounds_x0, prim->bounds_y0, prim->bounds_x1 - prim->bounds_x0, prim->bounds_y1 - prim->bounds_y0,
                   prim->color_r, prim->color_g, prim->color_b, prim->color_a,
                   blend_mode_name[blend], aa ? " AA" : "");
         }
-        else if (prim->type == RENDER_PRIMITIVE_QUAD) {
+        else if (prim->type == MYOSD_RENDER_PRIMITIVE_QUAD) {
             NSLog(@"    TEXQ [%.0f,%.0f,%.0f,%.0f] [(%.0f,%.0f),(%.0f,%.0f),(%.0f,%.0f),(%.0f,%.0f)] %s %dx%d (%lX:%d) %s%s%s%s%s%s%s%s",
                   prim->bounds_x0, prim->bounds_y0, prim->bounds_x1 - prim->bounds_x0, prim->bounds_y1 - prim->bounds_y0,
                   prim->texcoords[0].u, prim->texcoords[0].v,
@@ -1035,9 +1035,9 @@ simd_float4 ColorMatch(CGColorSpaceRef destColorSpace, CGColorSpaceRef sourceCol
                   prim->texture_palette ? " PALLETE" : "",
                   aa ? " AA" : "",
                   screen ? " SCREEN" : "", wrap ? " WRAP" : "",
-                  (orient & ORIENTATION_FLIP_X) ? " FLIPX" : "",
-                  (orient & ORIENTATION_FLIP_Y) ? " FLIPY" : "",
-                  (orient & ORIENTATION_SWAP_XY) ? " SWAPXY" : ""
+                  (orient & MYOSD_ORIENTATION_FLIP_X) ? " FLIPX" : "",
+                  (orient & MYOSD_ORIENTATION_FLIP_Y) ? " FLIPY" : "",
+                  (orient & MYOSD_ORIENTATION_SWAP_XY) ? " SWAPXY" : ""
                   );
         }
     }

@@ -42,8 +42,8 @@ static render_target *our_target;
 static const options_entry droid_mame_options[] =
 {
 	{ "initpath", ".;/mame", 0, "path to ini files" },
-	{ NULL, NULL, OPTION_HEADER, "DROID OPTIONS" },
-	{ "safearea(0.01-1)", "1.0", 0, "Adjust video for safe areas on older TVs (.9 or .85 are usually good values)" },
+	{ NULL, NULL, OPTION_HEADER, "MYOSD OPTIONS" },
+    { OPTION_HISCORE, "1", OPTION_BOOLEAN, "Enable HISCORE system" },
 	{ NULL }
 };
 

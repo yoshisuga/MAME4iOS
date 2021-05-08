@@ -148,79 +148,86 @@ enum MYOSD_GAME_INFO
 typedef struct _myosd_render_primitive myosd_render_primitive;
 struct _myosd_render_primitive
 {
-    myosd_render_primitive* next;              /* pointer to next element */
-    int                   type;                /* type of primitive */
-//  render_bounds         bounds;              /* bounds or positions */
+    myosd_render_primitive* next;               /* pointer to next element */
+    int                   type;                 /* type of primitive */
+//  render_bounds         bounds;               /* bounds or positions */
     float                 bounds_x0;
     float                 bounds_y0;
     float                 bounds_x1;
     float                 bounds_y1;
-//  render_color          color;               /* RGBA values */
+//  render_color          color;                /* RGBA values */
     float                 color_a;
     float                 color_r;
     float                 color_g;
     float                 color_b;
-//  UINT32                flags;               /* flags */
-    uint32_t              texorient:4;
-    uint32_t              texformat:4;
-    uint32_t              blendmode:4;
-    uint32_t              antialias:1;
-    uint32_t              screentex:1;
-    uint32_t              texwrap:1;
-    uint32_t              unused:17;
-    float                 width;               /* width (for line primitives) */
-//  render_texinfo        texture;             /* texture info (for quad primitives) */
-    void *                texture_base;        /* base of the data */
-    uint32_t              texture_rowpixels;   /* pixels per row */
-    uint32_t              texture_width;       /* width of the image */
-    uint32_t              texture_height;      /* height of the image */
-    const void*           texture_palette;     /* palette for PALETTE16 textures, LUTs for RGB15/RGB32 */
-    uint32_t              texture_seqid;       /* sequence ID */
-    uint32_t              texture_junk;        /* padding */
-//  render_quad_texuv     texcoords;           /* texture coordinates (for quad primitives) */
+    union {
+        uint32_t          flags;                /* flags */
+        struct {
+            uint32_t      texorient:4;          /* MYOSD_ORIENTATION_ */
+            uint32_t      texformat:4;          /* MYOSD_TEXFORMAT_ */
+            uint32_t      blendmode:4;          /* MYOSD_BLENDMODE_ */
+            uint32_t      antialias:1;          /* antialias flag */
+            uint32_t      screentex:1;          /* SCREEN flag */
+            uint32_t      texwrap:1;            /* texture wrap */
+            uint32_t      unused:17;
+        };
+    };
+    float                 width;                /* width (for line primitives) */
+//  render_texinfo        texture;              /* texture info (for quad primitives) */
+    void *                texture_base;         /* base of the data */
+    uint32_t              texture_rowpixels;    /* pixels per row */
+    uint32_t              texture_width;        /* width of the image */
+    uint32_t              texture_height;       /* height of the image */
+    const void*           texture_palette;      /* palette for PALETTE16 textures, LUTs for RGB15/RGB32 */
+    uint32_t              texture_seqid;        /* sequence ID */
+    uint32_t              texture_junk;         /* padding */
+//  render_quad_texuv     texcoords;            /* texture coordinates (for quad primitives) */
     struct {float u,v;}   texcoords[4];
 };
 
-#if !defined(MAME_EMU_RENDER_H) && !defined(ORIENTATION_FLIP_X)
 /* render primitive types */
 enum
 {
-    RENDER_PRIMITIVE_LINE,          /* a single line */
-    RENDER_PRIMITIVE_QUAD           /* a rectilinear quad */
+    MYOSD_RENDER_PRIMITIVE_LINE,          /* a single line */
+    MYOSD_RENDER_PRIMITIVE_QUAD           /* a rectilinear quad */
 };
 
 /* texture formats */
 enum
 {
-    TEXFORMAT_UNDEFINED = 0,        /* require a format to be specified */
-    TEXFORMAT_PALETTE16,            /* 16bpp palettized, alpha ignored */
-    TEXFORMAT_PALETTEA16,           /* 16bpp palettized, alpha respected */
-    TEXFORMAT_RGB15,                /* 16bpp 5-5-5 RGB */
-    TEXFORMAT_RGB32,                /* 32bpp 8-8-8 RGB */
-    TEXFORMAT_ARGB32,               /* 32bpp 8-8-8-8 ARGB */
-    TEXFORMAT_YUY16                 /* 16bpp 8-8 Y/Cb, Y/Cr in sequence */
+    MYOSD_TEXFORMAT_UNDEFINED = 0,        /* require a format to be specified */
+    MYOSD_TEXFORMAT_PALETTE16,            /* 16bpp palettized, alpha ignored */
+    MYOSD_TEXFORMAT_PALETTEA16,           /* 16bpp palettized, alpha respected */
+    MYOSD_TEXFORMAT_RGB15,                /* 16bpp 5-5-5 RGB */
+    MYOSD_TEXFORMAT_RGB32,                /* 32bpp 8-8-8 RGB */
+    MYOSD_TEXFORMAT_ARGB32,               /* 32bpp 8-8-8-8 ARGB */
+    MYOSD_TEXFORMAT_YUY16,                /* 16bpp 8-8 Y/Cb, Y/Cr in sequence */
+    MYOSD_TEXFORMAT_MASK = 0x00F0,
 };
 
 /* blending modes */
 enum
 {
-    BLENDMODE_NONE = 0,             /* no blending */
-    BLENDMODE_ALPHA,                /* standard alpha blend */
-    BLENDMODE_RGB_MULTIPLY,         /* apply source alpha to source pix, then multiply RGB values */
-    BLENDMODE_ADD                   /* apply source alpha to source pix, then add to destination */
+    MYOSD_BLENDMODE_NONE = 0,             /* no blending */
+    MYOSD_BLENDMODE_ALPHA,                /* standard alpha blend */
+    MYOSD_BLENDMODE_RGB_MULTIPLY,         /* apply source alpha to source pix, then multiply RGB values */
+    MYOSD_BLENDMODE_ADD,                  /* apply source alpha to source pix, then add to destination */
+    MYOSD_BLENDMODE_MASK = 0x0F00,
 };
 
-// orientation of bitmaps
-#define ORIENTATION_FLIP_X  0x0001  /* mirror everything in the X direction */
-#define ORIENTATION_FLIP_Y  0x0002  /* mirror everything in the Y direction */
-#define ORIENTATION_SWAP_XY 0x0004  /* mirror along the top-left/bottom-right diagonal */
+/* texorient */
+enum
+{
+    MYOSD_ORIENTATION_FLIP_X  = 0x0001,  /* mirror everything in the X direction */
+    MYOSD_ORIENTATION_FLIP_Y  = 0x0002,  /* mirror everything in the Y direction */
+    MYOSD_ORIENTATION_SWAP_XY = 0x0004,  /* mirror along the top-left/bottom-right diagonal */
+    MYOSD_ORIENTATION_MASK    = 0x000F,
 
-#define ORIENTATION_ROT0    0
-#define ORIENTATION_ROT90   (ORIENTATION_SWAP_XY | ORIENTATION_FLIP_X)   /* rotate clockwise 90 degrees */
-#define ORIENTATION_ROT180  (ORIENTATION_FLIP_X | ORIENTATION_FLIP_Y)    /* rotate 180 degrees */
-#define ORIENTATION_ROT270  (ORIENTATION_SWAP_XY | ORIENTATION_FLIP_Y)   /* rotate counter-clockwise 90 degrees */
-
-#endif
+    MYOSD_ORIENTATION_ROT0    = 0,
+    MYOSD_ORIENTATION_ROT90   = (MYOSD_ORIENTATION_SWAP_XY | MYOSD_ORIENTATION_FLIP_X),   /* rotate clockwise 90 degrees */
+    MYOSD_ORIENTATION_ROT180  = (MYOSD_ORIENTATION_FLIP_X  | MYOSD_ORIENTATION_FLIP_Y),   /* rotate 180 degrees */
+    MYOSD_ORIENTATION_ROT270  = (MYOSD_ORIENTATION_SWAP_XY | MYOSD_ORIENTATION_FLIP_Y),   /* rotate counter-clockwise 90 degrees */
+};
 
 // MYOSD KEY CODES
 enum myosd_keycode
@@ -346,32 +353,32 @@ enum {
     MYOSD_DISPLAY_HEIGHT,
     MYOSD_FPS,                  // GET, SET: show framerate
     MYOSD_SPEED,                // GET, SET: emulation speed (100 = 100%)
-    MYOSD_HISCORE,              // GET, SET: HISCORE system enabled
-    MYOSD_FORCE_PIXEL_ASPECT,   // GET, SET: if TRUE will always use "Pixel Aspect"
 };
 extern intptr_t myosd_get(int var);
 extern void myosd_set(int var, intptr_t value);
 
 // MYOSD app callback functions
 typedef struct {
-    
+
+    void (*output_init)(void);
+    void (*output_text)(int channel, const char* text);
+    void (*output_exit)(void);
+
     void (*game_init)(myosd_game_info *info);
+    void (*game_list)(myosd_game_info *games, int count);
     void (*game_exit)(void);
     
-    void (*video_init)(int width, int height);
-    void (*video_draw)(myosd_render_primitive* prim_list, int width, int height);
+    void (*video_init)(int screen_width, int screen_height, int render_width, int render_height);
+    void (*video_draw)(myosd_render_primitive* prim_list, int render_width, int render_height);
     void (*video_exit)(void);
-
-    void (*sound_init)(int rate, int stereo);
-    void (*sound_play)(void *buff, int len);
-    void (*sound_exit)(void);
 
     void (*input_init)(myosd_input_state* input, size_t state_size);
     void (*input_poll)(myosd_input_state* input, size_t state_size);
     void (*input_exit)(void);
-    
-    void (*output_text)(int channel, const char* text);
-    void (*set_game_info)(myosd_game_info *games, int count);
+
+    void (*sound_init)(int rate, int stereo);
+    void (*sound_play)(void *buff, int len);
+    void (*sound_exit)(void);
 
 }   myosd_callbacks;
 

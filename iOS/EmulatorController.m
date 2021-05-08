@@ -130,8 +130,10 @@ TIMER_INIT_END
 #endif
 
 static int myosd_exitGame = 0;      // set this to cause MAME to exit.
-static int myosd_vis_video_width;   // MAME video/screen width
-static int myosd_vis_video_height;  // MAME video/screen height
+static int myosd_screen_width;      // MAME screen size
+static int myosd_screen_height;     //
+static int myosd_render_width;      // MAME render target size
+static int myosd_render_height;     //
 
 // Game Controllers
 NSArray * g_controllers;
@@ -216,6 +218,7 @@ int g_pref_showHUD = 0;
 int g_pref_saveHUD = 0;     // previous value of g_pref_showHUD
 
 int g_pref_keep_aspect_ratio = 0;
+int g_pref_force_pixel_aspect_ratio = 0;
 
 int g_pref_animated_DPad = 0;
 int g_pref_full_screen_land = 1;
@@ -237,6 +240,7 @@ int g_pref_vector_bean2x = 0;
 int g_pref_vector_flicker = 0;
 int g_pref_cheat = 0;
 int g_pref_autosave = 0;
+int g_pref_hiscore = 0;
 
 int g_pref_lightgun_enabled = 1;
 int g_pref_lightgun_bottom_reload = 0;
@@ -294,13 +298,15 @@ static BOOL g_video_reset = FALSE;
 
 // called by the OSD layer when redner target changes size
 // **NOTE** this is called on the MAME background thread, dont do anything stupid.
-void m4i_video_init(int width, int height)
+void m4i_video_init(int screen_width, int screen_height, int render_width, int render_height)
 {
-    NSLog(@"m4i_video_init: %dx%d", width, height);
+    NSLog(@"m4i_video_init: %dx%d [%dx%d]", screen_width, screen_height, render_width, render_height);
     
-    myosd_vis_video_width = width;
-    myosd_vis_video_height = height;
-
+    myosd_screen_width = screen_width;
+    myosd_screen_height = screen_height;
+    myosd_render_width = render_width;
+    myosd_render_height = render_height;
+    
     if (sharedInstance == nil)
         return;
     
@@ -318,6 +324,8 @@ void m4i_video_init(int width, int height)
 // ...not doing something stupid includes not leaking autoreleased objects! use a autorelease pool if you need to!
 void m4i_video_draw(myosd_render_primitive* prim_list, int width, int height) {
 
+    NSCParameterAssert(width == myosd_render_width && height == myosd_render_height);
+    
     if (sharedInstance == nil || g_emulation_paused)
         return;
 
@@ -360,7 +368,7 @@ void m4i_output(int channel, const char* text)
 }
 
 void m4i_poll_input(myosd_input_state* myosd, size_t input_size);
-void m4i_set_game_info(myosd_game_info* game_info, int game_count);
+void m4i_game_list(myosd_game_info* game_info, int game_count);
 void m4i_game_start(myosd_game_info* game_info);
 void m4i_game_stop(void);
 
@@ -376,6 +384,7 @@ int run_mame(char* system, char* game)
         "-nocoinlock",
         g_pref_cheat ? "-cheat" : "-nocheat",
         g_pref_autosave ? "-autosave" : "-noautosave",
+        g_pref_hiscore ? "-hiscore" : "-nohiscore",
         g_pref_showINFO ? "-noskip_gameinfo" : "-skip_gameinfo",
         "-flicker", g_pref_vector_flicker ? "0.4" : "0.0",
         "-beam", g_pref_vector_bean2x ? "2.5" : "1.0",          // TODO: -beam_width_min and -beam_width_max on latest MAME
@@ -389,7 +398,7 @@ int run_mame(char* system, char* game)
         .video_draw = m4i_video_draw,
         .input_poll = m4i_poll_input,
         .output_text= m4i_output,
-        .set_game_info = m4i_set_game_info,
+        .game_list = m4i_game_list,
         .game_init = m4i_game_start,
         .game_exit = m4i_game_stop,
     };
@@ -495,7 +504,7 @@ NSDictionary* load_category_ini(void)
         NSString* key = @(line);
         NSString* cat = category_dict[key];
         if (cat != nil) {
-            NSLog(@"%@ is in multiple categories \"%@\" and \"%@\"", key, cat, curcat);
+            //NSLog(@"%@ is in multiple categories \"%@\" and \"%@\"", key, cat, curcat);
             if (![cat containsString:curcat]) {
                 cat = [cat stringByAppendingFormat:@",%@", curcat];
                 [category_dict setObject:cat forKey:key];
@@ -523,7 +532,7 @@ NSString* find_category(NSString* name, NSString* parent)
 }
 
 // called from deep inside MAME select_game menu, to give us the valid list of games/drivers
-void m4i_set_game_info(myosd_game_info* game_info, int game_count)
+void m4i_game_list(myosd_game_info* game_info, int game_count)
 {
     static NSString* screens[] = {kGameInfoScreenHorizontal, kGameInfoScreenVertical,
         kGameInfoScreenHorizontal @", " kGameInfoScreenVector, kGameInfoScreenVertical @", " kGameInfoScreenVector};
@@ -1306,8 +1315,8 @@ HUDViewController* g_menu;
         g_joy_ways = 8;
     }
     
-    myosd_set(MYOSD_FORCE_PIXEL_ASPECT, op.forcepxa);
-    myosd_set(MYOSD_HISCORE, op.hiscore);
+    g_pref_force_pixel_aspect_ratio = op.forcepxa;
+    g_pref_hiscore = op.hiscore;
 
     g_pref_filter_clones = op.filterClones;
     g_pref_filter_not_working = op.filterNotWorking;
@@ -3091,21 +3100,24 @@ void m4i_poll_input(myosd_input_state* myosd, size_t input_size) {
     [self getOverlayImage:&border_image andSize:&border_size];
     r = CGRectInset(r, border_size.width, border_size.height);
     
+    int myosd_width  = g_pref_force_pixel_aspect_ratio ? myosd_render_width  : myosd_screen_width;
+    int myosd_height = g_pref_force_pixel_aspect_ratio ? myosd_render_height : myosd_screen_height;
+
     // preserve aspect ratio, and snap to pixels.
     if (g_pref_keep_aspect_ratio) {
         CGSize aspect;
         
         // use an exact aspect ratio of 4:3 or 3:4 iff possible
-        if (floor(4.0 * myosd_vis_video_height / 3.0 + 0.5) == myosd_vis_video_width)
+        if (floor(4.0 * myosd_height / 3.0 + 0.5) == myosd_width)
             aspect = CGSizeMake(4, 3);
-        else if (floor(3.0 * myosd_vis_video_width / 4.0 + 0.5) == myosd_vis_video_height)
+        else if (floor(3.0 * myosd_width / 4.0 + 0.5) == myosd_height)
             aspect = CGSizeMake(4, 3);
-        else if (floor(3.0 * myosd_vis_video_height / 4.0 + 0.5) == myosd_vis_video_width)
+        else if (floor(3.0 * myosd_height / 4.0 + 0.5) == myosd_width)
             aspect = CGSizeMake(3, 4);
-        else if (floor(4.0 * myosd_vis_video_width / 3.0 + 0.5) == myosd_vis_video_height)
+        else if (floor(4.0 * myosd_width / 3.0 + 0.5) == myosd_height)
             aspect = CGSizeMake(3, 4);
         else
-            aspect = CGSizeMake(myosd_vis_video_width, myosd_vis_video_height);
+            aspect = CGSizeMake(myosd_width, myosd_height);
 
         //        r = AVMakeRectWithAspectRatioInsideRect(aspect, r);
         //        r.origin.x    = floor(r.origin.x * scale) / scale;
@@ -3135,14 +3147,14 @@ void m4i_poll_input(myosd_input_state* myosd, size_t input_size) {
     }
     
     // integer only scaling
-    if (g_pref_integer_scale_only && myosd_vis_video_width < r.size.width * scale && myosd_vis_video_height < r.size.height * scale) {
-        CGFloat n_w = floor(r.size.width * scale / myosd_vis_video_width);
-        CGFloat n_h = floor(r.size.height * scale / myosd_vis_video_height);
+    if (g_pref_integer_scale_only && myosd_width < r.size.width * scale && myosd_height < r.size.height * scale) {
+        CGFloat n_w = floor(r.size.width * scale / myosd_width);
+        CGFloat n_h = floor(r.size.height * scale / myosd_height);
 
-        CGFloat new_width  = (n_w * myosd_vis_video_width) / scale;
-        CGFloat new_height = (n_h * myosd_vis_video_height) / scale;
+        CGFloat new_width  = (n_w * myosd_width) / scale;
+        CGFloat new_height = (n_h * myosd_height) / scale;
         
-        NSLog(@"INTEGER SCALE[%d,%d] %dx%d => %0.3fx%0.3f@%dx", (int)n_w, (int)n_h, myosd_vis_video_width, myosd_vis_video_height, new_width, new_height, (int)scale);
+        NSLog(@"INTEGER SCALE[%d,%d] %dx%d => %0.3fx%0.3f@%dx", (int)n_w, (int)n_h, myosd_width, myosd_height, new_width, new_height, (int)scale);
 
         r.origin.x += floor((r.size.width - new_width)/2);
         r.origin.y += floor((r.size.height - new_height)/2);
@@ -3384,7 +3396,7 @@ void m4i_poll_input(myosd_input_state* myosd, size_t input_size) {
             break;
         }
         case 'X':
-            myosd_set(MYOSD_FORCE_PIXEL_ASPECT, !myosd_get(MYOSD_FORCE_PIXEL_ASPECT));
+            g_pref_force_pixel_aspect_ratio = !g_pref_force_pixel_aspect_ratio;
             [self changeUI];
             break;
         case 'A':
