@@ -305,7 +305,9 @@ void m4i_video_init(int width, int height)
     
     myosd_screen_width = width;
     myosd_screen_height = height;
-    
+    myosd_render_width = width;
+    myosd_render_height = height;
+
     if (sharedInstance == nil)
         return;
     
