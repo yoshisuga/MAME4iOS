@@ -148,7 +148,6 @@ __attribute__((objc_direct_members))
 
 - (void)layoutSubviews {
     [super layoutSubviews];
-    // TODO: have an explicit texture flush method?
     _textureCacheFlush = TRUE;
 }
 - (void)didMoveToWindow {
