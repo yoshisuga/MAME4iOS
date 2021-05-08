@@ -800,10 +800,12 @@ __attribute__((objc_direct_members))
 
     // also draw stats
 #ifdef DEBUG
-    NSString* stats = [NSString stringWithFormat:@"Tri:%d Tex:%d Load:%d", num_tri, num_tex, num_tex_load];
+    NSString* stats = [NSString stringWithFormat:@"Tri:%d Tex:%d Load:%d Cache:%d", num_tri, num_tex, num_tex_load, (int)_texture_cache.count];
     y += h + f*2;
-    [self drawText:stats at:CGPointMake(x + h/8,y + h/8) height:h color:VertexColor(0,0,0,0.5)];
-    [self drawText:stats at:CGPointMake(x,y) height:h color:VertexColor(1,1,1,1)];
+    [self setShader:ShaderAlpha];
+    [self drawRect:CGRectMake(x, y, [self sizeText:stats height:h].width, h) color:VertexColor(0,0,0,0.5)];
+    //[self drawText:stats at:CGPointMake(x + h/8,y + h/8) height:h color:VertexColor(0,0,0,0.5)];
+    [self drawText:stats at:CGPointMake(x,y) height:h color:VertexColor(1,1,0,1)];
 #endif
 }
 
