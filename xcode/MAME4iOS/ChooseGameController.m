@@ -57,6 +57,7 @@
 #define TITLE_COLOR             [UIColor whiteColor]
 #define HEADER_TEXT_COLOR       [UIColor whiteColor]
 #define HEADER_BACKGROUND_COLOR [UIColor clearColor]
+#define HEADER_SELECTED_COLOR   [self.tintColor colorWithAlphaComponent:0.5]
 #define HEADER_PINNED_COLOR     [BACKGROUND_COLOR colorWithAlphaComponent:0.8]
 
 #define BACKGROUND_COLOR        [UIColor colorWithWhite:0.066 alpha:1.0]
@@ -93,7 +94,7 @@
 #define SECTION_ITEM_SPACING    8.0
 #else   // tvOS or mac
 #define SECTION_INSET_X         8.0
-#define SECTION_INSET_Y         8.0
+#define SECTION_INSET_Y         32.0
 #define SECTION_LINE_SPACING    48.0
 #define SECTION_ITEM_SPACING    32.0
 #endif
@@ -123,6 +124,8 @@
 #define SCOPE_MODE_DEFAULT  @"System"
 #define ALL_SCOPES          @[@"System", @"Manufacturer", @"Year", @"Genre", @"Driver"]
 #define RECENT_GAMES_MAX    8
+
+#define SECTIONS_COLLAPSED_KEY    @"CollapsedSections"
 
 #define CLAMP(x, num) MIN(MAX(x,0), (num)-1)
 
@@ -190,6 +193,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     LayoutMode _layoutMode;
     CGFloat _layoutWidth;
     UISearchController* _searchController;
+    BOOL _isSearchResults;      // TRUE when we are used as a search results controller on tvOS
     NSArray* _key_commands;
     BOOL _searchCancel;
     NSIndexPath* _currentlyFocusedIndexPath;
@@ -206,7 +210,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 @implementation ChooseGameController
 
 + (NSArray<NSString*>*) allSettingsKeys {
-    return @[LAYOUT_MODE_KEY, SCOPE_MODE_KEY, RECENT_GAMES_KEY, FAVORITE_GAMES_KEY];
+    return @[LAYOUT_MODE_KEY, SCOPE_MODE_KEY, RECENT_GAMES_KEY, FAVORITE_GAMES_KEY, SECTIONS_COLLAPSED_KEY];
 }
 
 - (instancetype)init
@@ -343,7 +347,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         
         UIBarButtonItem* search = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSearch target:self action:@selector(showSearch)];
         self.navigationItem.rightBarButtonItems = [@[search] arrayByAddingObjectsFromArray:self.navigationItem.rightBarButtonItems];
-}
+    }
 #endif
     
     // attach long press gesture to collectionView (only on pre-iOS 13, and tvOS)
@@ -398,9 +402,12 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 -(void)showSearch
 {
     ChooseGameController* resultsController = [[ChooseGameController alloc] init];
+    resultsController->_isSearchResults = TRUE;
+    // search results are always grouped by `System`
+    resultsController->_gameFilterScope = SCOPE_MODE_DEFAULT;
     [resultsController setGameList:_gameList];
     resultsController.selectGameCallback = _selectGameCallback;
-    
+
     _searchController = [[UISearchController alloc] initWithSearchResultsController:resultsController];
     _searchController.searchResultsUpdater = resultsController;
     _searchController.searchBar.delegate = resultsController;
@@ -447,18 +454,18 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if ([games filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"%K = %@", kGameInfoName, kGameInfoNameMameMenu]].count == 0)
     {
         games = [games arrayByAddingObject:@{
+            kGameInfoType:kGameInfoTypeComputer,
             kGameInfoName:kGameInfoNameMameMenu,
             kGameInfoParent:@"",
-            kGameInfoDescription:@"MAME UI",
-            kGameInfoYear:@"2010",
-            kGameInfoManufacturer:@"MAME 0.139u1",
+            kGameInfoDescription:@"MAME 139u1", // TODO: use the correct MAME core version
+            kGameInfoYear:@"2010",              // TODO: use the correct MAME core year
+            kGameInfoManufacturer:@"MAMEDev and contributors",
         }];
-        
-        // then (re)sort the list by description
-        games = [games sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:kGameInfoDescription ascending:TRUE]]];
     }
     
-    _gameList = games;
+    // sort the list by description
+    _gameList = [games sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:kGameInfoDescription ascending:TRUE]]];
+    
     [self filterGameList];
 }
 
@@ -565,6 +572,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 - (void)filterGameList
 {
     NSArray* filteredGames = _gameList;
+    
+    // when search is active, empty search string will find zero games
+    if (_isSearchResults && [_gameFilterText length] == 0)
+        filteredGames = @[];
     
     // filter all games, multiple keywords will be treated as AND, and #### <#### >#### <=#### >=#### will compare years
     if ([_gameFilterText length] > 0)
@@ -688,27 +699,31 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         NSLog(@"SECTIONS AFTER MERGE: %d!", (int)[gameSectionTitles count]);
     }
     
-    // add favorite games
-    NSArray* favoriteGames = [[NSUserDefaults.standardUserDefaults objectForKey:FAVORITE_GAMES_KEY]
-        filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF IN %@", filteredGames]];
-    
-    if ([favoriteGames count] > 0) {
-        //NSLog(@"FAVORITE GAMES: %@", favoriteGames);
-        gameSectionTitles = [@[FAVORITE_GAMES_TITLE] arrayByAddingObjectsFromArray:gameSectionTitles];
-        gameData[FAVORITE_GAMES_TITLE] = favoriteGames;
-    }
+    // dont add Recents or Favorites when we are searching
+    if (!_isSearchResults) {
 
-    // load recent games and put them at the top
-    NSArray* recentGames = [[NSUserDefaults.standardUserDefaults objectForKey:RECENT_GAMES_KEY]
-        filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF IN %@", filteredGames]];
+        // add favorite games
+        NSArray* favoriteGames = [[NSUserDefaults.standardUserDefaults objectForKey:FAVORITE_GAMES_KEY]
+            filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF IN %@", filteredGames]];
+        
+        if ([favoriteGames count] > 0) {
+            //NSLog(@"FAVORITE GAMES: %@", favoriteGames);
+            gameSectionTitles = [@[FAVORITE_GAMES_TITLE] arrayByAddingObjectsFromArray:gameSectionTitles];
+            gameData[FAVORITE_GAMES_TITLE] = favoriteGames;
+        }
 
-    if ([recentGames count] > RECENT_GAMES_MAX)
-        recentGames = [recentGames subarrayWithRange:NSMakeRange(0, RECENT_GAMES_MAX)];
+        // load recent games and put them at the top
+        NSArray* recentGames = [[NSUserDefaults.standardUserDefaults objectForKey:RECENT_GAMES_KEY]
+            filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF IN %@", filteredGames]];
 
-    if ([recentGames count] > 0) {
-        //NSLog(@"RECENT GAMES: %@", recentGames);
-        gameSectionTitles = [@[RECENT_GAMES_TITLE] arrayByAddingObjectsFromArray:gameSectionTitles];
-        gameData[RECENT_GAMES_TITLE] = recentGames;
+        if ([recentGames count] > RECENT_GAMES_MAX)
+            recentGames = [recentGames subarrayWithRange:NSMakeRange(0, RECENT_GAMES_MAX)];
+
+        if ([recentGames count] > 0) {
+            //NSLog(@"RECENT GAMES: %@", recentGames);
+            gameSectionTitles = [@[RECENT_GAMES_TITLE] arrayByAddingObjectsFromArray:gameSectionTitles];
+            gameData[RECENT_GAMES_TITLE] = recentGames;
+        }
     }
     
     _gameSectionTitles = gameSectionTitles;
@@ -765,10 +780,6 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 {
     NSLog(@"searchBarCancelButtonClicked: active=%d", _searchController.active);
     _searchCancel = TRUE;
-    
-    if (!_searchController.active) {
-        [self showSettings];
-    }
 }
 #endif
 
@@ -860,16 +871,18 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     CGFloat yTop = scrollView.contentOffset.y + scrollView.adjustedContentInset.top;
     for (GameCell* cell in [self.collectionView visibleSupplementaryViewsOfKind:UICollectionElementKindSectionHeader]) {
         if (yTop > 0.5 && fabs(yTop - cell.frame.origin.y) <= cell.frame.size.height) {
+#if TARGET_OS_IOS
             if (@available(iOS 13.0, *))
                 [cell addBlur:UIBlurEffectStyleDark];
             else
                 cell.contentView.backgroundColor = HEADER_PINNED_COLOR;
+#else
+            cell.contentView.backgroundColor = HEADER_PINNED_COLOR;
+#endif
         }
         else {
-            if (@available(iOS 13.0, *))
-                cell.backgroundView = nil;
-            else
-                cell.contentView.backgroundColor = HEADER_BACKGROUND_COLOR;
+            cell.backgroundView = nil;
+            cell.contentView.backgroundColor = HEADER_BACKGROUND_COLOR;
         }
     }
 }
@@ -899,6 +912,11 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 #pragma mark Recent Games
 
+- (BOOL)isRecent:(NSDictionary*)game
+{
+    NSArray* recentGames = [NSUserDefaults.standardUserDefaults objectForKey:RECENT_GAMES_KEY] ?: @[];
+    return [recentGames containsObject:game];
+}
 - (void)setRecent:(NSDictionary*)game isRecent:(BOOL)flag
 {
     if (game == nil || [game[kGameInfoName] length] == 0)
@@ -1054,6 +1072,44 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 }
 
 
+#pragma mark Section collapse
+
+-(BOOL)isCollapsed:(NSInteger)section
+{
+    if (_isSearchResults)
+        return FALSE;
+    NSString* title = _gameSectionTitles[section];
+    NSArray* sections = [NSUserDefaults.standardUserDefaults objectForKey:SECTIONS_COLLAPSED_KEY] ?: @[];
+    return [sections containsObject:title];
+}
+- (void)setCollapsed:(NSInteger)section isCollapsed:(BOOL)flag
+{
+    NSString* title = _gameSectionTitles[section];
+    NSMutableArray* sections = [([NSUserDefaults.standardUserDefaults objectForKey:SECTIONS_COLLAPSED_KEY] ?: @[]) mutableCopy];
+
+    [sections removeObject:title];
+
+    if (flag)
+        [sections addObject:title];
+    
+    [NSUserDefaults.standardUserDefaults setObject:sections forKey:SECTIONS_COLLAPSED_KEY];
+}
+
+-(void)headerTap:(UITapGestureRecognizer*)sender
+{
+    NSLog(@"HEADER TAP: %d", (int)sender.view.tag);
+    NSInteger section = sender.view.tag;
+    if (section >= 0 && section < _gameSectionTitles.count)
+    {
+        [self setCollapsed:section isCollapsed:![self isCollapsed:section]];
+        [self.collectionView performBatchUpdates:^{
+            [self.collectionView reloadSections:[NSIndexSet indexSetWithIndex:section]];
+        } completion:^(BOOL finished){
+            [self kickLayout];
+        }];
+    }
+}
+
 #pragma mark UICollectionView data source
 
 - (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView
@@ -1063,6 +1119,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
 {
     if (section >= _gameSectionTitles.count)
+        return 0;
+    if ([self isCollapsed:section])
         return 0;
     NSString* title = _gameSectionTitles[section];
     NSInteger num = [_gameData[title] count];
@@ -1374,6 +1432,27 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     else
         return layout.headerReferenceSize;
 }
+
+// make an attributed string, replacing any :symbol: with an SF Symbol
+NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* color) {
+    NSDictionary* attributes = @{NSFontAttributeName:font,NSForegroundColorAttributeName:color};
+    UIImage* image = nil;
+    NSArray* arr = [text componentsSeparatedByString:@":"];
+    
+    if (arr.count != 3 || (image = [UIImage systemImageNamed:arr[1] withFont:font]) == nil)
+        return [[NSAttributedString alloc] initWithString:text attributes:attributes];
+    
+    NSMutableAttributedString* result = [[NSMutableAttributedString alloc] initWithString:arr[0] attributes:attributes];
+    
+    NSTextAttachment* att = [[NSTextAttachment alloc] init];
+    att.image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    [result appendAttributedString:[NSAttributedString attributedStringWithAttachment:att]];
+
+    [result appendAttributedString:[[NSAttributedString alloc] initWithString:arr[2] attributes:attributes]];
+
+    return [result copy];
+}
+
 - (UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath
 {
     GameCell* cell = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:HEADER_IDENTIFIER forIndexPath:indexPath];
@@ -1385,7 +1464,26 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     [cell setTextInsets:UIEdgeInsetsMake(2.0, self.view.safeAreaInsets.left + 2.0, 2.0, self.view.safeAreaInsets.right + 2.0)];
     [cell setCornerRadius:0.0];
     [cell setBorderWidth:0.0];
-
+    
+    // make the section title tappable to toggle collapse/expand section
+    if (@available(iOS 13.0, tvOS 13.0, *)) {
+        BOOL is_collapsed = [self isCollapsed:indexPath.section];
+        
+        // dont allow collapse if we only have a single (+MAME) section
+        if (!_isSearchResults && (_gameSectionTitles.count >= 2 || is_collapsed))
+        {
+            // only show a chevron if collapsed?
+            if (is_collapsed)
+            {
+                NSString* str = [NSString stringWithFormat:@"%@ :%@:", cell.text.text, is_collapsed ? @"chevron.right" : @"chevron.down"];
+                cell.text.attributedText = attributedString(str, cell.text.font, cell.text.textColor);
+            }
+            // install tap handler to toggle collapsed
+            cell.tag = indexPath.section;
+            [cell addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(headerTap:)]];
+        }
+    }
+        
     return cell;
 }
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath
@@ -1697,6 +1795,15 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         }],
     ];
     
+    if ([self isRecent:game]) {
+        actions = [actions arrayByAddingObjectsFromArray:@[
+            [self actionWithTitle:@"Remove from Recently Played" image:[UIImage systemImageNamed:@"minus.circle"] destructive:NO handler:^(id action) {
+                [self setRecent:game isRecent:NO];
+                [self filterGameList];
+            }]
+        ]];
+    }
+    
     if ([_history boolForKey:name] || [_mameinfo boolForKey:name]) {
         actions = [actions arrayByAddingObjectsFromArray:@[
             [self actionWithTitle:@"Info" image:[UIImage systemImageNamed:@"info.circle"] destructive:NO handler:^(id action) {
@@ -1754,6 +1861,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
     if ([actions count] == 0)
         return nil;
+    
+    self.view.window.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
     
     return [UIContextMenuConfiguration configurationWithIdentifier:indexPath
             previewProvider:^UIViewController* () {
@@ -1817,6 +1926,14 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         NSLog(@"didUpdateFocusInContext: %@", NSStringFromClass(context.nextFocusedItem.class));
 
     _currentlyFocusedIndexPath = context.nextFocusedIndexPath;
+}
+
+- (BOOL)collectionView:(UICollectionView *)collectionView canFocusItemAtIndexPath:(NSIndexPath *)indexPath {
+    // always set focus to the first collum when jumping from non indexPath to indexPath focus item
+    if (_currentlyFocusedIndexPath == nil && _layoutCollums > 1)
+        return (indexPath.item % _layoutCollums) == 0;
+    else
+        return TRUE;
 }
 
 -(void)handleLongPress:(UIGestureRecognizer*)sender {
@@ -1901,11 +2018,15 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if (item < 0 && section > 0)
     {
         section--;
+        while ([self.collectionView numberOfItemsInSection:section] == 0 && section > 0)
+            section--;
         item = (([self.collectionView numberOfItemsInSection:section] + _layoutCollums-1) / _layoutCollums - 1) * _layoutCollums + col;
     }
     else if (new_row >= num_rows && section+1 < self.collectionView.numberOfSections)
     {
         section++;
+        while ([self.collectionView numberOfItemsInSection:section] == 0 && section+1 < self.collectionView.numberOfSections)
+            section++;
         item = col;
     }
     
@@ -1913,7 +2034,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     item = CLAMP(item, [self.collectionView numberOfItemsInSection:section]);
 
     indexPath = [NSIndexPath indexPathForItem:item inSection:section];
-    [self.collectionView selectItemAtIndexPath:indexPath animated:YES scrollPosition:UICollectionViewScrollPositionCenteredVertically];
+    if ([self.collectionView numberOfItemsInSection:section] != 0)
+        [self.collectionView selectItemAtIndexPath:indexPath animated:YES scrollPosition:UICollectionViewScrollPositionCenteredVertically];
 }
 
 // called when input happens on a gamecontroller, keyboard, or touch screen
@@ -2137,6 +2259,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     _stackText.layoutMargins = UIEdgeInsetsMake(4.0, 8.0, 4.0, 8.0);
     _stackText.layoutMarginsRelativeArrangement = YES;
     _stackText.insetsLayoutMarginsFromSafeArea = NO;
+    
+    // remove any GRs
+    while (self.gestureRecognizers.firstObject != nil)
+        [self removeGestureRecognizer:self.gestureRecognizers.firstObject];
 }
 
 - (void)updateConstraints
@@ -2292,8 +2418,23 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 - (void)updateSelected
 {
     BOOL selected = self.selected || self.focused;
-    if (_image.image == nil)
+    if (_image.image == nil) {
+#if TARGET_OS_TV
+        UIColor* color = selected ? HEADER_SELECTED_COLOR : HEADER_BACKGROUND_COLOR;
+ 
+        if (@available(tvOS 14.0, *))
+        {
+            _stackText.backgroundColor = color;
+            _stackText.layer.cornerRadius = selected ? 16.0 : 0.0;
+        }
+        else
+        {
+            self.contentView.backgroundColor = color;
+            self.contentView.layer.cornerRadius = selected ? 16.0 : 0.0;
+        }
+#endif
         return;
+    }
     [self setBackgroundColor:selected ? CELL_SELECTED_BACKGROUND_COLOR : CELL_BACKGROUND_COLOR];
     [self setShadowColor:selected ? CELL_SELECTED_SHADOW_COLOR : CELL_SHADOW_COLOR];
     CGFloat scale = selected ? _scale : self.highlighted ? (2.0 - _scale) : 1.0;
@@ -2307,18 +2448,24 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 }
 - (void)setHighlighted:(BOOL)highlighted
 {
-    NSLog(@"setHighlighted(%@): %@", self.text.text, highlighted ? @"YES" : @"NO");
+    NSLog(@"setHighlighted(%@): %@", [self.text.text stringByReplacingOccurrencesOfString:@"\n" withString:@" • "], highlighted ? @"YES" : @"NO");
     [super setHighlighted:highlighted];
     [self updateSelected];
 }
 - (void)setSelected:(BOOL)selected
 {
-    NSLog(@"setSelected(%@): %@", self.text.text, selected ? @"YES" : @"NO");
+    NSLog(@"setSelected(%@): %@", [self.text.text stringByReplacingOccurrencesOfString:@"\n" withString:@" • "] , selected ? @"YES" : @"NO");
     [super setSelected:selected];
     [self updateSelected];
 }
 
 #if TARGET_OS_TV
+- (BOOL)canBecomeFocused {
+    // we want headers with a tap GR to get the focus
+    if (self.gestureRecognizers.count != 0)
+        return YES;
+    return [super canBecomeFocused];
+}
 - (void)didHintFocusMovement:(UIFocusMovementHint *)hint {
     NSLog(@"didHintFocusMovement(%@): dir=%@", [self.text.text stringByReplacingOccurrencesOfString:@"\n" withString:@" • "],
           NSStringFromCGVector(hint.movementDirection));

@@ -140,11 +140,14 @@
 
     NSMutableAttributedString* text = [[NSMutableAttributedString alloc] initWithString:raw_text attributes:body];
 
+    // remove stray $bio
+    [self modifyText:text pattern:@"^\\$bio$" string:@""];
+
     // we cant click on links so remove this all together
     [self modifyText:text pattern:@"^- CONTRIBUTE -\\s+?Edit this entry: https:.+?$" string:@""];
     
     // get rid of relative year
-    [self modifyText:text pattern:@"^Arcade Video game published [0-9]+ years ago:[ ]*\\n$" string:@""];
+    [self modifyText:text pattern:@"published [0-9]+ years ago:[ ]*\\n$" string:@""];
 
     // lines followed by blank line.
     [self modifyText:text pattern:@"^[A-Za-z].{1,30}(\\n\\n)(?=[A-Za-z].{1,30}$)" attributes:@[@{}, @"\n"]];
