@@ -432,6 +432,17 @@ static void check_pause()
     [g_emulation_paused_cond unlock];
 }
 
+// HACK: make a UI.INI to force MAME to always show Available games ONLY
+// TODO: mame is saving INI files in the root, should be `ini` dir, fix that!
+void ini_hack(void)
+{
+    @autoreleasepool {
+        NSString* ini_str = @"last_used_filter          Available\nhide_main_panel           3\n";
+        NSData*   ini_data = [ini_str dataUsingEncoding:NSUTF8StringEncoding];
+        [ini_data writeToFile:getDocumentPath(@"ui.ini") atomically:NO];
+    }
+}
+
 void* app_Thread_Start(void* args)
 {
     init_pause();
@@ -452,6 +463,11 @@ void* app_Thread_Start(void* args)
             g_mame_reset = FALSE;
         }
         
+        // TODO: remove this
+        if (myosd_get(MYOSD_VERSION) != 139)
+            ini_hack();
+        // TODO: remove this
+
         // reset g_mame_output_text if we are running a game, but not if we are just running menu.
         if (g_mame_game[0] != 0)
             g_mame_output_text[0] = 0;
