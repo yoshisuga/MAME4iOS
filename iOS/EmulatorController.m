@@ -237,7 +237,7 @@ int g_pref_haptic_button_feedback = 1;
 int g_pref_nintendoBAYX = 0;
 int g_pref_p1aspx = 0;
 
-int g_pref_vector_bean2x = 0;
+int g_pref_vector_beam2x = 0;
 int g_pref_vector_flicker = 0;
 int g_pref_cheat = 0;
 int g_pref_autosave = 0;
@@ -385,11 +385,13 @@ int run_mame(char* system, char* game)
         "-nocoinlock",
         g_pref_cheat ? "-cheat" : "-nocheat",
         g_pref_autosave ? "-autosave" : "-noautosave",
-        g_pref_hiscore ? "-hiscore" : "-nohiscore",
         g_pref_showINFO ? "-noskip_gameinfo" : "-skip_gameinfo",
         "-speed", speed,
-        "-flicker", g_pref_vector_flicker ? "0.4" : "0.0",
-        "-beam", g_pref_vector_bean2x ? "2.5" : "1.0",          // TODO: -beam_width_min and -beam_width_max on latest MAME
+// HACK: disable these for now
+//        g_pref_hiscore ? "-hiscore" : "-nohiscore",
+//        "-flicker", g_pref_vector_flicker ? "0.4" : "0.0",
+//        "-beam", g_pref_vector_beam2x ? "2.5" : "1.0",          // TODO: -beam_width_min and -beam_width_max on latest MAME
+// HACK: disable these for now
         "-pause_brightness", "1.0", "-update_in_pause",  // to debug shaders
         };
     
@@ -1342,7 +1344,7 @@ HUDViewController* g_menu;
         case 4: g_stick_size = 1.2; break;
     }
     
-    g_pref_vector_bean2x = [op vbean2x];
+    g_pref_vector_beam2x = [op vbean2x];
     g_pref_vector_flicker = [op vflicker];
 
     int speed = 100;
@@ -1712,6 +1714,12 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
     else
         alpha = 0.0;
     
+    // HACK: fix this!
+    // MAME 2xx does not give us the game_list (yet) so always show the UI
+    if (myosd_get(MYOSD_VERSION) != 139)
+        alpha = 1.0;
+    // HACK: fix this!
+
 #if TARGET_OS_IOS
     if (change_layout) {
         alpha = 0.0;
