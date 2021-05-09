@@ -109,12 +109,12 @@ void myosd_set(int var, intptr_t value)
     }
 }
 
-void myosd_set_video_mode(int screen_width,int screen_height,int target_width,int target_height)
+void myosd_set_video_mode(int vis_width,int vis_height,int min_width,int min_height)
 {
-    mame_printf_debug("myosd_set_video_mode: %dx%d [%dx%d]\n",screen_width,screen_height,target_width,target_height);
+    mame_printf_debug("myosd_set_video_mode: %dx%d [%dx%d]\n",vis_width,vis_height,min_width,min_height);
 
     if (host_callbacks.video_init != NULL)
-        host_callbacks.video_init(screen_width,screen_height);
+        host_callbacks.video_init(vis_width,vis_height,min_width,min_height);
 }
 
 void myosd_video_draw(render_primitive* prims, int width, int height)

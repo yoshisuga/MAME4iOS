@@ -130,10 +130,10 @@ TIMER_INIT_END
 #endif
 
 static int myosd_exitGame = 0;      // set this to cause MAME to exit.
-static int myosd_screen_width;      // MAME screen size
-static int myosd_screen_height;     //
-static int myosd_render_width;      // MAME render target size
-static int myosd_render_height;     //
+static int myosd_vis_width;         // MAME screen size
+static int myosd_vis_height;        //
+static int myosd_min_width;         // MAME render target size (pixel)
+static int myosd_min_height;        //
 
 // Game Controllers
 NSArray * g_controllers;
@@ -299,14 +299,15 @@ static BOOL g_video_reset = FALSE;
 
 // called by the OSD layer when redner target changes size
 // **NOTE** this is called on the MAME background thread, dont do anything stupid.
-void m4i_video_init(int width, int height)
+void m4i_video_init(int vis_width, int vis_height, int min_width, int min_height)
 {
     NSLog(@"m4i_video_init: %dx%d", width, height);
     
-    myosd_screen_width = width;
-    myosd_screen_height = height;
-    myosd_render_width = width;
-    myosd_render_height = height;
+    // set these globals for `force pixel aspect`
+    myosd_vis_width = vis_width;
+    myosd_vis_height = vis_height;
+    myosd_min_width = min_width;
+    myosd_min_height = min_height;
 
     if (sharedInstance == nil)
         return;
@@ -324,10 +325,6 @@ void m4i_video_init(int width, int height)
 // **NOTE** this is called on the MAME background thread, dont do anything stupid.
 // ...not doing something stupid includes not leaking autoreleased objects! use a autorelease pool if you need to!
 void m4i_video_draw(myosd_render_primitive* prim_list, int width, int height) {
-
-    // set these globals for `force pixel aspect`
-    myosd_render_width = width;
-    myosd_render_height = height;
 
     if (sharedInstance == nil || g_emulation_paused)
         return;
@@ -3105,8 +3102,8 @@ void m4i_poll_input(myosd_input_state* myosd, size_t input_size) {
     [self getOverlayImage:&border_image andSize:&border_size];
     r = CGRectInset(r, border_size.width, border_size.height);
     
-    int myosd_width  = g_pref_force_pixel_aspect_ratio ? myosd_render_width  : myosd_screen_width;
-    int myosd_height = g_pref_force_pixel_aspect_ratio ? myosd_render_height : myosd_screen_height;
+    int myosd_width  = g_pref_force_pixel_aspect_ratio ? myosd_min_width  : myosd_vis_width;
+    int myosd_height = g_pref_force_pixel_aspect_ratio ? myosd_min_height : myosd_vis_height;
 
     // preserve aspect ratio, and snap to pixels.
     if (g_pref_keep_aspect_ratio) {
