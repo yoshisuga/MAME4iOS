@@ -105,7 +105,7 @@ Even if you are not in the paid Apple Developer Program, you can sideload the ap
 * instead of running  `./make-ios.sh` run  `./get-libmame.sh`
     - if your projects are not *side by side* or you did not name the fork `MAME`, then pass the path to the `MAME` fork to the script.
     - for example if you cloned into `~/MyCode/ToddMAME` then run `./get-libmame.sh ~/MyCode/ToddMAME`
-* now you cant build and run in Xcode.
+* now you can build and run in Xcode.
 
 ## Issues running current `MAME`
 * we dont get the availible game/driver list (yet) so you always get the *DOS UI* 
