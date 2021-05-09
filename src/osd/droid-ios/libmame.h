@@ -341,7 +341,9 @@ enum myosd_keycode
     MYOSD_KEY_LCMD,
     MYOSD_KEY_RCMD,
     MYOSD_KEY_MENU,
-    MYOSD_KEY_CANCEL
+    MYOSD_KEY_CANCEL,
+    MYOSD_KEY_FIRST = MYOSD_KEY_A,
+    MYOSD_KEY_LAST = MYOSD_KEY_CANCEL
 };
 
 // myosd_get and myosd_set - get and set global state from the MAME driver.
