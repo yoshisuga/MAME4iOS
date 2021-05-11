@@ -96,6 +96,24 @@ Even if you are not in the paid Apple Developer Program, you can sideload the ap
         2. Select the project name on the left pane and make sure your personal team is selected
         3. Hit the `▶︎` Run button to install on your device. _Done._
         
+## How to build with latest `MAME`
+* clone this fork of [MAME](https://github.com/ToddLa/mame)
+* switch to the `ios-osd` branch.
+* run `./make-ios.sh` (or `./make-ios.sh tvos`) in the forked `MAME`
+* go watch [this](https://www.imdb.com/title/tt0056172/) or maybe [this](https://en.wikipedia.org/wiki/The_Godfather_(film_series)) while you wait for `MAME` to build.
+* now switch directories to your `MAME4iOS` project
+* instead of running  `./make-ios.sh` run  `./get-libmame.sh`
+    - if your projects are not *side by side* or you did not name the fork `MAME`, then pass the path to the `MAME` fork to the script.
+    - for example if you cloned into `~/MyCode/ToddMAME` then run `./get-libmame.sh ~/MyCode/ToddMAME`
+* now you can build and run in Xcode.
+
+## Issues running current `MAME`
+* we dont get the availible game/driver list (yet) so you always get the *DOS UI* 
+* most `MAME` 139 ROMs dont work on 229, but that is just normal life in `MAME` world
+* tracking down a sound issue and other random stuff.
+* some things (like being smart about number of players, etc) does not work (yet)
+* if you run a `Computer` machine you will be stuck and cant exit cuz we dont handle ui_mode and keyboards right (yet)
+
 ## tvOS
 
 MAME for tvOS support was added in early 2019, and it currently can run games has full native UI support and MFI controller support with most notably:

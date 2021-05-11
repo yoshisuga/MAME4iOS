@@ -57,7 +57,7 @@
 #define TITLE_COLOR             [UIColor whiteColor]
 #define HEADER_TEXT_COLOR       [UIColor whiteColor]
 #define HEADER_BACKGROUND_COLOR [UIColor clearColor]
-#define HEADER_SELECTED_COLOR   [self.tintColor colorWithAlphaComponent:0.5]
+#define HEADER_SELECTED_COLOR   [self.tintColor colorWithAlphaComponent:0.333]
 #define HEADER_PINNED_COLOR     [BACKGROUND_COLOR colorWithAlphaComponent:0.8]
 
 #define BACKGROUND_COLOR        [UIColor colorWithWhite:0.066 alpha:1.0]
@@ -200,7 +200,6 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     UIImage* _defaultImage;
     UIImage* _loadingImage;
     NSMutableSet* _updated_urls;
-    NSMutableDictionary* _gameImageSize;
     InfoDatabase* _history;
     InfoDatabase* _mameinfo;
     NSCache* _system_description;
@@ -500,55 +499,6 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 }
 
 #pragma mark - game images
-
--(CGSize)getGameImageSize:(NSDictionary*)info
-{
-    NSString* name = info[kGameInfoName];
-    CGSize size = CGSizeZero;
-
-    if (name == nil)
-        return size;
-    
-    NSValue* val = _gameImageSize[name];
-    
-    if (val != nil)
-        return [val CGSizeValue];
-    
-    // Apple has a special [PNG format](http://fileformats.archiveteam.org/wiki/CgBI), and Xcode converts all resources!
-    if (info.gameIsFake)
-        return CGSizeMake(640, 480);
-    
-    NSURL* url = info.gameLocalImageURL;
-    
-    if (url == nil)
-        return size;
-    
-    NSFileHandle* file = [NSFileHandle fileHandleForReadingFromURL:url error:nil];
-
-    if (file == nil)
-        return size;
-
-    // because we only need the size, directly read the PNG header and get it.
-    // [PNG header](https://en.wikipedia.org/wiki/Portable_Network_Graphics#File_header)
-    // 0x89 'PNG' \r\n 0x1A \n [13] 'IHDR' [width] [height] (FYI PNG stores integers in big-endian)
-    uint8_t png_header[] = {0x89, 'P','N','G', '\r','\n', 0x1A, '\n', 0,0,0,13, 'I','H','D','R'};
-    
-    NSData* data = [file readDataOfLength:sizeof(png_header) + 4*2];
-    const uint8_t* bytes = [data bytes];
-    
-    if ([data length] == (sizeof(png_header) + 4*2) && memcmp(png_header, bytes, sizeof(png_header)) == 0)
-    {
-        NSUInteger width  = (NSUInteger)bytes[sizeof(png_header) + 0*4 + 3] + ((NSUInteger)bytes[sizeof(png_header) + 0*4 + 2] << 8);
-        NSUInteger height = (NSUInteger)bytes[sizeof(png_header) + 1*4 + 3] + ((NSUInteger)bytes[sizeof(png_header) + 1*4 + 2] << 8);
-        size = CGSizeMake(width, height);
-    }
-    
-    // store this size in the cache, so next time we dont need to do any file I/O
-    _gameImageSize = _gameImageSize ?: [[NSMutableDictionary alloc] init];
-    _gameImageSize[name] = [NSValue valueWithCGSize:size];
-    
-    return size;
-}
 
 #pragma mark - game filter
 
@@ -1242,13 +1192,13 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     CGFloat item_width = layout.estimatedItemSize.width;
     CGFloat image_height, text_height;
     
-    // get the title image size, assume the image is 4:3 if we dont know.
-    CGSize imageSize = [self getGameImageSize:info];
-    
-    if (imageSize.height == 0.0 || imageSize.width == 0.0 || imageSize.width > imageSize.height)
-        image_height = ceil(item_width * 3.0 / 4.0);
-    else
+    // get the screen, assume the game is 4:3 if we dont know.
+    BOOL is_vert = [info.gameScreen containsString:kGameInfoScreenVertical];
+
+    if (is_vert)
         image_height = ceil(item_width * 4.0 / 3.0);
+    else
+        image_height = ceil(item_width * 3.0 / 4.0);
 
     // get the text height
     CGSize textSize = CGSizeMake(item_width - CELL_INSET_X*2, 9999.0);
@@ -1375,20 +1325,22 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
             // MAME games always ran on horz or vertical CRTs so it does not matter what the PAR of
             // the title image is force a aspect of 3:4 or 4:3
             
+            BOOL is_vert = [info.gameScreen containsString:kGameInfoScreenVertical];
+            
             if (self->_layoutMode == LayoutList) {
                 CGFloat aspect = 4.0 / 3.0;
                 [cell setImageAspect:aspect];
-                if (image.size.width < image.size.height)
+                if (is_vert)
                     cell.image.contentMode = UIViewContentModeScaleAspectFill;
             }
             else if (row_height.x != 0.0) {
                 CGFloat aspect = (cell.bounds.size.width / row_height.x);
                 [cell setImageAspect:aspect];
-                if (image.size.width < image.size.height && aspect > 1.0)
+                if (is_vert && aspect > 1.0)
                     cell.image.contentMode = UIViewContentModeScaleAspectFill;
             }
             else {
-                CGFloat aspect = (image.size.width < image.size.height) ? (3.0 / 4.0) : (4.0 / 3.0);
+                CGFloat aspect = is_vert ? (3.0 / 4.0) : (4.0 / 3.0);
                 [cell setImageAspect:aspect];
             }
  
@@ -2616,7 +2568,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     rect.size.width  -= self.collectionView.safeAreaInsets.left + self.collectionView.safeAreaInsets.right;
     
     UIImage* image = [[ImageCache sharedInstance] getImage:_game.gameImageURL size:CGSizeZero];
-    CGFloat aspect = image.size.width > image.size.height ? 4.0/3.0 : 3.0/4.0;
+    CGFloat aspect = [_game.gameScreen containsString:kGameInfoScreenVertical] ? 3.0/4.0 : 4.0/3.0;
 
     CGSize image_size = CGSizeMake(INFO_IMAGE_WIDTH, INFO_IMAGE_WIDTH / aspect);
     image_size.height = MIN(image_size.height, rect.size.height * 0.60);

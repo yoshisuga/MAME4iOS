@@ -130,8 +130,10 @@ TIMER_INIT_END
 #endif
 
 static int myosd_exitGame = 0;      // set this to cause MAME to exit.
-static int myosd_vis_video_width;   // MAME video/screen width
-static int myosd_vis_video_height;  // MAME video/screen height
+static int myosd_vis_width;         // MAME screen size
+static int myosd_vis_height;        //
+static int myosd_min_width;         // MAME render target size (pixel)
+static int myosd_min_height;        //
 
 // Game Controllers
 NSArray * g_controllers;
@@ -203,6 +205,7 @@ int g_pref_showINFO = 0;
 int g_pref_filter_clones;
 int g_pref_filter_not_working;
 int g_pref_filter_bios;
+int g_pref_speed;
 
 enum {
     HudSizeZero = 0,        // HUD is not visible at all.
@@ -216,6 +219,7 @@ int g_pref_showHUD = 0;
 int g_pref_saveHUD = 0;     // previous value of g_pref_showHUD
 
 int g_pref_keep_aspect_ratio = 0;
+int g_pref_force_pixel_aspect_ratio = 0;
 
 int g_pref_animated_DPad = 0;
 int g_pref_full_screen_land = 1;
@@ -233,10 +237,11 @@ int g_pref_haptic_button_feedback = 1;
 int g_pref_nintendoBAYX = 0;
 int g_pref_p1aspx = 0;
 
-int g_pref_vector_bean2x = 0;
+int g_pref_vector_beam2x = 0;
 int g_pref_vector_flicker = 0;
 int g_pref_cheat = 0;
 int g_pref_autosave = 0;
+int g_pref_hiscore = 0;
 
 int g_pref_lightgun_enabled = 1;
 int g_pref_lightgun_bottom_reload = 0;
@@ -259,6 +264,8 @@ static int change_layout=0;
 
 static int myosd_inGame = 0;    // TRUE if MAME is running a game
 static int myosd_in_menu = 0;   // TRUE if MAME has UI active (or is at the root aka no game)
+static int myosd_isVector = 0;  // TRUE if running a VECTOR game
+static int myosd_isVertical = 0;// TRUE if running a Vertical game
 
 static NSDictionary* g_category_dict;
 static SoftwareList* g_softlist;
@@ -292,12 +299,15 @@ static BOOL g_video_reset = FALSE;
 
 // called by the OSD layer when redner target changes size
 // **NOTE** this is called on the MAME background thread, dont do anything stupid.
-void m4i_video_init(int width, int height)
+void m4i_video_init(int vis_width, int vis_height, int min_width, int min_height)
 {
     NSLog(@"m4i_video_init: %dx%d", width, height);
     
-    myosd_vis_video_width = width;
-    myosd_vis_video_height = height;
+    // set these globals for `force pixel aspect`
+    myosd_vis_width = vis_width;
+    myosd_vis_height = vis_height;
+    myosd_min_width = min_width;
+    myosd_min_height = min_height;
 
     if (sharedInstance == nil)
         return;
@@ -358,15 +368,16 @@ void m4i_output(int channel, const char* text)
 }
 
 void m4i_poll_input(myosd_input_state* myosd, size_t input_size);
-void m4i_set_game_info(myosd_game_info* game_info, int game_count);
+void m4i_game_list(myosd_game_info* game_info, int game_count);
 void m4i_game_start(myosd_game_info* game_info);
 void m4i_game_stop(void);
 
 // run MAME (or pass NULL for main menu)
 int run_mame(char* system, char* game)
 {
-    // TODO: hiscore?
-    // TODO: speed?
+    char speed[16];
+    snprintf(speed, sizeof(speed), "%0.2f", (float)g_pref_speed / 100.0);
+    
     char* argv[] = {"mame4ios",
         // use -nocoinlock as a do-nothing option
         (system && system[0] != 0) ? system : "-nocoinlock",
@@ -375,8 +386,12 @@ int run_mame(char* system, char* game)
         g_pref_cheat ? "-cheat" : "-nocheat",
         g_pref_autosave ? "-autosave" : "-noautosave",
         g_pref_showINFO ? "-noskip_gameinfo" : "-skip_gameinfo",
-        "-flicker", g_pref_vector_flicker ? "0.4" : "0.0",
-        "-beam", g_pref_vector_bean2x ? "2.5" : "1.0",          // TODO: -beam_width_min and -beam_width_max on latest MAME
+        "-speed", speed,
+// HACK: disable these for now
+//        g_pref_hiscore ? "-hiscore" : "-nohiscore",
+//        "-flicker", g_pref_vector_flicker ? "0.4" : "0.0",
+//        "-beam", g_pref_vector_beam2x ? "2.5" : "1.0",          // TODO: -beam_width_min and -beam_width_max on latest MAME
+// HACK: disable these for now
         "-pause_brightness", "1.0", "-update_in_pause",  // to debug shaders
         };
     
@@ -387,7 +402,7 @@ int run_mame(char* system, char* game)
         .video_draw = m4i_video_draw,
         .input_poll = m4i_poll_input,
         .output_text= m4i_output,
-        .set_game_info = m4i_set_game_info,
+        .game_list = m4i_game_list,
         .game_init = m4i_game_start,
         .game_exit = m4i_game_stop,
     };
@@ -417,6 +432,17 @@ static void check_pause()
     [g_emulation_paused_cond unlock];
 }
 
+// HACK: make a UI.INI to force MAME to always show Available games ONLY
+// TODO: mame is saving INI files in the root, should be `ini` dir, fix that!
+void ini_hack(void)
+{
+    @autoreleasepool {
+        NSString* ini_str = @"last_used_filter          Available\nhide_main_panel           3\n";
+        NSData*   ini_data = [ini_str dataUsingEncoding:NSUTF8StringEncoding];
+        [ini_data writeToFile:getDocumentPath(@"ui.ini") atomically:NO];
+    }
+}
+
 void* app_Thread_Start(void* args)
 {
     init_pause();
@@ -437,6 +463,11 @@ void* app_Thread_Start(void* args)
             g_mame_reset = FALSE;
         }
         
+        // TODO: remove this
+        if (myosd_get(MYOSD_VERSION) != 139)
+            ini_hack();
+        // TODO: remove this
+
         // reset g_mame_output_text if we are running a game, but not if we are just running menu.
         if (g_mame_game[0] != 0)
             g_mame_output_text[0] = 0;
@@ -493,7 +524,7 @@ NSDictionary* load_category_ini(void)
         NSString* key = @(line);
         NSString* cat = category_dict[key];
         if (cat != nil) {
-            NSLog(@"%@ is in multiple categories \"%@\" and \"%@\"", key, cat, curcat);
+            //NSLog(@"%@ is in multiple categories \"%@\" and \"%@\"", key, cat, curcat);
             if (![cat containsString:curcat]) {
                 cat = [cat stringByAppendingFormat:@",%@", curcat];
                 [category_dict setObject:cat forKey:key];
@@ -521,8 +552,11 @@ NSString* find_category(NSString* name, NSString* parent)
 }
 
 // called from deep inside MAME select_game menu, to give us the valid list of games/drivers
-void m4i_set_game_info(myosd_game_info* game_info, int game_count)
+void m4i_game_list(myosd_game_info* game_info, int game_count)
 {
+    static NSString* screens[] = {kGameInfoScreenHorizontal, kGameInfoScreenVertical,
+        kGameInfoScreenHorizontal @", " kGameInfoScreenVector, kGameInfoScreenVertical @", " kGameInfoScreenVector};
+    
     static NSString* types[] = {kGameInfoTypeArcade, kGameInfoTypeConsole, kGameInfoTypeComputer};
     _Static_assert(MYOSD_GAME_TYPE_ARCADE == 0, "");
     _Static_assert(MYOSD_GAME_TYPE_CONSOLE == 1, "");
@@ -534,8 +568,7 @@ void m4i_set_game_info(myosd_game_info* game_info, int game_count)
         
         for (int i=0; i<game_count; i++)
         {
-            // TODO: MYOSD_GAME_INFO_RUNNABLE
-            // TODO: MYOSD_GAME_INFO_MECHANICAL
+            // TODO: MYOSD_GAME_INFO_VECTOR
 
             if (game_info[i].name == NULL || game_info[i].name[0] == 0)
                 continue;
@@ -557,6 +590,8 @@ void m4i_set_game_info(myosd_game_info* game_info, int game_count)
                 kGameInfoManufacturer:@(game_info[i].manufacturer),
                 kGameInfoCategory:    find_category(@(game_info[i].name), @(game_info[i].parent ?: "")),
                 kGameInfoDriver:      [@(game_info[i].source_file ?: "").lastPathComponent stringByDeletingPathExtension],
+                kGameInfoScreen:      screens[(game_info[i].flags & MYOSD_GAME_INFO_VERTICAL) ? 1 : 0 +
+                                              (game_info[i].flags & MYOSD_GAME_INFO_VECTOR)   ? 2 : 0 ]
             }];
         }
         
@@ -608,14 +643,21 @@ void m4i_set_game_info(myosd_game_info* game_info, int game_count)
 
 void m4i_game_start(myosd_game_info* info)
 {
-    NSLog(@"GAME START: %-16s %s", info->name, info->description);
+    NSLog(@"GAME START: %s \"%s\"%s%s", info->name, info->description,
+          (info->flags & MYOSD_GAME_INFO_VERTICAL) ? " VERTICAL" : "",
+          (info->flags & MYOSD_GAME_INFO_VECTOR) ? " VECTOR" : "");
+    
     myosd_inGame = 1;
+    myosd_isVector = (info->flags & MYOSD_GAME_INFO_VECTOR) != 0;
+    myosd_isVertical = (info->flags & MYOSD_GAME_INFO_VERTICAL) != 0;
 }
 
 void m4i_game_stop()
 {
     NSLog(@"GAME STOP");
     myosd_inGame = 0;
+    myosd_isVector = NO;
+    myosd_isVertical = NO;
 }
 
 @implementation UINavigationController(KeyboardDismiss)
@@ -705,6 +747,7 @@ void m4i_game_stop()
 - (void)startEmulation {
     if (g_emulation_initiated == 1)
         return;
+    // we must do this early to set all the g_pref_ globals
     [self updateOptions];
 
     sharedInstance = self;
@@ -1293,8 +1336,8 @@ HUDViewController* g_menu;
         g_joy_ways = 8;
     }
     
-    myosd_set(MYOSD_FORCE_PIXEL_ASPECT, op.forcepxa);
-    myosd_set(MYOSD_HISCORE, op.hiscore);
+    g_pref_force_pixel_aspect_ratio = op.forcepxa;
+    g_pref_hiscore = op.hiscore;
 
     g_pref_filter_clones = op.filterClones;
     g_pref_filter_not_working = op.filterNotWorking;
@@ -1317,10 +1360,10 @@ HUDViewController* g_menu;
         case 4: g_stick_size = 1.2; break;
     }
     
-    g_pref_vector_bean2x = [op vbean2x];
+    g_pref_vector_beam2x = [op vbean2x];
     g_pref_vector_flicker = [op vflicker];
 
-    int speed = -1;
+    int speed = 100;
     switch ([op emuspeed]) {
         case 1: speed = 50; break;
         case 2: speed = 60; break;
@@ -1338,7 +1381,8 @@ HUDViewController* g_menu;
         case 14: speed = 140; break;
         case 15: speed = 150; break;
     }
-    myosd_set(MYOSD_SPEED, speed);
+    g_pref_speed = speed;
+    myosd_set(MYOSD_SPEED, g_pref_speed);
     
     turboBtnEnabled[BTN_X] = [op turboXEnabled];
     turboBtnEnabled[BTN_Y] = [op turboYEnabled];
@@ -1686,6 +1730,12 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
     else
         alpha = 0.0;
     
+    // HACK: fix this!
+    // MAME 2xx does not give us the game_list (yet) so always show the UI
+    if (myosd_get(MYOSD_VERSION) != 139)
+        alpha = 1.0;
+    // HACK: fix this!
+
 #if TARGET_OS_IOS
     if (change_layout) {
         alpha = 0.0;
@@ -1805,6 +1855,38 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     return @(get_documents_path(self.class.shaderFile.UTF8String));
 }
 
+// get the current shader (friendly) name
+-(NSString*)getShaderName {
+    NSString* shader_name = myosd_isVector ? g_pref_line_shader : g_pref_screen_shader;
+    NSArray* shader_list = myosd_isVector ? Options.arrayLineShader : Options.arrayScreenShader;
+
+    // HACK: assume the 3rd shader is the actual default, None is 2nd
+    if (([shader_name isEqualToString:kScreenViewShaderDefault] || shader_name.length == 0) && shader_list.count >= 3) {
+        NSParameterAssert([shader_list[0] isEqualToString:kScreenViewShaderDefault]);
+        NSParameterAssert([shader_list[1] isEqualToString:kScreenViewShaderNone]);
+        shader_name =  [NSString stringWithFormat:@"%@ (%@)", kScreenViewShaderDefault, split(shader_list[2],@":").firstObject];
+    }
+
+   return shader_name;
+}
+
+// get the current shader, maping Default to the actual shader
+-(NSString*)getShader {
+    
+    NSString* shader_name = myosd_isVector ? g_pref_line_shader : g_pref_screen_shader;
+    NSArray* shader_list = myosd_isVector ? Options.arrayLineShader : Options.arrayScreenShader;
+    NSString* shader = [shader_list optionData:shader_name];
+    
+    // HACK: assume the 3rd shader is the actual default, None is 2nd
+    if (([shader_name isEqualToString:kScreenViewShaderDefault] || shader_name.length == 0) && shader_list.count >= 3) {
+        NSParameterAssert([shader_list[0] isEqualToString:kScreenViewShaderDefault]);
+        NSParameterAssert([shader_list[1] isEqualToString:kScreenViewShaderNone]);
+        shader = split(shader_list[2],@":").lastObject;
+    }
+    
+    return shader;
+}
+
 // save the current shader variables to disk
 -(void)saveShader {
     if (![screenView isKindOfClass:[MetalScreenView class]])
@@ -1816,25 +1898,23 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     NSDictionary* shader_dict_current = data ? [NSJSONSerialization JSONObjectWithData:data options:0 error:nil] : @{};
     NSMutableDictionary* shader_dict = [shader_dict_current mutableCopy];
 
-    // walk over the current screen *and* line shader and save variables.
-    for (NSString* shader_name in @[g_pref_screen_shader, g_pref_line_shader]) {
-        NSArray* shader_list = (shader_name == g_pref_screen_shader) ? Options.arrayScreenShader : Options.arrayLineShader;
-        NSString* shader =  [shader_list optionData:shader_name];
+    // walk over the current shader and save variables.
+    NSString* shader_name = [self getShaderName];
+    NSString* shader = [self getShader];
         
-        NSMutableArray* arr = [split(shader, @",") mutableCopy];
-        NSMutableDictionary* dict = [[NSMutableDictionary alloc] init];
-        
-        for (int i=0; i<arr.count; i++) {
-            if ([arr[i] hasPrefix:@"blend="] || ![arr[i] containsString:@"="])
-                continue;
-            NSString* key = split(arr[i], @"=").firstObject;
-            float default_value = [split(arr[i], @"=").lastObject floatValue];
-            float current_value = [(shader_variables[key] ?: @(default_value)) floatValue];
-            dict[key] = @(current_value);
-        }
-        
-        shader_dict[shader_name] = ([dict count] != 0) ? dict : nil;
+    NSMutableArray* arr = [split(shader, @",") mutableCopy];
+    NSMutableDictionary* dict = [[NSMutableDictionary alloc] init];
+    
+    for (int i=0; i<arr.count; i++) {
+        if ([arr[i] hasPrefix:@"blend="] || ![arr[i] containsString:@"="])
+            continue;
+        NSString* key = split(arr[i], @"=").firstObject;
+        float default_value = [split(arr[i], @"=").lastObject floatValue];
+        float current_value = [(shader_variables[key] ?: @(default_value)) floatValue];
+        dict[key] = @(current_value);
     }
+    
+    shader_dict[shader_name] = ([dict count] != 0) ? dict : nil;
     
     // write the shader data to disk
     data = [NSJSONSerialization dataWithJSONObject:shader_dict options:NSJSONWritingPrettyPrinted error:nil];
@@ -1848,11 +1928,10 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         return;
     NSData* data = [NSData dataWithContentsOfFile:self.shaderPath];
     NSDictionary* dict = data ? [NSJSONSerialization JSONObjectWithData:data options:0 error:nil] : @{};
-    for (NSString* key in @[g_pref_screen_shader, g_pref_line_shader]) {
-        id val = dict[key];
-        if ([val isKindOfClass:[NSDictionary class]])
-            [(MetalScreenView*)screenView setShaderVariables:val];
-    }
+    NSString* shader_name = [self getShaderName];
+    id val = dict[shader_name];
+    if ([val isKindOfClass:[NSDictionary class]])
+        [(MetalScreenView*)screenView setShaderVariables:val];
 }
 
 // reset *all* shader variables to default
@@ -1927,9 +2006,8 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     [hudView removeAll];
     EmulatorController* _self = self;
 
-    BOOL is_vector_game = [screenView isKindOfClass:[MetalScreenView class]] ? [(MetalScreenView*)screenView numScreens] == 0 : FALSE;
-    NSString* shader_name = is_vector_game ? g_pref_line_shader : g_pref_screen_shader;
-    NSString* shader = is_vector_game ? [Options.arrayLineShader optionData:shader_name] : [Options.arrayScreenShader optionData:shader_name];
+    NSString* shader_name = [self getShaderName];
+    NSString* shader = [self getShader];
     BOOL can_edit_shader = [[shader stringByReplacingOccurrencesOfString:@"blend=" withString:@""] componentsSeparatedByString:@"="].count > 1;
     
     if (g_pref_showHUD == HudSizeEditor && !can_edit_shader)
@@ -2160,11 +2238,6 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
 - (void)resetUI {
     NSLog(@"RESET UI (MAME VIDEO MODE CHANGE)");
-    
-    // we dont know (yet) raster/vector game, so take down any HUD Editor so it wont be wrong.
-    if (g_pref_showHUD == HudSizeEditor)
-        g_pref_showHUD = HudSizeLarge;
-    
     [self changeUI];
 }
 
@@ -2176,8 +2249,6 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         change_pause(1);
     
     // reset the frame count when you first turn on/off HUD
-    if (g_pref_showHUD != HudSizeInfo && g_pref_showFPS != myosd_get(MYOSD_FPS))
-        screenView.frameCount = 0;
     if ((g_pref_showHUD != 0) != (hudView != nil))
         screenView.frameCount = 0;
     
@@ -3055,21 +3126,24 @@ void m4i_poll_input(myosd_input_state* myosd, size_t input_size) {
     [self getOverlayImage:&border_image andSize:&border_size];
     r = CGRectInset(r, border_size.width, border_size.height);
     
+    int myosd_width  = g_pref_force_pixel_aspect_ratio ? myosd_min_width  : myosd_vis_width;
+    int myosd_height = g_pref_force_pixel_aspect_ratio ? myosd_min_height : myosd_vis_height;
+
     // preserve aspect ratio, and snap to pixels.
     if (g_pref_keep_aspect_ratio) {
         CGSize aspect;
         
         // use an exact aspect ratio of 4:3 or 3:4 iff possible
-        if (floor(4.0 * myosd_vis_video_height / 3.0 + 0.5) == myosd_vis_video_width)
+        if (floor(4.0 * myosd_height / 3.0 + 0.5) == myosd_width)
             aspect = CGSizeMake(4, 3);
-        else if (floor(3.0 * myosd_vis_video_width / 4.0 + 0.5) == myosd_vis_video_height)
+        else if (floor(3.0 * myosd_width / 4.0 + 0.5) == myosd_height)
             aspect = CGSizeMake(4, 3);
-        else if (floor(3.0 * myosd_vis_video_height / 4.0 + 0.5) == myosd_vis_video_width)
+        else if (floor(3.0 * myosd_height / 4.0 + 0.5) == myosd_width)
             aspect = CGSizeMake(3, 4);
-        else if (floor(4.0 * myosd_vis_video_width / 3.0 + 0.5) == myosd_vis_video_height)
+        else if (floor(4.0 * myosd_width / 3.0 + 0.5) == myosd_height)
             aspect = CGSizeMake(3, 4);
         else
-            aspect = CGSizeMake(myosd_vis_video_width, myosd_vis_video_height);
+            aspect = CGSizeMake(myosd_width, myosd_height);
 
         //        r = AVMakeRectWithAspectRatioInsideRect(aspect, r);
         //        r.origin.x    = floor(r.origin.x * scale) / scale;
@@ -3099,14 +3173,14 @@ void m4i_poll_input(myosd_input_state* myosd, size_t input_size) {
     }
     
     // integer only scaling
-    if (g_pref_integer_scale_only && myosd_vis_video_width < r.size.width * scale && myosd_vis_video_height < r.size.height * scale) {
-        CGFloat n_w = floor(r.size.width * scale / myosd_vis_video_width);
-        CGFloat n_h = floor(r.size.height * scale / myosd_vis_video_height);
+    if (g_pref_integer_scale_only && myosd_width < r.size.width * scale && myosd_height < r.size.height * scale) {
+        CGFloat n_w = floor(r.size.width * scale / myosd_width);
+        CGFloat n_h = floor(r.size.height * scale / myosd_height);
 
-        CGFloat new_width  = (n_w * myosd_vis_video_width) / scale;
-        CGFloat new_height = (n_h * myosd_vis_video_height) / scale;
+        CGFloat new_width  = (n_w * myosd_width) / scale;
+        CGFloat new_height = (n_h * myosd_height) / scale;
         
-        NSLog(@"INTEGER SCALE[%d,%d] %dx%d => %0.3fx%0.3f@%dx", (int)n_w, (int)n_h, myosd_vis_video_width, myosd_vis_video_height, new_width, new_height, (int)scale);
+        NSLog(@"INTEGER SCALE[%d,%d] %dx%d => %0.3fx%0.3f@%dx", (int)n_w, (int)n_h, myosd_width, myosd_height, new_width, new_height, (int)scale);
 
         r.origin.x += floor((r.size.width - new_width)/2);
         r.origin.y += floor((r.size.height - new_height)/2);
@@ -3348,7 +3422,7 @@ void m4i_poll_input(myosd_input_state* myosd, size_t input_size) {
             break;
         }
         case 'X':
-            myosd_set(MYOSD_FORCE_PIXEL_ASPECT, !myosd_get(MYOSD_FORCE_PIXEL_ASPECT));
+            g_pref_force_pixel_aspect_ratio = !g_pref_force_pixel_aspect_ratio;
             [self changeUI];
             break;
         case 'A':
@@ -3360,12 +3434,11 @@ void m4i_poll_input(myosd_input_state* myosd, size_t input_size) {
             break;
         case 'S':   // Speed 2x
         {
-            int speed = (int)myosd_get(MYOSD_SPEED);
-            if (speed != -1)
-                speed = -1;
+            if (g_pref_speed != 100)
+                g_pref_speed = 100;
             else
-                speed = 200;
-            myosd_set(MYOSD_SPEED, speed);
+                g_pref_speed = 200;
+            myosd_set(MYOSD_SPEED, g_pref_speed);
             break;
         }
         case 'M':

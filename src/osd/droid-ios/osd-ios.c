@@ -24,12 +24,10 @@
 
 #define AUDIO_BUFFERS 3
 
-int  myosd_fps = 0;
 int  myosd_display_width;
 int  myosd_display_height;
-int  myosd_force_pxaspect = 0;
 
-int  myosd_hiscore = 1;
+int  myosd_fps = 0;
 int  myosd_speed = 100;
 
 static int lib_inited = 0;
@@ -87,12 +85,6 @@ intptr_t myosd_get(int var)
             
         case MYOSD_SPEED:
             return myosd_speed;
-            
-        case MYOSD_HISCORE:
-            return myosd_hiscore;
-
-        case MYOSD_FORCE_PIXEL_ASPECT:
-            return myosd_force_pxaspect;
     }
     return 0;
 }
@@ -114,20 +106,15 @@ void myosd_set(int var, intptr_t value)
         case MYOSD_SPEED:
             myosd_speed = value;
             break;
-        case MYOSD_HISCORE:
-            myosd_hiscore = value;
-            break;
-        case MYOSD_FORCE_PIXEL_ASPECT:
-            myosd_force_pxaspect = value;
-            break;
     }
 }
 
-void myosd_set_video_mode(int width,int height)
+void myosd_set_video_mode(int vis_width,int vis_height,int min_width,int min_height)
 {
-    mame_printf_debug("myosd_set_video_mode: %dx%d\n",width,height);
+    mame_printf_debug("myosd_set_video_mode: %dx%d [%dx%d]\n",vis_width,vis_height,min_width,min_height);
+
     if (host_callbacks.video_init != NULL)
-        host_callbacks.video_init(width,height);
+        host_callbacks.video_init(vis_width,vis_height,min_width,min_height);
 }
 
 void myosd_video_draw(render_primitive* prims, int width, int height)
@@ -138,12 +125,32 @@ void myosd_video_draw(render_primitive* prims, int width, int height)
     _Static_assert(offsetof(myosd_render_primitive, color_a)      == offsetof(render_primitive, color), "");
     _Static_assert(offsetof(myosd_render_primitive, texture_base) == offsetof(render_primitive, texture), "");
     _Static_assert(offsetof(myosd_render_primitive, texcoords)    == offsetof(render_primitive, texcoords), "");
-    _Static_assert(PRIMFLAG_TEXORIENT_MASK == 0x000F);
-    _Static_assert(PRIMFLAG_TEXFORMAT_MASK == 0x00F0);
-    _Static_assert(PRIMFLAG_BLENDMODE_MASK == 0x0F00);
+    _Static_assert(offsetof(myosd_render_primitive, flags)        == offsetof(render_primitive, flags), "");
+    _Static_assert(PRIMFLAG_TEXORIENT_MASK == MYOSD_ORIENTATION_MASK);
+    _Static_assert(PRIMFLAG_TEXFORMAT_MASK == MYOSD_TEXFORMAT_MASK);
+    _Static_assert(PRIMFLAG_BLENDMODE_MASK == MYOSD_BLENDMODE_MASK);
     _Static_assert(PRIMFLAG_ANTIALIAS_MASK == 0x1000);
     _Static_assert(PRIMFLAG_SCREENTEX_MASK == 0x2000);
     _Static_assert(PRIMFLAG_TEXWRAP_MASK   == 0x4000);
+
+    _Static_assert(RENDER_PRIMITIVE_LINE == MYOSD_RENDER_PRIMITIVE_LINE);
+    _Static_assert(RENDER_PRIMITIVE_QUAD == MYOSD_RENDER_PRIMITIVE_QUAD);
+    
+    _Static_assert(TEXFORMAT_PALETTE16   == MYOSD_TEXFORMAT_PALETTE16);
+    _Static_assert(TEXFORMAT_PALETTEA16  == MYOSD_TEXFORMAT_PALETTEA16);
+    _Static_assert(TEXFORMAT_RGB15       == MYOSD_TEXFORMAT_RGB15);
+    _Static_assert(TEXFORMAT_RGB32       == MYOSD_TEXFORMAT_RGB32);
+    _Static_assert(TEXFORMAT_ARGB32      == MYOSD_TEXFORMAT_ARGB32);
+    _Static_assert(TEXFORMAT_YUY16       == MYOSD_TEXFORMAT_YUY16);
+
+    _Static_assert(BLENDMODE_NONE        == MYOSD_BLENDMODE_NONE);
+    _Static_assert(BLENDMODE_ALPHA       == MYOSD_BLENDMODE_ALPHA);
+    _Static_assert(BLENDMODE_RGB_MULTIPLY== MYOSD_BLENDMODE_RGB_MULTIPLY);
+    _Static_assert(BLENDMODE_ADD         == MYOSD_BLENDMODE_ADD);
+
+    _Static_assert(ORIENTATION_FLIP_X    == MYOSD_ORIENTATION_FLIP_X);
+    _Static_assert(ORIENTATION_FLIP_Y    == MYOSD_ORIENTATION_FLIP_Y);
+    _Static_assert(ORIENTATION_SWAP_XY   == MYOSD_ORIENTATION_SWAP_XY);
 
     if (host_callbacks.video_draw != NULL)
         host_callbacks.video_draw((myosd_render_primitive*)prims, width, height);
@@ -210,11 +217,22 @@ static void get_game_info(myosd_game_info* info, const game_driver *driver)
 
     if (driver->flags & GAME_SUPPORTS_SAVE)
         info->flags |= MYOSD_GAME_INFO_SUPPORTS_SAVE;
+
+    // check for a vector game
+    {
+        machine_config *config = global_alloc(machine_config(driver->machine_config));
+        for (const screen_device_config *devconfig = screen_first(*config); devconfig != NULL; devconfig = screen_next(devconfig))
+        {
+            if (devconfig->screen_type() == SCREEN_TYPE_VECTOR)
+                info->flags |= MYOSD_GAME_INFO_VECTOR;
+        }
+        global_free(config);
+    }
 }
 
 void myosd_set_game_info(const game_driver *driver_list[], int count)
 {
-    if (host_callbacks.set_game_info == NULL)
+    if (host_callbacks.game_list == NULL)
         return;
 
     myosd_game_info* myosd_games = (myosd_game_info*)malloc(sizeof(myosd_game_info) * count);
@@ -223,32 +241,36 @@ void myosd_set_game_info(const game_driver *driver_list[], int count)
     for (int i=0; i<count; i++)
         get_game_info(&myosd_games[i], driver_list[i]);
 
-    host_callbacks.set_game_info(myosd_games, count);
+    host_callbacks.game_list(myosd_games, count);
     free(myosd_games);
 }
 
 void myosd_init(void)
 {
-	int res = 0;
-    
-    // capture all MAME output so we can send it to the app.
-    for (int n=0; n<OUTPUT_CHANNEL_COUNT; n++)
-        mame_set_output_channel((output_channel)n, myosd_output, (void*)n, NULL, NULL);
-
 	if (!lib_inited )
     {
-       mame_printf_debug("myosd_init\n");
-       lib_inited = 1;
+        if (host_callbacks.output_init)
+            host_callbacks.output_init();
+
+        // capture all MAME output so we can send it to the app.
+        for (int n=0; n<OUTPUT_CHANNEL_COUNT; n++)
+            mame_set_output_channel((output_channel)n, myosd_output, (void*)n, NULL, NULL);
+
+        mame_printf_debug("myosd_init\n");
+        lib_inited = 1;
     }
 }
 
 void myosd_deinit(void)
 {
-    if (lib_inited )
+    if (lib_inited)
     {
         mame_printf_debug("myosd_deinit\n");
+        
+        if (host_callbacks.output_exit)
+            host_callbacks.output_exit();
 
-    	lib_inited = 0;
+        lib_inited = 0;
     }
 }
 

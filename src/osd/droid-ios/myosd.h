@@ -17,19 +17,20 @@
 extern "C" {
 #endif
 
+#define OPTION_HISCORE  "hiscore"
+
 // globals in osd-ios.c
-extern int  myosd_fps;
 extern int  myosd_display_width;        // display width,height is the screen output resolution
 extern int  myosd_display_height;       // ...set in the iOS app, to pick a good default render target size.
-extern int  myosd_force_pxaspect;
-extern int  myosd_hiscore;
+
+extern int  myosd_fps;
 extern int  myosd_speed;
 
 extern void myosd_init(void);
 extern void myosd_deinit(void);
 extern void myosd_machine_init(running_machine *machine);
 extern void myosd_machine_exit(running_machine *machine);
-extern void myosd_set_video_mode(int width,int height);
+extern void myosd_set_video_mode(int vis_width,int vis_height,int width, int height);
 extern void myosd_video_draw(render_primitive*, int width, int height);
 extern void myosd_poll_input_init(myosd_input_state* input);
 extern void myosd_poll_input(myosd_input_state* input);

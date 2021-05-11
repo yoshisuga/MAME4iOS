@@ -55,8 +55,6 @@ static Shader const ShaderTextureMultiply = @"texture, blend=mul";
 @property(readonly, nonatomic)  CGFloat    frameRateAverage;   // average frameRate
 @property(readonly, nonatomic)  CGFloat    renderTime;         // time it took last frame to render (sec)
 @property(readonly, nonatomic)  CGFloat    renderTimeAverage;  // average renderTime
-@property(readonly, nonatomic)  NSUInteger vertexCount;        // total verticies drawn last frame.
-@property(readonly, nonatomic)  NSUInteger primCount;          // total primitives drawn last frame.
 
 @property(readwrite, nonatomic) BOOL       showFPS;            // draw FPS stats
 @property(readwrite, nonatomic) CGFloat    sizeFPS;            // size of FPS text, height in points

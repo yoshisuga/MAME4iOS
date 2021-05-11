@@ -214,7 +214,7 @@ running_machine::running_machine(const game_driver &driver, const machine_config
 			firstcpu = downcast<cpu_device *>(device);
 			break;
 		}
-    if(myosd_hiscore)
+    if (options_get_bool(&m_options, OPTION_HISCORE))
     {
        cpu[0] = firstcpu;
        for (cpunum = 1; cpunum < ARRAY_LENGTH(cpu) && cpu[cpunum - 1] != NULL; cpunum++)
@@ -367,7 +367,7 @@ void running_machine::start()
 		cheat_init(this);
     
     //MKCHAMP - INITIALIZING THE HISCORE ENGINE
-    if (myosd_hiscore)
+    if (options_get_bool(&m_options, OPTION_HISCORE))
         hiscore_init(this);
 
 	// disallow save state registrations starting here

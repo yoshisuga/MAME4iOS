@@ -37,6 +37,8 @@ __attribute__((objc_direct_members))
     
     NSUInteger _prim_count;
     NSUInteger _vert_count;
+    NSUInteger _texture_count;
+    NSUInteger _texture_load_count;
 
     CGColorSpaceRef _colorSpaceDevice;
     CGColorSpaceRef _colorSpaceSRGB;
@@ -146,7 +148,6 @@ __attribute__((objc_direct_members))
 
 - (void)layoutSubviews {
     [super layoutSubviews];
-    // TODO: have an explicit texture flush method?
     _textureCacheFlush = TRUE;
 }
 - (void)didMoveToWindow {
@@ -372,7 +373,9 @@ __attribute__((objc_direct_members))
     _startRenderTime = CACurrentMediaTime();
     _prim_count = 0;
     _vert_count = 0;
-    
+    _texture_count = 0;
+    _texture_load_count = 0;
+
     _command = [_queue commandBuffer];
 
     MTLRenderPassDescriptor* desc = [[MTLRenderPassDescriptor alloc] init];
@@ -463,9 +466,6 @@ __attribute__((objc_direct_members))
         _renderTimeAverage = (_renderTimeAverage * _frameCount + _renderTime) / (_frameCount+1);
     else
         _renderTimeAverage = _renderTime;
-    
-    _primCount = _prim_count;
-    _vertexCount = _vert_count;
     
     [_draw_lock unlock];
 }
@@ -562,7 +562,7 @@ __attribute__((objc_direct_members))
 }
 
 -(void)drawLine:(CGPoint)start to:(CGPoint)end width:(CGFloat)width color:(VertexColor)color edgeAlpha:(CGFloat)alpha {
-    
+
     simd_float2 p0 = simd_make_float2(start.x, start.y);
     simd_float2 p1 = simd_make_float2(end.x, end.y);
 
@@ -688,7 +688,6 @@ __attribute__((objc_direct_members))
             NSParameterAssert(FALSE);
             break;
     }
-
     [self drawPrim:MTLPrimitiveTypeTriangleStrip vertices:vertices count:sizeof(vertices)/sizeof(vertices[0])];
 }
 -(void)drawGradientRect:(CGRect)rect color:(VertexColor)color1 color:(VertexColor)color2 orientation:(UIImageOrientation)orientation {
@@ -778,6 +777,13 @@ __attribute__((objc_direct_members))
     if (frame_count == 0)
         return;
     
+#ifdef DEBUG
+    // capture stats now, to not include the FPS text
+    int num_tri = (int)_prim_count;
+    int num_tex = (int)_texture_count;
+    int num_tex_load = (int)_texture_load_count;
+#endif
+    
     // get the timecode assuming 60fps
     NSUInteger frame = frame_count % 60;
     NSUInteger sec = (frame_count / 60) % 60;
@@ -790,6 +796,16 @@ __attribute__((objc_direct_members))
     CGFloat y = (h / 4);
     [self drawText:fps at:CGPointMake(x + h/8,y + h/8) height:h color:VertexColor(0,0,0,0.5)];
     [self drawText:fps at:CGPointMake(x,y) height:h color:VertexColor(1,1,1,1)];
+
+    // also draw stats
+#ifdef DEBUG
+    NSString* stats = [NSString stringWithFormat:@"Tri:%d Tex:%d Load:%d Cache:%d", num_tri, num_tex, num_tex_load, (int)_texture_cache.count];
+    y += h + f*2;
+    [self setShader:ShaderAlpha];
+    [self drawRect:CGRectMake(x, y, [self sizeText:stats height:h].width, h) color:VertexColor(0,0,0,0.5)];
+    //[self drawText:stats at:CGPointMake(x + h/8,y + h/8) height:h color:VertexColor(0,0,0,0.5)];
+    [self drawText:stats at:CGPointMake(x,y) height:h color:VertexColor(1,1,0,1)];
+#endif
 }
 
 #pragma mark - transforms
@@ -1137,10 +1153,12 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     NSUInteger texture_hash = [_texture_hash[texture_id] unsignedLongValue];
     
     // check for a cache hit, and texture data not changed (hash and size is the same)
+    _texture_count++;
     if (texture != nil && texture_hash == hash && texture.width == width && texture.height == height) {
         return texture;
     }
-    
+    _texture_load_count++;
+
     // create a new Metal texture (if needed), load the data, and put in cache
     if (texture == nil || texture.width != width || texture.height != height) {
         texture = [self textureWithFormat:format width:width height:height];
