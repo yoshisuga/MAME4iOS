@@ -114,6 +114,32 @@ Even if you are not in the paid Apple Developer Program, you can sideload the ap
 * some things (like being smart about number of players, etc) does not work (yet)
 * if you run a `Computer` machine you will be stuck and cant exit cuz we dont handle ui_mode and keyboards right (yet)
 
+## **Software Lists**
+
+Software lists are containing meta-data of software for computers and consoles and are coming from various sources,
+they are not compiled in code but use as valuable source of information in order to preserve and document software.
+
+## How to add software to `MAME4iOS`
+
+* first import a *software list xml* file, you can find these files [here](https://github.com/mamedev/mame/tree/master/hash)
+    - you can also copy software list xml files *by hand* to the `hash` directory.
+* you might be tempted to just import *all* software list files, dont do that, it will waste diskspace on your device, and cause `MAME4iOS` to do extra work.
+* after you have imported the software list xml files, you can import `ZIP` files containing software.  The name of the `ZIP` file *or* the subdirectory path in the `ZIP` file needs to match the name of a software list.
+
+example zip file(s)
+```
+a2600.zip
+    pacman.zip
+    et.zip
+```
+
+```
+MySoftware.zip
+    a2600/pacman.zip
+    a2600/et.zip
+    n64/007goldnu.7z
+```
+
 ## tvOS
 
 MAME for tvOS support was added in early 2019, and it currently can run games has full native UI support and MFI controller support with most notably:

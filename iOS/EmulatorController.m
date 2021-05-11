@@ -432,17 +432,6 @@ static void check_pause()
     [g_emulation_paused_cond unlock];
 }
 
-// HACK: make a UI.INI to force MAME to always show Available games ONLY
-// TODO: mame is saving INI files in the root, should be `ini` dir, fix that!
-void ini_hack(void)
-{
-    @autoreleasepool {
-        NSString* ini_str = @"last_used_filter          Available\nhide_main_panel           3\n";
-        NSData*   ini_data = [ini_str dataUsingEncoding:NSUTF8StringEncoding];
-        [ini_data writeToFile:getDocumentPath(@"ui.ini") atomically:NO];
-    }
-}
-
 void* app_Thread_Start(void* args)
 {
     init_pause();
@@ -463,11 +452,6 @@ void* app_Thread_Start(void* args)
             g_mame_reset = FALSE;
         }
         
-        // TODO: remove this
-        if (myosd_get(MYOSD_VERSION) != 139)
-            ini_hack();
-        // TODO: remove this
-
         // reset g_mame_output_text if we are running a game, but not if we are just running menu.
         if (g_mame_game[0] != 0)
             g_mame_output_text[0] = 0;
@@ -580,6 +564,8 @@ void m4i_game_list(myosd_game_info* game_info, int game_count)
                 continue;
             if (g_pref_filter_clones && game_info[i].parent != NULL && game_info[i].parent[0] != 0 && game_info[i].parent[0] != '0')
                 continue;
+            
+            NSString* software_list = @(game_info[i].software_list ?: "");
 
             [games addObject:@{
                 kGameInfoType:        (game_info[i].flags & MYOSD_GAME_INFO_BIOS) ? kGameInfoTypeBIOS : types[game_info[i].type],
@@ -590,52 +576,37 @@ void m4i_game_list(myosd_game_info* game_info, int game_count)
                 kGameInfoManufacturer:@(game_info[i].manufacturer),
                 kGameInfoCategory:    find_category(@(game_info[i].name), @(game_info[i].parent ?: "")),
                 kGameInfoDriver:      [@(game_info[i].source_file ?: "").lastPathComponent stringByDeletingPathExtension],
+                kGameInfoSoftware:    software_list,
                 kGameInfoScreen:      screens[(game_info[i].flags & MYOSD_GAME_INFO_VERTICAL) ? 1 : 0 +
                                               (game_info[i].flags & MYOSD_GAME_INFO_VECTOR)   ? 2 : 0 ]
             }];
+            
+            if (software_list.length != 0)
+                [games addObjectsFromArray:[g_softlist getGamesForSystem:@(game_info[i].name) fromList:software_list]];
         }
         
-// add some *fake* data to test UI
-#ifdef DEBUG
-        // TODO: "Atari 2600 (NTSC)" and "Atari 2600 (PAL)" show both?
-        if ([games filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"%K = %@", kGameInfoName, @"a2600"]].count == 0) {
-            [games addObject:@{
-                kGameInfoType:        types[MYOSD_GAME_TYPE_CONSOLE],
-                kGameInfoName:        @"a2600",
-                kGameInfoDescription: @"Atari 2600 (NTSC)",
-                kGameInfoYear:        @"1979",
-                kGameInfoManufacturer:@"Atari",
-                kGameInfoCategory:    find_category(@"a2600", @""),
-                kGameInfoDriver:      @"a2600.cpp",
-            }];
-            [games addObjectsFromArray:[g_softlist getGamesForSystem:@"a2600" fromList:@"a2600,a2600_cass"]];
+        NSString* mame_version = [@((const char *)myosd_get(MYOSD_VERSION_STRING) ?: "") componentsSeparatedByString:@" ("].firstObject;
 
-            [games addObject:@{
-                kGameInfoType:        types[MYOSD_GAME_TYPE_CONSOLE],
-                kGameInfoName:        @"a2600p",
-                kGameInfoDescription: @"Atari 2600 (PAL)",
-                kGameInfoYear:        @"1979",
-                kGameInfoManufacturer:@"Atari",
-                kGameInfoCategory:    find_category(@"a2600p", @""),
-                kGameInfoParent:      @"a2600",
-                kGameInfoDriver:      @"a2600.cpp",
-            }];
-            [games addObjectsFromArray:[g_softlist getGamesForSystem:@"a2600p" fromList:@"a2600,a2600_cass"]];
-        }
+        // add a *special* system game that will run the DOS MAME menu.
+        [games addObject:@{
+            kGameInfoType:kGameInfoTypeComputer,
+            kGameInfoName:kGameInfoNameMameMenu,
+            kGameInfoParent:@"",
+            kGameInfoDescription:[NSString stringWithFormat:@"MAME %@", mame_version],
+            kGameInfoYear:@"1996",
+            kGameInfoManufacturer:@"MAMEDev and contributors",
+        }];
         
-        if ([games filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"%K = %@", kGameInfoName, @"n64"]].count == 0) {
-            [games addObject:@{
-                kGameInfoType:        types[MYOSD_GAME_TYPE_CONSOLE],
-                kGameInfoName:        @"n64",
-                kGameInfoDescription: @"Nintendo 64",
-                kGameInfoYear:        @"1996",
-                kGameInfoManufacturer:@"Nintendo",
-                kGameInfoCategory:    find_category(@"n64", @""),
-                kGameInfoDriver:      @"n64.cpp",
-            }];
-            [games addObjectsFromArray:[g_softlist getGamesForSystem:@"n64" fromList:@"n64"]];
+        // HACK: the game list get sent "too soon" so delay a bit
+        // TODO: remove this
+        // TODO: one fix is to not pause MAME while we have the ChooseGame UI up.
+        if (myosd_get(MYOSD_VERSION) != 139) {
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                [sharedInstance performSelectorOnMainThread:@selector(chooseGame:) withObject:games waitUntilDone:FALSE];
+            });
+            return;
         }
-#endif
+        // HACK: the game list get sent "too soon" so delay a bit
         
         [sharedInstance performSelectorOnMainThread:@selector(chooseGame:) withObject:games waitUntilDone:FALSE];
     }
@@ -1730,12 +1701,6 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
     else
         alpha = 0.0;
     
-    // HACK: fix this!
-    // MAME 2xx does not give us the game_list (yet) so always show the UI
-    if (myosd_get(MYOSD_VERSION) != 139)
-        alpha = 1.0;
-    // HACK: fix this!
-
 #if TARGET_OS_IOS
     if (change_layout) {
         alpha = 0.0;

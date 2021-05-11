@@ -209,65 +209,6 @@
     }
 #endif
     
-#ifdef DEBUG
-    if (list.count == 0 && [list_name isEqualToString:@"a2600"]) {
-        list = @[
-            @{
-                kSoftwareListName:        @"pitfall",
-                kSoftwareListDescription: @"Pitfall! - Pitfall Harry's Jungle Adventure",
-                kSoftwareListYear:        @"1982",
-                kSoftwareListPublisher:   @"Activision",
-            },
-            @{
-                kSoftwareListName:        @"ET",
-                kSoftwareListDescription: @"E.T. - The Extra-Terrestrial",
-                kSoftwareListYear:        @"1982",
-                kSoftwareListPublisher:   @"Atari",
-            },
-            @{
-                kSoftwareListName:        @"ADVENTP",
-                kSoftwareListDescription: @"Adventure +",
-                kSoftwareListYear:        @"2003",
-                kSoftwareListPublisher:   @"Homebrew",
-            },
-            @{
-                kSoftwareListName:        @"COMBAT",
-                kSoftwareListDescription: @"Combat - Tank-Plus",
-                kSoftwareListYear:        @"1977",
-                kSoftwareListPublisher:   @"Atari",
-            },
-        ];
-    }
-    if (list.count == 0 && [list_name isEqualToString:@"n64"]) {
-        list = @[
-            @{
-                kSoftwareListName:        @"007GOLDNU",
-                kSoftwareListDescription: @"007 - GoldenEye (USA)",
-                kSoftwareListYear:        @"1997",
-                kSoftwareListPublisher:   @"Nintendo",
-            },
-            @{
-                kSoftwareListName:        @"MARIOKRTJ1",
-                kSoftwareListDescription: @"Mario Kart 64 (Japan)",
-                kSoftwareListYear:        @"1996",
-                kSoftwareListPublisher:   @"Nintendo",
-            },
-            @{
-                kSoftwareListName:        @"ZELDAOOTMQD",
-                kSoftwareListDescription: @"The Legend of Zelda - Ocarina of Time - Master Quest (USA, Debug Edition, Ripped from GC)",
-                kSoftwareListYear:        @"2003",
-                kSoftwareListPublisher:   @"Nintendo",
-            },
-            @{
-                kSoftwareListName:        @"MADDN2K2",
-                kSoftwareListDescription: @"Madden NFL 2002 (USA)",
-                kSoftwareListYear:        @"2001",
-                kSoftwareListPublisher:   @"Electronic Arts",
-            },
-        ];
-    }
-#endif
-    
     return list;
 }
 
