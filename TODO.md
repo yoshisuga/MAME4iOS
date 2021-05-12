@@ -8,6 +8,7 @@
 * How does new hiscore system work, will old dat file conflict
 * MAME 2xx will run/restore the last game, this is **bad** and needs turned off in the OSD. M4i manages restoring last game. 
 * Figure out correct solution to delayed game_list
+    - maybe dont pause the MAME thread when ChooseUI is active, just dont send any input to MAME.
 * OSD needs to get the “input profile” for the current game (ie num-players, etc)
 * Clean up the OSD module stuff
 * Find out is FORCE_DRC_C_BACKEND or NOASM needed. 

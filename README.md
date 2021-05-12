@@ -119,7 +119,7 @@ Even if you are not in the paid Apple Developer Program, you can sideload the ap
 Software lists are containing meta-data of software for computers and consoles and are coming from various sources,
 they are not compiled in code but use as valuable source of information in order to preserve and document software.
 
-## How to add software to `MAME4iOS`
+### How to add software to `MAME4iOS`
 
 * first import a *software list xml* file, you can find these files [here](https://github.com/mamedev/mame/tree/master/hash)
     - you can also copy software list xml files *by hand* to the `hash` directory.
