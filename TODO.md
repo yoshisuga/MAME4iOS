@@ -23,6 +23,7 @@
     * Add a row of keys to top of keyboard, replacing suggestions (coin, start, menu, exit,….)
 * See if 7z and ZIP files can co-exist
     * It looks like MAME will check ZIP first, then 7z question is will CRC fail in ZIP cause it to move along to 7z
+    - **YES** you can have both `7z` and `zip` 2xx will find roms in the `7z` 139 will ignore `zip`
 * See if a ZIP file renamed 7z will work. 
     - **NO** you cant just rename a ZIP -> 7Z, you must convert it
 * Support -bench mode (in 139 and 2xx)
