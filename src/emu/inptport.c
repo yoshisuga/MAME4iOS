@@ -100,6 +100,8 @@
 #include "uiinput.h"
 #include "debug/debugcon.h"
 
+#include "myosd.h"      // for myosd_num_ways
+
 #include <ctype.h>
 #include <time.h>
 
@@ -2099,12 +2101,16 @@ static void init_port_state(running_machine *machine)
 	init_autoselect_devices(machine->m_portlist, IPT_POSITIONAL,  IPT_POSITIONAL_V, 0,              OPTION_POSITIONAL_DEVICE, "positional");
 	init_autoselect_devices(machine->m_portlist, IPT_MOUSE_X,     IPT_MOUSE_Y,      0,              OPTION_MOUSE_DEVICE,      "mouse");
 
+    myosd_num_ways = 8;
 	/* look for 4-way joysticks and change the default map if we find any */
 	if (joystick_map_default[0] == 0 || strcmp(joystick_map_default, "auto") == 0)
 		for (port = machine->m_portlist.first(); port != NULL; port = port->next())
 			for (field = port->fieldlist; field != NULL; field = field->next)
 				if (field->state->joystick != NULL && field->way == 4)
 				{
+//DAV HACK
+                    myosd_num_ways = 4;
+//DAV HACK
                     input_device_set_joystick_map(machine, -1, (field->flags & FIELD_FLAG_ROTATED) ? joystick_map_4way_diagonal : joystick_map_4way_sticky);
 					break;
 				}

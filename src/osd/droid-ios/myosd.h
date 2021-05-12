@@ -26,6 +26,8 @@ extern int  myosd_display_height;       // ...set in the iOS app, to pick a good
 extern int  myosd_fps;
 extern int  myosd_speed;
 
+extern int  myosd_num_ways;
+
 extern void myosd_init(void);
 extern void myosd_deinit(void);
 extern void myosd_machine_init(running_machine *machine);
