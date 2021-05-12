@@ -24,6 +24,7 @@
 * See if 7z and ZIP files can co-exist
     * It looks like MAME will check ZIP first, then 7z question is will CRC fail in ZIP cause it to move along to 7z
 * See if a ZIP file renamed 7z will work. 
+    - **NO** you cant just rename a ZIP -> 7Z, you must convert it
 * Support -bench mode (in 139 and 2xx)
     * -str <n> -video none -sound none -nothrottle
 * Support -autosave (139 and 2xx)
