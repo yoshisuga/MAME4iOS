@@ -769,6 +769,13 @@ __attribute__((objc_direct_members))
     _lastDrawTime = drawTime;
 }
 
+#ifdef DEBUG
+static int gcd(int a, int b)
+{
+    return (b == 0) ? a : gcd(b, a % b);
+}
+#endif
+
 // draw the frame rate
 -(void)drawFPS {
 
@@ -799,10 +806,18 @@ __attribute__((objc_direct_members))
 
     // also draw stats
 #ifdef DEBUG
-    NSString* stats = [NSString stringWithFormat:@"Tri:%d Tex:%d Load:%d Cache:%d", num_tri, num_tex, num_tex_load, (int)_texture_cache.count];
+    int scale  = (int)_layer.contentsScale;
+    int width  = (int)_layer.drawableSize.width;
+    int height = (int)_layer.drawableSize.height;
+    int div = gcd(width,height);
+
+    NSString* stats = [NSString stringWithFormat:@"Tri:%d Tex:%d Load:%d Cache:%d\n%dx%d@%dx [%d:%d]",
+                       num_tri, num_tex, num_tex_load, (int)_texture_cache.count,
+                       width/scale,height/scale,scale,width/div,height/div];
+    CGSize size = [self sizeText:stats height:h];
     y += h + f*2;
     [self setShader:ShaderAlpha];
-    [self drawRect:CGRectMake(x, y, [self sizeText:stats height:h].width, h) color:VertexColor(0,0,0,0.5)];
+    [self drawRect:CGRectMake(x, y, size.width, size.height) color:VertexColor(0,0,0,0.5)];
     //[self drawText:stats at:CGPointMake(x + h/8,y + h/8) height:h color:VertexColor(0,0,0,0.5)];
     [self drawText:stats at:CGPointMake(x,y) height:h color:VertexColor(1,1,0,1)];
 #endif
@@ -1354,6 +1369,12 @@ static uint64_t g_font[128];
         if (ch > 127)
             continue;
         
+        if (ch == '\n') {
+            x = xy.x;
+            y += height;
+            continue;
+        }
+        
         void* ident = (void*)(g_font + ch); // use address of glyph data as unique identifier
         [self setTexture:0 texture:ident hash:0 width:8 height:8 format:MTLPixelFormatBGRA8Unorm texture_load:^(id<MTLTexture> texture) {
             uint64_t mask = g_font[ch];
@@ -1374,12 +1395,27 @@ static uint64_t g_font[128];
 }
 
 -(CGSize)sizeText:(NSString*)text height:(CGFloat)height {
-    int n = 0;
+    CGFloat x = 0.0;
+    CGFloat y = 0.0;
+    CGFloat w = height;
+    CGFloat h = height;
+    CGSize size = CGSizeZero;
     for (const char* pch = text.UTF8String; *pch; pch++) {
-        if (*pch <= 127)
-            n++;
+        uint8_t ch = *pch;
+        
+        if (ch > 127)
+            continue;
+        
+        if (ch == '\n') {
+            x = 0.0;
+            if (pch[1] != 0) y += height;
+            continue;
+        }
+        x += w;
+        size.width = MAX(size.width,x);
     }
-    return CGSizeMake(n * height, height);
+    size.height = y + h;
+    return size;
 }
 
 // 8x8 Arcade font, only for ASCII 0-127
