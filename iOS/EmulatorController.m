@@ -167,14 +167,14 @@ uint8_t myosd_keyboard[NUM_KEYS];
 int     myosd_keyboard_changed;
 
 // input profile for current machine (see poll_input)
-int myosd_num_buttons;
-int myosd_num_ways;
-int myosd_num_players;
-int myosd_num_coins;
-int myosd_num_inputs;
-int myosd_mouse;
-int myosd_light_gun;
-int myosd_num_keyboard;
+static int myosd_num_buttons;
+static int myosd_num_ways;
+static int myosd_num_players;
+static int myosd_num_coins;
+static int myosd_num_inputs;
+static int myosd_mouse;
+static int myosd_light_gun;
+static int myosd_num_keyboard;
 
 // Touch Directional Input tracking
 int touchDirectionalCyclesAfterMoved = 0;
@@ -264,8 +264,9 @@ static int change_layout=0;
 
 static int myosd_inGame = 0;    // TRUE if MAME is running a game
 static int myosd_in_menu = 0;   // TRUE if MAME has UI active (or is at the root aka no game)
-static int myosd_isVector = 0;  // TRUE if running a VECTOR game
 static int myosd_isVertical = 0;// TRUE if running a Vertical game
+static int myosd_isVector = 0;  // TRUE if running a VECTOR game
+static int myosd_isLCD = 0;     // TRUE if running a LCD game
 
 static NSDictionary* g_category_dict;
 static SoftwareList* g_softlist;
@@ -538,9 +539,16 @@ NSString* find_category(NSString* name, NSString* parent)
 // called from deep inside MAME select_game menu, to give us the valid list of games/drivers
 void m4i_game_list(myosd_game_info* game_info, int game_count)
 {
-    static NSString* screens[] = {kGameInfoScreenHorizontal, kGameInfoScreenVertical,
-        kGameInfoScreenHorizontal @", " kGameInfoScreenVector, kGameInfoScreenVertical @", " kGameInfoScreenVector};
-    
+    static NSString* screens[8] = {
+        kGameInfoScreenHorizontal,
+        kGameInfoScreenVertical,
+        kGameInfoScreenHorizontal @", " kGameInfoScreenVector,
+        kGameInfoScreenVertical   @", " kGameInfoScreenVector,
+        kGameInfoScreenHorizontal @", " kGameInfoScreenLCD,
+        kGameInfoScreenVertical   @", " kGameInfoScreenLCD,
+        kGameInfoScreenHorizontal,
+        kGameInfoScreenVertical};
+
     static NSString* types[] = {kGameInfoTypeArcade, kGameInfoTypeConsole, kGameInfoTypeComputer};
     _Static_assert(MYOSD_GAME_TYPE_ARCADE == 0, "");
     _Static_assert(MYOSD_GAME_TYPE_CONSOLE == 1, "");
@@ -552,8 +560,6 @@ void m4i_game_list(myosd_game_info* game_info, int game_count)
         
         for (int i=0; i<game_count; i++)
         {
-            // TODO: MYOSD_GAME_INFO_VECTOR
-
             if (game_info[i].name == NULL || game_info[i].name[0] == 0)
                 continue;
             if (game_info[i].type < 0 || game_info[i].type >= sizeof(types)/sizeof(types[0]))
@@ -578,7 +584,8 @@ void m4i_game_list(myosd_game_info* game_info, int game_count)
                 kGameInfoDriver:      [@(game_info[i].source_file ?: "").lastPathComponent stringByDeletingPathExtension],
                 kGameInfoSoftware:    software_list,
                 kGameInfoScreen:      screens[(game_info[i].flags & MYOSD_GAME_INFO_VERTICAL) ? 1 : 0 +
-                                              (game_info[i].flags & MYOSD_GAME_INFO_VECTOR)   ? 2 : 0 ]
+                                              (game_info[i].flags & MYOSD_GAME_INFO_VECTOR)   ? 2 : 0 +
+                                              (game_info[i].flags & MYOSD_GAME_INFO_LCD)      ? 4 : 0 ]
             }];
             
             if (software_list.length != 0)
@@ -619,16 +626,18 @@ void m4i_game_start(myosd_game_info* info)
           (info->flags & MYOSD_GAME_INFO_VECTOR) ? " VECTOR" : "");
     
     myosd_inGame = 1;
-    myosd_isVector = (info->flags & MYOSD_GAME_INFO_VECTOR) != 0;
     myosd_isVertical = (info->flags & MYOSD_GAME_INFO_VERTICAL) != 0;
+    myosd_isVector = (info->flags & MYOSD_GAME_INFO_VECTOR) != 0;
+    myosd_isLCD = (info->flags & MYOSD_GAME_INFO_LCD) != 0;
 }
 
 void m4i_game_stop()
 {
     NSLog(@"GAME STOP");
     myosd_inGame = 0;
-    myosd_isVector = NO;
     myosd_isVertical = NO;
+    myosd_isVector = NO;
+    myosd_isLCD = NO;
 }
 
 @implementation UINavigationController(KeyboardDismiss)

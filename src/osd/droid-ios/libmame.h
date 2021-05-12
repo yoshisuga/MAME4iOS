@@ -142,6 +142,7 @@ enum MYOSD_GAME_INFO
     MYOSD_GAME_INFO_BIOS                = 1<<4,     // this driver entry is a BIOS root
     MYOSD_GAME_INFO_SUPPORTS_SAVE       = 1<<5,     // system supports save states
     MYOSD_GAME_INFO_VECTOR              = 1<<6,     // SCREEN is VECTOR
+    MYOSD_GAME_INFO_LCD                 = 1<<7,     // SCREEN is LCD
 };
 
 // this is copy/clone of the render_primitive in render.h passed up to UI/OSD layer in myosd_video_draw
