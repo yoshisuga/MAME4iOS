@@ -31,6 +31,8 @@ static myosd_input_state myosd_input;
 
 static int poll_ports = 0;
 
+int myosd_num_ways = 0;     // this will be set by init_port_state (in inptport.c)
+
 static void my_poll_ports(running_machine *machine);
 static INT32 my_get_state(void *device_internal, void *item_internal);
 static INT32 my_axis_get_state(void *device_internal, void *item_internal);
@@ -152,6 +154,7 @@ void my_poll_ports(running_machine *machine)
 	const input_port_config *port;
     if(poll_ports)
     {
+        int way8 = 0;
         myosd_input.num_buttons = 0;
         myosd_input.num_lightgun = 0;
         myosd_input.num_mouse = 0;
@@ -159,7 +162,8 @@ void my_poll_ports(running_machine *machine)
         myosd_input.num_players = 1;
         myosd_input.num_coins = 1;
         myosd_input.num_inputs = 1;
-        myosd_input.num_ways = 2;
+        myosd_input.num_ways = myosd_num_ways;
+        
         for (port = machine->m_portlist.first(); port != NULL; port = port->next())
         {
             for (field = port->fieldlist; field != NULL; field = field->next)
@@ -224,15 +228,12 @@ void my_poll_ports(running_machine *machine)
                     if(myosd_input.num_buttons<6)myosd_input.num_buttons=6;
                 
                 // count the number of ways (joystick directions)
-                if(field->type == IPT_JOYSTICK_UP || field->type == IPT_JOYSTICK_DOWN)
-                    if(myosd_input.num_ways<4)myosd_input.num_ways=4;
-                if(field->type == IPT_JOYSTICKLEFT_UP  || field->type == IPT_JOYSTICKLEFT_DOWN ||
-                   field->type == IPT_JOYSTICKRIGHT_UP || field->type == IPT_JOYSTICKRIGHT_DOWN)
-                    if(myosd_input.num_ways<8)myosd_input.num_ways=8;
+                if(field->type == IPT_JOYSTICK_UP || field->type == IPT_JOYSTICK_DOWN || field->type == IPT_JOYSTICKLEFT_UP || field->type == IPT_JOYSTICKLEFT_DOWN)
+                    way8=1;
                 if(field->type == IPT_AD_STICK_X || field->type == IPT_LIGHTGUN_X || field->type == IPT_MOUSE_X ||
                    field->type == IPT_TRACKBALL_X || field->type == IPT_PEDAL)
-                    if(myosd_input.num_ways<8)myosd_input.num_ways=8;
-                
+                    way8=1;
+
                 // detect if mouse or lightgun input is wanted.
                 if(field->type == IPT_DIAL   || field->type == IPT_PADDLE   || field->type == IPT_POSITIONAL   || field->type == IPT_TRACKBALL_X ||
                    field->type == IPT_DIAL_V || field->type == IPT_PADDLE_V || field->type == IPT_POSITIONAL_V || field->type == IPT_TRACKBALL_Y)
@@ -246,6 +247,14 @@ void my_poll_ports(running_machine *machine)
             }
         }
         poll_ports=0;
+        
+        //8 if analog or lightgun or up or down
+        if (myosd_input.num_ways != 4) {
+            if (way8)
+                myosd_input.num_ways = 8;
+            else
+                myosd_input.num_ways = 2;
+        }
         
         mame_printf_debug("Num Buttons %d\n",myosd_input.num_buttons);
         mame_printf_debug("Num WAYS %d\n",myosd_input.num_ways);
