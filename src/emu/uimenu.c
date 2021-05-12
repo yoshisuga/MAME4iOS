@@ -3868,8 +3868,8 @@ static void menu_select_game_build_driver_list(ui_menu *menu, select_game_state 
 			for (src = dir->name; *src != 0 && *src != '.' && dst < &drivername[ARRAY_LENGTH(drivername) - 1]; src++)
 				*dst++ = tolower((UINT8)*src);
 			*dst = 0;
-            
-			/* find it in the array */
+
+            /* find it in the array */
 			tempdriver.name = drivername;
 			tempdriver_ptr = &tempdriver;
 			found_driver = (const game_driver **)bsearch(&tempdriver_ptr, menustate->driverlist, driver_count, sizeof(*menustate->driverlist), menu_select_game_driver_compare);
