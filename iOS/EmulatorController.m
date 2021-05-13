@@ -393,11 +393,9 @@ int run_mame(char* system, char* game)
         g_pref_autosave ? "-autosave" : "-noautosave",
         g_pref_showINFO ? "-noskip_gameinfo" : "-skip_gameinfo",
         "-speed", speed,
-// HACK: disable these for now
-//        g_pref_hiscore ? "-hiscore" : "-nohiscore",
-//        "-flicker", g_pref_vector_flicker ? "0.4" : "0.0",
-//        "-beam", g_pref_vector_beam2x ? "2.5" : "1.0",          // TODO: -beam_width_min and -beam_width_max on latest MAME
-// HACK: disable these for now
+        g_pref_hiscore ? "-hiscore" : "-nohiscore",
+        "-flicker", g_pref_vector_flicker ? "0.4" : "0.0",
+        "-beam", g_pref_vector_beam2x ? "2.5" : "1.0", 
         "-pause_brightness", "1.0", "-update_in_pause",  // to debug shaders
         };
     

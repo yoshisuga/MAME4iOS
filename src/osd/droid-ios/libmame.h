@@ -343,8 +343,14 @@ enum myosd_keycode
     MYOSD_KEY_RCMD,
     MYOSD_KEY_MENU,
     MYOSD_KEY_CANCEL,
+    // special key alias(s)
     MYOSD_KEY_FIRST = MYOSD_KEY_A,
-    MYOSD_KEY_LAST = MYOSD_KEY_CANCEL
+    MYOSD_KEY_LAST = MYOSD_KEY_CANCEL,
+    MYOSD_KEY_CONFIGURE = MYOSD_KEY_TAB,
+    MYOSD_KEY_UI_MODE = MYOSD_KEY_NUMLOCK,
+    // special non-mapped keys
+    MYOSD_KEY_EXIT,
+    MYOSD_KEY_RESET,
 };
 
 // myosd_get and myosd_set - get and set global state from the MAME driver.
