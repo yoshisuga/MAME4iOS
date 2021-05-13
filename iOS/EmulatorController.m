@@ -179,6 +179,11 @@ static int myosd_num_keyboard;
 // Touch Directional Input tracking
 int touchDirectionalCyclesAfterMoved = 0;
 
+enum {
+    PAUSE_FALSE = 0,
+    PAUSE_THREAD,
+    PAUSE_INPUT,
+};
 int g_emulation_paused = 0;
 int g_emulation_initiated=0;
 NSCondition* g_emulation_paused_cond;
@@ -428,7 +433,7 @@ static void change_pause(int pause)
 static void check_pause()
 {
     [g_emulation_paused_cond lock];
-    while (g_emulation_paused)
+    while (g_emulation_paused == PAUSE_THREAD)
         [g_emulation_paused_cond wait];
     [g_emulation_paused_cond unlock];
 }
@@ -603,18 +608,8 @@ void m4i_game_list(myosd_game_info* game_info, int game_count)
             kGameInfoYear:@"1996",
             kGameInfoManufacturer:@"MAMEDev and contributors",
         }];
-        
-        // HACK: the game list get sent "too soon" so delay a bit
-        // TODO: remove this
-        // TODO: one fix is to not pause MAME while we have the ChooseGame UI up.
-        if (myosd_get(MYOSD_VERSION) != 139) {
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                [sharedInstance performSelectorOnMainThread:@selector(chooseGame:) withObject:games waitUntilDone:FALSE];
-            });
-            return;
-        }
-        // HACK: the game list get sent "too soon" so delay a bit
-        
+
+        // give the list to the main thread to display to user
         [sharedInstance performSelectorOnMainThread:@selector(chooseGame:) withObject:games waitUntilDone:FALSE];
     }
 }
@@ -766,8 +761,7 @@ void m4i_game_stop()
     
     NSLog(@"stopEmulation: START");
     
-    if (g_emulation_paused)
-        change_pause(0);
+    change_pause(PAUSE_FALSE);
     
     g_emulation_initiated = 0;
     while (g_emulation_initiated == 0) {
@@ -781,7 +775,7 @@ void m4i_game_stop()
 
 - (void)startMenu
 {
-    change_pause(1);
+    change_pause(PAUSE_THREAD);
     [UIApplication sharedApplication].idleTimerDisabled = NO;
     [self updatePointerLocked];
 }
@@ -1148,12 +1142,12 @@ HUDViewController* g_menu;
     // get the state of our ROMs
     [self checkForNewRomsInit];
     
-    if (self.presentedViewController == nil && g_emulation_paused == 0)
+    if (self.presentedViewController == nil && g_emulation_paused == PAUSE_FALSE)
         [self startMenu];
 }
 
 - (void)enterForeground {
-    if (self.presentedViewController == nil && g_emulation_paused == 1)
+    if (self.presentedViewController == nil && g_emulation_paused == PAUSE_THREAD)
         [self endMenu];
     
     // check for any ROMs changes, for example from Files.app
@@ -1217,7 +1211,7 @@ HUDViewController* g_menu;
 }
 
 - (void)endMenu{
-    change_pause(0);
+    change_pause(PAUSE_FALSE);
     
     // always enable Keyboard so we can get input from a Hardware keyboard.
     keyboardView.active = TRUE; //force renable
@@ -2218,9 +2212,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 - (void)changeUI { @autoreleasepool {
 
     int prev_emulation_paused = g_emulation_paused;
-   
-    if (g_emulation_paused == 0)
-        change_pause(1);
+    change_pause(PAUSE_THREAD);
     
     // reset the frame count when you first turn on/off HUD
     if ((g_pref_showHUD != 0) != (hudView != nil))
@@ -2256,8 +2248,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         [hideShowControlsForLightgun setImage:[UIImage imageNamed:@"dpad"] forState:UIControlStateNormal];
     }
     
-    if (prev_emulation_paused != 1)
-        change_pause(0);
+    change_pause(prev_emulation_paused);
     
     [UIApplication sharedApplication].idleTimerDisabled = (myosd_inGame || g_joy_used) ? YES : NO;//so atract mode dont sleep
 
@@ -2718,7 +2709,7 @@ void m4i_poll_input(myosd_input_state* myosd, size_t input_size) {
     NSCParameterAssert(input_size == sizeof(myosd_input_state));
     
     // this is called on the MAME thread, need to be carefull and clean up!
-    @autoreleasepool {
+    if (g_emulation_paused == PAUSE_FALSE) @autoreleasepool {
         
         // g_video_reset is set when iphone_Reset_Views is called
         // we have input on a brand new machine, and we need to configure the UI fresh
@@ -5578,7 +5569,7 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
         g_mame_game[0] = g_mame_system[0] = 0;     // run the MENU
     }
 
-    change_pause(0);
+    change_pause(PAUSE_FALSE);
     myosd_exitGame = 1; // exit menu mode and start game or menu.
 }
 
@@ -5677,7 +5668,7 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
     ChooseGameController* choose = [[ChooseGameController alloc] init];
     [choose setGameList:games];
     choose.backgroundImage = [self loadTileImage:@"ui-background.png"];
-    change_pause(1);
+    change_pause(PAUSE_INPUT);
     choose.selectGameCallback = ^(NSDictionary* game) {
         if ([game[kGameInfoName] isEqualToString:kGameInfoNameSettings]) {
             [self runSettings];
