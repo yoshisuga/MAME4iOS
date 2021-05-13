@@ -770,6 +770,7 @@ int hid_to_mame(int keyCode) {
     }
     
     // handle ESC key without sending to MAME, so we can present UI
+    // TODO: handle ESC different for machines that use direct keyboard
     if (mame_key == MYOSD_KEY_ESC && isKeyDown)
         return [emuController runExit];
     

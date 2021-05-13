@@ -81,7 +81,6 @@ typedef struct {
     
     // current input mode
     int input_mode;
-    int keyboard_mode;
 
 }   myosd_input_state;
 
@@ -89,13 +88,8 @@ typedef struct {
 enum myosd_input_mode
 {
     MYOSD_INPUT_MODE_NORMAL,
-    MYOSD_INPUT_MODE_UI
-};
-
-// myosd keyboard mode
-enum myosd_keyboard_mode
-{
-    MYOSD_KEYBOARD_MODE_NORMAL
+    MYOSD_INPUT_MODE_MENU,
+    MYOSD_INPUT_MODE_KEYBOARD
 };
 
 // myosd output
@@ -347,7 +341,10 @@ enum myosd_keycode
     MYOSD_KEY_FIRST = MYOSD_KEY_A,
     MYOSD_KEY_LAST = MYOSD_KEY_CANCEL,
     MYOSD_KEY_CONFIGURE = MYOSD_KEY_TAB,
-    MYOSD_KEY_UI_MODE = MYOSD_KEY_NUMLOCK,
+    MYOSD_KEY_SERVICE = MYOSD_KEY_F2,
+    MYOSD_KEY_LOADSAVE = MYOSD_KEY_F7,      // LOAD or SAVE
+    MYOSD_KEY_SNAP = MYOSD_KEY_F12,         // SNAPSHOT or RECORD
+    MYOSD_KEY_UIMODE = MYOSD_KEY_SCRLOCK,
     // special non-mapped keys
     MYOSD_KEY_EXIT,
     MYOSD_KEY_RESET,

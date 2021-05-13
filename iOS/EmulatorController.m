@@ -395,8 +395,8 @@ int run_mame(char* system, char* game)
         "-speed", speed,
         g_pref_hiscore ? "-hiscore" : "-nohiscore",
         "-flicker", g_pref_vector_flicker ? "0.4" : "0.0",
-        "-beam", g_pref_vector_beam2x ? "2.5" : "1.0", 
-        "-pause_brightness", "1.0", "-update_in_pause",  // to debug shaders
+        "-beam", g_pref_vector_beam2x ? "2.5" : "1.0",
+        "-pause_brightness", "1.0",  // to debug shaders
         };
     
     int argc = sizeof(argv) / sizeof(argv[0]);
@@ -782,13 +782,13 @@ void m4i_game_stop()
 void mame_load_state(int slot)
 {
     NSCParameterAssert(slot == 1 || slot == 2);
-    push_mame_keys(MYOSD_KEY_F7, (slot == 1) ? MYOSD_KEY_1 : MYOSD_KEY_2, 0, 0);
+    push_mame_keys(MYOSD_KEY_LOADSAVE, (slot == 1) ? MYOSD_KEY_1 : MYOSD_KEY_2, 0, 0);
 }
 
 void mame_save_state(int slot)
 {
     NSCParameterAssert(slot == 1 || slot == 2);
-    push_mame_keys(MYOSD_KEY_LSHIFT, MYOSD_KEY_F7, (slot == 1) ? MYOSD_KEY_1 : MYOSD_KEY_2, 0);
+    push_mame_keys(MYOSD_KEY_LSHIFT, MYOSD_KEY_LOADSAVE, (slot == 1) ? MYOSD_KEY_1 : MYOSD_KEY_2, 0);
 }
 
 - (void)presentPopup:(UIViewController *)viewController from:(UIView*)view animated:(BOOL)flag completion:(void (^)(void))completion {
@@ -966,7 +966,7 @@ HUDViewController* g_menu;
                 [NSString stringWithFormat:@":%@:Pause", getGamepadSymbol(gamepad, gamepad.buttonB)],
             ] style:HUDButtonStylePlain handler:^(NSUInteger button) {
                 if (button == 0)
-                    push_mame_key(MYOSD_KEY_TAB);
+                    push_mame_key(MYOSD_KEY_CONFIGURE);
                 else
                     push_mame_key(MYOSD_KEY_P);
             }];
@@ -990,7 +990,7 @@ HUDViewController* g_menu;
             // CONFIGURE and PAUSE
             [menu addButtons:@[@":slider.horizontal.3:Configure",@":pause.circle:Pause"] style:HUDButtonStyleDefault handler:^(NSUInteger button) {
                 if (button == 0)
-                    push_mame_key(MYOSD_KEY_TAB);
+                    push_mame_key(MYOSD_KEY_CONFIGURE);
                 else
                     push_mame_key(MYOSD_KEY_P);
             }];
@@ -998,9 +998,9 @@ HUDViewController* g_menu;
         // RESET and SERVICE
         [menu addButtons:@[@":power:Reset", @":wrench:Service"] style:HUDButtonStyleDefault handler:^(NSUInteger button) {
             if (button == 0)
-                push_mame_key(MYOSD_KEY_F3);
+                push_mame_key(MYOSD_KEY_RESET);
             else
-                push_mame_key(MYOSD_KEY_F2);
+                push_mame_key(MYOSD_KEY_SERVICE);
         }];
         
         // show any MAME output, usually a WARNING message, we catch errors in an other place.
@@ -2088,23 +2088,23 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         }];
         [hudView addButtons:@[@":slider.horizontal.3:Configure",@":pause.circle:Pause"] handler:^(NSUInteger button) {
             if (button == 0)
-                push_mame_key(MYOSD_KEY_TAB);
+                push_mame_key(MYOSD_KEY_CONFIGURE);
             else
                 push_mame_key(MYOSD_KEY_P);
         }];
 #if (FALSE && TARGET_OS_IOS)    // TODO: show snapshots in the ChooseGameUI
         [hudView addButtons:@[@":camera:Snapshot", @":video:Record"] handler:^(NSUInteger button) {
             if (button == 0)
-                push_mame_key(MYOSD_KEY_F12);
+                push_mame_key(MYOSD_KEY_SNAP;
             else
-                push_mame_keys(MYOSD_KEY_LSHIFT, MYOSD_KEY_F12, 0, 0);
+                push_mame_keys(MYOSD_KEY_LSHIFT, MYOSD_KEY_SNAP, 0, 0);
         }];
 #endif
         [hudView addButtons:@[@":power:Reset", @":wrench:Service"] handler:^(NSUInteger button) {
             if (button == 0)
-                push_mame_key(MYOSD_KEY_F3);
+                push_mame_key(MYOSD_KEY_RESET);
             else
-                push_mame_key(MYOSD_KEY_F2);
+                push_mame_key(MYOSD_KEY_SERVICE);
         }];
         [hudView addButton:(myosd_inGame && myosd_in_menu==0) ? @":xmark.circle:Exit Game" : @":xmark.circle:Exit" color:UIColor.systemRedColor handler:^{
             [_self runExit:NO];
@@ -2321,6 +2321,17 @@ static void push_mame_keys(NSUInteger key1, NSUInteger key2, NSUInteger key3, NS
     push_mame_key(key1 | (key2 << 8) | (key3 << 16) | (key4 << 24));
 }
 
+// flush any pending keys or buttons
+static void push_mame_flush()
+{
+    [g_mame_buttons_lock lock];
+    [g_mame_buttons removeAllObjects];
+    [g_mame_buttons_lock unlock];
+    g_mame_key = 0;
+    g_mame_buttons_tick = 0;
+}
+
+
 // send buttons and keys - we do this inside of myosd_poll_input() because it is called from droid_ios_poll_input
 // ...and we are sure MAME is in a state to accept input, and not waking up from being paused or loading a ROM
 // ...we hold a button DOWN for 2 frames (buttonPressReleaseCycles) and wait (buttonNextPressCycles) frames.
@@ -2329,8 +2340,11 @@ static int handle_buttons(myosd_input_state* myosd)
 {
     // check for exit (we cound just do this with push_mame_key...)
     if (myosd_exitGame) {
-        NSCParameterAssert(g_mame_key == 0 || g_mame_key == MYOSD_KEY_ESC);
-        g_mame_key = MYOSD_KEY_ESC;
+        NSCParameterAssert(g_mame_key == 0 || g_mame_key == MYOSD_KEY_ESC || g_mame_key == MYOSD_KEY_EXIT);
+        if (myosd_in_menu)
+            g_mame_key = MYOSD_KEY_ESC;
+        else
+            g_mame_key = MYOSD_KEY_EXIT;
         myosd_exitGame = 0;
     }
     
@@ -2644,7 +2658,7 @@ static void handle_device_input(myosd_input_state* myosd)
             // TODO: this prevents mapping buttons for player 2,3,4
             // TODO: ...so until we handle native input mapping dont do this.
             // when in a MAME menu (or the root) let any controller work the UI
-            //if (myosd->input_mode == MYOSD_INPUT_MODE_UI)
+            //if (myosd->input_mode == MYOSD_INPUT_MODE_MENU)
             //    player = 0;
             
             // dont overwrite a lower index controller, unless....
@@ -2711,7 +2725,10 @@ void m4i_poll_input(myosd_input_state* myosd, size_t input_size) {
         
         // g_video_reset is set when iphone_Reset_Views is called
         // we have input on a brand new machine, and we need to configure the UI fresh
+        // TODO: this can me moved to m4i_input_init, for clean up.
         if (g_video_reset) {
+            
+            push_mame_flush();
 
             // get the input profile for this machine (copy into globals)
             myosd_num_buttons   = myosd->num_buttons;
@@ -2728,7 +2745,7 @@ void m4i_poll_input(myosd_input_state* myosd, size_t input_size) {
         }
         
         // set global menu state
-        myosd_in_menu = myosd->input_mode == MYOSD_INPUT_MODE_UI;
+        myosd_in_menu = myosd->input_mode == MYOSD_INPUT_MODE_MENU;
         
         // keep myosd_waysStick uptodate
         if (ways_auto)
@@ -3294,7 +3311,7 @@ void m4i_poll_input(myosd_input_state* myosd, size_t input_size) {
     [self startPlayer:0];
 }
 -(void)mameConfigure {
-    push_mame_key(MYOSD_KEY_TAB);
+    push_mame_key(MYOSD_KEY_CONFIGURE);
 }
 -(void)mameSettings {
     [self runSettings];
@@ -3303,7 +3320,7 @@ void m4i_poll_input(myosd_input_state* myosd, size_t input_size) {
     push_mame_key(MYOSD_KEY_P);
 }
 -(void)mameReset {
-    push_mame_key(MYOSD_KEY_F3);
+    push_mame_key(MYOSD_KEY_RESET);
 }
 -(void)mameFullscreen {
     [self commandKey:'\r'];
@@ -5132,7 +5149,7 @@ static unsigned long g_device_has_input[NUM_DEV];   // TRUE if device needs to b
     }
     if (changed_state & MYOSD_Y) {
         NSLog(@"...MENU+Y => MAME MENU");
-        push_mame_key(MYOSD_KEY_TAB);
+        push_mame_key(MYOSD_KEY_CONFIGURE);
     }
     if (changed_state & MYOSD_UP) {
         NSLog(@"...MENU+UP => LOAD STATE 1");

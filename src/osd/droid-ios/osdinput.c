@@ -282,11 +282,17 @@ static float myosd_joystick_read_analog(int n, int axis)
 
 void droid_ios_poll_input(running_machine *machine)
 {    
-    myosd_input.input_mode = ui_is_menu_active() ? MYOSD_INPUT_MODE_UI : MYOSD_INPUT_MODE_NORMAL;
-    myosd_input.keyboard_mode = MYOSD_KEYBOARD_MODE_NORMAL;
+    myosd_input.input_mode = ui_is_menu_active() ? MYOSD_INPUT_MODE_MENU : MYOSD_INPUT_MODE_NORMAL;
 
     my_poll_ports(machine);
     myosd_poll_input(&myosd_input);
+    
+    // handle *special* EXIT and RESET keys
+    if (myosd_input.keyboard[MYOSD_KEY_EXIT] != 0 && !machine->exit_pending())
+        machine->schedule_exit();
+    
+    if (myosd_input.keyboard[MYOSD_KEY_RESET] != 0 && !machine->scheduled_event_pending())
+        machine->schedule_hard_reset();
     
     for(int i=0; i<NUM_JOY; i++)
     {

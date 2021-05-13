@@ -18,6 +18,7 @@ extern "C" {
 #endif
 
 #define OPTION_HISCORE  "hiscore"
+#define OPTION_BENCH    "bench"
 
 // globals in osd-ios.c
 extern int  myosd_display_width;        // display width,height is the screen output resolution
