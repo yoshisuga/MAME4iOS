@@ -167,14 +167,14 @@ uint8_t myosd_keyboard[NUM_KEYS];
 int     myosd_keyboard_changed;
 
 // input profile for current machine (see poll_input)
-int myosd_num_buttons;
-int myosd_num_ways;
-int myosd_num_players;
-int myosd_num_coins;
-int myosd_num_inputs;
-int myosd_mouse;
-int myosd_light_gun;
-int myosd_num_keyboard;
+static int myosd_num_buttons;
+static int myosd_num_ways;
+static int myosd_num_players;
+static int myosd_num_coins;
+static int myosd_num_inputs;
+static int myosd_mouse;
+static int myosd_light_gun;
+static int myosd_num_keyboard;
 
 // Touch Directional Input tracking
 int touchDirectionalCyclesAfterMoved = 0;

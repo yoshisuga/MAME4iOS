@@ -89,16 +89,6 @@ extern float myosd_pad_y;
 extern uint8_t myosd_keyboard[256];
 extern int     myosd_keyboard_changed;
 
-// input profile for current machine
-extern int myosd_num_buttons;
-extern int myosd_num_ways;
-extern int myosd_num_players;
-extern int myosd_num_coins;
-extern int myosd_num_inputs;
-extern int myosd_mouse;
-extern int myosd_light_gun;
-extern int myosd_num_keyboard;
-
 extern int g_emulation_initiated;
 extern int g_emulation_paused;
 
