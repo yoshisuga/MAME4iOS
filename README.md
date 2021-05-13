@@ -108,11 +108,11 @@ Even if you are not in the paid Apple Developer Program, you can sideload the ap
 * now you can build and run in Xcode.
 
 ## Issues running current `MAME`
-* we dont get the availible game/driver list (yet) so you always get the *DOS UI* 
-* most `MAME` 139 ROMs dont work on 229, but that is just normal life in `MAME` world
+* most `MAME` 139 ROMs dont work on 229, but that is just normal life in `MAME` world, see [this](#mixing_139_and_2xx_roms).
 * tracking down a sound issue and other random stuff.
 * some things (like being smart about number of players, etc) does not work (yet)
 * if you run a `Computer` machine you will be stuck and cant exit cuz we dont handle ui_mode and keyboards right (yet)
+* the `hiscore` and `cheat` system has not been updated.
 
 ## **Software Lists**
 
