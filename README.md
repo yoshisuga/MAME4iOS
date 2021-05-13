@@ -140,6 +140,9 @@ MySoftware.zip
     n64/007goldnu.7z
 ```
 
+## Mixing 139 and 2xx ROMs
+Some `romsets` are not compatible between MAME 139 and newer versions, the best way to use both `romsets` at the same time is to make sure the newer ones are stored in the `7z` format and the 139 ones in the `zip` format.  This way both files can co-exist.
+
 ## tvOS
 
 MAME for tvOS support was added in early 2019, and it currently can run games has full native UI support and MFI controller support with most notably:
