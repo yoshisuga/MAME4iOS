@@ -5589,7 +5589,7 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
         }
         return;
     }
-    g_no_roms_found = [games count] == 0;
+    g_no_roms_found = [games count] <= 1;
     if (g_no_roms_found) {
         NSLog(@"NO GAMES, ASK USER WHAT TO DO....");
         
