@@ -1165,10 +1165,11 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     {
         if (badge.length != 0)
         {
-            UIFont* font = [UIFont systemFontOfSize:CELL_TITLE_FONT.pointSize * 0.5];
-            CGFloat dy = floor((CELL_TITLE_FONT.ascender - font.ascender) / 2);
+            UIFont* text_font = [text attribute:NSFontAttributeName atIndex:0 effectiveRange:nil];
+            UIFont* badge_font = [UIFont systemFontOfSize:text_font.pointSize * 0.5];
+            CGFloat dy = floor((text_font.capHeight - badge_font.capHeight) / 2);
             
-            UIImage* image = [UIImage systemImageNamed:badge withFont:font];
+            UIImage* image = [UIImage systemImageNamed:badge withFont:badge_font];
             NSTextAttachment* att = [[NSTextAttachment alloc] init];
             att.image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
             NSMutableAttributedString* badge_text = [[NSAttributedString attributedStringWithAttachment:att] mutableCopy];
@@ -1176,6 +1177,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
                 NSForegroundColorAttributeName:UIColor.systemBlueColor,
                 NSBaselineOffsetAttributeName:@(dy)} range:NSMakeRange(0, badge_text.length)];
 
+            [text insertAttributedString:[[NSAttributedString alloc] initWithString:@"\u2009"] atIndex:0];  // U+2009 Thin Space
             [text insertAttributedString:badge_text atIndex:0];
         }
     }
