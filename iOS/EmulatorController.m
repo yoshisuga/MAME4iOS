@@ -373,7 +373,8 @@ void m4i_output(int channel, const char* text)
     }
 }
 
-void m4i_poll_input(myosd_input_state* myosd, size_t input_size);
+void m4i_input_init(myosd_input_state* myosd, size_t input_size);
+void m4i_input_poll(myosd_input_state* myosd, size_t input_size);
 void m4i_game_list(myosd_game_info* game_info, int game_count);
 void m4i_game_start(myosd_game_info* game_info);
 void m4i_game_stop(void);
@@ -404,7 +405,8 @@ int run_mame(char* system, char* game)
     myosd_callbacks callbacks = {
         .video_init = m4i_video_init,
         .video_draw = m4i_video_draw,
-        .input_poll = m4i_poll_input,
+        .input_init = m4i_input_init,
+        .input_poll = m4i_input_poll,
         .output_text= m4i_output,
         .game_list = m4i_game_list,
         .game_init = m4i_game_start,
@@ -2311,6 +2313,7 @@ NSUInteger g_mame_key;                      // key(s) to send to mame
 // send a set of MYOSD_KEY(s) to MAME
 static void push_mame_key(NSUInteger key)
 {
+    NSCParameterAssert([NSThread isMainThread]);     // only push keys from main thread
     NSCParameterAssert(g_mame_key == 0);
     g_mame_key = key;
 }
@@ -2338,7 +2341,7 @@ static void push_mame_flush()
 // ...these are *magic* numbers that seam to work good. if we hold a key down too long, games may ignore it. if we send too fast bad too.
 static int handle_buttons(myosd_input_state* myosd)
 {
-    // check for exit (we cound just do this with push_mame_key...)
+    // check for exitGame
     if (myosd_exitGame) {
         NSCParameterAssert(g_mame_key == 0 || g_mame_key == MYOSD_KEY_ESC || g_mame_key == MYOSD_KEY_EXIT);
         if (myosd_in_menu)
@@ -2714,8 +2717,27 @@ static void handle_p1aspx(myosd_input_state* myosd) {
     }
 }
 
-// called from inside MAME droid_ios_poll_input
-void m4i_poll_input(myosd_input_state* myosd, size_t input_size) {
+// called from inside MAME for a reset of the input system
+void m4i_input_init(myosd_input_state* myosd, size_t input_size) {
+    
+    push_mame_flush();
+
+    // get the input profile for this machine (copy into globals)
+    myosd_num_buttons   = myosd->num_buttons;
+    myosd_num_ways      = myosd->num_ways;
+    myosd_num_players   = myosd->num_players;
+    myosd_num_coins     = myosd->num_coins;
+    myosd_num_inputs    = myosd->num_inputs;
+    myosd_mouse         = myosd->num_mouse;
+    myosd_light_gun     = myosd->num_lightgun;
+    myosd_num_keyboard  = myosd->num_keyboard;
+    
+    // we have input on a brand new machine, and we need to configure the UI fresh
+    g_video_reset = TRUE;
+}
+
+// called from inside MAME
+void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
     
     // make sure libmame is the right version
     NSCParameterAssert(input_size == sizeof(myosd_input_state));
@@ -2723,25 +2745,10 @@ void m4i_poll_input(myosd_input_state* myosd, size_t input_size) {
     // this is called on the MAME thread, need to be carefull and clean up!
     if (g_emulation_paused == PAUSE_FALSE) @autoreleasepool {
         
-        // g_video_reset is set when iphone_Reset_Views is called
-        // we have input on a brand new machine, and we need to configure the UI fresh
-        // TODO: this can me moved to m4i_input_init, for clean up.
-        if (g_video_reset) {
-            
-            push_mame_flush();
-
-            // get the input profile for this machine (copy into globals)
-            myosd_num_buttons   = myosd->num_buttons;
-            myosd_num_ways      = myosd->num_ways;
-            myosd_num_players   = myosd->num_players;
-            myosd_num_coins     = myosd->num_coins;
-            myosd_num_inputs    = myosd->num_inputs;
-            myosd_mouse         = myosd->num_mouse;
-            myosd_light_gun     = myosd->num_lightgun;
-            myosd_num_keyboard  = myosd->num_keyboard;
-            
-            g_video_reset = FALSE;
+        // g_video_reset is set when m4i_video_init or m4i_input_init is called
+         if (g_video_reset) {
             [sharedInstance performSelectorOnMainThread:@selector(resetUI) withObject:nil waitUntilDone:NO];
+            g_video_reset = FALSE;
         }
         
         // set global menu state
