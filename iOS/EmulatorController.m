@@ -2850,6 +2850,7 @@ void m4i_poll_input(myosd_input_state* myosd, size_t input_size) {
         num_buttons = (myosd_num_buttons == 0) ? 2 : myosd_num_buttons;
    
     BOOL touch_buttons_disabled = myosd_mouse == 1 && g_pref_touch_analog_enabled && g_pref_touch_analog_hide_buttons;
+    BOOL menu_buttons_disabled = g_pref_showHUD == HudSizeLarge || (g_pref_showHUD == HudSizeTiny && g_pref_saveHUD == HudSizeLarge);
     buttonState = 0;
     for (int i=0; i<NUM_BUTTONS; i++)
     {
@@ -2869,7 +2870,7 @@ void m4i_poll_input(myosd_input_state* myosd, size_t input_size) {
             
             if (touch_buttons_disabled && !(i == BTN_SELECT || i == BTN_START || i == BTN_EXIT || i == BTN_OPTION)) continue;
             
-            if ((g_pref_showHUD > 0) && (i == BTN_SELECT || i == BTN_START || i == BTN_EXIT || i == BTN_OPTION)) continue;
+            if (menu_buttons_disabled && (i == BTN_SELECT || i == BTN_START || i == BTN_EXIT || i == BTN_OPTION)) continue;
         }
         
         UIImage* image_up = [self loadImage:nameImgButton_NotPress[i]];
