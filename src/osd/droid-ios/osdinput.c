@@ -242,7 +242,7 @@ void my_poll_ports(running_machine *machine)
                     myosd_input.num_mouse = 1;
                 if(field->type == IPT_LIGHTGUN_X)
                     myosd_input.num_lightgun = 1;
-                if(field->type == IPT_KEYBOARD || field->type == IPT_KEYPAD)
+                if(field->type == IPT_KEYBOARD)
                     myosd_input.num_keyboard = 1;
             }
         }

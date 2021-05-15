@@ -47,6 +47,8 @@ enum MYOSD_AXIS {
 };
 
 #define NUM_JOY 4
+#define NUM_MICE 4
+#define NUM_GUN 4
 #define NUM_KEYS 256
 
 // MYOSD INPUT STATE
@@ -59,13 +61,13 @@ typedef struct {
     float joy_analog[NUM_JOY][MYOSD_AXIS_NUM];
 
     // mice
-    unsigned long mouse_status[NUM_JOY];
+    unsigned long mouse_status[NUM_MICE];
     float mouse_x[NUM_JOY];
     float mouse_y[NUM_JOY];
     float mouse_z[NUM_JOY];
 
     // lightgun(s)
-    unsigned long lightgun_status[NUM_JOY];
+    unsigned long lightgun_status[NUM_GUN];
     float lightgun_x[NUM_JOY];
     float lightgun_y[NUM_JOY];
     

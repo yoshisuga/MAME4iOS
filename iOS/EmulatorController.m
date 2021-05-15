@@ -174,7 +174,7 @@ static int myosd_num_coins;
 static int myosd_num_inputs;
 static int myosd_mouse;
 static int myosd_light_gun;
-static int myosd_num_keyboard;
+static int myosd_has_keyboard;
 
 // Touch Directional Input tracking
 int touchDirectionalCyclesAfterMoved = 0;
@@ -836,16 +836,14 @@ void mame_save_state(int slot)
 // player is zero based 0=P1, 1=P2, etc
 - (void)startPlayer:(int)player {
     
-    // P1 or P2 Start
-    if (player < 2 && myosd_num_players <= 2) {
+    // P1 Start
+    if (player < 1) {
         // add an extra COIN for good luck, some games need two coins to play by default
         push_mame_button(0, MYOSD_SELECT);      // Player 1 COIN
-        // insert a COIN, make sure to not exceed the max coin slot for game
-        push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X (or P1) COIN
-        // then hit START
-        push_mame_button(player, MYOSD_START);  // Player X START
+        push_mame_button(0, MYOSD_SELECT);      // Player 1 COIN
+        push_mame_button(player, MYOSD_START);  // Player 1 START
     }
-    // P3 or P4 Start
+    // P2, P3 or P4 Start
     else {
         // insert a COIN for each player, make sure to not exceed the max coin slot for game
         for (int i=0; i<=player; i++)
@@ -899,10 +897,20 @@ HUDViewController* g_menu;
     
     if(myosd_inGame && myosd_in_menu==0)
     {
-        // 1P and 2P Start
-        [menu addButtons:(myosd_num_players >= 2) ? @[@":person:1P Start", @":person.2:2P Start"] : @[@":centsign.circle:Coin+Start"] style:HUDButtonStyleDefault handler:^(NSUInteger button) {
-            [self startPlayer:(int)button];
-        }];
+        // myosd_num_players counts the number of Start buttons, if there are zero Start buttons, we cant do anything!
+        if (myosd_num_players == 1) {
+            // 1P Start
+            [menu addButtons:@[@":centsign.circle:Coin+Start"] style:HUDButtonStyleDefault handler:^(NSUInteger button) {
+                [self startPlayer:0];
+            }];
+        }
+        else if (myosd_num_players >= 2) {
+            // 1P and 2P Start
+            [menu addButtons:@[@":person:1P Start", @":person.2:2P Start"] style:HUDButtonStyleDefault handler:^(NSUInteger button) {
+                [self startPlayer:(int)button];
+            }];
+        }
+
         // 3P and 4P Start
         if (myosd_num_players >= 3) {
             // FYI there is no person.4 symbol, so we just reuse person.3
@@ -1004,7 +1012,18 @@ HUDViewController* g_menu;
             else
                 push_mame_key(MYOSD_KEY_SERVICE);
         }];
-        
+#if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST)
+        // KEYBOARD and PASTE
+        if (myosd_has_keyboard) {
+            BOOL can_paste = [self canPerformAction:@selector(paste:) withSender:nil];
+            [menu addButtons:@[@":keyboard:Keyboard", can_paste ? @":doc.on.clipboard:Paste" : @""] style:HUDButtonStyleDefault handler:^(NSUInteger button) {
+                if (button == 0)
+                    ; // TODO: show/hide keyboard
+                else
+                    [self paste:nil];
+            }];
+        }
+#endif
         // show any MAME output, usually a WARNING message, we catch errors in an other place.
         if (g_mame_output_text[0]) {
             NSString* button = @":info.circle:MAME Output";
@@ -2072,9 +2091,16 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     }
     
     if (g_pref_showHUD == HudSizeLarge) {
-        [hudView addButtons:(myosd_num_players >= 2) ? @[@":person:1P Start", @":person.2:2P Start"] : @[@":centsign.circle:Coin+Start"] handler:^(NSUInteger button) {
-            [_self startPlayer:(int)button];
-        }];
+        if (myosd_num_players == 1) {
+            [hudView addButtons:@[@":centsign.circle:Coin+Start"] handler:^(NSUInteger button) {
+                [_self startPlayer:0];
+            }];
+        }
+        else if (myosd_num_players >= 2) {
+            [hudView addButtons:@[@":person:1P Start", @":person.2:2P Start"] handler:^(NSUInteger button) {
+                [_self startPlayer:(int)button];
+            }];
+        }
         if (myosd_num_players >= 3) {
             // FYI there is no person.4 symbol, so we just reuse person.3
             [hudView addButtons:@[@":person.3:3P Start", (myosd_num_players >= 4) ? @":person.3:4P Start" : @""] handler:^(NSUInteger button) {
@@ -2108,6 +2134,17 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
             else
                 push_mame_key(MYOSD_KEY_SERVICE);
         }];
+#if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST)
+        // KEYBOARD and PASTE
+        if (myosd_has_keyboard) {
+            [hudView addButtons:@[@":keyboard:Keyboard", @":doc.on.clipboard:Paste"] handler:^(NSUInteger button) {
+                if (button == 0)
+                    ; // TODO: show/hide keyboard
+                else
+                    [sharedInstance paste:nil];
+            }];
+        }
+#endif
         [hudView addButton:(myosd_inGame && myosd_in_menu==0) ? @":xmark.circle:Exit Game" : @":xmark.circle:Exit" color:UIColor.systemRedColor handler:^{
             [_self runExit:NO];
         }];
@@ -2730,7 +2767,7 @@ void m4i_input_init(myosd_input_state* myosd, size_t input_size) {
     myosd_num_inputs    = myosd->num_inputs;
     myosd_mouse         = myosd->num_mouse;
     myosd_light_gun     = myosd->num_lightgun;
-    myosd_num_keyboard  = myosd->num_keyboard;
+    myosd_has_keyboard  = myosd->num_keyboard != 0;
     
     // we have input on a brand new machine, and we need to configure the UI fresh
     g_video_reset = TRUE;
@@ -3292,6 +3329,7 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
 #pragma mark - MENU
 
 -(BOOL)canPerformAction:(SEL)action withSender:(id)sender {
+    
     if (action == @selector(mameSelect) ||
         action == @selector(mameStart) ||
         action == @selector(mameStartP1) ||
@@ -3303,9 +3341,16 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
         action == @selector(mameReset)) {
 
         NSLog(@"canPerformAction: %@: %d", NSStringFromSelector(action), !g_emulation_paused && [self presentedViewController] == nil);
-        
         return !g_emulation_paused && [self presentedViewController] == nil;
     }
+    
+    if (action == @selector(paste:)) {
+        BOOL can_paste = !g_emulation_paused && [self presentedViewController] == nil &&
+                myosd_has_keyboard && UIPasteboard.generalPasteboard.hasStrings;
+        NSLog(@"canPaste: %d", can_paste);
+        return can_paste;
+    }
+
     return [super canPerformAction:action withSender:sender];
 }
 -(void)mameSelect {
@@ -3334,6 +3379,10 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
 }
 -(void)mameExit {
     [self runExit];
+}
+-(void)paste:(id)sender {
+    if (myosd_has_keyboard)
+        push_mame_keys(MYOSD_KEY_LSHIFT, MYOSD_KEY_SCRLOCK, 0, 0);
 }
 
 
@@ -3432,6 +3481,9 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
         case 'M':
             g_direct_mouse_enable = !g_direct_mouse_enable;
             [self updatePointerLocked];
+            break;
+        case 'V':
+            [self paste:nil];
             break;
 #ifdef DEBUG
         case 'R':
