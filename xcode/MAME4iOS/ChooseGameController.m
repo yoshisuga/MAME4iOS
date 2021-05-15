@@ -1085,7 +1085,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 //  romname     short Description           Description                 Description
 //              short Manufacturer • Year   short Manufacturer • Year   Manufacturer • Year  • romname [parent-rom]
 //
-+(NSAttributedString*)getGameText:(NSDictionary*)info layoutMode:(LayoutMode)layoutMode textAlignment:(NSTextAlignment)textAlignment
++(NSAttributedString*)getGameText:(NSDictionary*)info layoutMode:(LayoutMode)layoutMode textAlignment:(NSTextAlignment)textAlignment badge:(NSString*)badge
 {
     NSString* title;
     NSString* detail;
@@ -1093,7 +1093,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     
     if (info[kGameInfoName] == nil || info[kGameInfoDescription] == nil)
         return nil;
-
+    
     if (layoutMode == LayoutTiny) {
         title = @"";
         detail = info[kGameInfoName];
@@ -1147,6 +1147,27 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         }]];
     }
     
+    if (@available(iOS 13.0, tvOS 13.0, *))
+    {
+        if (badge.length != 0)
+        {
+            UIFont* text_font = [text attribute:NSFontAttributeName atIndex:0 effectiveRange:nil];
+            UIFont* badge_font = [UIFont systemFontOfSize:text_font.pointSize * 0.5];
+            CGFloat dy = floor((text_font.capHeight - badge_font.capHeight) / 2);
+            
+            UIImage* image = [UIImage systemImageNamed:badge withFont:badge_font];
+            NSTextAttachment* att = [[NSTextAttachment alloc] init];
+            att.image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+            NSMutableAttributedString* badge_text = [[NSAttributedString attributedStringWithAttachment:att] mutableCopy];
+            [badge_text addAttributes:@{
+                NSForegroundColorAttributeName:UIColor.systemBlueColor,
+                NSBaselineOffsetAttributeName:@(dy)} range:NSMakeRange(0, badge_text.length)];
+
+            [text insertAttributedString:[[NSAttributedString alloc] initWithString:@"\u2009"] atIndex:0];  // U+2009 Thin Space
+            [text insertAttributedString:badge_text atIndex:0];
+        }
+    }
+    
     if (textAlignment != NSTextAlignmentLeft)
     {
         NSMutableParagraphStyle *paragraph = [[NSMutableParagraphStyle alloc] init];
@@ -1157,14 +1178,21 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     return [text copy];
 }
 
++(NSAttributedString*)getGameText:(NSDictionary*)game layoutMode:(LayoutMode)layoutMode
+{
+    return [self getGameText:game layoutMode:layoutMode textAlignment:NSTextAlignmentCenter badge:nil];
+}
+
 +(NSAttributedString*)getGameText:(NSDictionary*)game
 {
-    return [self getGameText:game layoutMode:LayoutLarge textAlignment:NSTextAlignmentCenter];
+    return [self getGameText:game layoutMode:LayoutLarge];
 }
 
 -(NSAttributedString*)getGameText:(NSDictionary*)game
 {
-    return [[self class] getGameText:game layoutMode:_layoutMode textAlignment:_layoutMode == LayoutList ? NSTextAlignmentLeft : CELL_TEXT_ALIGN];
+    return [[self class] getGameText:game layoutMode:_layoutMode
+                       textAlignment:_layoutMode == LayoutList ? NSTextAlignmentLeft : CELL_TEXT_ALIGN
+                               badge:[self isFavorite:game] ? @"star.fill" : @""];
 }
 
 // compute the size(s) of a single item. returns: (x = image_height, y = text_height)
@@ -1720,7 +1748,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     BOOL is_fav = [self isFavorite:game];
     
     NSString* fav_text = is_fav ? @"Unfavorite" : @"Favorite";
-    NSString* fav_icon = is_fav ? @"heart.slash" : @"heart";
+    NSString* fav_icon = is_fav ? @"star.slash" : @"star";
     
     NSArray* actions = @[
         [self actionWithTitle:@"Play" image:[UIImage systemImageNamed:@"gamecontroller"] destructive:NO handler:^(id action) {
@@ -2617,7 +2645,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
 - (NSAttributedString*)getText:(NSIndexPath*)indexPath {
     
     if (indexPath.item == 0)
-        return [ChooseGameController getGameText:_game layoutMode:LayoutList textAlignment:NSTextAlignmentCenter];
+        return [ChooseGameController getGameText:_game layoutMode:LayoutList];
     
     NSAttributedString* text = _game[indexPath.item == 1 ? kGameInfoHistory : kGameInfoMameInfo];
     
