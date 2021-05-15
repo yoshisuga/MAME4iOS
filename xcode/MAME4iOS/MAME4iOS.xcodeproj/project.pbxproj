@@ -590,6 +590,7 @@
 		EFE00345263EF86400E42246 /* MAME4iOS-Base.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "MAME4iOS-Base.entitlements"; sourceTree = "<group>"; };
 		EFE003462640472100E42246 /* TopShelf-Full.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "TopShelf-Full.entitlements"; sourceTree = "<group>"; };
 		EFE003472640472100E42246 /* TopShelf-Base.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "TopShelf-Base.entitlements"; sourceTree = "<group>"; };
+		EFE0036C264C0B0D00E42246 /* TODO.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = TODO.md; path = ../../TODO.md; sourceTree = "<group>"; };
 		EFE1D707242C05CE0081EEC6 /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = System/Library/Frameworks/CoreImage.framework; sourceTree = SDKROOT; };
 		EFE1D709242C1D840081EEC6 /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS13.2.sdk/System/Library/Frameworks/CoreImage.framework; sourceTree = DEVELOPER_DIR; };
 		EFE4B6A92453D7F80009A6F1 /* InfoDatabase.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InfoDatabase.h; sourceTree = "<group>"; };
@@ -838,6 +839,7 @@
 				EF55DE312533C21E004E37EF /* MAME4iOS.xcconfig */,
 				EF9F9C9E240070E700352554 /* README.md */,
 				EFFBA6FD24F1C91200F8666B /* WHATSNEW.md */,
+				EFE0036C264C0B0D00E42246 /* TODO.md */,
 				CEAC6C2716AAA73900AF3275 /* RELOADED */,
 				EF8E427B24900FE40049C84C /* UIKit Classes */,
 				92A5338421EBDBAD0089FBB9 /* GCDWebServer */,

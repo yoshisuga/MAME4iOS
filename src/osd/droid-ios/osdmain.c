@@ -41,9 +41,11 @@ static render_target *our_target;
 
 static const options_entry droid_mame_options[] =
 {
-	{ "initpath", ".;/mame", 0, "path to ini files" },
+//	{ "initpath", ".;/mame", 0, "path to ini files" },
 	{ NULL, NULL, OPTION_HEADER, "MYOSD OPTIONS" },
     { OPTION_HISCORE, "1", OPTION_BOOLEAN, "Enable HISCORE system" },
+    { OPTION_BENCH,   "0", 0, "Benchmark for the given number of emulated seconds; implies -video none -sound none -nothrottle" },
+
 	{ NULL }
 };
 
@@ -87,6 +89,8 @@ void osd_init(running_machine *machine)
 	if (our_target == NULL)
 		fatalerror("Error creating render target");
 
+    // TODO: handle -bench
+    
     myosd_machine_init(machine);
 	droid_ios_init_input(machine);
 	droid_ios_init_sound(machine);

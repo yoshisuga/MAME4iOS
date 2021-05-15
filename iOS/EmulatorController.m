@@ -179,6 +179,11 @@ static int myosd_num_keyboard;
 // Touch Directional Input tracking
 int touchDirectionalCyclesAfterMoved = 0;
 
+enum {
+    PAUSE_FALSE = 0,
+    PAUSE_THREAD,
+    PAUSE_INPUT,
+};
 int g_emulation_paused = 0;
 int g_emulation_initiated=0;
 NSCondition* g_emulation_paused_cond;
@@ -264,8 +269,9 @@ static int change_layout=0;
 
 static int myosd_inGame = 0;    // TRUE if MAME is running a game
 static int myosd_in_menu = 0;   // TRUE if MAME has UI active (or is at the root aka no game)
-static int myosd_isVector = 0;  // TRUE if running a VECTOR game
 static int myosd_isVertical = 0;// TRUE if running a Vertical game
+static int myosd_isVector = 0;  // TRUE if running a VECTOR game
+static int myosd_isLCD = 0;     // TRUE if running a LCD game
 
 static NSDictionary* g_category_dict;
 static SoftwareList* g_softlist;
@@ -367,7 +373,8 @@ void m4i_output(int channel, const char* text)
     }
 }
 
-void m4i_poll_input(myosd_input_state* myosd, size_t input_size);
+void m4i_input_init(myosd_input_state* myosd, size_t input_size);
+void m4i_input_poll(myosd_input_state* myosd, size_t input_size);
 void m4i_game_list(myosd_game_info* game_info, int game_count);
 void m4i_game_start(myosd_game_info* game_info);
 void m4i_game_stop(void);
@@ -387,12 +394,10 @@ int run_mame(char* system, char* game)
         g_pref_autosave ? "-autosave" : "-noautosave",
         g_pref_showINFO ? "-noskip_gameinfo" : "-skip_gameinfo",
         "-speed", speed,
-// HACK: disable these for now
-//        g_pref_hiscore ? "-hiscore" : "-nohiscore",
-//        "-flicker", g_pref_vector_flicker ? "0.4" : "0.0",
-//        "-beam", g_pref_vector_beam2x ? "2.5" : "1.0",          // TODO: -beam_width_min and -beam_width_max on latest MAME
-// HACK: disable these for now
-        "-pause_brightness", "1.0", "-update_in_pause",  // to debug shaders
+        g_pref_hiscore ? "-hiscore" : "-nohiscore",
+        "-flicker", g_pref_vector_flicker ? "0.4" : "0.0",
+        "-beam", g_pref_vector_beam2x ? "2.5" : "1.0",
+        "-pause_brightness", "1.0",  // to debug shaders
         };
     
     int argc = sizeof(argv) / sizeof(argv[0]);
@@ -400,7 +405,8 @@ int run_mame(char* system, char* game)
     myosd_callbacks callbacks = {
         .video_init = m4i_video_init,
         .video_draw = m4i_video_draw,
-        .input_poll = m4i_poll_input,
+        .input_init = m4i_input_init,
+        .input_poll = m4i_input_poll,
         .output_text= m4i_output,
         .game_list = m4i_game_list,
         .game_init = m4i_game_start,
@@ -427,20 +433,9 @@ static void change_pause(int pause)
 static void check_pause()
 {
     [g_emulation_paused_cond lock];
-    while (g_emulation_paused)
+    while (g_emulation_paused == PAUSE_THREAD)
         [g_emulation_paused_cond wait];
     [g_emulation_paused_cond unlock];
-}
-
-// HACK: make a UI.INI to force MAME to always show Available games ONLY
-// TODO: mame is saving INI files in the root, should be `ini` dir, fix that!
-void ini_hack(void)
-{
-    @autoreleasepool {
-        NSString* ini_str = @"last_used_filter          Available\nhide_main_panel           3\n";
-        NSData*   ini_data = [ini_str dataUsingEncoding:NSUTF8StringEncoding];
-        [ini_data writeToFile:getDocumentPath(@"ui.ini") atomically:NO];
-    }
 }
 
 void* app_Thread_Start(void* args)
@@ -463,11 +458,6 @@ void* app_Thread_Start(void* args)
             g_mame_reset = FALSE;
         }
         
-        // TODO: remove this
-        if (myosd_get(MYOSD_VERSION) != 139)
-            ini_hack();
-        // TODO: remove this
-
         // reset g_mame_output_text if we are running a game, but not if we are just running menu.
         if (g_mame_game[0] != 0)
             g_mame_output_text[0] = 0;
@@ -554,9 +544,16 @@ NSString* find_category(NSString* name, NSString* parent)
 // called from deep inside MAME select_game menu, to give us the valid list of games/drivers
 void m4i_game_list(myosd_game_info* game_info, int game_count)
 {
-    static NSString* screens[] = {kGameInfoScreenHorizontal, kGameInfoScreenVertical,
-        kGameInfoScreenHorizontal @", " kGameInfoScreenVector, kGameInfoScreenVertical @", " kGameInfoScreenVector};
-    
+    static NSString* screens[8] = {
+        kGameInfoScreenHorizontal,
+        kGameInfoScreenVertical,
+        kGameInfoScreenHorizontal @", " kGameInfoScreenVector,
+        kGameInfoScreenVertical   @", " kGameInfoScreenVector,
+        kGameInfoScreenHorizontal @", " kGameInfoScreenLCD,
+        kGameInfoScreenVertical   @", " kGameInfoScreenLCD,
+        kGameInfoScreenHorizontal,
+        kGameInfoScreenVertical};
+
     static NSString* types[] = {kGameInfoTypeArcade, kGameInfoTypeConsole, kGameInfoTypeComputer};
     _Static_assert(MYOSD_GAME_TYPE_ARCADE == 0, "");
     _Static_assert(MYOSD_GAME_TYPE_CONSOLE == 1, "");
@@ -568,8 +565,6 @@ void m4i_game_list(myosd_game_info* game_info, int game_count)
         
         for (int i=0; i<game_count; i++)
         {
-            // TODO: MYOSD_GAME_INFO_VECTOR
-
             if (game_info[i].name == NULL || game_info[i].name[0] == 0)
                 continue;
             if (game_info[i].type < 0 || game_info[i].type >= sizeof(types)/sizeof(types[0]))
@@ -580,6 +575,8 @@ void m4i_game_list(myosd_game_info* game_info, int game_count)
                 continue;
             if (g_pref_filter_clones && game_info[i].parent != NULL && game_info[i].parent[0] != 0 && game_info[i].parent[0] != '0')
                 continue;
+            
+            NSString* software_list = @(game_info[i].software_list ?: "");
 
             [games addObject:@{
                 kGameInfoType:        (game_info[i].flags & MYOSD_GAME_INFO_BIOS) ? kGameInfoTypeBIOS : types[game_info[i].type],
@@ -590,53 +587,29 @@ void m4i_game_list(myosd_game_info* game_info, int game_count)
                 kGameInfoManufacturer:@(game_info[i].manufacturer),
                 kGameInfoCategory:    find_category(@(game_info[i].name), @(game_info[i].parent ?: "")),
                 kGameInfoDriver:      [@(game_info[i].source_file ?: "").lastPathComponent stringByDeletingPathExtension],
+                kGameInfoSoftware:    software_list,
                 kGameInfoScreen:      screens[(game_info[i].flags & MYOSD_GAME_INFO_VERTICAL) ? 1 : 0 +
-                                              (game_info[i].flags & MYOSD_GAME_INFO_VECTOR)   ? 2 : 0 ]
+                                              (game_info[i].flags & MYOSD_GAME_INFO_VECTOR)   ? 2 : 0 +
+                                              (game_info[i].flags & MYOSD_GAME_INFO_LCD)      ? 4 : 0 ]
             }];
+            
+            if (software_list.length != 0)
+                [games addObjectsFromArray:[g_softlist getGamesForSystem:@(game_info[i].name) fromList:software_list]];
         }
         
-// add some *fake* data to test UI
-#ifdef DEBUG
-        // TODO: "Atari 2600 (NTSC)" and "Atari 2600 (PAL)" show both?
-        if ([games filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"%K = %@", kGameInfoName, @"a2600"]].count == 0) {
-            [games addObject:@{
-                kGameInfoType:        types[MYOSD_GAME_TYPE_CONSOLE],
-                kGameInfoName:        @"a2600",
-                kGameInfoDescription: @"Atari 2600 (NTSC)",
-                kGameInfoYear:        @"1979",
-                kGameInfoManufacturer:@"Atari",
-                kGameInfoCategory:    find_category(@"a2600", @""),
-                kGameInfoDriver:      @"a2600.cpp",
-            }];
-            [games addObjectsFromArray:[g_softlist getGamesForSystem:@"a2600" fromList:@"a2600,a2600_cass"]];
+        NSString* mame_version = [@((const char *)myosd_get(MYOSD_VERSION_STRING) ?: "") componentsSeparatedByString:@" ("].firstObject;
 
-            [games addObject:@{
-                kGameInfoType:        types[MYOSD_GAME_TYPE_CONSOLE],
-                kGameInfoName:        @"a2600p",
-                kGameInfoDescription: @"Atari 2600 (PAL)",
-                kGameInfoYear:        @"1979",
-                kGameInfoManufacturer:@"Atari",
-                kGameInfoCategory:    find_category(@"a2600p", @""),
-                kGameInfoParent:      @"a2600",
-                kGameInfoDriver:      @"a2600.cpp",
-            }];
-            [games addObjectsFromArray:[g_softlist getGamesForSystem:@"a2600p" fromList:@"a2600,a2600_cass"]];
-        }
-        
-        if ([games filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"%K = %@", kGameInfoName, @"n64"]].count == 0) {
-            [games addObject:@{
-                kGameInfoType:        types[MYOSD_GAME_TYPE_CONSOLE],
-                kGameInfoName:        @"n64",
-                kGameInfoDescription: @"Nintendo 64",
-                kGameInfoYear:        @"1996",
-                kGameInfoManufacturer:@"Nintendo",
-                kGameInfoCategory:    find_category(@"n64", @""),
-                kGameInfoDriver:      @"n64.cpp",
-            }];
-            [games addObjectsFromArray:[g_softlist getGamesForSystem:@"n64" fromList:@"n64"]];
-        }
-#endif
-        
+        // add a *special* system game that will run the DOS MAME menu.
+        [games addObject:@{
+            kGameInfoType:kGameInfoTypeComputer,
+            kGameInfoName:kGameInfoNameMameMenu,
+            kGameInfoParent:@"",
+            kGameInfoDescription:[NSString stringWithFormat:@"MAME %@", mame_version],
+            kGameInfoYear:@"1996",
+            kGameInfoManufacturer:@"MAMEDev and contributors",
+        }];
+
+        // give the list to the main thread to display to user
         [sharedInstance performSelectorOnMainThread:@selector(chooseGame:) withObject:games waitUntilDone:FALSE];
     }
 }
@@ -648,16 +621,18 @@ void m4i_game_start(myosd_game_info* info)
           (info->flags & MYOSD_GAME_INFO_VECTOR) ? " VECTOR" : "");
     
     myosd_inGame = 1;
-    myosd_isVector = (info->flags & MYOSD_GAME_INFO_VECTOR) != 0;
     myosd_isVertical = (info->flags & MYOSD_GAME_INFO_VERTICAL) != 0;
+    myosd_isVector = (info->flags & MYOSD_GAME_INFO_VECTOR) != 0;
+    myosd_isLCD = (info->flags & MYOSD_GAME_INFO_LCD) != 0;
 }
 
 void m4i_game_stop()
 {
     NSLog(@"GAME STOP");
     myosd_inGame = 0;
-    myosd_isVector = NO;
     myosd_isVertical = NO;
+    myosd_isVector = NO;
+    myosd_isLCD = NO;
 }
 
 @implementation UINavigationController(KeyboardDismiss)
@@ -786,8 +761,7 @@ void m4i_game_stop()
     
     NSLog(@"stopEmulation: START");
     
-    if (g_emulation_paused)
-        change_pause(0);
+    change_pause(PAUSE_FALSE);
     
     g_emulation_initiated = 0;
     while (g_emulation_initiated == 0) {
@@ -801,7 +775,7 @@ void m4i_game_stop()
 
 - (void)startMenu
 {
-    change_pause(1);
+    change_pause(PAUSE_THREAD);
     [UIApplication sharedApplication].idleTimerDisabled = NO;
     [self updatePointerLocked];
 }
@@ -810,13 +784,13 @@ void m4i_game_stop()
 void mame_load_state(int slot)
 {
     NSCParameterAssert(slot == 1 || slot == 2);
-    push_mame_keys(MYOSD_KEY_F7, (slot == 1) ? MYOSD_KEY_1 : MYOSD_KEY_2, 0, 0);
+    push_mame_keys(MYOSD_KEY_LOADSAVE, (slot == 1) ? MYOSD_KEY_1 : MYOSD_KEY_2, 0, 0);
 }
 
 void mame_save_state(int slot)
 {
     NSCParameterAssert(slot == 1 || slot == 2);
-    push_mame_keys(MYOSD_KEY_LSHIFT, MYOSD_KEY_F7, (slot == 1) ? MYOSD_KEY_1 : MYOSD_KEY_2, 0);
+    push_mame_keys(MYOSD_KEY_LSHIFT, MYOSD_KEY_LOADSAVE, (slot == 1) ? MYOSD_KEY_1 : MYOSD_KEY_2, 0);
 }
 
 - (void)presentPopup:(UIViewController *)viewController from:(UIView*)view animated:(BOOL)flag completion:(void (^)(void))completion {
@@ -994,7 +968,7 @@ HUDViewController* g_menu;
                 [NSString stringWithFormat:@":%@:Pause", getGamepadSymbol(gamepad, gamepad.buttonB)],
             ] style:HUDButtonStylePlain handler:^(NSUInteger button) {
                 if (button == 0)
-                    push_mame_key(MYOSD_KEY_TAB);
+                    push_mame_key(MYOSD_KEY_CONFIGURE);
                 else
                     push_mame_key(MYOSD_KEY_P);
             }];
@@ -1018,7 +992,7 @@ HUDViewController* g_menu;
             // CONFIGURE and PAUSE
             [menu addButtons:@[@":slider.horizontal.3:Configure",@":pause.circle:Pause"] style:HUDButtonStyleDefault handler:^(NSUInteger button) {
                 if (button == 0)
-                    push_mame_key(MYOSD_KEY_TAB);
+                    push_mame_key(MYOSD_KEY_CONFIGURE);
                 else
                     push_mame_key(MYOSD_KEY_P);
             }];
@@ -1026,9 +1000,9 @@ HUDViewController* g_menu;
         // RESET and SERVICE
         [menu addButtons:@[@":power:Reset", @":wrench:Service"] style:HUDButtonStyleDefault handler:^(NSUInteger button) {
             if (button == 0)
-                push_mame_key(MYOSD_KEY_F3);
+                push_mame_key(MYOSD_KEY_RESET);
             else
-                push_mame_key(MYOSD_KEY_F2);
+                push_mame_key(MYOSD_KEY_SERVICE);
         }];
         
         // show any MAME output, usually a WARNING message, we catch errors in an other place.
@@ -1168,12 +1142,12 @@ HUDViewController* g_menu;
     // get the state of our ROMs
     [self checkForNewRomsInit];
     
-    if (self.presentedViewController == nil && g_emulation_paused == 0)
+    if (self.presentedViewController == nil && g_emulation_paused == PAUSE_FALSE)
         [self startMenu];
 }
 
 - (void)enterForeground {
-    if (self.presentedViewController == nil && g_emulation_paused == 1)
+    if (self.presentedViewController == nil && g_emulation_paused == PAUSE_THREAD)
         [self endMenu];
     
     // check for any ROMs changes, for example from Files.app
@@ -1237,7 +1211,7 @@ HUDViewController* g_menu;
 }
 
 - (void)endMenu{
-    change_pause(0);
+    change_pause(PAUSE_FALSE);
     
     // always enable Keyboard so we can get input from a Hardware keyboard.
     keyboardView.active = TRUE; //force renable
@@ -1730,12 +1704,6 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
     else
         alpha = 0.0;
     
-    // HACK: fix this!
-    // MAME 2xx does not give us the game_list (yet) so always show the UI
-    if (myosd_get(MYOSD_VERSION) != 139)
-        alpha = 1.0;
-    // HACK: fix this!
-
 #if TARGET_OS_IOS
     if (change_layout) {
         alpha = 0.0;
@@ -2122,23 +2090,23 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         }];
         [hudView addButtons:@[@":slider.horizontal.3:Configure",@":pause.circle:Pause"] handler:^(NSUInteger button) {
             if (button == 0)
-                push_mame_key(MYOSD_KEY_TAB);
+                push_mame_key(MYOSD_KEY_CONFIGURE);
             else
                 push_mame_key(MYOSD_KEY_P);
         }];
 #if (FALSE && TARGET_OS_IOS)    // TODO: show snapshots in the ChooseGameUI
         [hudView addButtons:@[@":camera:Snapshot", @":video:Record"] handler:^(NSUInteger button) {
             if (button == 0)
-                push_mame_key(MYOSD_KEY_F12);
+                push_mame_key(MYOSD_KEY_SNAP;
             else
-                push_mame_keys(MYOSD_KEY_LSHIFT, MYOSD_KEY_F12, 0, 0);
+                push_mame_keys(MYOSD_KEY_LSHIFT, MYOSD_KEY_SNAP, 0, 0);
         }];
 #endif
         [hudView addButtons:@[@":power:Reset", @":wrench:Service"] handler:^(NSUInteger button) {
             if (button == 0)
-                push_mame_key(MYOSD_KEY_F3);
+                push_mame_key(MYOSD_KEY_RESET);
             else
-                push_mame_key(MYOSD_KEY_F2);
+                push_mame_key(MYOSD_KEY_SERVICE);
         }];
         [hudView addButton:(myosd_inGame && myosd_in_menu==0) ? @":xmark.circle:Exit Game" : @":xmark.circle:Exit" color:UIColor.systemRedColor handler:^{
             [_self runExit:NO];
@@ -2244,9 +2212,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 - (void)changeUI { @autoreleasepool {
 
     int prev_emulation_paused = g_emulation_paused;
-   
-    if (g_emulation_paused == 0)
-        change_pause(1);
+    change_pause(PAUSE_THREAD);
     
     // reset the frame count when you first turn on/off HUD
     if ((g_pref_showHUD != 0) != (hudView != nil))
@@ -2282,8 +2248,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         [hideShowControlsForLightgun setImage:[UIImage imageNamed:@"dpad"] forState:UIControlStateNormal];
     }
     
-    if (prev_emulation_paused != 1)
-        change_pause(0);
+    change_pause(prev_emulation_paused);
     
     [UIApplication sharedApplication].idleTimerDisabled = (myosd_inGame || g_joy_used) ? YES : NO;//so atract mode dont sleep
 
@@ -2348,6 +2313,7 @@ NSUInteger g_mame_key;                      // key(s) to send to mame
 // send a set of MYOSD_KEY(s) to MAME
 static void push_mame_key(NSUInteger key)
 {
+    NSCParameterAssert([NSThread isMainThread]);     // only push keys from main thread
     NSCParameterAssert(g_mame_key == 0);
     g_mame_key = key;
 }
@@ -2358,16 +2324,30 @@ static void push_mame_keys(NSUInteger key1, NSUInteger key2, NSUInteger key3, NS
     push_mame_key(key1 | (key2 << 8) | (key3 << 16) | (key4 << 24));
 }
 
+// flush any pending keys or buttons
+static void push_mame_flush()
+{
+    [g_mame_buttons_lock lock];
+    [g_mame_buttons removeAllObjects];
+    [g_mame_buttons_lock unlock];
+    g_mame_key = 0;
+    g_mame_buttons_tick = 0;
+}
+
+
 // send buttons and keys - we do this inside of myosd_poll_input() because it is called from droid_ios_poll_input
 // ...and we are sure MAME is in a state to accept input, and not waking up from being paused or loading a ROM
 // ...we hold a button DOWN for 2 frames (buttonPressReleaseCycles) and wait (buttonNextPressCycles) frames.
 // ...these are *magic* numbers that seam to work good. if we hold a key down too long, games may ignore it. if we send too fast bad too.
 static int handle_buttons(myosd_input_state* myosd)
 {
-    // check for exit (we cound just do this with push_mame_key...)
+    // check for exitGame
     if (myosd_exitGame) {
-        NSCParameterAssert(g_mame_key == 0 || g_mame_key == MYOSD_KEY_ESC);
-        g_mame_key = MYOSD_KEY_ESC;
+        NSCParameterAssert(g_mame_key == 0 || g_mame_key == MYOSD_KEY_ESC || g_mame_key == MYOSD_KEY_EXIT);
+        if (myosd_in_menu)
+            g_mame_key = MYOSD_KEY_ESC;
+        else
+            g_mame_key = MYOSD_KEY_EXIT;
         myosd_exitGame = 0;
     }
     
@@ -2681,7 +2661,7 @@ static void handle_device_input(myosd_input_state* myosd)
             // TODO: this prevents mapping buttons for player 2,3,4
             // TODO: ...so until we handle native input mapping dont do this.
             // when in a MAME menu (or the root) let any controller work the UI
-            //if (myosd->input_mode == MYOSD_INPUT_MODE_UI)
+            //if (myosd->input_mode == MYOSD_INPUT_MODE_MENU)
             //    player = 0;
             
             // dont overwrite a lower index controller, unless....
@@ -2737,35 +2717,42 @@ static void handle_p1aspx(myosd_input_state* myosd) {
     }
 }
 
-// called from inside MAME droid_ios_poll_input
-void m4i_poll_input(myosd_input_state* myosd, size_t input_size) {
+// called from inside MAME for a reset of the input system
+void m4i_input_init(myosd_input_state* myosd, size_t input_size) {
+    
+    push_mame_flush();
+
+    // get the input profile for this machine (copy into globals)
+    myosd_num_buttons   = myosd->num_buttons;
+    myosd_num_ways      = myosd->num_ways;
+    myosd_num_players   = myosd->num_players;
+    myosd_num_coins     = myosd->num_coins;
+    myosd_num_inputs    = myosd->num_inputs;
+    myosd_mouse         = myosd->num_mouse;
+    myosd_light_gun     = myosd->num_lightgun;
+    myosd_num_keyboard  = myosd->num_keyboard;
+    
+    // we have input on a brand new machine, and we need to configure the UI fresh
+    g_video_reset = TRUE;
+}
+
+// called from inside MAME
+void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
     
     // make sure libmame is the right version
     NSCParameterAssert(input_size == sizeof(myosd_input_state));
     
     // this is called on the MAME thread, need to be carefull and clean up!
-    @autoreleasepool {
+    if (g_emulation_paused == PAUSE_FALSE) @autoreleasepool {
         
-        // g_video_reset is set when iphone_Reset_Views is called
-        // we have input on a brand new machine, and we need to configure the UI fresh
-        if (g_video_reset) {
-
-            // get the input profile for this machine (copy into globals)
-            myosd_num_buttons   = myosd->num_buttons;
-            myosd_num_ways      = myosd->num_ways;
-            myosd_num_players   = myosd->num_players;
-            myosd_num_coins     = myosd->num_coins;
-            myosd_num_inputs    = myosd->num_inputs;
-            myosd_mouse         = myosd->num_mouse;
-            myosd_light_gun     = myosd->num_lightgun;
-            myosd_num_keyboard  = myosd->num_keyboard;
-            
-            g_video_reset = FALSE;
+        // g_video_reset is set when m4i_video_init or m4i_input_init is called
+         if (g_video_reset) {
             [sharedInstance performSelectorOnMainThread:@selector(resetUI) withObject:nil waitUntilDone:NO];
+            g_video_reset = FALSE;
         }
         
         // set global menu state
-        myosd_in_menu = myosd->input_mode == MYOSD_INPUT_MODE_UI;
+        myosd_in_menu = myosd->input_mode == MYOSD_INPUT_MODE_MENU;
         
         // keep myosd_waysStick uptodate
         if (ways_auto)
@@ -2885,6 +2872,7 @@ void m4i_poll_input(myosd_input_state* myosd, size_t input_size) {
         num_buttons = (myosd_num_buttons == 0) ? 2 : myosd_num_buttons;
    
     BOOL touch_buttons_disabled = myosd_mouse == 1 && g_pref_touch_analog_enabled && g_pref_touch_analog_hide_buttons;
+    BOOL menu_buttons_disabled = g_pref_showHUD == HudSizeLarge || (g_pref_showHUD == HudSizeTiny && g_pref_saveHUD == HudSizeLarge);
     buttonState = 0;
     for (int i=0; i<NUM_BUTTONS; i++)
     {
@@ -2904,7 +2892,7 @@ void m4i_poll_input(myosd_input_state* myosd, size_t input_size) {
             
             if (touch_buttons_disabled && !(i == BTN_SELECT || i == BTN_START || i == BTN_EXIT || i == BTN_OPTION)) continue;
             
-            if ((g_pref_showHUD > 0) && (i == BTN_SELECT || i == BTN_START || i == BTN_EXIT || i == BTN_OPTION)) continue;
+            if (menu_buttons_disabled && (i == BTN_SELECT || i == BTN_START || i == BTN_EXIT || i == BTN_OPTION)) continue;
         }
         
         UIImage* image_up = [self loadImage:nameImgButton_NotPress[i]];
@@ -3330,7 +3318,7 @@ void m4i_poll_input(myosd_input_state* myosd, size_t input_size) {
     [self startPlayer:0];
 }
 -(void)mameConfigure {
-    push_mame_key(MYOSD_KEY_TAB);
+    push_mame_key(MYOSD_KEY_CONFIGURE);
 }
 -(void)mameSettings {
     [self runSettings];
@@ -3339,7 +3327,7 @@ void m4i_poll_input(myosd_input_state* myosd, size_t input_size) {
     push_mame_key(MYOSD_KEY_P);
 }
 -(void)mameReset {
-    push_mame_key(MYOSD_KEY_F3);
+    push_mame_key(MYOSD_KEY_RESET);
 }
 -(void)mameFullscreen {
     [self commandKey:'\r'];
@@ -5168,7 +5156,7 @@ static unsigned long g_device_has_input[NUM_DEV];   // TRUE if device needs to b
     }
     if (changed_state & MYOSD_Y) {
         NSLog(@"...MENU+Y => MAME MENU");
-        push_mame_key(MYOSD_KEY_TAB);
+        push_mame_key(MYOSD_KEY_CONFIGURE);
     }
     if (changed_state & MYOSD_UP) {
         NSLog(@"...MENU+UP => LOAD STATE 1");
@@ -5604,7 +5592,7 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
         g_mame_game[0] = g_mame_system[0] = 0;     // run the MENU
     }
 
-    change_pause(0);
+    change_pause(PAUSE_FALSE);
     myosd_exitGame = 1; // exit menu mode and start game or menu.
 }
 
@@ -5624,7 +5612,7 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
         }
         return;
     }
-    g_no_roms_found = [games count] == 0;
+    g_no_roms_found = [games count] <= 1;
     if (g_no_roms_found) {
         NSLog(@"NO GAMES, ASK USER WHAT TO DO....");
         
@@ -5703,7 +5691,7 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
     ChooseGameController* choose = [[ChooseGameController alloc] init];
     [choose setGameList:games];
     choose.backgroundImage = [self loadTileImage:@"ui-background.png"];
-    change_pause(1);
+    change_pause(PAUSE_INPUT);
     choose.selectGameCallback = ^(NSDictionary* game) {
         if ([game[kGameInfoName] isEqualToString:kGameInfoNameSettings]) {
             [self runSettings];

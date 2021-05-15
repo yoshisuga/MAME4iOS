@@ -3869,6 +3869,10 @@ static void menu_select_game_build_driver_list(ui_menu *menu, select_game_state 
 				*dst++ = tolower((UINT8)*src);
 			*dst = 0;
 
+			/* ignore 7z files, 139 does not support them */
+			if (src[0] == '.' && src[1] == '7' && (src[2] == 'z' || src[2] == 'Z') && src[3] == 0)
+				continue;
+
 			/* find it in the array */
 			tempdriver.name = drivername;
 			tempdriver_ptr = &tempdriver;

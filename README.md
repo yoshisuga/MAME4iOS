@@ -108,11 +108,40 @@ Even if you are not in the paid Apple Developer Program, you can sideload the ap
 * now you can build and run in Xcode.
 
 ## Issues running current `MAME`
-* we dont get the availible game/driver list (yet) so you always get the *DOS UI* 
-* most `MAME` 139 ROMs dont work on 229, but that is just normal life in `MAME` world
+* most `MAME` 139 ROMs dont work on 229, but that is just normal life in `MAME` world, see [this](#mixing-139-and-2xx-roms).
 * tracking down a sound issue and other random stuff.
 * some things (like being smart about number of players, etc) does not work (yet)
 * if you run a `Computer` machine you will be stuck and cant exit cuz we dont handle ui_mode and keyboards right (yet)
+* the `hiscore` and `cheat` system has not been updated.
+
+## **Software Lists**
+
+Software lists are containing meta-data of software for computers and consoles and are coming from various sources,
+they are not compiled in code but use as valuable source of information in order to preserve and document software.
+
+### How to add software to `MAME4iOS`
+
+* first import a *software list xml* file, you can find these files [here](https://github.com/mamedev/mame/tree/master/hash)
+    - you can also copy software list xml files *by hand* to the `hash` directory.
+* you might be tempted to just import *all* software list files, dont do that, it will waste diskspace on your device, and cause `MAME4iOS` to do extra work.
+* after you have imported the software list xml files, you can import `ZIP` files containing software.  The name of the `ZIP` file *or* the subdirectory path in the `ZIP` file needs to match the name of a software list.
+
+example zip file(s)
+```
+a2600.zip
+    pacman.zip
+    et.zip
+```
+
+```
+MySoftware.zip
+    a2600/pacman.zip
+    a2600/et.zip
+    n64/007goldnu.7z
+```
+
+## Mixing 139 and 2xx ROMs
+Some `romsets` are not compatible between MAME 139 and newer versions, the best way to use both `romsets` at the same time is to make sure the newer ones are stored in the `7z` format and the 139 ones in the `zip` format.  This way both files can co-exist.
 
 ## tvOS
 

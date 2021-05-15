@@ -81,7 +81,6 @@ typedef struct {
     
     // current input mode
     int input_mode;
-    int keyboard_mode;
 
 }   myosd_input_state;
 
@@ -89,13 +88,8 @@ typedef struct {
 enum myosd_input_mode
 {
     MYOSD_INPUT_MODE_NORMAL,
-    MYOSD_INPUT_MODE_UI
-};
-
-// myosd keyboard mode
-enum myosd_keyboard_mode
-{
-    MYOSD_KEYBOARD_MODE_NORMAL
+    MYOSD_INPUT_MODE_MENU,
+    MYOSD_INPUT_MODE_KEYBOARD
 };
 
 // myosd output
@@ -142,6 +136,7 @@ enum MYOSD_GAME_INFO
     MYOSD_GAME_INFO_BIOS                = 1<<4,     // this driver entry is a BIOS root
     MYOSD_GAME_INFO_SUPPORTS_SAVE       = 1<<5,     // system supports save states
     MYOSD_GAME_INFO_VECTOR              = 1<<6,     // SCREEN is VECTOR
+    MYOSD_GAME_INFO_LCD                 = 1<<7,     // SCREEN is LCD
 };
 
 // this is copy/clone of the render_primitive in render.h passed up to UI/OSD layer in myosd_video_draw
@@ -342,8 +337,17 @@ enum myosd_keycode
     MYOSD_KEY_RCMD,
     MYOSD_KEY_MENU,
     MYOSD_KEY_CANCEL,
+    // special key alias(s)
     MYOSD_KEY_FIRST = MYOSD_KEY_A,
-    MYOSD_KEY_LAST = MYOSD_KEY_CANCEL
+    MYOSD_KEY_LAST = MYOSD_KEY_CANCEL,
+    MYOSD_KEY_CONFIGURE = MYOSD_KEY_TAB,
+    MYOSD_KEY_SERVICE = MYOSD_KEY_F2,
+    MYOSD_KEY_LOADSAVE = MYOSD_KEY_F7,      // LOAD or SAVE
+    MYOSD_KEY_SNAP = MYOSD_KEY_F12,         // SNAPSHOT or RECORD
+    MYOSD_KEY_UIMODE = MYOSD_KEY_SCRLOCK,
+    // special non-mapped keys
+    MYOSD_KEY_EXIT,
+    MYOSD_KEY_RESET,
 };
 
 // myosd_get and myosd_set - get and set global state from the MAME driver.
