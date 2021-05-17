@@ -368,7 +368,7 @@ void m4i_output(int channel, const char* text)
 #endif
     
     // ignore this error
-    if (channel == MYOSD_OUTPUT_ERROR && strcmp(text, "Error opening translation file English") == 0)
+    if (channel == MYOSD_OUTPUT_ERROR && strstr(text, "Error opening translation file") != NULL)
         return;
     
     // capture any error/warning output for later use.
@@ -480,6 +480,8 @@ void* app_Thread_Start(void* args)
                 strncpy(g_mame_game_error, mame_game, sizeof(g_mame_game_error));
             else
                 snprintf(g_mame_game_error, sizeof(g_mame_game_error), "%s/%s", mame_system, mame_game);
+            
+            g_mame_game[0] = g_mame_system[0] = 0;
         }
         // we should always be asked to run a different game, if not (mame failed with no error) go back to the menu
         if (strcmp(mame_game, g_mame_game) == 0 && strcmp(mame_system, g_mame_system) == 0)
