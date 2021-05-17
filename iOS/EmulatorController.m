@@ -463,12 +463,11 @@ void* app_Thread_Start(void* args)
             g_mame_reset = FALSE;
         }
         
-        // copy the system+game we should run, and zero them out for next time.
+        // copy the system+game we should run
         char mame_system[sizeof(g_mame_system)];    // system MAME should run
         char mame_game[sizeof(g_mame_game)];        // game MAME should run (or empty is menu)
         strncpy(mame_system, g_mame_system, sizeof(mame_system));
         strncpy(mame_game, g_mame_game, sizeof(mame_game));
-        g_mame_game[0] = g_mame_system[0] = 0;
         
         BOOL running_game = mame_game[0] != 0;
         
@@ -482,6 +481,9 @@ void* app_Thread_Start(void* args)
             else
                 snprintf(g_mame_game_error, sizeof(g_mame_game_error), "%s/%s", mame_system, mame_game);
         }
+        // we should always be asked to run a different game, if not (mame failed with no error) go back to the menu
+        if (strcmp(mame_game, g_mame_game) == 0 && strcmp(mame_system, g_mame_system) == 0)
+            g_mame_game[0] = g_mame_system[0] = 0;
      }
     NSLog(@"thread exit");
     g_emulation_initiated = -1;
@@ -5662,6 +5664,10 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
     }
     else if (viewController != nil) {
         NSLog(@"CANT RUN GAME! (%@ is active)", viewController);
+        return;
+    }
+    else if ([game[kGameInfoName] isEqualToString:@(g_mame_game)] && [(game[kGameInfoSystem] ?: @"") isEqualToString:@(g_mame_system)]) {
+        NSLog(@"GAME IS ALREADY RUNNING! (%@/%@)", @(g_mame_system), @(g_mame_game));
         return;
     }
     
