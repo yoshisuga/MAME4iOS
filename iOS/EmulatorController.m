@@ -285,9 +285,9 @@ static NSDictionary* g_mame_game_info;
 static BOOL g_mame_reset = FALSE;           // do a full reset (delete cfg files) before running MAME
 static char g_mame_system[16+1];            // system MAME should run
 static char g_mame_game[16+1];              // game MAME should run (or empty is menu)
-static char g_mame_game_error[16+16+1+1];
+static char g_mame_game_error[16+16+1+1];   // name of the system/game that got an error.
 static char g_mame_output_text[4096];
-static BOOL g_mame_warning = FALSE;
+static BOOL g_mame_warning_shown = FALSE;
 static BOOL g_no_roms_found = FALSE;
 
 static NSInteger g_settings_roms_count;
@@ -451,7 +451,7 @@ void* app_Thread_Start(void* args)
     while (g_emulation_initiated) {
         prev_myosd_mouse = myosd_mouse = 0;
         prev_myosd_light_gun = myosd_light_gun = 0;
-        g_mame_warning = 0;
+        g_mame_warning_shown = 0;
         
         // reset MAME by deleteing CFG file cfg/default.cfg
         if (g_mame_reset) @autoreleasepool {
@@ -463,24 +463,26 @@ void* app_Thread_Start(void* args)
             g_mame_reset = FALSE;
         }
         
-        BOOL running_game = g_mame_game[0] != 0;
+        // copy the system+game we should run, and zero them out for next time.
+        char mame_system[sizeof(g_mame_system)];    // system MAME should run
+        char mame_game[sizeof(g_mame_game)];        // game MAME should run (or empty is menu)
+        strncpy(mame_system, g_mame_system, sizeof(mame_system));
+        strncpy(mame_game, g_mame_game, sizeof(mame_game));
+        g_mame_game[0] = g_mame_system[0] = 0;
+        
+        BOOL running_game = mame_game[0] != 0;
         
         // reset g_mame_output_text if we are running a game, but not if we are just running menu.
         if (running_game)
             g_mame_output_text[0] = 0;
         
-        if (run_mame(g_mame_system, g_mame_game) != 0 && running_game) {
-            
-            if (g_mame_system[0] == 0)
-                strncpy(g_mame_game_error, g_mame_game, sizeof(g_mame_game_error));
+        if (run_mame(mame_system, mame_game) != 0 && running_game) {
+            if (mame_system[0] == 0)
+                strncpy(g_mame_game_error, mame_game, sizeof(g_mame_game_error));
             else
-                snprintf(g_mame_game_error, sizeof(g_mame_game_error), "%s/%s", g_mame_system, g_mame_game);
+                snprintf(g_mame_game_error, sizeof(g_mame_game_error), "%s/%s", mame_system, mame_game);
         }
-        
-        // after running a game, go back to menu
-        if (running_game)
-            g_mame_game[0] = g_mame_system[0] = 0;
-    }
+     }
     NSLog(@"thread exit");
     g_emulation_initiated = -1;
     return NULL;
@@ -2315,9 +2317,9 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     prev_myosd_mouse = myosd_mouse;
 
     // Show a WARNING toast, but only once, and only if MAME did not show it already
-    if (g_pref_showINFO == 0 && g_mame_warning == 0 && g_mame_output_text[0] && strstr(g_mame_output_text, "WARNING") != NULL) {
+    if (g_pref_showINFO == 0 && g_mame_warning_shown == 0 && g_mame_output_text[0] && strstr(g_mame_output_text, "WARNING") != NULL) {
         [self.view makeToast:@"⚠️Game might not run correctly." duration:3.0 position:CSToastPositionBottom style:toastStyle];
-        g_mame_warning = 1;
+        g_mame_warning_shown = 1;
     }
     
     [self updatePointerLocked];
