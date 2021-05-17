@@ -1183,17 +1183,13 @@
 				TargetAttributes = {
 					925ABCA41E46DCC500997182 = {
 						LastSwiftMigration = 1200;
-						ProvisioningStyle = Automatic;
 					};
 					92ECB8EA21EA984D00D1E3D0 = {
 						CreatedOnToolsVersion = 10.1;
 						ProvisioningStyle = Automatic;
 					};
-					EFA7A0DE24B65C020009CF88 = {
-					};
 					EFEEA4B025C9D41E00314132 = {
 						CreatedOnToolsVersion = 12.4;
-						ProvisioningStyle = Automatic;
 					};
 				};
 			};
