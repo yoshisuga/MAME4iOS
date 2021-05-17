@@ -307,7 +307,7 @@ static BOOL g_video_reset = FALSE;
 // **NOTE** this is called on the MAME background thread, dont do anything stupid.
 void m4i_video_init(int vis_width, int vis_height, int min_width, int min_height)
 {
-    NSLog(@"m4i_video_init: %dx%d", width, height);
+    NSLog(@"m4i_video_init: %dx%d [%dx%d]", vis_width, vis_height, min_width, min_height);
     
     // set these globals for `force pixel aspect`
     myosd_vis_width = vis_width;
@@ -366,6 +366,11 @@ void m4i_output(int channel, const char* text)
     else
         fputs(text, stdout);
 #endif
+    
+    // ignore this error
+    if (channel == MYOSD_OUTPUT_ERROR && strcmp(text, "Error opening translation file English") == 0)
+        return;
+    
     // capture any error/warning output for later use.
     if (channel == MYOSD_OUTPUT_ERROR || channel == MYOSD_OUTPUT_WARNING) {
         strncpy(g_mame_output_text + strlen(g_mame_output_text), text, sizeof(g_mame_output_text) - strlen(g_mame_output_text) - 1);
@@ -458,19 +463,23 @@ void* app_Thread_Start(void* args)
             g_mame_reset = FALSE;
         }
         
+        BOOL running_game = g_mame_game[0] != 0;
+        
         // reset g_mame_output_text if we are running a game, but not if we are just running menu.
-        if (g_mame_game[0] != 0)
+        if (running_game)
             g_mame_output_text[0] = 0;
         
-        if (run_mame(g_mame_system, g_mame_game) != 0 && g_mame_game[0] != 0) {
+        if (run_mame(g_mame_system, g_mame_game) != 0 && running_game) {
             
             if (g_mame_system[0] == 0)
                 strncpy(g_mame_game_error, g_mame_game, sizeof(g_mame_game_error));
             else
                 snprintf(g_mame_game_error, sizeof(g_mame_game_error), "%s/%s", g_mame_system, g_mame_game);
-            
-            g_mame_game[0] = g_mame_system[0] = 0;
         }
+        
+        // after running a game, go back to menu
+        if (running_game)
+            g_mame_game[0] = g_mame_system[0] = 0;
     }
     NSLog(@"thread exit");
     g_emulation_initiated = -1;
@@ -3151,8 +3160,34 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
     [self getOverlayImage:&border_image andSize:&border_size];
     r = CGRectInset(r, border_size.width, border_size.height);
     
-    int myosd_width  = g_pref_force_pixel_aspect_ratio ? myosd_min_width  : myosd_vis_width;
-    int myosd_height = g_pref_force_pixel_aspect_ratio ? myosd_min_height : myosd_vis_height;
+    // by default use the full size MAME wants us to.
+    int myosd_width  = myosd_vis_width;
+    int myosd_height = myosd_vis_height;
+    
+    // force pixel aspect: use the non-aspect corrected min buffer size
+    if (g_pref_force_pixel_aspect_ratio && myosd_min_width != 0 && myosd_min_height != 0) {
+        myosd_width  = myosd_min_width;
+        myosd_height = myosd_min_height;
+    }
+    // if we want to integer scale start with the aspect converted min buffer
+    else if (g_pref_integer_scale_only && myosd_vis_height != 0 && myosd_min_width != 0 && myosd_min_height != 0) {
+        CGFloat aspect = (CGFloat)myosd_vis_width / myosd_vis_height;
+        
+        if (myosd_min_width < myosd_min_height * aspect) {
+            myosd_width  = floor(myosd_min_height * aspect + 0.5);
+            myosd_height = myosd_min_height;
+        }
+        else {
+            myosd_width  = myosd_min_width;
+            myosd_height = floor(myosd_min_width / aspect + 0.5);
+        }
+    }
+
+    // handle possible zero size and use a 4:3 default
+    if (myosd_width == 0 || myosd_height == 0) {
+        myosd_width  = 4;
+        myosd_height = 3;
+    }
 
     // preserve aspect ratio, and snap to pixels.
     if (g_pref_keep_aspect_ratio) {
