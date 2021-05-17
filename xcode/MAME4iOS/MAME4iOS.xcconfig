@@ -15,17 +15,17 @@
 //    you can also set the Development Team via the drop down in the Xcode project editor, for each Target.
 //    you can find your TeamID [here](https://developer.apple.com/account/#/membership)
 
-ORG_IDENTIFIER          = app.toddla    // CHANGE this to your Organization Identifier.
-DEVELOPMENT_TEAM        = 8RUN83V8CA    // CHANGE this to your Team ID. (or select in Xcode project editor)
-CURRENT_PROJECT_VERSION = 2021.7
-MARKETING_VERSION       = 2021.7
+ORG_IDENTIFIER          = com.example   // CHANGE this to your Organization Identifier.
+DEVELOPMENT_TEAM        = ABC8675309    // CHANGE this to your Team ID. (or select in Xcode project editor)
+CURRENT_PROJECT_VERSION = 2021.6
+MARKETING_VERSION       = 2021.6
 
 // 2. enable or disable entitlements
 //    tvOS TopShelf and iCloud import/export require special app entitlements
 
 ENTITLEMENTS_TYPE = -Base
 // UN-COMMENT NEXT LINE if you want a build with full entitlements
-ENTITLEMENTS_TYPE = -Full
+// ENTITLEMENTS_TYPE = -Full
 // UN-COMMENT PREV LINE if you want a build with full entitlements
 
 // these should not be changed.
