@@ -10,6 +10,7 @@
 
 // keys used in a software list xml
 #define kSoftwareListName           @"name"
+#define kSoftwareListParent         @"cloneof"
 #define kSoftwareListYear           @"year"
 #define kSoftwareListDescription    @"description"
 #define kSoftwareListPublisher      @"publisher"
