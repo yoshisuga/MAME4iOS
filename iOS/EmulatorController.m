@@ -396,7 +396,7 @@ int run_mame(char* system, char* game)
         (game && game[0] != 0 && game[0] != ' ') ? game : "-nocoinlock",
         "-nocoinlock",
         g_pref_cheat ? "-cheat" : "-nocheat",
-        g_pref_autosave ? "-autosave" : "-noautosave",
+        g_pref_autosave ? "-autosave" : "-noautosave",      // TODO: this is not connected to any UI
         g_pref_showINFO ? "-noskip_gameinfo" : "-skip_gameinfo",
         "-speed", speed,
         g_pref_hiscore ? "-hiscore" : "-nohiscore",
