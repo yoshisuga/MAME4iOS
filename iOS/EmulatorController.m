@@ -3384,13 +3384,15 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
         NSLog(@"canPerformAction: %@: %d", NSStringFromSelector(action), !g_emulation_paused && [self presentedViewController] == nil);
         return !g_emulation_paused && [self presentedViewController] == nil;
     }
-    
+
+#if TARGET_OS_IOS
     if (action == @selector(paste:)) {
         BOOL can_paste = !g_emulation_paused && [self presentedViewController] == nil &&
                 myosd_has_keyboard && UIPasteboard.generalPasteboard.hasStrings;
         NSLog(@"canPaste: %d", can_paste);
         return can_paste;
     }
+#endif
 
     return [super canPerformAction:action withSender:sender];
 }
