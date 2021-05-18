@@ -85,13 +85,17 @@
 #define SKIP(n)  (buffer_ptr += n, buffer_len -= n)
 
     // seek to the end and look for the EOCD, very very important! search backward! we dont want to find signature in an embedded zip!
-    LOAD(file, file.lengthOfFile - 512, 512);
+    LOAD(file, MAX(file.lengthOfFile,512) - 512, 512);
     uint8_t eocd_sig[] = {0x50, 0x4b, 0x05, 0x06};
     NSRange r = [buffer_data rangeOfData:[NSData dataWithBytes:&eocd_sig length:4] options:NSDataSearchBackwards range:NSMakeRange(0, [buffer_data length])];
 
     if (r.location == NSNotFound)
         return ERROR(@"bad zip file (cant find central directory)");
-
+    
+    // handle a empty, small, or invalid zip with no ZIP64 header
+    if (r.location < 20)
+        goto small_zip;
+    
     SKIP(r.location - 20);
 
     // see if we have a ZIP64 EOCD header
@@ -133,7 +137,7 @@
     else
     {
         SKIP(16);
-
+small_zip:
         //  End of central directory record (EOCD)
         //  Offset   Bytes  Description
         //  0        4      End of central directory signature = 0x06054b50
