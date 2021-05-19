@@ -10,7 +10,7 @@
 #import "ZipFile.h"
 #import "GameInfo.h"
 
-#define DebugLog 0
+#define DebugLog 1
 #if DebugLog == 0 || !defined(DEBUG)
 #define NSLog(...) (void)0
 #endif
@@ -47,8 +47,17 @@
 
 // get software list names
 - (NSArray*)getSoftwareListNames {
-    NSArray* files = [NSFileManager.defaultManager contentsOfDirectoryAtPath:hash_dir error:nil];
-    return [files valueForKey:@"stringByDeletingPathExtension"];
+    @synchronized (self) {
+        NSArray* list = [software_list_cache objectForKey:@"*"];
+        if (list == nil) {
+            @autoreleasepool {
+                list = [NSFileManager.defaultManager contentsOfDirectoryAtPath:hash_dir error:nil];
+                list = [list valueForKey:@"stringByDeletingPathExtension"];
+                [software_list_cache setObject:list forKey:@"*"];
+            }
+        }
+        return list;
+    }
 }
 
 // get software list, from cache, or load and validate the ROMs
@@ -81,6 +90,7 @@
                 kGameInfoSoftwareList:list,
                 kGameInfoSystem:      system,
                 kGameInfoName:        STR(software[kSoftwareListName]),
+                kGameInfoParent:      STR(software[kSoftwareListParent]),
                 kGameInfoDescription: STR(software[kSoftwareListDescription]),
                 kGameInfoYear:        STR(software[kSoftwareListYear]),
                 kGameInfoManufacturer:STR(software[kSoftwareListPublisher]),
@@ -93,13 +103,13 @@
 
 // install a XML or ZIP file
 - (BOOL)installFile:(NSString*)path {
-    [self reload];
-    
-    if ([ZIP_FILE_TYPES containsObject:path.pathExtension.lowercaseString])
-        return [self installZIP:path];
+ 
+    @autoreleasepool {
+        if ([ZIP_FILE_TYPES containsObject:path.pathExtension.lowercaseString])
+            return [self installZIP:path];
 
-    if ([@[@"xml"] containsObject:path.pathExtension.lowercaseString]) @autoreleasepool {
-        return [self installXML:path];
+        if ([@[@"xml"] containsObject:path.pathExtension.lowercaseString])
+            return [self installXML:path];
     }
 
     return FALSE;
@@ -128,7 +138,7 @@
     }
     for (NSString* clone in clones) {
         
-        if (clone.length == 0)
+        if (clone.length == 0 || [clone containsString:@"/"])
             continue;
         
         // create a empty zip with the name of the clone.
@@ -198,7 +208,7 @@
 
 // get the names of all files in a ZIP, excluding hidden files and directories.
 // TODO: this does not work for 7z files
-static NSArray* getZipFiles(NSString* path) {
+static NSArray<NSString*>* getZipFiles(NSString* path) {
     NSMutableArray* files = [[NSMutableArray alloc] init];
     [ZipFile enumerate:path withOptions:ZipFileEnumFiles usingBlock:^(ZipFileInfo* info) {
         [files addObject:info.name];
@@ -208,6 +218,11 @@ static NSArray* getZipFiles(NSString* path) {
 
 // install a ZIP file
 - (BOOL)installZIP:(NSString*)path {
+
+    // if we dont have any software lists, bail
+    NSArray* list_names = [self getSoftwareListNames];
+    if (list_names.count == 0)
+        return FALSE;
     
     // get names of all files in this romset, if empty zip get out.
     NSArray* files = [getZipFiles(path) valueForKeyPath:@"lastPathComponent.lowercaseString"];
@@ -215,17 +230,22 @@ static NSArray* getZipFiles(NSString* path) {
         return FALSE;
 
     NSString* name = path.lastPathComponent.stringByDeletingPathExtension.lowercaseString;
+    
+    // if the ROM had a name like "foobar 1.zip", "foobar (1).zip" use only the first word as the ROM name.
+    // this most likley came when a user downloaded the zip and a foobar.zip already existed, MAME ROMs are <=20 char and no spaces.
+    NSArray* words = [name componentsSeparatedByString:@" "];
+    if (words.count == 2 && [words.lastObject stringByTrimmingCharactersInSet:[NSCharacterSet punctuationCharacterSet]].intValue != 0)
+        name = words.firstObject;
+    
     NSLog(@"SEARCHING SOFTWARE LISTS FOR: %@", name);
-    NSString* found_list = nil;
 
     // figure out if this zip file is a SOFTWARE romset, buy looking for it in *all*
     // ...the installed software lists, and if it is copy it to the right subdir of `roms`
-    for (NSString* list_name in [self getSoftwareListNames]) @autoreleasepool {
+    for (NSString* list_name in list_names) @autoreleasepool {
         
         NSLog(@"    SEARCHING LIST(%@) FOR: %@", list_name, name);
 
-        NSString* path = [[hash_dir stringByAppendingPathComponent:list_name] stringByAppendingPathExtension:@"xml"];
-        NSDictionary* dict = [XmlFile dictionaryWithPath:path error:nil];
+        NSDictionary* dict = [self loadSoftwareListXML:list_name cache:YES];
 
         // walk all software in this list looking for a name match, then if names match check names of ROMs
         for (NSDictionary* software in LIST([dict valueForKeyPath:@"softwarelist.software"])) {
@@ -249,40 +269,49 @@ static NSArray* getZipFiles(NSString* path) {
                     }
                 }
                 
-                if (found_all_roms)
-                    found_list = list_name;
+                if (found_all_roms) {
+                    NSLog(@"FOUND %@ in LIST: %@", name, list_name);
+                    NSString* dest_path = [[[roms_dir stringByAppendingPathComponent:list_name] stringByAppendingPathComponent:name] stringByAppendingPathExtension:path.pathExtension];
+                    
+                    // move romset to roms sub directory and overwrite any other file that is there.
+                    [NSFileManager.defaultManager removeItemAtPath:dest_path error:nil];
+                    [NSFileManager.defaultManager moveItemAtPath:path toPath:dest_path error:nil];
+                    
+                    [self extractClones:dest_path];
+                    return TRUE;
+                }
             }
-            if (found_list != nil)
-                break;
         }
-        if (found_list != nil)
-            break;
     }
     
-    if (found_list != nil) {
-        NSLog(@"FOUND %@ in LIST: %@", name, found_list);
-        NSString* dest_path = [[roms_dir stringByAppendingPathComponent:found_list] stringByAppendingPathComponent:path.lastPathComponent];
-        
-        // move romset to roms sub directory and overwrite any other file that is there.
-        [NSFileManager.defaultManager removeItemAtPath:dest_path error:nil];
-        [NSFileManager.defaultManager moveItemAtPath:path toPath:dest_path error:nil];
-        
-        return TRUE;
-    }
-    
-    // we did not find this ZIP in any software list
     NSLog(@"DID NOT FIND %@ in *any* SOFTWARE LIST", name);
     return FALSE;
+}
+
+// load software list xml file (and maybe cache it)
+- (NSDictionary*)loadSoftwareListXML:(NSString*)name cache:(BOOL)cache {
+    NSParameterAssert(name.length != 0);
+    NSString* path = [[hash_dir stringByAppendingPathComponent:name] stringByAppendingPathExtension:@"xml"];
+    
+    @synchronized (self) {
+        NSDictionary* dict = [software_list_cache objectForKey:path];
+        if (dict == nil) {
+            @autoreleasepool {
+                dict = [XmlFile dictionaryWithPath:path error:nil];
+                if (cache)
+                    [software_list_cache setObject:dict forKey:path];
+            }
+        }
+        return dict;
+    }
 }
 
 // load software list, and validate the ROMs
 - (NSArray*)loadSoftwareList:(NSString*)list_name {
     NSParameterAssert(list_name.length != 0);
     
-    NSString* path = [[hash_dir stringByAppendingPathComponent:list_name] stringByAppendingPathExtension:@"xml"];
-
     // load the XML file
-    NSDictionary* dict = [XmlFile dictionaryWithPath:path error:nil];
+    NSDictionary* dict = [self loadSoftwareListXML:list_name cache:FALSE];
     
     // get all the software in the list
     NSArray* list = LIST([dict valueForKeyPath:@"softwarelist.software"]);
