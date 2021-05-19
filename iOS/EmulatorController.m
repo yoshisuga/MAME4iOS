@@ -292,7 +292,8 @@ static BOOL g_no_roms_found = FALSE;
 
 static NSInteger g_settings_roms_count;
 static NSInteger g_settings_file_count;
-static NSInteger g_settings_hash_count;
+static NSInteger g_settings_list_count;
+static NSUInteger g_settings_options_hash;
 
 static BOOL g_bluetooth_enabled;
 
@@ -1197,28 +1198,36 @@ HUDViewController* g_menu;
 - (void)checkForNewRomsInit {
     g_settings_file_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:getDocumentPath(@"") error:nil] count];
     g_settings_roms_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:getDocumentPath(@"roms") error:nil] count];
-    g_settings_hash_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:getDocumentPath(@"hash") error:nil] count];
+    g_settings_list_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:getDocumentPath(@"hash") error:nil] count];
+    g_settings_options_hash = [[[Options alloc] init] hash];
 }
 
 - (void)checkForNewRoms {
     NSInteger file_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:getDocumentPath(@"") error:nil] count];
     NSInteger roms_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:getDocumentPath(@"roms") error:nil] count];
-    NSInteger hash_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:getDocumentPath(@"hash") error:nil] count];
+    NSInteger list_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:getDocumentPath(@"hash") error:nil] count];
+    NSUInteger options_hash = [[[Options alloc] init] hash];
 
     if (file_count != g_settings_file_count)
         NSLog(@"FILES added to root %ld => %ld", g_settings_file_count, file_count);
     if (roms_count != g_settings_roms_count)
         NSLog(@"FILES added to roms %ld => %ld", g_settings_roms_count, roms_count);
-    if (hash_count != g_settings_hash_count)
-        NSLog(@"FILES added to hash %ld => %ld", g_settings_hash_count, hash_count);
+    if (list_count != g_settings_list_count)
+        NSLog(@"FILES added to hash %ld => %ld", g_settings_list_count, list_count);
+    if (options_hash != g_settings_options_hash)
+        NSLog(@"OPTIONS HAVE CHANGED %lX != %lX", options_hash, g_settings_options_hash);
 
-    if (g_settings_hash_count != hash_count)
+    if (g_settings_list_count != list_count)
         [g_softlist reload];
 
     if (g_settings_file_count != file_count)
         [self performSelector:@selector(moveROMS) withObject:nil afterDelay:0.0];
-    else if ((g_settings_roms_count != roms_count) || (g_settings_hash_count != hash_count) || (g_mame_reset && myosd_inGame == 0))
+    else if ((g_settings_roms_count != roms_count) || (g_settings_list_count != list_count) || (g_mame_reset && myosd_inGame == 0))
         [self reload];
+    else if (options_hash != g_settings_options_hash && myosd_inGame == 0)
+        [self reload];
+    else if (options_hash != g_settings_options_hash && myosd_inGame != 0)
+        ; // TODO: relaunch the current game??
 }
 
 - (void)runSettings {
@@ -4497,6 +4506,10 @@ BOOL is_roms_dir(NSString* dir) {
             [[NSFileManager defaultManager] removeItemAtPath:romPath error:nil];
             result = FALSE;
         }
+        
+        // if this is a merged romset, release the kraken!!, I mean extract the clones.
+        if (error == nil && [romsPath isEqualToString:toPath.stringByDeletingLastPathComponent])
+            [g_softlist extractClones:toPath];
     }
     else
     {
