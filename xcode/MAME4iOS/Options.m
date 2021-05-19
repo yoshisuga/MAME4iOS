@@ -246,9 +246,9 @@
     
 }
 
-- (void)saveOptions
+- (NSDictionary*)getDictionary
 {
-    NSDictionary* optionsDict = [NSDictionary dictionaryWithObjectsAndKeys:
+    return [NSDictionary dictionaryWithObjectsAndKeys:
                              [NSString stringWithFormat:@"%d", _keepAspectRatio], @"KeepAspect",
                               
                              _filter, @"filter",
@@ -317,11 +317,34 @@
                              [NSString stringWithFormat:@"%d", _hapticButtonFeedback], @"hapticButtonFeedback",
                                  
                              nil];
-    
-    
+}
+
+- (void)saveOptions
+{
+    NSDictionary* optionsDict = [self getDictionary];
     NSData* data = [NSPropertyListSerialization dataWithPropertyList:optionsDict format:NSPropertyListBinaryFormat_v1_0 options:0 error:nil];
     NSParameterAssert(data != nil);
     [data writeToFile:Options.optionsPath atomically:NO];
+}
+
+// hash and isEqual
+-(NSUInteger)hash {
+    // we need to do our own hash, cuz Dictionary hash is just the count!
+    NSDictionary* optionsDict = [self getDictionary];
+    NSUInteger prime = 137;
+    NSUInteger result = [optionsDict hash];
+    for (NSObject *key in [[optionsDict allKeys] sortedArrayUsingSelector:@selector(compare:)]) {
+        result = prime * result + [key hash];
+        result = prime * result + [optionsDict[key] hash];
+    }
+    return result;
+}
+- (BOOL)isEqual:(id)object {
+    
+    if (![object isKindOfClass:[self class]])
+        return FALSE;
+    
+    return [[self getDictionary] isEqual:[object getDictionary]];
 }
 
 @end
