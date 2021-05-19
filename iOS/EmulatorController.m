@@ -464,11 +464,12 @@ void* app_Thread_Start(void* args)
             g_mame_reset = FALSE;
         }
         
-        // copy the system+game we should run
+        // copy the system+game we should run, and set globals so we run the menu next time.
         char mame_system[sizeof(g_mame_system)];    // system MAME should run
         char mame_game[sizeof(g_mame_game)];        // game MAME should run (or empty is menu)
         strncpy(mame_system, g_mame_system, sizeof(mame_system));
         strncpy(mame_game, g_mame_game, sizeof(mame_game));
+        g_mame_game[0] = g_mame_system[0] = 0;
         
         BOOL running_game = mame_game[0] != 0;
         
@@ -481,13 +482,8 @@ void* app_Thread_Start(void* args)
                 strncpy(g_mame_game_error, mame_game, sizeof(g_mame_game_error));
             else
                 snprintf(g_mame_game_error, sizeof(g_mame_game_error), "%s/%s", mame_system, mame_game);
-            
-            g_mame_game[0] = g_mame_system[0] = 0;
         }
-        // we should always be asked to run a different game, if not (mame failed with no error) go back to the menu
-        if (strcmp(mame_game, g_mame_game) == 0 && strcmp(mame_system, g_mame_system) == 0)
-            g_mame_game[0] = g_mame_system[0] = 0;
-     }
+    }
     NSLog(@"thread exit");
     g_emulation_initiated = -1;
     return NULL;
@@ -609,8 +605,12 @@ void m4i_game_list(myosd_game_info* game_info, int game_count)
                                               (game_info[i].flags & MYOSD_GAME_INFO_LCD)      ? 4 : 0 ]
             }];
             
-            if (software_list.length != 0)
-                [games addObjectsFromArray:[g_softlist getGamesForSystem:@(game_info[i].name) fromList:software_list]];
+            if (software_list.length != 0) {
+                NSArray* software = [g_softlist getGamesForSystem:@(game_info[i].name) fromList:software_list];
+                if (g_pref_filter_clones)
+                    software = [software filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"%K == ''", kGameInfoParent]];
+                [games addObjectsFromArray:software];
+            }
         }
         
         NSString* mame_version = [@((const char *)myosd_get(MYOSD_VERSION_STRING) ?: "") componentsSeparatedByString:@" ("].firstObject;
@@ -754,8 +754,8 @@ void m4i_game_stop()
     NSString* name = g_mame_game_info[kGameInfoName] ?: @"";
     if ([name isEqualToString:kGameInfoNameMameMenu])
         name = @" ";
-    strncpy(g_mame_system, [(g_mame_game_info[kGameInfoSystem] ?: @"") cStringUsingEncoding:NSUTF8StringEncoding], sizeof(g_mame_system));
-    strncpy(g_mame_game, [name cStringUsingEncoding:NSUTF8StringEncoding], sizeof(g_mame_game));
+    strncpy(g_mame_system, g_mame_game_info.gameSystem.UTF8String, sizeof(g_mame_system));
+    strncpy(g_mame_game, name.UTF8String, sizeof(g_mame_game));
     g_mame_game_error[0] = 0;
     
     // delete the UserDefaults, this way if we crash we wont try this game next boot
@@ -1139,7 +1139,7 @@ HUDViewController* g_menu;
     }
     else if (myosd_inGame && myosd_in_menu == 0)
     {
-        if (g_mame_game[0] != ' ') {
+        if (!g_mame_game_info.gameIsMame) {
             g_mame_game[0] = g_mame_system[0] = 0;
             g_mame_game_info = nil;
         }
@@ -1196,16 +1196,16 @@ HUDViewController* g_menu;
 }
 
 - (void)checkForNewRomsInit {
-    g_settings_file_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:getDocumentPath(@"") error:nil] count];
-    g_settings_roms_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:getDocumentPath(@"roms") error:nil] count];
-    g_settings_list_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:getDocumentPath(@"hash") error:nil] count];
+    g_settings_roms_count = [NSFileManager.defaultManager enumeratorAtPath:getDocumentPath(@"roms")].allObjects.count;
+    g_settings_file_count = [NSFileManager.defaultManager contentsOfDirectoryAtPath:getDocumentPath(@"") error:nil].count;
+    g_settings_list_count = [NSFileManager.defaultManager contentsOfDirectoryAtPath:getDocumentPath(@"hash") error:nil].count;
     g_settings_options_hash = [[[Options alloc] init] hash];
 }
 
 - (void)checkForNewRoms {
-    NSInteger file_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:getDocumentPath(@"") error:nil] count];
-    NSInteger roms_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:getDocumentPath(@"roms") error:nil] count];
-    NSInteger list_count = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath:getDocumentPath(@"hash") error:nil] count];
+    NSInteger roms_count = [NSFileManager.defaultManager enumeratorAtPath:getDocumentPath(@"roms")].allObjects.count;
+    NSInteger file_count = [NSFileManager.defaultManager contentsOfDirectoryAtPath:getDocumentPath(@"") error:nil].count;
+    NSInteger list_count = [NSFileManager.defaultManager contentsOfDirectoryAtPath:getDocumentPath(@"hash") error:nil].count;
     NSUInteger options_hash = [[[Options alloc] init] hash];
 
     if (file_count != g_settings_file_count)
@@ -1227,7 +1227,7 @@ HUDViewController* g_menu;
     else if (options_hash != g_settings_options_hash && myosd_inGame == 0)
         [self reload];
     else if (options_hash != g_settings_options_hash && myosd_inGame != 0)
-        ; // TODO: relaunch the current game??
+        [self restart]; // re-launch current game
 }
 
 - (void)runSettings {
@@ -1656,7 +1656,7 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
     mouseInitialLocation = CGPointMake(9111, 9111);
     mouseTouchStartLocation = mouseInitialLocation;
 
-    if (g_mame_game[0] && g_mame_game[0] != ' ')
+    if (g_mame_game_info.gameName.length != 0 && !g_mame_game_info.gameIsFake)
         [self updateUserActivity:g_mame_game_info];
 }
 
@@ -1742,7 +1742,7 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
 // called from changeUI, and changeUI is called from iphone_Reset_Views() each time a new game (or menu) is started.
 - (void)updateScreenView {
     CGFloat alpha;
-    if (myosd_inGame || g_mame_game[0])
+    if (myosd_inGame || g_mame_game_info.gameName.length != 0)
         alpha = 1.0;
     else
         alpha = 0.0;
@@ -2291,10 +2291,10 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     [imageExternalDisplay removeFromSuperview];
     imageExternalDisplay = nil;
     
-    // load the skin based on <ROMNAME>,<PARENT>,<MACHINE>,<USER PREF>
-    if (g_mame_game[0] && g_mame_game[0] != ' ' && g_mame_game_info != nil)
-        [skinManager setCurrentSkin:[NSString stringWithFormat:@"%s,%@,%@,%@", g_mame_game, (g_mame_game_info[kGameInfoParent] ?: @""), (g_mame_game_info[kGameInfoDriver] ?: @""), g_pref_skin]];
-    else if (g_mame_game[0])
+    // load the skin based on <ROMNAME>,<PARENT>,<MACHINE>,<SYSTEM>,<USER PREF>
+    if (g_mame_game_info.gameName.length != 0 && !g_mame_game_info.gameIsMame)
+        [skinManager setCurrentSkin:[NSString stringWithFormat:@"%@,%@,%@,%@,%@", g_mame_game_info.gameName, g_mame_game_info.gameParent, g_mame_game_info.gameDriver, g_mame_game_info.gameSystem, g_pref_skin]];
+    else if (g_mame_game_info.gameName.length != 0)
         [skinManager setCurrentSkin:g_pref_skin];
 
     [self buildScreenView];
@@ -2393,6 +2393,7 @@ static void push_mame_flush()
     [g_mame_buttons_lock unlock];
     g_mame_key = 0;
     g_mame_buttons_tick = 0;
+    myosd_exitGame = 0;
 }
 
 
@@ -4508,7 +4509,7 @@ BOOL is_roms_dir(NSString* dir) {
         }
         
         // if this is a merged romset, release the kraken!!, I mean extract the clones.
-        if (error == nil && [romsPath isEqualToString:toPath.stringByDeletingLastPathComponent])
+        if (error == nil && [toPath hasPrefix:romsPath])
             [g_softlist extractClones:toPath];
     }
     else
@@ -4792,7 +4793,7 @@ BOOL is_roms_dir(NSString* dir) {
 #pragma mark - RESET
 
 - (void)runReset {
-    NSLog(@"RESET: %s", g_mame_game);
+    NSLog(@"RESET: %@", g_mame_game_info.gameName);
     
     NSString* msg = @"Reset " PRODUCT_NAME;
 
@@ -5682,20 +5683,15 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
         NSLog(@"CANT RUN GAME! (%@ is active)", viewController);
         return;
     }
-    else if ([game[kGameInfoName] isEqualToString:@(g_mame_game)] && [(game[kGameInfoSystem] ?: @"") isEqualToString:@(g_mame_system)]) {
-        NSLog(@"GAME IS ALREADY RUNNING! (%@/%@)", @(g_mame_system), @(g_mame_game));
-        return;
-    }
     
     NSString* name = game[kGameInfoName];
 
-    if ([name isEqualToString:kGameInfoNameMameMenu])
-        name = @" ";
-
-    if (name != nil) {
+    if (name.length != 0) {
+        if ([name isEqualToString:kGameInfoNameMameMenu])
+            name = @" ";
         g_mame_game_info = game;
-        strncpy(g_mame_system, [(game[kGameInfoSystem] ?: @"") cStringUsingEncoding:NSUTF8StringEncoding], sizeof(g_mame_system));
-        strncpy(g_mame_game, [name cStringUsingEncoding:NSUTF8StringEncoding], sizeof(g_mame_game));
+        strncpy(g_mame_system, game.gameSystem.UTF8String, sizeof(g_mame_system));
+        strncpy(g_mame_game, name.UTF8String, sizeof(g_mame_game));
         [self updateUserActivity:game];
     }
     else {
@@ -5703,12 +5699,17 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
         g_mame_game[0] = g_mame_system[0] = 0;     // run the MENU
     }
 
+    // TODO: *note* this will not work right if the mame configure menu is active, the menu will just dismiss, not a new issue.
     change_pause(PAUSE_FALSE);
     myosd_exitGame = 1; // exit menu mode and start game or menu.
 }
 
 -(void)reload {
     [self performSelectorOnMainThread:@selector(playGame:) withObject:nil waitUntilDone:NO];
+}
+
+-(void)restart {
+    [self performSelectorOnMainThread:@selector(playGame:) withObject:g_mame_game_info waitUntilDone:NO];
 }
 
 #pragma mark choose game UI
@@ -5780,12 +5781,12 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
         }];
         return;
     }
-    if (g_mame_game[0] == ' ') {
-        NSLog(@"RUNNING MAME MENU, DONT BRING UP UI.");
+    if (g_mame_game_info.gameIsMame) {
+        NSLog(@"RUNNING MAMEUI, DONT BRING UP UI.");
         return;
     }
-    if (g_mame_game[0] != 0) {
-        NSLog(@"RUNNING %s.%s, DONT BRING UP UI.", g_mame_system, g_mame_game);
+    if (myosd_inGame) {
+        NSLog(@"RUNNING GAME, DONT BRING UP UI.");
         return;
     }
     
