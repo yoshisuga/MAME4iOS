@@ -1809,7 +1809,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
 
 // get the title for the ContextMenu
 - (NSString*)menuTitleForGame:(NSDictionary *)game {
-    return [ChooseGameController getGameText:game].string;
+    return [ChooseGameController getGameText:game layoutMode:LayoutList].string;
 }
 - (NSString*)menuTitleForItemAtIndexPath:(NSIndexPath *)indexPath {
     return [self menuTitleForGame:[self getGameInfo:indexPath]];
