@@ -4639,9 +4639,8 @@ BOOL is_roms_dir(NSString* dir) {
             continue;
         
         // TODO: 7z for artwork and samples?
-        NSArray* paths = @[@"artwork/%@.zip", @"samples/%@.zip", @"titles/%@.png", @"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@/1.sta", @"sta/%@/2.sta", @"hi/%@.hi"];
+        NSArray* paths = @[@"roms/%@.zip", @"roms/%@.7z", @"artwork/%@.zip", @"samples/%@.zip", @"titles/%@.png", @"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@/1.sta", @"sta/%@/2.sta", @"hi/%@.hi"];
 
-        [files addObject:rom];
         for (NSString* path in paths) {
             NSString* file = [NSString stringWithFormat:path, rom.stringByDeletingPathExtension];
             if ([NSFileManager.defaultManager fileExistsAtPath:[rootPath stringByAppendingPathComponent:file]])
