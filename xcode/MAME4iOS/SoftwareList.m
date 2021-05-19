@@ -105,6 +105,45 @@
     return FALSE;
 }
 
+// if this a merged romset, extract clones as empty zip files so they show up as Available
+//
+//  a merged romset will look like this:
+//      rom1
+//      rom2
+//      clone1/rom1
+//      clone1/rom2
+//      clone2/rom1
+//      clone2/rom2
+//
+- (BOOL)extractClones:(NSString*)path {
+    
+    NSLog(@"EXTRACT CLONES: %@", path);
+    
+    // get directory names of all files in this romset
+    NSSet* clones = [NSSet setWithArray:[getZipFiles(path) valueForKeyPath:@"stringByDeletingLastPathComponent.lowercaseString"]];
+    
+    if (clones.count < 2 || ![clones containsObject:@""]) {
+        NSLog(@"....NOT A MERGED ROMSET");
+        return FALSE;
+    }
+    for (NSString* clone in clones) {
+        
+        if (clone.length == 0)
+            continue;
+        
+        // create a empty zip with the name of the clone.
+        // TODO: should we create a empty 7z for 7z files??
+        NSString* clone_path = [[path.stringByDeletingLastPathComponent stringByAppendingPathComponent:clone] stringByAppendingPathExtension:@"zip" /* path.pathExtension*/];
+        
+        if (![NSFileManager.defaultManager fileExistsAtPath:clone_path]) {
+            NSLog(@"....CREATING CLONE: %@", clone);
+            NSParameterAssert([clone_path.pathExtension isEqualToString:@"zip"]);
+            [ZipFile exportTo:clone_path fromItems:@[] withOptions:ZipFileWriteFiles usingBlock:^ZipFileInfo* (id item) {return nil;}];
+        }
+    }
+    return TRUE;
+}
+
 // discard any cached data, forcing a re-load from disk. (called after moveROMs does an import)
 - (void)reload {
     @synchronized (self) {

@@ -33,6 +33,9 @@ NS_ASSUME_NONNULL_BEGIN
 // install a XML or ZIP file
 - (BOOL)installFile:(NSString*)path;
 
+// if this a merged romset, extract clones as empty zip files so they show up as Available
+- (BOOL)extractClones:(NSString*)path;
+
 // discard any cached data, forcing a re-load from disk.
 - (void)reload;
 
