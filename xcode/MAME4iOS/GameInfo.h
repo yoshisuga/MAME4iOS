@@ -68,6 +68,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) NSArray<NSURL*>* gameImageURLs;
 
 @property (nonatomic, readonly) BOOL gameIsFake;
+@property (nonatomic, readonly) BOOL gameIsMame;
 
 @end
 

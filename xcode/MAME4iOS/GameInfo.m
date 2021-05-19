@@ -62,6 +62,10 @@
 {
     return [@[kGameInfoNameMameMenu, kGameInfoNameSettings] containsObject:self[kGameInfoName]];
 }
+- (BOOL)gameIsMame
+{
+    return [self.gameName isEqualToString:kGameInfoNameMameMenu];
+}
 -(NSString*)gameTitle
 {
     return [(self[kGameInfoDescription] ?: self[kGameInfoName] ?: @"") componentsSeparatedByString:@" ("].firstObject;
