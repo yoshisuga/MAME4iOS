@@ -76,9 +76,11 @@
 }
 
 // get games for a system list can be a comma separated list of softlist names
-- (NSArray<NSDictionary*>*)getGamesForSystem:(NSString*)system fromList:(NSString*)lists {
-    NSParameterAssert(![lists containsString:@" "]);
+- (NSArray<NSDictionary*>*)getGamesForSystem:(NSDictionary*)system {
+
+    NSString* lists = system.gameSoftware;
     
+    NSParameterAssert(![lists containsString:@" "]);
     if (lists.length == 0)
         return @[];
 
@@ -88,13 +90,14 @@
         for (NSDictionary* software in [self getSoftwareList:list]) {
             [games addObject:@{
                 kGameInfoSoftwareList:list,
-                kGameInfoSystem:      system,
+                kGameInfoSystem:      system.gameName,
+                kGameInfoDriver:      system.gameDriver,
                 kGameInfoName:        STR(software[kSoftwareListName]),
                 kGameInfoParent:      STR(software[kSoftwareListParent]),
                 kGameInfoDescription: STR(software[kSoftwareListDescription]),
                 kGameInfoYear:        STR(software[kSoftwareListYear]),
                 kGameInfoManufacturer:STR(software[kSoftwareListPublisher]),
-            }];
+             }];
         }
     }
 

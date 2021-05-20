@@ -391,6 +391,10 @@ int run_mame(char* system, char* game)
     char speed[16];
     snprintf(speed, sizeof(speed), "%0.2f", (float)g_pref_speed / 100.0);
     
+    char snap[64] = {"%g/%i"};
+    if (system && system[0] != 0 && game && game[0] != 0)
+        snprintf(snap, sizeof(snap), "%s/%s/%%i", system, game);
+
     char* argv[] = {"mame4ios",
         // use -nocoinlock as a do-nothing option
         (system && system[0] != 0) ? system : "-nocoinlock",
@@ -404,6 +408,7 @@ int run_mame(char* system, char* game)
         "-flicker", g_pref_vector_flicker ? "0.4" : "0.0",
         "-beam", g_pref_vector_beam2x ? "2.5" : "1.0",
         "-pause_brightness", "1.0",  // to debug shaders
+        "-snapname", snap,
         };
     
     int argc = sizeof(argv) / sizeof(argv[0]);
@@ -606,7 +611,7 @@ void m4i_game_list(myosd_game_info* game_info, int game_count)
             }];
             
             if (software_list.length != 0) {
-                NSArray* software = [g_softlist getGamesForSystem:@(game_info[i].name) fromList:software_list];
+                NSArray* software = [g_softlist getGamesForSystem:games.lastObject];
                 if (g_pref_filter_clones)
                     software = [software filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"%K == ''", kGameInfoParent]];
                 [games addObjectsFromArray:software];
@@ -2144,20 +2149,29 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
             else
                 push_mame_key(MYOSD_KEY_P);
         }];
-#if (FALSE && TARGET_OS_IOS)    // TODO: show snapshots in the ChooseGameUI
-        [hudView addButtons:@[@":camera:Snapshot", @":video:Record"] handler:^(NSUInteger button) {
+        
+#if TARGET_OS_IOS
+        [hudView addButtons:@[@":camera:Snapshot", @":wrench:Service"] handler:^(NSUInteger button) {
             if (button == 0)
-                push_mame_key(MYOSD_KEY_SNAP;
-            else
-                push_mame_keys(MYOSD_KEY_LSHIFT, MYOSD_KEY_SNAP, 0, 0);
-        }];
-#endif
-        [hudView addButtons:@[@":power:Reset", @":wrench:Service"] handler:^(NSUInteger button) {
-            if (button == 0)
-                push_mame_key(MYOSD_KEY_RESET);
+                push_mame_key(MYOSD_KEY_SNAP);
             else
                 push_mame_key(MYOSD_KEY_SERVICE);
         }];
+        [hudView addButtons:@[@":power:Power", @":escape:Reset"] handler:^(NSUInteger button) {
+            if (button == 0)
+                push_mame_key(MYOSD_KEY_RESET);         // this does a HARD reset
+            else
+                push_mame_key(MYOSD_KEY_F3);            // this does a SOFT reset
+        }];
+#else
+        [hudView addButtons:@[@":power:Power", @":wrench:Service"] handler:^(NSUInteger button) {
+            if (button == 0)
+                push_mame_key(MYOSD_KEY_RESET);         // this does a HARD reset
+            else
+                push_mame_key(MYOSD_KEY_SERVICE);
+        }];
+#endif
+        
 #if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST)
         // KEYBOARD and PASTE
         if (myosd_has_keyboard) {

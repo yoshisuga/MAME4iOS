@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray<NSDictionary*>*)getSoftwareList:(NSString*)name;
 
 // get games for a system
-- (NSArray<NSDictionary*>*)getGamesForSystem:(NSString*)system fromList:(NSString*)list;
+- (NSArray<NSDictionary*>*)getGamesForSystem:(NSDictionary*)system;
 
 // install a XML or ZIP file
 - (BOOL)installFile:(NSString*)path;

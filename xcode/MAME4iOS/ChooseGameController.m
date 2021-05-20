@@ -448,6 +448,24 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 - (void)setGameList:(NSArray*)games
 {
+    // remove any snapshots
+    games = [games filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"%K != %@", kGameInfoType, kGameInfoTypeSnapshot]];
+    
+    // add all snapshots on disk
+    for (NSString* snap in [NSFileManager.defaultManager enumeratorAtPath:getDocumentPath(@"snap")].allObjects) {
+        
+        if (![snap.pathExtension.lowercaseString isEqualToString:@"png"] || snap.stringByDeletingLastPathComponent.length == 0)
+            continue;
+        
+        games = [games arrayByAddingObject:@{
+            kGameInfoType:kGameInfoTypeSnapshot,
+            kGameInfoFile:snap,
+            kGameInfoManufacturer:snap.lastPathComponent.stringByDeletingPathExtension,
+            kGameInfoName:snap.stringByDeletingLastPathComponent.lastPathComponent,
+            kGameInfoDescription:snap.stringByDeletingLastPathComponent.lastPathComponent,
+        }];
+    }
+
     // sort the list by description
     _gameList = [games sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:kGameInfoDescription ascending:TRUE]]];
     
@@ -1357,6 +1375,9 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
                 CGFloat aspect = is_vert ? (3.0 / 4.0) : (4.0 / 3.0);
                 [cell setImageAspect:aspect];
             }
+            
+            if (info.gameIsSnapshot)
+                cell.image.contentMode = UIViewContentModeScaleAspectFill;
  
             cell.image.image = image;
             return;
@@ -1457,6 +1478,9 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     NSDictionary* game = [self getGameInfo:indexPath];
     
     NSLog(@"DID SELECT ITEM[%d.%d] %@", (int)indexPath.section, (int)indexPath.item, game[kGameInfoName]);
+    
+    if (game.gameIsSnapshot)
+        return;
     
     // add (or move to front) of the recent game LRU list...
     [self setRecent:game isRecent:TRUE];
@@ -1744,6 +1768,33 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     [self getImage:game.gameImageURLs localURL:game.gameLocalImageURL completionHandler:^(UIImage *image) {}];
 
     NSLog(@"menuActionsForItemAtIndexPath: [%d.%d] %@ %@", (int)indexPath.section, (int)indexPath.row, game[kGameInfoName], game);
+    
+    if (game.gameIsSnapshot) {
+        return @[
+            [self actionWithTitle:@"Use as Title Image" image:[UIImage systemImageNamed:@"photo"] destructive:NO handler:^(id action) {
+                NSString* src = game.gameLocalImageURL.path;
+                NSString* dst = [NSString stringWithFormat:@"%@/%@.png", getDocumentPath(@"titles"), game.gameFile.stringByDeletingLastPathComponent];
+                [NSFileManager.defaultManager removeItemAtPath:dst error:nil];
+                [NSFileManager.defaultManager copyItemAtPath:src toPath:dst error:nil];
+                [ImageCache.sharedInstance flush];
+                [self updateImage:[NSURL fileURLWithPath:dst]];
+            }],
+#if TARGET_OS_IOS
+            [self actionWithTitle:@"Share" image:[UIImage systemImageNamed:@"square.and.arrow.up"] destructive:NO handler:^(id action) {
+                NSURL* url = game.gameLocalImageURL;
+                UIActivityViewController* activity = [[UIActivityViewController alloc] initWithActivityItems:@[url] applicationActivities:nil];
+                activity.popoverPresentationController.sourceView = self.view;
+                activity.popoverPresentationController.sourceRect = CGRectMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds), 0.0f, 0.0f);
+                activity.popoverPresentationController.permittedArrowDirections = 0;
+                [self presentViewController:activity animated:YES completion:nil];
+            }],
+#endif
+            [self actionWithTitle:@"Delete" image:[UIImage systemImageNamed:@"trash"] destructive:YES handler:^(id action) {
+                [NSFileManager.defaultManager removeItemAtPath:game.gameLocalImageURL.path error:nil];
+                [self setGameList:self->_gameList];
+            }]
+        ];
+    }
     
     BOOL is_fav = [self isFavorite:game];
     
