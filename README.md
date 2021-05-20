@@ -99,7 +99,7 @@ Even if you are not in the paid Apple Developer Program, you can sideload the ap
 ## How to build `MAME4iOS` with the latest version of `MAME`
 
 * if you want to build `MAME`
-    - clone this fork of [MAME](https://github.com/ToddLa/mame)
+    - clone [this fork](https://github.com/ToddLa/mame) of `MAME`
     - switch to the `ios-osd` branch.
     - run `./make-ios.sh` (or `./make-ios.sh tvos`) in the forked `MAME`
     - go watch [this](https://www.imdb.com/title/tt3748528/) then [this](https://en.wikipedia.org/wiki/Star_Wars_Trilogy) while you wait for `MAME` to build.
