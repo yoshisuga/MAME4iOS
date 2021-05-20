@@ -15,7 +15,7 @@
 ##
 
 if [ "$1" == "" ]; then
-    $0 ios $2
+    $0 ios
     exit
 fi
 
@@ -40,5 +40,9 @@ if [ -f "../MAME/$LIBMAME" ]; then
     exit
 fi
 
-echo "USAGE: $0 [ios | tvos | mac | all] [source]"
+## download from GitHub if no local version
+echo DOWNLOAD $LIBMAME
+curl -L  curl -L "https://github.com/ToddLa/mame/releases/download/mame0231/$LIBMAME.gz" | gunzip > $LIBMAME
+
+## echo "USAGE: $0 [ios | tvos | mac | all] [source]"
 
