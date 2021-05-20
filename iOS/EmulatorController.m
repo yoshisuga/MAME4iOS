@@ -2412,7 +2412,6 @@ static void push_mame_flush()
 }
 
 #define MYOSD_KEY_ESC_2 (MYOSD_KEY_ESC + (MYOSD_KEY_ESC<<8))
-#define MYOSD_KEY_ESC_4 (MYOSD_KEY_ESC_2 + (MYOSD_KEY_ESC_2<<16))
 
 // send buttons and keys - we do this inside of myosd_poll_input() because it is called from droid_ios_poll_input
 // ...and we are sure MAME is in a state to accept input, and not waking up from being paused or loading a ROM
@@ -2422,19 +2421,16 @@ static int handle_buttons(myosd_input_state* myosd)
 {
     // check for exitGame
     if (myosd_exitGame) {
-        NSCParameterAssert(g_mame_key == 0 ||
-                           g_mame_key == MYOSD_KEY_EXIT ||
-                           g_mame_key == MYOSD_KEY_ESC ||
-                           g_mame_key == MYOSD_KEY_ESC_2 ||
-                           g_mame_key == MYOSD_KEY_ESC_4);
+        NSCParameterAssert(g_mame_key == 0 || g_mame_key == MYOSD_KEY_EXIT ||
+                           g_mame_key == MYOSD_KEY_ESC || g_mame_key == MYOSD_KEY_ESC_2);
         // only force a hard exit on keyboard machines, else just use ESC
         // TODO: fix keyboard for realz
         if (myosd_has_keyboard && myosd_inGame && !myosd_in_menu)
             g_mame_key = MYOSD_KEY_EXIT;    // this does a schedule_exit inside MAME
-        else if (myosd_inGame)
-            g_mame_key = MYOSD_KEY_ESC;
+        else if (myosd_exitGame == 2 || g_no_roms_found)
+            g_mame_key = MYOSD_KEY_ESC_2;   // push ESC twice incase a MAME msgbox is up.
         else
-            g_mame_key = MYOSD_KEY_ESC_4;   // cram 4 ESCs down MAMEs input. (will reset in m4i_input_init)
+            g_mame_key = MYOSD_KEY_ESC;
         myosd_exitGame = 0;
     }
     
