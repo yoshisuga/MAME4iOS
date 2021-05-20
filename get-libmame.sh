@@ -42,7 +42,7 @@ fi
 
 ## download from GitHub if no local version
 echo DOWNLOAD $LIBMAME
-curl -L  curl -L "https://github.com/ToddLa/mame/releases/download/mame0231/$LIBMAME.gz" | gunzip > $LIBMAME
+curl -L "https://github.com/ToddLa/mame/releases/download/mame0231/$LIBMAME.gz" | gunzip > $LIBMAME
 
 ## echo "USAGE: $0 [ios | tvos | mac | all] [source]"
 
