@@ -487,6 +487,7 @@ void* app_Thread_Start(void* args)
                 strncpy(g_mame_game_error, mame_game, sizeof(g_mame_game_error));
             else
                 snprintf(g_mame_game_error, sizeof(g_mame_game_error), "%s/%s", mame_system, mame_game);
+            g_mame_game[0] = g_mame_system[0] = 0;
         }
     }
     NSLog(@"thread exit");
@@ -1029,7 +1030,7 @@ HUDViewController* g_menu;
         // RESET and SERVICE
         [menu addButtons:@[@":power:Reset", @":wrench:Service"] style:HUDButtonStyleDefault handler:^(NSUInteger button) {
             if (button == 0)
-                push_mame_key(MYOSD_KEY_RESET);
+                push_mame_key(MYOSD_KEY_F3);    // SOFT reset
             else
                 push_mame_key(MYOSD_KEY_SERVICE);
         }];
@@ -2166,7 +2167,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 #else
         [hudView addButtons:@[@":power:Power", @":wrench:Service"] handler:^(NSUInteger button) {
             if (button == 0)
-                push_mame_key(MYOSD_KEY_RESET);         // this does a HARD reset
+                push_mame_key(MYOSD_KEY_F3);            // this does a SOFT reset
             else
                 push_mame_key(MYOSD_KEY_SERVICE);
         }];
@@ -2420,10 +2421,11 @@ static int handle_buttons(myosd_input_state* myosd)
     // check for exitGame
     if (myosd_exitGame) {
         NSCParameterAssert(g_mame_key == 0 || g_mame_key == MYOSD_KEY_ESC || g_mame_key == MYOSD_KEY_EXIT);
-        if (myosd_in_menu)
-            g_mame_key = MYOSD_KEY_ESC;
-        else
+        // only force a hard exit on keyboard machines, else just use ESC
+        if (myosd_has_keyboard && myosd_inGame && !myosd_in_menu)
             g_mame_key = MYOSD_KEY_EXIT;
+        else
+            g_mame_key = MYOSD_KEY_ESC;
         myosd_exitGame = 0;
     }
     
@@ -3439,7 +3441,7 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
     push_mame_key(MYOSD_KEY_P);
 }
 -(void)mameReset {
-    push_mame_key(MYOSD_KEY_RESET);
+    push_mame_key(MYOSD_KEY_F3);    // SOFT reset
 }
 -(void)mameFullscreen {
     [self commandKey:'\r'];
