@@ -10,7 +10,7 @@
 #import "ZipFile.h"
 #import "GameInfo.h"
 
-#define DebugLog 1
+#define DebugLog 0
 #if DebugLog == 0 || !defined(DEBUG)
 #define NSLog(...) (void)0
 #endif
@@ -341,7 +341,7 @@ static NSArray<NSString*>* getZipFiles(NSString* path) {
         return FALSE;
     }]];
 
-#if DebugLog != 0
+#if defined(DEBUG) && DebugLog != 0
     if (list.count != 0) {
         NSLog(@"LOADING SOFTWARE LIST: %@ \"%@\"", [dict valueForKeyPath:@"softwarelist.name"], [dict valueForKeyPath:@"softwarelist.description"]);
         for (NSDictionary* software in list)
