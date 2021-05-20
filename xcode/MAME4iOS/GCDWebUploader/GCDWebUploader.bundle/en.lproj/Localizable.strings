@@ -1,3 +1,3 @@
-"PROLOGUE" = "<p>Drag &amp; drop files on this window or use the \"Upload Files&hellip;\" button to upload new files.</p>";
+"PROLOGUE" = "<p>Drag &amp; drop files on this window or use the \"Upload Files&hellip;\" button to upload new files.</p><p><b>NOTE</b> files copied directly into <code>roms</code> will not be *smart* imported.</b></p>";
 "EPILOGUE" = "";
 "FOOTER_FORMAT" = "%@ %@";

@@ -96,19 +96,19 @@ Even if you are not in the paid Apple Developer Program, you can sideload the ap
         2. Select the project name on the left pane and make sure your personal team is selected
         3. Hit the `▶︎` Run button to install on your device. _Done._
         
-## How to build with latest `MAME`
+## How to build `MAME4iOS` with the latest version of `MAME`
 
-* if you want to build MAME
+* if you want to build `MAME`
     - clone this fork of [MAME](https://github.com/ToddLa/mame)
     - switch to the `ios-osd` branch.
     - run `./make-ios.sh` (or `./make-ios.sh tvos`) in the forked `MAME`
-    - go watch [this](https://www.imdb.com/title/tt0056172/) or maybe [this](https://en.wikipedia.org/wiki/The_Godfather_(film_series)) while you wait for `MAME` to build.
+    - go watch [this](https://www.imdb.com/title/tt3748528/) then [this](https://en.wikipedia.org/wiki/Star_Wars_Trilogy) while you wait for `MAME` to build.
     - now switch directories to your `MAME4iOS` project
-    - instead of running  `./make-ios.sh` run  `./get-libmame.sh <path to your MAME clone>`
+    - instead of running  `./make-ios.sh` run  `./get-libmame.sh ios <path to your MAME clone>`
     - build and run in Xcode.
     
 * if you want to use the latest pre-build `libmame`
-    - instead of running  `./make-ios.sh` run  `./get-libmame.sh`
+    - instead of running  `./make-ios.sh` run  `./get-libmame.sh` or  `./get-libmame.sh tvos`
     - build and run in Xcode.
 
 ## Issues running current `MAME`
