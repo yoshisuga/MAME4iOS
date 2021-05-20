@@ -732,7 +732,7 @@ void m4i_game_stop()
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 + (NSDictionary*)getCurrentGame {
-    return [[NSUserDefaults standardUserDefaults] objectForKey:kSelectedGameInfoKey];
+    return [[NSUserDefaults standardUserDefaults] objectForKey:kSelectedGameInfoKey] ?: @{};
 }
 
 + (EmulatorController*)sharedInstance {
