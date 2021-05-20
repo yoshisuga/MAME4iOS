@@ -75,14 +75,16 @@
 #if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST)
 #define CELL_TITLE_FONT         [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
 #define CELL_TITLE_COLOR        [UIColor whiteColor]
+#define CELL_CLONE_COLOR        [UIColor colorWithWhite:0.555 alpha:1.0]
 #define CELL_DETAIL_FONT        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote]
-#define CELL_DETAIL_COLOR       [UIColor lightGrayColor]
+#define CELL_DETAIL_COLOR       [UIColor colorWithWhite:0.333 alpha:1.0]
 #define CELL_MAX_LINES          3
 #else   // tvOS and mac
 #define CELL_TITLE_FONT         [UIFont boldSystemFontOfSize:20.0]
 #define CELL_TITLE_COLOR        [UIColor whiteColor]
+#define CELL_CLONE_COLOR        [UIColor colorWithWhite:0.555 alpha:1.0]
 #define CELL_DETAIL_FONT        [UIFont systemFontOfSize:20.0]
-#define CELL_DETAIL_COLOR       [UIColor lightGrayColor]
+#define CELL_DETAIL_COLOR       [UIColor colorWithWhite:0.333 alpha:1.0]
 #define CELL_MAX_LINES          3
 #endif
 
@@ -1103,7 +1105,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 //  romname     short Description           Description                 Description
 //              short Manufacturer • Year   short Manufacturer • Year   Manufacturer • Year  • romname [parent-rom]
 //
-+(NSAttributedString*)getGameText:(NSDictionary*)info layoutMode:(LayoutMode)layoutMode textAlignment:(NSTextAlignment)textAlignment badge:(NSString*)badge
++(NSAttributedString*)getGameText:(NSDictionary*)info layoutMode:(LayoutMode)layoutMode textAlignment:(NSTextAlignment)textAlignment badge:(NSString*)badge clone:(BOOL)clone
 {
     NSString* title;
     NSString* detail;
@@ -1151,7 +1153,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
     NSMutableAttributedString* text = [[NSMutableAttributedString alloc] initWithString:title attributes:@{
         NSFontAttributeName:CELL_TITLE_FONT,
-        NSForegroundColorAttributeName:CELL_TITLE_COLOR
+        NSForegroundColorAttributeName:clone ? CELL_CLONE_COLOR : CELL_TITLE_COLOR
     }];
 
     if (detail != nil)
@@ -1198,7 +1200,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 +(NSAttributedString*)getGameText:(NSDictionary*)game layoutMode:(LayoutMode)layoutMode
 {
-    return [self getGameText:game layoutMode:layoutMode textAlignment:NSTextAlignmentCenter badge:nil];
+    return [self getGameText:game layoutMode:layoutMode textAlignment:NSTextAlignmentCenter badge:nil clone:NO];
 }
 
 +(NSAttributedString*)getGameText:(NSDictionary*)game
@@ -1210,7 +1212,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 {
     return [[self class] getGameText:game layoutMode:_layoutMode
                        textAlignment:_layoutMode == LayoutList ? NSTextAlignmentLeft : CELL_TEXT_ALIGN
-                               badge:[self isFavorite:game] ? @"star.fill" : @""];
+                               badge:[self isFavorite:game] ? @"star.fill" : @""
+                               clone:game.gameParent.length != 0];
 }
 
 // compute the size(s) of a single item. returns: (x = image_height, y = text_height)
