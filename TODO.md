@@ -1,23 +1,30 @@
 # MAME 2xx TODO
 
 * Font is getting scaled badly, show info on startup is unreadable. 
+    - fixed we always run at hi-res now.
 * Font scaled textures not cached, getting re-loaded every frame when Config or Main Menu is active. A seqid problem similar to one I fixed in 139. 
 * Command line options for -cheat, -bench, -beam width need fixed. 
+    - fixed
 * Need to update at least help, and maybe UI to call out options that can’t be changed without restarting game. 
+    - fixed any Settings change causes a restart
 * How does the cheat system work on 2xx, do we need a new cheat.zip? Does the old one being around break anything?? Can we have a cheat.7z co-exist with cheat.zip
 * How does new hiscore system work, will old dat file conflict
-* MAME 2xx will run/restore the last game, this is **bad** and needs turned off in the OSD. M4i manages restoring last game. 
 * Figure out correct solution to delayed game_list
     - maybe dont pause the MAME thread when ChooseUI is active, just dont send any input to MAME.
+    - fixed, we dont hard pause MAME when the UI is up.
 * OSD needs to get the “input profile” for the current game (ie num-players, etc)
+    - done.
 * Clean up the OSD module stuff
+    - done module stuff is all gone.
 * Find out is FORCE_DRC_C_BACKEND or NOASM needed. 
     * -[no]drc
     * -drc_use_c
 * Test mouse and lightgun input. 
 * Handle sending command keys to MAME when in a game that uses the keyboard. 
-    *  Big problem for ESC, we can’t even exit (maybe have a special MYOSD exit command, or special key)
+    -  Big problem for ESC, we can’t even exit (maybe have a special MYOSD exit command, or special key)
+    - fixed we do a schedule-exit so MAME will exit, even in a keyboard machine.
 * Support switching keyboard modes, support UIMODEKEY 
+    - uimodekey is mapped to backslash in DEBUG (for now)
 * Support an on-screen keyboard for games that use keyboard, figure out simple UI for it.
     * Menu or HUD command to hide/show keyboard?
     * See if alpha can be applied to system keyboard?
@@ -31,6 +38,7 @@
     * -str <n> -video none -sound none -nothrottle
 * Support -autosave (139 and 2xx)
 * Show Snaps and Videos in the UI and let user delete them (or make a snap the title image)
+    - done.
 * Figure out right value to use for osd-numprocessors
 * Investigate pre-scale.
 * Watchdog timer?
@@ -39,5 +47,5 @@
 * -bios <name>
 * LUA console and HTTP server, disable?
 * Support LCD screen type.
-* 
+    - LCD is detected, but no special shader yet.
 

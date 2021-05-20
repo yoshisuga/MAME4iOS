@@ -97,21 +97,24 @@ Even if you are not in the paid Apple Developer Program, you can sideload the ap
         3. Hit the `▶︎` Run button to install on your device. _Done._
         
 ## How to build with latest `MAME`
-* clone this fork of [MAME](https://github.com/ToddLa/mame)
-* switch to the `ios-osd` branch.
-* run `./make-ios.sh` (or `./make-ios.sh tvos`) in the forked `MAME`
-* go watch [this](https://www.imdb.com/title/tt0056172/) or maybe [this](https://en.wikipedia.org/wiki/The_Godfather_(film_series)) while you wait for `MAME` to build.
-* now switch directories to your `MAME4iOS` project
-* instead of running  `./make-ios.sh` run  `./get-libmame.sh`
-    - if your projects are not *side by side* or you did not name the fork `MAME`, then pass the path to the `MAME` fork to the script.
-    - for example if you cloned into `~/MyCode/ToddMAME` then run `./get-libmame.sh ~/MyCode/ToddMAME`
-* now you can build and run in Xcode.
+
+* if you want to build MAME
+    - clone this fork of [MAME](https://github.com/ToddLa/mame)
+    - switch to the `ios-osd` branch.
+    - run `./make-ios.sh` (or `./make-ios.sh tvos`) in the forked `MAME`
+    - go watch [this](https://www.imdb.com/title/tt0056172/) or maybe [this](https://en.wikipedia.org/wiki/The_Godfather_(film_series)) while you wait for `MAME` to build.
+    - now switch directories to your `MAME4iOS` project
+    - instead of running  `./make-ios.sh` run  `./get-libmame.sh <path to your MAME clone>`
+    - build and run in Xcode.
+    
+* if you want to use the latest pre-build `libmame`
+    - instead of running  `./make-ios.sh` run  `./get-libmame.sh`
+    - build and run in Xcode.
 
 ## Issues running current `MAME`
 * most `MAME` 139 ROMs dont work on 229, but that is just normal life in `MAME` world, see [this](#mixing-139-and-2xx-roms).
 * tracking down a sound issue and other random stuff.
-* some things (like being smart about number of players, etc) does not work (yet)
-* if you run a `Computer` machine you will be stuck and cant exit cuz we dont handle ui_mode and keyboards right (yet)
+* if you run a `Computer` machine, you need a USB keyboard, and backslash is ui_mode_key.
 * the `hiscore` and `cheat` system has not been updated.
 
 ## **Software Lists**
@@ -123,8 +126,10 @@ they are not compiled in code but use as valuable source of information in order
 
 * first import a *software list xml* file, you can find these files [here](https://github.com/mamedev/mame/tree/master/hash)
     - you can also copy software list xml files *by hand* to the `hash` directory.
-* you might be tempted to just import *all* software list files, dont do that, it will waste diskspace on your device, and cause `MAME4iOS` to do extra work.
-* after you have imported the software list xml files, you can import `ZIP` files containing software.  The name of the `ZIP` file *or* the subdirectory path in the `ZIP` file needs to match the name of a software list.
+* you might be tempted to just import *all* software list files, **dont** do that, it will waste diskspace on your device, and cause `MAME4iOS` to do extra work.
+* after you have imported the software list xml files, you can import `ZIP` files containing software. 
+
+If the name of the `ZIP` file *or* the subdirectory path in the `ZIP` matches the name of a software list, it will be imported directly, otherwise all software lists will be searched for a match.
 
 example zip file(s)
 ```
