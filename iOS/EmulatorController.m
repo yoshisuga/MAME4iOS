@@ -2427,8 +2427,8 @@ static int handle_buttons(myosd_input_state* myosd)
         // TODO: fix keyboard for realz
         if (myosd_has_keyboard && myosd_inGame && !myosd_in_menu)
             g_mame_key = MYOSD_KEY_EXIT;    // this does a schedule_exit inside MAME
-        else if (myosd_exitGame == 2 || g_no_roms_found)
-            g_mame_key = MYOSD_KEY_ESC_2;   // push ESC twice incase a MAME msgbox is up.
+        else if (g_no_roms_found && myosd_get(MYOSD_VERSION) > 139)     // HACK!
+            g_mame_key = MYOSD_KEY_ESC_2;   // push ESC twice to dismiss msgbox.
         else
             g_mame_key = MYOSD_KEY_ESC;
         myosd_exitGame = 0;
@@ -4713,7 +4713,7 @@ BOOL is_roms_dir(NSString* dir) {
             [application.delegate application:application openURL:url options:@{UIApplicationOpenURLOptionsOpenInPlaceKey:@(NO)}];
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(moveROMS) object:nil];
         }
-        [self performSelectorOnMainThread:@selector(moveROMS) withObject:nil waitUntilDone:NO];
+        [self reload];
     }
     else {
         NSParameterAssert(urls.count == 1);
@@ -5621,7 +5621,7 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
         [[WebServer sharedInstance] webUploader].delegate = nil;
         [[WebServer sharedInstance] stopUploader];
         if (!myosd_inGame)
-            myosd_exitGame = 1;     /* exit mame menu and re-scan ROMs*/
+            [self reload];  /* exit mame menu and re-scan ROMs*/
     }]];
     alert.preferredAction = alert.actions.lastObject;
     g_web_server_alert = TRUE;
@@ -5780,8 +5780,9 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
             }]];
         }
         [alert addAction:[UIAlertAction actionWithTitle:@"Reload ROMs" style:UIAlertActionStyleCancel image:[UIImage systemImageNamed:@"arrow.2.circlepath.circle" withPointSize:size] handler:^(UIAlertAction * _Nonnull action) {
-            myosd_exitGame = 1;     /* exit mame menu and re-scan ROMs*/
+            [self reload];  /* exit mame menu and re-scan ROMs*/
         }]];
+        change_pause(PAUSE_INPUT);
         [self.topViewController presentViewController:alert animated:YES completion:nil];
         return;
     }
