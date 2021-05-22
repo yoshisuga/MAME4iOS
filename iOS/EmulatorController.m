@@ -2421,7 +2421,7 @@ static int handle_buttons(myosd_input_state* myosd)
         if (myosd_has_keyboard && myosd_inGame && !myosd_in_menu)
             g_mame_key = MYOSD_KEY_EXIT;    // this does a schedule_exit inside MAME
         else if (g_no_roms_found && myosd_get(MYOSD_VERSION) > 139)     // HACK!
-            g_mame_key = MYOSD_KEY_ESC_2;   // push ESC twice to dismiss msgbox.
+            g_mame_key = MYOSD_KEY_EXIT;    // force an exit to dismiss msgbox.
         else
             g_mame_key = MYOSD_KEY_ESC;
         myosd_exitGame = 0;
