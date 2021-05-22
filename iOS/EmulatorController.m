@@ -97,17 +97,17 @@ TIMER_INIT_END
 -(GCControllerButtonInput*)buttonHome;
 @end
 #endif
-@interface GCExtendedGamepad (SafeButtons)
+@interface NSObject (SafeButtons)
 @property (readonly) GCControllerButtonInput* buttonHomeSafe;
 @property (readonly) GCControllerButtonInput* buttonMenuSafe;
 @property (readonly) GCControllerButtonInput* buttonOptionsSafe;
 @end
-@implementation GCExtendedGamepad (SafeButtons)
+@implementation NSObject (SafeButtons)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpartial-availability"
--(GCControllerButtonInput*)buttonHomeSafe    {return [self respondsToSelector:@selector(buttonHome)]    ? [self buttonHome]    : nil;}
--(GCControllerButtonInput*)buttonMenuSafe    {return [self respondsToSelector:@selector(buttonMenu)]    ? [self buttonMenu]    : nil;}
--(GCControllerButtonInput*)buttonOptionsSafe {return [self respondsToSelector:@selector(buttonOptions)] ? [self buttonOptions] : nil;}
+-(GCControllerButtonInput*)buttonHomeSafe    {return [self respondsToSelector:@selector(buttonHome)]    ? [(GCExtendedGamepad*)self buttonHome]    : nil;}
+-(GCControllerButtonInput*)buttonMenuSafe    {return [self respondsToSelector:@selector(buttonMenu)]    ? [(GCExtendedGamepad*)self buttonMenu]    : nil;}
+-(GCControllerButtonInput*)buttonOptionsSafe {return [self respondsToSelector:@selector(buttonOptions)] ? [(GCExtendedGamepad*)self buttonOptions] : nil;}
 #pragma clang diagnostic pop
 #define buttonHome buttonHomeSafe
 #define buttonMenu buttonMenuSafe
@@ -1751,7 +1751,11 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
     if (myosd_inGame || g_mame_game_info.gameName.length != 0)
         alpha = 1.0;
     else
-        alpha = DebugLog ? 0.5 : 0.0;
+        alpha = 0.0;
+    
+#if DebugLog && defined(DEBUG)
+    alpha = 1.0;    // always show MAME when debugging
+#endif
     
 #if TARGET_OS_IOS
     if (change_layout) {
@@ -2150,8 +2154,6 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
             else
                 push_mame_key(MYOSD_KEY_P);
         }];
-        
-#if TARGET_OS_IOS
         [hudView addButtons:@[@":camera:Snapshot", @":wrench:Service"] handler:^(NSUInteger button) {
             if (button == 0)
                 push_mame_key(MYOSD_KEY_SNAP);
@@ -2164,15 +2166,6 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
             else
                 push_mame_key(MYOSD_KEY_F3);            // this does a SOFT reset
         }];
-#else
-        [hudView addButtons:@[@":power:Power", @":wrench:Service"] handler:^(NSUInteger button) {
-            if (button == 0)
-                push_mame_key(MYOSD_KEY_F3);            // this does a SOFT reset
-            else
-                push_mame_key(MYOSD_KEY_SERVICE);
-        }];
-#endif
-        
 #if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST)
         // KEYBOARD and PASTE
         if (myosd_has_keyboard) {
@@ -5005,8 +4998,8 @@ static unsigned long g_device_has_input[NUM_DEV];   // TRUE if device needs to b
     if (controller.extendedGamepad == nil) {
         controller.microGamepad.valueChangedHandler = ^(GCMicroGamepad* gamepad, GCControllerElement* element) {
             int index = (int)[g_controllers indexOfObjectIdenticalTo:gamepad.controller];
-            NSParameterAssert(index >= 0 && index < NUM_DEV);
-            g_device_has_input[index] = 1;
+            if (index >= 0 && index < NUM_DEV)
+                g_device_has_input[index] = 1;
         };
         return;
     }
@@ -5024,7 +5017,6 @@ static unsigned long g_device_has_input[NUM_DEV];   // TRUE if device needs to b
         GCController* controller = gamepad.controller;
         int index = (int)[g_controllers indexOfObjectIdenticalTo:controller];
 
-        NSParameterAssert(index >= 0 && index < NUM_DEV);
         if (!(index >= 0 && index < NUM_DEV))
             return;
 
@@ -5055,7 +5047,7 @@ static unsigned long g_device_has_input[NUM_DEV];   // TRUE if device needs to b
     GCExtendedGamepad* gamepad = controller.extendedGamepad;
     
     GCControllerButtonInput *buttonHome = gamepad.buttonHome;
-    GCControllerButtonInput *buttonMenu = gamepad.buttonMenu;
+    GCControllerButtonInput *buttonMenu = gamepad.buttonMenu ?: controller.microGamepad.buttonMenu;
     GCControllerButtonInput *buttonOptions = gamepad.buttonOptions;
     
 #ifdef __IPHONE_14_0
@@ -5088,11 +5080,12 @@ static unsigned long g_device_has_input[NUM_DEV];   // TRUE if device needs to b
     // < iOS 13 (MFi only) we only have a PAUSE handler, and we only get a single event on button up
     //      PAUSE => MAME4iOS MENU
     //
-    // on tvOS a single MENU button (MFi) is *broken* it is better to use the PAUSE handler.
-    //
 #if TARGET_OS_TV
-    if (buttonMenu != nil && buttonOptions == nil)
-        buttonMenu = nil;   // force using PAUSE handler on tvOS
+    // on tvOS pre14 a single MENU button controller (MFi) it is better to use the PAUSE handler.
+    if (@available(tvOS 14.0, *)) {} else {
+        if (gamepad != nil && buttonMenu != nil && buttonOptions == nil)
+            buttonMenu = nil;   // force using PAUSE handler on tvOS
+    }
 #endif
     __weak GCController* _controller = controller;  // dont capture controller strongly in handlers
     if (buttonMenu != nil) {
@@ -5141,7 +5134,6 @@ static unsigned long g_device_has_input[NUM_DEV];   // TRUE if device needs to b
     int index = (int)[g_controllers indexOfObjectIdenticalTo:controller];
     int player = (int)controller.playerIndex;
 
-    NSParameterAssert(index >= 0 && index < NUM_DEV && player >= 0 && player < NUM_JOY);
     if (index < 0 || index >= NUM_DEV || player < 0 || player >= NUM_JOY)
         return;
     
@@ -5193,7 +5185,6 @@ static unsigned long g_device_has_input[NUM_DEV];   // TRUE if device needs to b
     NSLog(@"showMenu (after delay): %@", controller);
     int index = (int)[g_controllers indexOfObjectIdenticalTo:controller];
     // treat showing the menu after a delay the same as hiting a combo button
-    NSParameterAssert(index >= 0 && index < NUM_DEV);
     if (index >= 0 && index < NUM_DEV)
         g_menuButtonPressed[index] |= MYOSD_MENU;
     [self runMenu:controller];
@@ -5233,7 +5224,6 @@ static unsigned long g_device_has_input[NUM_DEV];   // TRUE if device needs to b
     int index = (int)[g_controllers indexOfObjectIdenticalTo:controller];
     int player = (int)controller.playerIndex;
 
-    NSParameterAssert(index >= 0 && index < NUM_DEV && player >= 0 && player < NUM_JOY);
     if (index < 0 || index >= NUM_DEV || player < 0 || player >= NUM_JOY)
         return;
     
