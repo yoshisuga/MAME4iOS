@@ -65,7 +65,7 @@
 #define CELL_SHADOW_COLOR       UIColor.clearColor
 #define CELL_BACKGROUND_COLOR   UIColor.clearColor
 
-#define CELL_SELECTED_SHADOW_COLOR       self.tintColor
+#define CELL_SELECTED_COLOR      self.tintColor
 #define CELL_SELECTED_BACKGROUND_COLOR   UIColor.clearColor
 
 #define CELL_CORNER_RADIUS      16.0
@@ -1062,6 +1062,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
             [self.collectionView reloadSections:[NSIndexSet indexSetWithIndex:section]];
         } completion:^(BOOL finished){
             [self kickLayout];
+            [self performSelector:@selector(reloadData) withObject:nil afterDelay:0.250];
         }];
     }
 }
@@ -1619,7 +1620,6 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
 -(void)info:(NSDictionary*)_game
 {
     NSMutableDictionary* game = [_game mutableCopy];
-    NSString* name = game[kGameInfoName];
 
     NSDictionary* atributes = @{
         UIFontTextStyleHeadline: @{
@@ -1633,8 +1633,10 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     };
 
     // add in our history/mameinfo to game dict.
-    game[kGameInfoHistory] = [_history attributedStringForKey:name attributes:atributes];
-    game[kGameInfoMameInfo] = [_mameinfo attributedStringForKey:name attributes:atributes];
+    game[kGameInfoHistory] = [_history attributedStringForKey:game.gameName attributes:atributes] ?:
+                             [_history attributedStringForKey:game.gameParent attributes:atributes];
+    game[kGameInfoMameInfo] = [_mameinfo attributedStringForKey:game.gameName attributes:atributes] ?:
+                              [_mameinfo attributedStringForKey:game.gameParent attributes:atributes];
 
     GameInfoController* gameInfoController = [[GameInfoController alloc] initWithGame:game];
     gameInfoController.title = @"Info";
@@ -1824,7 +1826,8 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
         ]];
     }
     
-    if ([_history boolForKey:name] || [_mameinfo boolForKey:name]) {
+    if ([_history boolForKey:game.gameName]   || [_mameinfo boolForKey:game.gameName] ||
+        [_history boolForKey:game.gameParent] || [_mameinfo boolForKey:game.gameParent]) {
         actions = [actions arrayByAddingObjectsFromArray:@[
             [self actionWithTitle:@"Info" image:[UIImage systemImageNamed:@"info.circle"] destructive:NO handler:^(id action) {
                 [self info:game];
@@ -2440,23 +2443,19 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     BOOL selected = self.selected || self.focused;
     if (_image.image == nil) {
 #if TARGET_OS_TV
-        UIColor* color = selected ? HEADER_SELECTED_COLOR : HEADER_BACKGROUND_COLOR;
- 
-        if (@available(tvOS 14.0, *))
-        {
-            _stackText.backgroundColor = color;
-            _stackText.layer.cornerRadius = selected ? 16.0 : 0.0;
-        }
-        else
-        {
-            self.contentView.backgroundColor = color;
-            self.contentView.layer.cornerRadius = selected ? 16.0 : 0.0;
-        }
+        // GameInfoController will change this class
+        if ([_text isKindOfClass:[UILabel class]])
+            self.contentView.backgroundColor = selected ? HEADER_SELECTED_COLOR : HEADER_BACKGROUND_COLOR;
 #endif
         return;
     }
     [self setBackgroundColor:selected ? CELL_SELECTED_BACKGROUND_COLOR : CELL_BACKGROUND_COLOR];
-    [self setShadowColor:selected ? CELL_SELECTED_SHADOW_COLOR : CELL_SHADOW_COLOR];
+#if TARGET_OS_TV
+    [_image.layer setBorderWidth:4.0];
+    [_image.layer setBorderColor:(selected ? CELL_SELECTED_COLOR : UIColor.clearColor).CGColor];
+#else
+    [self setShadowColor:selected ? CELL_SELECTED_COLOR : CELL_SHADOW_COLOR];
+#endif
     CGFloat scale = selected ? _scale : self.highlighted ? (2.0 - _scale) : 1.0;
     _stackView.transform = CGAffineTransformMakeScale(scale, scale);
 #if TARGET_OS_TV
@@ -2635,7 +2634,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     rect.size.height -= self.collectionView.safeAreaInsets.top;
     rect.size.width  -= self.collectionView.safeAreaInsets.left + self.collectionView.safeAreaInsets.right;
     
-    UIImage* image = [[ImageCache sharedInstance] getImage:_game.gameImageURL size:CGSizeZero];
+    UIImage* image = [[ImageCache sharedInstance] getImage:_game.gameImageURLs.firstObject size:CGSizeZero];
     CGFloat aspect = [_game.gameScreen containsString:kGameInfoScreenVertical] ? 3.0/4.0 : 4.0/3.0;
 
     CGSize image_size = CGSizeMake(INFO_IMAGE_WIDTH, INFO_IMAGE_WIDTH / aspect);
