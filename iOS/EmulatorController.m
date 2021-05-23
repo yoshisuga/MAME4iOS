@@ -290,10 +290,12 @@ static char g_mame_output_text[4096];
 static BOOL g_mame_warning_shown = FALSE;
 static BOOL g_no_roms_found = FALSE;
 
+#define OPTIONS_RELOAD_KEYS     @[@"filterClones", @"filterNotWorking", @"filterBIOS"]
+#define OPTIONS_RESTART_KEYS    @[@"cheats", @"autosave", @"emuspeed", @"hiscore", @"vbean2x", @"vflicker"]
 static NSInteger g_settings_roms_count;
 static NSInteger g_settings_file_count;
-static NSInteger g_settings_list_count;
-static NSUInteger g_settings_options_hash;
+static NSInteger g_settings_hash_count;
+static Options*  g_settings_options;
 
 static BOOL g_bluetooth_enabled;
 
@@ -1204,36 +1206,36 @@ HUDViewController* g_menu;
 - (void)checkForNewRomsInit {
     g_settings_roms_count = [NSFileManager.defaultManager enumeratorAtPath:getDocumentPath(@"roms")].allObjects.count;
     g_settings_file_count = [NSFileManager.defaultManager contentsOfDirectoryAtPath:getDocumentPath(@"") error:nil].count;
-    g_settings_list_count = [NSFileManager.defaultManager contentsOfDirectoryAtPath:getDocumentPath(@"hash") error:nil].count;
-    g_settings_options_hash = [[[Options alloc] init] hash];
+    g_settings_hash_count = [NSFileManager.defaultManager contentsOfDirectoryAtPath:getDocumentPath(@"hash") error:nil].count;
+    g_settings_options = [[Options alloc] init];
 }
 
 - (void)checkForNewRoms {
     NSInteger roms_count = [NSFileManager.defaultManager enumeratorAtPath:getDocumentPath(@"roms")].allObjects.count;
     NSInteger file_count = [NSFileManager.defaultManager contentsOfDirectoryAtPath:getDocumentPath(@"") error:nil].count;
-    NSInteger list_count = [NSFileManager.defaultManager contentsOfDirectoryAtPath:getDocumentPath(@"hash") error:nil].count;
-    NSUInteger options_hash = [[[Options alloc] init] hash];
+    NSInteger hash_count = [NSFileManager.defaultManager contentsOfDirectoryAtPath:getDocumentPath(@"hash") error:nil].count;
+    Options* options = [[Options alloc] init];
 
     if (file_count != g_settings_file_count)
         NSLog(@"FILES added to root %ld => %ld", g_settings_file_count, file_count);
     if (roms_count != g_settings_roms_count)
         NSLog(@"FILES added to roms %ld => %ld", g_settings_roms_count, roms_count);
-    if (list_count != g_settings_list_count)
+    if (hash_count != g_settings_hash_count)
         NSLog(@"FILES added to hash %ld => %ld", g_settings_list_count, list_count);
-    if (options_hash != g_settings_options_hash)
-        NSLog(@"OPTIONS HAVE CHANGED %lX != %lX", options_hash, g_settings_options_hash);
 
-    if (g_settings_list_count != list_count)
+    if (g_settings_hash_count != hash_count)
         [g_softlist reload];
 
     if (g_settings_file_count != file_count)
         [self performSelector:@selector(moveROMS) withObject:nil afterDelay:0.0];
-    else if ((g_settings_roms_count != roms_count) || (g_settings_list_count != list_count) || (g_mame_reset && myosd_inGame == 0))
+    else if ((g_settings_roms_count != roms_count) || (g_settings_hash_count != hash_count) || (g_mame_reset && myosd_inGame == 0))
         [self reload];
-    else if (options_hash != g_settings_options_hash && myosd_inGame == 0)
+    else if (myosd_inGame == 0 && ![g_settings_options isEqualToOptions:options withKeys:OPTIONS_RELOAD_KEYS])
         [self reload];
-    else if (options_hash != g_settings_options_hash && myosd_inGame != 0)
+    else if (myosd_inGame != 0 && ![g_settings_options isEqualToOptions:options withKeys:OPTIONS_RESTART_KEYS])
         [self restart]; // re-launch current game
+    
+    g_settings_options = nil;
 }
 
 - (void)runSettings {

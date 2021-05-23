@@ -18,8 +18,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)resetOptions;
 + (void)setOption:(id)value forKey:(NSString*)key;
 
-@property (readonly) NSUInteger hash;
-- (BOOL)isEqual:(id)object;
+// compare two Options, but only the specified keys
+- (BOOL)isEqualToOptions:(Options*)other withKeys:(NSArray<NSString*>*)keys;
 
 @property (class, readonly, strong) NSString* optionsFile;
 

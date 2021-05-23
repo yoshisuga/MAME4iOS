@@ -327,24 +327,19 @@
     [data writeToFile:Options.optionsPath atomically:NO];
 }
 
-// hash and isEqual
--(NSUInteger)hash {
-    // we need to do our own hash, cuz Dictionary hash is just the count!
-    NSDictionary* optionsDict = [self getDictionary];
-    NSUInteger prime = 137;
-    NSUInteger result = [optionsDict hash];
-    for (NSObject *key in [[optionsDict allKeys] sortedArrayUsingSelector:@selector(compare:)]) {
-        result = prime * result + [key hash];
-        result = prime * result + [optionsDict[key] hash];
+// compare two Options, but only the specified keys
+- (BOOL)isEqualToOptions:(Options*)other withKeys:(NSArray<NSString*>*)keys {
+
+    NSDictionary* lhs = [self getDictionary];
+    NSDictionary* rhs = [other getDictionary];
+
+    for (NSString* key in keys) {
+        id a = lhs[key];
+        id b = rhs[key];
+        if (!(a == b || [a isEqual:b]))
+            return FALSE;
     }
-    return result;
-}
-- (BOOL)isEqual:(id)object {
-    
-    if (![object isKindOfClass:[self class]])
-        return FALSE;
-    
-    return [[self getDictionary] isEqual:[object getDictionary]];
+    return TRUE;
 }
 
 @end
