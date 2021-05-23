@@ -291,7 +291,7 @@ static BOOL g_mame_warning_shown = FALSE;
 static BOOL g_no_roms_found = FALSE;
 
 #define OPTIONS_RELOAD_KEYS     @[@"filterClones", @"filterNotWorking", @"filterBIOS"]
-#define OPTIONS_RESTART_KEYS    @[@"cheats", @"autosave", @"emuspeed", @"hiscore", @"vbean2x", @"vflicker"]
+#define OPTIONS_RESTART_KEYS    @[@"cheats", @"autosave", /*@"emuspeed",*/ @"hiscore", @"vbean2x", @"vflicker"] 
 static NSInteger g_settings_roms_count;
 static NSInteger g_settings_file_count;
 static NSInteger g_settings_hash_count;

@@ -15,8 +15,8 @@
 
 enum OptionSections
 {
-    kInputSection = 0,
     kImportSection,
+    kInputSection,
     kScreenSection,
     kVectorSection,
     kMiscSection,

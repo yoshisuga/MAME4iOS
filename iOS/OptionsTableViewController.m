@@ -83,10 +83,10 @@
     
     const char * myosd_version = (const char *)myosd_get(MYOSD_VERSION_STRING) ?: "";
     // get the mame version from MYOSD, and remove any date in ()s
-    NSString* mame_version = [[NSString stringWithUTF8String:myosd_version] componentsSeparatedByString:@" ("].firstObject;
+    NSString* mame_version = [@(myosd_version) componentsSeparatedByString:@" ("].firstObject;
     
     if (mame_version.length != 0)
-        version = [NSString stringWithFormat:@"%@ • %@", version, mame_version];
+        version = [NSString stringWithFormat:@"%@ • MAME %@", version, mame_version];
 
     // this is the last date Info.plist was modifed, if you do a clean build, or change the version, it is the build date.
 #if TARGET_OS_MACCATALYST
@@ -123,7 +123,7 @@
     else if (git_commit)
         build_info = [NSString stringWithFormat:@"%@ (%@)", build_date, git_commit];
 
-    return [NSString stringWithFormat:@"%@ • %@\n%@\n%@", display_name, version, bundle_ident, build_info];
+    return [NSString stringWithFormat:@"%@ %@\n%@\n%@", display_name, version, bundle_ident, build_info];
 }
 
 #if TARGET_OS_TV

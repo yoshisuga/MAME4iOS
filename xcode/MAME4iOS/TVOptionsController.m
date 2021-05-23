@@ -81,6 +81,9 @@
     if ( section == kImportSection ) {
         return @"Import / Export";
     }
+    if ( section == kInputSection ) {
+        return @"Input";
+    }
 
     return @"";
 }
