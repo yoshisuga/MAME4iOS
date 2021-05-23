@@ -299,6 +299,12 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     [seg2 addTarget:self action:@selector(scopeChange:) forControlEvents:UIControlEventValueChanged];
     UIBarButtonItem* scope = [[UIBarButtonItem alloc] initWithCustomView:seg2];
     
+#if TARGET_OS_TV
+    UIColor* color = UIApplication.sharedApplication.keyWindow.tintColor;
+    [seg2 setTitleTextAttributes:@{NSForegroundColorAttributeName:color} forState:UIControlStateNormal];
+    [seg2 setTitleTextAttributes:@{NSForegroundColorAttributeName:color} forState:UIControlStateSelected];
+#endif
+    
     // settings
     UIImage* settingsImage = [UIImage systemImageNamed:@"gear" withPointSize:height] ?: [[UIImage imageNamed:@"menu"] scaledToSize:CGSizeMake(height, height)];
 #if TARGET_OS_TV
