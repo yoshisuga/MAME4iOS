@@ -1301,12 +1301,12 @@ HUDViewController* g_menu;
     
     g_pref_keep_aspect_ratio = [op keepAspectRatio];
     
-    g_pref_filter = [Options.arrayFilter optionName:op.filter];
-    g_pref_screen_shader = [Options.arrayScreenShader optionName:op.screenShader];
-    g_pref_line_shader = [Options.arrayLineShader optionName:op.lineShader];
+    g_pref_filter = [Options.arrayFilter optionFind:op.filter];
+    g_pref_screen_shader = [Options.arrayScreenShader optionFind:op.screenShader];
+    g_pref_line_shader = [Options.arrayLineShader optionFind:op.lineShader];
     [self loadShader];
 
-    g_pref_skin = [Options.arraySkin optionName:op.skin];
+    g_pref_skin = [Options.arraySkin optionFind:op.skin];
     [skinManager setCurrentSkin:g_pref_skin];
 
     g_pref_integer_scale_only = op.integerScalingOnly;
@@ -1880,34 +1880,15 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
 // get the current shader (friendly) name
 -(NSString*)getShaderName {
-    NSString* shader_name = myosd_isVector ? g_pref_line_shader : g_pref_screen_shader;
-    NSArray* shader_list = myosd_isVector ? Options.arrayLineShader : Options.arrayScreenShader;
-
-    // HACK: assume the 3rd shader is the actual default, None is 2nd
-    if (([shader_name isEqualToString:kScreenViewShaderDefault] || shader_name.length == 0) && shader_list.count >= 3) {
-        NSParameterAssert([shader_list[0] isEqualToString:kScreenViewShaderDefault]);
-        NSParameterAssert([shader_list[1] isEqualToString:kScreenViewShaderNone]);
-        shader_name =  [NSString stringWithFormat:@"%@ (%@)", kScreenViewShaderDefault, split(shader_list[2],@":").firstObject];
-    }
-
-   return shader_name;
+    return myosd_isVector ? g_pref_line_shader : g_pref_screen_shader;
 }
 
 // get the current shader, maping Default to the actual shader
 -(NSString*)getShader {
-    
-    NSString* shader_name = myosd_isVector ? g_pref_line_shader : g_pref_screen_shader;
-    NSArray* shader_list = myosd_isVector ? Options.arrayLineShader : Options.arrayScreenShader;
-    NSString* shader = [shader_list optionData:shader_name];
-    
-    // HACK: assume the 3rd shader is the actual default, None is 2nd
-    if (([shader_name isEqualToString:kScreenViewShaderDefault] || shader_name.length == 0) && shader_list.count >= 3) {
-        NSParameterAssert([shader_list[0] isEqualToString:kScreenViewShaderDefault]);
-        NSParameterAssert([shader_list[1] isEqualToString:kScreenViewShaderNone]);
-        shader = split(shader_list[2],@":").lastObject;
-    }
-    
-    return shader;
+    if (myosd_isVector)
+        return [MetalScreenView getLineShader:g_pref_line_shader];
+    else
+        return [MetalScreenView getScreenShader:g_pref_screen_shader];
 }
 
 // save the current shader variables to disk
@@ -3282,8 +3263,8 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
     
     NSDictionary* options = @{
         kScreenViewFilter: g_pref_filter,
-        kScreenViewScreenShader: [Options.arrayScreenShader optionData:g_pref_screen_shader],
-        kScreenViewLineShader: [Options.arrayLineShader optionData:g_pref_line_shader],
+        kScreenViewScreenShader: g_pref_screen_shader,
+        kScreenViewLineShader: g_pref_line_shader,
     };
     
     // the reason we dont re-create screenView each time is because we access screenView from background threads

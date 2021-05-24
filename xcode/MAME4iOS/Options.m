@@ -358,31 +358,11 @@
 }
 // find and return option index given a name, default to first if not found
 - (NSUInteger)indexOfOption:(NSString*)string {
-    NSParameterAssert(![string containsString:@":"]); // a name should never contain the data.
-    // option lists are of the form "Name : Data" or just "Name"
-    for (NSUInteger idx=0; idx<self.count; idx++) {
-        NSString* str = [self[idx] componentsSeparatedByString:@":"].firstObject;
-        if ([string isEqualToString:[str stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet]])
-            return idx;
-    }
-    return 0;
-}
-// find and return option data given a string, default to first if not found
-- (NSString*)optionData:(NSString*)string {
-
-    NSString* str = [self optionAtIndex:[self indexOfOption:string]];
-    str = [str componentsSeparatedByString:@":"].lastObject;
-    str = [str stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
-
-    return str;
+    NSUInteger idx = [self indexOfObject:string];
+    return (idx == NSNotFound) ? 0 : idx;
 }
 // find and return option name given a string, default to first if not found
-- (NSString*)optionName:(NSString*)string {
-
-    NSString* str = [self optionAtIndex:[self indexOfOption:string]];
-    str = [str componentsSeparatedByString:@":"].firstObject;
-    str = [str stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
-    
-    return str;
+- (NSString*)optionFind:(NSString*)string {
+    return [self optionAtIndex:[self indexOfOption:string]];
 }
 @end

@@ -92,7 +92,9 @@ TIMER_INIT_END
 // SCREEN SHADER
 //
 // Metal shader string is of the form:
-//        <Friendly Name> : <shader description>
+//        @"<Friendly Name>", @"<shader description>"
+//
+// the first shader in this list is used the Default
 //
 // NOTE: see MetalView.h for what a <shader description> is.
 // in addition to the <shader description> in MetalView.h you can specify a named variable like so....
@@ -113,9 +115,8 @@ TIMER_INIT_END
 //
 //  Presets are simply the @string without the key names, only numbers!
 //
-+ (NSArray*)screenShaderList {
-    return @[kScreenViewShaderDefault, kScreenViewShaderNone,
-             @"simpleTron: simpleCRT, mame-screen-dst-rect, mame-screen-src-rect,\
++ (NSArray*)screenShaders {
+    return @[@"simpleTron", @"simpleCRT, mame-screen-dst-rect, mame-screen-src-rect,\
                             Vertical Curvature = 5.0 1.0 10.0 0.1,\
                             Horizontal Curvature = 4.0 1.0 10.0 0.1,\
                             Curvature Strength = 0.25 0.0 1.0 0.05,\
@@ -123,7 +124,7 @@ TIMER_INIT_END
                             Vignette Strength = 0.05 0.0 1.0 0.05,\
                             Zoom Factor = 1.0 0.01 5.0 0.1,\
                             Brightness Factor = 1.0 0.0 2.0",
-             @"megaTron : megaTron, mame-screen-src-rect, mame-screen-dst-rect,\
+             @"megaTron", @"megaTron, mame-screen-src-rect, mame-screen-dst-rect,\
                             Shadow Mask Type = 3.0 0.0 3.0 1.0,\
                             Shadow Mask Intensity = 0.5 0.0 1.0 0.05,\
                             Scanline Thinness = 0.7 0.0 1.0 0.05,\
@@ -132,13 +133,13 @@ TIMER_INIT_END
                             Use Trinitron-style Curvature = 0.0 0.0 1.0 1.0,\
                             CRT Corner Roundness = 3.0 2.0 11.0 1.0,\
                             CRT Gamma = 2.9 0.0 5.0 0.1",
-             @"megaTron - Shadow Mask Strong: megaTron, mame-screen-src-rect, mame-screen-dst-rect,3.0,0.75,0.6,1.4,0.02,1.0,2.0,3.0",
-             @"megaTron - Vertical Games (Use Linear Filter): megaTron, mame-screen-src-rect, mame-screen-dst-rect,3.0,0.4,0.8,3.0,0.02,0.0,3.0,2.9",
-             @"megaTron - Grille Mask: megaTron, mame-screen-src-rect, mame-screen-dst-rect,2.0,0.85,0.6,2.0,0.02,1.0,2.0,3.0",
-             @"megaTron - Grille Mask Lite: megaTron, mame-screen-src-rect, mame-screen-dst-rect,1.0,0.6,0.6,1.6,0.02,1.0,2.0,2.8",
-             @"megaTron - No Shadow Mask but Blurred: megaTron, mame-screen-src-rect, mame-screen-dst-rect,0.0,0.6,0.6,1.0,0.02,0.0,2.0,2.6",
+             @"megaTron - Shadow Mask Strong", @"megaTron, mame-screen-src-rect, mame-screen-dst-rect,3.0,0.75,0.6,1.4,0.02,1.0,2.0,3.0",
+             @"megaTron - Vertical Games (Use Linear Filter)", @"megaTron, mame-screen-src-rect, mame-screen-dst-rect,3.0,0.4,0.8,3.0,0.02,0.0,3.0,2.9",
+             @"megaTron - Grille Mask", @"megaTron, mame-screen-src-rect, mame-screen-dst-rect,2.0,0.85,0.6,2.0,0.02,1.0,2.0,3.0",
+             @"megaTron - Grille Mask Lite", @"megaTron, mame-screen-src-rect, mame-screen-dst-rect,1.0,0.6,0.6,1.6,0.02,1.0,2.0,2.8",
+             @"megaTron - No Shadow Mask but Blurred", @"megaTron, mame-screen-src-rect, mame-screen-dst-rect,0.0,0.6,0.6,1.0,0.02,0.0,2.0,2.6",
              
-             @"ulTron : ultron,\
+             @"ulTron ", @"ultron,\
                         mame-screen-src-rect,\
                         mame-screen-dst-rect,\
                         Scanline Sharpness = -6.0 -20.0 0.0 1.0,\
@@ -154,16 +155,30 @@ TIMER_INIT_END
                         Glow Amount = 0.15 0.0 1.0 0.05,\
                         Phosphor Focus = 1.75 0.0 10.0 0.05",
              
+             kScreenViewShaderNone, ShaderTexture,
+             
 #ifdef DEBUG
-             @"Wombat1: mame_screen_test, mame-screen-size, frame-count, 1.0, 8.0, 8.0",
-             @"Wombat2: mame_screen_test, mame-screen-size, frame-count, wombat_rate=2.0, wombat_u=16.0, wombat_v=16.0",
-             @"Test (dot): mame_screen_dot, mame-screen-matrix",
-             @"Test (scanline): mame_screen_line, mame-screen-matrix",
-             @"Test (rainbow): mame_screen_rainbow, mame-screen-matrix, frame-count, rainbow_h = 16.0 4.0 32.0 1.0, rainbow_speed = 1.0 1.0 16.0",
-             @"Test (color): texture, blend=copy, color-test-pattern=1 0 1 1, test-brightness-factor=1.0 1.0 4.0",
+             @"Wombat1", @"mame_screen_test, mame-screen-size, frame-count, 1.0, 8.0, 8.0",
+             @"Wombat2", @"mame_screen_test, mame-screen-size, frame-count, wombat_rate=2.0, wombat_u=16.0, wombat_v=16.0",
+             @"Test (dot)", @"mame_screen_dot, mame-screen-matrix",
+             @"Test (scanline)", @"mame_screen_line, mame-screen-matrix",
+             @"Test (rainbow)", @"mame_screen_rainbow, mame-screen-matrix, frame-count, rainbow_h = 16.0 4.0 32.0 1.0, rainbow_speed = 1.0 1.0 16.0",
+             @"Test (color)", @"texture, blend=copy, color-test-pattern=1 0 1 1, test-brightness-factor=1.0 1.0 4.0",
 #endif
     ];
 }
+
++ (NSArray*)screenShaderList {
+    return [self.screenShaders filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"NOT (self CONTAINS ',')"]];
+}
++ (Shader)getScreenShader:(NSString*)name {
+    NSInteger idx = [self.screenShaders indexOfObject:name];
+    if (idx == NSNotFound) idx = 0;     // use the first shader as a default
+    return self.screenShaders[idx + 1];
+}
+
+
+
 
 // LINE SHADER - a line shader is exactly like a screen shader.
 //
@@ -188,24 +203,35 @@ TIMER_INIT_END
 //      `line-time` == 0.0  - lines for the current frame
 //      `line-time` > 0.0   - lines for past frames (line-time is the number of seconds in the past)
 //
-+ (NSArray*)lineShaderList {
-    return @[kScreenViewShaderDefault, kScreenViewShaderNone,
-        @"lineTron: lineTron, blend=alpha, fade-width-scale=1.2 0.1 8, line-time, fade-falloff=3 1 8, fade-strength = 0.2 0.1 3.0 0.1",
++ (NSArray*)lineShaders {
+    return @[
+        @"lineTron", @"lineTron, blend=alpha, fade-width-scale=1.2 0.1 8, line-time, fade-falloff=3 1 8, fade-strength = 0.2 0.1 3.0 0.1",
+             
+        kScreenViewShaderNone, ShaderNone,
 
 #ifdef DEBUG
-        @"Dash: mame_test_vector_dash, blend=add, width-scale=1.0 0.25 6.0, frame-count, length=25.0, speed=16.0",
-        @"Dash (Fast): mame_test_vector_dash, blend=add, 1.0, frame-count, 15.0, 16.0",
-        @"Dash (Slow): mame_test_vector_dash, blend=add, 1.0, frame-count, 15.0, 2.0",
+        @"Dash",         @"mame_test_vector_dash, blend=add, width-scale=1.0 0.25 6.0, frame-count, length=25.0, speed=16.0",
+        @"Dash (Fast)",  @"mame_test_vector_dash, blend=add, 1.0, frame-count, 15.0, 16.0",
+        @"Dash (Slow)",  @"mame_test_vector_dash, blend=add, 1.0, frame-count, 15.0, 2.0",
                  
-        @"Pulse: mame_test_vector_pulse, blend=add, width-scale=1.0 0.25 6.0, frame-count, rate=2.0",
-        @"Pulse (Fast): mame_test_vector_pulse, blend=add, 1.0, frame-count, 0.5",
-        @"Pulse (Slow): mame_test_vector_pulse, blend=add, 1.0, frame-count, 2.0",
+        @"Pulse",        @"mame_test_vector_pulse, blend=add, width-scale=1.0 0.25 6.0, frame-count, rate=2.0",
+        @"Pulse (Fast)", @"mame_test_vector_pulse, blend=add, 1.0, frame-count, 0.5",
+        @"Pulse (Slow)", @"mame_test_vector_pulse, blend=add, 1.0, frame-count, 2.0",
 
-        @"Fade (Alpha): mame_test_vector_fade, blend=alpha, fade-width-scale=1.2 1 8, line-time, fade-falloff=2 1 4, fade-strength = 0.5 0.1 3.0 0.1",
-        @"Fade (Add):   mame_test_vector_fade, blend=add,   fade-width-scale=1.2 1 8, line-time, fade-falloff=2 1 4, fade-strength = 0.5 0.1 3.0 0.1",
+        @"Fade (Alpha)", @"mame_test_vector_fade, blend=alpha, fade-width-scale=1.2 1 8, line-time, fade-falloff=2 1 4, fade-strength = 0.5 0.1 3.0 0.1",
+        @"Fade (Add)",   @"mame_test_vector_fade, blend=add,   fade-width-scale=1.2 1 8, line-time, fade-falloff=2 1 4, fade-strength = 0.5 0.1 3.0 0.1",
 #endif
     ];
 }
++ (NSArray*)lineShaderList {
+    return [self.lineShaders filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"NOT (self CONTAINS ',')"]];
+}
++ (Shader)getLineShader:(NSString*)name {
+    NSInteger idx = [self.lineShaders indexOfObject:name];
+    if (idx == NSNotFound) idx = 0;     // use the first shader as a default
+    return self.lineShaders[idx + 1];
+}
+
 + (NSArray*)filterList {
     return @[kScreenViewFilterLinear, kScreenViewFilterNearest];
 }
@@ -241,32 +267,10 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         _filter = MTLSamplerMinMagFilterLinear;
 
     // get the shader to use when drawing the SCREEN, default to the 3 entry in the list (simpleTron).
-    NSString* screen_shader = _options[kScreenViewScreenShader] ?: kScreenViewShaderDefault;
-
-    NSParameterAssert([MetalScreenView.screenShaderList[0] isEqualToString:kScreenViewShaderDefault]);
-    NSParameterAssert([MetalScreenView.screenShaderList[1] isEqualToString:kScreenViewShaderNone]);
-    NSParameterAssert(MetalScreenView.screenShaderList.count > 2);
-    if ([screen_shader length] == 0 || [screen_shader isEqualToString:kScreenViewShaderDefault])
-        screen_shader = split(MetalScreenView.screenShaderList[2], @":").lastObject;
-
-    if ([screen_shader isEqualToString:kScreenViewShaderNone])
-        screen_shader = ShaderTexture;
-    
-    _screen_shader = screen_shader;
+    _screen_shader = [MetalScreenView getScreenShader:_options[kScreenViewScreenShader]];
 
     // get the shader to use when drawing VECTOR lines, default to lineTron
-    NSString* line_shader = _options[kScreenViewLineShader] ?: kScreenViewShaderDefault;
-    
-    NSParameterAssert([MetalScreenView.lineShaderList[0] isEqualToString:kScreenViewShaderDefault]);
-    NSParameterAssert([MetalScreenView.lineShaderList[1] isEqualToString:kScreenViewShaderNone]);
-    NSParameterAssert(MetalScreenView.lineShaderList.count > 2);
-    if ([line_shader length] == 0 || [line_shader isEqualToString:kScreenViewShaderDefault])
-        line_shader = split(MetalScreenView.lineShaderList[2], @":").lastObject;
-
-    if ([line_shader isEqualToString:kScreenViewShaderNone])
-        line_shader = nil;
-    
-    _line_shader = line_shader;
+    _line_shader = [MetalScreenView getLineShader:_options[kScreenViewLineShader]];
     
     // see if the line shader wants past lines, ie does it list `line-time` in the parameter list.x
     _line_shader_wants_past_lines = [_line_shader rangeOfString:@"line-time"].length != 0;
@@ -584,7 +588,7 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
         }
         else if (prim->type == MYOSD_RENDER_PRIMITIVE_LINE) {
             // wide line, if the blendmode is ADD this is a VECTOR line, else a UI line.
-            if (prim->blendmode == MYOSD_BLENDMODE_ADD && _line_shader != nil) {
+            if (prim->blendmode == MYOSD_BLENDMODE_ADD && _line_shader != ShaderNone) {
                 // this line is a vector line, use a special shader
 
                 // pre-multiply color, so shader has non-iterated color

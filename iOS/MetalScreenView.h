@@ -46,5 +46,9 @@
 
 @interface MetalScreenView : MetalView <ScreenView>
 
+// get the actual shaders used for a given name, used by the HUD to edit params
++ (Shader)getScreenShader:(NSString*)name;
++ (Shader)getLineShader:(NSString*)name;
+
 @end
 
