@@ -65,7 +65,7 @@
 #define CELL_SHADOW_COLOR       UIColor.clearColor
 #define CELL_BACKGROUND_COLOR   UIColor.clearColor
 
-#define CELL_SELECTED_COLOR      self.tintColor
+#define CELL_SELECTED_SHADOW_COLOR       self.tintColor
 #define CELL_SELECTED_BACKGROUND_COLOR   UIColor.clearColor
 
 #define CELL_CORNER_RADIUS      16.0
@@ -2449,7 +2449,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     BOOL selected = self.selected || self.focused;
     if (_image.image == nil) {
 #if TARGET_OS_TV
-        // GameInfoController will change this class
+        // GameInfoController will change this class, so ignore that case
         if ([_text isKindOfClass:[UILabel class]])
             self.contentView.backgroundColor = selected ? HEADER_SELECTED_COLOR : HEADER_BACKGROUND_COLOR;
 #endif
@@ -2457,10 +2457,10 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     }
     [self setBackgroundColor:selected ? CELL_SELECTED_BACKGROUND_COLOR : CELL_BACKGROUND_COLOR];
 #if TARGET_OS_TV
-    [_image.layer setBorderWidth:4.0];
-    [_image.layer setBorderColor:(selected ? CELL_SELECTED_COLOR : UIColor.clearColor).CGColor];
+    [_image.layer setBorderWidth:1.0 / UIScreen.mainScreen.scale];
+    [_image.layer setBorderColor:(selected ? CELL_SELECTED_SHADOW_COLOR : UIColor.clearColor).CGColor];
 #else
-    [self setShadowColor:selected ? CELL_SELECTED_COLOR : CELL_SHADOW_COLOR];
+    [self setShadowColor:selected ? CELL_SELECTED_SHADOW_COLOR : CELL_SHADOW_COLOR];
 #endif
     CGFloat scale = selected ? _scale : self.highlighted ? (2.0 - _scale) : 1.0;
     _stackView.transform = CGAffineTransformMakeScale(scale, scale);

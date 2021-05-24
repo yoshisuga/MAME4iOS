@@ -55,9 +55,6 @@
 #define kScreenViewFilterNearest    @"Nearest"
 #define kScreenViewFilterLinear     @"Linear"
 
-#define kScreenViewShaderNone       @"None"
-#define kScreenViewShaderDefault    @"Default"
-
 @protocol ScreenView <NSObject>
 
 // the Settings UI will let the user choose from these

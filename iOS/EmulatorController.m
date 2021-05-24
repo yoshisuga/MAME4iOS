@@ -291,7 +291,7 @@ static BOOL g_mame_warning_shown = FALSE;
 static BOOL g_no_roms_found = FALSE;
 
 #define OPTIONS_RELOAD_KEYS     @[@"filterClones", @"filterNotWorking", @"filterBIOS"]
-#define OPTIONS_RESTART_KEYS    @[@"cheats", @"autosave", /*@"emuspeed",*/ @"hiscore", @"vbean2x", @"vflicker"] 
+#define OPTIONS_RESTART_KEYS    @[@"cheats", @"autosave", @"hiscore", @"vbean2x", @"vflicker"]
 static NSInteger g_settings_roms_count;
 static NSInteger g_settings_file_count;
 static NSInteger g_settings_hash_count;
@@ -1211,6 +1211,8 @@ HUDViewController* g_menu;
 }
 
 - (void)checkForNewRoms {
+    if (g_settings_options == nil)
+        return;
     NSInteger roms_count = [NSFileManager.defaultManager enumeratorAtPath:getDocumentPath(@"roms")].allObjects.count;
     NSInteger file_count = [NSFileManager.defaultManager contentsOfDirectoryAtPath:getDocumentPath(@"") error:nil].count;
     NSInteger hash_count = [NSFileManager.defaultManager contentsOfDirectoryAtPath:getDocumentPath(@"hash") error:nil].count;
@@ -1234,7 +1236,10 @@ HUDViewController* g_menu;
         [self reload];
     else if (myosd_inGame != 0 && ![g_settings_options isEqualToOptions:options withKeys:OPTIONS_RESTART_KEYS])
         [self restart]; // re-launch current game
-    
+    // TODO: fix MAME 2xx to support changing speed "on the fly"
+    else if (myosd_inGame != 0 && myosd_get(MYOSD_SPEED) == 0 && ![g_settings_options isEqualToOptions:options withKeys:@[@"emuspeed"]])
+        [self restart]; // re-launch current game
+
     g_settings_options = nil;
 }
 

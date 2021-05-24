@@ -94,15 +94,14 @@ TIMER_INIT_END
 // Metal shader string is of the form:
 //        @"<Friendly Name>", @"<shader description>"
 //
-// the first shader in this list is used the Default
+// the first shader in this list is used the *Default*
 //
 // NOTE: see MetalView.h for what a <shader description> is.
 // in addition to the <shader description> in MetalView.h you can specify a named variable like so....
 //
-//       variable_name = <default value> <min value> <max value> <step value>
-//
-//  you dont use commas to separate values, use spaces.
-//  min, max, and step are all optional, and only effect the InfoHUD, MetalView ignores them.
+//      variable_name = <default value> <min value> <max value> <step value>
+//          dont use commas to separate values, use spaces.
+//          min, max, and step are all optional, and only effect the InfoHUD, MetalView ignores them.
 //
 //  the following variables are pre-defined by MetalView and MetalScreenView
 //
@@ -155,7 +154,7 @@ TIMER_INIT_END
                         Glow Amount = 0.15 0.0 1.0 0.05,\
                         Phosphor Focus = 1.75 0.0 10.0 0.05",
              
-             kScreenViewShaderNone, ShaderTexture,
+             @"None", ShaderTexture,
              
 #ifdef DEBUG
              @"Wombat1", @"mame_screen_test, mame-screen-size, frame-count, 1.0, 8.0, 8.0",
@@ -169,6 +168,7 @@ TIMER_INIT_END
 }
 
 + (NSArray*)screenShaderList {
+    // return only the shader names, shaders will have a comma
     return [self.screenShaders filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"NOT (self CONTAINS ',')"]];
 }
 + (Shader)getScreenShader:(NSString*)name {
@@ -207,7 +207,7 @@ TIMER_INIT_END
     return @[
         @"lineTron", @"lineTron, blend=alpha, fade-width-scale=1.2 0.1 8, line-time, fade-falloff=3 1 8, fade-strength = 0.2 0.1 3.0 0.1",
              
-        kScreenViewShaderNone, ShaderNone,
+        @"None", ShaderNone,
 
 #ifdef DEBUG
         @"Dash",         @"mame_test_vector_dash, blend=add, width-scale=1.0 0.25 6.0, frame-count, length=25.0, speed=16.0",
@@ -224,6 +224,7 @@ TIMER_INIT_END
     ];
 }
 + (NSArray*)lineShaderList {
+    // return only the shader names, shaders will have a comma
     return [self.lineShaders filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"NOT (self CONTAINS ',')"]];
 }
 + (Shader)getLineShader:(NSString*)name {
@@ -463,7 +464,6 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
 
 #pragma mark - draw MAME primitives
 
-// return 1 if you handled the draw, 0 for a software render
 // NOTE this is called on MAME background thread, dont do anything stupid.
 - (void)drawScreen:(void*)prim_list size:(CGSize)size {
     static Shader shader_map[] = {ShaderNone, ShaderAlpha, ShaderMultiply, ShaderAdd};
