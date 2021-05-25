@@ -921,6 +921,16 @@ HUDViewController* g_menu;
     
     if(myosd_inGame && myosd_in_menu==0)
     {
+        // if there are zero Start buttons, check for a 2600  // TODO: remove this hack.
+        if (myosd_num_players == 0 && [g_mame_game_info.gameSystem isEqualToString:@"a2600"]) {
+            [menu addButtons:@[@"Select", @"Start"] style:HUDButtonStyleDefault handler:^(NSUInteger button) {
+                if (button == 0)
+                    push_mame_key(MYOSD_KEY_1);
+                else
+                    push_mame_key(MYOSD_KEY_2);
+            }];
+        }
+
         // myosd_num_players counts the number of Start buttons, if there are zero Start buttons, we cant do anything!
         if (myosd_num_players == 1) {
             // 1P Start
