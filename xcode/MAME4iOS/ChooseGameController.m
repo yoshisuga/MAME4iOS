@@ -65,7 +65,7 @@
 #define CELL_SHADOW_COLOR       UIColor.clearColor
 #define CELL_BACKGROUND_COLOR   UIColor.clearColor
 
-#define CELL_SELECTED_SHADOW_COLOR       self.tintColor
+#define CELL_SELECTED_SHADOW_COLOR       [self.tintColor colorWithAlphaComponent:0.333]
 #define CELL_SELECTED_BACKGROUND_COLOR   UIColor.clearColor
 
 #define CELL_CORNER_RADIUS      16.0
@@ -845,6 +845,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         else {
             cell.backgroundView = nil;
             cell.contentView.backgroundColor = HEADER_BACKGROUND_COLOR;
+            cell.selected = cell.selected;  // update selected/focused state
         }
     }
 }
@@ -2457,7 +2458,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     }
     [self setBackgroundColor:selected ? CELL_SELECTED_BACKGROUND_COLOR : CELL_BACKGROUND_COLOR];
 #if TARGET_OS_TV
-    [_image.layer setBorderWidth:1.0 / UIScreen.mainScreen.scale];
+    [_image.layer setBorderWidth:1.0];
     [_image.layer setBorderColor:(selected ? CELL_SELECTED_SHADOW_COLOR : UIColor.clearColor).CGColor];
 #else
     [self setShadowColor:selected ? CELL_SELECTED_SHADOW_COLOR : CELL_SHADOW_COLOR];
