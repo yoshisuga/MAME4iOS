@@ -65,8 +65,10 @@
 #define CELL_SHADOW_COLOR       UIColor.clearColor
 #define CELL_BACKGROUND_COLOR   UIColor.clearColor
 
-#define CELL_SELECTED_SHADOW_COLOR       [self.tintColor colorWithAlphaComponent:0.333]
-#define CELL_SELECTED_BACKGROUND_COLOR   UIColor.clearColor
+#define CELL_SELECTED_SHADOW_COLOR      UIColor.clearColor
+#define CELL_SELECTED_BACKGROUND_COLOR  UIColor.clearColor
+#define CELL_SELECTED_BORDER_COLOR      [self.tintColor colorWithAlphaComponent:0.500]
+#define CELL_SELECTED_BORDER_WIDTH      1.0
 
 #define CELL_CORNER_RADIUS      16.0
 #define CELL_BORDER_WIDTH       0.0
@@ -2456,13 +2458,14 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
 #endif
         return;
     }
+    
     [self setBackgroundColor:selected ? CELL_SELECTED_BACKGROUND_COLOR : CELL_BACKGROUND_COLOR];
-#if TARGET_OS_TV
-    [_image.layer setBorderWidth:1.0];
-    [_image.layer setBorderColor:(selected ? CELL_SELECTED_SHADOW_COLOR : UIColor.clearColor).CGColor];
-#else
     [self setShadowColor:selected ? CELL_SELECTED_SHADOW_COLOR : CELL_SHADOW_COLOR];
-#endif
+    
+    if (CELL_SELECTED_BORDER_COLOR != UIColor.clearColor) {
+        [_image.layer setBorderWidth:selected ? CELL_SELECTED_BORDER_WIDTH : 0.0];
+        [_image.layer setBorderColor:(selected ? CELL_SELECTED_BORDER_COLOR : UIColor.clearColor).CGColor];
+    }
     CGFloat scale = selected ? _scale : self.highlighted ? (2.0 - _scale) : 1.0;
     _stackView.transform = CGAffineTransformMakeScale(scale, scale);
 #if TARGET_OS_TV
