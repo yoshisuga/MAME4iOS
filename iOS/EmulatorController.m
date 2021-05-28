@@ -4549,7 +4549,7 @@ BOOL is_roms_dir(NSString* dir) {
     // now add ZIP files.
     for (NSString* file in files)
     {
-        if ([file isEqualToString:@"cheat.zip"])
+        if ([file.stringByDeletingPathExtension.lowercaseString isEqualToString:@"cheat"])
             continue;
         if ([file.pathExtension.lowercaseString isEqualToString:@"xml"])
             continue;
