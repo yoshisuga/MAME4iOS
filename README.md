@@ -112,10 +112,11 @@ Even if you are not in the paid Apple Developer Program, you can sideload the ap
     - build and run in Xcode.
 
 ## Issues running current `MAME`
-* most `MAME` 139 ROMs dont work on 229, but that is just normal life in `MAME` world, see [this](#mixing-139-and-2xx-roms).
+* most `MAME` 139 ROMs dont work on 2xx, but that is just normal life in `MAME` world, see [this](#mixing-139-and-2xx-roms).
 * tracking down a sound issue and other random stuff.
-* if you run a `Computer` machine, you need a USB keyboard, and backslash is ui_mode_key.
+* if you run a `Computer` machine, you need a USB keyboard, and `\` (backslash) is the ui_mode_key.
 * the `hiscore` and `cheat` system has not been updated.
+* `MAME` Configure menu has a `Add To Favorites` and `Select New Machine` that dont interact with the `MAME4iOS` Ux.
 
 ## **Software Lists**
 

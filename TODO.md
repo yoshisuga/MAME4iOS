@@ -2,6 +2,7 @@
 
 * Font is getting scaled badly, show info on startup is unreadable. 
     - fixed we always run at hi-res now.
+* investigate loooooong startup time, and what can we do about it.
 * Font scaled textures not cached, getting re-loaded every frame when Config or Main Menu is active. A seqid problem similar to one I fixed in 139. 
 * Command line options for -cheat, -bench, -beam width need fixed. 
     - fixed
