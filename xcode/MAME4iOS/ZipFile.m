@@ -6,7 +6,7 @@
 //
 
 #import "ZipFile.h"
-#import <Compression.h>
+#import <compression.h>
 
 #if !__has_feature(objc_arc)
 #error("This file assumes ARC")
