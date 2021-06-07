@@ -32,7 +32,7 @@ if [ "$1" != "ios" ] && [ "$1" != "tvos" ] && [ "$1" != "mac" ]; then
 fi
 
 LIBMAME="libmame-$1.a"
-LIBMAME_URL="https://github.com/ToddLa/mame/releases/download/mame0231/$LIBMAME.gz"
+LIBMAME_URL="https://github.com/ToddLa/mame/releases/latest/download/$LIBMAME.gz"
 
 if [ -d "$2" ]; then
     echo COPY "$2/$LIBMAME"
