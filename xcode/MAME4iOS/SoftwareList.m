@@ -145,8 +145,7 @@
             continue;
         
         // create a empty zip with the name of the clone.
-        // TODO: should we create a empty 7z for 7z files??
-        NSString* clone_path = [[path.stringByDeletingLastPathComponent stringByAppendingPathComponent:clone] stringByAppendingPathExtension:@"zip" /* path.pathExtension*/];
+        NSString* clone_path = [[path.stringByDeletingLastPathComponent stringByAppendingPathComponent:clone] stringByAppendingPathExtension:path.pathExtension];
         
         if (![NSFileManager.defaultManager fileExistsAtPath:clone_path]) {
             NSLog(@"....CREATING CLONE: %@", clone);

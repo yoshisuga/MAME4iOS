@@ -60,6 +60,9 @@
 + (BOOL)enumerate:(NSString*)path withOptions:(ZipFileEnumOptions)options usingBlock:(void (NS_NOESCAPE ^)(ZipFileInfo* info))block
 { @autoreleasepool {
     
+    if ([path.pathExtension.lowercaseString isEqualToString:@"7z"])
+        return [self enumerate7z:path withOptions:options usingBlock:block];
+    
     NSFileHandle* file = [NSFileHandle fileHandleForReadingAtPath:path];
     
     if (file == nil)
@@ -305,6 +308,9 @@ small_zip:
 // create a ZipFile from any user supplied data, callback is required to convert item in array to a ZipFileInfo
 + (BOOL)exportTo:(NSString*)path fromItems:(NSArray*)items withOptions:(ZipFileWriteOptions)options usingBlock:(ZipFileInfo* (NS_NOESCAPE ^)(id item))loadHandler
 {
+    if ([path.pathExtension.lowercaseString isEqualToString:@"7z"])
+        return [self export7z:path fromItems:items withOptions:options usingBlock:loadHandler];
+
     if (options & ZipFileWriteAtomic) {
         NSError* error = nil;
         NSURL* fileURL = [NSURL fileURLWithPath:path];
@@ -552,6 +558,26 @@ small_zip:
     
     return result;
 }
+
+#pragma mark - minimal 7z archive support
+
++ (BOOL)enumerate7z:(NSString*)path withOptions:(ZipFileEnumOptions)options usingBlock:(void (NS_NOESCAPE ^)(ZipFileInfo* info))block
+{
+    // TODO: enumerate names from a 7z
+    return FALSE;
+}
+
++ (BOOL)export7z:(NSString*)path fromItems:(NSArray*)items withOptions:(ZipFileWriteOptions)options usingBlock:(ZipFileInfo* (NS_NOESCAPE ^)(id item))loadHandler
+{
+    // only support creating an empty archive
+    if (items.count != 0)
+        return FALSE;
+    
+    uint8_t empty[32] = {0x37,0x7a,0xbc,0xaf,0x27,0x1c,0x00,0x03,0x8d,0x9b,0xd5,0x0f};
+    NSData* data = [NSData dataWithBytes:empty length:sizeof(empty)];
+    return [NSFileManager.defaultManager createFileAtPath:path contents:data attributes:nil];
+}
+
 
 @end
 

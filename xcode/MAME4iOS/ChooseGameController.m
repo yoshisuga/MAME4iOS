@@ -10,6 +10,7 @@
 #import "ChooseGameController.h"
 #import "PopupSegmentedControl.h"
 #import "GameInfo.h"
+#import "SoftwareList.h"
 #import "ImageCache.h"
 #import "SystemImage.h"
 #import "InfoDatabase.h"
@@ -1556,6 +1557,15 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     if (all) {
         for (NSString* file in @[@"roms/%@.zip", @"roms/%@.7z", @"roms/%@/", @"artwork/%@.zip", @"samples/%@.zip"])
             [files addObject:[NSString stringWithFormat:file, name]];
+    }
+
+    // if we are a parent ROM include all of our clones
+    if (game.gameParent.length <= 1 && all) {
+        NSArray* clones = [_gameList filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"gameSystem == %@ && gameParent == %@", game.gameSystem, game.gameName]];
+        for (NSDictionary* clone in clones) {
+            // TODO: check if this is a merged romset??
+            [files addObjectsFromArray:[self getGameFiles:clone allFiles:YES]];
+        }
     }
     
     return files;
