@@ -68,8 +68,8 @@
 
 #define CELL_SELECTED_SHADOW_COLOR      UIColor.clearColor
 #define CELL_SELECTED_BACKGROUND_COLOR  UIColor.clearColor
-#define CELL_SELECTED_BORDER_COLOR      [self.tintColor colorWithAlphaComponent:0.500]
-#define CELL_SELECTED_BORDER_WIDTH      1.0
+#define CELL_SELECTED_BORDER_COLOR      [self.tintColor colorWithAlphaComponent:0.800]
+#define CELL_SELECTED_BORDER_WIDTH      4.0
 
 #define CELL_CORNER_RADIUS      16.0
 #define CELL_BORDER_WIDTH       0.0
@@ -127,7 +127,7 @@
 #define LAYOUT_MODE_DEFAULT LayoutSmall
 #define SCOPE_MODE_KEY      @"ScopeMode"
 #define SCOPE_MODE_DEFAULT  @"System"
-#define ALL_SCOPES          @[@"System", @"Manufacturer", @"Year", @"Genre", @"Driver"]
+#define ALL_SCOPES          @[@"System", @"Clones", @"Manufacturer", @"Year", @"Genre", @"Driver"]
 #define RECENT_GAMES_MAX    8
 
 #define SECTIONS_COLLAPSED_KEY    @"CollapsedSections"
@@ -573,6 +573,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     // group games by category into sections
     NSMutableDictionary* gameData = [[NSMutableDictionary alloc] init];
     NSString* key = nil;
+    BOOL clones = FALSE;
     
     if ([_gameFilterScope isEqualToString:@"Year"])
         key = kGameInfoYear;
@@ -590,6 +591,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         key = kGameInfoSystem;
     if ([_gameFilterScope isEqualToString:@"Type"])
         key = kGameInfoType;
+    if ((clones = [_gameFilterScope isEqualToString:@"Clones"]))
+        key = kGameInfoSystem;
 
     for (NSDictionary* game in filteredGames) {
         NSString* section = game[key];
@@ -611,7 +614,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
         if ([section length] == 0 && key == (void*)kGameInfoSystem)
             section = game.gameType;
-
+        
+        if ([section length] != 0 && clones && game.gameIsClone)
+            section = [NSString stringWithFormat:@"%@ • Clones", section];
+        
         if ([section length] == 0)
             section = @"Unknown";
         
@@ -1561,7 +1567,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
 
     // if we are a parent ROM include all of our clones
     if (game.gameParent.length <= 1 && all) {
-        NSArray* clones = [_gameList filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"gameSystem == %@ && gameParent == %@", game.gameSystem, game.gameName]];
+        NSArray* clones = [_gameList filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"%K == %@ AND %K == %@", kGameInfoSystem, game[kGameInfoSystem], kGameInfoParent, game.gameName]];
         for (NSDictionary* clone in clones) {
             // TODO: check if this is a merged romset??
             [files addObjectsFromArray:[self getGameFiles:clone allFiles:YES]];
@@ -1576,7 +1582,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     NSString* title = [self menuTitleForGame:game];
     NSString* message = nil;
 
-    [self showAlertWithTitle:title message:message buttons:@[@"Delete Settings", @"Delete Everything", @"Cancel"] handler:^(NSUInteger button) {
+    [self showAlertWithTitle:title message:message buttons:@[@"Delete Settings", @"Delete Files", @"Cancel"] handler:^(NSUInteger button) {
         
         // cancel get out!
         if (button == 2)
@@ -1599,8 +1605,14 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
         if (allFiles) {
             [self setRecent:game isRecent:FALSE];
             [self setFavorite:game isFavorite:FALSE];
+            
+            NSArray* list = [self->_gameList filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF != %@", game]];
 
-            [self setGameList:[self->_gameList filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF != %@", game]]];
+            // if this is a parent romset, delete all the clones too.
+            if (game.gameParent.length <= 1)
+                list = [list filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"NOT (%K == %@ AND %K == %@)", kGameInfoSystem, game[kGameInfoSystem], kGameInfoParent, game.gameName]];
+
+            [self setGameList:list];
 
             // if we have deleted the last game, excpet for the MAMEMENU, then exit with no game selected and let a re-scan happen.
             if ([self->_gameList count] <= 1) {
