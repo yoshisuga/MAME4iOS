@@ -4394,11 +4394,6 @@ BOOL is_roms_dir(NSString* dir) {
 
     NSString* toPath = nil;
     
-    // dont barf on a 7z file, just pretend enumeration worked, and found nothing interesting inside
-    if (!result && [romName.pathExtension.lowercaseString isEqualToString:@"7z"]) {
-        result = TRUE;
-    }
-
     if (!result)
     {
         NSLog(@"%@ is a CORRUPT ZIP (deleting)", romPath);
@@ -4581,6 +4576,11 @@ BOOL is_roms_dir(NSString* dir) {
     BOOL first_boot = [files_to_import containsObject:@"cheat0139.zip"];
 
     if (!first_boot) {
+        
+        // HACK: wait til any other VC is presented, sigh
+        if (self.presentedViewController.isBeingPresented)
+            return [self performSelector:_cmd withObject:nil afterDelay:1.0];
+        
         progressAlert = [UIAlertController alertControllerWithTitle:@"Moving ROMs" message:@"Please wait..." preferredStyle:UIAlertControllerStyleAlert];
         [progressAlert setProgress:0.0 text:@""];
         [self.topViewController presentViewController:progressAlert animated:YES completion:nil];

@@ -149,7 +149,6 @@
         
         if (![NSFileManager.defaultManager fileExistsAtPath:clone_path]) {
             NSLog(@"....CREATING CLONE: %@", clone);
-            NSParameterAssert([clone_path.pathExtension isEqualToString:@"zip"]);
             [ZipFile exportTo:clone_path fromItems:@[] withOptions:ZipFileWriteFiles usingBlock:^ZipFileInfo* (id item) {return nil;}];
         }
     }

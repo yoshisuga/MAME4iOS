@@ -69,6 +69,12 @@ int myosd_main(int argc, char** argv, myosd_callbacks* callbacks, size_t callbac
     return ios_main(argc, argv);
 }
 
+// myosd_enumerate_7z - placeholder function, MAME 139 does not support 7z archives, so just fail.
+extern "C" int myosd_enumerate_7z(const char* path, int load_data_flag, void* callback_ptr, void (*callback)(void* callback_ptr, const uint16_t* name, size_t len, const uint8_t* data, size_t size))
+{
+    return -1;
+}
+
 // myosd_get
 intptr_t myosd_get(int var)
 {
