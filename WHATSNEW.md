@@ -1,17 +1,17 @@
 # Version 2021.7
 * `OSD` changes.
-* Ability to build with latest `MAME` version (229 or higher)
+* Ability to build with latest `MAME` version (0.232)
 * New `Category.ini` from `MAME` 230
 * Attack of the Clones! - support import of merged romsets.
 * `MAME` Software List (aka softlist) support.
     - allow sloftlist `XML` files to be imported.
     - *smart* import of software romsets.
-* Collapsable sections in ChooseGame UI
+* Collapsable sections in `ChooseGameUI`
 * Snapshot button on `HUD` and ability to use a Snapshot as Title image.
 * handle import of `7z` files.
-    - **note** *smart import* does not work fully with `7z` romsets, they are just assumed to be a arcade (not software) romset.
     - 139 version of `MAME4iOS` will ignore `7z` romsets
 * Support for new `Apple Remote` with tvOS 14.6
+* Added ability to group Clones in a different section in `ChooseGameUI`
 
 # Version 2021.6
 * `Mouse` device support.
