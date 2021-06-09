@@ -73,6 +73,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) BOOL gameIsFake;
 @property (nonatomic, readonly) BOOL gameIsMame;
 @property (nonatomic, readonly) BOOL gameIsSnapshot;
+@property (nonatomic, readonly) BOOL gameIsClone;
 
 @end
 

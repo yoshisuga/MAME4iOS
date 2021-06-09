@@ -74,6 +74,10 @@
 {
     return [self.gameType isEqualToString:kGameInfoTypeSnapshot];
 }
+- (BOOL)gameIsClone
+{
+    return self.gameParent.length > 1;  // parent can be "0"
+}
 -(NSString*)gameTitle
 {
     return [(self[kGameInfoDescription] ?: self[kGameInfoName] ?: @"") componentsSeparatedByString:@" ("].firstObject;
