@@ -10,6 +10,7 @@
 #import "ChooseGameController.h"
 #import "PopupSegmentedControl.h"
 #import "GameInfo.h"
+#import "SoftwareList.h"
 #import "ImageCache.h"
 #import "SystemImage.h"
 #import "InfoDatabase.h"
@@ -65,8 +66,10 @@
 #define CELL_SHADOW_COLOR       UIColor.clearColor
 #define CELL_BACKGROUND_COLOR   UIColor.clearColor
 
-#define CELL_SELECTED_SHADOW_COLOR       self.tintColor
-#define CELL_SELECTED_BACKGROUND_COLOR   UIColor.clearColor
+#define CELL_SELECTED_SHADOW_COLOR      UIColor.clearColor
+#define CELL_SELECTED_BACKGROUND_COLOR  UIColor.clearColor
+#define CELL_SELECTED_BORDER_COLOR      [self.tintColor colorWithAlphaComponent:0.800]
+#define CELL_SELECTED_BORDER_WIDTH      4.0
 
 #define CELL_CORNER_RADIUS      16.0
 #define CELL_BORDER_WIDTH       0.0
@@ -75,14 +78,16 @@
 #if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST)
 #define CELL_TITLE_FONT         [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
 #define CELL_TITLE_COLOR        [UIColor whiteColor]
+#define CELL_CLONE_COLOR        [UIColor colorWithWhite:0.555 alpha:1.0]
 #define CELL_DETAIL_FONT        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote]
-#define CELL_DETAIL_COLOR       [UIColor lightGrayColor]
+#define CELL_DETAIL_COLOR       [UIColor colorWithWhite:0.333 alpha:1.0]
 #define CELL_MAX_LINES          3
 #else   // tvOS and mac
 #define CELL_TITLE_FONT         [UIFont boldSystemFontOfSize:20.0]
 #define CELL_TITLE_COLOR        [UIColor whiteColor]
+#define CELL_CLONE_COLOR        [UIColor colorWithWhite:0.555 alpha:1.0]
 #define CELL_DETAIL_FONT        [UIFont systemFontOfSize:20.0]
-#define CELL_DETAIL_COLOR       [UIColor lightGrayColor]
+#define CELL_DETAIL_COLOR       [UIColor colorWithWhite:0.333 alpha:1.0]
 #define CELL_MAX_LINES          3
 #endif
 
@@ -122,7 +127,7 @@
 #define LAYOUT_MODE_DEFAULT LayoutSmall
 #define SCOPE_MODE_KEY      @"ScopeMode"
 #define SCOPE_MODE_DEFAULT  @"System"
-#define ALL_SCOPES          @[@"System", @"Manufacturer", @"Year", @"Genre", @"Driver"]
+#define ALL_SCOPES          @[@"System", @"Clones", @"Manufacturer", @"Year", @"Genre", @"Driver"]
 #define RECENT_GAMES_MAX    8
 
 #define SECTIONS_COLLAPSED_KEY    @"CollapsedSections"
@@ -297,6 +302,12 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     [seg2 addTarget:self action:@selector(scopeChange:) forControlEvents:UIControlEventValueChanged];
     UIBarButtonItem* scope = [[UIBarButtonItem alloc] initWithCustomView:seg2];
     
+#if TARGET_OS_TV
+    UIColor* color = UIApplication.sharedApplication.keyWindow.tintColor;
+    [seg2 setTitleTextAttributes:@{NSForegroundColorAttributeName:color} forState:UIControlStateNormal];
+    [seg2 setTitleTextAttributes:@{NSForegroundColorAttributeName:color} forState:UIControlStateSelected];
+#endif
+    
     // settings
     UIImage* settingsImage = [UIImage systemImageNamed:@"gear" withPointSize:height] ?: [[UIImage imageNamed:@"menu"] scaledToSize:CGSizeMake(height, height)];
 #if TARGET_OS_TV
@@ -448,6 +459,24 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 - (void)setGameList:(NSArray*)games
 {
+    // remove any snapshots
+    games = [games filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"%K != %@", kGameInfoType, kGameInfoTypeSnapshot]];
+    
+    // add all snapshots on disk
+    for (NSString* snap in [NSFileManager.defaultManager enumeratorAtPath:getDocumentPath(@"snap")].allObjects) {
+        
+        if (![snap.pathExtension.lowercaseString isEqualToString:@"png"] || snap.stringByDeletingLastPathComponent.length == 0)
+            continue;
+        
+        games = [games arrayByAddingObject:@{
+            kGameInfoType:kGameInfoTypeSnapshot,
+            kGameInfoFile:snap,
+            kGameInfoManufacturer:snap.lastPathComponent.stringByDeletingPathExtension,
+            kGameInfoName:snap.stringByDeletingLastPathComponent.lastPathComponent,
+            kGameInfoDescription:snap.stringByDeletingLastPathComponent.lastPathComponent,
+        }];
+    }
+
     // sort the list by description
     _gameList = [games sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:kGameInfoDescription ascending:TRUE]]];
     
@@ -544,6 +573,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     // group games by category into sections
     NSMutableDictionary* gameData = [[NSMutableDictionary alloc] init];
     NSString* key = nil;
+    BOOL clones = FALSE;
     
     if ([_gameFilterScope isEqualToString:@"Year"])
         key = kGameInfoYear;
@@ -561,6 +591,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         key = kGameInfoSystem;
     if ([_gameFilterScope isEqualToString:@"Type"])
         key = kGameInfoType;
+    if ((clones = [_gameFilterScope isEqualToString:@"Clones"]))
+        key = kGameInfoSystem;
 
     for (NSDictionary* game in filteredGames) {
         NSString* section = game[key];
@@ -582,7 +614,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
         if ([section length] == 0 && key == (void*)kGameInfoSystem)
             section = game.gameType;
-
+        
+        if ([section length] != 0 && clones && game.gameIsClone)
+            section = [NSString stringWithFormat:@"%@ • Clones", section];
+        
         if ([section length] == 0)
             section = @"Unknown";
         
@@ -819,6 +854,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         else {
             cell.backgroundView = nil;
             cell.contentView.backgroundColor = HEADER_BACKGROUND_COLOR;
+            cell.selected = cell.selected;  // update selected/focused state
         }
     }
 }
@@ -1042,6 +1078,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
             [self.collectionView reloadSections:[NSIndexSet indexSetWithIndex:section]];
         } completion:^(BOOL finished){
             [self kickLayout];
+            [self performSelector:@selector(reloadData) withObject:nil afterDelay:0.250];
         }];
     }
 }
@@ -1085,7 +1122,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 //  romname     short Description           Description                 Description
 //              short Manufacturer • Year   short Manufacturer • Year   Manufacturer • Year  • romname [parent-rom]
 //
-+(NSAttributedString*)getGameText:(NSDictionary*)info layoutMode:(LayoutMode)layoutMode textAlignment:(NSTextAlignment)textAlignment badge:(NSString*)badge
++(NSAttributedString*)getGameText:(NSDictionary*)info layoutMode:(LayoutMode)layoutMode textAlignment:(NSTextAlignment)textAlignment badge:(NSString*)badge clone:(BOOL)clone
 {
     NSString* title;
     NSString* detail;
@@ -1133,7 +1170,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
     NSMutableAttributedString* text = [[NSMutableAttributedString alloc] initWithString:title attributes:@{
         NSFontAttributeName:CELL_TITLE_FONT,
-        NSForegroundColorAttributeName:CELL_TITLE_COLOR
+        NSForegroundColorAttributeName:clone ? CELL_CLONE_COLOR : CELL_TITLE_COLOR
     }];
 
     if (detail != nil)
@@ -1180,7 +1217,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 +(NSAttributedString*)getGameText:(NSDictionary*)game layoutMode:(LayoutMode)layoutMode
 {
-    return [self getGameText:game layoutMode:layoutMode textAlignment:NSTextAlignmentCenter badge:nil];
+    return [self getGameText:game layoutMode:layoutMode textAlignment:NSTextAlignmentCenter badge:nil clone:NO];
 }
 
 +(NSAttributedString*)getGameText:(NSDictionary*)game
@@ -1192,7 +1229,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 {
     return [[self class] getGameText:game layoutMode:_layoutMode
                        textAlignment:_layoutMode == LayoutList ? NSTextAlignmentLeft : CELL_TEXT_ALIGN
-                               badge:[self isFavorite:game] ? @"star.fill" : @""];
+                               badge:[self isFavorite:game] ? @"star.fill" : @""
+                               clone:game.gameParent.length != 0];
 }
 
 // compute the size(s) of a single item. returns: (x = image_height, y = text_height)
@@ -1357,6 +1395,9 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
                 CGFloat aspect = is_vert ? (3.0 / 4.0) : (4.0 / 3.0);
                 [cell setImageAspect:aspect];
             }
+            
+            if (info.gameIsSnapshot)
+                cell.image.contentMode = UIViewContentModeScaleAspectFill;
  
             cell.image.image = image;
             return;
@@ -1458,6 +1499,9 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     
     NSLog(@"DID SELECT ITEM[%d.%d] %@", (int)indexPath.section, (int)indexPath.item, game[kGameInfoName]);
     
+    if (game.gameIsSnapshot)
+        return;
+    
     // add (or move to front) of the recent game LRU list...
     [self setRecent:game isRecent:TRUE];
     
@@ -1520,6 +1564,15 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
         for (NSString* file in @[@"roms/%@.zip", @"roms/%@.7z", @"roms/%@/", @"artwork/%@.zip", @"samples/%@.zip"])
             [files addObject:[NSString stringWithFormat:file, name]];
     }
+
+    // if we are a parent ROM include all of our clones
+    if (game.gameParent.length <= 1 && all) {
+        NSArray* clones = [_gameList filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"%K == %@ AND %K == %@", kGameInfoSystem, game[kGameInfoSystem], kGameInfoParent, game.gameName]];
+        for (NSDictionary* clone in clones) {
+            // TODO: check if this is a merged romset??
+            [files addObjectsFromArray:[self getGameFiles:clone allFiles:YES]];
+        }
+    }
     
     return files;
 }
@@ -1529,7 +1582,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     NSString* title = [self menuTitleForGame:game];
     NSString* message = nil;
 
-    [self showAlertWithTitle:title message:message buttons:@[@"Delete Settings", @"Delete Everything", @"Cancel"] handler:^(NSUInteger button) {
+    [self showAlertWithTitle:title message:message buttons:@[@"Delete Settings", @"Delete Files", @"Cancel"] handler:^(NSUInteger button) {
         
         // cancel get out!
         if (button == 2)
@@ -1552,8 +1605,14 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
         if (allFiles) {
             [self setRecent:game isRecent:FALSE];
             [self setFavorite:game isFavorite:FALSE];
+            
+            NSArray* list = [self->_gameList filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF != %@", game]];
 
-            [self setGameList:[self->_gameList filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF != %@", game]]];
+            // if this is a parent romset, delete all the clones too.
+            if (game.gameParent.length <= 1)
+                list = [list filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"NOT (%K == %@ AND %K == %@)", kGameInfoSystem, game[kGameInfoSystem], kGameInfoParent, game.gameName]];
+
+            [self setGameList:list];
 
             // if we have deleted the last game, excpet for the MAMEMENU, then exit with no game selected and let a re-scan happen.
             if ([self->_gameList count] <= 1) {
@@ -1592,7 +1651,6 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
 -(void)info:(NSDictionary*)_game
 {
     NSMutableDictionary* game = [_game mutableCopy];
-    NSString* name = game[kGameInfoName];
 
     NSDictionary* atributes = @{
         UIFontTextStyleHeadline: @{
@@ -1606,8 +1664,10 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     };
 
     // add in our history/mameinfo to game dict.
-    game[kGameInfoHistory] = [_history attributedStringForKey:name attributes:atributes];
-    game[kGameInfoMameInfo] = [_mameinfo attributedStringForKey:name attributes:atributes];
+    game[kGameInfoHistory] = [_history attributedStringForKey:game.gameName attributes:atributes] ?:
+                             [_history attributedStringForKey:game.gameParent attributes:atributes];
+    game[kGameInfoMameInfo] = [_mameinfo attributedStringForKey:game.gameName attributes:atributes] ?:
+                              [_mameinfo attributedStringForKey:game.gameParent attributes:atributes];
 
     GameInfoController* gameInfoController = [[GameInfoController alloc] initWithGame:game];
     gameInfoController.title = @"Info";
@@ -1745,6 +1805,33 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
 
     NSLog(@"menuActionsForItemAtIndexPath: [%d.%d] %@ %@", (int)indexPath.section, (int)indexPath.row, game[kGameInfoName], game);
     
+    if (game.gameIsSnapshot) {
+        return @[
+            [self actionWithTitle:@"Use as Title Image" image:[UIImage systemImageNamed:@"photo"] destructive:NO handler:^(id action) {
+                NSString* src = game.gameLocalImageURL.path;
+                NSString* dst = [NSString stringWithFormat:@"%@/%@.png", getDocumentPath(@"titles"), game.gameFile.stringByDeletingLastPathComponent];
+                [NSFileManager.defaultManager removeItemAtPath:dst error:nil];
+                [NSFileManager.defaultManager copyItemAtPath:src toPath:dst error:nil];
+                [ImageCache.sharedInstance flush];
+                [self updateImage:[NSURL fileURLWithPath:dst]];
+            }],
+#if TARGET_OS_IOS
+            [self actionWithTitle:@"Share" image:[UIImage systemImageNamed:@"square.and.arrow.up"] destructive:NO handler:^(id action) {
+                NSURL* url = game.gameLocalImageURL;
+                UIActivityViewController* activity = [[UIActivityViewController alloc] initWithActivityItems:@[url] applicationActivities:nil];
+                activity.popoverPresentationController.sourceView = self.view;
+                activity.popoverPresentationController.sourceRect = CGRectMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds), 0.0f, 0.0f);
+                activity.popoverPresentationController.permittedArrowDirections = 0;
+                [self presentViewController:activity animated:YES completion:nil];
+            }],
+#endif
+            [self actionWithTitle:@"Delete" image:[UIImage systemImageNamed:@"trash"] destructive:YES handler:^(id action) {
+                [NSFileManager.defaultManager removeItemAtPath:game.gameLocalImageURL.path error:nil];
+                [self setGameList:self->_gameList];
+            }]
+        ];
+    }
+    
     BOOL is_fav = [self isFavorite:game];
     
     NSString* fav_text = is_fav ? @"Unfavorite" : @"Favorite";
@@ -1770,7 +1857,8 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
         ]];
     }
     
-    if ([_history boolForKey:name] || [_mameinfo boolForKey:name]) {
+    if ([_history boolForKey:game.gameName]   || [_mameinfo boolForKey:game.gameName] ||
+        [_history boolForKey:game.gameParent] || [_mameinfo boolForKey:game.gameParent]) {
         actions = [actions arrayByAddingObjectsFromArray:@[
             [self actionWithTitle:@"Info" image:[UIImage systemImageNamed:@"info.circle"] destructive:NO handler:^(id action) {
                 [self info:game];
@@ -1809,7 +1897,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
 
 // get the title for the ContextMenu
 - (NSString*)menuTitleForGame:(NSDictionary *)game {
-    return [ChooseGameController getGameText:game].string;
+    return [ChooseGameController getGameText:game layoutMode:LayoutList].string;
 }
 - (NSString*)menuTitleForItemAtIndexPath:(NSIndexPath *)indexPath {
     return [self menuTitleForGame:[self getGameInfo:indexPath]];
@@ -2386,23 +2474,20 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     BOOL selected = self.selected || self.focused;
     if (_image.image == nil) {
 #if TARGET_OS_TV
-        UIColor* color = selected ? HEADER_SELECTED_COLOR : HEADER_BACKGROUND_COLOR;
- 
-        if (@available(tvOS 14.0, *))
-        {
-            _stackText.backgroundColor = color;
-            _stackText.layer.cornerRadius = selected ? 16.0 : 0.0;
-        }
-        else
-        {
-            self.contentView.backgroundColor = color;
-            self.contentView.layer.cornerRadius = selected ? 16.0 : 0.0;
-        }
+        // GameInfoController will change this class, so ignore that case
+        if ([_text isKindOfClass:[UILabel class]])
+            self.contentView.backgroundColor = selected ? HEADER_SELECTED_COLOR : HEADER_BACKGROUND_COLOR;
 #endif
         return;
     }
+    
     [self setBackgroundColor:selected ? CELL_SELECTED_BACKGROUND_COLOR : CELL_BACKGROUND_COLOR];
     [self setShadowColor:selected ? CELL_SELECTED_SHADOW_COLOR : CELL_SHADOW_COLOR];
+    
+    if (CELL_SELECTED_BORDER_COLOR != UIColor.clearColor) {
+        [_image.layer setBorderWidth:selected ? CELL_SELECTED_BORDER_WIDTH : 0.0];
+        [_image.layer setBorderColor:(selected ? CELL_SELECTED_BORDER_COLOR : UIColor.clearColor).CGColor];
+    }
     CGFloat scale = selected ? _scale : self.highlighted ? (2.0 - _scale) : 1.0;
     _stackView.transform = CGAffineTransformMakeScale(scale, scale);
 #if TARGET_OS_TV
@@ -2581,7 +2666,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     rect.size.height -= self.collectionView.safeAreaInsets.top;
     rect.size.width  -= self.collectionView.safeAreaInsets.left + self.collectionView.safeAreaInsets.right;
     
-    UIImage* image = [[ImageCache sharedInstance] getImage:_game.gameImageURL size:CGSizeZero];
+    UIImage* image = [[ImageCache sharedInstance] getImage:_game.gameImageURLs.firstObject size:CGSizeZero];
     CGFloat aspect = [_game.gameScreen containsString:kGameInfoScreenVertical] ? 3.0/4.0 : 4.0/3.0;
 
     CGSize image_size = CGSizeMake(INFO_IMAGE_WIDTH, INFO_IMAGE_WIDTH / aspect);

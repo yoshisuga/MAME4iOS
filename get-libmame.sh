@@ -8,14 +8,14 @@
 ## target is one of the following
 ##      ios     get libmame-ios.a for iOS
 ##      tvos    get libmame-tvos.a for tvOS
-##      mac     get libmame.a for Catalyst
+##      mac     get libmame-mac.a for Catalyst
 ##      all     get all
 ##
 ## source is path to MAME project or blank for default (../MAME)
 ##
 
 if [ "$1" == "" ]; then
-    $0 ios $2
+    $0 ios
     exit
 fi
 
@@ -26,9 +26,15 @@ if [ "$1" == "all" ]; then
     exit
 fi
 
-LIBMAME="libmame-$1.a"
+if [ "$1" != "ios" ] && [ "$1" != "tvos" ] && [ "$1" != "mac" ]; then
+    echo "USAGE: $0 [ios | tvos | mac | all] [path to MAME]"
+    exit
+fi
 
-if [ "$2" != "" ] && [ -f "$2/$LIBMAME" ]; then
+LIBMAME="libmame-$1.a"
+LIBMAME_URL="https://github.com/ToddLa/mame/releases/latest/download/$LIBMAME.gz"
+
+if [ -d "$2" ]; then
     echo COPY "$2/$LIBMAME"
     cp "$2/$LIBMAME" .
     exit
@@ -40,5 +46,8 @@ if [ -f "../MAME/$LIBMAME" ]; then
     exit
 fi
 
-echo "USAGE: $0 [ios | tvos | mac | all] [source]"
+## download from GitHub if no local version
+echo DOWNLOAD $LIBMAME
+curl -L $LIBMAME_URL | gunzip > $LIBMAME
+
 

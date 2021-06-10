@@ -123,28 +123,28 @@
                 {
                     cell.textLabel.text = @"Filter";
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                    cell.detailTextLabel.text = [Options.arrayFilter optionName:op.filter];
+                    cell.detailTextLabel.text = [Options.arrayFilter optionFind:op.filter];
                     break;
                 }
                 case 1:
                 {
                     cell.textLabel.text   = @"Skin";
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                    cell.detailTextLabel.text = [Options.arraySkin optionName:op.skin];
+                    cell.detailTextLabel.text = [Options.arraySkin optionFind:op.skin];
                     break;
                 }
                 case 2:
                 {
                     cell.textLabel.text   = @"Screen Shader";
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                    cell.detailTextLabel.text = [Options.arrayScreenShader optionName:op.screenShader];
+                    cell.detailTextLabel.text = [Options.arrayScreenShader optionFind:op.screenShader];
                     break;
                 }
                 case 3:
                 {
                     cell.textLabel.text   = @"Vector Shader";
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                    cell.detailTextLabel.text = [Options.arrayLineShader optionName:op.lineShader];
+                    cell.detailTextLabel.text = [Options.arrayLineShader optionFind:op.lineShader];
                     break;
                 }
                case 4:

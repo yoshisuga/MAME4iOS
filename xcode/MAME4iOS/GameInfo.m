@@ -62,6 +62,22 @@
 {
     return [@[kGameInfoNameMameMenu, kGameInfoNameSettings] containsObject:self[kGameInfoName]];
 }
+- (BOOL)gameIsMame
+{
+    return [self.gameName isEqualToString:kGameInfoNameMameMenu];
+}
+- (NSString*)gameFile
+{
+    return self[kGameInfoFile] ?: @"";
+}
+- (BOOL)gameIsSnapshot
+{
+    return [self.gameType isEqualToString:kGameInfoTypeSnapshot];
+}
+- (BOOL)gameIsClone
+{
+    return self.gameParent.length > 1;  // parent can be "0"
+}
 -(NSString*)gameTitle
 {
     return [(self[kGameInfoDescription] ?: self[kGameInfoName] ?: @"") componentsSeparatedByString:@" ("].firstObject;
@@ -72,8 +88,11 @@
     NSParameterAssert(self.gameName.length != 0);
     NSParameterAssert(![self.gameName containsString:@" "]);
     NSParameterAssert(![self.gameSystem containsString:@" "]);
-
-    if (self.gameSoftwareList.length != 0)
+    
+    if (self.gameIsFake || self.gameIsSnapshot) {
+        return @[self.gameLocalImageURL];
+    }
+    else if (self.gameSoftwareList.length != 0)
     {
         /// MESS style title url
         /// http://adb.arcadeitalia.net/media/mess.current/titles/a2600/adventur.png
@@ -142,7 +161,9 @@
     NSString *path = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES).firstObject;
 #endif
     
-    if (self.gameSoftwareList.length != 0)
+    if (self.gameIsSnapshot)
+        return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/snap/%@", path, self.gameFile] isDirectory:NO];
+    else if (self.gameSoftwareList.length != 0)
         return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/titles/%@/%@.png", path, self.gameSoftwareList, name] isDirectory:NO];
     else
         return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/titles/%@.png", path, name] isDirectory:NO];

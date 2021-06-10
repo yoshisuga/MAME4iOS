@@ -55,17 +55,11 @@
 #define kScreenViewFilterNearest    @"Nearest"
 #define kScreenViewFilterLinear     @"Linear"
 
-#define kScreenViewShaderNone       @"None"
-#define kScreenViewShaderDefault    @"Default"
-
 @protocol ScreenView <NSObject>
 
-// the Settings UI will let the user choose from these, format of a entry is is:
+// the Settings UI will let the user choose from these
 //
-//      <Friendly Name> : <Data>
-//
-// only the <Friendly Name> will be shown to the user, the <Data> will be passed
-// in the setOptions: NSDictionary
+// the string will be passed in the setOptions: NSDictionary
 //
 + (NSArray<NSString*>*)filterList;
 + (NSArray<NSString*>*)screenShaderList;

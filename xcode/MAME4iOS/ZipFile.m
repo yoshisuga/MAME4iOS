@@ -6,7 +6,9 @@
 //
 
 #import "ZipFile.h"
-#import <Compression.h>
+#import <compression.h>
+
+#define SEVEN_ZIP_SUPPORT   1   // minimal support for reading and creating empty 7z files.
 
 #if !__has_feature(objc_arc)
 #error("This file assumes ARC")
@@ -37,6 +39,26 @@
 - (NSUInteger) dosDateTime;
 @end
 
+#if SEVEN_ZIP_SUPPORT
+
+// TODO: add this to MYOSD.H? or leave it *internal*
+// enumerate the files (and optionaly the data) in a 7Z archive, return 0 on success
+extern int myosd_enumerate_7z(const char* path, int load_data_flag, void* callback_ptr, void (*callback)(void* callback_ptr, const uint16_t* name, size_t len, const uint8_t* data, size_t size));
+
+static void callback_7z(void* callback_ptr, const uint16_t* name, size_t len, const uint8_t* data, size_t size) {
+    @autoreleasepool {
+        ZipFileInfo* info = [[ZipFileInfo alloc] init];
+        if (len > 0 && name[len-1] == 0)
+            len--;
+        info.name = [NSString stringWithCharacters:name length:len];
+        if (data != NULL && size != 0)
+            info.data = [NSData dataWithBytes:data length:size];
+        void (^block)(ZipFileInfo* info) = (__bridge id)callback_ptr;
+        block(info);
+    }
+}
+#endif
+
 @implementation ZipFile
 
 #pragma mark - ZipFile reading
@@ -59,6 +81,11 @@
 // ```
 + (BOOL)enumerate:(NSString*)path withOptions:(ZipFileEnumOptions)options usingBlock:(void (NS_NOESCAPE ^)(ZipFileInfo* info))block
 { @autoreleasepool {
+
+#if SEVEN_ZIP_SUPPORT
+    if ([path.pathExtension.lowercaseString isEqualToString:@"7z"])
+         return myosd_enumerate_7z(path.UTF8String, (options & ZipFileEnumLoadData) != 0, (__bridge void*)block, callback_7z) == 0;
+#endif
     
     NSFileHandle* file = [NSFileHandle fileHandleForReadingAtPath:path];
     
@@ -85,13 +112,17 @@
 #define SKIP(n)  (buffer_ptr += n, buffer_len -= n)
 
     // seek to the end and look for the EOCD, very very important! search backward! we dont want to find signature in an embedded zip!
-    LOAD(file, file.lengthOfFile - 512, 512);
+    LOAD(file, MAX(file.lengthOfFile,512) - 512, 512);
     uint8_t eocd_sig[] = {0x50, 0x4b, 0x05, 0x06};
     NSRange r = [buffer_data rangeOfData:[NSData dataWithBytes:&eocd_sig length:4] options:NSDataSearchBackwards range:NSMakeRange(0, [buffer_data length])];
 
     if (r.location == NSNotFound)
         return ERROR(@"bad zip file (cant find central directory)");
-
+    
+    // handle a empty, small, or invalid zip with no ZIP64 header
+    if (r.location < 20)
+        goto small_zip;
+    
     SKIP(r.location - 20);
 
     // see if we have a ZIP64 EOCD header
@@ -133,7 +164,7 @@
     else
     {
         SKIP(16);
-
+small_zip:
         //  End of central directory record (EOCD)
         //  Offset   Bytes  Description
         //  0        4      End of central directory signature = 0x06054b50
@@ -325,6 +356,19 @@
         
         return result;
     }
+
+#if SEVEN_ZIP_SUPPORT
+    if ([path.pathExtension.lowercaseString isEqualToString:@"7z"]) {
+        
+        // only support creating an empty archive
+        if (items.count != 0)
+            return FALSE;
+        
+        uint8_t empty[32] = {0x37,0x7a,0xbc,0xaf,0x27,0x1c,0x00,0x03,0x8d,0x9b,0xd5,0x0f};
+        NSData* data = [NSData dataWithBytes:empty length:sizeof(empty)];
+        return [NSFileManager.defaultManager createFileAtPath:path contents:data attributes:nil];
+    }
+#endif
     
     [NSFileManager.defaultManager createFileAtPath:path contents:nil attributes:nil];
     NSFileHandle* file = [NSFileHandle fileHandleForWritingAtPath:path];

@@ -246,9 +246,9 @@
     
 }
 
-- (void)saveOptions
+- (NSDictionary*)getDictionary
 {
-    NSDictionary* optionsDict = [NSDictionary dictionaryWithObjectsAndKeys:
+    return [NSDictionary dictionaryWithObjectsAndKeys:
                              [NSString stringWithFormat:@"%d", _keepAspectRatio], @"KeepAspect",
                               
                              _filter, @"filter",
@@ -317,11 +317,29 @@
                              [NSString stringWithFormat:@"%d", _hapticButtonFeedback], @"hapticButtonFeedback",
                                  
                              nil];
-    
-    
+}
+
+- (void)saveOptions
+{
+    NSDictionary* optionsDict = [self getDictionary];
     NSData* data = [NSPropertyListSerialization dataWithPropertyList:optionsDict format:NSPropertyListBinaryFormat_v1_0 options:0 error:nil];
     NSParameterAssert(data != nil);
     [data writeToFile:Options.optionsPath atomically:NO];
+}
+
+// compare two Options, but only the specified keys
+- (BOOL)isEqualToOptions:(Options*)other withKeys:(NSArray<NSString*>*)keys {
+
+    NSDictionary* lhs = [self getDictionary];
+    NSDictionary* rhs = [other getDictionary];
+
+    for (NSString* key in keys) {
+        id a = lhs[key];
+        id b = rhs[key];
+        if (!(a == b || [a isEqual:b]))
+            return FALSE;
+    }
+    return TRUE;
 }
 
 @end
@@ -340,31 +358,11 @@
 }
 // find and return option index given a name, default to first if not found
 - (NSUInteger)indexOfOption:(NSString*)string {
-    NSParameterAssert(![string containsString:@":"]); // a name should never contain the data.
-    // option lists are of the form "Name : Data" or just "Name"
-    for (NSUInteger idx=0; idx<self.count; idx++) {
-        NSString* str = [self[idx] componentsSeparatedByString:@":"].firstObject;
-        if ([string isEqualToString:[str stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet]])
-            return idx;
-    }
-    return 0;
-}
-// find and return option data given a string, default to first if not found
-- (NSString*)optionData:(NSString*)string {
-
-    NSString* str = [self optionAtIndex:[self indexOfOption:string]];
-    str = [str componentsSeparatedByString:@":"].lastObject;
-    str = [str stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
-
-    return str;
+    NSUInteger idx = [self indexOfObject:string];
+    return (idx == NSNotFound) ? 0 : idx;
 }
 // find and return option name given a string, default to first if not found
-- (NSString*)optionName:(NSString*)string {
-
-    NSString* str = [self optionAtIndex:[self indexOfOption:string]];
-    str = [str componentsSeparatedByString:@":"].firstObject;
-    str = [str stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
-    
-    return str;
+- (NSString*)optionFind:(NSString*)string {
+    return [self optionAtIndex:[self indexOfOption:string]];
 }
 @end

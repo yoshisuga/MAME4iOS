@@ -687,6 +687,12 @@ int hid_to_mame(int keyCode) {
         mame_map[UIKeyboardHIDUsageKeyboardApplication] = MYOSD_KEY_INVALID;
         mame_map[UIKeyboardHIDUsageKeyboardPower      ] = MYOSD_KEY_INVALID;
         
+#ifdef DEBUG
+        // HACK: map backslash to SCRLOCK to test keyboards
+        // TODO: remove this....
+        mame_map[UIKeyboardHIDUsageKeyboardBackslash   ] = MYOSD_KEY_SCRLOCK;
+#endif
+        
 #else   // provide a minimal set of keys for Xcode < 11.4
         
         for (int i=0; i<26; i++)

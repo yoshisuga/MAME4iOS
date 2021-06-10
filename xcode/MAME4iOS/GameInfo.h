@@ -29,11 +29,13 @@
 #define kGameInfoMameInfo       @"mameinfo"
 #define kGameInfoSoftware       @"software"         // list of supported software for system
 #define kGameInfoSoftwareList   @"softlist"         // this game is *from* a software list
+#define kGameInfoFile           @"file"
 
 #define kGameInfoTypeArcade     @"Arcade"
 #define kGameInfoTypeConsole    @"Console"
 #define kGameInfoTypeComputer   @"Computer"
 #define kGameInfoTypeBIOS       @"BIOS"
+#define kGameInfoTypeSnapshot   @"Snapshot"
 
 #define kGameInfoScreenHorizontal   @"Horizontal"
 #define kGameInfoScreenVertical     @"Vertical"
@@ -60,6 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) NSString* gameCategory;
 @property (nonatomic, strong, readonly) NSString* gameSoftware;
 @property (nonatomic, strong, readonly) NSString* gameSoftwareList;
+@property (nonatomic, strong, readonly) NSString* gameFile;
 
 @property (nonatomic, strong, readonly) NSString* gameTitle;
 @property (nonatomic, strong, readonly) NSURL* gameImageURL;
@@ -68,6 +71,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) NSArray<NSURL*>* gameImageURLs;
 
 @property (nonatomic, readonly) BOOL gameIsFake;
+@property (nonatomic, readonly) BOOL gameIsMame;
+@property (nonatomic, readonly) BOOL gameIsSnapshot;
+@property (nonatomic, readonly) BOOL gameIsClone;
 
 @end
 

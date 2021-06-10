@@ -81,6 +81,9 @@
     if ( section == kImportSection ) {
         return @"Import / Export";
     }
+    if ( section == kInputSection ) {
+        return @"Input";
+    }
 
     return @"";
 }
@@ -153,19 +156,19 @@
         if ( indexPath.row == 0 ) {
             cell.textLabel.text = @"Filter";
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-            cell.detailTextLabel.text = [Options.arrayFilter optionName:op.filter];
+            cell.detailTextLabel.text = [Options.arrayFilter optionFind:op.filter];
         } else if ( indexPath.row == 1 ) {
             cell.textLabel.text   = @"Skin";
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-            cell.detailTextLabel.text = [Options.arraySkin optionName:op.skin];
+            cell.detailTextLabel.text = [Options.arraySkin optionFind:op.skin];
         } else if ( indexPath.row == 2 ) {
             cell.textLabel.text   = @"Screen Shader";
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-            cell.detailTextLabel.text = [Options.arrayScreenShader optionName:op.screenShader];
+            cell.detailTextLabel.text = [Options.arrayScreenShader optionFind:op.screenShader];
         } else if ( indexPath.row == 3 ) {
             cell.textLabel.text   = @"Vector Shader";
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-            cell.detailTextLabel.text = [Options.arrayLineShader optionName:op.lineShader];
+            cell.detailTextLabel.text = [Options.arrayLineShader optionFind:op.lineShader];
         } else if ( indexPath.row == 4 ) {
             cell.textLabel.text = @"Keep Aspect Ratio";
             cell.accessoryView = [self optionSwitchForKey:@"keepAspectRatio"];

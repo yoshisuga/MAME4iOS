@@ -55,12 +55,8 @@
     if (self = [super initWithStyle:UITableViewStyleGrouped])
     {
         NSAssert([[[Options alloc] init] valueForKey:keyValue] != nil, @"bad key");
-        
         key = keyValue;
-        list = [listValue mutableCopy];
-        // if the list items are of the form "Name : Data", we only want to show "Name" to the user.
-        for (NSInteger i=0; i<list.count; i++)
-            ((NSMutableArray*)list)[i] = [[list[i] componentsSeparatedByString:@":"].firstObject stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
+        list = listValue;
     }
     return self;
 }

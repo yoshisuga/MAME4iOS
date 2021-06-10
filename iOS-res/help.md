@@ -20,7 +20,7 @@ This version emulates over 8000 different romsets.
 
 Please, try to understand that that with that amount of games, some will run better than others and some might not even run with MAME4iOS Reloaded. Please, don't email me asking for a specific game to run.
 
-After installing, place your MAME-titled zipped roms in `/roms` folder, use iTunes file sharing, built in WebServer or AirDrop (select Open in MAME4iOS).
+After installing, place your MAME-titled zipped roms in the top folder, use iTunes file sharing, Files.app, built in WebServer or AirDrop (select Open in MAME4iOS).
 
 MAME4iOS Reloaded uses only '0.139u1' romset.
 
@@ -41,6 +41,7 @@ To see [MAME license](#MAME4iOS-LICENSE), go to the end of this document.
 *   MiFI, Xbox, and DualShock [Game Controlers](#game-controlers)
 *   [TV-OUT](#tv-out)
 *   [iCloud Import, Export, and Sync.](#iCloud)
+*   [Simple *smart* romset install](#ROM-INSTALLATION)
 
 ... and more.
 
@@ -365,9 +366,14 @@ To connect an iPad or iPhone to your TV or a projector, you can either use the A
 
 When the cable is connected to a TV or projector, MAME4iOS will automatically use it when playing a game.
 
+## ROM INSTALLATION
+
+use `Import...`, `Start Web Server`, or `Import from iCloud` from `MAME4iOS` `Settings` 
+
+
 ## MANUAL ROM INSTALLATION
 
-use iTunes file sharing (if your MAME4iOS build has it available) or use a 3rd party app like iFunBox or iExplorer to copy ROMs on sandboxed MAME4iOS 'Documents' folder:
+use iTunes file sharing (if your MAME4iOS build has it available) or Files.app, or a 3rd party app like iFunBox or iExplorer to copy ROMs on sandboxed MAME4iOS 'Documents' folder:
 
 Step 1\. Downloaded iFunBox (or a similar utility) and plug your iOS device into your computer.
 
@@ -376,6 +382,39 @@ Step 2\. Launch iFunBox and select your iOS device on the left hand side.
 Step 3\. click on apps icon. Now you should see a list of all of your device’s applications. Locate MAME4iOS, click it, and select Documents.
 
 Step 4\. And that’s all there is to it. Move your ROMs into this folder, launch MAME4iOS, and start playing!
+
+## Software Lists
+
+Software lists are containing meta-data of software for computers and consoles and are coming from various sources,
+they are not compiled in code but use as valuable source of information in order to preserve and document software.
+
+### How to add software to `MAME4iOS`
+
+* first import a *software list xml* file, you can find these files [here](https://github.com/mamedev/mame/tree/master/hash)
+    - you can also copy software list xml files *by hand* to the `hash` directory.
+* you might be tempted to just import *all* software list files, **dont** do that, it will waste diskspace on your device, and cause `MAME4iOS` to do extra work.
+* after you have imported the software list xml files, you can import `ZIP` files containing software. 
+
+If the name of the `ZIP` file *or* the subdirectory path in the `ZIP` matches the name of a software list, it will be imported directly, otherwise all software lists will be searched for a match.
+
+example zip file(s)
+```
+a2600.zip
+    pacman.zip
+    et.zip
+```
+
+```
+MySoftware.zip
+    a2600/pacman.zip
+    a2600/et.zip
+    n64/007goldnu.7z
+```
+
+## Mixing 139 and 2xx ROMs
+Some `romsets` are not compatible between MAME 139 and newer versions, the best way to use both `romsets` at the same time is to make sure the newer ones are stored in the `7z` format and the 139 ones in the `zip` format.  This way both files can co-exist.
+
+
 
 ## DIRECTORIES
 

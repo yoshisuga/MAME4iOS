@@ -18,6 +18,9 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)resetOptions;
 + (void)setOption:(id)value forKey:(NSString*)key;
 
+// compare two Options, but only the specified keys
+- (BOOL)isEqualToOptions:(Options*)other withKeys:(NSArray<NSString*>*)keys;
+
 @property (class, readonly, strong) NSString* optionsFile;
 
 @property (class, readonly, strong) NSArray* arrayEmuSpeed;
@@ -104,9 +107,7 @@ NS_ASSUME_NONNULL_BEGIN
 // find and return option index given a name, default to first if not found
 - (NSUInteger)indexOfOption:(NSString*)string;
 // find and return option name given a string, default to first if not found
-- (NSString*)optionName:(NSString*)string;
-// find and return option data given a string, default to first if not found
-- (NSString*)optionData:(NSString*)string;
+- (NSString*)optionFind:(NSString*)string;
 @end
 
 
