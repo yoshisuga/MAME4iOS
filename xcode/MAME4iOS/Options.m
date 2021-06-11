@@ -21,6 +21,9 @@
 + (NSArray*)arrayControlType {
     return @[@"Keyboard",@"iCade or compatible",@"iCP, Gametel",@"iMpulse"];
 }
++ (NSArray*)arraySoundValue {
+    return @[@"Off", @"On (11 KHz)", @"On (22 KHz)",@"On (33 KHz)", @"On (44 KHz)", @"On (48 KHz)"];
+}
 
 + (NSArray*)arraySkin {
     return [SkinManager getSkinNames];
@@ -125,6 +128,8 @@
         
         _controltype = 0;
         
+        _soundValue = 5;
+
         _sticktype = 0;
         _numbuttons = 0;
         _aplusb = 0;
@@ -216,6 +221,8 @@
         _analogDeadZoneValue =  [[optionsDict objectForKey:@"analogDeadZoneValue"] intValue];
         _controltype =  [[optionsDict objectForKey:@"controlType"] intValue];
         
+        _soundValue =  [([optionsDict objectForKey:@"soundValue"] ?: @(5)) intValue];
+        
         _sticktype  =  [[optionsDict objectForKey:@"sticktype"] intValue];
         _numbuttons  =  [[optionsDict objectForKey:@"numbuttons"] intValue];
         _aplusb  =  [[optionsDict objectForKey:@"aplusb"] intValue];
@@ -289,6 +296,8 @@
                              
                              [NSString stringWithFormat:@"%d", _controltype], @"controlType",
                              
+                             [NSString stringWithFormat:@"%d", _soundValue], @"soundValue",
+
                              [NSString stringWithFormat:@"%d", _sticktype], @"sticktype",
                              [NSString stringWithFormat:@"%d", _numbuttons], @"numbuttons",
                              [NSString stringWithFormat:@"%d", _aplusb], @"aplusb",

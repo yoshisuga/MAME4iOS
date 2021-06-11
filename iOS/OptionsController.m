@@ -254,6 +254,13 @@
                      cell.detailTextLabel.text = [Options.arrayEmuSpeed optionAtIndex:op.emuspeed];
                      break;
                 }
+                case 6:
+                {
+                     cell.textLabel.text   = @"Sound";
+                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                     cell.detailTextLabel.text = [Options.arraySoundValue optionAtIndex:op.soundValue];
+                     break;
+                }
             }
             break;   
         }
@@ -417,7 +424,7 @@
           case kOtherSection: return 1;
           case kVideoSection: return 7;
           case kVectorSection: return 2;
-          case kMiscSection: return 6;
+          case kMiscSection: return 7;
           case kFilterSection: return 3;
           case kImportSection: return 3;
           case kCloudImportSection:
@@ -485,6 +492,10 @@
         {
             if (row==5) {
                 ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"emuspeed" list:Options.arrayEmuSpeed title:cell.textLabel.text];
+                [[self navigationController] pushViewController:listController animated:YES];
+            }
+            if (row==6) {
+                ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"soundValue" list:Options.arraySoundValue title:cell.textLabel.text];
                 [[self navigationController] pushViewController:listController animated:YES];
             }
             break;

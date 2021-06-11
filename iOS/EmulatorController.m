@@ -237,6 +237,8 @@ int g_pref_full_num_buttons=4;
 int g_pref_input_touch_type = TOUCH_INPUT_DSTICK;
 int g_pref_analog_DZ_value = 2;
 int g_pref_ext_control_type = 1;
+int g_pref_sound_value = 0;
+int g_pref_benchmark = 0;
 int g_pref_haptic_button_feedback = 1;
 
 int g_pref_nintendoBAYX = 0;
@@ -291,7 +293,7 @@ static BOOL g_mame_warning_shown = FALSE;
 static BOOL g_no_roms_found = FALSE;
 
 #define OPTIONS_RELOAD_KEYS     @[@"filterClones", @"filterNotWorking", @"filterBIOS"]
-#define OPTIONS_RESTART_KEYS    @[@"cheats", @"autosave", @"hiscore", @"vbean2x", @"vflicker"]
+#define OPTIONS_RESTART_KEYS    @[@"cheats", @"autosave", @"hiscore", @"vbean2x", @"vflicker", @"soundValue"]
 static NSInteger g_settings_roms_count;
 static NSInteger g_settings_file_count;
 static NSInteger g_settings_hash_count;
@@ -390,17 +392,22 @@ void m4i_game_stop(void);
 // run MAME (or pass NULL for main menu)
 int run_mame(char* system, char* game)
 {
+    // use -nocoinlock as a do-nothing option
+    char* nada = "-nocoinlock";
+
     char speed[16];
     snprintf(speed, sizeof(speed), "%0.2f", (float)g_pref_speed / 100.0);
     
     char snap[64] = {"%g/%i"};
     if (system && system[0] != 0 && game && game[0] != 0)
         snprintf(snap, sizeof(snap), "%s/%s/%%i", system, game);
+    
+    char sound[16];
+    snprintf(sound, sizeof(sound), "%d", g_pref_sound_value);
 
     char* argv[] = {"mame4ios",
-        // use -nocoinlock as a do-nothing option
-        (system && system[0] != 0) ? system : "-nocoinlock",
-        (game && game[0] != 0 && game[0] != ' ') ? game : "-nocoinlock",
+        (system && system[0] != 0) ? system : nada,
+        (game && game[0] != 0 && game[0] != ' ') ? game : nada,
         "-nocoinlock",
         g_pref_cheat ? "-cheat" : "-nocheat",
         g_pref_autosave ? "-autosave" : "-noautosave",      // TODO: this is not connected to any UI
@@ -411,6 +418,10 @@ int run_mame(char* system, char* game)
         "-beam", g_pref_vector_beam2x ? "2.5" : "1.0",
         "-pause_brightness", "1.0",  // to debug shaders
         "-snapname", snap,
+        g_pref_sound_value != 0 ? "-samplerate" : myosd_get(MYOSD_VERSION) == 139 ? "-nosound" : "-sound",
+        g_pref_sound_value != 0 ?         sound : myosd_get(MYOSD_VERSION) == 139 ?       nada :   "none",
+        g_pref_benchmark ? "-bench" : nada,
+        g_pref_benchmark ?     "90" : nada,
         };
     
     int argc = sizeof(argv) / sizeof(argv[0]);
@@ -1340,6 +1351,15 @@ HUDViewController* g_menu;
     g_pref_analog_DZ_value = [op analogDeadZoneValue];
     g_pref_ext_control_type = [op controltype];
     g_pref_haptic_button_feedback = [op hapticButtonFeedback];
+    
+    switch  ([op soundValue]){
+        case 0: g_pref_sound_value=0;break;
+        case 1: g_pref_sound_value=11025;break;
+        case 2: g_pref_sound_value=22050;break;
+        case 3: g_pref_sound_value=32000;break;
+        case 4: g_pref_sound_value=44100;break;
+        case 5: g_pref_sound_value=48000;break;
+        default:g_pref_sound_value=0;}
     
     g_pref_cheat = [op cheats];
        
