@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (class, readonly, strong) NSArray* arrayEmuSpeed;
 @property (class, readonly, strong) NSArray* arrayControlType;
+@property (class, readonly, strong) NSArray* arraySoundValue;
 @property (class, readonly, strong) NSArray* arraySkin;
 @property (class, readonly, strong) NSArray* arrayFilter;
 @property (class, readonly, strong) NSArray* arrayScreenShader;
@@ -51,6 +52,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readwrite,assign) int controltype;
 @property (readwrite,assign) int showINFO;
+
+@property (readwrite,assign) int soundValue;
 
 @property (readwrite,assign) int sticktype;
 @property (readwrite,assign) int numbuttons;
