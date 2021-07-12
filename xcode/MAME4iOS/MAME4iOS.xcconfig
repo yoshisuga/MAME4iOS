@@ -17,8 +17,8 @@
 
 ORG_IDENTIFIER          = com.example   // CHANGE this to your Organization Identifier.
 DEVELOPMENT_TEAM        = ABC8675309    // CHANGE this to your Team ID. (or select in Xcode project editor)
-CURRENT_PROJECT_VERSION = 2021.7b
-MARKETING_VERSION       = 2021.7b
+CURRENT_PROJECT_VERSION = 2021.7
+MARKETING_VERSION       = 2021.7
 
 // 2. enable or disable entitlements
 //    tvOS TopShelf and iCloud import/export require special app entitlements
@@ -28,9 +28,13 @@ ENTITLEMENTS_TYPE = -Base
 // ENTITLEMENTS_TYPE = -Full
 // UN-COMMENT PREV LINE if you want a build with full entitlements
 
-// 3. The MAME binary to link to. You can point this to an earlier version of MAME,
-//    such as version 0.139u1 (Classic)
-MAMELIB = libmame-ios.a
+// 3. The MAME binary to link to.
+//    The default is libmame-[platform].a (Latest MAME version)
+//    You can point this to an earlier version of MAME,
+//    such as libmame-classic-[platform].a (Classic, MAME version 0.139u1).
+MAMELIB_IOS = libmame-ios.a
+MAMELIB_TVOS = libmame-tvos.a
+MAMELIB_MACOS = libmame-mac.a
 
 // these should not be changed.
 PRODUCT_BUNDLE_IDENTIFIER   = $(ORG_IDENTIFIER).$(PROJECT_NAME:lower)
