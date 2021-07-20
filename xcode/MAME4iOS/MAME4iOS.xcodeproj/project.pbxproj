@@ -448,7 +448,7 @@
 		92ECB8EB21EA984D00D1E3D0 /* MAME4tvOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MAME4tvOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		92ECB8F621EA985000D1E3D0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		92ECB8F821EA985000D1E3D0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		92ECB8FE21EA992100D1E3D0 /* libmame-tvos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libmame-tvos.a"; path = ../../$LIBMAME_TVOS; sourceTree = "<group>"; };
+		92ECB8FE21EA992100D1E3D0 /* libmame-tvos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libmame-tvos.a"; path = ../../$MAMELIB_TVOS; sourceTree = "<group>"; };
 		92ECB90021EA993E00D1E3D0 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.1.sdk/usr/lib/libc++.tbd"; sourceTree = DEVELOPER_DIR; };
 		92ECB90321EA997A00D1E3D0 /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.1.sdk/System/Library/Frameworks/GameController.framework; sourceTree = DEVELOPER_DIR; };
 		92ECB90521EA998000D1E3D0 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.1.sdk/System/Library/Frameworks/CoreFoundation.framework; sourceTree = DEVELOPER_DIR; };
@@ -560,7 +560,7 @@
 		EFA7570B2406D64600A02AAB /* SystemImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SystemImage.m; sourceTree = "<group>"; };
 		EFA7570C2406D64600A02AAB /* SystemImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SystemImage.h; sourceTree = "<group>"; };
 		EFA757212408488D00A02AAB /* iCadeControls.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = iCadeControls.png; path = "../../iOS-res/iCadeControls.png"; sourceTree = "<group>"; };
-		EFA7A0DC24B61E6C0009CF88 /* libmame-mac.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libmame-mac.a"; path = ../../$LIBMAME_MACOS; sourceTree = "<group>"; };
+		EFA7A0DC24B61E6C0009CF88 /* libmame-mac.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libmame-mac.a"; path = ../../$MAMELIB_MACOS; sourceTree = "<group>"; };
 		EFA7A15E24B65C020009CF88 /* MAME4mac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MAME4mac.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EFA7A16124B65FCC0009CF88 /* MAME4mac-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "MAME4mac-Info.plist"; sourceTree = "<group>"; };
 		EFA7A16524B792CE0009CF88 /* MetalPerformanceShaders.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalPerformanceShaders.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/System/Library/Frameworks/MetalPerformanceShaders.framework; sourceTree = DEVELOPER_DIR; };
