@@ -11,6 +11,6 @@
 
 #include "MAME4iOS.xcconfig"
 
-MAMELIB_IOS = libmame-classic-ios.a
-MAMELIB_TVOS = libmame-classic-tvos.a
-MAMELIB_MACOS = libmame-classic-mac.a
+MAMELIB_IOS = libmame-139u1-ios.a
+MAMELIB_TVOS = libmame-139u1-tvos.a
+MAMELIB_MACOS = libmame-139u1-mac.a
