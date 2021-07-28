@@ -1,0 +1,16 @@
+//
+//  Classic.xcconfig
+//  MAME4iOS
+//
+//  Created by Yoshi Sugawara on 7/10/21.
+//  Copyright © 2021 MAME4iOS Team. All rights reserved.
+//
+
+// Configuration settings file format documentation can be found at:
+// https://help.apple.com/xcode/#/dev745c5c974
+
+#include "MAME4iOS.xcconfig"
+
+MAMELIB_IOS = libmame-139u1-ios.a
+MAMELIB_TVOS = libmame-139u1-tvos.a
+MAMELIB_MACOS = libmame-139u1-mac.a
