@@ -28,17 +28,21 @@ ENTITLEMENTS_TYPE = -Base
 // ENTITLEMENTS_TYPE = -Full
 // UN-COMMENT PREV LINE if you want a build with full entitlements
 
-// 3. The MAME binary to link to.
-//    The default is libmame-[platform].a (Latest MAME version)
-//    You can point this to an earlier version of MAME,
-//    such as libmame-classic-[platform].a (Classic, MAME version 0.139u1).
-MAMELIB_IOS = libmame-ios.a
-MAMELIB_TVOS = libmame-tvos.a
-MAMELIB_MACOS = libmame-mac.a
+// 3. Select the MAME binary to link to.
+//    139u1 or latest MAME version
+
+// USE THIS LINE for a local build of 139u1 MAME. (via make-ios.sh, make-tvos.sh, or make-mac.sh)
+// MAMELIB = libmame-139u1
+// USE THIS LINE for a build of current latest MAME (via get-libmame.sh)
+MAMELIB = libmame
 
 // these should not be changed.
 PRODUCT_BUNDLE_IDENTIFIER   = $(ORG_IDENTIFIER).$(PROJECT_NAME:lower)
 APP_GROUP_IDENTIFIER        = group.$(ORG_IDENTIFIER).$(PROJECT_NAME:lower)
 ICLOUD_CONTAINER_IDENTIFIER = iCloud.$(ORG_IDENTIFIER).$(PROJECT_NAME:lower)
 CODE_SIGN_ENTITLEMENTS      = $(TARGET_NAME)/$(TARGET_NAME)$(ENTITLEMENTS_TYPE).entitlements
+
+MAMELIB_IOS = $(MAMELIB)-ios.a
+MAMELIB_TVOS = $(MAMELIB)-tvos.a
+MAMELIB_MACOS = $(MAMELIB)-mac.a
 
