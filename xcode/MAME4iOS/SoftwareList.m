@@ -189,7 +189,7 @@
 
     if (name.length == 0 || desc.length == 0 || list.count == 0) {
         NSLog(@"INVALID SOFTWARE LIST: %@", path);
-        return nil;
+        return FALSE;
     }
     
     NSLog(@"INSTALL SOFTWARE LIST: %@ \"%@\" (%d items)", name, desc, (int)list.count);
