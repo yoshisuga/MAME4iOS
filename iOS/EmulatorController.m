@@ -2422,18 +2422,21 @@ static void push_mame_flush()
     myosd_exitGame = 0;
 }
 
-#define MYOSD_KEY_ESC_2 (MYOSD_KEY_ESC + (MYOSD_KEY_ESC<<8))
-
 // send buttons and keys - we do this inside of myosd_poll_input() because it is called from droid_ios_poll_input
 // ...and we are sure MAME is in a state to accept input, and not waking up from being paused or loading a ROM
 // ...we hold a button DOWN for 2 frames (buttonPressReleaseCycles) and wait (buttonNextPressCycles) frames.
 // ...these are *magic* numbers that seam to work good. if we hold a key down too long, games may ignore it. if we send too fast bad too.
 static int handle_buttons(myosd_input_state* myosd)
 {
+    // ignore input (ie delay) used to hold down or pause between keys AND buttons
+    if (g_mame_buttons_tick > 0) {
+        g_mame_buttons_tick--;
+        return 1;
+    }
+
     // check for exitGame
     if (myosd_exitGame) {
-        NSCParameterAssert(g_mame_key == 0 || g_mame_key == MYOSD_KEY_EXIT ||
-                           g_mame_key == MYOSD_KEY_ESC || g_mame_key == MYOSD_KEY_ESC_2);
+        NSCParameterAssert(g_mame_key == 0 || g_mame_key == MYOSD_KEY_EXIT || g_mame_key == MYOSD_KEY_ESC);
         // only force a hard exit on keyboard machines, else just use ESC
         // TODO: fix keyboard for realz
         if (myosd_has_keyboard && myosd_inGame && !myosd_in_menu)
@@ -2451,6 +2454,7 @@ static int handle_buttons(myosd_input_state* myosd)
 
         if (myosd->keyboard[key] == 0) {
             myosd->keyboard[key] = 0x80;
+            g_mame_buttons_tick = buttonPressReleaseCycles;  // keep key DOWN for this long.
         }
         else {
             if (key != MYOSD_KEY_LSHIFT && key != MYOSD_KEY_LCONTROL) {
@@ -2459,6 +2463,9 @@ static int handle_buttons(myosd_input_state* myosd)
                 myosd->keyboard[MYOSD_KEY_LCONTROL] = 0;
             }
             g_mame_key = g_mame_key >> 8;
+            
+            if (g_mame_key != 0 )
+                g_mame_buttons_tick = buttonNextPressCycles;  // wait this long before next key
         }
         return 1;
     }
@@ -2466,11 +2473,6 @@ static int handle_buttons(myosd_input_state* myosd)
     // send buttons to MAME
     if (g_mame_buttons.count == 0)
         return 0;
-    
-    if (g_mame_buttons_tick > 0) {
-        g_mame_buttons_tick--;
-        return 1;
-    }
     
     [g_mame_buttons_lock lock];
     unsigned long button = g_mame_buttons.firstObject.intValue;

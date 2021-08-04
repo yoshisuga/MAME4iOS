@@ -1,6 +1,6 @@
 # Version 2021.7
 * `OSD` changes.
-* Ability to build with latest `MAME` version (0.232)
+* Ability to build with latest `MAME` version
 * New `Category.ini` from `MAME` 230
 * Attack of the Clones! - support import of merged romsets.
 * `MAME` Software List (aka softlist) support.
