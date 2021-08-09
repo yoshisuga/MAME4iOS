@@ -1,4 +1,6 @@
 # Version 2021.7
+**NOTE** `MAME4iOS` 2021.7 comes in two versions, one that uses `MAME 139u1`, and one that uses the latest `MAME` (currently 234).  Make sure you download the version that is compatible with your ROMs, You can get the current version from the `Settings` page. If you want to use software based (ie cartridge, etc) romsets, please read the **Software Lists** section in the HELP or README.
+
 * `OSD` changes.
 * Ability to build with latest `MAME` version
 * New `Category.ini` from `MAME` 230

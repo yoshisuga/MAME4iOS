@@ -2454,7 +2454,8 @@ static int handle_buttons(myosd_input_state* myosd)
 
         if (myosd->keyboard[key] == 0) {
             myosd->keyboard[key] = 0x80;
-            g_mame_buttons_tick = buttonPressReleaseCycles;  // keep key DOWN for this long.
+            if (g_mame_key != MYOSD_KEY_ESC)
+                g_mame_buttons_tick = buttonPressReleaseCycles;  // keep key DOWN for this long.
         }
         else {
             if (key != MYOSD_KEY_LSHIFT && key != MYOSD_KEY_LCONTROL) {
@@ -2464,7 +2465,7 @@ static int handle_buttons(myosd_input_state* myosd)
             }
             g_mame_key = g_mame_key >> 8;
             
-            if (g_mame_key != 0 )
+            if (g_mame_key != 0)
                 g_mame_buttons_tick = buttonNextPressCycles;  // wait this long before next key
         }
         return 1;

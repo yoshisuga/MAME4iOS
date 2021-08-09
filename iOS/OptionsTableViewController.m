@@ -123,7 +123,7 @@
     else if (git_commit)
         build_info = [NSString stringWithFormat:@"%@ (%@)", build_date, git_commit];
 
-    return [NSString stringWithFormat:@"%@ %@\n%@\n%@", display_name, version, bundle_ident, build_info];
+    return [NSString stringWithFormat:@"%@ • %@\n%@\n%@", display_name, version, bundle_ident, build_info];
 }
 
 #if TARGET_OS_TV
