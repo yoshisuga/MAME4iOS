@@ -87,7 +87,7 @@
         [UIKeyCommand commandWithTitle:@"Coin+Start"image:[UIImage systemImageNamed:@"person.circle"]       action:@selector(mameStartP1)   input:@"1" modifierFlags:UIKeyModifierCommand propertyList:nil],
         [UIKeyCommand commandWithTitle:@"Fullscreen"image:[UIImage systemImageNamed:@"rectangle.and.arrow.up.right.and.arrow.down.left"]
                                 action:@selector(mameFullscreen) input:@"\r" modifierFlags:UIKeyModifierCommand propertyList:nil],
-        [UIKeyCommand commandWithTitle:@"Settings"  image:[UIImage systemImageNamed:@"gear"]                action:@selector(mameSettings)  input:@"," modifierFlags:UIKeyModifierCommand propertyList:nil],
+        [UIKeyCommand commandWithTitle:@"Settings"  image:[UIImage systemImageNamed:@"gear"]                action:@selector(mameSettings)  input:@"." modifierFlags:UIKeyModifierCommand propertyList:nil],
         [UIKeyCommand commandWithTitle:@"Configure" image:[UIImage systemImageNamed:@"slider.horizontal.3"] action:@selector(mameConfigure) input:@"\t" modifierFlags:0 propertyList:nil],
         [UIKeyCommand commandWithTitle:@"Pause"     image:[UIImage systemImageNamed:@"pause.circle"]        action:@selector(mamePause)     input:@"P" modifierFlags:0 propertyList:nil],
         [UIKeyCommand commandWithTitle:@"Reset"     image:[UIImage systemImageNamed:@"power"]               action:@selector(mameReset)     input:keyF3 modifierFlags:0 propertyList:nil],
