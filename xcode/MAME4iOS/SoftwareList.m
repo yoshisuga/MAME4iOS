@@ -234,7 +234,7 @@ static NSArray<NSString*>* getZipFiles(NSString* path) {
     
     // if the ROM had a name like "foobar 1.zip", "foobar (1).zip" use only the first word as the ROM name.
     // this most likley came when a user downloaded the zip and a foobar.zip already existed, MAME ROMs are <=20 char and no spaces.
-    NSArray* words = [name componentsSeparatedByString:@" "];
+    NSArray* words = [name componentsSeparatedByCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@" -"]];
     if (words.count == 2 && [words.lastObject stringByTrimmingCharactersInSet:[NSCharacterSet punctuationCharacterSet]].intValue != 0)
         name = words.firstObject;
     

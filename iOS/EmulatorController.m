@@ -853,7 +853,7 @@ void mame_save_state(int slot)
         ppc.sourceView = self.view;
 
         // use only up/down arrows if the popup can fit
-        if (ppc.permittedArrowDirections == UIPopoverArrowDirectionAny) {
+        if (viewController.preferredContentSize.height != 0 && ppc.permittedArrowDirections == UIPopoverArrowDirectionAny) {
             CGRect rect = [ppc.sourceView convertRect:ppc.sourceRect toCoordinateSpace:ppc.sourceView.window];
             CGRect safe = UIEdgeInsetsInsetRect(ppc.sourceView.window.bounds, ppc.sourceView.window.safeAreaInsets);
             CGSize size = viewController.preferredContentSize;
@@ -4355,7 +4355,7 @@ BOOL is_roms_dir(NSString* dir) {
     
     // if the ROM had a name like "foobar 1.zip", "foobar (1).zip" use only the first word as the ROM name.
     // this most likley came when a user downloaded the zip and a foobar.zip already existed, MAME ROMs are <=20 char and no spaces.
-    NSArray* words = [[romName stringByDeletingPathExtension] componentsSeparatedByString:@" "];
+    NSArray* words = [[romName stringByDeletingPathExtension] componentsSeparatedByCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@" -"]];
     if (words.count == 2 && [words.lastObject stringByTrimmingCharactersInSet:[NSCharacterSet punctuationCharacterSet]].intValue != 0)
         romName = [words.firstObject stringByAppendingPathExtension:romName.pathExtension];
 
