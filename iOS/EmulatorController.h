@@ -152,6 +152,7 @@ enum {BTN_A,BTN_B,BTN_Y,BTN_X,BTN_L1,BTN_R1,
 - (void)runImport;
 - (void)runExport;
 - (void)runExportSkin;
+- (void)runShowFiles;
 #endif
 
 - (void)enterBackground;

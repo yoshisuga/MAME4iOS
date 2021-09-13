@@ -4818,7 +4818,21 @@ BOOL is_roms_dir(NSString* dir) {
     [top presentViewController:activity animated:YES completion:nil];
 #endif
 }
-#endif
+
+// open (aka Show in Finder or Files.app) the Document directory
+- (void)runShowFiles {
+    // first try to open Files.app, if that fails then open Finder
+    NSString* str =  [NSString stringWithFormat:@"shareddocuments://%@",  getDocumentPath(@"")];
+    NSURL* url = [[NSURL alloc] initWithString:str];
+    [UIApplication.sharedApplication openURL:url options:@{} completionHandler:^(BOOL success) {
+        if (!success) {
+            NSURL* url = [[NSURL alloc] initFileURLWithPath:getDocumentPath(@"")];
+            [UIApplication.sharedApplication openURL:url options:@{} completionHandler:nil];
+        }
+    }];
+}
+
+#endif // TARGET_OS_IOS
 
 - (void)runServer {
     [WebServer sharedInstance].webUploader.delegate = self;

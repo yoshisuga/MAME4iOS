@@ -1611,6 +1611,8 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
             // if this is a parent romset, delete all the clones too.
             if (game.gameParent.length <= 1)
                 list = [list filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"NOT (%K == %@ AND %K == %@)", kGameInfoSystem, game[kGameInfoSystem], kGameInfoParent, game.gameName]];
+            
+            // TODO: if you delete a machine/system shoud we delete all the Software too?
 
             [self setGameList:list];
 

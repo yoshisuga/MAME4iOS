@@ -69,6 +69,7 @@
         [UICommand commandWithTitle:@"Export..."     image:[UIImage systemImageNamed:@"square.and.arrow.up.on.square"]        action:@selector(fileExport) propertyList:nil],
 //      [UICommand commandWithTitle:@"Export Skin..."image:[UIImage systemImageNamed:@"square.and.arrow.up"]        action:@selector(fileExportSkin) propertyList:nil],
         [UICommand commandWithTitle:@"Start Server"  image:[UIImage systemImageNamed:@"arrow.up.arrow.down.circle"] action:@selector(fileStartServer) propertyList:nil],
+        [UICommand commandWithTitle:@"Show Files"    image:[UIImage systemImageNamed:@"folder"] action:@selector(fileShowFiles) propertyList:nil],
     ]] atStartOfMenuForIdentifier:UIMenuFile];
     
     // UIKeyInputF3 is only valid on 13.4 or later, avoid a build warning
@@ -117,6 +118,9 @@
 }
 -(void)fileExportSkin {
     [hrViewController runExportSkin];
+}
+-(void)fileShowFiles {
+    [hrViewController runShowFiles];
 }
 
 @end
