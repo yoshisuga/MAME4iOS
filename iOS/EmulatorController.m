@@ -296,7 +296,6 @@ static BOOL g_no_roms_found = FALSE;
 #define OPTIONS_RESTART_KEYS    @[@"cheats", @"autosave", @"hiscore", @"vbean2x", @"vflicker", @"soundValue"]
 static NSInteger g_settings_roms_count;
 static NSInteger g_settings_file_count;
-static NSInteger g_settings_hash_count;
 static Options*  g_settings_options;
 
 static BOOL g_bluetooth_enabled;
@@ -422,6 +421,9 @@ int run_mame(char* system, char* game)
         g_pref_sound_value != 0 ?         sound : myosd_get(MYOSD_VERSION) == 139 ?       nada :   "none",
         g_pref_benchmark ? "-bench" : nada,
         g_pref_benchmark ?     "90" : nada,
+#if DEBUG
+        "-verbose",
+#endif
         };
     
     int argc = sizeof(argv) / sizeof(argv[0]);
@@ -1227,7 +1229,6 @@ HUDViewController* g_menu;
 - (void)checkForNewRomsInit {
     g_settings_roms_count = [NSFileManager.defaultManager enumeratorAtPath:getDocumentPath(@"roms")].allObjects.count;
     g_settings_file_count = [NSFileManager.defaultManager contentsOfDirectoryAtPath:getDocumentPath(@"") error:nil].count;
-    g_settings_hash_count = [NSFileManager.defaultManager contentsOfDirectoryAtPath:getDocumentPath(@"hash") error:nil].count;
     g_settings_options = [[Options alloc] init];
 }
 
@@ -1236,22 +1237,16 @@ HUDViewController* g_menu;
         return;
     NSInteger roms_count = [NSFileManager.defaultManager enumeratorAtPath:getDocumentPath(@"roms")].allObjects.count;
     NSInteger file_count = [NSFileManager.defaultManager contentsOfDirectoryAtPath:getDocumentPath(@"") error:nil].count;
-    NSInteger hash_count = [NSFileManager.defaultManager contentsOfDirectoryAtPath:getDocumentPath(@"hash") error:nil].count;
     Options* options = [[Options alloc] init];
 
     if (file_count != g_settings_file_count)
         NSLog(@"FILES added to root %ld => %ld", g_settings_file_count, file_count);
     if (roms_count != g_settings_roms_count)
         NSLog(@"FILES added to roms %ld => %ld", g_settings_roms_count, roms_count);
-    if (hash_count != g_settings_hash_count)
-        NSLog(@"FILES added to hash %ld => %ld", g_settings_list_count, list_count);
-
-    if (g_settings_hash_count != hash_count)
-        [g_softlist reload];
 
     if (g_settings_file_count != file_count)
         [self performSelector:@selector(moveROMS) withObject:nil afterDelay:0.0];
-    else if ((g_settings_roms_count != roms_count) || (g_settings_hash_count != hash_count) || (g_mame_reset && myosd_inGame == 0))
+    else if ((g_settings_roms_count != roms_count) || (g_mame_reset && myosd_inGame == 0))
         [self reload];
     else if (myosd_inGame == 0 && ![g_settings_options isEqualToOptions:options withKeys:OPTIONS_RELOAD_KEYS])
         [self reload];
@@ -1637,13 +1632,14 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
     [hideShowControlsForLightgun.imageView setContentMode:UIViewContentModeScaleAspectFit];
     [hideShowControlsForLightgun setImage:[UIImage imageNamed:@"dpad"] forState:UIControlStateNormal];
     [hideShowControlsForLightgun addTarget:self action:@selector(toggleControlsForLightgunButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
-    hideShowControlsForLightgun.alpha = 0.2f;
+    hideShowControlsForLightgun.alpha = ((float)g_controller_opacity / 100.0f) * 0.5;
     hideShowControlsForLightgun.translatesAutoresizingMaskIntoConstraints = NO;
-    [hideShowControlsForLightgun addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:[[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad ? 30.0f : 20.0f]];
-    [hideShowControlsForLightgun addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:[[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad ? 30.0f :20.0f]];
+    CGFloat size = UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPad ? 32.0f : 24.0f;
+    [hideShowControlsForLightgun addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:size]];
+    [hideShowControlsForLightgun addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:size]];
     [self.view addSubview:hideShowControlsForLightgun];
     [self.view addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeCenterX multiplier:1.0f constant:0.0f]];
-    [self.view addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeTopMargin multiplier:1.0f constant:8.0f]];
+    [self.view addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeTopMargin multiplier:1.0f constant:size / 2.0]];
     areControlsHidden = NO;
 #else
     UIPanGestureRecognizer* pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(remotePan:)];
@@ -4289,7 +4285,7 @@ BOOL is_root_dir(NSString* dir) {
         return [MAME_ROOT_DIRS containsObject:dir];
 }
 
-// return TRUE if `dir` is a subdir of `roms` *OR* is the basename of a romset in `roms` *OR* is name of a softlist
+// return TRUE if `dir` is a subdir of `roms` *OR* is the basename of a romset in `roms`
 BOOL is_roms_dir(NSString* dir) {
     
     if (dir.length == 0)
@@ -4307,11 +4303,6 @@ BOOL is_roms_dir(NSString* dir) {
         if ([NSFileManager.defaultManager fileExistsAtPath:[path stringByAppendingPathExtension:ext]])
             return TRUE;
     }
-    
-    // check for softlist name
-    path = [[getDocumentPath(@"hash") stringByAppendingPathComponent:dir] stringByAppendingPathExtension:@"xml"];
-    if ([NSFileManager.defaultManager fileExistsAtPath:path])
-        return TRUE;
     
     return FALSE;
 }
@@ -4361,11 +4352,6 @@ BOOL is_roms_dir(NSString* dir) {
 
     NSLog(@"ROM NAME: '%@' PATH:%@", romName, [romPath stringByReplacingOccurrencesOfString:rootPath withString:@"~/"]);
     
-    // import a XML file, currently a XML file is assumed to be a SoftwareList
-    if ([romName.pathExtension.lowercaseString isEqualToString:@"xml"]) {
-        return [g_softlist installFile:romPath];
-    }
-    
     //
     // scan the ZIP file to see what kind it is.
     //
@@ -4389,7 +4375,6 @@ BOOL is_roms_dir(NSString* dir) {
     int __block numSKIN = 0;
     int __block numLAY = 0;
     int __block numZIP = 0;
-    int __block numXML = 0;
     int __block numCHD = 0;
     int __block numWAV = 0;
     int __block numDAT = 0;
@@ -4405,8 +4390,6 @@ BOOL is_roms_dir(NSString* dir) {
             numWAV++;
         if ([ext isEqualToString:@"CHD"])
             numCHD++;
-        if ([ext isEqualToString:@"XML"])
-            numXML++;
         if ([dat_files containsObject:info.name.lastPathComponent.uppercaseString])
             numDAT++;
         for (int i=0; i<NUM_BUTTONS; i++)
@@ -4416,12 +4399,13 @@ BOOL is_roms_dir(NSString* dir) {
     }];
 
     NSString* toPath = nil;
-    
+    NSString* softList = nil;
+
     if (!result)
     {
         NSLog(@"%@ is a CORRUPT ZIP (deleting)", romPath);
     }
-    else if (numZIP != 0 || numCHD != 0 || numDAT != 0 || numXML != 0)
+    else if (numZIP != 0 || numCHD != 0 || numDAT != 0)
     {
         NSLog(@"%@ is a ZIPSET", [romPath lastPathComponent]);
         int maxFiles = numFiles;
@@ -4462,7 +4446,7 @@ BOOL is_roms_dir(NSString* dir) {
             if (toPath == nil && dirs.count == 0 && is_roms_dir(romName.stringByDeletingPathExtension))
                 toPath = [romsPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@/%@", romName.stringByDeletingPathExtension, name]];
             
-            // if it is a zip or xml and we dont know where to put it drop it in the root to get re-imported
+            // if it is a zip and we dont know where to put it drop it in the root to get re-imported
             if (toPath == nil && [IMPORT_FILE_TYPES containsObject:ext])
                 toPath = [rootPath stringByAppendingPathComponent:name];
             
@@ -4509,8 +4493,14 @@ BOOL is_roms_dir(NSString* dir) {
         NSLog(@"%@ is a SKIN file", romName);
         toPath = [skinPath stringByAppendingPathComponent:romName];
     }
-    else if ([g_softlist installFile:romPath]) {
-        NSLog(@"%@ is a SOFTWARE ROMSET", romName);
+    else if ((softList = [g_softlist getSoftwareListForPath:romPath andName:romName.stringByDeletingPathExtension]) != nil) {
+        NSLog(@"%@ is a SOFTWARE ROMSET (%@)", romName, softList);
+        
+        NSString* softDir = [romsPath stringByAppendingPathComponent:softList];
+        toPath = [softDir stringByAppendingPathComponent:romName];
+
+        // create (if needed) directory to hold software ROMs
+        [NSFileManager.defaultManager createDirectoryAtPath:softDir withIntermediateDirectories:NO attributes:nil error:nil];
     }
     else if ([romName length] <= 20 && ![romName containsString:@" "])
     {
@@ -4557,19 +4547,10 @@ BOOL is_roms_dir(NSString* dir) {
     
     NSMutableArray *list = [[NSMutableArray alloc] init];
     
-    // add all the XML files first, so we have SoftwareList info for the later files (if needed)
+    // add ZIP files, skipping well known root zips
     for (NSString* file in files)
     {
-        if ([file.pathExtension.lowercaseString isEqualToString:@"xml"])
-            [list addObject:file];
-    }
-    
-    // now add ZIP files.
-    for (NSString* file in files)
-    {
-        if ([file.stringByDeletingPathExtension.lowercaseString isEqualToString:@"cheat"])
-            continue;
-        if ([file.pathExtension.lowercaseString isEqualToString:@"xml"])
+        if ([@[@"cheat", @"hash"] containsObject:file.stringByDeletingPathExtension.lowercaseString])
             continue;
         if ([IMPORT_FILE_TYPES containsObject:file.pathExtension.lowercaseString])
             [list addObject: file];
@@ -4851,19 +4832,12 @@ BOOL is_roms_dir(NSString* dir) {
         [self reset];
         [self done:self];
     }]];
-    if ([g_softlist getSoftwareListNames].count != 0) {
-        [alert addAction:[UIAlertAction actionWithTitle:@"Delete Software" style:UIAlertActionStyleDestructive handler:^(UIAlertAction* action) {
-            [g_softlist reset];
-            [self done:self];
-        }]];
-    }
     [alert addAction:[UIAlertAction actionWithTitle:@"Delete All ROMs" style:UIAlertActionStyleDestructive handler:^(UIAlertAction* action) {
         for (NSString* file in [EmulatorController getROMS]) {
             NSString* path = [NSString stringWithUTF8String:get_documents_path(file.UTF8String)];
             if (![NSFileManager.defaultManager removeItemAtPath:path error:nil])
                 NSLog(@"ERROR DELETING ROM: %@", file);
         }
-        [g_softlist reset];
         [self reset];
         [self done:self];
     }]];
