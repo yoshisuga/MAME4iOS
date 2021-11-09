@@ -81,6 +81,13 @@ const char* get_documents_path(const char* file)
 
     chdir (get_documents_path(""));
     
+    // copy first-run files.
+    if (![NSFileManager.defaultManager fileExistsAtPath:getDocumentPath(@"roms")])
+    {
+        for (NSString* file in @[@"cheat0139.zip", @"history0139.zip"])
+            [NSFileManager.defaultManager copyItemAtPath:getResourcePath(file) toPath:getDocumentPath(file) error:nil];
+    }
+    
     // create directories
     for (NSString* dir in MAME_ROOT_DIRS)
     {
@@ -90,24 +97,27 @@ const char* get_documents_path(const char* file)
             continue;
         
         mkdir(dirPath.UTF8String, 0755);
-        
-        // copy pre-canned files.
-        for (NSString* file in @[@"cheat0139.zip", @"history0139.zip", @"Category.ini", @"hiscore.dat"])
-        {
-            NSString* fromPath = [NSString stringWithUTF8String:get_resource_path(file.UTF8String)];
-            NSString* toPath = [NSString stringWithUTF8String:get_documents_path(file.UTF8String)];
-            
-            if ([[NSFileManager defaultManager] fileExistsAtPath:fromPath] && ![[NSFileManager defaultManager] fileExistsAtPath:toPath])
-            {
-                NSError* error = nil;
-                if (![[NSFileManager defaultManager] copyItemAtPath: fromPath toPath:toPath error:&error])
-                    NSLog(@"Unable to copy file %@! %@", fromPath, [error localizedDescription]);
-            }
+    }
+    
+    // copy (or update) pre-canned files.
+    for (NSString* file in @[@"Category.ini", @"hiscore.dat", @"hash.zip"])
+    {
+        NSString* fromPath = getResourcePath(file);
+        NSString* toPath = getDocumentPath(file);
+        NSParameterAssert([NSFileManager.defaultManager fileExistsAtPath:fromPath]);
+
+        NSDate* fromDate = [[NSFileManager.defaultManager attributesOfItemAtPath:fromPath error:nil] fileModificationDate];
+        NSDate* toDate = [[NSFileManager.defaultManager attributesOfItemAtPath:toPath error:nil] fileModificationDate] ?: NSDate.distantPast;
+        NSParameterAssert(fromDate != nil);
+
+        if ([fromDate compare:toDate] == NSOrderedDescending) {
+            [NSFileManager.defaultManager removeItemAtPath:toPath error:nil];
+            [NSFileManager.defaultManager copyItemAtPath:fromPath toPath:toPath error:nil];
         }
     }
 
     // set non-backup items.
-    for (NSString* path in @[@"roms", @"artwork", @"titles", @"samples", @"nvram", @"cheat.zip"])
+    for (NSString* path in @[@"roms", @"artwork", @"titles", @"samples", @"nvram", @"cheat.zip", @"hash.zip"])
     {
         NSURL* url = [NSURL fileURLWithPath:[NSString stringWithUTF8String:get_documents_path(path.UTF8String)]];
         [url setResourceValue:@(YES) forKey:NSURLIsExcludedFromBackupKey error:nil];
