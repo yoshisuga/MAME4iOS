@@ -46,7 +46,7 @@
 #import "EmulatorController.h"
 #include "libmame.h"
 
-#define DebugLog 0
+#define DebugLog 1
 #if DebugLog == 0
 #define NSLog(...) (void)0
 #endif
@@ -738,6 +738,12 @@ int hid_to_mame(int keyCode) {
 //      * macOS keyboard when debugging in Xcode simulator
 //
 -(void)hardwareKey:(NSString*)key keyCode:(int)keyCode isKeyDown:(BOOL)isKeyDown modifierFlags:(UIKeyModifierFlags)modifierFlags {
+    
+#ifdef __IPHONE_13_4
+    // CMD+. will send an ESC key like this. (used on the iPad magic keyboard with no real Escape key)
+    if (key == UIKeyInputEscape)
+        keyCode = UIKeyboardHIDUsageKeyboardEscape;
+#endif
     
     NSLog(@"hardwareKey: %s%s%s%s%@ (%d) %s",
           (modifierFlags & UIKeyModifierShift)     ? "SHIFT+" : "",
