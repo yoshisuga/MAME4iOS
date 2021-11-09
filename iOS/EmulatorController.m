@@ -115,14 +115,25 @@ TIMER_INIT_END
 @end
 #endif
 
-#if TARGET_OS_MACCATALYST
 @class NSCursor;
 @interface NSObject()
 -(void)hide;
 -(void)unhide;
 -(void)toggleFullScreen:(id)sender;
 @end
+
+static BOOL IsRunningOnMac() {
+#if TARGET_OS_MACCATALYST
+    return TRUE;
+#elif TARGET_OS_IOS
+    if (@available(iOS 14.0, *))
+        return NSProcessInfo.processInfo.isiOSAppOnMac;
+    else
+        return FALSE;
+#else
+    return FALSE;
 #endif
+}
 
 #define DebugLog 0
 #if DebugLog == 0 || DEBUG == 0
@@ -911,14 +922,15 @@ HUDViewController* g_menu;
 
     HUDViewController* menu = [[HUDViewController alloc] init];
 
-#if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST)
-    menu.font = nil;
-    menu.blurBackground = YES;
-#else
-    menu.font = [UIFont systemFontOfSize:42.0 weight:UIFontWeightRegular];
-    menu.blurBackground = NO;
-    menu.dimBackground = 0.8;
-#endif
+    if (TARGET_OS_IOS && !IsRunningOnMac()) {
+        menu.font = nil;
+        menu.blurBackground = YES;
+    }
+    else {
+        menu.font = [UIFont systemFontOfSize:42.0 weight:UIFontWeightRegular];
+        menu.blurBackground = NO;
+        menu.dimBackground = 0.8;
+    }
     
 #if TARGET_OS_IOS
     if (view != nil)
@@ -1815,7 +1827,7 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
 -(void)enableHDR {
 
     // no HDR on macOS, at least not yet
-    if (TARGET_OS_MACCATALYST || self.view.window.screen.traitCollection.displayGamut != UIDisplayGamutP3)
+    if (IsRunningOnMac() || self.view.window.screen.traitCollection.displayGamut != UIDisplayGamutP3)
         return;
 
     if (avPlayer == nil) {
@@ -2022,13 +2034,14 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     
     if (hudView == nil) {
         hudView = [[InfoHUD alloc] init];
-#if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST)
-        hudView.font = [UIFont monospacedDigitSystemFontOfSize:hudView.font.pointSize weight:UIFontWeightRegular];
-        hudView.layoutMargins = UIEdgeInsetsMake(8, 8, 8, 8);
-#else
-        hudView.font = [UIFont monospacedDigitSystemFontOfSize:24.0 weight:UIFontWeightRegular];
-        hudView.layoutMargins = UIEdgeInsetsMake(16, 16, 16, 16);
-#endif
+        if (TARGET_OS_IOS && !IsRunningOnMac()) {
+            hudView.font = [UIFont monospacedDigitSystemFontOfSize:hudView.font.pointSize weight:UIFontWeightRegular];
+            hudView.layoutMargins = UIEdgeInsetsMake(8, 8, 8, 8);
+        }
+        else {
+            hudView.font = [UIFont monospacedDigitSystemFontOfSize:24.0 weight:UIFontWeightRegular];
+            hudView.layoutMargins = UIEdgeInsetsMake(16, 16, 16, 16);
+        }
         [hudView addTarget:self action:@selector(hudChange:) forControlEvents:UIControlEventValueChanged];
         [self loadHUD];
         [self.view addSubview:hudView];
@@ -3095,7 +3108,7 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
 
 #pragma mark - SCREEN VIEW SETUP
 
-#if TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS
 -(BOOL)isFullscreenWindow {
     if (self.view.window == nil)
         return TRUE;
@@ -3139,13 +3152,17 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
         g_device_is_fullscreen = FALSE;
     
     g_direct_mouse_enable = TRUE;
-#if TARGET_OS_MACCATALYST
-    if ([self isFullscreenWindow])
-        // on macOS device is always fullscreen when the app window is fullscreen.
-        g_device_is_fullscreen = TRUE;
-    else
-        // on macOS dont use direct mouse input when the app window is NOT fullscreen.
-        g_direct_mouse_enable = FALSE;
+
+#if TARGET_OS_IOS
+    if (IsRunningOnMac())
+    {
+        if ([self isFullscreenWindow])
+            // on macOS device is always fullscreen when the app window is fullscreen.
+            g_device_is_fullscreen = TRUE;
+        else
+            // on macOS dont use direct mouse input when the app window is NOT fullscreen.
+            g_direct_mouse_enable = FALSE;
+    }
 #endif
     
     if (change_layout)
@@ -3484,21 +3501,22 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
                 // if user is manualy controling fullscreen, then turn off fullscreen joy.
                 op.fullscreenJoystick = g_pref_full_screen_joy = FALSE;
                 
-#if TARGET_OS_MACCATALYST
                 // in macApp we really only want one flag for "fullscreen"
                 // NOTE: macApp has two concepts of fullsceen g_device_is_fullscreen is if
                 // the game SCREEN fills our window, and a macApp's window can be fullscreen
-                op.fullscreenLandscape = g_pref_full_screen_land = !g_device_is_fullscreen;
-                op.fullscreenPortrait = g_pref_full_screen_port = !g_device_is_fullscreen;
-                
-                if (g_device_is_fullscreen)
-                    [[[[NSClassFromString(@"NSApplication") sharedApplication] windows] firstObject] toggleFullScreen:nil];
-#else
-                if (g_device_is_landscape)
+                if (IsRunningOnMac()) {
                     op.fullscreenLandscape = g_pref_full_screen_land = !g_device_is_fullscreen;
-                else
                     op.fullscreenPortrait = g_pref_full_screen_port = !g_device_is_fullscreen;
-#endif
+
+                    if (g_device_is_fullscreen)
+                        [[[[NSClassFromString(@"NSApplication") sharedApplication] windows] firstObject] toggleFullScreen:nil];
+                }
+                else {
+                    if (g_device_is_landscape)
+                        op.fullscreenLandscape = g_pref_full_screen_land = !g_device_is_fullscreen;
+                    else
+                        op.fullscreenPortrait = g_pref_full_screen_port = !g_device_is_fullscreen;
+                }
                 [op saveOptions];
                 [self changeUI];
                 break;
@@ -4735,32 +4753,33 @@ BOOL is_roms_dir(NSString* dir) {
 - (void)runExport {
     NSString* name = @PRODUCT_NAME " (export)";
     
-#if TARGET_OS_MACCATALYST
-    NSURL *url = [self createTempFile:[name stringByAppendingPathExtension:@"zip"]];
-    [self saveROMS:url progressBlock:nil];
-    UIDocumentPickerViewController* documentPicker = [[UIDocumentPickerViewController alloc] initWithURLs:@[url] inMode:UIDocumentPickerModeMoveToService];
-    documentPicker.modalPresentationStyle = UIModalPresentationFormSheet;
-    documentPicker.delegate = self;
-    documentPicker.allowsMultipleSelection = YES;
-    [self.topViewController presentViewController:documentPicker animated:YES completion:nil];
-#else
-    FileItemProvider* item = [[FileItemProvider alloc] initWithTitle:name typeIdentifier:@"public.zip-archive" saveHandler:^BOOL(NSURL* url, FileItemProviderProgressHandler progressHandler) {
-        return [self saveROMS:url progressBlock:progressHandler];
-    }];
-    
-    // NOTE UIActivityViewController is kind of broken in the Simulator, if you find a crash or problem verify it on a real device.
-    UIActivityViewController* activity = [[UIActivityViewController alloc] initWithActivityItems:@[item] applicationActivities:nil];
-    
-    UIViewController* top = self.topViewController;
-
-    if (activity.popoverPresentationController != nil) {
-        activity.popoverPresentationController.sourceView = top.view;
-        activity.popoverPresentationController.sourceRect = CGRectMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds), 0.0f, 0.0f);
-        activity.popoverPresentationController.permittedArrowDirections = 0;
+    if (IsRunningOnMac()) {
+        NSURL *url = [self createTempFile:[name stringByAppendingPathExtension:@"zip"]];
+        [self saveROMS:url progressBlock:nil];
+        UIDocumentPickerViewController* documentPicker = [[UIDocumentPickerViewController alloc] initWithURLs:@[url] inMode:UIDocumentPickerModeMoveToService];
+        documentPicker.modalPresentationStyle = UIModalPresentationFormSheet;
+        documentPicker.delegate = self;
+        documentPicker.allowsMultipleSelection = YES;
+        [self.topViewController presentViewController:documentPicker animated:YES completion:nil];
     }
-    
-    [top presentViewController:activity animated:YES completion:nil];
-#endif
+    else {
+        FileItemProvider* item = [[FileItemProvider alloc] initWithTitle:name typeIdentifier:@"public.zip-archive" saveHandler:^BOOL(NSURL* url, FileItemProviderProgressHandler progressHandler) {
+            return [self saveROMS:url progressBlock:progressHandler];
+        }];
+        
+        // NOTE UIActivityViewController is kind of broken in the Simulator, if you find a crash or problem verify it on a real device.
+        UIActivityViewController* activity = [[UIActivityViewController alloc] initWithActivityItems:@[item] applicationActivities:nil];
+        
+        UIViewController* top = self.topViewController;
+
+        if (activity.popoverPresentationController != nil) {
+            activity.popoverPresentationController.sourceView = top.view;
+            activity.popoverPresentationController.sourceRect = CGRectMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds), 0.0f, 0.0f);
+            activity.popoverPresentationController.permittedArrowDirections = 0;
+        }
+        
+        [top presentViewController:activity animated:YES completion:nil];
+    }
 }
 - (void)runExportSkin {
     
@@ -4772,32 +4791,33 @@ BOOL is_roms_dir(NSString* dir) {
     else
         skin_export_name = g_pref_skin;
     
-#if TARGET_OS_MACCATALYST
-    NSURL *url = [self createTempFile:[skin_export_name stringByAppendingPathExtension:@"zip"]];
-    [skinManager exportTo:url.path progressBlock:nil];
-    UIDocumentPickerViewController* documentPicker = [[UIDocumentPickerViewController alloc] initWithURLs:@[url] inMode:UIDocumentPickerModeMoveToService];
-    documentPicker.modalPresentationStyle = UIModalPresentationFormSheet;
-    documentPicker.delegate = self;
-    documentPicker.allowsMultipleSelection = YES;
-    [self.topViewController presentViewController:documentPicker animated:YES completion:nil];
-#else
-    FileItemProvider* item = [[FileItemProvider alloc] initWithTitle:skin_export_name typeIdentifier:@"public.zip-archive" saveHandler:^BOOL(NSURL* url, FileItemProviderProgressHandler progressHandler) {
-        return [self->skinManager exportTo:url.path progressBlock:progressHandler];
-    }];
-    
-    // NOTE UIActivityViewController is kind of broken in the Simulator, if you find a crash or problem verify it on a real device.
-    UIActivityViewController* activity = [[UIActivityViewController alloc] initWithActivityItems:@[item] applicationActivities:nil];
-    
-    UIViewController* top = self.topViewController;
-
-    if (activity.popoverPresentationController != nil) {
-        activity.popoverPresentationController.sourceView = top.view;
-        activity.popoverPresentationController.sourceRect = CGRectMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds), 0.0f, 0.0f);
-        activity.popoverPresentationController.permittedArrowDirections = 0;
+    if (IsRunningOnMac()) {
+        NSURL *url = [self createTempFile:[skin_export_name stringByAppendingPathExtension:@"zip"]];
+        [skinManager exportTo:url.path progressBlock:nil];
+        UIDocumentPickerViewController* documentPicker = [[UIDocumentPickerViewController alloc] initWithURLs:@[url] inMode:UIDocumentPickerModeMoveToService];
+        documentPicker.modalPresentationStyle = UIModalPresentationFormSheet;
+        documentPicker.delegate = self;
+        documentPicker.allowsMultipleSelection = YES;
+        [self.topViewController presentViewController:documentPicker animated:YES completion:nil];
     }
-    
-    [top presentViewController:activity animated:YES completion:nil];
-#endif
+    else {
+        FileItemProvider* item = [[FileItemProvider alloc] initWithTitle:skin_export_name typeIdentifier:@"public.zip-archive" saveHandler:^BOOL(NSURL* url, FileItemProviderProgressHandler progressHandler) {
+            return [self->skinManager exportTo:url.path progressBlock:progressHandler];
+        }];
+        
+        // NOTE UIActivityViewController is kind of broken in the Simulator, if you find a crash or problem verify it on a real device.
+        UIActivityViewController* activity = [[UIActivityViewController alloc] initWithActivityItems:@[item] applicationActivities:nil];
+        
+        UIViewController* top = self.topViewController;
+
+        if (activity.popoverPresentationController != nil) {
+            activity.popoverPresentationController.sourceView = top.view;
+            activity.popoverPresentationController.sourceRect = CGRectMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds), 0.0f, 0.0f);
+            activity.popoverPresentationController.permittedArrowDirections = 0;
+        }
+        
+        [top presentViewController:activity animated:YES completion:nil];
+    }
 }
 
 // open (aka Show in Finder or Files.app) the Document directory
