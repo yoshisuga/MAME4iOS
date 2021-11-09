@@ -46,7 +46,7 @@
 #import "EmulatorController.h"
 #include "libmame.h"
 
-#define DebugLog 1
+#define DebugLog 0
 #if DebugLog == 0
 #define NSLog(...) (void)0
 #endif
