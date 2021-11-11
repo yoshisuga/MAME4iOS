@@ -133,10 +133,8 @@
     
     unichar key = [text characterAtIndex:0];
     
-#if TARGET_OS_TV
     if ([emuController controllerUserInteractionEnabled])
         return;
-#endif
     
     //NSLog(@"%s: %@ (%d)", __FUNCTION__, text.debugDescription, [text characterAtIndex:0]);
 

@@ -125,7 +125,7 @@ TIMER_INIT_END
 static BOOL IsRunningOnMac() {
 #if TARGET_OS_MACCATALYST
     return TRUE;
-#elif TARGET_OS_IOS
+#elif TARGET_OS_IOS && defined(__IPHONE_14_0)
     if (@available(iOS 14.0, *))
         return NSProcessInfo.processInfo.isiOSAppOnMac;
     else
@@ -135,7 +135,7 @@ static BOOL IsRunningOnMac() {
 #endif
 }
 
-#define DebugLog 0
+#define DebugLog 1
 #if DebugLog == 0 || DEBUG == 0
 #define NSLog(...) (void)0
 #endif
@@ -152,17 +152,17 @@ NSArray * g_keyboards;
 NSArray * g_mice;
 
 NSLock* mouse_lock;
-unsigned long mouse_status[NUM_JOY];
-float mouse_delta_x[NUM_JOY];
-float mouse_delta_y[NUM_JOY];
-float mouse_delta_z[NUM_JOY];
+unsigned long mouse_status[MYOSD_NUM_MICE];
+float mouse_delta_x[MYOSD_NUM_MICE];
+float mouse_delta_y[MYOSD_NUM_MICE];
+float mouse_delta_z[MYOSD_NUM_MICE];
 
 unsigned long lightgun_status;
 float lightgun_x;
 float lightgun_y;
 
 // Turbo and Autofire functionality
-int cyclesAfterButtonPressed[NUM_JOY][NUM_BUTTONS];
+int cyclesAfterButtonPressed[MYOSD_NUM_JOY][NUM_BUTTONS];
 int turboBtnEnabled[NUM_BUTTONS];
 int g_pref_autofire = 0;
 
@@ -174,7 +174,7 @@ unsigned long myosd_pad_status_2;
 float myosd_pad_x;
 float myosd_pad_y;
 
-uint8_t myosd_keyboard[NUM_KEYS];
+uint8_t myosd_keyboard[MYOSD_NUM_KEYS];
 int     myosd_keyboard_changed;
 
 // input profile for current machine (see poll_input)
@@ -267,7 +267,7 @@ int g_pref_lightgun_bottom_reload = 0;
 int g_pref_touch_analog_enabled = 1;
 int g_pref_touch_analog_hide_dpad = 1;
 int g_pref_touch_analog_hide_buttons = 0;
-float g_pref_touch_analog_sensitivity = 500.0;
+float g_pref_touch_analog_sensitivity = 512.0;
 
 int g_pref_touch_directional_enabled = 0;
 
@@ -432,7 +432,7 @@ int run_mame(char* system, char* game)
         g_pref_sound_value != 0 ?         sound : myosd_get(MYOSD_VERSION) == 139 ?       nada :   "none",
         g_pref_benchmark ? "-bench" : nada,
         g_pref_benchmark ?     "90" : nada,
-#if DEBUG
+#if DebugLog && defined(DEBUG)
         "-verbose",
 #endif
         };
@@ -682,15 +682,6 @@ void m4i_game_stop()
     myosd_isVector = NO;
     myosd_isLCD = NO;
 }
-
-@implementation UINavigationController(KeyboardDismiss)
-
-- (BOOL)disablesAutomaticKeyboardDismissal
-{
-    return NO;
-}
-
-@end
 
 @interface EmulatorController() {
     CSToastStyle *toastStyle;
@@ -1312,16 +1303,12 @@ HUDViewController* g_menu;
             viewControllerToPresent.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
     }
 
-#if TARGET_OS_TV
     self.controllerUserInteractionEnabled = YES;
-#endif
     [super presentViewController:viewControllerToPresent animated:flag completion:completion];
 }
 -(void)dismissViewControllerAnimated:(BOOL)flag completion:(void (^)(void))completion {
     NSLog(@"DISMISS VIEWCONTROLLER: %@", [self presentedViewController]);
-#if TARGET_OS_TV
     self.controllerUserInteractionEnabled = NO;
-#endif
     [super dismissViewControllerAnimated:flag completion:completion];
 }
 
@@ -2381,7 +2368,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
 #define DIRECT_CONTROLLER_READ  0 // 1 - always read controller, 0 - cache read, and only read when marked dirty
 
-#define NUM_DEV (NUM_JOY+1) // one extra device for the Siri Remote!
+#define NUM_DEV (MYOSD_NUM_JOY+1) // one extra device for the Siri Remote!
 
 #define MYOSD_PLAYER_SHIFT  28
 #define MYOSD_PLAYER_MASK   MYOSD_PLAYER(0x3)
@@ -2518,7 +2505,7 @@ static void handle_turbo(myosd_input_state* myosd) {
     }
     
     for (int button=0; button<NUM_BUTTONS; button++) {
-        for (int i = 0; i < NUM_JOY; i++) {
+        for (int i = 0; i < MYOSD_NUM_JOY; i++) {
             if (turboBtnEnabled[button]) {
                 if (myosd->joy_status[i] & buttonMask[button]) {
                     // toggle the button every `buttonPressReleaseCycles`
@@ -2539,12 +2526,12 @@ void handle_autofire(myosd_input_state* myosd)
     if (!g_pref_autofire || myosd->input_mode != MYOSD_INPUT_MODE_NORMAL)
         return;
 
-    static int A_pressed[NUM_JOY];
-    static int old_A_pressed[NUM_JOY];
-    static int enabled_autofire[NUM_JOY];
-    static int fire[NUM_JOY];
+    static int A_pressed[MYOSD_NUM_JOY];
+    static int old_A_pressed[MYOSD_NUM_JOY];
+    static int enabled_autofire[MYOSD_NUM_JOY];
+    static int fire[MYOSD_NUM_JOY];
 
-    for(int i=0; i<NUM_JOY; i++)
+    for(int i=0; i<MYOSD_NUM_JOY; i++)
     {
         old_A_pressed[i] = A_pressed[i];
         A_pressed[i] = (myosd->joy_status[i] & MYOSD_A) != 0;
@@ -2783,7 +2770,7 @@ static void handle_device_input(myosd_input_state* myosd)
         }
     }
     // set all other controllers to ZERO
-    for (int index = (int)controllers_count; index < NUM_JOY; index++) {
+    for (int index = (int)controllers_count; index < MYOSD_NUM_JOY; index++) {
         myosd->joy_status[index] = 0;
         memset(myosd->joy_analog[index], 0, sizeof(myosd->joy_analog[0]));
     }
@@ -2793,7 +2780,7 @@ static void handle_device_input(myosd_input_state* myosd)
     TIMER_START(timer_read_mice);
     NSArray* mice = g_mice;
     if (mice.count != 0 && g_direct_mouse_enable) {
-        for (int i = 0; i < MIN(NUM_JOY, mice.count); i++) {
+        for (int i = 0; i < MIN(MYOSD_NUM_MICE, mice.count); i++) {
             read_mouse(mice[i], myosd, i);
         }
     }
@@ -2817,7 +2804,7 @@ static void handle_p1aspx(myosd_input_state* myosd) {
     if (g_pref_p1aspx == 0 || myosd->input_mode != MYOSD_INPUT_MODE_NORMAL)
         return;
     
-    for (int i=1; i<NUM_JOY; i++) {
+    for (int i=1; i<MYOSD_NUM_JOY; i++) {
         myosd->joy_status[i] = myosd->joy_status[0];
         memcpy(myosd->joy_analog[i], myosd->joy_analog[0], sizeof(myosd->joy_analog[0]));
     }
@@ -3129,8 +3116,8 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
         screenSize.height = floor(screenSize.height / 0.77);
     }
 
-    NSLog(@"screenSize: %@", NSStringFromSize(screenSize));
-    NSLog(@"windowSize: %@", NSStringFromSize(windowSize));
+    NSLog(@"screenSize: %@", NSStringFromCGSize(screenSize));
+    NSLog(@"windowSize: %@", NSStringFromCGSize(windowSize));
 
     return (windowSize.width >= screenSize.width && windowSize.height >= screenSize.height);
 }
@@ -4303,7 +4290,7 @@ BOOL is_root_dir(NSString* dir) {
         return [MAME_ROOT_DIRS containsObject:dir];
 }
 
-// return TRUE if `dir` is a subdir of `roms` *OR* is the basename of a romset in `roms`
+// return TRUE if `dir` is a subdir of `roms` *OR* is the basename of a romset in `roms` *OR* is name of a softlist
 BOOL is_roms_dir(NSString* dir) {
     
     if (dir.length == 0)
@@ -4321,6 +4308,10 @@ BOOL is_roms_dir(NSString* dir) {
         if ([NSFileManager.defaultManager fileExistsAtPath:[path stringByAppendingPathExtension:ext]])
             return TRUE;
     }
+    
+    // check for softlist name
+    if ([[g_softlist getSoftwareListNames] containsObject:dir])
+        return TRUE;
     
     return FALSE;
 }
@@ -4511,7 +4502,7 @@ BOOL is_roms_dir(NSString* dir) {
         NSLog(@"%@ is a SKIN file", romName);
         toPath = [skinPath stringByAppendingPathComponent:romName];
     }
-    else if ((softList = [g_softlist getSoftwareListForPath:romPath andName:romName.stringByDeletingPathExtension]) != nil) {
+    else if ((softList = [g_softlist getSoftwareListNameForRomset:romPath named:romName.stringByDeletingPathExtension]) != nil) {
         NSLog(@"%@ is a SOFTWARE ROMSET (%@)", romName, softList);
         
         NSString* softDir = [romsPath stringByAppendingPathComponent:softList];
@@ -4631,7 +4622,7 @@ BOOL is_roms_dir(NSString* dir) {
                 NSLog(@"found (%d) *more* ROMs to move....", (int)files.count);
         }
         
-        dispatch_async(dispatch_get_main_queue(), ^{
+        dispatch_async(dispatch_get_main_queue(), ^{ 
             if (progressAlert == nil)
                 g_move_roms = 0;
             [progressAlert.presentingViewController dismissViewControllerAnimated:YES completion:^{
@@ -4738,7 +4729,7 @@ BOOL is_roms_dir(NSString* dir) {
     // TODO: we might need to export the `org.7-zip.7-zip-archive` type in Info.plist??
     UIDocumentPickerViewController* documentPicker = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:@[@"public.zip-archive", @"org.7-zip.7-zip-archive", @"public.xml"] inMode:UIDocumentPickerModeImport];
     documentPicker.modalPresentationStyle = UIModalPresentationFormSheet;
-    documentPicker.delegate = self;
+    documentPicker.delegate = (id<UIDocumentPickerDelegate>)self;
     documentPicker.allowsMultipleSelection = YES;
     [self.topViewController presentViewController:documentPicker animated:YES completion:nil];
 }
@@ -4758,7 +4749,7 @@ BOOL is_roms_dir(NSString* dir) {
         [self saveROMS:url progressBlock:nil];
         UIDocumentPickerViewController* documentPicker = [[UIDocumentPickerViewController alloc] initWithURLs:@[url] inMode:UIDocumentPickerModeMoveToService];
         documentPicker.modalPresentationStyle = UIModalPresentationFormSheet;
-        documentPicker.delegate = self;
+        documentPicker.delegate = (id<UIDocumentPickerDelegate>)self;
         documentPicker.allowsMultipleSelection = YES;
         [self.topViewController presentViewController:documentPicker animated:YES completion:nil];
     }
@@ -4796,7 +4787,7 @@ BOOL is_roms_dir(NSString* dir) {
         [skinManager exportTo:url.path progressBlock:nil];
         UIDocumentPickerViewController* documentPicker = [[UIDocumentPickerViewController alloc] initWithURLs:@[url] inMode:UIDocumentPickerModeMoveToService];
         documentPicker.modalPresentationStyle = UIModalPresentationFormSheet;
-        documentPicker.delegate = self;
+        documentPicker.delegate = (id<UIDocumentPickerDelegate>)self;
         documentPicker.allowsMultipleSelection = YES;
         [self.topViewController presentViewController:documentPicker animated:YES completion:nil];
     }
@@ -4836,7 +4827,7 @@ BOOL is_roms_dir(NSString* dir) {
 #endif // TARGET_OS_IOS
 
 - (void)runServer {
-    [WebServer sharedInstance].webUploader.delegate = self;
+    [WebServer sharedInstance].webUploader.delegate = (id<GCDWebUploaderDelegate>)self;
     [[WebServer sharedInstance] startUploader];
 }
 
@@ -4953,8 +4944,8 @@ static unsigned long g_device_has_input[NUM_DEV];   // TRUE if device needs to b
         }
     }
     // only handle upto NUM_JOY (non Siri Remote) controllers
-    if (controllers.count > NUM_JOY) {
-        [controllers removeObjectsInRange:NSMakeRange(NUM_JOY,controllers.count - NUM_JOY)];
+    if (controllers.count > MYOSD_NUM_JOY) {
+        [controllers removeObjectsInRange:NSMakeRange(MYOSD_NUM_JOY,controllers.count - MYOSD_NUM_JOY)];
     }
     // add all the controllers without a extendedGamepad profile last, ie the Siri Remote.
     for (GCController* controler in GCController.controllers) {
@@ -4993,7 +4984,7 @@ static unsigned long g_device_has_input[NUM_DEV];   // TRUE if device needs to b
     for (NSInteger index = 0; index < g_controllers.count; index++) {
         GCController* controller = g_controllers[index];
         // the Siri Remote, or any controller higher than MAME is looking for get mapped to Player 1
-        if (controller.extendedGamepad == nil || index >= MIN(myosd_num_inputs, NUM_JOY))
+        if (controller.extendedGamepad == nil || index >= MIN(myosd_num_inputs, MYOSD_NUM_JOY))
             [controller setPlayerIndex:0];
         else
             [controller setPlayerIndex:index];
@@ -5163,7 +5154,7 @@ static unsigned long g_device_has_input[NUM_DEV];   // TRUE if device needs to b
     int index = (int)[g_controllers indexOfObjectIdenticalTo:controller];
     int player = (int)controller.playerIndex;
 
-    if (index < 0 || index >= NUM_DEV || player < 0 || player >= NUM_JOY)
+    if (index < 0 || index >= NUM_DEV || player < 0 || player >= MYOSD_NUM_JOY)
         return;
     
     NSLog(@"handleMenuButton[%d]: %s %s", index,
@@ -5253,7 +5244,7 @@ static unsigned long g_device_has_input[NUM_DEV];   // TRUE if device needs to b
     int index = (int)[g_controllers indexOfObjectIdenticalTo:controller];
     int player = (int)controller.playerIndex;
 
-    if (index < 0 || index >= NUM_DEV || player < 0 || player >= NUM_JOY)
+    if (index < 0 || index >= NUM_DEV || player < 0 || player >= MYOSD_NUM_JOY)
         return;
     
     unsigned long combo_buttons = (MYOSD_A|MYOSD_B|MYOSD_X|MYOSD_Y|MYOSD_UP|MYOSD_DOWN|MYOSD_LEFT|MYOSD_RIGHT|MYOSD_L1|MYOSD_R1|MYOSD_L2|MYOSD_R2);
@@ -5420,8 +5411,11 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
             GCDeviceElement* element = device.physicalInputProfile.elements[key];
             NSLog(@"            ELEMENT: %@", element);
             
-            NSLog(@"                     Name: %@ (%@)", element.localizedName, element.unmappedLocalizedName);
-            NSLog(@"                     Symbol: %@ (%@)", element.sfSymbolsName, element.unmappedSfSymbolsName);
+            if (element.localizedName != nil)
+                NSLog(@"                     Name: %@ (%@)", element.localizedName, element.unmappedLocalizedName);
+            if (element.sfSymbolsName != nil)
+                NSLog(@"                     Symbol: %@ (%@)", element.sfSymbolsName, element.unmappedSfSymbolsName);
+            
             NSLog(@"                     isAnalog: %@", element.isAnalog ? @"YES" : @"NO");
             NSLog(@"                     isBoundToSystemGesture: %@", element.isBoundToSystemGesture ? @"YES" : @"NO");
             NSLog(@"                     preferredSystemGestureState: %@",
@@ -5509,7 +5503,7 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
 -(void)setupMice API_AVAILABLE(ios(14.0)) {
     g_mice = [GCMouse.mice copy];
     
-    for (int i = 0; i < MIN(NUM_JOY, g_mice.count); i++) {
+    for (int i = 0; i < MIN(MYOSD_NUM_MICE, g_mice.count); i++) {
         GCMouse* mouse = g_mice[i];
         [self dumpDevice:mouse];
         
@@ -5522,19 +5516,22 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
         // TODO: turns out MAME will merge mice by default, we dont need to.
 
         [mouse.mouseInput.leftButton setPressedChangedHandler:^(GCControllerButtonInput* button, float value, BOOL pressed) {
+            NSLog(@"MOUSE BUTTON %@", button);
             mouse_status[i] = (mouse_status[i] & ~MYOSD_A) | (pressed ? MYOSD_A : 0);
         }];
         [mouse.mouseInput.rightButton setPressedChangedHandler:^(GCControllerButtonInput* button, float value, BOOL pressed) {
+            NSLog(@"MOUSE BUTTON %@", button);
             mouse_status[i] = (mouse_status[i] & ~MYOSD_B) | (pressed ? MYOSD_B : 0);
         }];
         [mouse.mouseInput.middleButton setPressedChangedHandler:^(GCControllerButtonInput* button, float value, BOOL pressed) {
+            NSLog(@"MOUSE BUTTON %@", button);
             mouse_status[i] = (mouse_status[i] & ~MYOSD_Y) | (pressed ? MYOSD_Y : 0);
         }];
         [mouse.mouseInput setMouseMovedHandler:^(GCMouseInput* mouse, float deltaX, float deltaY) {
             if (!g_direct_mouse_enable)
                 return;
             deltaY = -deltaY;   // flip Y for MAME
-            //NSLog(@"MOUSE MOVE: %f, %f", deltaX, deltaY);
+            NSLog(@"MOUSE MOVE: %f, %f", deltaX, deltaY);
             [mouse_lock lock];
             mouse_delta_x[i] += deltaX * g_pref_touch_analog_sensitivity * scale;
             mouse_delta_y[i] += deltaY * g_pref_touch_analog_sensitivity * scale;
@@ -5550,7 +5547,7 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
             float zValue = sqrtf(xValue*xValue + yValue*yValue);
             if (yValue < -xValue)
                 zValue = -zValue;
-            //NSLog(@"MOUSE SCROLL: (%f, %f) => %f", xValue, yValue, zValue);
+            NSLog(@"MOUSE SCROLL: (%f, %f) => %f", xValue, yValue, zValue);
             [mouse_lock lock];
             mouse_delta_z[i] += zValue * g_pref_touch_analog_sensitivity * scale;
             [mouse_lock unlock];

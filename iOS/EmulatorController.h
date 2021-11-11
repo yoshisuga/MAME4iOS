@@ -65,12 +65,6 @@ enum {BTN_A,BTN_B,BTN_Y,BTN_X,BTN_L1,BTN_R1,
 #define ZIP_FILE_TYPES    @[@"zip", @"7z"]
 #define MAME_ROOT_DIRS    @[@"iOS", @"artwork", @"titles", @"cfg", @"nvram", @"ini", @"snap", @"sta", @"hi", @"inp", @"memcard", @"samples", @"roms", @"dats", @"cheat", @"skins"]
 
-@interface UINavigationController (KeyboardDismiss)
-
-- (BOOL)disablesAutomaticKeyboardDismissal;
-
-@end
-
 #if TARGET_OS_IOS
 @class AnalogStickView;
 @class LayoutView;
@@ -79,11 +73,7 @@ enum {BTN_A,BTN_B,BTN_Y,BTN_X,BTN_L1,BTN_R1,
 @class InfoHUD;
 @class KeyboardView;
 
-#if TARGET_OS_IOS
-@interface EmulatorController : UIViewController<GCDWebUploaderDelegate, UIDocumentPickerDelegate>
-#elif TARGET_OS_TV
-@interface EmulatorController : GCEventViewController<GCDWebUploaderDelegate>
-#endif
+@interface EmulatorController : GCEventViewController
 {
   @public UIView<ScreenView>* screenView;
   UIImageView	    * imageBack;
