@@ -21,6 +21,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithPath:(NSString*)root;
 
+// get names of all software lists
+- (NSArray<NSString*>*)getSoftwareListNames;
+
 // get software list by name, filtered to only Available
 - (NSArray<NSDictionary*>*)getSoftwareList:(NSString*)name;
 
@@ -28,7 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray<NSDictionary*>*)getGamesForSystem:(NSDictionary*)system;
 
 // get name of software list for a romset, used to know where to install.
-- (nullable NSString*)getSoftwareListForPath:(NSString*)path andName:(NSString*)name;
+- (nullable NSString*)getSoftwareListNameForRomset:(NSString*)path named:(NSString*)name;
 
 // if this a merged romset, extract clones as empty zip files so they show up as Available
 - (BOOL)extractClones:(NSString*)path;

@@ -47,6 +47,20 @@
 
 #pragma mark Public methods
 
+// get software list names
+- (NSArray*)getSoftwareListNames {
+    @synchronized (self) {
+        NSArray* list = [software_list_cache objectForKey:@"*"];
+        if (list == nil) {
+            @autoreleasepool {
+                list = [getZipFileNames(hash_zip) valueForKeyPath:@"lastPathComponent.stringByDeletingPathExtension.lowercaseString"];
+                [software_list_cache setObject:list forKey:@"*"];
+            }
+        }
+        return list; 
+    }
+}
+
 // get software list, from cache, or load and validate the ROMs
 - (NSArray*)getSoftwareList:(NSString*)name {
     NSParameterAssert(name.length != 0 && ![name containsString:@" "] && ![name containsString:@","]);
@@ -100,20 +114,22 @@
 //
 // we use a cached pre-computed database to find the possible software list names to search
 //
-- (nullable NSString*)getSoftwareListForPath:(NSString*)path andName:(NSString*)name {
+- (nullable NSString*)getSoftwareListNameForRomset:(NSString*)path named:(NSString*)name {
     
     if (name.length == 0)
         name = path.lastPathComponent.stringByDeletingPathExtension.lowercaseString;
+    
+    // get subset of software lists to search
+    NSDictionary* soft_list_db = [self getSoftwareListDatabase];
+    NSArray* list_names = LIST(soft_list_db[name]);
+    if (list_names.count == 0)
+        return nil;
 
     // get SHA1 of all files in this romset
     NSArray* hashes = getZipFileSHA1(path);
     if (hashes.count == 0)
-        return FALSE;
+        return nil;
 
-    // get subset of software lists to search
-    NSDictionary* soft_list_db = [self getSoftwareListDatabase];
-    NSArray* list_names = LIST(soft_list_db[name]);
-    
     NSLog(@"SEARCHING SOFTWARE LISTS(%@) FOR: %@", [list_names componentsJoinedByString:@", "], name);
 
     // figure out if this zip file is a SOFTWARE romset, by looking for it in *all* the installed software lists
@@ -245,9 +261,10 @@ static NSString* sha1(NSData* data) {
 }
 
 // get the SHA1 of all files in a ZIP, excluding hidden files and directories.
+// TODO: this does not work for 7z files
 static NSArray<NSString*>* getZipFileSHA1(NSString* path) {
     NSMutableArray* hashes = [[NSMutableArray alloc] init];
-    [ZipFile enumerate:path withOptions:ZipFileEnumFiles usingBlock:^(ZipFileInfo* info) {
+    [ZipFile enumerate:path withOptions:(ZipFileEnumFiles | ZipFileEnumLoadData) usingBlock:^(ZipFileInfo* info) {
         [hashes addObject:sha1(info.data)];
     }];
     return [hashes copy];
