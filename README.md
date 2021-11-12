@@ -52,17 +52,19 @@ Even if you are not in the paid Apple Developer Program, you can sideload the ap
 1. Open the Xcode project in `MAME4iOS.xcodeproj`  
 
 2. Set the Organization and Team Identifer in `MAME4iOS.xcconfig`
-        ```
-        ORG_IDENTIFIER   = com.example    // CHANGE this to your Organization Identifier.
-        DEVELOPMENT_TEAM = ABC8675309     // CHANGE this to your Team ID. (or select in Xcode project editor)
-        ```
-        - The `ORG_IDENTIFIER` is a reverse DNS string that uniquely identifies your organization.
-        - You can also set the Development Team via the drop down in the Xcode project editor, for each Target.  
-        - You can find your TeamID [here](https://developer.apple.com/account/#/membership).
-        
-3. Enable entitlements in `MAME4iOS.xcconfig` (optional, only if you a developer account)  
-    - entitlements are required for tvOS TopShelf and iCloud Import/Export/Sync.
+
+    ```
+    ORG_IDENTIFIER   = com.example    // CHANGE this to your Organization Identifier.
+    DEVELOPMENT_TEAM = ABC8675309     // CHANGE this to your Team ID. (or select in Xcode project editor)
+    ```
     
+    - The `ORG_IDENTIFIER` is a reverse DNS string that uniquely identifies your organization.
+    - You can also set the Development Team via the drop down in the Xcode project editor, for each Target.  
+    - You can find your TeamID [here](https://developer.apple.com/account/#/membership).
+        
+3. Enable entitlements in `MAME4iOS.xcconfig` (optional, only if you have a developer account)  
+    - entitlements are required for tvOS TopShelf and iCloud Import/Export/Sync.
+
 4. Select the MAME binary to link to, in `MAME4iOS.xcconfig`
     - 139u1 or latest `MAME 2xx` version.
 
