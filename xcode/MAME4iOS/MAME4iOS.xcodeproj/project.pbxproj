@@ -1343,7 +1343,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# force this resource to update each build\ntouch gitinfo.json.sh\n\n# build (or download) the MAME lib\ncd ../../\nif [ \"$MAMELIB\" == \"libmame\" ]; then\n    ./get-libmame.sh\nelif [ \"$PLATFORM_NAME\" == \"iphonesimulator\" ]; then\n    ./make-ios.sh simulator\nelse\n    ./make-ios.sh\nfi\n";
+			shellScript = "# force this resource to update each build\ntouch gitinfo.json.sh\n\n# build (or download) the MAME lib\ncd ../../\nif [ \"$MAMELIB\" == \"libmame\" ] && [ \"$PLATFORM_NAME\" == \"iphonesimulator\" ]; then\n    ./get-libmame.sh ios-simulator\nelif [ \"$MAMELIB\" == \"libmame\" ]; then\n    ./get-libmame.sh\nelif [ \"$PLATFORM_NAME\" == \"iphonesimulator\" ]; then\n    ./make-ios.sh simulator\nelse\n    ./make-ios.sh\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 		EF79BDDA24B7D72C00824BFD /* ShellScript */ = {
@@ -1362,7 +1362,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# force this resource to update each build\ntouch gitinfo.json.sh\n\n# build (or download) the MAME lib\ncd ../../\nif [ \"$MAMELIB\" == \"libmame\" ]; then\n    ./get-libmame.sh tvos\nelif [ \"$PLATFORM_NAME\" == \"appletvsimulator\" ]; then\n    ./make-tvos.sh simulator\nelse\n    ./make-tvos.sh\nfi\n";
+			shellScript = "# force this resource to update each build\ntouch gitinfo.json.sh\n\n# build (or download) the MAME lib\ncd ../../\nif [ \"$MAMELIB\" == \"libmame\" ] && [ \"$PLATFORM_NAME\" == \"appletvsimulator\" ]; then\n    ./get-libmame.sh tvos-simulator\nelif [ \"$MAMELIB\" == \"libmame\" ]; then\n    ./get-libmame.sh tvos\nelif [ \"$PLATFORM_NAME\" == \"appletvsimulator\" ]; then\n    ./make-tvos.sh simulator\nelse\n    ./make-tvos.sh\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */

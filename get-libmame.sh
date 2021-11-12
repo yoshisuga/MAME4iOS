@@ -26,7 +26,7 @@ if [ "$1" == "all" ]; then
     exit
 fi
 
-if [ "$1" != "ios" ] && [ "$1" != "tvos" ] && [ "$1" != "mac" ]; then
+if [ "$1" != "ios" ] && [ "$1" != "tvos" ] && [ "$1" != "mac" ] && [ "$1" != "ios-simulator" ] && [ "$1" != "tvos-simulator" ]; then
     echo "USAGE: $0 [ios | tvos | mac | all] [path to MAME]"
     exit
 fi
@@ -47,7 +47,12 @@ if [ -f "../MAME/$LIBMAME" ]; then
 fi
 
 ## download from GitHub if no local version
-echo DOWNLOAD $LIBMAME
-curl -L $LIBMAME_URL | gunzip > $LIBMAME
-
+if [ ! -f "$LIBMAME" ]; then
+    echo DOWNLOAD $LIBMAME
+    if curl --head --fail --silent --output /dev/null -L $LIBMAME_URL; then
+        curl -L $LIBMAME_URL | gunzip > $LIBMAME
+    else
+        echo $LIBMAME NOT FOUND!
+    fi
+fi
 
