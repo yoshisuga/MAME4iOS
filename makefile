@@ -23,9 +23,7 @@ OSVERSION = 12.4
 endif
 
 iOS = 1
-
 iOSOSX = 1
-
 iOSARM64 = 1
 
 ifndef ARCH
@@ -260,6 +258,8 @@ PREFIXSDL =
 SUFFIX64 =
 SUFFIXDEBUG =
 SUFFIXPROFILE =
+SUFFIXOS =
+SUFFIXSIM =
 
 # Windows SDL builds get an SDL prefix
 ifeq ($(OSD),sdl)
@@ -283,6 +283,16 @@ ifdef PROFILE
 SUFFIXPROFILE = p
 endif
 
+ifdef tvOS
+SUFFIXOS = _tvOS
+else ifdef macCatalyst
+SUFFIXOS = _macOS_$(ARCH)
+endif
+
+ifdef iOSSIMULATOR
+SUFFIXSIM = _simulator
+endif
+
 # the name is just 'target' if no subtarget; otherwise it is
 # the concatenation of the two (e.g., mametiny)
 ifeq ($(TARGET),$(SUBTARGET))
@@ -292,7 +302,7 @@ NAME = $(TARGET)$(SUBTARGET)
 endif
 
 # fullname is prefix+name+suffix+suffix64+suffixdebug
-FULLNAME = $(PREFIX)$(PREFIXSDL)$(NAME)$(SUFFIX)$(SUFFIX64)$(SUFFIXDEBUG)$(SUFFIXPROFILE)
+FULLNAME = $(PREFIX)$(PREFIXSDL)$(NAME)$(SUFFIX)$(SUFFIX64)$(SUFFIXDEBUG)$(SUFFIXPROFILE)$(SUFFIXOS)$(SUFFIXSIM)
 
 # get the final emulator name
 
@@ -302,6 +312,22 @@ else ifdef macCatalyst
 EMULATOR = libmame-139u1-mac-$(ARCH).a
 else
 EMULATOR = libmame-139u1-ios.a
+endif
+
+
+#--------------------------------------------------------------
+# delete the static lib if there is a SIMULATOR mismatch (hack)
+#--------------------------------------------------------------
+EMULATOR_PLATFORM = $(shell otool -lv $(EMULATOR) 2>&1 | grep -m 1 platform)
+
+ifdef iOSSIMULATOR
+ifneq (SIMULATOR,$(findstring SIMULATOR,$(EMULATOR_PLATFORM)))
+$(shell rm -f $(EMULATOR))
+endif
+else
+ifeq (SIMULATOR,$(findstring SIMULATOR,$(EMULATOR_PLATFORM)))
+$(shell rm -f $(EMULATOR))
+endif
 endif
 
 #-------------------------------------------------
