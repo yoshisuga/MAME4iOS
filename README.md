@@ -39,7 +39,7 @@ This repo adds additional support for:
 - Touch analog for games like Arkanoid
 - Builds in Xcode 11.4/12.x and runs on latest iOS 12/13/14 versions
 
-## Installation / Sideloading
+## Building / Installation / Sideloading
 
 ### Xcode
 
@@ -58,15 +58,18 @@ Requirements: Mac 10.13.6 with Xcode 11.4 or above to bulid.
         
 2. Enable entitlements  in `xcode/MAME4iOS/MAME4iOS.xcconfig` (optional)  
     - entitlements are required for tvOS TopShelf and iCloud Import/Export/Sync.
+    
+3. Select the MAME binary to link to, in `xcode/MAME4iOS/MAME4iOS.xcconfig`
+    - 139u1 or latest `MAME 2xx` version.
 
-3. Choose the appropriate build target in Xcode:
+4. Choose the appropriate build target in Xcode:
     - `MAME4iOS` (iPhone/iPad)
     - `MAME4tvOS` (AppleTV)
     - `MAME4mac` (Mac Catalyst)
 
 Even if you are not in the paid Apple Developer Program, you can sideload the app using a Mac with Xcode.
 
-1. Open the Xcode project in `xcode/MAME4iOS/MAME4iOS.xcodeproj`<br>
+1. Open the Xcode project in `xcode/MAME4iOS/MAME4iOS.xcodeproj`  
 
 2. Build:
     1. If you are a developer: Build and `▶︎` Run on your device. _Done._
@@ -80,6 +83,7 @@ Even if you are not in the paid Apple Developer Program, you can sideload the ap
 * if you want to use the latest pre-build `libmame` (recomended)
     - edit `xcode/MAME4iOS/MAME4iOS.xcconfig` to select the `libmame` library.
     - build and run in Xcode.
+    - **NOTE** there are only pre-built libraries for a device, not for the Simulator. 
     
 * if you want to build `MAME`
     - clone [this fork](https://github.com/ToddLa/mame) of `MAME`
