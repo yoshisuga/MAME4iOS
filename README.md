@@ -47,7 +47,11 @@ Requirements: iOS 12.4 or higher, tvOS 12.4 or higher, or Mac 10.15.5 (Catalina)
 
 Requirements: Mac 10.13.6 with Xcode 11.4 or above to bulid.
 
-1. Set the Organization and Team Identifer in `xcode/MAME4iOS/MAME4iOS.xcconfig`
+Even if you are not in the paid Apple Developer Program, you can sideload the app using a Mac with Xcode.
+
+1. Open the Xcode project in `MAME4iOS.xcodeproj`  
+
+2. Set the Organization and Team Identifer in `MAME4iOS.xcconfig`
         ```
         ORG_IDENTIFIER   = com.example    // CHANGE this to your Organization Identifier.
         DEVELOPMENT_TEAM = ABC8675309     // CHANGE this to your Team ID. (or select in Xcode project editor)
@@ -56,29 +60,28 @@ Requirements: Mac 10.13.6 with Xcode 11.4 or above to bulid.
         - You can also set the Development Team via the drop down in the Xcode project editor, for each Target.  
         - You can find your TeamID [here](https://developer.apple.com/account/#/membership).
         
-2. Enable entitlements  in `xcode/MAME4iOS/MAME4iOS.xcconfig` (optional)  
+3. Enable entitlements in `MAME4iOS.xcconfig` (optional, only if you a developer account)  
     - entitlements are required for tvOS TopShelf and iCloud Import/Export/Sync.
     
-3. Select the MAME binary to link to, in `xcode/MAME4iOS/MAME4iOS.xcconfig`
+4. Select the MAME binary to link to, in `MAME4iOS.xcconfig`
     - 139u1 or latest `MAME 2xx` version.
 
-4. Choose the appropriate build target in Xcode:
-    - `MAME4iOS` (iPhone/iPad)
-    - `MAME4tvOS` (AppleTV)
-    - `MAME4mac` (Mac Catalyst)
+5. Choose the appropriate build target in Xcode:
+    - `MAME4iOS Release` (iPhone/iPad)
+    - `MAME tvOS Release` (AppleTV)
+    - `MAME4mac Release` (Mac Catalyst)
 
-Even if you are not in the paid Apple Developer Program, you can sideload the app using a Mac with Xcode.
-
-1. Open the Xcode project in `xcode/MAME4iOS/MAME4iOS.xcodeproj`  
-
-2. Build:
+6. Build:
     1. If you are a developer: Build and `▶︎` Run on your device. _Done._
+        - *NOTE* first time build may take a long time.
     2. If you are not a developer…
         1. `Xcode` → `Preferences` add your Apple ID, select your Personal Team, and create an iOS Development Profile.
         2. Select the project name on the left pane and make sure your personal team is selected
         3. Hit the `▶︎` Run button to install on your device. _Done._
         
 ## How to build `MAME4iOS` with the latest version of `MAME`
+
+By default `MAME4iOS` will use a 139u1 version of `MAME`.
 
 * if you want to use the latest pre-build `libmame` (recomended)
     - edit `xcode/MAME4iOS/MAME4iOS.xcconfig` to select the `libmame` library.
