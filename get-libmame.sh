@@ -14,8 +14,8 @@
 ## source is path to MAME project or blank for default (../MAME)
 ##
 
-if [ "$1" == "" ]; then
-    $0 ios
+if [ "$1" == "" ] || [ "$1" == "clean" ]; then
+    $0 ios $1
     exit
 fi
 
@@ -34,12 +34,20 @@ fi
 LIBMAME="libmame-$1.a"
 LIBMAME_URL="https://github.com/ToddLa/mame/releases/latest/download/$LIBMAME.gz"
 
-if [ -d "$2" ]; then
+if [ "$2" == "clean" ]; then
+    echo CLEAN $LIBMAME
+    rm -f $LIBMAME
+    exit
+fi
+
+## copy from local custom build
+if [ -f "$2/$LIBMAME" ]; then
     echo COPY "$2/$LIBMAME"
     cp "$2/$LIBMAME" .
     exit
 fi
 
+## copy from local custom build
 if [ -f "../MAME/$LIBMAME" ]; then
     echo COPY "../MAME/$LIBMAME"
     cp "../MAME/$LIBMAME" .
@@ -49,10 +57,6 @@ fi
 ## download from GitHub if no local version
 if [ ! -f "$LIBMAME" ]; then
     echo DOWNLOAD $LIBMAME
-    if curl --head --fail --silent --output /dev/null -L $LIBMAME_URL; then
-        curl -L $LIBMAME_URL | gunzip > $LIBMAME
-    else
-        echo $LIBMAME NOT FOUND!
-    fi
+    curl -L $LIBMAME_URL | gunzip > $LIBMAME || (rm -r $LIBMAME; echo "DOWNLOAD $LIBMAME ** FAILED")
 fi
 
