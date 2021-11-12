@@ -284,13 +284,13 @@ SUFFIXPROFILE = p
 endif
 
 ifdef tvOS
-SUFFIXOS = _tvOS
+SUFFIXOS = -tvOS
 else ifdef macCatalyst
-SUFFIXOS = _macOS_$(ARCH)
+SUFFIXOS = -macOS-$(ARCH)
 endif
 
 ifdef iOSSIMULATOR
-SUFFIXSIM = _simulator
+SUFFIXSIM = -simulator
 endif
 
 # the name is just 'target' if no subtarget; otherwise it is
@@ -307,27 +307,11 @@ FULLNAME = $(PREFIX)$(PREFIXSDL)$(NAME)$(SUFFIX)$(SUFFIX64)$(SUFFIXDEBUG)$(SUFFI
 # get the final emulator name
 
 ifdef tvOS
-EMULATOR = libmame-139u1-tvos.a
+EMULATOR = libmame-139u1-tvos$(SUFFIXSIM).a
 else ifdef macCatalyst
 EMULATOR = libmame-139u1-mac-$(ARCH).a
 else
-EMULATOR = libmame-139u1-ios.a
-endif
-
-
-#--------------------------------------------------------------
-# delete the static lib if there is a SIMULATOR mismatch (hack)
-#--------------------------------------------------------------
-EMULATOR_PLATFORM = $(shell otool -lv $(EMULATOR) 2>&1 | grep -m 1 platform)
-
-ifdef iOSSIMULATOR
-ifneq (SIMULATOR,$(findstring SIMULATOR,$(EMULATOR_PLATFORM)))
-$(shell rm -f $(EMULATOR))
-endif
-else
-ifeq (SIMULATOR,$(findstring SIMULATOR,$(EMULATOR_PLATFORM)))
-$(shell rm -f $(EMULATOR))
-endif
+EMULATOR = libmame-139u1-ios$(SUFFIXSIM).a
 endif
 
 #-------------------------------------------------
