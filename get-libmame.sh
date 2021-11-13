@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ##
-## get-libmame.sh [target] [source]
+## get-libmame.sh [target] [clean | source]
 ##
 ## get version of libmame from MAME project, or the web
 ##
@@ -34,10 +34,16 @@ fi
 LIBMAME="libmame-$1.a"
 LIBMAME_URL="https://github.com/ToddLa/mame/releases/latest/download/$LIBMAME.gz"
 
+## only do a clean and get out
 if [ "$2" == "clean" ]; then
     echo CLEAN $LIBMAME
     rm -f $LIBMAME
     exit
+fi
+
+## detect if we are run from Xcode and need to do a CLEAN first
+if [ "TARGET_BUILD_DIR" != "" ] && [ $(ls -1 "$TARGET_BUILD_DIR" | wc -l) -lt 2 ]; then
+    rm -f $LIBMAME
 fi
 
 ## copy from local custom build
