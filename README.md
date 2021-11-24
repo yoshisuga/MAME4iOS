@@ -39,7 +39,7 @@ This repo adds additional support for:
 - Touch analog for games like Arkanoid
 - Builds in Xcode 11.4/12.x and runs on latest iOS 12/13/14 versions
 
-## Installation / Sideloading
+## Building / Installation / Sideloading
 
 ### Xcode
 
@@ -47,50 +47,35 @@ Requirements: iOS 12.4 or higher, tvOS 12.4 or higher, or Mac 10.15.5 (Catalina)
 
 Requirements: Mac 10.13.6 with Xcode 11.4 or above to bulid.
 
-Building MAME4iOS requires a prebuilt MAME binary (it has not been included in this repo due to its large size):
-
-1. Make sure you have the latest version of the Xcode commandline tools installed:  
-`xcode-select --install`
-
-2. In Terminal: `cd [path to MAME4iOS root]`  
-  <sup>(alternatively, you can drag & drop a folder on Terminal after `cd` if don't know how to get the directory path)</sup><br>
-
-3. Create the needed MAME binary by building it yourself from scratch: <br>
-    *** FOR CATALINA USERS, IN THE SECURITY & PRIVACY SETTINGS, PLEASE ALLOW "TERMINAL" "TO RUN SOFTWARE LOCALLY THAT DOES NOT MEET THE SYSTEMS SECURITY POLICY" IN THE DEVELOPER TOOLS CATEGORY ON THE PRIVACY PAGE IN ORDER TO COMPLETE A SUCCESFUL BUILD *** <br>
-- Build it in the above selected terminal by chosing one of the following scripts (depending on which device you are building for):<br>
-        - iOS: `./make-ios.sh`<br>
-        <sup>For iPhone 5S, iPad Air, iPad mini, and up…</sup><br>
-        - tvOS: `./make-tvos.sh`<br>
-        <sup>AppleTV (4/4k and above)</sup><br>
-        - simulator: `./make-sim.sh`<br>
-        <sup>iOS (version 12.4 and above)</sup><br>
-        - macOS: `./make-mac.sh`<br>
-        <sup>macOS(version 10.15 Catalina and above)</sup><br>
-        
-    4. Set the Organization and Team Identifer in `xcode/MAME4iOS/MAME4iOS.xcconfig`
-        ```
-        ORG_IDENTIFIER   = com.example    // CHANGE this to your Organization Identifier.
-        DEVELOPMENT_TEAM = ABC8675309     // CHANGE this to your Team ID. (or select in Xcode project editor)
-        ```
-
-        - The `ORG_IDENTIFIER` is a reverse DNS string that uniquely identifies your organization.
-        - You can also set the Development Team via the drop down in the Xcode project editor, for each Target.  
-        - You can find your TeamID [here](https://developer.apple.com/account/#/membership).
-        
-5. Enable entitlements  in `xcode/MAME4iOS/MAME4iOS.xcconfig` (optional)  
-    - entitlements are required for tvOS TopShelf and iCloud Import/Export/Sync.
-
-6. Choose the appropriate build target in Xcode:
-    - `MAME4iOS` (iPhone/iPad)
-    - `MAME4tvOS` (AppleTV)
-    - `MAME4mac` (Mac Catalyst)
-
 Even if you are not in the paid Apple Developer Program, you can sideload the app using a Mac with Xcode.
 
-1. Open the Xcode project in `xcode/MAME4iOS/MAME4iOS.xcodeproj`<br>
-    <sup>Make sure you have the `libmame.a` (or `libmame-tvos.a`) file in the root of your project.</sup><br>
-2. Build:
+1. Open the Xcode project in `MAME4iOS.xcodeproj`  
+
+2. Set the Organization and Team Identifer in `MAME4iOS.xcconfig`
+
+    ```
+    ORG_IDENTIFIER   = com.example    // CHANGE this to your Organization Identifier.
+    DEVELOPMENT_TEAM = ABC8675309     // CHANGE this to your Team ID. (or select in Xcode project editor)
+    ```
+    
+    - The `ORG_IDENTIFIER` is a reverse DNS string that uniquely identifies your organization.
+    - You can also set the Development Team via the drop down in the Xcode project editor, for each Target.  
+    - You can find your TeamID [here](https://developer.apple.com/account/#/membership).
+        
+3. Enable entitlements in `MAME4iOS.xcconfig` (optional, only if you have a developer account)  
+    - entitlements are required for tvOS TopShelf and iCloud Import/Export/Sync.
+
+4. Select the MAME binary to link to, in `MAME4iOS.xcconfig`
+    - 139u1 or latest `MAME 2xx` version.
+
+5. Choose the appropriate build target in Xcode:
+    - `MAME4iOS Release` (iPhone/iPad)
+    - `MAME tvOS Release` (AppleTV)
+    - `MAME4mac Release` (Mac Catalyst)
+
+6. Build:
     1. If you are a developer: Build and `▶︎` Run on your device. _Done._
+        - *NOTE* first time build may take a long time.
     2. If you are not a developer…
         1. `Xcode` → `Preferences` add your Apple ID, select your Personal Team, and create an iOS Development Profile.
         2. Select the project name on the left pane and make sure your personal team is selected
@@ -98,10 +83,12 @@ Even if you are not in the paid Apple Developer Program, you can sideload the ap
         
 ## How to build `MAME4iOS` with the latest version of `MAME`
 
+By default `MAME4iOS` will use a 139u1 version of `MAME`.
+
 * if you want to use the latest pre-build `libmame` (recomended)
-    - instead of running  `./make-ios.sh` run  `./get-libmame.sh` or  `./get-libmame.sh tvos`
     - edit `xcode/MAME4iOS/MAME4iOS.xcconfig` to select the `libmame` library.
     - build and run in Xcode.
+    - **NOTE** there are only pre-built libraries for a device, not for the Simulator. 
     
 * if you want to build `MAME`
     - clone [this fork](https://github.com/ToddLa/mame) of `MAME`
@@ -109,7 +96,7 @@ Even if you are not in the paid Apple Developer Program, you can sideload the ap
     - run `./make-ios.sh` (or `./make-ios.sh tvos`) in the forked `MAME`
     - go watch [this](https://www.imdb.com/title/tt3748528/) then [this](https://en.wikipedia.org/wiki/Star_Wars_Trilogy) while you wait for `MAME` to build.
     - now switch directories to your `MAME4iOS` project
-    - instead of running  `./make-ios.sh` run  `./get-libmame.sh ios <path to your MAME clone>`
+    - run  `./get-libmame.sh ios <path to your MAME clone>`
     - edit `xcode/MAME4iOS/MAME4iOS.xcconfig` to select the `libmame` library.
     - build and run in Xcode.
 

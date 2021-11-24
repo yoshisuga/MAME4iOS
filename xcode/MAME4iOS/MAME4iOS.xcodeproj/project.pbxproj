@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -1318,6 +1318,7 @@
 /* Begin PBXShellScriptBuildPhase section */
 		EF79BDD824B7CE8100824BFD /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
@@ -1331,11 +1332,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# force this resource to update each build\ntouch gitinfo.json.sh\n";
+			shellScript = "# force this resource to update each build\ntouch gitinfo.json.sh\n\n# build (or download) the MAME lib\ncd ../../\nif [ \"$MAMELIB\" == \"libmame\" ]; then\n    ./get-libmame.sh mac\nelse\n    ./make-mac.sh\nfi\n";
+			showEnvVarsInLog = 0;
 		};
 		EF79BDD924B7D71800824BFD /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
+			alwaysOutOfDate = 1;
+			buildActionMask = 12;
 			files = (
 			);
 			inputFileListPaths = (
@@ -1348,10 +1351,12 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# force this resource to update each build\ntouch gitinfo.json.sh\n";
+			shellScript = "# force this resource to update each build\ntouch gitinfo.json.sh\n\n# build (or download) the MAME lib\ncd ../../\nif [ \"$MAMELIB\" == \"libmame\" ] && [ \"$PLATFORM_NAME\" == \"iphonesimulator\" ]; then\n    ./get-libmame.sh ios-simulator\nelif [ \"$MAMELIB\" == \"libmame\" ]; then\n    ./get-libmame.sh\nelif [ \"$PLATFORM_NAME\" == \"iphonesimulator\" ]; then\n    ./make-ios.sh simulator\nelse\n    ./make-ios.sh\nfi\n";
+			showEnvVarsInLog = 0;
 		};
 		EF79BDDA24B7D72C00824BFD /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
@@ -1365,7 +1370,8 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# force this resource to update each build\ntouch gitinfo.json.sh\n";
+			shellScript = "# force this resource to update each build\ntouch gitinfo.json.sh\n\n# build (or download) the MAME lib\ncd ../../\nif [ \"$MAMELIB\" == \"libmame\" ] && [ \"$PLATFORM_NAME\" == \"appletvsimulator\" ]; then\n    ./get-libmame.sh tvos-simulator\nelif [ \"$MAMELIB\" == \"libmame\" ]; then\n    ./get-libmame.sh tvos\nelif [ \"$PLATFORM_NAME\" == \"appletvsimulator\" ]; then\n    ./make-tvos.sh simulator\nelse\n    ./make-tvos.sh\nfi\n";
+			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -1592,7 +1598,10 @@
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = "MAME4iOS/MAME4iOS-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../..",
@@ -1626,7 +1635,10 @@
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = "MAME4iOS/MAME4iOS-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../..",
@@ -1688,7 +1700,10 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				INFOPLIST_FILE = MAME4tvOS/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(SRCROOT)/../..",
 					"$(inherited)",
@@ -1750,7 +1765,10 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				INFOPLIST_FILE = MAME4tvOS/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(SRCROOT)/../..",
 					"$(inherited)",
@@ -1959,7 +1977,11 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				INFOPLIST_FILE = TopShelf/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(inherited).$(TARGET_NAME:lower)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1992,7 +2014,11 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				INFOPLIST_FILE = TopShelf/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "$(inherited).$(TARGET_NAME:lower)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
