@@ -142,6 +142,9 @@
 		EF67E11624B8972100AFF489 /* MacMenu.m in Sources */ = {isa = PBXBuildFile; fileRef = EF67E11524B8972100AFF489 /* MacMenu.m */; };
 		EF7B232C23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
 		EF7B232D23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
+		EF7D116527348BDD00E61BB9 /* hash.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF7D116427348BDD00E61BB9 /* hash.zip */; };
+		EF7D116627348BDD00E61BB9 /* hash.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF7D116427348BDD00E61BB9 /* hash.zip */; };
+		EF7D116727348BDD00E61BB9 /* hash.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF7D116427348BDD00E61BB9 /* hash.zip */; };
 		EF8409A2260CEFAB00FAC3CF /* AVPlayerView.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8409A1260CEFAB00FAC3CF /* AVPlayerView.m */; };
 		EF8409A3260CEFAB00FAC3CF /* AVPlayerView.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8409A1260CEFAB00FAC3CF /* AVPlayerView.m */; };
 		EF8409A9260CF3F200FAC3CF /* whiteHDR.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = EF8409A8260CF3F200FAC3CF /* whiteHDR.mp4 */; };
@@ -529,6 +532,7 @@
 		EF55DE312533C21E004E37EF /* MAME4iOS.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = MAME4iOS.xcconfig; sourceTree = "<group>"; };
 		EF55DE5A2534C304004E37EF /* TVServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = TVServices.framework; path = Library/Frameworks/TVServices.framework; sourceTree = DEVELOPER_DIR; };
 		EF67E11524B8972100AFF489 /* MacMenu.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MacMenu.m; sourceTree = "<group>"; };
+		EF7D116427348BDD00E61BB9 /* hash.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = hash.zip; path = "../../iOS-res/hash.zip"; sourceTree = "<group>"; };
 		EF8409A0260CEFAB00FAC3CF /* AVPlayerView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVPlayerView.h; sourceTree = "<group>"; };
 		EF8409A1260CEFAB00FAC3CF /* AVPlayerView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AVPlayerView.m; sourceTree = "<group>"; };
 		EF8409A8260CF3F200FAC3CF /* whiteHDR.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; name = whiteHDR.mp4; path = "../../iOS-res/whiteHDR.mp4"; sourceTree = "<group>"; };
@@ -962,6 +966,7 @@
 		EF1C941624C2544A00749C69 /* content */ = {
 			isa = PBXGroup;
 			children = (
+				EF7D116427348BDD00E61BB9 /* hash.zip */,
 				EF1C93ED24C252C500749C69 /* history0139.zip */,
 				EF1C93EB24C252C500749C69 /* hiscore.dat */,
 				EF1C93E824C252C500749C69 /* Category.ini */,
@@ -1229,6 +1234,7 @@
 			files = (
 				EF1C940C24C252C600749C69 /* hiscore.dat in Resources */,
 				EF26AE08241848800078FD30 /* mame_logo.png in Resources */,
+				EF7D116527348BDD00E61BB9 /* hash.zip in Resources */,
 				EF1C93FD24C252C600749C69 /* skins in Resources */,
 				EF1C93F724C252C600749C69 /* LICENSE in Resources */,
 				EFA7570524057FD800A02AAB /* default_game_icon.png in Resources */,
@@ -1267,6 +1273,7 @@
 				92A533D121EBDDF20089FBB9 /* GCDWebUploader.bundle in Resources */,
 				EF1C941D24C2552900749C69 /* gitinfo.json.sh in Resources */,
 				EFFBA6FF24F1C91200F8666B /* WHATSNEW.md in Resources */,
+				EF7D116627348BDD00E61BB9 /* hash.zip in Resources */,
 				EF1C941324C252C600749C69 /* history0139.zip in Resources */,
 				B5FAE31921FCE64D003F44D0 /* MAME_tvOS.lsr in Resources */,
 			);
@@ -1285,6 +1292,7 @@
 				EF1C941E24C2552900749C69 /* gitinfo.json.sh in Resources */,
 				EF1C941424C252C600749C69 /* history0139.zip in Resources */,
 				EFA7A16D24B7A40F0009CF88 /* Assets.xcassets in Resources */,
+				EF7D116727348BDD00E61BB9 /* hash.zip in Resources */,
 				EFA7A14324B65C020009CF88 /* dpad.png in Resources */,
 				EFA7A14424B65C020009CF88 /* Launch Screen.storyboard in Resources */,
 				EFFBA70024F1C91200F8666B /* WHATSNEW.md in Resources */,

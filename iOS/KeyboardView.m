@@ -133,10 +133,8 @@
     
     unichar key = [text characterAtIndex:0];
     
-#if TARGET_OS_TV
     if ([emuController controllerUserInteractionEnabled])
         return;
-#endif
     
     //NSLog(@"%s: %@ (%d)", __FUNCTION__, text.debugDescription, [text characterAtIndex:0]);
 
@@ -738,6 +736,12 @@ int hid_to_mame(int keyCode) {
 //      * macOS keyboard when debugging in Xcode simulator
 //
 -(void)hardwareKey:(NSString*)key keyCode:(int)keyCode isKeyDown:(BOOL)isKeyDown modifierFlags:(UIKeyModifierFlags)modifierFlags {
+    
+#ifdef __IPHONE_13_4
+    // CMD+. will send an ESC key like this. (used on the iPad magic keyboard with no real Escape key)
+    if (key == UIKeyInputEscape)
+        keyCode = UIKeyboardHIDUsageKeyboardEscape;
+#endif
     
     NSLog(@"hardwareKey: %s%s%s%s%@ (%d) %s",
           (modifierFlags & UIKeyModifierShift)     ? "SHIFT+" : "",

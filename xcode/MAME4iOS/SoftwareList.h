@@ -21,26 +21,23 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithPath:(NSString*)root;
 
-// get software list names
+// get names of all software lists
 - (NSArray<NSString*>*)getSoftwareListNames;
 
-// get software list
+// get software list by name, filtered to only Available
 - (NSArray<NSDictionary*>*)getSoftwareList:(NSString*)name;
 
-// get games for a system
+// get games for a system, filtered to only Available
 - (NSArray<NSDictionary*>*)getGamesForSystem:(NSDictionary*)system;
 
-// install a XML or ZIP file
-- (BOOL)installFile:(NSString*)path;
+// get name of software list for a romset, used to know where to install.
+- (nullable NSString*)getSoftwareListNameForRomset:(NSString*)path named:(NSString*)name;
 
 // if this a merged romset, extract clones as empty zip files so they show up as Available
 - (BOOL)extractClones:(NSString*)path;
 
 // discard any cached data, forcing a re-load from disk.
 - (void)reload;
-
-// delete all software lists
-- (void)reset;
 
 @end
 

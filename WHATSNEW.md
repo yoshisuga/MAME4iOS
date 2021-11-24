@@ -1,8 +1,10 @@
 # Version 2021.8
 * Updated to MAME 2xx core.
+* Build in all `MAME` software list `XML` files, no need to import XML files anymore.
 * Added Menu (and button in Settings) to open `Document` directory in `Files.app` (or `Finder.app`)
-* Handle romsets names that end with `dash` number.
+* Handle romsets names that end with `dash` number. (like `packman - 3.zip`)
 * Dont conflict with system keyboard shortcut for Prefrences `CMD+,`
+* Handle system keyboard shortcut for Escape `CMD+.`
 * Build LIBMAME via Xcode, no more need to run scripts from `Terminal.app`
 
 # Version 2021.7

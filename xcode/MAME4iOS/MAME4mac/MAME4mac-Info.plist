@@ -52,28 +52,6 @@
                 <string>org.7-zip.7-zip-archive</string>
             </array>
         </dict>
-        <dict>
-            <key>CFBundleTypeExtensions</key>
-            <array>
-                <string>xml</string>
-                <string>XML</string>
-            </array>
-            <key>CFBundleTypeMIMETypes</key>
-            <array>
-                <string>application/xml</string>
-                <string>text/xml</string>
-            </array>
-            <key>CFBundleTypeName</key>
-            <string>XML text</string>
-            <key>CFBundleTypeRole</key>
-            <string>Viewer</string>
-            <key>LSHandlerRank</key>
-            <string>Alternate</string>
-            <key>LSItemContentTypes</key>
-            <array>
-                <string>public.xml</string>
-            </array>
-        </dict>
 	</array>
 	<key>CFBundleExecutable</key>
 	<string>${EXECUTABLE_NAME}</string>

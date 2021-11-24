@@ -17,15 +17,15 @@
 #include "myosd.h"
 
 // the states
-static int joy_buttons[NUM_JOY][12];
-static int joy_axis[NUM_JOY][6];
-static int joy_hats[NUM_JOY][4];
+static int joy_buttons[MYOSD_NUM_JOY][12];
+static int joy_axis[MYOSD_NUM_JOY][6];
+static int joy_hats[MYOSD_NUM_JOY][4];
 
-static int lightgun_buttons[NUM_JOY][2];
-static int lightgun_axis[NUM_JOY][2];
+static int lightgun_buttons[MYOSD_NUM_GUN][2];
+static int lightgun_axis[MYOSD_NUM_GUN][2];
 
-static int mouse_buttons[NUM_JOY][3];   // L,R,M
-static int mouse_axis[NUM_JOY][3];      // x,y,z
+static int mouse_buttons[MYOSD_NUM_MICE][3];   // L,R,M
+static int mouse_axis[MYOSD_NUM_MICE][3];      // x,y,z
 
 static myosd_input_state myosd_input;
 
@@ -48,7 +48,7 @@ void droid_ios_init_input(running_machine *machine)
 	input_device_class_enable(machine, DEVICE_CLASS_JOYSTICK, TRUE);
 	input_device_class_enable(machine, DEVICE_CLASS_MOUSE, TRUE);
 
-	for (int i = 0; i < NUM_JOY; i++)
+	for (int i = 0; i < MYOSD_NUM_JOY; i++)
 	{
 		char name[10];
 		input_device *devinfo;
@@ -117,7 +117,7 @@ void droid_ios_init_input(running_machine *machine)
         input_device_item_add(keyboard_device, name, &myosd_input.keyboard[key], key, my_get_state);
     }
 
-    for (int i = 0; i < NUM_JOY; i++)
+    for (int i = 0; i < MYOSD_NUM_GUN; i++)
     {
         char name[10];
             snprintf(name, 10, "Lightgun %d", i + 1);
@@ -130,7 +130,10 @@ void droid_ios_init_input(running_machine *machine)
        input_device_item_add(lightgun_device, "Y Axis", &lightgun_axis[i][1], ITEM_ID_YAXIS, my_axis_get_state);
        input_device_item_add(lightgun_device, "A", &lightgun_buttons[i][0], ITEM_ID_BUTTON1, my_get_state);
        input_device_item_add(lightgun_device, "B", &lightgun_buttons[i][1], ITEM_ID_BUTTON2, my_get_state);
-
+    }
+    
+    for (int i = 0; i < MYOSD_NUM_MICE; i++)
+    {
 	   char mouse_name[10];
 	   snprintf(mouse_name, 10, "Mouse %d", i + 1);
 	   input_device *mouse_device = input_device_add(machine, DEVICE_CLASS_MOUSE, mouse_name, NULL);
@@ -294,7 +297,7 @@ void droid_ios_poll_input(running_machine *machine)
     if (myosd_input.keyboard[MYOSD_KEY_RESET] != 0 && !machine->scheduled_event_pending())
         machine->schedule_hard_reset();
     
-    for(int i=0; i<NUM_JOY; i++)
+    for(int i=0; i<MYOSD_NUM_JOY; i++)
     {
         long _pad_status = myosd_joystick_read(i);
 
