@@ -69,6 +69,7 @@
         [UICommand commandWithTitle:@"Export..."     image:[UIImage systemImageNamed:@"square.and.arrow.up.on.square"]        action:@selector(fileExport) propertyList:nil],
 //      [UICommand commandWithTitle:@"Export Skin..."image:[UIImage systemImageNamed:@"square.and.arrow.up"]        action:@selector(fileExportSkin) propertyList:nil],
         [UICommand commandWithTitle:@"Start Server"  image:[UIImage systemImageNamed:@"arrow.up.arrow.down.circle"] action:@selector(fileStartServer) propertyList:nil],
+        [UICommand commandWithTitle:@"Show Files"    image:[UIImage systemImageNamed:@"folder"] action:@selector(fileShowFiles) propertyList:nil],
     ]] atStartOfMenuForIdentifier:UIMenuFile];
     
     // UIKeyInputF3 is only valid on 13.4 or later, avoid a build warning
@@ -87,7 +88,7 @@
         [UIKeyCommand commandWithTitle:@"Coin+Start"image:[UIImage systemImageNamed:@"person.circle"]       action:@selector(mameStartP1)   input:@"1" modifierFlags:UIKeyModifierCommand propertyList:nil],
         [UIKeyCommand commandWithTitle:@"Fullscreen"image:[UIImage systemImageNamed:@"rectangle.and.arrow.up.right.and.arrow.down.left"]
                                 action:@selector(mameFullscreen) input:@"\r" modifierFlags:UIKeyModifierCommand propertyList:nil],
-        [UIKeyCommand commandWithTitle:@"Settings"  image:[UIImage systemImageNamed:@"gear"]                action:@selector(mameSettings)  input:@"," modifierFlags:UIKeyModifierCommand propertyList:nil],
+        [UIKeyCommand commandWithTitle:@"Settings"  image:[UIImage systemImageNamed:@"gear"]                action:@selector(mameSettings)  input:@"/" modifierFlags:UIKeyModifierCommand propertyList:nil],
         [UIKeyCommand commandWithTitle:@"Configure" image:[UIImage systemImageNamed:@"slider.horizontal.3"] action:@selector(mameConfigure) input:@"\t" modifierFlags:0 propertyList:nil],
         [UIKeyCommand commandWithTitle:@"Pause"     image:[UIImage systemImageNamed:@"pause.circle"]        action:@selector(mamePause)     input:@"P" modifierFlags:0 propertyList:nil],
         [UIKeyCommand commandWithTitle:@"Reset"     image:[UIImage systemImageNamed:@"power"]               action:@selector(mameReset)     input:keyF3 modifierFlags:0 propertyList:nil],
@@ -117,6 +118,9 @@
 }
 -(void)fileExportSkin {
     [hrViewController runExportSkin];
+}
+-(void)fileShowFiles {
+    [hrViewController runShowFiles];
 }
 
 @end

@@ -46,30 +46,30 @@ enum MYOSD_AXIS {
     MYOSD_AXIS_NUM
 };
 
-#define NUM_JOY 4
-#define NUM_MICE 4
-#define NUM_GUN 4
-#define NUM_KEYS 256
+#define MYOSD_NUM_JOY 4
+#define MYOSD_NUM_MICE 4
+#define MYOSD_NUM_GUN 4
+#define MYOSD_NUM_KEYS 256
 
 // MYOSD INPUT STATE
 typedef struct {
     // keyboard
-    unsigned char keyboard[NUM_KEYS];
+    unsigned char keyboard[MYOSD_NUM_KEYS];
 
     // joystick(s)
-    unsigned long joy_status[NUM_JOY];
-    float joy_analog[NUM_JOY][MYOSD_AXIS_NUM];
+    unsigned long joy_status[MYOSD_NUM_JOY];
+    float joy_analog[MYOSD_NUM_JOY][MYOSD_AXIS_NUM];
 
     // mice
-    unsigned long mouse_status[NUM_MICE];
-    float mouse_x[NUM_JOY];
-    float mouse_y[NUM_JOY];
-    float mouse_z[NUM_JOY];
+    unsigned long mouse_status[MYOSD_NUM_MICE];
+    float mouse_x[MYOSD_NUM_MICE];
+    float mouse_y[MYOSD_NUM_MICE];
+    float mouse_z[MYOSD_NUM_MICE];
 
     // lightgun(s)
-    unsigned long lightgun_status[NUM_GUN];
-    float lightgun_x[NUM_JOY];
-    float lightgun_y[NUM_JOY];
+    unsigned long lightgun_status[MYOSD_NUM_GUN];
+    float lightgun_x[MYOSD_NUM_GUN];
+    float lightgun_y[MYOSD_NUM_GUN];
     
     // input profile for current machine
     int num_buttons;

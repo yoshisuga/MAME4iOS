@@ -120,34 +120,6 @@ Even if you are not in the paid Apple Developer Program, you can sideload the ap
 * the `hiscore` and `cheat` system has not been updated.
 * `MAME` Configure menu has a `Add To Favorites` and `Select New Machine` that dont interact with the `MAME4iOS` Ux.
 
-## **Software Lists**
-
-Software lists are containing meta-data of software for computers and consoles and are coming from various sources,
-they are not compiled in code but use as valuable source of information in order to preserve and document software.
-
-### How to add software to `MAME4iOS`
-
-* first import a *software list xml* file, you can find these files [here](https://github.com/mamedev/mame/tree/master/hash)
-    - you can also copy software list xml files *by hand* to the `hash` directory.
-* you might be tempted to just import *all* software list files, **dont** do that, it will waste diskspace on your device, and cause `MAME4iOS` to do extra work.
-* after you have imported the software list xml files, you can import `ZIP` files containing software. 
-
-If the name of the `ZIP` file *or* the subdirectory path in the `ZIP` matches the name of a software list, it will be imported directly, otherwise all software lists will be searched for a match.
-
-example zip file(s)
-```
-a2600.zip
-    pacman.zip
-    et.zip
-```
-
-```
-MySoftware.zip
-    a2600/pacman.zip
-    a2600/et.zip
-    n64/007goldnu.7z
-```
-
 ## Mixing 139 and 2xx ROMs
 Some `romsets` are not compatible between MAME 139 and newer versions, the best way to use both `romsets` at the same time is to make sure the newer ones are stored in the `7z` format and the 139 ones in the `zip` format.  This way both files can co-exist.
 

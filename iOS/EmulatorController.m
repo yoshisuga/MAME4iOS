@@ -115,16 +115,27 @@ TIMER_INIT_END
 @end
 #endif
 
-#if TARGET_OS_MACCATALYST
 @class NSCursor;
 @interface NSObject()
 -(void)hide;
 -(void)unhide;
 -(void)toggleFullScreen:(id)sender;
 @end
-#endif
 
-#define DebugLog 0
+static BOOL IsRunningOnMac() {
+#if TARGET_OS_MACCATALYST
+    return TRUE;
+#elif TARGET_OS_IOS && defined(__IPHONE_14_0)
+    if (@available(iOS 14.0, *))
+        return NSProcessInfo.processInfo.isiOSAppOnMac;
+    else
+        return FALSE;
+#else
+    return FALSE;
+#endif
+}
+
+#define DebugLog 1
 #if DebugLog == 0 || DEBUG == 0
 #define NSLog(...) (void)0
 #endif
@@ -141,17 +152,17 @@ NSArray * g_keyboards;
 NSArray * g_mice;
 
 NSLock* mouse_lock;
-unsigned long mouse_status[NUM_JOY];
-float mouse_delta_x[NUM_JOY];
-float mouse_delta_y[NUM_JOY];
-float mouse_delta_z[NUM_JOY];
+unsigned long mouse_status[MYOSD_NUM_MICE];
+float mouse_delta_x[MYOSD_NUM_MICE];
+float mouse_delta_y[MYOSD_NUM_MICE];
+float mouse_delta_z[MYOSD_NUM_MICE];
 
 unsigned long lightgun_status;
 float lightgun_x;
 float lightgun_y;
 
 // Turbo and Autofire functionality
-int cyclesAfterButtonPressed[NUM_JOY][NUM_BUTTONS];
+int cyclesAfterButtonPressed[MYOSD_NUM_JOY][NUM_BUTTONS];
 int turboBtnEnabled[NUM_BUTTONS];
 int g_pref_autofire = 0;
 
@@ -163,7 +174,7 @@ unsigned long myosd_pad_status_2;
 float myosd_pad_x;
 float myosd_pad_y;
 
-uint8_t myosd_keyboard[NUM_KEYS];
+uint8_t myosd_keyboard[MYOSD_NUM_KEYS];
 int     myosd_keyboard_changed;
 
 // input profile for current machine (see poll_input)
@@ -256,7 +267,7 @@ int g_pref_lightgun_bottom_reload = 0;
 int g_pref_touch_analog_enabled = 1;
 int g_pref_touch_analog_hide_dpad = 1;
 int g_pref_touch_analog_hide_buttons = 0;
-float g_pref_touch_analog_sensitivity = 500.0;
+float g_pref_touch_analog_sensitivity = 512.0;
 
 int g_pref_touch_directional_enabled = 0;
 
@@ -296,7 +307,6 @@ static BOOL g_no_roms_found = FALSE;
 #define OPTIONS_RESTART_KEYS    @[@"cheats", @"autosave", @"hiscore", @"vbean2x", @"vflicker", @"soundValue"]
 static NSInteger g_settings_roms_count;
 static NSInteger g_settings_file_count;
-static NSInteger g_settings_hash_count;
 static Options*  g_settings_options;
 
 static BOOL g_bluetooth_enabled;
@@ -422,6 +432,9 @@ int run_mame(char* system, char* game)
         g_pref_sound_value != 0 ?         sound : myosd_get(MYOSD_VERSION) == 139 ?       nada :   "none",
         g_pref_benchmark ? "-bench" : nada,
         g_pref_benchmark ?     "90" : nada,
+#if DebugLog && defined(DEBUG)
+        "-verbose",
+#endif
         };
     
     int argc = sizeof(argv) / sizeof(argv[0]);
@@ -670,15 +683,6 @@ void m4i_game_stop()
     myosd_isLCD = NO;
 }
 
-@implementation UINavigationController(KeyboardDismiss)
-
-- (BOOL)disablesAutomaticKeyboardDismissal
-{
-    return NO;
-}
-
-@end
-
 @interface EmulatorController() {
     CSToastStyle *toastStyle;
     CGPoint mouseTouchStartLocation;
@@ -853,7 +857,7 @@ void mame_save_state(int slot)
         ppc.sourceView = self.view;
 
         // use only up/down arrows if the popup can fit
-        if (ppc.permittedArrowDirections == UIPopoverArrowDirectionAny) {
+        if (viewController.preferredContentSize.height != 0 && ppc.permittedArrowDirections == UIPopoverArrowDirectionAny) {
             CGRect rect = [ppc.sourceView convertRect:ppc.sourceRect toCoordinateSpace:ppc.sourceView.window];
             CGRect safe = UIEdgeInsetsInsetRect(ppc.sourceView.window.bounds, ppc.sourceView.window.safeAreaInsets);
             CGSize size = viewController.preferredContentSize;
@@ -909,14 +913,15 @@ HUDViewController* g_menu;
 
     HUDViewController* menu = [[HUDViewController alloc] init];
 
-#if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST)
-    menu.font = nil;
-    menu.blurBackground = YES;
-#else
-    menu.font = [UIFont systemFontOfSize:42.0 weight:UIFontWeightRegular];
-    menu.blurBackground = NO;
-    menu.dimBackground = 0.8;
-#endif
+    if (TARGET_OS_IOS && !IsRunningOnMac()) {
+        menu.font = nil;
+        menu.blurBackground = YES;
+    }
+    else {
+        menu.font = [UIFont systemFontOfSize:42.0 weight:UIFontWeightRegular];
+        menu.blurBackground = NO;
+        menu.dimBackground = 0.8;
+    }
     
 #if TARGET_OS_IOS
     if (view != nil)
@@ -1227,7 +1232,6 @@ HUDViewController* g_menu;
 - (void)checkForNewRomsInit {
     g_settings_roms_count = [NSFileManager.defaultManager enumeratorAtPath:getDocumentPath(@"roms")].allObjects.count;
     g_settings_file_count = [NSFileManager.defaultManager contentsOfDirectoryAtPath:getDocumentPath(@"") error:nil].count;
-    g_settings_hash_count = [NSFileManager.defaultManager contentsOfDirectoryAtPath:getDocumentPath(@"hash") error:nil].count;
     g_settings_options = [[Options alloc] init];
 }
 
@@ -1236,22 +1240,16 @@ HUDViewController* g_menu;
         return;
     NSInteger roms_count = [NSFileManager.defaultManager enumeratorAtPath:getDocumentPath(@"roms")].allObjects.count;
     NSInteger file_count = [NSFileManager.defaultManager contentsOfDirectoryAtPath:getDocumentPath(@"") error:nil].count;
-    NSInteger hash_count = [NSFileManager.defaultManager contentsOfDirectoryAtPath:getDocumentPath(@"hash") error:nil].count;
     Options* options = [[Options alloc] init];
 
     if (file_count != g_settings_file_count)
         NSLog(@"FILES added to root %ld => %ld", g_settings_file_count, file_count);
     if (roms_count != g_settings_roms_count)
         NSLog(@"FILES added to roms %ld => %ld", g_settings_roms_count, roms_count);
-    if (hash_count != g_settings_hash_count)
-        NSLog(@"FILES added to hash %ld => %ld", g_settings_list_count, list_count);
-
-    if (g_settings_hash_count != hash_count)
-        [g_softlist reload];
 
     if (g_settings_file_count != file_count)
         [self performSelector:@selector(moveROMS) withObject:nil afterDelay:0.0];
-    else if ((g_settings_roms_count != roms_count) || (g_settings_hash_count != hash_count) || (g_mame_reset && myosd_inGame == 0))
+    else if ((g_settings_roms_count != roms_count) || (g_mame_reset && myosd_inGame == 0))
         [self reload];
     else if (myosd_inGame == 0 && ![g_settings_options isEqualToOptions:options withKeys:OPTIONS_RELOAD_KEYS])
         [self reload];
@@ -1305,16 +1303,12 @@ HUDViewController* g_menu;
             viewControllerToPresent.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
     }
 
-#if TARGET_OS_TV
     self.controllerUserInteractionEnabled = YES;
-#endif
     [super presentViewController:viewControllerToPresent animated:flag completion:completion];
 }
 -(void)dismissViewControllerAnimated:(BOOL)flag completion:(void (^)(void))completion {
     NSLog(@"DISMISS VIEWCONTROLLER: %@", [self presentedViewController]);
-#if TARGET_OS_TV
     self.controllerUserInteractionEnabled = NO;
-#endif
     [super dismissViewControllerAnimated:flag completion:completion];
 }
 
@@ -1637,13 +1631,14 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
     [hideShowControlsForLightgun.imageView setContentMode:UIViewContentModeScaleAspectFit];
     [hideShowControlsForLightgun setImage:[UIImage imageNamed:@"dpad"] forState:UIControlStateNormal];
     [hideShowControlsForLightgun addTarget:self action:@selector(toggleControlsForLightgunButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
-    hideShowControlsForLightgun.alpha = 0.2f;
+    hideShowControlsForLightgun.alpha = ((float)g_controller_opacity / 100.0f) * 0.5;
     hideShowControlsForLightgun.translatesAutoresizingMaskIntoConstraints = NO;
-    [hideShowControlsForLightgun addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:[[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad ? 30.0f : 20.0f]];
-    [hideShowControlsForLightgun addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:[[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad ? 30.0f :20.0f]];
+    CGFloat size = UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPad ? 32.0f : 24.0f;
+    [hideShowControlsForLightgun addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:size]];
+    [hideShowControlsForLightgun addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:size]];
     [self.view addSubview:hideShowControlsForLightgun];
     [self.view addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeCenterX multiplier:1.0f constant:0.0f]];
-    [self.view addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeTopMargin multiplier:1.0f constant:8.0f]];
+    [self.view addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeTopMargin multiplier:1.0f constant:size / 2.0]];
     areControlsHidden = NO;
 #else
     UIPanGestureRecognizer* pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(remotePan:)];
@@ -1819,7 +1814,7 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
 -(void)enableHDR {
 
     // no HDR on macOS, at least not yet
-    if (TARGET_OS_MACCATALYST || self.view.window.screen.traitCollection.displayGamut != UIDisplayGamutP3)
+    if (IsRunningOnMac() || self.view.window.screen.traitCollection.displayGamut != UIDisplayGamutP3)
         return;
 
     if (avPlayer == nil) {
@@ -2026,13 +2021,14 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     
     if (hudView == nil) {
         hudView = [[InfoHUD alloc] init];
-#if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST)
-        hudView.font = [UIFont monospacedDigitSystemFontOfSize:hudView.font.pointSize weight:UIFontWeightRegular];
-        hudView.layoutMargins = UIEdgeInsetsMake(8, 8, 8, 8);
-#else
-        hudView.font = [UIFont monospacedDigitSystemFontOfSize:24.0 weight:UIFontWeightRegular];
-        hudView.layoutMargins = UIEdgeInsetsMake(16, 16, 16, 16);
-#endif
+        if (TARGET_OS_IOS && !IsRunningOnMac()) {
+            hudView.font = [UIFont monospacedDigitSystemFontOfSize:hudView.font.pointSize weight:UIFontWeightRegular];
+            hudView.layoutMargins = UIEdgeInsetsMake(8, 8, 8, 8);
+        }
+        else {
+            hudView.font = [UIFont monospacedDigitSystemFontOfSize:24.0 weight:UIFontWeightRegular];
+            hudView.layoutMargins = UIEdgeInsetsMake(16, 16, 16, 16);
+        }
         [hudView addTarget:self action:@selector(hudChange:) forControlEvents:UIControlEventValueChanged];
         [self loadHUD];
         [self.view addSubview:hudView];
@@ -2372,7 +2368,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
 #define DIRECT_CONTROLLER_READ  0 // 1 - always read controller, 0 - cache read, and only read when marked dirty
 
-#define NUM_DEV (NUM_JOY+1) // one extra device for the Siri Remote!
+#define NUM_DEV (MYOSD_NUM_JOY+1) // one extra device for the Siri Remote!
 
 #define MYOSD_PLAYER_SHIFT  28
 #define MYOSD_PLAYER_MASK   MYOSD_PLAYER(0x3)
@@ -2509,7 +2505,7 @@ static void handle_turbo(myosd_input_state* myosd) {
     }
     
     for (int button=0; button<NUM_BUTTONS; button++) {
-        for (int i = 0; i < NUM_JOY; i++) {
+        for (int i = 0; i < MYOSD_NUM_JOY; i++) {
             if (turboBtnEnabled[button]) {
                 if (myosd->joy_status[i] & buttonMask[button]) {
                     // toggle the button every `buttonPressReleaseCycles`
@@ -2530,12 +2526,12 @@ void handle_autofire(myosd_input_state* myosd)
     if (!g_pref_autofire || myosd->input_mode != MYOSD_INPUT_MODE_NORMAL)
         return;
 
-    static int A_pressed[NUM_JOY];
-    static int old_A_pressed[NUM_JOY];
-    static int enabled_autofire[NUM_JOY];
-    static int fire[NUM_JOY];
+    static int A_pressed[MYOSD_NUM_JOY];
+    static int old_A_pressed[MYOSD_NUM_JOY];
+    static int enabled_autofire[MYOSD_NUM_JOY];
+    static int fire[MYOSD_NUM_JOY];
 
-    for(int i=0; i<NUM_JOY; i++)
+    for(int i=0; i<MYOSD_NUM_JOY; i++)
     {
         old_A_pressed[i] = A_pressed[i];
         A_pressed[i] = (myosd->joy_status[i] & MYOSD_A) != 0;
@@ -2774,7 +2770,7 @@ static void handle_device_input(myosd_input_state* myosd)
         }
     }
     // set all other controllers to ZERO
-    for (int index = (int)controllers_count; index < NUM_JOY; index++) {
+    for (int index = (int)controllers_count; index < MYOSD_NUM_JOY; index++) {
         myosd->joy_status[index] = 0;
         memset(myosd->joy_analog[index], 0, sizeof(myosd->joy_analog[0]));
     }
@@ -2784,7 +2780,7 @@ static void handle_device_input(myosd_input_state* myosd)
     TIMER_START(timer_read_mice);
     NSArray* mice = g_mice;
     if (mice.count != 0 && g_direct_mouse_enable) {
-        for (int i = 0; i < MIN(NUM_JOY, mice.count); i++) {
+        for (int i = 0; i < MIN(MYOSD_NUM_MICE, mice.count); i++) {
             read_mouse(mice[i], myosd, i);
         }
     }
@@ -2808,7 +2804,7 @@ static void handle_p1aspx(myosd_input_state* myosd) {
     if (g_pref_p1aspx == 0 || myosd->input_mode != MYOSD_INPUT_MODE_NORMAL)
         return;
     
-    for (int i=1; i<NUM_JOY; i++) {
+    for (int i=1; i<MYOSD_NUM_JOY; i++) {
         myosd->joy_status[i] = myosd->joy_status[0];
         memcpy(myosd->joy_analog[i], myosd->joy_analog[0], sizeof(myosd->joy_analog[0]));
     }
@@ -3099,7 +3095,7 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
 
 #pragma mark - SCREEN VIEW SETUP
 
-#if TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS
 -(BOOL)isFullscreenWindow {
     if (self.view.window == nil)
         return TRUE;
@@ -3120,8 +3116,8 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
         screenSize.height = floor(screenSize.height / 0.77);
     }
 
-    NSLog(@"screenSize: %@", NSStringFromSize(screenSize));
-    NSLog(@"windowSize: %@", NSStringFromSize(windowSize));
+    NSLog(@"screenSize: %@", NSStringFromCGSize(screenSize));
+    NSLog(@"windowSize: %@", NSStringFromCGSize(windowSize));
 
     return (windowSize.width >= screenSize.width && windowSize.height >= screenSize.height);
 }
@@ -3143,13 +3139,17 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
         g_device_is_fullscreen = FALSE;
     
     g_direct_mouse_enable = TRUE;
-#if TARGET_OS_MACCATALYST
-    if ([self isFullscreenWindow])
-        // on macOS device is always fullscreen when the app window is fullscreen.
-        g_device_is_fullscreen = TRUE;
-    else
-        // on macOS dont use direct mouse input when the app window is NOT fullscreen.
-        g_direct_mouse_enable = FALSE;
+
+#if TARGET_OS_IOS
+    if (IsRunningOnMac())
+    {
+        if ([self isFullscreenWindow])
+            // on macOS device is always fullscreen when the app window is fullscreen.
+            g_device_is_fullscreen = TRUE;
+        else
+            // on macOS dont use direct mouse input when the app window is NOT fullscreen.
+            g_direct_mouse_enable = FALSE;
+    }
 #endif
     
     if (change_layout)
@@ -3488,21 +3488,22 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
                 // if user is manualy controling fullscreen, then turn off fullscreen joy.
                 op.fullscreenJoystick = g_pref_full_screen_joy = FALSE;
                 
-#if TARGET_OS_MACCATALYST
                 // in macApp we really only want one flag for "fullscreen"
                 // NOTE: macApp has two concepts of fullsceen g_device_is_fullscreen is if
                 // the game SCREEN fills our window, and a macApp's window can be fullscreen
-                op.fullscreenLandscape = g_pref_full_screen_land = !g_device_is_fullscreen;
-                op.fullscreenPortrait = g_pref_full_screen_port = !g_device_is_fullscreen;
-                
-                if (g_device_is_fullscreen)
-                    [[[[NSClassFromString(@"NSApplication") sharedApplication] windows] firstObject] toggleFullScreen:nil];
-#else
-                if (g_device_is_landscape)
+                if (IsRunningOnMac()) {
                     op.fullscreenLandscape = g_pref_full_screen_land = !g_device_is_fullscreen;
-                else
                     op.fullscreenPortrait = g_pref_full_screen_port = !g_device_is_fullscreen;
-#endif
+
+                    if (g_device_is_fullscreen)
+                        [[[[NSClassFromString(@"NSApplication") sharedApplication] windows] firstObject] toggleFullScreen:nil];
+                }
+                else {
+                    if (g_device_is_landscape)
+                        op.fullscreenLandscape = g_pref_full_screen_land = !g_device_is_fullscreen;
+                    else
+                        op.fullscreenPortrait = g_pref_full_screen_port = !g_device_is_fullscreen;
+                }
                 [op saveOptions];
                 [self changeUI];
                 break;
@@ -4309,8 +4310,7 @@ BOOL is_roms_dir(NSString* dir) {
     }
     
     // check for softlist name
-    path = [[getDocumentPath(@"hash") stringByAppendingPathComponent:dir] stringByAppendingPathExtension:@"xml"];
-    if ([NSFileManager.defaultManager fileExistsAtPath:path])
+    if ([[g_softlist getSoftwareListNames] containsObject:dir])
         return TRUE;
     
     return FALSE;
@@ -4355,16 +4355,11 @@ BOOL is_roms_dir(NSString* dir) {
     
     // if the ROM had a name like "foobar 1.zip", "foobar (1).zip" use only the first word as the ROM name.
     // this most likley came when a user downloaded the zip and a foobar.zip already existed, MAME ROMs are <=20 char and no spaces.
-    NSArray* words = [[romName stringByDeletingPathExtension] componentsSeparatedByString:@" "];
+    NSArray* words = [[romName stringByDeletingPathExtension] componentsSeparatedByCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@" -"]];
     if (words.count == 2 && [words.lastObject stringByTrimmingCharactersInSet:[NSCharacterSet punctuationCharacterSet]].intValue != 0)
         romName = [words.firstObject stringByAppendingPathExtension:romName.pathExtension];
 
     NSLog(@"ROM NAME: '%@' PATH:%@", romName, [romPath stringByReplacingOccurrencesOfString:rootPath withString:@"~/"]);
-    
-    // import a XML file, currently a XML file is assumed to be a SoftwareList
-    if ([romName.pathExtension.lowercaseString isEqualToString:@"xml"]) {
-        return [g_softlist installFile:romPath];
-    }
     
     //
     // scan the ZIP file to see what kind it is.
@@ -4389,7 +4384,6 @@ BOOL is_roms_dir(NSString* dir) {
     int __block numSKIN = 0;
     int __block numLAY = 0;
     int __block numZIP = 0;
-    int __block numXML = 0;
     int __block numCHD = 0;
     int __block numWAV = 0;
     int __block numDAT = 0;
@@ -4405,8 +4399,6 @@ BOOL is_roms_dir(NSString* dir) {
             numWAV++;
         if ([ext isEqualToString:@"CHD"])
             numCHD++;
-        if ([ext isEqualToString:@"XML"])
-            numXML++;
         if ([dat_files containsObject:info.name.lastPathComponent.uppercaseString])
             numDAT++;
         for (int i=0; i<NUM_BUTTONS; i++)
@@ -4416,12 +4408,13 @@ BOOL is_roms_dir(NSString* dir) {
     }];
 
     NSString* toPath = nil;
-    
+    NSString* softList = nil;
+
     if (!result)
     {
         NSLog(@"%@ is a CORRUPT ZIP (deleting)", romPath);
     }
-    else if (numZIP != 0 || numCHD != 0 || numDAT != 0 || numXML != 0)
+    else if (numZIP != 0 || numCHD != 0 || numDAT != 0)
     {
         NSLog(@"%@ is a ZIPSET", [romPath lastPathComponent]);
         int maxFiles = numFiles;
@@ -4462,7 +4455,7 @@ BOOL is_roms_dir(NSString* dir) {
             if (toPath == nil && dirs.count == 0 && is_roms_dir(romName.stringByDeletingPathExtension))
                 toPath = [romsPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@/%@", romName.stringByDeletingPathExtension, name]];
             
-            // if it is a zip or xml and we dont know where to put it drop it in the root to get re-imported
+            // if it is a zip and we dont know where to put it drop it in the root to get re-imported
             if (toPath == nil && [IMPORT_FILE_TYPES containsObject:ext])
                 toPath = [rootPath stringByAppendingPathComponent:name];
             
@@ -4509,8 +4502,14 @@ BOOL is_roms_dir(NSString* dir) {
         NSLog(@"%@ is a SKIN file", romName);
         toPath = [skinPath stringByAppendingPathComponent:romName];
     }
-    else if ([g_softlist installFile:romPath]) {
-        NSLog(@"%@ is a SOFTWARE ROMSET", romName);
+    else if ((softList = [g_softlist getSoftwareListNameForRomset:romPath named:romName.stringByDeletingPathExtension]) != nil) {
+        NSLog(@"%@ is a SOFTWARE ROMSET (%@)", romName, softList);
+        
+        NSString* softDir = [romsPath stringByAppendingPathComponent:softList];
+        toPath = [softDir stringByAppendingPathComponent:romName];
+
+        // create (if needed) directory to hold software ROMs
+        [NSFileManager.defaultManager createDirectoryAtPath:softDir withIntermediateDirectories:NO attributes:nil error:nil];
     }
     else if ([romName length] <= 20 && ![romName containsString:@" "])
     {
@@ -4557,19 +4556,10 @@ BOOL is_roms_dir(NSString* dir) {
     
     NSMutableArray *list = [[NSMutableArray alloc] init];
     
-    // add all the XML files first, so we have SoftwareList info for the later files (if needed)
+    // add ZIP files, skipping well known root zips
     for (NSString* file in files)
     {
-        if ([file.pathExtension.lowercaseString isEqualToString:@"xml"])
-            [list addObject:file];
-    }
-    
-    // now add ZIP files.
-    for (NSString* file in files)
-    {
-        if ([file.stringByDeletingPathExtension.lowercaseString isEqualToString:@"cheat"])
-            continue;
-        if ([file.pathExtension.lowercaseString isEqualToString:@"xml"])
+        if ([@[@"cheat", @"hash"] containsObject:file.stringByDeletingPathExtension.lowercaseString])
             continue;
         if ([IMPORT_FILE_TYPES containsObject:file.pathExtension.lowercaseString])
             [list addObject: file];
@@ -4632,7 +4622,7 @@ BOOL is_roms_dir(NSString* dir) {
                 NSLog(@"found (%d) *more* ROMs to move....", (int)files.count);
         }
         
-        dispatch_async(dispatch_get_main_queue(), ^{
+        dispatch_async(dispatch_get_main_queue(), ^{ 
             if (progressAlert == nil)
                 g_move_roms = 0;
             [progressAlert.presentingViewController dismissViewControllerAnimated:YES completion:^{
@@ -4739,7 +4729,7 @@ BOOL is_roms_dir(NSString* dir) {
     // TODO: we might need to export the `org.7-zip.7-zip-archive` type in Info.plist??
     UIDocumentPickerViewController* documentPicker = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:@[@"public.zip-archive", @"org.7-zip.7-zip-archive", @"public.xml"] inMode:UIDocumentPickerModeImport];
     documentPicker.modalPresentationStyle = UIModalPresentationFormSheet;
-    documentPicker.delegate = self;
+    documentPicker.delegate = (id<UIDocumentPickerDelegate>)self;
     documentPicker.allowsMultipleSelection = YES;
     [self.topViewController presentViewController:documentPicker animated:YES completion:nil];
 }
@@ -4754,32 +4744,33 @@ BOOL is_roms_dir(NSString* dir) {
 - (void)runExport {
     NSString* name = @PRODUCT_NAME " (export)";
     
-#if TARGET_OS_MACCATALYST
-    NSURL *url = [self createTempFile:[name stringByAppendingPathExtension:@"zip"]];
-    [self saveROMS:url progressBlock:nil];
-    UIDocumentPickerViewController* documentPicker = [[UIDocumentPickerViewController alloc] initWithURLs:@[url] inMode:UIDocumentPickerModeMoveToService];
-    documentPicker.modalPresentationStyle = UIModalPresentationFormSheet;
-    documentPicker.delegate = self;
-    documentPicker.allowsMultipleSelection = YES;
-    [self.topViewController presentViewController:documentPicker animated:YES completion:nil];
-#else
-    FileItemProvider* item = [[FileItemProvider alloc] initWithTitle:name typeIdentifier:@"public.zip-archive" saveHandler:^BOOL(NSURL* url, FileItemProviderProgressHandler progressHandler) {
-        return [self saveROMS:url progressBlock:progressHandler];
-    }];
-    
-    // NOTE UIActivityViewController is kind of broken in the Simulator, if you find a crash or problem verify it on a real device.
-    UIActivityViewController* activity = [[UIActivityViewController alloc] initWithActivityItems:@[item] applicationActivities:nil];
-    
-    UIViewController* top = self.topViewController;
-
-    if (activity.popoverPresentationController != nil) {
-        activity.popoverPresentationController.sourceView = top.view;
-        activity.popoverPresentationController.sourceRect = CGRectMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds), 0.0f, 0.0f);
-        activity.popoverPresentationController.permittedArrowDirections = 0;
+    if (IsRunningOnMac()) {
+        NSURL *url = [self createTempFile:[name stringByAppendingPathExtension:@"zip"]];
+        [self saveROMS:url progressBlock:nil];
+        UIDocumentPickerViewController* documentPicker = [[UIDocumentPickerViewController alloc] initWithURLs:@[url] inMode:UIDocumentPickerModeMoveToService];
+        documentPicker.modalPresentationStyle = UIModalPresentationFormSheet;
+        documentPicker.delegate = (id<UIDocumentPickerDelegate>)self;
+        documentPicker.allowsMultipleSelection = YES;
+        [self.topViewController presentViewController:documentPicker animated:YES completion:nil];
     }
-    
-    [top presentViewController:activity animated:YES completion:nil];
-#endif
+    else {
+        FileItemProvider* item = [[FileItemProvider alloc] initWithTitle:name typeIdentifier:@"public.zip-archive" saveHandler:^BOOL(NSURL* url, FileItemProviderProgressHandler progressHandler) {
+            return [self saveROMS:url progressBlock:progressHandler];
+        }];
+        
+        // NOTE UIActivityViewController is kind of broken in the Simulator, if you find a crash or problem verify it on a real device.
+        UIActivityViewController* activity = [[UIActivityViewController alloc] initWithActivityItems:@[item] applicationActivities:nil];
+        
+        UIViewController* top = self.topViewController;
+
+        if (activity.popoverPresentationController != nil) {
+            activity.popoverPresentationController.sourceView = top.view;
+            activity.popoverPresentationController.sourceRect = CGRectMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds), 0.0f, 0.0f);
+            activity.popoverPresentationController.permittedArrowDirections = 0;
+        }
+        
+        [top presentViewController:activity animated:YES completion:nil];
+    }
 }
 - (void)runExportSkin {
     
@@ -4791,37 +4782,52 @@ BOOL is_roms_dir(NSString* dir) {
     else
         skin_export_name = g_pref_skin;
     
-#if TARGET_OS_MACCATALYST
-    NSURL *url = [self createTempFile:[skin_export_name stringByAppendingPathExtension:@"zip"]];
-    [skinManager exportTo:url.path progressBlock:nil];
-    UIDocumentPickerViewController* documentPicker = [[UIDocumentPickerViewController alloc] initWithURLs:@[url] inMode:UIDocumentPickerModeMoveToService];
-    documentPicker.modalPresentationStyle = UIModalPresentationFormSheet;
-    documentPicker.delegate = self;
-    documentPicker.allowsMultipleSelection = YES;
-    [self.topViewController presentViewController:documentPicker animated:YES completion:nil];
-#else
-    FileItemProvider* item = [[FileItemProvider alloc] initWithTitle:skin_export_name typeIdentifier:@"public.zip-archive" saveHandler:^BOOL(NSURL* url, FileItemProviderProgressHandler progressHandler) {
-        return [self->skinManager exportTo:url.path progressBlock:progressHandler];
-    }];
-    
-    // NOTE UIActivityViewController is kind of broken in the Simulator, if you find a crash or problem verify it on a real device.
-    UIActivityViewController* activity = [[UIActivityViewController alloc] initWithActivityItems:@[item] applicationActivities:nil];
-    
-    UIViewController* top = self.topViewController;
-
-    if (activity.popoverPresentationController != nil) {
-        activity.popoverPresentationController.sourceView = top.view;
-        activity.popoverPresentationController.sourceRect = CGRectMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds), 0.0f, 0.0f);
-        activity.popoverPresentationController.permittedArrowDirections = 0;
+    if (IsRunningOnMac()) {
+        NSURL *url = [self createTempFile:[skin_export_name stringByAppendingPathExtension:@"zip"]];
+        [skinManager exportTo:url.path progressBlock:nil];
+        UIDocumentPickerViewController* documentPicker = [[UIDocumentPickerViewController alloc] initWithURLs:@[url] inMode:UIDocumentPickerModeMoveToService];
+        documentPicker.modalPresentationStyle = UIModalPresentationFormSheet;
+        documentPicker.delegate = (id<UIDocumentPickerDelegate>)self;
+        documentPicker.allowsMultipleSelection = YES;
+        [self.topViewController presentViewController:documentPicker animated:YES completion:nil];
     }
-    
-    [top presentViewController:activity animated:YES completion:nil];
-#endif
+    else {
+        FileItemProvider* item = [[FileItemProvider alloc] initWithTitle:skin_export_name typeIdentifier:@"public.zip-archive" saveHandler:^BOOL(NSURL* url, FileItemProviderProgressHandler progressHandler) {
+            return [self->skinManager exportTo:url.path progressBlock:progressHandler];
+        }];
+        
+        // NOTE UIActivityViewController is kind of broken in the Simulator, if you find a crash or problem verify it on a real device.
+        UIActivityViewController* activity = [[UIActivityViewController alloc] initWithActivityItems:@[item] applicationActivities:nil];
+        
+        UIViewController* top = self.topViewController;
+
+        if (activity.popoverPresentationController != nil) {
+            activity.popoverPresentationController.sourceView = top.view;
+            activity.popoverPresentationController.sourceRect = CGRectMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds), 0.0f, 0.0f);
+            activity.popoverPresentationController.permittedArrowDirections = 0;
+        }
+        
+        [top presentViewController:activity animated:YES completion:nil];
+    }
 }
-#endif
+
+// open (aka Show in Finder or Files.app) the Document directory
+- (void)runShowFiles {
+    // first try to open Files.app, if that fails then open Finder
+    NSString* str =  [NSString stringWithFormat:@"shareddocuments://%@",  getDocumentPath(@"")];
+    NSURL* url = [[NSURL alloc] initWithString:str];
+    [UIApplication.sharedApplication openURL:url options:@{} completionHandler:^(BOOL success) {
+        if (!success) {
+            NSURL* url = [[NSURL alloc] initFileURLWithPath:getDocumentPath(@"")];
+            [UIApplication.sharedApplication openURL:url options:@{} completionHandler:nil];
+        }
+    }];
+}
+
+#endif // TARGET_OS_IOS
 
 - (void)runServer {
-    [WebServer sharedInstance].webUploader.delegate = self;
+    [WebServer sharedInstance].webUploader.delegate = (id<GCDWebUploaderDelegate>)self;
     [[WebServer sharedInstance] startUploader];
 }
 
@@ -4837,19 +4843,12 @@ BOOL is_roms_dir(NSString* dir) {
         [self reset];
         [self done:self];
     }]];
-    if ([g_softlist getSoftwareListNames].count != 0) {
-        [alert addAction:[UIAlertAction actionWithTitle:@"Delete Software" style:UIAlertActionStyleDestructive handler:^(UIAlertAction* action) {
-            [g_softlist reset];
-            [self done:self];
-        }]];
-    }
     [alert addAction:[UIAlertAction actionWithTitle:@"Delete All ROMs" style:UIAlertActionStyleDestructive handler:^(UIAlertAction* action) {
         for (NSString* file in [EmulatorController getROMS]) {
             NSString* path = [NSString stringWithUTF8String:get_documents_path(file.UTF8String)];
             if (![NSFileManager.defaultManager removeItemAtPath:path error:nil])
                 NSLog(@"ERROR DELETING ROM: %@", file);
         }
-        [g_softlist reset];
         [self reset];
         [self done:self];
     }]];
@@ -4945,8 +4944,8 @@ static unsigned long g_device_has_input[NUM_DEV];   // TRUE if device needs to b
         }
     }
     // only handle upto NUM_JOY (non Siri Remote) controllers
-    if (controllers.count > NUM_JOY) {
-        [controllers removeObjectsInRange:NSMakeRange(NUM_JOY,controllers.count - NUM_JOY)];
+    if (controllers.count > MYOSD_NUM_JOY) {
+        [controllers removeObjectsInRange:NSMakeRange(MYOSD_NUM_JOY,controllers.count - MYOSD_NUM_JOY)];
     }
     // add all the controllers without a extendedGamepad profile last, ie the Siri Remote.
     for (GCController* controler in GCController.controllers) {
@@ -4985,7 +4984,7 @@ static unsigned long g_device_has_input[NUM_DEV];   // TRUE if device needs to b
     for (NSInteger index = 0; index < g_controllers.count; index++) {
         GCController* controller = g_controllers[index];
         // the Siri Remote, or any controller higher than MAME is looking for get mapped to Player 1
-        if (controller.extendedGamepad == nil || index >= MIN(myosd_num_inputs, NUM_JOY))
+        if (controller.extendedGamepad == nil || index >= MIN(myosd_num_inputs, MYOSD_NUM_JOY))
             [controller setPlayerIndex:0];
         else
             [controller setPlayerIndex:index];
@@ -5155,7 +5154,7 @@ static unsigned long g_device_has_input[NUM_DEV];   // TRUE if device needs to b
     int index = (int)[g_controllers indexOfObjectIdenticalTo:controller];
     int player = (int)controller.playerIndex;
 
-    if (index < 0 || index >= NUM_DEV || player < 0 || player >= NUM_JOY)
+    if (index < 0 || index >= NUM_DEV || player < 0 || player >= MYOSD_NUM_JOY)
         return;
     
     NSLog(@"handleMenuButton[%d]: %s %s", index,
@@ -5245,7 +5244,7 @@ static unsigned long g_device_has_input[NUM_DEV];   // TRUE if device needs to b
     int index = (int)[g_controllers indexOfObjectIdenticalTo:controller];
     int player = (int)controller.playerIndex;
 
-    if (index < 0 || index >= NUM_DEV || player < 0 || player >= NUM_JOY)
+    if (index < 0 || index >= NUM_DEV || player < 0 || player >= MYOSD_NUM_JOY)
         return;
     
     unsigned long combo_buttons = (MYOSD_A|MYOSD_B|MYOSD_X|MYOSD_Y|MYOSD_UP|MYOSD_DOWN|MYOSD_LEFT|MYOSD_RIGHT|MYOSD_L1|MYOSD_R1|MYOSD_L2|MYOSD_R2);
@@ -5412,8 +5411,11 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
             GCDeviceElement* element = device.physicalInputProfile.elements[key];
             NSLog(@"            ELEMENT: %@", element);
             
-            NSLog(@"                     Name: %@ (%@)", element.localizedName, element.unmappedLocalizedName);
-            NSLog(@"                     Symbol: %@ (%@)", element.sfSymbolsName, element.unmappedSfSymbolsName);
+            if (element.localizedName != nil)
+                NSLog(@"                     Name: %@ (%@)", element.localizedName, element.unmappedLocalizedName);
+            if (element.sfSymbolsName != nil)
+                NSLog(@"                     Symbol: %@ (%@)", element.sfSymbolsName, element.unmappedSfSymbolsName);
+            
             NSLog(@"                     isAnalog: %@", element.isAnalog ? @"YES" : @"NO");
             NSLog(@"                     isBoundToSystemGesture: %@", element.isBoundToSystemGesture ? @"YES" : @"NO");
             NSLog(@"                     preferredSystemGestureState: %@",
@@ -5501,7 +5503,7 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
 -(void)setupMice API_AVAILABLE(ios(14.0)) {
     g_mice = [GCMouse.mice copy];
     
-    for (int i = 0; i < MIN(NUM_JOY, g_mice.count); i++) {
+    for (int i = 0; i < MIN(MYOSD_NUM_MICE, g_mice.count); i++) {
         GCMouse* mouse = g_mice[i];
         [self dumpDevice:mouse];
         
@@ -5514,19 +5516,22 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
         // TODO: turns out MAME will merge mice by default, we dont need to.
 
         [mouse.mouseInput.leftButton setPressedChangedHandler:^(GCControllerButtonInput* button, float value, BOOL pressed) {
+            NSLog(@"MOUSE BUTTON %@", button);
             mouse_status[i] = (mouse_status[i] & ~MYOSD_A) | (pressed ? MYOSD_A : 0);
         }];
         [mouse.mouseInput.rightButton setPressedChangedHandler:^(GCControllerButtonInput* button, float value, BOOL pressed) {
+            NSLog(@"MOUSE BUTTON %@", button);
             mouse_status[i] = (mouse_status[i] & ~MYOSD_B) | (pressed ? MYOSD_B : 0);
         }];
         [mouse.mouseInput.middleButton setPressedChangedHandler:^(GCControllerButtonInput* button, float value, BOOL pressed) {
+            NSLog(@"MOUSE BUTTON %@", button);
             mouse_status[i] = (mouse_status[i] & ~MYOSD_Y) | (pressed ? MYOSD_Y : 0);
         }];
         [mouse.mouseInput setMouseMovedHandler:^(GCMouseInput* mouse, float deltaX, float deltaY) {
             if (!g_direct_mouse_enable)
                 return;
             deltaY = -deltaY;   // flip Y for MAME
-            //NSLog(@"MOUSE MOVE: %f, %f", deltaX, deltaY);
+            NSLog(@"MOUSE MOVE: %f, %f", deltaX, deltaY);
             [mouse_lock lock];
             mouse_delta_x[i] += deltaX * g_pref_touch_analog_sensitivity * scale;
             mouse_delta_y[i] += deltaY * g_pref_touch_analog_sensitivity * scale;
@@ -5542,7 +5547,7 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
             float zValue = sqrtf(xValue*xValue + yValue*yValue);
             if (yValue < -xValue)
                 zValue = -zValue;
-            //NSLog(@"MOUSE SCROLL: (%f, %f) => %f", xValue, yValue, zValue);
+            NSLog(@"MOUSE SCROLL: (%f, %f) => %f", xValue, yValue, zValue);
             [mouse_lock lock];
             mouse_delta_z[i] += zValue * g_pref_touch_analog_sensitivity * scale;
             [mouse_lock unlock];

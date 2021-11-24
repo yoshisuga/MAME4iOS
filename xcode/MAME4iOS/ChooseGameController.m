@@ -1611,6 +1611,8 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
             // if this is a parent romset, delete all the clones too.
             if (game.gameParent.length <= 1)
                 list = [list filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"NOT (%K == %@ AND %K == %@)", kGameInfoSystem, game[kGameInfoSystem], kGameInfoParent, game.gameName]];
+            
+            // TODO: if you delete a machine/system shoud we delete all the Software too?
 
             [self setGameList:list];
 
@@ -2034,6 +2036,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
 #pragma mark Keyboard and Game Controller navigation
 
 #if TARGET_OS_IOS
+- (void)onCommandExit  { }
 - (void)onCommandUp    { [self onCommandMove:-1 * _layoutCollums]; }
 - (void)onCommandDown  { [self onCommandMove:+1 * _layoutCollums]; }
 - (void)onCommandLeft  { [self onCommandMove:-1]; }
@@ -2117,7 +2120,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
 }
 - (NSArray*)keyCommands {
     
-    if (_searchController.isActive)
+    if (_searchController.isActive || self.presentedViewController != nil)
         return @[];
     
     if (_key_commands == nil) {
@@ -2128,6 +2131,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
             [UIKeyCommand keyCommandWithInput:UIKeyInputDownArrow   modifierFlags:0 action:@selector(onCommandDown)],
             [UIKeyCommand keyCommandWithInput:UIKeyInputLeftArrow   modifierFlags:0 action:@selector(onCommandLeft)],
             [UIKeyCommand keyCommandWithInput:UIKeyInputRightArrow  modifierFlags:0 action:@selector(onCommandRight)],
+            [UIKeyCommand keyCommandWithInput:UIKeyInputEscape      modifierFlags:0 action:@selector(onCommandExit)],
             // iCade
             [UIKeyCommand keyCommandWithInput:@"y" modifierFlags:0 action:@selector(onCommandSelect)], // SELECT
             [UIKeyCommand keyCommandWithInput:@"h" modifierFlags:0 action:@selector(onCommandSelect)], // START
@@ -2137,6 +2141,13 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
             [UIKeyCommand keyCommandWithInput:@"a" modifierFlags:0 action:@selector(onCommandLeft)],
             [UIKeyCommand keyCommandWithInput:@"d" modifierFlags:0 action:@selector(onCommandRight)],
         ];
+        
+#ifdef __IPHONE_15_0
+        if (@available(iOS 15.0, *)) {
+            for (UIKeyCommand* key_command in _key_commands)
+                key_command.wantsPriorityOverSystemBehavior = YES;
+        }
+#endif
     }
     return _key_commands;
 }

@@ -328,6 +328,13 @@
                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                    break;
                }
+               case 3:
+               {
+                   cell.textLabel.text = @"Show Files";
+                   cell.imageView.image = [UIImage systemImageNamed:@"folder"];
+                   cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                   break;
+               }
            }
            break;
         }
@@ -426,7 +433,7 @@
           case kVectorSection: return 2;
           case kMiscSection: return 7;
           case kFilterSection: return 3;
-          case kImportSection: return 3;
+          case kImportSection: return 4;
           case kCloudImportSection:
               if (CloudSync.status == CloudSyncStatusAvailable)
                   return 4;
@@ -510,6 +517,9 @@
             }
             if (row==2) {
                 [self.emuController runServer];
+            }
+            if (row==3) {
+                [self.emuController runShowFiles];
             }
             break;
         }

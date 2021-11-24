@@ -274,45 +274,14 @@ small_zip:
         info.method = compression;
         info.date = [NSDate dateWithDosDateTime:datetime];
         info.file = file;
+        info.offset = local_offset;
         info.data = nil;
 
-        if (uncompressed_size != 0)
+        // if the caller wants the data, load it and fail if error.
+        if (uncompressed_size != 0 && (options & ZipFileEnumLoadData))
         {
-            NSData*         buffer_data;
-            const uint8_t*  buffer_ptr;
-            NSUInteger      buffer_len;
-            
-            // seek to the local file header and find location of the data
-            LOAD(file, local_offset, 512);
-            
-            //  Local file header
-            //  Offset    Bytes   Description
-            //  0         4       Local file header signature = 0x04034b50 (read as a little-endian number)
-            //  4         2       Version needed to extract (minimum)
-            //  6         2       General purpose bit flag
-            //  8         2       Compression method
-            //  10        2       File last modification time
-            //  12        2       File last modification date
-            //  14        4       CRC-32
-            //  18        4       Compressed size
-            //  22        4       Uncompressed size
-            //  26        2       File name length (n)
-            //  28        2       Extra field length (m)
-            //  30        n       File name
-            //  30+n      m       Extra field
-            if (READ4() != 0x04034b50)
-                return ERROR(@"bad zip file (cant find local file header)");
-            SKIP(22);    // verion, flags, compression. datetime, crc32, compressed size, uncompressed size
-            name_len = READ2();
-            extra_len = READ2();
-            info.offset = local_offset + 30 + name_len + extra_len;
-            
-            // if the caller wants the data, load it and fail if error.
-            if (options & ZipFileEnumLoadData)
-            {
-                if (info.data == nil)
-                    return FALSE;
-            }
+            if (info.data == nil)
+                return FALSE;
         }
 
         if (!(options & ZipFileEnumDirectories) && info.isDirectory)
@@ -424,12 +393,12 @@ small_zip:
             BYTE2(name_len),        // File name length
             BYTE2(0),               // Extra field length
         };
+        info.offset = [file offsetInFileSafe];
         [file writeBytes:local_file_header length:sizeof(local_file_header)];
         [file writeDataSafe:name_data];
-        info.offset = [file offsetInFileSafe];
         [file writeDataSafe:data];
         
-        if (([file offsetInFileSafe] - info.offset) != data.length)
+        if (([file offsetInFileSafe] - info.offset) != sizeof(local_file_header) + name_data.length + data.length)
             return ERROR("write error");
 
         info.crc32 = crc32;
@@ -450,7 +419,7 @@ small_zip:
         uint32_t datetime = (uint32_t)info.date.dosDateTime;
         NSData* name_data = [info.name dataUsingEncoding:NSUTF8StringEncoding];
         uint16_t name_len = [name_data length];
-        uint64_t offset = info.offset - (30 + name_len);
+        uint64_t offset = info.offset;
         uint16_t extra_len = 0;
         uint32_t external_attr = (0100644<<16);     // -rw-r--r--
                                   
@@ -484,7 +453,7 @@ small_zip:
         [file writeBytes:central_directory_file_header length:sizeof(central_directory_file_header)];
         [file writeDataSafe:name_data];
         if (extra_len) {
-            uint64_t offset = info.offset - (30 + name_len);
+            uint64_t offset = info.offset;
             uint8_t extra[] = {
                 BYTE2(0x0001),
                 BYTE2(8),
@@ -619,7 +588,30 @@ small_zip:
     if (_file == nil)
         return nil;
     
-    NSData* data = [_file readDataOfLength:_compressed_size atOffset:_offset];
+    //  Local file header
+    //  Offset    Bytes   Description
+    //  0         4       Local file header signature = 0x04034b50 (read as a little-endian number)
+    //  4         2       Version needed to extract (minimum)
+    //  6         2       General purpose bit flag
+    //  8         2       Compression method
+    //  10        2       File last modification time
+    //  12        2       File last modification date
+    //  14        4       CRC-32
+    //  18        4       Compressed size
+    //  22        4       Uncompressed size
+    //  26        2       File name length (n)
+    //  28        2       Extra field length (m)
+    //  30        n       File name
+    //  30+n      m       Extra field
+    NSData* head = [_file readDataOfLength:30 atOffset:_offset];
+
+    if (OSReadLittleInt32(head.bytes, 0) != 0x04034b50)
+        return ERROR(@"bad zip file (cant find local file header)") ? nil : nil;
+    
+    uint16_t name_len = OSReadLittleInt16(head.bytes, 26);
+    uint16_t extra_len = OSReadLittleInt16(head.bytes, 28);
+    
+    NSData* data = [_file readDataOfLength:_compressed_size atOffset:_offset + 30 + name_len + extra_len];
     _file = nil;    // we dont need a ref to the file after data is loaded.
 
     if ([data length] != _compressed_size)
