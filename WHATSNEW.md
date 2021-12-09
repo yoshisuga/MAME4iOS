@@ -1,11 +1,13 @@
 # Version 2021.8
-* Updated to MAME 2xx core.
+* Updated to [MAME 238](https://www.mamedev.org/releases/whatsnew_0238.txt).
 * Build in all `MAME` software list `XML` files, no need to import XML files anymore.
 * Added Menu (and button in Settings) to open `Document` directory in `Files.app` (or `Finder.app`)
 * Handle romsets names that end with `dash` number. (like `packman - 3.zip`)
 * Dont conflict with system keyboard shortcut for Prefrences `CMD+,`
 * Handle system keyboard shortcut for Escape `CMD+.`
-* Build LIBMAME via Xcode, no more need to run scripts from `Terminal.app`
+* Build `LIBMAME` via Xcode, no more need to run scripts from `Terminal.app`
+* fix `MOUSE` and `LIGHTGUN` input in `MAME` 2xx build.
+* Import `CHD` files.  if the `CHD` file is named `<romname>.chd` it will be copied into `roms/<romname>`
 
 # Version 2021.7
 **NOTE** `MAME4iOS` 2021.7 comes in two versions, one that uses `MAME 139u1`, and one that uses the latest `MAME` (currently 234).  Make sure you download the version that is compatible with your ROMs, You can get the current version from the `Settings` page. If you want to use software based (ie cartridge, etc) romsets, please read the **Software Lists** section in the HELP or README.
