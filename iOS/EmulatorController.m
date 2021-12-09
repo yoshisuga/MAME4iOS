@@ -135,7 +135,7 @@ static BOOL IsRunningOnMac() {
 #endif
 }
 
-#define DebugLog 1
+#define DebugLog 0
 #if DebugLog == 0 || DEBUG == 0
 #define NSLog(...) (void)0
 #endif
@@ -4339,8 +4339,7 @@ BOOL is_roms_dir(NSString* dir) {
 //
 -(BOOL)moveROM:(NSString*)romName progressBlock:(void (^)(double progress, NSString* text))block {
 
-    if (![IMPORT_FILE_TYPES containsObject:romName.pathExtension.lowercaseString])
-        return FALSE;
+    NSParameterAssert([IMPORT_FILE_TYPES containsObject:romName.pathExtension.lowercaseString]);
     
     NSError *error = nil;
 
@@ -4410,7 +4409,7 @@ BOOL is_roms_dir(NSString* dir) {
     NSString* toPath = nil;
     NSString* softList = nil;
 
-    if (!result)
+    if (!result && [romPath.pathExtension.lowercaseString isEqualToString:@"zip"])
     {
         NSLog(@"%@ is a CORRUPT ZIP (deleting)", romPath);
     }
@@ -4502,14 +4501,24 @@ BOOL is_roms_dir(NSString* dir) {
         NSLog(@"%@ is a SKIN file", romName);
         toPath = [skinPath stringByAppendingPathComponent:romName];
     }
+    else if ([romPath.pathExtension.lowercaseString isEqualToString:@"chd"])
+    {
+        // TODO: some games use multiple CHDs or CHDs with names not matching the <romset> name, they need to be copied by hand in that case.
+        NSLog(@"%@ is a CHD file", romName);
+        
+        // check for "<romset>.chd" and copy to "roms/<romset>"
+        NSString* name = romName.stringByDeletingPathExtension;
+        if (is_roms_dir(name))
+            toPath = [[romsPath stringByAppendingPathComponent:name] stringByAppendingPathComponent:romName];
+        
+        // check for "<romset>X.chd" and copy to "roms/<romset>"
+        name = [name substringToIndex:name.length-1];
+        if (toPath == nil && is_roms_dir(name))
+            toPath = [[romsPath stringByAppendingPathComponent:name] stringByAppendingPathComponent:romName];
+    }
     else if ((softList = [g_softlist getSoftwareListNameForRomset:romPath named:romName.stringByDeletingPathExtension]) != nil) {
         NSLog(@"%@ is a SOFTWARE ROMSET (%@)", romName, softList);
-        
-        NSString* softDir = [romsPath stringByAppendingPathComponent:softList];
-        toPath = [softDir stringByAppendingPathComponent:romName];
-
-        // create (if needed) directory to hold software ROMs
-        [NSFileManager.defaultManager createDirectoryAtPath:softDir withIntermediateDirectories:NO attributes:nil error:nil];
+        toPath = [[romsPath stringByAppendingPathComponent:softList] stringByAppendingPathComponent:romName];
     }
     else if ([romName length] <= 20 && ![romName containsString:@" "])
     {
@@ -4530,6 +4539,15 @@ BOOL is_roms_dir(NSString* dir) {
         //now move it
         error = nil;
         [[NSFileManager defaultManager] moveItemAtPath:romPath toPath:toPath error:&error];
+        
+        // create (if needed) directory to hold the ROM
+        if (error != nil)
+        {
+            [NSFileManager.defaultManager createDirectoryAtPath:toPath.stringByDeletingLastPathComponent withIntermediateDirectories:NO attributes:nil error:nil];
+            error = nil;
+            [[NSFileManager defaultManager] moveItemAtPath:romPath toPath:toPath error:&error];
+        }
+        
         if(error!=nil)
         {
             NSLog(@"Unable to move rom: %@", [error localizedDescription]);
@@ -4556,15 +4574,17 @@ BOOL is_roms_dir(NSString* dir) {
     
     NSMutableArray *list = [[NSMutableArray alloc] init];
     
-    // add ZIP files, skipping well known root zips
+    // add ZIP files, skipping well known root zips, put ZIPs first
     for (NSString* file in files)
     {
         if ([@[@"cheat", @"hash"] containsObject:file.stringByDeletingPathExtension.lowercaseString])
             continue;
-        if ([IMPORT_FILE_TYPES containsObject:file.pathExtension.lowercaseString])
-            [list addObject: file];
+        if ([ZIP_FILE_TYPES containsObject:file.pathExtension.lowercaseString])
+            [list insertObject:file atIndex:0];
+        else if ([IMPORT_FILE_TYPES containsObject:file.pathExtension.lowercaseString])
+            [list addObject:file];
     }
-    
+
     return [list copy];
 }
 
@@ -4727,7 +4747,7 @@ BOOL is_roms_dir(NSString* dir) {
 
 - (void)runImport {
     // TODO: we might need to export the `org.7-zip.7-zip-archive` type in Info.plist??
-    UIDocumentPickerViewController* documentPicker = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:@[@"public.zip-archive", @"org.7-zip.7-zip-archive", @"public.xml"] inMode:UIDocumentPickerModeImport];
+    UIDocumentPickerViewController* documentPicker = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:@[@"public.zip-archive", @"org.7-zip.7-zip-archive", @"org.mamedev.disk-image"] inMode:UIDocumentPickerModeImport];
     documentPicker.modalPresentationStyle = UIModalPresentationFormSheet;
     documentPicker.delegate = (id<UIDocumentPickerDelegate>)self;
     documentPicker.allowsMultipleSelection = YES;
