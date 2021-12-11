@@ -100,6 +100,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readwrite,assign) int hapticButtonFeedback;
 
+@property (readwrite,assign) int useDRC;
+
 @end
 
 @interface NSArray (optionAtIndex)

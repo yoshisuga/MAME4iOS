@@ -222,6 +222,7 @@ int g_pref_filter_clones;
 int g_pref_filter_not_working;
 int g_pref_filter_bios;
 int g_pref_speed;
+int g_pref_drc;
 
 enum {
     HudSizeZero = 0,        // HUD is not visible at all.
@@ -304,7 +305,7 @@ static BOOL g_mame_warning_shown = FALSE;
 static BOOL g_no_roms_found = FALSE;
 
 #define OPTIONS_RELOAD_KEYS     @[@"filterClones", @"filterNotWorking", @"filterBIOS"]
-#define OPTIONS_RESTART_KEYS    @[@"cheats", @"autosave", @"hiscore", @"vbean2x", @"vflicker", @"soundValue"]
+#define OPTIONS_RESTART_KEYS    @[@"cheats", @"autosave", @"hiscore", @"vbean2x", @"vflicker", @"soundValue", @"useDRC"]
 static NSInteger g_settings_roms_count;
 static NSInteger g_settings_file_count;
 static Options*  g_settings_options;
@@ -423,6 +424,8 @@ int run_mame(char* system, char* game)
         g_pref_autosave ? "-autosave" : "-noautosave",      // TODO: this is not connected to any UI
         g_pref_showINFO ? "-noskip_gameinfo" : "-skip_gameinfo",
         "-speed", speed,
+        // TODO: change the useDRC default if the arm64 version starts working.
+        myosd_get(MYOSD_VERSION) == 139 ? nada : (g_pref_drc ? "-drc" : "-nodrc"),
         g_pref_hiscore ? "-hiscore" : "-nohiscore",
         "-flicker", g_pref_vector_flicker ? "0.4" : "0.0",
         "-beam", g_pref_vector_beam2x ? "2.5" : "1.0",
@@ -1416,6 +1419,8 @@ HUDViewController* g_menu;
     
     g_pref_vector_beam2x = [op vbean2x];
     g_pref_vector_flicker = [op vflicker];
+    
+    g_pref_drc = [op useDRC];
 
     int speed = 100;
     switch ([op emuspeed]) {

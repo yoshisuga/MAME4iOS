@@ -46,7 +46,7 @@
     } else if ( section == kVectorSection ) {
         return 2;
     } else if ( section == kMiscSection ) {
-        return 7;
+        return 8;
     } else if ( section == kInputSection ) {
         return 1;
     } else if ( section == kImportSection ) {
@@ -204,10 +204,13 @@
             cell.textLabel.text   = @"Save Hiscores";
             cell.accessoryView = [self optionSwitchForKey:@"hiscore"];
         } else if ( indexPath.row == 5 ) {
+            cell.textLabel.text   = @"Use DRC";
+            cell.accessoryView = [self optionSwitchForKey:@"useDRC"];
+        } else if ( indexPath.row == 6 ) {
             cell.textLabel.text   = @"Emulated Speed";
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
             cell.detailTextLabel.text = [Options.arrayEmuSpeed optionAtIndex:op.emuspeed];
-        } else if ( indexPath.row == 6 ) {
+        } else if ( indexPath.row == 7 ) {
             cell.textLabel.text   = @"Sound";
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
             cell.detailTextLabel.text = [Options.arraySoundValue optionAtIndex:op.soundValue];
@@ -267,11 +270,11 @@
             [[self navigationController] pushViewController:listController animated:YES];
         }
     } else if ( indexPath.section == kMiscSection ) {
-        if ( indexPath.row == 5 ) {
+        if ( indexPath.row == 6 ) {
             ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"emuspeed" list:Options.arrayEmuSpeed title:cell.textLabel.text];
             [[self navigationController] pushViewController:listController animated:YES];
         }
-        if ( indexPath.row == 6 ) {
+        if ( indexPath.row == 7 ) {
             ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"soundValue" list:Options.arraySoundValue title:cell.textLabel.text];
             [[self navigationController] pushViewController:listController animated:YES];
         }

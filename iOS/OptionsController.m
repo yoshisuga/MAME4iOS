@@ -249,12 +249,18 @@
                 }
                 case 5:
                 {
+                     cell.textLabel.text   = @"Use DRC";
+                     cell.accessoryView = [self optionSwitchForKey:@"useDRC"];
+                     break;
+                }
+                case 6:
+                {
                      cell.textLabel.text   = @"Emulated Speed";
                      cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                      cell.detailTextLabel.text = [Options.arrayEmuSpeed optionAtIndex:op.emuspeed];
                      break;
                 }
-                case 6:
+                case 7:
                 {
                      cell.textLabel.text   = @"Sound";
                      cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
@@ -431,7 +437,7 @@
           case kOtherSection: return 1;
           case kVideoSection: return 7;
           case kVectorSection: return 2;
-          case kMiscSection: return 7;
+          case kMiscSection: return 8;
           case kFilterSection: return 3;
           case kImportSection: return 4;
           case kCloudImportSection:
@@ -497,11 +503,11 @@
         }
         case kMiscSection:
         {
-            if (row==5) {
+            if (row==6) {
                 ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"emuspeed" list:Options.arrayEmuSpeed title:cell.textLabel.text];
                 [[self navigationController] pushViewController:listController animated:YES];
             }
-            if (row==6) {
+            if (row==7) {
                 ListOptionController *listController = [[ListOptionController alloc] initWithKey:@"soundValue" list:Options.arraySoundValue title:cell.textLabel.text];
                 [[self navigationController] pushViewController:listController animated:YES];
             }
