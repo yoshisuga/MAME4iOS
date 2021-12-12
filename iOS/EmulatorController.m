@@ -122,19 +122,6 @@ TIMER_INIT_END
 -(void)toggleFullScreen:(id)sender;
 @end
 
-static BOOL IsRunningOnMac() {
-#if TARGET_OS_MACCATALYST
-    return TRUE;
-#elif TARGET_OS_IOS && defined(__IPHONE_14_0)
-    if (@available(iOS 14.0, *))
-        return NSProcessInfo.processInfo.isiOSAppOnMac;
-    else
-        return FALSE;
-#else
-    return FALSE;
-#endif
-}
-
 #define DebugLog 0
 #if DebugLog == 0 || DEBUG == 0
 #define NSLog(...) (void)0

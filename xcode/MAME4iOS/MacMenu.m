@@ -43,7 +43,7 @@
 // called once at startup, to build or modify our main app menu.
 - (void)buildMenuWithBuilder:(id<UIMenuBuilder>)builder {
     
-    if (builder.system != UIMenuSystem.mainSystem)
+    if (!IsRunningOnMac() || builder.system != UIMenuSystem.mainSystem)
         return;
     
     [builder removeMenuForIdentifier:UIMenuEdit];

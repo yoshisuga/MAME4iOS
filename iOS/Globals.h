@@ -61,6 +61,19 @@
     #define PRODUCT_NAME_LONG   "MAME for iOS"
 #endif
 
+static inline BOOL IsRunningOnMac() {
+#if TARGET_OS_MACCATALYST
+    return TRUE;
+#elif TARGET_OS_IOS && defined(__IPHONE_14_0)
+    if (@available(iOS 14.0, *))
+        return NSProcessInfo.processInfo.isiOSAppOnMac;
+    else
+        return FALSE;
+#else
+    return FALSE;
+#endif
+}
+
 /* Convert between radians and degrees */
 #ifndef RAD_TO_DEGREE
 #define RAD_TO_DEGREE(r)	((r * 180.0f) / M_PI)
