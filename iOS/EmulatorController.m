@@ -89,10 +89,13 @@ TIMER_INIT(timer_read_mice)
 TIMER_INIT(load_cat)
 TIMER_INIT_END
 
+#import "MAME4iOS-Swift.h"
+
 // declare "safe" properties for buttonHome, buttonMenu, buttonsOptions that work on pre-iOS 13,14
 #if (TARGET_OS_IOS && __IPHONE_OS_VERSION_MIN_REQUIRED < 140000) || (TARGET_OS_TV && __TV_OS_VERSION_MIN_REQUIRED < 140000)
 #ifndef __IPHONE_14_0
 @class GCMouse;
+@class EmulatorKeyboardKeyPressedDelegate;
 @interface GCExtendedGamepad()
 -(GCControllerButtonInput*)buttonHome;
 @end
@@ -683,7 +686,7 @@ void m4i_game_stop()
     myosd_isLCD = NO;
 }
 
-@interface EmulatorController() {
+@interface EmulatorController()<EmulatorKeyboardKeyPressedDelegate> {
     CSToastStyle *toastStyle;
     CGPoint mouseTouchStartLocation;
     CGPoint mouseInitialLocation;
@@ -1696,6 +1699,8 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
 
     if (g_mame_game_info.gameName.length != 0 && !g_mame_game_info.gameIsFake)
         [self updateUserActivity:g_mame_game_info];
+    
+    [self setupEmulatorKeyboard];
 }
 
 -(void)viewWillAppear:(BOOL)animated {
@@ -2362,6 +2367,11 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     
     areControlsHidden = NO;
     memset(cyclesAfterButtonPressed, 0, sizeof(cyclesAfterButtonPressed));
+    
+    // yoshi temp: always show emulator keyboard
+    if (self.emulatorKeyboardView != nil) {
+        [self.view bringSubviewToFront:self.emulatorKeyboardView];
+    }
 }}
 
 #pragma mark - mame device input
@@ -5922,4 +5932,10 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
 #endif
 }
 
+#pragma mark EmulatorKeyboardPressedDelegate
+
+-(void)keyPressedWithIsKeyDown:(BOOL)isKeyDown key:(id<KeyCoded>)key {
+    myosd_keyboard[key.keyCode] = isKeyDown ? 0x80 : 0x00;
+    myosd_keyboard_changed = 1;
+}
 @end

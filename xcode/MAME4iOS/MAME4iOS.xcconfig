@@ -32,9 +32,9 @@ ENTITLEMENTS_TYPE = -Base
 //    139u1 or latest MAME version
 
 // USE THIS LINE for a local build of 139u1 MAME. (via make-ios.sh, make-tvos.sh, or make-mac.sh)
-MAMELIB = libmame-139u1
+// MAMELIB = libmame-139u1
 // USE THIS LINE for a build of current latest MAME (via get-libmame.sh)
-// MAMELIB = libmame
+MAMELIB = libmame
 
 // these should not be changed.
 PRODUCT_BUNDLE_IDENTIFIER   = $(ORG_IDENTIFIER).$(PROJECT_NAME:lower)
