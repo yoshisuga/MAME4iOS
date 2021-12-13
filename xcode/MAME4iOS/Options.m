@@ -173,6 +173,8 @@
         _touchDirectionalEnabled = 0;
         
         _hapticButtonFeedback = 1;
+        
+        _useDRC = 0;
     }
     else
     {
@@ -249,6 +251,8 @@
         _emuspeed  =  [[optionsDict objectForKey:@"emuspeed"] intValue];
         
         _hapticButtonFeedback = [([optionsDict objectForKey:@"hapticButtonFeedback"] ?: @(1)) intValue];
+        
+        _useDRC = [[optionsDict objectForKey:@"useDRC"] intValue];
     }
     
 }
@@ -325,6 +329,8 @@
                                  
                              [NSString stringWithFormat:@"%d", _hapticButtonFeedback], @"hapticButtonFeedback",
                                  
+                             [NSString stringWithFormat:@"%d", _useDRC], @"useDRC",
+                
                              nil];
 }
 

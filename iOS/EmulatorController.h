@@ -61,7 +61,7 @@ enum {BTN_A,BTN_B,BTN_Y,BTN_X,BTN_L1,BTN_R1,
       BTN_STICK,
       NUM_BUTTONS};
 
-#define IMPORT_FILE_TYPES @[@"zip", @"7z"]
+#define IMPORT_FILE_TYPES @[@"zip", @"7z", @"chd"]
 #define ZIP_FILE_TYPES    @[@"zip", @"7z"]
 #define MAME_ROOT_DIRS    @[@"iOS", @"artwork", @"titles", @"cfg", @"nvram", @"ini", @"snap", @"sta", @"hi", @"inp", @"memcard", @"samples", @"roms", @"dats", @"cheat", @"skins"]
 

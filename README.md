@@ -92,7 +92,6 @@ By default `MAME4iOS` will use a 139u1 version of `MAME`.
     
 * if you want to build `MAME`
     - clone [this fork](https://github.com/ToddLa/mame) of `MAME`
-    - switch to the `ios-osd` branch.
     - run `./make-ios.sh` (or `./make-ios.sh tvos`) in the forked `MAME`
     - go watch [this](https://www.imdb.com/title/tt3748528/) then [this](https://en.wikipedia.org/wiki/Star_Wars_Trilogy) while you wait for `MAME` to build.
     - now switch directories to your `MAME4iOS` project
@@ -102,10 +101,10 @@ By default `MAME4iOS` will use a 139u1 version of `MAME`.
 
 ## Issues running current `MAME`
 * most `MAME` 139 ROMs dont work on 2xx, but that is just normal life in `MAME` world, see [this](#mixing-139-and-2xx-roms).
-* tracking down a sound issue and other random stuff.
 * if you run a `Computer` machine, you need a USB keyboard, and `\` (backslash) is the ui_mode_key.
 * the `hiscore` and `cheat` system has not been updated.
 * `MAME` Configure menu has a `Add To Favorites` and `Select New Machine` that dont interact with the `MAME4iOS` Ux.
+* Games that use DRC (like NFL Blitz....) will not work correctly and may crash hang.  This is an issue with the arm64 support in `MAME`.
 
 ## Mixing 139 and 2xx ROMs
 Some `romsets` are not compatible between MAME 139 and newer versions, the best way to use both `romsets` at the same time is to make sure the newer ones are stored in the `7z` format and the 139 ones in the `zip` format.  This way both files can co-exist.

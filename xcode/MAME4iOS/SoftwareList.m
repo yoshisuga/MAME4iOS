@@ -54,7 +54,7 @@
         if (list == nil) {
             @autoreleasepool {
                 list = [getZipFileNames(hash_zip) valueForKeyPath:@"lastPathComponent.stringByDeletingPathExtension.lowercaseString"];
-                [software_list_cache setObject:list forKey:@"*"];
+                [software_list_cache setObject:(list ?: @[]) forKey:@"*"];
             }
         }
         return list; 
@@ -69,7 +69,7 @@
         if (list == nil) {
             @autoreleasepool {
                 list = [self loadSoftwareList:name];
-                [software_list_cache setObject:list forKey:name];
+                [software_list_cache setObject:(list ?: @[]) forKey:name];
             }
         }
         return list;
@@ -261,7 +261,6 @@ static NSString* sha1(NSData* data) {
 }
 
 // get the SHA1 of all files in a ZIP, excluding hidden files and directories.
-// TODO: this does not work for 7z files
 static NSArray<NSString*>* getZipFileSHA1(NSString* path) {
     NSMutableArray* hashes = [[NSMutableArray alloc] init];
     [ZipFile enumerate:path withOptions:(ZipFileEnumFiles | ZipFileEnumLoadData) usingBlock:^(ZipFileInfo* info) {
@@ -280,7 +279,7 @@ static NSArray<NSString*>* getZipFileSHA1(NSString* path) {
         if (dict == nil) {
             @autoreleasepool {
                 dict = [self loadSoftwareListXML:name];
-                [software_list_cache setObject:dict forKey:key];
+                [software_list_cache setObject:(dict ?: @{}) forKey:key];
             }
         }
         return dict;
@@ -364,7 +363,7 @@ static NSArray<NSString*>* getZipFileSHA1(NSString* path) {
         if (dict == nil) {
             @autoreleasepool {
                 dict = [self loadSoftwareListDatabase];
-                [software_list_cache setObject:dict forKey:key];
+                [software_list_cache setObject:(dict ?: @{}) forKey:key];
             }
         }
         return dict;
