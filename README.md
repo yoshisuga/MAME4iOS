@@ -2,7 +2,7 @@
 
 Original Author: David Valdeita (Seleuco)  
 
-This is a port of MAME 0.139u1 for iOS 12+, iPadOS 12+, tvOS 12+ and on both macOS Catalina & Big Sur using Mac Catalyst.
+This is a port of MAME for iOS, iPadOS, tvOS and macOS. MAME4iOS is designed to run for modern iOS and macOS platforms, including support for the latest Apple technology platform enhancments such as Metal graphics and the M1 processor.
 
 [Download IPAs for iOS and tvOS here](https://github.com/yoshisuga/MAME4iOS/releases)
 
@@ -20,24 +20,24 @@ This is a port of MAME 0.139u1 for iOS 12+, iPadOS 12+, tvOS 12+ and on both mac
 
 MAME stands for Multi Arcade Machine Emulator, and lets you play arcade games from the past 30+ years on a device that fits in your pocket! My teenage self from decades ago would be replaying that ["mind blown GIF"](https://media0.giphy.com/media/xT0xeJpnrWC4XWblEk/giphy.gif) over and over again, but that GIF did not exist back then.
 
-More than 2000 games are supported, and the currently supported romset version is MAME 0.139u1 (September 2010).
+More than 2000 games are supported, and the currently supported romsets are 0.238 (November 24, 2021) version is MAME 0.139u1 (September 2010).
 
-It has been updated to compile and runs on Xcode 11+/iOS/tvOS 12+ by [Les Bird](http://www.lesbird.com/iMame4All/iMame4All_Xcode.html), and he has graciously added support for MFI Controllers.
+It has been updated to compile and runs on the latest Xcode by [Les Bird](http://www.lesbird.com/iMame4All/iMame4All_Xcode.html), and he has graciously added support for MFI Controllers.
 
-This repo adds additional support for:
+Since then, a large number of features have been added:
 
-- 64-bit binary to run on modern and future iOS devices
-- Supports modern device screen sizes, including iPhone X/XR/XS/XS Max and iPad Pro
-- A native iOS/iPadOS/tvOS frontend (by @ToddLa, new in 2020!)
-- A native Metal rendering engine (by @ToddLa, new in 2020!)
+- 64-bit binary to run on modern and future iOS and macOS devices, including Macs using the M1 series of processors
+- Supports modern device screen sizes for iPhone and iPad
 - tvOS support (new in 2019!)
-- An in-app web server to transfer files from your computer (new in 2019!)
-- Transfer ROMs, Artwork, and ROMSETs via AirDrop or iOS File Sharing (new in 2020!)
 - Multiple MFI controllers (up to 4 with dual analog support - @DarrenBranford)
 - Supports using the touch screen as a lightgun
 - Turbo mode toggle for buttons
 - Touch analog for games like Arkanoid
-- Builds in Xcode 11.4/12.x and runs on latest iOS 12/13/14 versions
+- An in-app web server to transfer files from your computer (new in 2019!)
+- A native iOS/iPadOS/tvOS frontend (by @ToddLa, new in 2020!)
+- A native Metal rendering engine (by @ToddLa, new in 2020!)
+- Transfer ROMs, Artwork, and ROMSETs via AirDrop or iOS File Sharing (new in 2020!)
+- Builds in the latest Xcode
 
 ## Building / Installation / Sideloading
 
