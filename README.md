@@ -20,7 +20,7 @@ This is a port of MAME for iOS, iPadOS, tvOS and macOS. MAME4iOS is designed to 
 
 MAME stands for Multi Arcade Machine Emulator, and lets you play arcade games from the past 30+ years on a device that fits in your pocket! My teenage self from decades ago would be replaying that ["mind blown GIF"](https://media0.giphy.com/media/xT0xeJpnrWC4XWblEk/giphy.gif) over and over again, but that GIF did not exist back then.
 
-More than 2000 games are supported, and the currently supported romsets are 0.238 (November 24, 2021) version is MAME 0.139u1 (September 2010).
+More than 2000 games are supported, and the currently supported romsets are 0.238 (November 2021) and 0.139u1 (September 2010). Note that there are separate apps for the latest MAME and the classic 0.139u1 versions. This is done because the supported romsets differ greatly between the the MAME versions.
 
 It has been updated to compile and runs on the latest Xcode by [Les Bird](http://www.lesbird.com/iMame4All/iMame4All_Xcode.html), and he has graciously added support for MFI Controllers.
 
