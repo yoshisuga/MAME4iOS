@@ -5,3 +5,4 @@ libmame-dist/*
 xcuserdata
 obj
 .vscode/*
+xcode/dist

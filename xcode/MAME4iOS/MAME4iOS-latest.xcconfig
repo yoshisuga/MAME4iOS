@@ -1,0 +1,52 @@
+//
+//  MAME4iOS.xcconfig
+//  MAME4iOS
+//
+//  Created by Todd Laney on 10/10/20.
+//  Copyright © 2020 Seleuco. All rights reserved.
+//
+// Configuration settings file format documentation can be found at:
+// https://help.apple.com/xcode/#/dev745c5c974
+// http://codeworkshop.net/posts/xcode-build-setting-transformations
+// https://nshipster.com/xcconfig/
+
+
+// 1. change ORG_IDENTIFIER and DEVELOPMENT_TEAM
+//    the `ORG_IDENTIFIER` is a reverse DNS string that uniquely identifies your organization.
+//    you can also set the Development Team via the drop down in the Xcode project editor, for each Target.
+//    you can find your TeamID [here](https://developer.apple.com/account/#/membership)
+
+ORG_IDENTIFIER          = com.example   // CHANGE this to your Organization Identifier.
+DEVELOPMENT_TEAM        = R72X3BF4KE    // CHANGE this to your Team ID. (or select in Xcode project editor)
+CURRENT_PROJECT_VERSION = 2021.8
+MARKETING_VERSION       = 2021.8
+
+// 2. enable or disable entitlements
+//    tvOS TopShelf and iCloud import/export require special app entitlements
+
+ENTITLEMENTS_TYPE = -Base
+// UN-COMMENT NEXT LINE if you want a build with full entitlements
+// ENTITLEMENTS_TYPE = -Full
+// UN-COMMENT PREV LINE if you want a build with full entitlements
+
+// 3. Select the MAME binary to link to.
+//    139u1 or latest MAME version
+
+// USE THIS LINE for a local build of 139u1 MAME. (via make-ios.sh, make-tvos.sh, or make-mac.sh)
+// MAMELIB = libmame-139u1
+// USE THIS LINE for a build of current latest MAME (via get-libmame.sh)
+MAMELIB = libmame
+
+// these should not be changed.
+PRODUCT_BUNDLE_IDENTIFIER   = $(ORG_IDENTIFIER).$(PROJECT_NAME:lower)
+APP_GROUP_IDENTIFIER        = group.$(ORG_IDENTIFIER).$(PROJECT_NAME:lower)
+ICLOUD_CONTAINER_IDENTIFIER = iCloud.$(ORG_IDENTIFIER).$(PROJECT_NAME:lower)
+CODE_SIGN_ENTITLEMENTS      = $(TARGET_NAME)/$(TARGET_NAME)$(ENTITLEMENTS_TYPE).entitlements
+
+MAMELIB_IOS = $(MAMELIB)-ios.a
+MAMELIB_TVOS = $(MAMELIB)-tvos.a
+MAMELIB_MACOS = $(MAMELIB)-mac.a
+
+MAMELIB_IOS[sdk=iphonesimulator*] = $(MAMELIB)-ios-simulator.a
+MAMELIB_TVOS[sdk=appletvsimulator*] = $(MAMELIB)-tvos-simulator.a
+
