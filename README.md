@@ -81,25 +81,19 @@ Even if you are not in the paid Apple Developer Program, you can sideload the ap
         2. Select the project name on the left pane and make sure your personal team is selected
         3. Hit the `▶︎` Run button to install on your device. _Done._
         
-## How to build `MAME4iOS` with the latest version of `MAME`
+## How to build latest version of `MAME` (optional)
 
-By default `MAME4iOS` will use a 139u1 version of `MAME`.
+By default `MAME4iOS` will use pre-combiled libraries for the latest MAME, if you need a Simulator build, or just want to build `MAME`, you need to...
 
-* if you want to use the latest pre-build `libmame` (recomended)
-    - edit `xcode/MAME4iOS/MAME4iOS.xcconfig` to select the `libmame` library.
-    - build and run in Xcode.
-    - **NOTE** there are only pre-built libraries for a device, not for the Simulator. 
-    
-* if you want to build `MAME`
     - clone [this fork](https://github.com/ToddLa/mame) of `MAME`
-    - run `./make-ios.sh` (or `./make-ios.sh tvos`) in the forked `MAME`
+    - run `./make-ios.sh [ios | tvos | ios-simulator | tvos-simulator | macOS]` in the forked `MAME`
     - go watch [this](https://www.imdb.com/title/tt3748528/) then [this](https://en.wikipedia.org/wiki/Star_Wars_Trilogy) while you wait for `MAME` to build.
     - now switch directories to your `MAME4iOS` project
     - run  `./get-libmame.sh ios <path to your MAME clone>`
     - edit `xcode/MAME4iOS/MAME4iOS.xcconfig` to select the `libmame` library.
     - build and run in Xcode.
 
-## Issues running current `MAME`
+## Issues running latest `MAME`
 * most `MAME` 139 ROMs dont work on 2xx, but that is just normal life in `MAME` world, see [this](#mixing-139-and-2xx-roms).
 * if you run a `Computer` machine, you need a USB keyboard, and `\` (backslash) is the ui_mode_key.
 * the `hiscore` and `cheat` system has not been updated.

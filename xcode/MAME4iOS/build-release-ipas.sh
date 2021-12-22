@@ -1,42 +1,70 @@
 #!/bin/sh
 
-C_RED="\033[0;31m"
-C_BLUE="\033[0;34m"
+C_RED="\033[0;91m"
+C_WHITE="\033[0;97m"
+C_BLUE="\033[0;94m"
 C_RESET="\033[0m"
 
-echo "${C_RED}Before running, edit the TEAM identifier in the .xcconfig files so that code signing works.${C_RESET}\n\n"
+# get the DEVELOPMENT_TEAM out of the xcconfig
+DEVELOPMENT_TEAM=`grep -oe "^DEVELOPMENT_TEAM\s*=\s*[a-zA-Z0-9]*" MAME4iOS.xcconfig | cut -w -f3`
+
+if [ "$DEVELOPMENT_TEAM" == "" ] || [ "$DEVELOPMENT_TEAM" == "ABC8675309" ]; then
+    echo "${C_RED}Before running, edit the DEVELOPMENT_TEAM identifier in the .xcconfig file so that code signing works.${C_RESET}"
+    echo "${C_RED}DEVELOPMENT_TEAM = ${DEVELOPMENT_TEAM}${C_RESET}"
+    exit -1
+fi
+
+if [ "$1" == "clean" ]; then
+    rm -r ../dist
+    exit
+fi
+
+# create a exportOptions.plist with the correct DEVELOPMENT_TEAM
+[ -d ../dist ] || mkdir ../dist
+cat << EOF > "../dist/exportOptions.plist"
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>method</key>
+    <string>development</string>
+    <key>teamID</key>
+    <string>${DEVELOPMENT_TEAM}</string>
+</dict>
+</plist>
+EOF
 
 declare -a SCHEMES=("MAME4iOS Release" "MAME tvOS Release" "MAME4mac Release")
 declare -a SCHEME_NAMES=("MAME4iOS" "MAME4tvOS" "MAME4mac")
-declare -a CONFIGS=("MAME4iOS.xcconfig" "MAME4iOS-latest.xcconfig")
+declare -a CONFIGS=("MAMELIB=libmame-139u1" "MAMELIB=libmame")
 declare -a CONFIG_NAMES=("139" "latest")
 
 for i in "${!SCHEMES[@]}"
 do
   SCHEME="${SCHEMES[$i]}"
   NAME="${SCHEME_NAMES[$i]}"
-  echo "${C_BLUE}Scheme: ${SCHEME}${C_RESET}"
   for j in "${!CONFIGS[@]}"
   do
     CONFIG="${CONFIGS[$j]}"
     ARCHIVE_NAME="${NAME}-${CONFIG_NAMES[$j]}"
-    echo "${C_BLUE}Config: ${CONFIG} Archive: ${ARCHIVE_NAME}${C_RESET}"
-    xcodebuild -project MAME4iOS.xcodeproj \
-    -config Release -scheme "${SCHEME}" \
-    -archivePath "../dist/${ARCHIVE_NAME}" \
-    -xcconfig ${CONFIG} \
-    -allowProvisioningUpdates \
-    archive
+    echo "${C_BLUE}Scheme: ${SCHEME} Config: ${CONFIG} Archive: ${ARCHIVE_NAME}${C_RESET}"
 
+    xcodebuild -project MAME4iOS.xcodeproj \
+        -scheme "${SCHEME}" \
+        -archivePath "../dist/${ARCHIVE_NAME}" \
+        -allowProvisioningUpdates \
+        ${CONFIG} \
+        archive || exit -1
+        
     xcodebuild -exportArchive \
-    -archivePath "../dist/${ARCHIVE_NAME}.xcarchive" \
-    -exportOptionsPlist exportOptions.plist \
-    -exportPath ../dist \
-    -allowProvisioningUpdates
+        -archivePath "../dist/${ARCHIVE_NAME}.xcarchive" \
+        -exportOptionsPlist "../dist/exportOptions.plist" \
+        -exportPath ../dist \
+        -allowProvisioningUpdates || exit -1
 
     # exportArchive will create an IPA file named: ${PRODUCT_NAME}.ipa (you can't specify the filename of the IPA)
     mv ../dist/${NAME}.ipa ../dist/${ARCHIVE_NAME}.ipa
-    # do the mac app too    
+    # do the mac app too
     mv ../dist/${NAME}.app ../dist/${ARCHIVE_NAME}.app
   done
 done
