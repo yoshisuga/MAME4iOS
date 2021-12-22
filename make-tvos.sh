@@ -6,7 +6,7 @@ if [ "$1" == "simulator" ]; then
 fi
 
 ## detect if we are run from Xcode and need to do a CLEAN first
-if [ "TARGET_BUILD_DIR" != "" ] && [ $(ls -1 "$TARGET_BUILD_DIR" | wc -l) -lt 2 ]; then
+if [ "$TARGET_BUILD_DIR" != "" ] && [ $(ls -1 "$TARGET_BUILD_DIR" | wc -l) -lt 2 ]; then
     make tvOS=1 clean
 fi
 
