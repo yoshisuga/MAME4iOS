@@ -41,11 +41,6 @@ if [ "$2" == "clean" ]; then
     exit
 fi
 
-## detect if we are run from Xcode and need to do a CLEAN first
-if [ "TARGET_BUILD_DIR" != "" ] && [ $(ls -1 "$TARGET_BUILD_DIR" | wc -l) -lt 2 ]; then
-    rm -f $LIBMAME
-fi
-
 ## copy from local custom build
 if [ -f "$2/$LIBMAME" ]; then
     echo COPY "$2/$LIBMAME"
@@ -60,8 +55,8 @@ if [ -f "../MAME/$LIBMAME" ]; then
     exit
 fi
 
-## download from GitHub if no local version
-if [ ! -f "$LIBMAME" ]; then
+## download from GitHub if no local version, *or* version on GitHub is newer
+if [ ! -f "$LIBMAME" ] || [ 200 == `curl --silent --head --output /dev/null --write-out "%{http_code}" -z $LIBMAME -L $LIBMAME_URL` ]; then
     echo DOWNLOAD $LIBMAME
     curl -L $LIBMAME_URL | gunzip > $LIBMAME || (rm -r $LIBMAME; echo "DOWNLOAD $LIBMAME ** FAILED")
 fi
