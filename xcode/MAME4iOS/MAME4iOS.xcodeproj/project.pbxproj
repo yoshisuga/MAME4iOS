@@ -93,9 +93,6 @@
 		EF19F22D235D1BDF00C8EE7F /* ChooseGameController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF19F229235D1BDF00C8EE7F /* ChooseGameController.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		EF1C93EE24C252C600749C69 /* SKIN_1 in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E124C252C400749C69 /* SKIN_1 */; };
 		EF1C93F024C252C600749C69 /* SKIN_1 in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E124C252C400749C69 /* SKIN_1 */; };
-		EF1C93F124C252C600749C69 /* cheat0139.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E224C252C400749C69 /* cheat0139.zip */; };
-		EF1C93F224C252C600749C69 /* cheat0139.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E224C252C400749C69 /* cheat0139.zip */; };
-		EF1C93F324C252C600749C69 /* cheat0139.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E224C252C400749C69 /* cheat0139.zip */; };
 		EF1C93F424C252C600749C69 /* help.md in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E324C252C400749C69 /* help.md */; };
 		EF1C93F624C252C600749C69 /* help.md in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E324C252C400749C69 /* help.md */; };
 		EF1C93F724C252C600749C69 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E424C252C400749C69 /* LICENSE */; };
@@ -109,9 +106,6 @@
 		EF1C940C24C252C600749C69 /* hiscore.dat in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93EB24C252C500749C69 /* hiscore.dat */; };
 		EF1C940D24C252C600749C69 /* hiscore.dat in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93EB24C252C500749C69 /* hiscore.dat */; };
 		EF1C940E24C252C600749C69 /* hiscore.dat in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93EB24C252C500749C69 /* hiscore.dat */; };
-		EF1C941224C252C600749C69 /* history0139.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93ED24C252C500749C69 /* history0139.zip */; };
-		EF1C941324C252C600749C69 /* history0139.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93ED24C252C500749C69 /* history0139.zip */; };
-		EF1C941424C252C600749C69 /* history0139.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93ED24C252C500749C69 /* history0139.zip */; };
 		EF1C941C24C2552900749C69 /* gitinfo.json.sh in Resources */ = {isa = PBXBuildFile; fileRef = EF1C941B24C2552800749C69 /* gitinfo.json.sh */; };
 		EF1C941D24C2552900749C69 /* gitinfo.json.sh in Resources */ = {isa = PBXBuildFile; fileRef = EF1C941B24C2552800749C69 /* gitinfo.json.sh */; };
 		EF1C941E24C2552900749C69 /* gitinfo.json.sh in Resources */ = {isa = PBXBuildFile; fileRef = EF1C941B24C2552800749C69 /* gitinfo.json.sh */; };
@@ -138,6 +132,15 @@
 		EF301CF1240460C5000510FD /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF301CF0240460C5000510FD /* Alert.m */; };
 		EF301CF2240460C5000510FD /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF301CF0240460C5000510FD /* Alert.m */; };
 		EF301CF3240460F3000510FD /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF27F36323F73CD400B1E50A /* ZipFile.m */; };
+		EF490D91277A5C8C00407865 /* history.dat.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF490D90277A5C8C00407865 /* history.dat.zip */; };
+		EF490D92277A5C8C00407865 /* history.dat.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF490D90277A5C8C00407865 /* history.dat.zip */; };
+		EF490D93277A5C8C00407865 /* history.dat.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF490D90277A5C8C00407865 /* history.dat.zip */; };
+		EF490D96277A5E0E00407865 /* cheat.7z in Resources */ = {isa = PBXBuildFile; fileRef = EF490D94277A5E0E00407865 /* cheat.7z */; };
+		EF490D97277A5E0E00407865 /* cheat.7z in Resources */ = {isa = PBXBuildFile; fileRef = EF490D94277A5E0E00407865 /* cheat.7z */; };
+		EF490D98277A5E0E00407865 /* cheat.7z in Resources */ = {isa = PBXBuildFile; fileRef = EF490D94277A5E0E00407865 /* cheat.7z */; };
+		EF490D99277A5E0E00407865 /* cheat.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF490D95277A5E0E00407865 /* cheat.zip */; };
+		EF490D9A277A5E0E00407865 /* cheat.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF490D95277A5E0E00407865 /* cheat.zip */; };
+		EF490D9B277A5E0E00407865 /* cheat.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF490D95277A5E0E00407865 /* cheat.zip */; };
 		EF568DB025D5D4F600092B30 /* InfoHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = EFB3C6DB248C33DF00F44780 /* InfoHUD.m */; };
 		EF67E11624B8972100AFF489 /* MacMenu.m in Sources */ = {isa = PBXBuildFile; fileRef = EF67E11524B8972100AFF489 /* MacMenu.m */; };
 		EF7B232C23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
@@ -502,13 +505,11 @@
 		EF19F229235D1BDF00C8EE7F /* ChooseGameController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ChooseGameController.m; sourceTree = "<group>"; };
 		EF19F22E235D1C0300C8EE7F /* ChooseGameController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ChooseGameController.h; sourceTree = "<group>"; };
 		EF1C93E124C252C400749C69 /* SKIN_1 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SKIN_1; path = "../../iOS-res/SKIN_1"; sourceTree = "<group>"; };
-		EF1C93E224C252C400749C69 /* cheat0139.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = cheat0139.zip; path = "../../iOS-res/cheat0139.zip"; sourceTree = "<group>"; };
 		EF1C93E324C252C400749C69 /* help.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = help.md; path = "../../iOS-res/help.md"; sourceTree = "<group>"; };
 		EF1C93E424C252C400749C69 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = folder; path = LICENSE; sourceTree = "<group>"; };
 		EF1C93E624C252C500749C69 /* skins */ = {isa = PBXFileReference; lastKnownFileType = folder; name = skins; path = "../../iOS-res/skins"; sourceTree = "<group>"; };
 		EF1C93E824C252C500749C69 /* Category.ini */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Category.ini; path = "../../iOS-res/Category.ini"; sourceTree = "<group>"; };
 		EF1C93EB24C252C500749C69 /* hiscore.dat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = hiscore.dat; path = "../../iOS-res/hiscore.dat"; sourceTree = "<group>"; };
-		EF1C93ED24C252C500749C69 /* history0139.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = history0139.zip; path = "../../iOS-res/history0139.zip"; sourceTree = "<group>"; };
 		EF1C941B24C2552800749C69 /* gitinfo.json.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = gitinfo.json.sh; sourceTree = "<group>"; };
 		EF23D32F243CB9CE006B3EE2 /* PopupSegmentedControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PopupSegmentedControl.h; sourceTree = "<group>"; };
 		EF23D330243CB9CE006B3EE2 /* PopupSegmentedControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PopupSegmentedControl.m; sourceTree = "<group>"; };
@@ -529,6 +530,9 @@
 		EF29C8802401C73900AFFA4E /* Launch Screen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		EF301CEF240460C5000510FD /* Alert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Alert.h; sourceTree = "<group>"; };
 		EF301CF0240460C5000510FD /* Alert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Alert.m; sourceTree = "<group>"; };
+		EF490D90277A5C8C00407865 /* history.dat.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = history.dat.zip; path = "../../iOS-res/history.dat.zip"; sourceTree = "<group>"; };
+		EF490D94277A5E0E00407865 /* cheat.7z */ = {isa = PBXFileReference; lastKnownFileType = file; name = cheat.7z; path = "../../iOS-res/cheat.7z"; sourceTree = "<group>"; };
+		EF490D95277A5E0E00407865 /* cheat.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = cheat.zip; path = "../../iOS-res/cheat.zip"; sourceTree = "<group>"; };
 		EF55DE312533C21E004E37EF /* MAME4iOS.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = MAME4iOS.xcconfig; sourceTree = "<group>"; };
 		EF55DE5A2534C304004E37EF /* TVServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = TVServices.framework; path = Library/Frameworks/TVServices.framework; sourceTree = DEVELOPER_DIR; };
 		EF67E11524B8972100AFF489 /* MacMenu.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MacMenu.m; sourceTree = "<group>"; };
@@ -967,10 +971,11 @@
 			isa = PBXGroup;
 			children = (
 				EF7D116427348BDD00E61BB9 /* hash.zip */,
-				EF1C93ED24C252C500749C69 /* history0139.zip */,
+				EF490D94277A5E0E00407865 /* cheat.7z */,
+				EF490D95277A5E0E00407865 /* cheat.zip */,
+				EF490D90277A5C8C00407865 /* history.dat.zip */,
 				EF1C93EB24C252C500749C69 /* hiscore.dat */,
 				EF1C93E824C252C500749C69 /* Category.ini */,
-				EF1C93E224C252C400749C69 /* cheat0139.zip */,
 			);
 			name = content;
 			sourceTree = "<group>";
@@ -1236,19 +1241,20 @@
 				EF26AE08241848800078FD30 /* mame_logo.png in Resources */,
 				EF7D116527348BDD00E61BB9 /* hash.zip in Resources */,
 				EF1C93FD24C252C600749C69 /* skins in Resources */,
+				EF490D96277A5E0E00407865 /* cheat.7z in Resources */,
+				EF490D99277A5E0E00407865 /* cheat.zip in Resources */,
 				EF1C93F724C252C600749C69 /* LICENSE in Resources */,
 				EFA7570524057FD800A02AAB /* default_game_icon.png in Resources */,
 				EF1C940324C252C600749C69 /* Category.ini in Resources */,
 				EF1C941C24C2552900749C69 /* gitinfo.json.sh in Resources */,
-				EF1C941224C252C600749C69 /* history0139.zip in Resources */,
 				EFA7A16B24B7A38E0009CF88 /* Assets.xcassets in Resources */,
 				920BBDEF201FC29700AE7D50 /* dpad.png in Resources */,
 				EF29C8822401C73A00AFFA4E /* Launch Screen.storyboard in Resources */,
 				EFFBA6FE24F1C91200F8666B /* WHATSNEW.md in Resources */,
 				920BBDF220210C3800AE7D50 /* menu.png in Resources */,
 				92A533D021EBDDF20089FBB9 /* GCDWebUploader.bundle in Resources */,
-				EF1C93F124C252C600749C69 /* cheat0139.zip in Resources */,
 				EFA756FF2405585D00A02AAB /* mameui.png in Resources */,
+				EF490D91277A5C8C00407865 /* history.dat.zip in Resources */,
 				EF1C93EE24C252C600749C69 /* SKIN_1 in Resources */,
 				EFA757222408488D00A02AAB /* iCadeControls.png in Resources */,
 				EF1C93F424C252C600749C69 /* help.md in Resources */,
@@ -1260,10 +1266,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EF1C93F224C252C600749C69 /* cheat0139.zip in Resources */,
 				EF24BB0024C7894700D9C55A /* skins_tvOS in Resources */,
+				EF490D92277A5C8C00407865 /* history.dat.zip in Resources */,
 				EF26AE09241848800078FD30 /* mame_logo.png in Resources */,
 				EF1C940424C252C600749C69 /* Category.ini in Resources */,
+				EF490D9A277A5E0E00407865 /* cheat.zip in Resources */,
 				EF8409AA260CF3F200FAC3CF /* whiteHDR.mp4 in Resources */,
 				EF1C93F824C252C600749C69 /* LICENSE in Resources */,
 				EFA757002405585D00A02AAB /* mameui.png in Resources */,
@@ -1272,9 +1279,9 @@
 				EF1C940D24C252C600749C69 /* hiscore.dat in Resources */,
 				92A533D121EBDDF20089FBB9 /* GCDWebUploader.bundle in Resources */,
 				EF1C941D24C2552900749C69 /* gitinfo.json.sh in Resources */,
+				EF490D97277A5E0E00407865 /* cheat.7z in Resources */,
 				EFFBA6FF24F1C91200F8666B /* WHATSNEW.md in Resources */,
 				EF7D116627348BDD00E61BB9 /* hash.zip in Resources */,
-				EF1C941324C252C600749C69 /* history0139.zip in Resources */,
 				B5FAE31921FCE64D003F44D0 /* MAME_tvOS.lsr in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1283,6 +1290,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EF490D9B277A5E0E00407865 /* cheat.zip in Resources */,
 				EF1C940E24C252C600749C69 /* hiscore.dat in Resources */,
 				EFA7A13424B65C020009CF88 /* mame_logo.png in Resources */,
 				EF1C93FF24C252C600749C69 /* skins in Resources */,
@@ -1290,16 +1298,16 @@
 				EFA7A13724B65C020009CF88 /* default_game_icon.png in Resources */,
 				EF1C940524C252C600749C69 /* Category.ini in Resources */,
 				EF1C941E24C2552900749C69 /* gitinfo.json.sh in Resources */,
-				EF1C941424C252C600749C69 /* history0139.zip in Resources */,
 				EFA7A16D24B7A40F0009CF88 /* Assets.xcassets in Resources */,
 				EF7D116727348BDD00E61BB9 /* hash.zip in Resources */,
 				EFA7A14324B65C020009CF88 /* dpad.png in Resources */,
 				EFA7A14424B65C020009CF88 /* Launch Screen.storyboard in Resources */,
+				EF490D93277A5C8C00407865 /* history.dat.zip in Resources */,
 				EFFBA70024F1C91200F8666B /* WHATSNEW.md in Resources */,
 				EFA7A14924B65C020009CF88 /* menu.png in Resources */,
 				EFA7A14E24B65C020009CF88 /* GCDWebUploader.bundle in Resources */,
-				EF1C93F324C252C600749C69 /* cheat0139.zip in Resources */,
 				EFA7A15024B65C020009CF88 /* mameui.png in Resources */,
+				EF490D98277A5E0E00407865 /* cheat.7z in Resources */,
 				EF1C93F024C252C600749C69 /* SKIN_1 in Resources */,
 				EFA7A15124B65C020009CF88 /* iCadeControls.png in Resources */,
 				EF1C93F624C252C600749C69 /* help.md in Resources */,

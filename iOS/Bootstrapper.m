@@ -47,6 +47,7 @@
 
 #import "Bootstrapper.h"
 #import "Globals.h"
+#import "libmame.h"     // to get the MAME version
 
 #import "EmulatorController.h"
 #import <GameController/GameController.h>
@@ -84,7 +85,7 @@ const char* get_documents_path(const char* file)
     // copy first-run files.
     if (![NSFileManager.defaultManager fileExistsAtPath:getDocumentPath(@"roms")])
     {
-        for (NSString* file in @[@"cheat0139.zip", @"history0139.zip"])
+        for (NSString* file in @[@"history.dat.zip"])
             [NSFileManager.defaultManager copyItemAtPath:getResourcePath(file) toPath:getDocumentPath(file) error:nil];
     }
     
@@ -99,8 +100,11 @@ const char* get_documents_path(const char* file)
         mkdir(dirPath.UTF8String, 0755);
     }
     
+    // cheat.zip is the 139 version, and cheat.7z is the 2xx version
+    NSString* cheat_zip = myosd_get(MYOSD_VERSION) == 139 ? @"cheat.zip" : @"cheat.7z";
+
     // copy (or update) pre-canned files.
-    for (NSString* file in @[@"Category.ini", @"hiscore.dat", @"hash.zip"])
+    for (NSString* file in @[@"Category.ini", @"hiscore.dat", @"hash.zip", cheat_zip])
     {
         NSString* fromPath = getResourcePath(file);
         NSString* toPath = getDocumentPath(file);
@@ -115,9 +119,13 @@ const char* get_documents_path(const char* file)
             [NSFileManager.defaultManager copyItemAtPath:fromPath toPath:toPath error:nil];
         }
     }
+    
+    // delete the 139 cheat.zip if this is the latest MAME
+    if (myosd_get(MYOSD_VERSION) != 139)
+        [NSFileManager.defaultManager removeItemAtPath:getDocumentPath(@"cheat.zip") error:nil];
 
     // set non-backup items.
-    for (NSString* path in @[@"roms", @"artwork", @"titles", @"samples", @"nvram", @"cheat.zip", @"hash.zip"])
+    for (NSString* path in @[@"roms", @"artwork", @"titles", @"samples", @"nvram", @"cheat.zip", @"cheat.7z", @"hash.zip"])
     {
         NSURL* url = [NSURL fileURLWithPath:[NSString stringWithUTF8String:get_documents_path(path.UTF8String)]];
         [url setResourceValue:@(YES) forKey:NSURLIsExcludedFromBackupKey error:nil];

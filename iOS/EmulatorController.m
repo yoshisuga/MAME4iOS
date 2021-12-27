@@ -422,7 +422,7 @@ int run_mame(char* system, char* game)
         g_pref_sound_value != 0 ?         sound : myosd_get(MYOSD_VERSION) == 139 ?       nada :   "none",
         g_pref_benchmark ? "-bench" : nada,
         g_pref_benchmark ?     "90" : nada,
-#if DebugLog && defined(DEBUG)
+#ifdef DEBUG
         "-verbose",
 #endif
         };
@@ -4597,8 +4597,8 @@ BOOL is_roms_dir(NSString* dir) {
 
     UIAlertController *progressAlert = nil;
 
-    // on the first-boot cheat.zip will not exist, we want to be silent in this case.
-    BOOL first_boot = [files_to_import containsObject:@"cheat0139.zip"];
+    // on the first-boot history.dat will not exist, we want to be silent in this case, this is important for tvOS
+    BOOL first_boot = [files_to_import containsObject:@"history.dat.zip"];
 
     if (!first_boot) {
         
