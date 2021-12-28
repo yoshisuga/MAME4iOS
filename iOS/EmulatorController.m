@@ -1081,10 +1081,10 @@ HUDViewController* g_menu;
             NSString* button = @":info.circle:MAME Output";
             NSString* message = [[NSString stringWithUTF8String:g_mame_output_text] stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
 
-            if ([message rangeOfString:@"WARNING"].location != NSNotFound)
+            if ([message rangeOfString:@"WARNING" options:NSCaseInsensitiveSearch].location != NSNotFound)
                 button = @":exclamationmark.triangle:MAME Warning";
             
-            if ([message rangeOfString:@"ERROR"].location != NSNotFound)
+            if ([message rangeOfString:@"ERROR" options:NSCaseInsensitiveSearch].location != NSNotFound)
                 button = @":xmark.octagon:MAME Error";
             
             [menu addButton:button style:HUDButtonStyleDefault handler:^{
@@ -1212,12 +1212,16 @@ HUDViewController* g_menu;
 
     // get the state of our ROMs
     [self checkForNewRomsInit];
-    
-    if (self.presentedViewController == nil && g_emulation_paused == PAUSE_FALSE)
+
+    // TODO: Should we PAUSE on macOS?
+    // PAUSE (by calling startMenu) the mame thread when we go into the background. but not on macOS
+    if (!IsRunningOnMac() && self.presentedViewController == nil && g_emulation_paused == PAUSE_FALSE)
         [self startMenu];
 }
 
 - (void)enterForeground {
+    
+    // RESUME (by calling endMenu) the mame thread when we go into the background.
     if (self.presentedViewController == nil && g_emulation_paused == PAUSE_THREAD)
         [self endMenu];
     
@@ -1687,6 +1691,12 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
         [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(deviceDidBecomeNonCurrent:) name:GCMouseDidStopBeingCurrentNotification object:nil];
     }
 #endif
+
+    // if we are a macApp handle our window being active similar to iOS foreground/background
+    if (IsRunningOnMac()) {
+        [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(enterForeground) name:@"NSApplicationDidBecomeActiveNotification" object:nil];
+        [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(enterBackground) name:@"NSApplicationDidResignActiveNotification" object:nil];
+    }
     
     [self performSelectorOnMainThread:@selector(setupGameControllers) withObject:nil waitUntilDone:NO];
     
@@ -1697,9 +1707,6 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
     
     mouseInitialLocation = CGPointMake(9111, 9111);
     mouseTouchStartLocation = mouseInitialLocation;
-
-    if (g_mame_game_info.gameName.length != 0 && !g_mame_game_info.gameIsFake)
-        [self updateUserActivity:g_mame_game_info];
 }
 
 -(void)viewWillAppear:(BOOL)animated {
@@ -1709,6 +1716,10 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
+
+    if (g_mame_game_info.gameName.length != 0 && !g_mame_game_info.gameIsFake)
+        [self updateUserActivity:g_mame_game_info];
+
     [self scanForDevices];
     if (![MetalScreenView isSupported]) {
         [self showAlertWithTitle:@PRODUCT_NAME message:@"Metal not supported on this device." buttons:@[] handler:nil];
@@ -3509,6 +3520,7 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
                         op.fullscreenPortrait = g_pref_full_screen_port = !g_device_is_fullscreen;
                 }
                 [op saveOptions];
+                g_joy_used = 0;     // use the touch ui, until a countroller is used.
                 [self changeUI];
                 break;
             }
@@ -5740,6 +5752,7 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
     else {
         g_mame_game_info = nil;
         g_mame_game[0] = g_mame_system[0] = 0;     // run the MENU
+        [self updateUserActivity:nil];
     }
 
     // TODO: *note* this will not work right if the mame configure menu is active, the menu will just dismiss, not a new issue.
@@ -5841,6 +5854,8 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
             [self performSelectorOnMainThread:@selector(scanForDevices) withObject:nil waitUntilDone:NO];
         }
     }
+    
+    [self updateUserActivity:nil];
 
     NSLog(@"GAMES: %@", games);
 
@@ -5924,7 +5939,19 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
 -(void)updateUserActivity:(NSDictionary*)game
 {
 #if TARGET_OS_IOS
-    self.userActivity = [ChooseGameController userActivityForGame:game];
+    if (game != nil)
+        self.userActivity = [ChooseGameController userActivityForGame:game];
+    else
+        self.userActivity = nil;
+
+    if (IsRunningOnMac()) {
+        if (@available(iOS 13.0, *)) {
+            if (game != nil)
+                self.view.window.windowScene.title = game.gameTitle;
+            else
+                self.view.window.windowScene.title = nil;   // set title back to our app name
+        }
+    }
 #endif
 }
 
