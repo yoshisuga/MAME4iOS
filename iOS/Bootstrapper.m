@@ -52,6 +52,7 @@
 #import "EmulatorController.h"
 #import <GameController/GameController.h>
 #import "Alert.h"
+#import "ZipFile.h"
 
 #include <sys/stat.h>
 
@@ -78,16 +79,20 @@ const char* get_documents_path(const char* file)
 
 @implementation Bootstrapper
 
+- (BOOL)extract:(NSString*)path to:(NSString*)dir {
+    NSParameterAssert([NSFileManager.defaultManager fileExistsAtPath:path]);
+    return [ZipFile enumerate:path withOptions:(ZipFileEnumFiles + ZipFileEnumLoadData) usingBlock:^(ZipFileInfo* info) {
+        // zip file should not have directory names, check for that in DEBUG
+        NSParameterAssert(![info.name.pathComponents.firstObject isEqualToString:dir.lastPathComponent]);
+        NSString* toPath = [dir stringByAppendingPathComponent:info.name];
+        [NSFileManager.defaultManager createDirectoryAtPath:[toPath stringByDeletingLastPathComponent] withIntermediateDirectories:TRUE attributes:nil error:nil];
+        [info.data writeToFile:toPath atomically:YES];
+    }];
+}
+
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary<UIApplicationLaunchOptionsKey,id> *)launchOptions {
 
     chdir (get_documents_path(""));
-    
-    // copy first-run files.
-    if (![NSFileManager.defaultManager fileExistsAtPath:getDocumentPath(@"roms")])
-    {
-        for (NSString* file in @[@"history.dat.zip"])
-            [NSFileManager.defaultManager copyItemAtPath:getResourcePath(file) toPath:getDocumentPath(file) error:nil];
-    }
     
     // create directories
     for (NSString* dir in MAME_ROOT_DIRS)
@@ -100,12 +105,25 @@ const char* get_documents_path(const char* file)
         mkdir(dirPath.UTF8String, 0755);
     }
     
+    // copy first-run files.
+    if (![NSFileManager.defaultManager fileExistsAtPath:getDocumentPath(@"dats/history.dat")])
+        [self extract:getResourcePath(@"history.dat.zip") to:getDocumentPath(@"dats")];
+ 
+    if (myosd_get(MYOSD_VERSION) != 139 && ![NSFileManager.defaultManager fileExistsAtPath:getDocumentPath(@"plugins/hiscore/hiscore.dat")] )
+        [self extract:getResourcePath(@"plugins.zip") to:getDocumentPath(@"plugins")];
+
     // cheat.zip is the 139 version, and cheat.7z is the 2xx version
     NSString* cheat_zip = myosd_get(MYOSD_VERSION) == 139 ? @"cheat.zip" : @"cheat.7z";
+    
+    // hiscore.dat (in root) is the 139 version, and plugins/hiscore/hiscore.dat is the 2xx version
+    NSString* hiscore_dat = myosd_get(MYOSD_VERSION) == 139 ? @"hiscore.dat" : @"";
 
     // copy (or update) pre-canned files.
-    for (NSString* file in @[@"Category.ini", @"hiscore.dat", @"hash.zip", cheat_zip])
+    for (NSString* file in @[@"Category.ini", hiscore_dat, @"hash.zip", cheat_zip])
     {
+        if (file.length == 0)
+            continue;
+        
         NSString* fromPath = getResourcePath(file);
         NSString* toPath = getDocumentPath(file);
         NSParameterAssert([NSFileManager.defaultManager fileExistsAtPath:fromPath]);
@@ -124,6 +142,10 @@ const char* get_documents_path(const char* file)
     if (myosd_get(MYOSD_VERSION) != 139)
         [NSFileManager.defaultManager removeItemAtPath:getDocumentPath(@"cheat.zip") error:nil];
 
+    // delete the 139 hiscore.dat (in root) if this is the latest MAME
+    if (myosd_get(MYOSD_VERSION) != 139)
+        [NSFileManager.defaultManager removeItemAtPath:getDocumentPath(@"hiscore.dat") error:nil];
+    
     // set non-backup items.
     for (NSString* path in @[@"roms", @"artwork", @"titles", @"samples", @"nvram", @"cheat.zip", @"cheat.7z", @"hash.zip"])
     {

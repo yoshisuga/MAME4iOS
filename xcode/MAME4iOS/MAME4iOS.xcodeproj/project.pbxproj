@@ -84,6 +84,9 @@
 		92ECB91921EAD57900D1E3D0 /* UIView+Toast.m in Sources */ = {isa = PBXBuildFile; fileRef = 92B99F0D2022706600CC44E3 /* UIView+Toast.m */; };
 		B5FAE31921FCE64D003F44D0 /* MAME_tvOS.lsr in Resources */ = {isa = PBXBuildFile; fileRef = B5FAE31821FCE64D003F44D0 /* MAME_tvOS.lsr */; };
 		E9856CF023C9A7C50071666D /* MultipeerConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E9856CEF23C9A7C50071666D /* MultipeerConnectivity.framework */; };
+		EF08EB32277A937900E4D455 /* plugins.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF08EB31277A937900E4D455 /* plugins.zip */; };
+		EF08EB33277A937900E4D455 /* plugins.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF08EB31277A937900E4D455 /* plugins.zip */; };
+		EF08EB34277A937900E4D455 /* plugins.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF08EB31277A937900E4D455 /* plugins.zip */; };
 		EF1628712627A5A800E2B2AB /* libmame-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EF1628122624ACC800E2B2AB /* libmame-ios.a */; };
 		EF1741D6261BB2D600DE8386 /* GameInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = EF1741D5261BB2D600DE8386 /* GameInfo.m */; };
 		EF1741D7261BB2D600DE8386 /* GameInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = EF1741D5261BB2D600DE8386 /* GameInfo.m */; };
@@ -498,6 +501,7 @@
 		CEE680D1163BE5C400051BC2 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		E9856CEF23C9A7C50071666D /* MultipeerConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MultipeerConnectivity.framework; path = System/Library/Frameworks/MultipeerConnectivity.framework; sourceTree = SDKROOT; };
 		EF06A576248064AC00A974B8 /* Timer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Timer.h; sourceTree = "<group>"; };
+		EF08EB31277A937900E4D455 /* plugins.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = plugins.zip; path = "../../iOS-res/plugins.zip"; sourceTree = "<group>"; };
 		EF1628122624ACC800E2B2AB /* libmame-ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libmame-ios.a"; path = ../../$MAMELIB_IOS; sourceTree = "<group>"; };
 		EF16284F2627433300E2B2AB /* libmame.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = libmame.h; path = "../../../src/osd/droid-ios/libmame.h"; sourceTree = "<group>"; };
 		EF1741D4261BB2D600DE8386 /* GameInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GameInfo.h; sourceTree = "<group>"; };
@@ -975,6 +979,7 @@
 				EF490D95277A5E0E00407865 /* cheat.zip */,
 				EF490D90277A5C8C00407865 /* history.dat.zip */,
 				EF1C93EB24C252C500749C69 /* hiscore.dat */,
+				EF08EB31277A937900E4D455 /* plugins.zip */,
 				EF1C93E824C252C500749C69 /* Category.ini */,
 			);
 			name = content;
@@ -1244,6 +1249,7 @@
 				EF490D96277A5E0E00407865 /* cheat.7z in Resources */,
 				EF490D99277A5E0E00407865 /* cheat.zip in Resources */,
 				EF1C93F724C252C600749C69 /* LICENSE in Resources */,
+				EF08EB32277A937900E4D455 /* plugins.zip in Resources */,
 				EFA7570524057FD800A02AAB /* default_game_icon.png in Resources */,
 				EF1C940324C252C600749C69 /* Category.ini in Resources */,
 				EF1C941C24C2552900749C69 /* gitinfo.json.sh in Resources */,
@@ -1280,6 +1286,7 @@
 				92A533D121EBDDF20089FBB9 /* GCDWebUploader.bundle in Resources */,
 				EF1C941D24C2552900749C69 /* gitinfo.json.sh in Resources */,
 				EF490D97277A5E0E00407865 /* cheat.7z in Resources */,
+				EF08EB33277A937900E4D455 /* plugins.zip in Resources */,
 				EFFBA6FF24F1C91200F8666B /* WHATSNEW.md in Resources */,
 				EF7D116627348BDD00E61BB9 /* hash.zip in Resources */,
 				B5FAE31921FCE64D003F44D0 /* MAME_tvOS.lsr in Resources */,
@@ -1300,6 +1307,7 @@
 				EF1C941E24C2552900749C69 /* gitinfo.json.sh in Resources */,
 				EFA7A16D24B7A40F0009CF88 /* Assets.xcassets in Resources */,
 				EF7D116727348BDD00E61BB9 /* hash.zip in Resources */,
+				EF08EB34277A937900E4D455 /* plugins.zip in Resources */,
 				EFA7A14324B65C020009CF88 /* dpad.png in Resources */,
 				EFA7A14424B65C020009CF88 /* Launch Screen.storyboard in Resources */,
 				EF490D93277A5C8C00407865 /* history.dat.zip in Resources */,

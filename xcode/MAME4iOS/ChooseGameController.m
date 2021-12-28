@@ -1561,8 +1561,8 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
         [files addObject:[NSString stringWithFormat:file, name]];
     
     if (all) {
-        for (NSString* file in @[@"roms/%@.zip", @"roms/%@.7z", @"roms/%@/", @"artwork/%@.zip", @"samples/%@.zip"])
-            [files addObject:[NSString stringWithFormat:file, name]];
+        for (NSString* file in @[@"roms/%@.zip", @"roms/%@.7z", @"roms/%@/%@.chd", @"roms/%@/", @"artwork/%@.zip", @"samples/%@.zip"])
+            [files addObject:[NSString stringWithFormat:file, name, name]];
     }
 
     // if we are a parent ROM include all of our clones
