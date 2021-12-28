@@ -1556,8 +1556,8 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     
     NSMutableArray* files = [[NSMutableArray alloc] init];
     
-    for (NSString* file in @[@"titles/%@.png", @"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@/1.sta", @"sta/%@/2.sta", @"hi/%@.hi", @"nvram/%@.nv", @"inp/%@.inp",
-                             @"snap/%@.png", @"snap/%@.mng", @"snap/%@.avi", @"snap/%@/"])
+    for (NSString* file in @[@"titles/%@.png", @"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@/1.sta", @"sta/%@/2.sta", @"hi/%@.hi", @"hiscore/%@.hi",
+                             @"nvram/%@.nv", @"inp/%@.inp", @"snap/%@.png", @"snap/%@.mng", @"snap/%@.avi", @"snap/%@/"])
         [files addObject:[NSString stringWithFormat:file, name]];
     
     if (all) {
