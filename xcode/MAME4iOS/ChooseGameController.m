@@ -1556,13 +1556,13 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     
     NSMutableArray* files = [[NSMutableArray alloc] init];
     
-    for (NSString* file in @[@"titles/%@.png", @"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@/1.sta", @"sta/%@/2.sta", @"hi/%@.hi", @"nvram/%@.nv", @"inp/%@.inp",
-                             @"snap/%@.png", @"snap/%@.mng", @"snap/%@.avi", @"snap/%@/"])
+    for (NSString* file in @[@"titles/%@.png", @"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@/1.sta", @"sta/%@/2.sta", @"hi/%@.hi", @"hiscore/%@.hi",
+                             @"nvram/%@.nv", @"inp/%@.inp", @"snap/%@.png", @"snap/%@.mng", @"snap/%@.avi", @"snap/%@/"])
         [files addObject:[NSString stringWithFormat:file, name]];
     
     if (all) {
-        for (NSString* file in @[@"roms/%@.zip", @"roms/%@.7z", @"roms/%@/", @"artwork/%@.zip", @"samples/%@.zip"])
-            [files addObject:[NSString stringWithFormat:file, name]];
+        for (NSString* file in @[@"roms/%@.zip", @"roms/%@.7z", @"roms/%@/%@.chd", @"roms/%@/", @"artwork/%@.zip", @"samples/%@.zip"])
+            [files addObject:[NSString stringWithFormat:file, name, name]];
     }
 
     // if we are a parent ROM include all of our clones

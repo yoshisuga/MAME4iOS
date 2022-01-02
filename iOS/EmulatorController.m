@@ -402,6 +402,8 @@ int run_mame(char* system, char* game)
     
     char sound[16];
     snprintf(sound, sizeof(sound), "%d", g_pref_sound_value);
+    
+    BOOL is139 = myosd_get(MYOSD_VERSION) == 139;
 
     char* argv[] = {"mame4ios",
         (system && system[0] != 0) ? system : nada,
@@ -411,18 +413,28 @@ int run_mame(char* system, char* game)
         g_pref_autosave ? "-autosave" : "-noautosave",      // TODO: this is not connected to any UI
         g_pref_showINFO ? "-noskip_gameinfo" : "-skip_gameinfo",
         "-speed", speed,
+        
         // TODO: change the useDRC default if the arm64 version starts working.
-        myosd_get(MYOSD_VERSION) == 139 ? nada : (g_pref_drc ? "-drc" : "-nodrc"),
-        g_pref_hiscore ? "-hiscore" : "-nohiscore",
+        is139 ? nada : (g_pref_drc ? "-drc" : "-nodrc"),
+
+        // 139: -hiscore OR -nohiscore
+        // 2xx: -plugin hiscore OR nada
+        g_pref_hiscore ? (is139 ? "-hiscore" : "-plugin") : (is139 ? "-nohiscore" : nada),
+        g_pref_hiscore ? (is139 ?       nada : "hiscore") : (is139 ?         nada : nada),
+
         "-flicker", g_pref_vector_flicker ? "0.4" : "0.0",
         "-beam", g_pref_vector_beam2x ? "2.5" : "1.0",
         "-pause_brightness", "1.0",  // to debug shaders
         "-snapname", snap,
-        g_pref_sound_value != 0 ? "-samplerate" : myosd_get(MYOSD_VERSION) == 139 ? "-nosound" : "-sound",
-        g_pref_sound_value != 0 ?         sound : myosd_get(MYOSD_VERSION) == 139 ?       nada :   "none",
+        
+        // 139: -samplerate XXX OR -nosound
+        // 2xx: -samplerate XXX OR -sound none
+        g_pref_sound_value != 0 ? "-samplerate" : is139 ? "-nosound" : "-sound",
+        g_pref_sound_value != 0 ?         sound : is139 ?       nada :   "none",
+        
         g_pref_benchmark ? "-bench" : nada,
         g_pref_benchmark ?     "90" : nada,
-#if DebugLog && defined(DEBUG)
+#ifdef DEBUG
         "-verbose",
 #endif
         };
@@ -1069,10 +1081,10 @@ HUDViewController* g_menu;
             NSString* button = @":info.circle:MAME Output";
             NSString* message = [[NSString stringWithUTF8String:g_mame_output_text] stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
 
-            if ([message rangeOfString:@"WARNING"].location != NSNotFound)
+            if ([message rangeOfString:@"WARNING" options:NSCaseInsensitiveSearch].location != NSNotFound)
                 button = @":exclamationmark.triangle:MAME Warning";
             
-            if ([message rangeOfString:@"ERROR"].location != NSNotFound)
+            if ([message rangeOfString:@"ERROR" options:NSCaseInsensitiveSearch].location != NSNotFound)
                 button = @":xmark.octagon:MAME Error";
             
             [menu addButton:button style:HUDButtonStyleDefault handler:^{
@@ -1200,12 +1212,16 @@ HUDViewController* g_menu;
 
     // get the state of our ROMs
     [self checkForNewRomsInit];
-    
-    if (self.presentedViewController == nil && g_emulation_paused == PAUSE_FALSE)
+
+    // TODO: Should we PAUSE on macOS?
+    // PAUSE (by calling startMenu) the mame thread when we go into the background. but not on macOS
+    if (!IsRunningOnMac() && self.presentedViewController == nil && g_emulation_paused == PAUSE_FALSE)
         [self startMenu];
 }
 
 - (void)enterForeground {
+    
+    // RESUME (by calling endMenu) the mame thread when we go into the background.
     if (self.presentedViewController == nil && g_emulation_paused == PAUSE_THREAD)
         [self endMenu];
     
@@ -1675,6 +1691,12 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
         [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(deviceDidBecomeNonCurrent:) name:GCMouseDidStopBeingCurrentNotification object:nil];
     }
 #endif
+
+    // if we are a macApp handle our window being active similar to iOS foreground/background
+    if (IsRunningOnMac()) {
+        [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(enterForeground) name:@"NSApplicationDidBecomeActiveNotification" object:nil];
+        [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(enterBackground) name:@"NSApplicationDidResignActiveNotification" object:nil];
+    }
     
     [self performSelectorOnMainThread:@selector(setupGameControllers) withObject:nil waitUntilDone:NO];
     
@@ -1685,9 +1707,6 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
     
     mouseInitialLocation = CGPointMake(9111, 9111);
     mouseTouchStartLocation = mouseInitialLocation;
-
-    if (g_mame_game_info.gameName.length != 0 && !g_mame_game_info.gameIsFake)
-        [self updateUserActivity:g_mame_game_info];
 }
 
 -(void)viewWillAppear:(BOOL)animated {
@@ -1697,6 +1716,10 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
+
+    if (g_mame_game_info.gameName.length != 0 && !g_mame_game_info.gameIsFake)
+        [self updateUserActivity:g_mame_game_info];
+
     [self scanForDevices];
     if (![MetalScreenView isSupported]) {
         [self showAlertWithTitle:@PRODUCT_NAME message:@"Metal not supported on this device." buttons:@[] handler:nil];
@@ -3497,6 +3520,7 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
                         op.fullscreenPortrait = g_pref_full_screen_port = !g_device_is_fullscreen;
                 }
                 [op saveOptions];
+                g_joy_used = 0;     // use the touch ui, until a countroller is used.
                 [self changeUI];
                 break;
             }
@@ -4339,7 +4363,6 @@ BOOL is_roms_dir(NSString* dir) {
     NSString *romsPath = [NSString stringWithUTF8String:get_documents_path("roms")];
     NSString *artwPath = [NSString stringWithUTF8String:get_documents_path("artwork")];
     NSString *sampPath = [NSString stringWithUTF8String:get_documents_path("samples")];
-    NSString *datsPath = [NSString stringWithUTF8String:get_documents_path("dats")];
     NSString *skinPath = [NSString stringWithUTF8String:get_documents_path("skins")];
 
     NSString *romPath = [rootPath stringByAppendingPathComponent:romName];
@@ -4357,7 +4380,6 @@ BOOL is_roms_dir(NSString* dir) {
     //
     //  * zipset, if the ZIP contains other ZIP files, then it is a zip of romsets, aka zipset?.
     //  * chdset, if the ZIP has CHDs in it.
-    //  * datset, if the ZIP has DATs in it. *NOTE* many ROMSETs have .DAT files, so we only check a whitelist of files.
     //  * artwork, if the ZIP contains a .LAY file, then it is artwork
     //  * samples, if the ZIP contains a .WAV file, then it is samples
     //  * skin, if the ZIP contains certain .PNG files that we use to draw buttons/etc
@@ -4369,15 +4391,11 @@ BOOL is_roms_dir(NSString* dir) {
                             @"background_landscape.png", @"background_landscape_wide.png",
                             @"background_portrait.png", @"back_portrait_tall.png"];
 
-    // whitelist of valid .DAT files we will copy to the dats folder
-    NSArray* dat_files = @[@"HISTORY.DAT", @"MAMEINFO.DAT"];
-    
     int __block numSKIN = 0;
     int __block numLAY = 0;
     int __block numZIP = 0;
     int __block numCHD = 0;
     int __block numWAV = 0;
-    int __block numDAT = 0;
     int __block numFiles = 0;
     BOOL result = [ZipFile enumerate:romPath withOptions:ZipFileEnumFiles usingBlock:^(ZipFileInfo* info) {
         NSString* ext = [info.name.pathExtension uppercaseString];
@@ -4390,8 +4408,6 @@ BOOL is_roms_dir(NSString* dir) {
             numWAV++;
         if ([ext isEqualToString:@"CHD"])
             numCHD++;
-        if ([dat_files containsObject:info.name.lastPathComponent.uppercaseString])
-            numDAT++;
         for (int i=0; i<NUM_BUTTONS; i++)
             numSKIN += [info.name.lastPathComponent isEqualToString:nameImgButton_Press[i]];
         if ([skin_files containsObject:info.name.lastPathComponent])
@@ -4405,7 +4421,7 @@ BOOL is_roms_dir(NSString* dir) {
     {
         NSLog(@"%@ is a CORRUPT ZIP (deleting)", romPath);
     }
-    else if (numZIP != 0 || numCHD != 0 || numDAT != 0)
+    else if (numZIP != 0 || numCHD != 0)
     {
         NSLog(@"%@ is a ZIPSET", [romPath lastPathComponent]);
         int maxFiles = numFiles;
@@ -4450,10 +4466,6 @@ BOOL is_roms_dir(NSString* dir) {
             if (toPath == nil && [IMPORT_FILE_TYPES containsObject:ext])
                 toPath = [rootPath stringByAppendingPathComponent:name];
             
-            // drop DAT files in `dats`
-            if (toPath == nil && [ext isEqualToString:@"dat"])
-                toPath = [datsPath stringByAppendingPathComponent:name];
-
             if (toPath != nil)
                 NSLog(@"...UNZIP: %@ => %@", info.name, [toPath stringByReplacingOccurrencesOfString:rootPath withString:@"~/"]);
             else
@@ -4595,21 +4607,13 @@ BOOL is_roms_dir(NSString* dir) {
     if (files_to_import.count == 0 || g_move_roms != 0)
         return;
 
-    UIAlertController *progressAlert = nil;
-
-    // on the first-boot cheat.zip will not exist, we want to be silent in this case.
-    BOOL first_boot = [files_to_import containsObject:@"cheat0139.zip"];
-
-    if (!first_boot) {
-        
-        // HACK: wait til any other VC is presented, sigh
-        if (self.presentedViewController.isBeingPresented)
-            return [self performSelector:_cmd withObject:nil afterDelay:1.0];
-        
-        progressAlert = [UIAlertController alertControllerWithTitle:@"Moving ROMs" message:@"Please wait..." preferredStyle:UIAlertControllerStyleAlert];
-        [progressAlert setProgress:0.0 text:@""];
-        [self.topViewController presentViewController:progressAlert animated:YES completion:nil];
-    }
+    // HACK: wait til any other VC is presented, sigh
+    if (self.presentedViewController.isBeingPresented)
+        return [self performSelector:_cmd withObject:nil afterDelay:1.0];
+    
+    UIAlertController *progressAlert = [UIAlertController alertControllerWithTitle:@"Moving ROMs" message:@"Please wait..." preferredStyle:UIAlertControllerStyleAlert];
+    [progressAlert setProgress:0.0 text:@""];
+    [self.topViewController presentViewController:progressAlert animated:YES completion:nil];
     
     g_move_roms = 1;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -4677,7 +4681,9 @@ BOOL is_roms_dir(NSString* dir) {
             continue;
         
         // TODO: 7z for artwork and samples?
-        NSArray* paths = @[@"roms/%@.zip", @"roms/%@.7z", @"artwork/%@.zip", @"samples/%@.zip", @"titles/%@.png", @"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@/1.sta", @"sta/%@/2.sta", @"hi/%@.hi"];
+        // TODO: we specificaly *DONT* save CHDs
+        // "hi" is the 139 dir, and "hiscore" is the 2xx dir
+        NSArray* paths = @[@"roms/%@.zip", @"roms/%@.7z", @"artwork/%@.zip", @"samples/%@.zip", @"titles/%@.png", @"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@/1.sta", @"sta/%@/2.sta", @"hi/%@.hi", @"hiscore/%@.hi"];
 
         for (NSString* path in paths) {
             NSString* file = [NSString stringWithFormat:path, rom.stringByDeletingPathExtension];
@@ -5746,6 +5752,7 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
     else {
         g_mame_game_info = nil;
         g_mame_game[0] = g_mame_system[0] = 0;     // run the MENU
+        [self updateUserActivity:nil];
     }
 
     // TODO: *note* this will not work right if the mame configure menu is active, the menu will just dismiss, not a new issue.
@@ -5847,6 +5854,8 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
             [self performSelectorOnMainThread:@selector(scanForDevices) withObject:nil waitUntilDone:NO];
         }
     }
+    
+    [self updateUserActivity:nil];
 
     NSLog(@"GAMES: %@", games);
 
@@ -5930,7 +5939,19 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
 -(void)updateUserActivity:(NSDictionary*)game
 {
 #if TARGET_OS_IOS
-    self.userActivity = [ChooseGameController userActivityForGame:game];
+    if (game != nil)
+        self.userActivity = [ChooseGameController userActivityForGame:game];
+    else
+        self.userActivity = nil;
+
+    if (IsRunningOnMac()) {
+        if (@available(iOS 13.0, *)) {
+            if (game != nil)
+                self.view.window.windowScene.title = game.gameTitle;
+            else
+                self.view.window.windowScene.title = nil;   // set title back to our app name
+        }
+    }
 #endif
 }
 

@@ -626,6 +626,11 @@
             NSInteger dir = (type == UIPressTypeUpArrow) ? -1 : +1;
             NSInteger n = _selected + dir;
             
+            if (n < 0)
+                n = items.count-1;
+            if (n >= items.count)
+                n = 0;
+
             if (n >= 0 && n < items.count) {
                 CGFloat f = (CGFloat)MAX(0,[self selectedSegmentIndex]) / MAX(1,[self numberOfSegments]);
                 [self setSelectedSegmentIndex:UISegmentedControlNoSegment];

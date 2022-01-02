@@ -9,7 +9,10 @@
 * Need to update at least help, and maybe UI to call out options that can’t be changed without restarting game. 
     - fixed any Settings change causes a restart
 * How does the cheat system work on 2xx, do we need a new cheat.zip? Does the old one being around break anything?? Can we have a cheat.7z co-exist with cheat.zip
+    - use cheat.7z for 2xx, and use cheat.zip for 139
 * How does new hiscore system work, will old dat file conflict
+    - 2xx HISCOREs needs the plugin system, we have copy in a resource plugin.zip, extract on first-run
+    - old hiscore.dat will conflict, we delete it when running 2xx
 * Figure out correct solution to delayed game_list
     - maybe dont pause the MAME thread when ChooseUI is active, just dont send any input to MAME.
     - fixed, we dont hard pause MAME when the UI is up.
