@@ -1081,7 +1081,7 @@ HUDViewController* g_menu;
         }];
 #if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST)
         // KEYBOARD and PASTE
-        if ((myosd_has_keyboard || DEBUG) && g_keyboards.count == 0 && gamepad == nil) {
+        if ((myosd_has_keyboard || DebugLog) && g_keyboards.count == 0 && gamepad == nil) {
             BOOL can_paste = [self canPerformAction:@selector(paste:) withSender:nil];
             [menu addButtons:@[@":keyboard:Keyboard", can_paste ? @":doc.on.clipboard:Paste" : @""] style:HUDButtonStyleDefault handler:^(NSUInteger button) {
                 if (button == 0)
@@ -2189,7 +2189,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         }];
 #if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST)
         // KEYBOARD and PASTE
-        if ((myosd_has_keyboard || DEBUG) && g_keyboards.count == 0) {
+        if ((myosd_has_keyboard || DebugLog) && g_keyboards.count == 0) {
             [hudView addButtons:@[@":keyboard:Keyboard", @":doc.on.clipboard:Paste"] handler:^(NSUInteger button) {
                 if (button == 0)
                     sharedInstance->keyboardView.showSoftwareKeyboard = !sharedInstance->keyboardView.showSoftwareKeyboard;
