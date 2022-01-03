@@ -201,6 +201,7 @@ below is a list of a small subset of the keys supported by MAME4iOS, for a full 
      6               | Player 2 COIN
      TAB             | MAME UI MENU
      ESC or ⌘+.      | MAME UI EXIT
+     ⌘+DELETE        | MAME toggle UI MODE (aka SCRLOCK)
      RETURN          | MAME UI SELECT (aka 🅐)
 
 These keys are specific to `MAME4iOS`

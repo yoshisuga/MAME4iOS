@@ -898,13 +898,28 @@ void mame_save_state(int slot)
 
 HUDViewController* g_menu;
 
--(void)runMenu:(GCController*)controller from:(UIView*)view {
+-(void)runMenu:(id)sender {
+
+    GCController* controller = [sender isKindOfClass:[GCController class]] ? sender : nil;
+    UIView* view = [sender isKindOfClass:[UIView class]] ? sender : nil;
+    
     NSLog(@"runMenu: %@", controller);
     TIMER_DUMP();
     TIMER_RESET();
     
-    if (self.presentedViewController != nil)
+    // if menu is up take it down
+    if (self.presentedViewController != nil) {
+        if (self.presentedViewController.isBeingDismissed || self.presentedViewController != g_menu)
+            return;
+        
+        if ([self.presentedViewController isKindOfClass:[UIAlertController class]])
+            [(UIAlertController*)self.presentedViewController dismissWithCancel];
+
+        if ([self.presentedViewController isKindOfClass:[HUDViewController class]])
+            [self dismissViewControllerAnimated:TRUE completion:nil];
+        
         return;
+    }
 
     int player = (int)controller.playerIndex;
     GCExtendedGamepad* gamepad = controller.extendedGamepad;
@@ -1066,11 +1081,11 @@ HUDViewController* g_menu;
         }];
 #if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST)
         // KEYBOARD and PASTE
-        if (myosd_has_keyboard) {
+        if ((myosd_has_keyboard || DEBUG) && g_keyboards.count == 0 && gamepad == nil) {
             BOOL can_paste = [self canPerformAction:@selector(paste:) withSender:nil];
             [menu addButtons:@[@":keyboard:Keyboard", can_paste ? @":doc.on.clipboard:Paste" : @""] style:HUDButtonStyleDefault handler:^(NSUInteger button) {
                 if (button == 0)
-                    ; // TODO: show/hide keyboard
+                    self->keyboardView.showSoftwareKeyboard = !self->keyboardView.showSoftwareKeyboard;
                 else
                     [self paste:nil];
             }];
@@ -1120,32 +1135,9 @@ HUDViewController* g_menu;
     [self startMenu];
     [self presentPopup:menu from:view animated:YES completion:nil];
 }
-- (void)runMenu:(GCController*)controller
-{
-    [self runMenu:controller from:nil];
-}
 - (void)runMenu
 {
     [self runMenu:nil];
-}
-
-// show or dismiss our in-game menu (called on joystick MENU button)
-- (void)toggleMenu:(GCController*)controller
-{
-    // if menu is up take it down
-    if (self.presentedViewController != nil) {
-        if (self.presentedViewController.isBeingDismissed || self.presentedViewController != g_menu)
-            return;
-        
-        if ([self.presentedViewController isKindOfClass:[UIAlertController class]])
-            [(UIAlertController*)self.presentedViewController dismissWithCancel];
-
-        if ([self.presentedViewController isKindOfClass:[HUDViewController class]])
-            [self dismissViewControllerAnimated:TRUE completion:nil];
-    }
-    else {
-        [self runMenu:controller];
-    }
 }
 
 - (void)runExit:(BOOL)ask_user from:(UIView*)view
@@ -1564,7 +1556,7 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
     // touch screen OPTION button
     if ((buttonState & MYOSD_OPTION) && !(pad_status & MYOSD_OPTION))
     {
-        [self runMenu:0 from:buttonViews[BTN_OPTION]];
+        [self runMenu:buttonViews[BTN_OPTION]];
     }
     
     // SELECT and START at the same time (iCade)
@@ -1795,7 +1787,7 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
 // called from changeUI, and changeUI is called from iphone_Reset_Views() each time a new game (or menu) is started.
 - (void)updateScreenView {
     CGFloat alpha;
-    if (myosd_inGame || g_mame_game_info.gameName.length != 0)
+    if (myosd_inGame || g_mame_game_info.gameIsMame)
         alpha = 1.0;
     else
         alpha = 0.0;
@@ -1839,7 +1831,7 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
         [self.view addSubview:avPlayer];
     }
     avPlayer.frame = CGRectMake(0, 0, 1, 1);
-    avPlayer.center = self.view.center;
+    avPlayer.center = CGPointMake(self.view.safeAreaInsets.left, self.view.safeAreaInsets.top);
     [self.view sendSubviewToBack:avPlayer];
 }
 
@@ -2197,10 +2189,10 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         }];
 #if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST)
         // KEYBOARD and PASTE
-        if (myosd_has_keyboard) {
+        if ((myosd_has_keyboard || DEBUG) && g_keyboards.count == 0) {
             [hudView addButtons:@[@":keyboard:Keyboard", @":doc.on.clipboard:Paste"] handler:^(NSUInteger button) {
                 if (button == 0)
-                    ; // TODO: show/hide keyboard
+                    sharedInstance->keyboardView.showSoftwareKeyboard = !sharedInstance->keyboardView.showSoftwareKeyboard;
                 else
                     [sharedInstance paste:nil];
             }];
@@ -2304,6 +2296,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
 - (void)resetUI {
     NSLog(@"RESET UI (MAME VIDEO MODE CHANGE)");
+    g_joy_used = 0;     // use the touch ui, until a countroller is used.
     [self changeUI];
 }
 
@@ -2459,6 +2452,18 @@ static int handle_buttons(myosd_input_state* myosd)
         myosd_exitGame = 0;
     }
     
+    // check for CONFIGURE when not in UIMODE (HACK)
+    // TODO: only do this for CONFIGURE?
+    static int g_force_uimode = 0;
+    if (g_mame_key == MYOSD_KEY_CONFIGURE && myosd->input_mode == MYOSD_INPUT_MODE_KEYBOARD) {
+        g_mame_key = (MYOSD_KEY_CONFIGURE<<8) + MYOSD_KEY_UIMODE;
+        g_force_uimode = 1;
+    }
+    if (g_force_uimode && g_mame_key == 0 && !myosd_in_menu) {
+        g_mame_key = MYOSD_KEY_UIMODE;
+        g_force_uimode = 0;
+    }
+    
     // send keys to MAME
     if (g_mame_key != 0) {
         int key = g_mame_key & 0xFF;
@@ -2509,7 +2514,7 @@ static int handle_buttons(myosd_input_state* myosd)
 static void handle_turbo(myosd_input_state* myosd) {
     
     // dont do turbo mode in MAME menus.
-    if (myosd->input_mode != MYOSD_INPUT_MODE_NORMAL)
+    if (myosd->input_mode == MYOSD_INPUT_MODE_MENU)
         return;
     
     // also dont do turbo mode if all checks are off
@@ -2538,7 +2543,7 @@ static void handle_turbo(myosd_input_state* myosd) {
 
 void handle_autofire(myosd_input_state* myosd)
 {
-    if (!g_pref_autofire || myosd->input_mode != MYOSD_INPUT_MODE_NORMAL)
+    if (!g_pref_autofire || myosd->input_mode == MYOSD_INPUT_MODE_MENU)
         return;
 
     static int A_pressed[MYOSD_NUM_JOY];
@@ -2816,7 +2821,7 @@ static void handle_device_input(myosd_input_state* myosd)
 // handle p1aspx (P1 as P2, P3, P4)
 static void handle_p1aspx(myosd_input_state* myosd) {
     
-    if (g_pref_p1aspx == 0 || myosd->input_mode != MYOSD_INPUT_MODE_NORMAL)
+    if (g_pref_p1aspx == 0 || myosd->input_mode == MYOSD_INPUT_MODE_MENU)
         return;
     
     for (int i=1; i<MYOSD_NUM_JOY; i++) {
@@ -2861,7 +2866,7 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
         
         // set global menu state
         myosd_in_menu = myosd->input_mode == MYOSD_INPUT_MODE_MENU;
-        
+
         // keep myosd_waysStick uptodate
         if (ways_auto)
             g_joy_ways = myosd_in_menu ? 4 : myosd_num_ways;
@@ -2980,7 +2985,7 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
         num_buttons = (myosd_num_buttons == 0) ? 2 : myosd_num_buttons;
    
     BOOL touch_buttons_disabled = myosd_mouse == 1 && g_pref_touch_analog_enabled && g_pref_touch_analog_hide_buttons;
-    BOOL menu_buttons_disabled = g_pref_showHUD == HudSizeLarge || (g_pref_showHUD == HudSizeTiny && g_pref_saveHUD == HudSizeLarge);
+    BOOL menu_buttons_disabled = g_pref_showHUD == HudSizeLarge; /* || (g_pref_showHUD == HudSizeTiny && g_pref_saveHUD == HudSizeLarge); */
     buttonState = 0;
     for (int i=0; i<NUM_BUTTONS; i++)
     {
@@ -5213,7 +5218,7 @@ static unsigned long g_device_has_input[NUM_DEV];   // TRUE if device needs to b
             }
             else {
                 NSLog(@"...MENU/HOME => MAME4iOS MENU");
-                [self toggleMenu:controller];
+                [self runMenu:controller];
             }
         }
     }
@@ -5293,7 +5298,7 @@ static unsigned long g_device_has_input[NUM_DEV];   // TRUE if device needs to b
     if (changed_state & combo_buttons) {
         // TODO: only hide the menuHUD if *we* own it
         if (g_menu)
-            [self toggleMenu:controller];
+            [self runMenu:controller];
         else
             [self cancelShowMenu:controller];
         g_menuButtonPressed[index] |= changed_state;
@@ -5874,6 +5879,7 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
         
         [self dismissViewControllerAnimated:YES completion:^{
             self->keyboardView.active = TRUE;
+            self->keyboardView.showSoftwareKeyboard = FALSE;
             [self performSelectorOnMainThread:@selector(playGame:) withObject:game waitUntilDone:FALSE];
         }];
     };
@@ -5915,7 +5921,7 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
 
         // dont handle MENU here, we do it in handleMenuButton (except for no controllers)
         if (type == UIPressTypeMenu && g_controllers.count == 0)
-            [self toggleMenu:nil];
+            [self runMenu];
         
         // but handle UP/DOWN/LEFT/RIGHT, and PLAY/PAUSE for the HUD
         if (g_pref_showHUD && self.presentedViewController == nil) {

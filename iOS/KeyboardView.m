@@ -44,6 +44,7 @@
 
 #import "KeyboardView.h"
 #import "EmulatorController.h"
+#import <GameController/GameController.h>
 #include "libmame.h"
 
 #define DebugLog 0
@@ -86,7 +87,8 @@
     {
         memset(myosd_keyboard, 0, sizeof(myosd_keyboard));
         myosd_keyboard_changed = 1;
-        [self becomeFirstResponder];
+        if (emuController.presentedViewController == nil)
+            [self becomeFirstResponder];
     }
 }
 
@@ -107,9 +109,26 @@
     }
 }
 
+- (void)setShowSoftwareKeyboard:(BOOL)showSoftwareKeyboard {
+    if (_showSoftwareKeyboard != showSoftwareKeyboard) {
+        _showSoftwareKeyboard = showSoftwareKeyboard;
+        [self setActive:_active];
+        [self reloadInputViews];
+    }
+}
 
-- (UIView*) inputView {
-    return inputView;
+// the dismiss keyboard key on iPad software keyboard will just call resignFirstResponder
+- (BOOL)resignFirstResponder {
+    if (emuController.presentingViewController == nil)
+        _showSoftwareKeyboard = NO;
+    return [super resignFirstResponder];
+}
+
+- (UIView*)inputView {
+    if (_showSoftwareKeyboard)
+        return nil;
+    else
+        return inputView;
 }
 
 #pragma mark handle iCade key
@@ -598,7 +617,7 @@ int hid_to_mame(int keyCode) {
 
     static int mame_map[256];
     
-    if (mame_map[1] == 0) {
+    if (mame_map[4 /*UIKeyboardHIDUsageKeyboardA*/] == 0) {
 #ifdef __IPHONE_13_4
         /* A-Z */
         for (int i=0; i<26; i++)
@@ -619,7 +638,7 @@ int hid_to_mame(int keyCode) {
         /* special keys */
         mame_map[UIKeyboardHIDUsageKeyboardReturnOrEnter    ] = MYOSD_KEY_ENTER;
         mame_map[UIKeyboardHIDUsageKeyboardEscape           ] = MYOSD_KEY_ESC;
-        mame_map[UIKeyboardHIDUsageKeyboardDeleteOrBackspace] = MYOSD_KEY_DEL;
+        mame_map[UIKeyboardHIDUsageKeyboardDeleteOrBackspace] = MYOSD_KEY_BACKSPACE;
         mame_map[UIKeyboardHIDUsageKeyboardTab              ] = MYOSD_KEY_TAB;
         mame_map[UIKeyboardHIDUsageKeyboardSpacebar         ] = MYOSD_KEY_SPACE;
         mame_map[UIKeyboardHIDUsageKeyboardHyphen           ] = MYOSD_KEY_MINUS;
@@ -643,7 +662,7 @@ int hid_to_mame(int keyCode) {
         mame_map[UIKeyboardHIDUsageKeyboardInsert       ] = MYOSD_KEY_INSERT;
         mame_map[UIKeyboardHIDUsageKeyboardHome         ] = MYOSD_KEY_HOME;
         mame_map[UIKeyboardHIDUsageKeyboardPageUp       ] = MYOSD_KEY_PGUP;
-        mame_map[UIKeyboardHIDUsageKeyboardDeleteForward] = MYOSD_KEY_DEL_PAD;          // TODO: check
+        mame_map[UIKeyboardHIDUsageKeyboardDeleteForward] = MYOSD_KEY_DEL;              // TODO: check
         mame_map[UIKeyboardHIDUsageKeyboardEnd          ] = MYOSD_KEY_END;
         mame_map[UIKeyboardHIDUsageKeyboardPageDown     ] = MYOSD_KEY_PGDN;
         mame_map[UIKeyboardHIDUsageKeyboardRightArrow   ] = MYOSD_KEY_RIGHT;
@@ -655,11 +674,14 @@ int hid_to_mame(int keyCode) {
         mame_map[UIKeyboardHIDUsageKeyboardLeftControl  ] = MYOSD_KEY_LCONTROL;
         mame_map[UIKeyboardHIDUsageKeyboardLeftShift    ] = MYOSD_KEY_LSHIFT;
         mame_map[UIKeyboardHIDUsageKeyboardLeftAlt      ] = MYOSD_KEY_LALT;
-        mame_map[UIKeyboardHIDUsageKeyboardLeftGUI      ] = MYOSD_KEY_LCMD;
         mame_map[UIKeyboardHIDUsageKeyboardRightControl ] = MYOSD_KEY_RCONTROL;
         mame_map[UIKeyboardHIDUsageKeyboardRightShift   ] = MYOSD_KEY_RSHIFT;
         mame_map[UIKeyboardHIDUsageKeyboardRightAlt     ] = MYOSD_KEY_RALT;
-        mame_map[UIKeyboardHIDUsageKeyboardRightGUI     ] = MYOSD_KEY_RCMD;
+
+        /* command keys */
+        // dont let MAME have access to the ⌘ key, we (and macOS, and iOS) want to use it.
+        // mame_map[UIKeyboardHIDUsageKeyboardLeftGUI] = MYOSD_KEY_LCMD;
+        // mame_map[UIKeyboardHIDUsageKeyboardRightGUI] = MYOSD_KEY_RCMD;
 
         /* Keypad (numpad) keys */
         mame_map[UIKeyboardHIDUsageKeypadNumLock         ] = MYOSD_KEY_NUMLOCK;
@@ -681,16 +703,6 @@ int hid_to_mame(int keyCode) {
         mame_map[UIKeyboardHIDUsageKeypadPeriod          ] = MYOSD_KEY_STOP;
         mame_map[UIKeyboardHIDUsageKeypadEqualSign       ] = MYOSD_KEY_EQUALS;
 
-        /* Other keys */
-        mame_map[UIKeyboardHIDUsageKeyboardApplication] = MYOSD_KEY_INVALID;
-        mame_map[UIKeyboardHIDUsageKeyboardPower      ] = MYOSD_KEY_INVALID;
-        
-#ifdef DEBUG
-        // HACK: map backslash to SCRLOCK to test keyboards
-        // TODO: remove this....
-        mame_map[UIKeyboardHIDUsageKeyboardBackslash   ] = MYOSD_KEY_SCRLOCK;
-#endif
-        
 #else   // provide a minimal set of keys for Xcode < 11.4
         
         for (int i=0; i<26; i++)
@@ -771,6 +783,9 @@ int hid_to_mame(int keyCode) {
     // CMD+x special command key (ALT+ works in the simulator CMD+ does not)
     if (modifierFlags == (TARGET_OS_SIMULATOR ? UIKeyModifierAlternate : UIKeyModifierCommand))
     {
+        // CMD+DELETE => SCRLOCK (aka UIMODE)
+        if (mame_key == MYOSD_KEY_BACKSPACE)
+            mame_key = MYOSD_KEY_SCRLOCK;
         if (isKeyDown && mame_key == MYOSD_KEY_ENTER)
             return [emuController commandKey:'\r'];
         if (isKeyDown && mame_key >= MYOSD_KEY_A && mame_key <= MYOSD_KEY_Z)
@@ -870,5 +885,244 @@ int hid_to_mame(int keyCode) {
 }
 
 #endif
+
+#pragma mark Software Keyboard
+
+#if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST)
+
+- (BOOL)conformsToProtocol:(Protocol *)protocol {
+    //NSLog(@"conformsToProtocol: %@ ==> %@", NSStringFromProtocol(protocol), [super conformsToProtocol:protocol] ? @"YES" : @"NO");
+    // NOTE it is very important not to support UIKeyInput when running on macOS, otherwise pressesBegan/End does not get called.
+    if (NSProtocolFromString(@"UIKeyInput") == protocol)
+        return IsRunningOnMac() ? FALSE : TRUE;
+    return [super conformsToProtocol:protocol];
+}
+
+- (BOOL) hasText {
+    return YES;
+}
+- (void)insertText:(NSString *)text {
+    NSLog(@"insertText: %@", text);
+    int mame_key = ascii_to_mame([text characterAtIndex:0]);
+    if (mame_key != 0)
+        send_mame_key(mame_key);
+}
+- (void)deleteBackward {
+    send_mame_key(MYOSD_KEY_BACKSPACE);
+}
+
+- (UIKeyboardAppearance)keyboardAppearance {
+    return UIKeyboardAppearanceDark;
+}
+
+-(UIKeyboardType)keyboardType {
+    return UIKeyboardTypeASCIICapable;
+}
+
+// map a ASCII key to a MAME KEY
+static int ascii_to_mame(int key) {
+
+    static int mame_map[128];
+    
+    if (mame_map['A'] == 0) {
+        /* a-z */
+        for (int i=0; i<26; i++)
+            mame_map['a'+i] = MYOSD_KEY_A+i;
+        
+        /* A-Z */
+        for (int i=0; i<26; i++)
+            mame_map['A'+i] = MYOSD_KEY_A+i + (MYOSD_KEY_LSHIFT<<8);
+        
+        /* 0-9 */
+        for (int i=0; i<10; i++)
+            mame_map['0'+i] = MYOSD_KEY_0+i;
+
+        mame_map['!'] = MYOSD_KEY_1 + (MYOSD_KEY_LSHIFT<<8);
+        mame_map['@'] = MYOSD_KEY_2 + (MYOSD_KEY_LSHIFT<<8);
+        mame_map['#'] = MYOSD_KEY_3 + (MYOSD_KEY_LSHIFT<<8);
+        mame_map['$'] = MYOSD_KEY_4 + (MYOSD_KEY_LSHIFT<<8);
+        mame_map['%'] = MYOSD_KEY_5 + (MYOSD_KEY_LSHIFT<<8);
+        mame_map['^'] = MYOSD_KEY_6 + (MYOSD_KEY_LSHIFT<<8);
+        mame_map['&'] = MYOSD_KEY_7 + (MYOSD_KEY_LSHIFT<<8);
+        mame_map['*'] = MYOSD_KEY_8 + (MYOSD_KEY_LSHIFT<<8);
+        mame_map['('] = MYOSD_KEY_9 + (MYOSD_KEY_LSHIFT<<8);
+        mame_map[')'] = MYOSD_KEY_0 + (MYOSD_KEY_LSHIFT<<8);
+
+        /* special keys */
+        mame_map['\r'] = MYOSD_KEY_ENTER;
+        mame_map['\n'] = MYOSD_KEY_ENTER;
+        mame_map[' '] = MYOSD_KEY_SPACE;
+        mame_map['\t'] = MYOSD_KEY_TAB;
+        
+        mame_map['`'] = MYOSD_KEY_TILDE;
+        mame_map['~'] = MYOSD_KEY_TILDE + (MYOSD_KEY_LSHIFT<<8);
+
+        mame_map['-'] = MYOSD_KEY_MINUS;
+        mame_map['='] = MYOSD_KEY_EQUALS;
+        mame_map['_'] = MYOSD_KEY_MINUS + (MYOSD_KEY_LSHIFT<<8);
+        mame_map['+'] = MYOSD_KEY_EQUALS + (MYOSD_KEY_LSHIFT<<8);
+
+        mame_map[','] = MYOSD_KEY_COMMA;
+        mame_map['.'] = MYOSD_KEY_STOP;
+        mame_map['/'] = MYOSD_KEY_SLASH;
+        mame_map['<'] = MYOSD_KEY_COMMA + (MYOSD_KEY_LSHIFT<<8);
+        mame_map['>'] = MYOSD_KEY_STOP + (MYOSD_KEY_LSHIFT<<8);
+        mame_map['?'] = MYOSD_KEY_SLASH + (MYOSD_KEY_LSHIFT<<8);
+
+        mame_map[';'] = MYOSD_KEY_COLON;
+        mame_map['\''] = MYOSD_KEY_QUOTE;
+        mame_map[':'] = MYOSD_KEY_COLON + (MYOSD_KEY_LSHIFT<<8);
+        mame_map['"'] = MYOSD_KEY_QUOTE + (MYOSD_KEY_LSHIFT<<8);
+
+        mame_map['['] = MYOSD_KEY_OPENBRACE;
+        mame_map[']'] = MYOSD_KEY_CLOSEBRACE;
+        mame_map['\\'] = MYOSD_KEY_BACKSLASH;
+        mame_map['{'] = MYOSD_KEY_OPENBRACE + (MYOSD_KEY_LSHIFT<<8);
+        mame_map['}'] = MYOSD_KEY_CLOSEBRACE + (MYOSD_KEY_LSHIFT<<8);
+        mame_map['|'] = MYOSD_KEY_BACKSLASH + (MYOSD_KEY_LSHIFT<<8);
+    }
+
+    if (key >= 0 && key < 128)
+        return mame_map[key];
+    else
+        return 0;
+}
+
+static void send_mame_key(int key) {
+
+    // send the key(s) to MAME via myosd_keyboard
+    myosd_keyboard[key & 0xFF] = 0x80;
+    if ((key & 0xFF00) != 0)
+        myosd_keyboard[(key >> 8) & 0xFF] = 0x80;
+    myosd_keyboard_changed = 1;
+
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.100 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+        myosd_keyboard[key & 0xFF] = 0x00;
+        if ((key & 0xFF00) != 0)
+            myosd_keyboard[(key >> 8) & 0xFF] = 0x00;
+        myosd_keyboard_changed = 1;
+    });
+}
+
+- (void)mameKeyDown:(UIButton*)sender {
+    NSLog(@"KEY DOWN: %d", (int)sender.tag);
+    int key = (int)sender.tag;
+    sender.backgroundColor = UIColor.systemGrayColor;
+    myosd_keyboard[key] = 0x80;
+    myosd_keyboard_changed = 1;
+}
+- (void)mameKeyUp:(UIButton*)sender API_AVAILABLE(ios(14.0)) {
+    NSLog(@"KEY UP: %d", (int)sender.tag);
+    int key = (int)sender.tag;
+    sender.backgroundColor = UIColor.systemGray5Color;
+    myosd_keyboard[key] = 0x00;
+    myosd_keyboard_changed = 1;
+    if (key == MYOSD_KEY_MENU)
+        [emuController runMenu:sender];
+}
+
+- (UIBarButtonItem*)mameKey:(NSString*)str code:(int)mame_key  API_AVAILABLE(ios(14.0)) {
+    UIImage* image = [[UIImage systemImageNamed:str] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    UIButton* btn = [UIButton buttonWithType:UIButtonTypeCustom];
+    if (image != nil)
+        [btn setImage:image forState:UIControlStateNormal];
+    else
+        [btn setTitle:str forState:UIControlStateNormal];
+    btn.contentEdgeInsets = UIEdgeInsetsMake(6, 5, 6, 5);
+    btn.layer.cornerRadius = 4;
+    btn.backgroundColor = UIColor.systemGray5Color;
+    btn.tintColor = UIColor.whiteColor;
+    btn.tag = mame_key;
+    [btn addTarget:self action:@selector(mameKeyDown:) forControlEvents:UIControlEventTouchDown];
+    [btn addTarget:self action:@selector(mameKeyUp:) forControlEvents:UIControlEventTouchUpInside | UIControlEventTouchUpOutside | UIControlEventTouchCancel];
+    [btn sizeToFit];
+    return [[UIBarButtonItem alloc] initWithCustomView:btn];
+}
+- (UIBarButtonItem*)flexibleSpaceItem {
+    return [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
+}
+- (UIBarButtonItem*)fixedSpaceItemOfWidth:(CGFloat)width {
+    UIBarButtonItem* fix = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
+    fix.width = width;
+    return fix;
+}
+
+- (UIView*)inputAccessoryView {
+    
+#ifdef __IPHONE_14_0
+    // we only want to create/use an accessory view if we are *sure* there is no hardware keyboard attached....
+    if (@available(iOS 14.0, *)) {
+        BOOL isKeyboardAttached = GCKeyboard.coalescedKeyboard != nil;
+        
+        if (_showSoftwareKeyboard && !isKeyboardAttached)
+            return [self makeKeyboardToolbar];
+    }
+#endif
+    
+    return nil;
+}
+
+- (UIToolbar*)makeKeyboardToolbar API_AVAILABLE(ios(14.0)) {
+    
+    static UIToolbar* toolbar = nil;
+
+    if (toolbar == nil) {
+        NSMutableArray* items = [[NSMutableArray alloc] init];
+
+        BOOL iPad = UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPad;
+
+#define Fix() [self fixedSpaceItemOfWidth:2.0]
+#define Sep() [self flexibleSpaceItem]
+#define Key(str, key) [self mameKey:str code:key]
+        
+        if (iPad) {
+            /* ESC, SHIFT, CONTROL, and ALT */
+            [items addObjectsFromArray:@[
+                Key(@"ESC", MYOSD_KEY_ESC),
+                Fix(), Key(@"shift", MYOSD_KEY_LSHIFT),
+                Fix(), Key(@"control", MYOSD_KEY_LCONTROL),
+                Fix(), Key(@"option", MYOSD_KEY_LALT),
+            ]];
+        }
+        else {
+            /* TAB, SHIFT, CONTROL */
+            [items addObjectsFromArray:@[
+                Key(@"escape", MYOSD_KEY_ESC),
+                Fix(), Key(@"arrow.right.to.line", MYOSD_KEY_TAB),
+                Fix(), Key(@"shift", MYOSD_KEY_LSHIFT),
+                Fix(), Key(@"control", MYOSD_KEY_LCONTROL),
+            ]];
+        }
+
+        /* F1 - F12 */
+        if (iPad) {
+            for (int i=0; i<12; i++) {
+                [items addObject:i==0 ? Sep() : Fix()];
+                [items addObject:Key(([NSString stringWithFormat:@"F%d", i+1]), MYOSD_KEY_F1+i)];
+            }
+        }
+        
+        /* arrow keys */
+        [items addObjectsFromArray:@[
+            Sep(), Key(@"arrow.up", MYOSD_KEY_UP),
+            Fix(), Key(@"arrow.left", MYOSD_KEY_LEFT),
+            Fix(), Key(@"arrow.right", MYOSD_KEY_RIGHT),
+            Fix(), Key(@"arrow.down", MYOSD_KEY_DOWN),
+        ]];
+
+        /* srrlock and menu */
+        [items addObjectsFromArray:@[
+            Sep(), Key(@"lock", MYOSD_KEY_SCRLOCK),
+            Fix(), Key(@"list.dash", MYOSD_KEY_MENU),
+        ]];
+
+        toolbar = [[UIToolbar alloc] init];
+        toolbar.items = items;
+        [toolbar sizeToFit];
+    }
+    return toolbar;
+}
+
+#endif // (TARGET_OS_IOS && !TARGET_OS_MACCATALYST)
 
 @end
