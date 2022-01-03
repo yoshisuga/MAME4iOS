@@ -85,13 +85,13 @@ Even if you are not in the paid Apple Developer Program, you can sideload the ap
 
 By default `MAME4iOS` will use pre-combiled libraries for the latest MAME, if you need a Simulator build, or just want to build `MAME`, you need to...
 
-    - clone [this fork](https://github.com/ToddLa/mame) of `MAME`
-    - run `./make-ios.sh [ios | tvos | ios-simulator | tvos-simulator | macOS]` in the forked `MAME`
-    - go watch [this](https://www.imdb.com/title/tt3748528/) then [this](https://en.wikipedia.org/wiki/Star_Wars_Trilogy) while you wait for `MAME` to build.
-    - now switch directories to your `MAME4iOS` project
-    - run  `./get-libmame.sh ios <path to your MAME clone>`
-    - edit `xcode/MAME4iOS/MAME4iOS.xcconfig` to select the `libmame` library.
-    - build and run in Xcode.
+- clone [this fork](https://github.com/ToddLa/mame) of `MAME`
+- run `./make-ios.sh [ios | tvos | ios-simulator | tvos-simulator | macOS]` in the forked `MAME`
+- go watch [this](https://www.imdb.com/title/tt3748528/) then [this](https://en.wikipedia.org/wiki/Star_Wars_Trilogy) while you wait for `MAME` to build.
+- now switch directories to your `MAME4iOS` project
+- run  `./get-libmame.sh ios <path to your MAME clone>`
+- edit `xcode/MAME4iOS/MAME4iOS.xcconfig` to select the `libmame` library.
+- build and run in Xcode.
 
 ## Issues running latest `MAME`
 * most `MAME` 139 ROMs dont work on 2xx, but that is just normal life in `MAME` world, see [this](#mixing-139-and-2xx-roms).
