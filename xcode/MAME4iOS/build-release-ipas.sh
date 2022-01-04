@@ -7,6 +7,7 @@ C_RESET="\033[0m"
 
 # get the DEVELOPMENT_TEAM out of the xcconfig
 DEVELOPMENT_TEAM=`grep -oe "^DEVELOPMENT_TEAM\s*=\s*[a-zA-Z0-9]*" MAME4iOS.xcconfig | cut -w -f3`
+VERSION=`grep -oe "^CURRENT_PROJECT_VERSION\s*=\s*[\.0-9]*" MAME4iOS.xcconfig | cut -w -f3`
 
 if [ "$DEVELOPMENT_TEAM" == "" ] || [ "$DEVELOPMENT_TEAM" == "ABC8675309" ]; then
     echo "${C_RED}Before running, edit the DEVELOPMENT_TEAM identifier in the .xcconfig file so that code signing works.${C_RESET}"
@@ -46,7 +47,7 @@ do
   for j in "${!CONFIGS[@]}"
   do
     CONFIG="${CONFIGS[$j]}"
-    ARCHIVE_NAME="${NAME}-${CONFIG_NAMES[$j]}"
+    ARCHIVE_NAME="${NAME}-${VERSION}-${CONFIG_NAMES[$j]}"
     echo "${C_BLUE}Scheme: ${SCHEME} Config: ${CONFIG} Archive: ${ARCHIVE_NAME}${C_RESET}"
 
     xcodebuild -project MAME4iOS.xcodeproj \
