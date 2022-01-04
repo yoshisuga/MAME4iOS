@@ -1,4 +1,5 @@
-# Version 2021.9
+# Version 2022.0
+* Updated to [MAME 239](https://www.mamedev.org/releases/whatsnew_0239.txt).
 * Support CHEATs and HISCOREs for latest MAME, and stay compatible with 139.
 
 # Version 2021.8
