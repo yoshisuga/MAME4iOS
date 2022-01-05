@@ -5,9 +5,20 @@ C_WHITE="\033[0;97m"
 C_BLUE="\033[0;94m"
 C_RESET="\033[0m"
 
-# get the DEVELOPMENT_TEAM out of the xcconfig
-DEVELOPMENT_TEAM=`grep -oe "^DEVELOPMENT_TEAM\s*=\s*[a-zA-Z0-9]*" MAME4iOS.xcconfig | cut -w -f3`
-VERSION=`grep -oe "^CURRENT_PROJECT_VERSION\s*=\s*[\.0-9]*" MAME4iOS.xcconfig | cut -w -f3`
+# get the DEVELOPMENT_TEAM and VERSION out of the xcconfig(s)
+if [ -f Developer.xcconfig ]; then
+    DEVELOPMENT_TEAM=`grep -oe "^DEVELOPMENT_TEAM\s*=\s*[a-zA-Z0-9]*" Developer.xcconfig | cut -w -f3`
+fi
+if [ "$DEVELOPMENT_TEAM" == "" ]; then
+    DEVELOPMENT_TEAM=`grep -oe "^DEVELOPMENT_TEAM\s*=\s*[a-zA-Z0-9]*" MAME4iOS.xcconfig | cut -w -f3`
+fi
+
+if [ -f Developer.xcconfig ]; then
+    VERSION=`grep -oe "^CURRENT_PROJECT_VERSION\s*=\s*[\.0-9]*" Developer.xcconfig | cut -w -f3`
+fi
+if [ "$VERSION" == "" ]; then
+    VERSION=`grep -oe "^CURRENT_PROJECT_VERSION\s*=\s*[\.0-9]*" MAME4iOS.xcconfig | cut -w -f3`
+fi
 
 if [ "$DEVELOPMENT_TEAM" == "" ] || [ "$DEVELOPMENT_TEAM" == "ABC8675309" ]; then
     echo "${C_RED}Before running, edit the DEVELOPMENT_TEAM identifier in the .xcconfig file so that code signing works.${C_RESET}"
@@ -31,6 +42,8 @@ cat << EOF > "../dist/exportOptions.plist"
     <string>development</string>
     <key>teamID</key>
     <string>${DEVELOPMENT_TEAM}</string>
+    <key>iCloudContainerEnvironment</key>
+    <string>Development</string>
 </dict>
 </plist>
 EOF
