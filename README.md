@@ -95,10 +95,9 @@ By default `MAME4iOS` will use pre-combiled libraries for the latest MAME, if yo
 
 ## Issues running latest `MAME`
 * most `MAME` 139 ROMs dont work on 2xx, but that is just normal life in `MAME` world, see [this](#mixing-139-and-2xx-roms).
-* if you run a `Computer` machine, you need a USB keyboard, and `\` (backslash) is the ui_mode_key.
-* the `hiscore` and `cheat` system has not been updated.
+* if you run a `Computer` machine, and you use a USB keyboard, ⌘+DELETE is is the ui_mode_key.
 * `MAME` Configure menu has a `Add To Favorites` and `Select New Machine` that dont interact with the `MAME4iOS` Ux.
-* Games that use DRC (like NFL Blitz....) will not work correctly and may crash hang.  This is an issue with the arm64 support in `MAME`.
+* Games that use DRC (like NFL Blitz....) will not work correctly and may crash hang, if `Use DRC` is enabled, This is an issue with the arm64 support in `MAME`.
 
 ## Mixing 139 and 2xx ROMs
 Some `romsets` are not compatible between MAME 139 and newer versions, the best way to use both `romsets` at the same time is to make sure the newer ones are stored in the `7z` format and the 139 ones in the `zip` format.  This way both files can co-exist.

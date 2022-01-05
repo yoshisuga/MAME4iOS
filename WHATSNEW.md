@@ -1,8 +1,10 @@
+# Version 2022.1
+* Support for Software keyboard for machines that need keyboard input.
+
 # Version 2022.0
 * Updated to [MAME 239](https://www.mamedev.org/releases/whatsnew_0239.txt).
 * Support CHEATs and HISCOREs for latest MAME, and stay compatible with 139.
 * On-screen MENU selection will wrap top to bottom, and bottom to top.
-* Support for Software keyboard for machines that need keyboard input.
 
 # Version 2021.8
 * Updated to [MAME 238](https://www.mamedev.org/releases/whatsnew_0238.txt).
