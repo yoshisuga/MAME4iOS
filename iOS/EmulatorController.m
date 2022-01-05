@@ -2459,7 +2459,7 @@ static int handle_buttons(myosd_input_state* myosd)
         g_mame_key = (MYOSD_KEY_CONFIGURE<<8) + MYOSD_KEY_UIMODE;
         g_force_uimode = 1;
     }
-    if (g_force_uimode && g_mame_key == 0 && !myosd_in_menu) {
+    if (g_force_uimode && g_mame_key == 0 && myosd->input_mode != MYOSD_INPUT_MODE_MENU) {
         g_mame_key = MYOSD_KEY_UIMODE;
         g_force_uimode = 0;
     }
