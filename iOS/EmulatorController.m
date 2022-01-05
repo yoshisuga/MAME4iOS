@@ -214,13 +214,11 @@ int g_pref_drc;
 enum {
     HudSizeZero = 0,        // HUD is not visible at all.
     HudSizeNormal = 1,      // HUD is 'normal' size, just a toolbar.
-    HudSizeTiny = 2,        // HUD is single button, press to expand.
     HudSizeInfo = 3,        // HUD is expanded to include extra info, and FPS.
     HudSizeLarge = 4,       // HUD is expanded to include in-game menu.
     HudSizeEditor = 5,      // HUD is expanded to include Shader editing sliders.
 };
-int g_pref_showHUD = 0;
-int g_pref_saveHUD = 0;     // previous value of g_pref_showHUD
+int g_pref_showHUD = 0;     // if < 0 HUD is single button, press to expand.
 
 int g_pref_keep_aspect_ratio = 0;
 int g_pref_force_pixel_aspect_ratio = 0;
@@ -2055,20 +2053,16 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     if (g_pref_showHUD == HudSizeEditor && !can_edit_shader)
         g_pref_showHUD = HudSizeNormal;
     
-    if (g_pref_showHUD == HudSizeTiny) {
+    if (g_pref_showHUD < 0) {
         [hudView addButton:@":command:⌘:" handler:^{
             Options* op = [[Options alloc] init];
-            if (g_pref_saveHUD != HudSizeZero && g_pref_saveHUD != HudSizeTiny)
-                g_pref_showHUD = g_pref_saveHUD;    // restore HUD to previous size.
-            else
-                g_pref_showHUD = HudSizeNormal;     // if HUD is OFF turn it on at Normal size.
+            g_pref_showHUD = -g_pref_showHUD; // restore HUD to previous size.
             op.showHUD = g_pref_showHUD;
             [op saveOptions];
             [_self changeUI];
         }];
     }
-    
-    if (g_pref_showHUD != HudSizeTiny) {
+    else {
         // add a toolbar of quick actions.
         NSArray* items = @[
             @"Coin", @"Start",
@@ -2096,7 +2090,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
                     Options* op = [[Options alloc] init];
                     if (g_pref_showHUD <= HudSizeNormal)
                         g_pref_showHUD = HudSizeInfo;
-                    else if (g_pref_showHUD == HudSizeInfo)
+                    else if (g_pref_showHUD <= HudSizeInfo)
                         g_pref_showHUD = HudSizeLarge;
                     else if (g_pref_showHUD == HudSizeLarge)
                         g_pref_showHUD = HudSizeEditor;
@@ -2110,8 +2104,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
                 case 5:
                 {
                     Options* op = [[Options alloc] init];
-                    g_pref_saveHUD = g_pref_showHUD;
-                    g_pref_showHUD = TARGET_OS_IOS ? HudSizeTiny : HudSizeZero;
+                    g_pref_showHUD = TARGET_OS_IOS ? -g_pref_showHUD : HudSizeZero;
                     op.showHUD = g_pref_showHUD;
                     [op saveOptions];
                     [_self changeUI];
@@ -2287,7 +2280,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
     [UIView animateWithDuration:0.250 animations:^{
         self->hudView.frame = rect;
-        if (g_pref_showHUD == HudSizeTiny)
+        if (g_pref_showHUD < 0)
             self->hudView.alpha = ((float)g_controller_opacity / 100.0f);
         else
             self->hudView.alpha = 1.0;
@@ -2985,7 +2978,7 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
         num_buttons = (myosd_num_buttons == 0) ? 2 : myosd_num_buttons;
    
     BOOL touch_buttons_disabled = myosd_mouse == 1 && g_pref_touch_analog_enabled && g_pref_touch_analog_hide_buttons;
-    BOOL menu_buttons_disabled = g_pref_showHUD == HudSizeLarge; /* || (g_pref_showHUD == HudSizeTiny && g_pref_saveHUD == HudSizeLarge); */
+    BOOL menu_buttons_disabled = g_pref_showHUD == HudSizeLarge;
     buttonState = 0;
     for (int i=0; i<NUM_BUTTONS; i++)
     {
@@ -3552,16 +3545,10 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
         {
             Options* op = [[Options alloc] init];
 
-            if (g_pref_showHUD == HudSizeZero) {
-                if (g_pref_saveHUD != HudSizeZero)
-                    g_pref_showHUD = g_pref_saveHUD;    // restore HUD to previous size.
-                else
-                    g_pref_showHUD = HudSizeNormal;     // if HUD is OFF turn it on at Normal size.
-            }
-            else {
-                g_pref_saveHUD = g_pref_showHUD;        // if HUD is ON, hide it but keep the size.
-                g_pref_showHUD = HudSizeZero;
-            }
+            if (g_pref_showHUD == HudSizeZero)
+                g_pref_showHUD = HudSizeNormal;     // if HUD is OFF turn it on at Normal size.
+            else
+                g_pref_showHUD = HudSizeZero;       // if HUD is ON, hide it.
 
             op.showHUD = g_pref_showHUD;
             [op saveOptions];
