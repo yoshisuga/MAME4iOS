@@ -36,6 +36,9 @@ MAMELIB = libmame-139u1
 // USE THIS LINE for a build of current latest MAME (via get-libmame.sh)
 // MAMELIB = libmame
 
+// let developer override with optional file.
+#include? "Developer.xcconfig"
+
 // these should not be changed.
 PRODUCT_BUNDLE_IDENTIFIER   = $(ORG_IDENTIFIER).$(PROJECT_NAME:lower)
 APP_GROUP_IDENTIFIER        = group.$(ORG_IDENTIFIER).$(PROJECT_NAME:lower)
