@@ -1814,6 +1814,9 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
     else
         alpha = 0.0;
     
+    if (g_mame_benchmark)
+        alpha = 0.0;
+
 #if DebugLog && defined(DEBUG)
     alpha = 1.0;    // always show MAME when debugging
 #endif
@@ -5711,46 +5714,47 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
     // 3. choose game controller is active.
     //      dissmiss and run game.
     //
-    UIViewController* viewController = self.presentedViewController;
-    if ([viewController isKindOfClass:[UINavigationController class]])
-        viewController = [(UINavigationController*)viewController topViewController];
-    
-    if ([viewController isKindOfClass:[UIAlertController class]]) {
-        UIAlertController* alert = (UIAlertController*)viewController;
-        UIAlertAction* action;
+    if (self.presentedViewController != nil && !g_mame_benchmark) {
+        UIViewController* viewController = self.presentedViewController;
+        if ([viewController isKindOfClass:[UINavigationController class]])
+            viewController = [(UINavigationController*)viewController topViewController];
+        
+        if ([viewController isKindOfClass:[UIAlertController class]]) {
+            UIAlertController* alert = (UIAlertController*)viewController;
+            UIAlertAction* action;
 
-        NSLog(@"ALERT: %@", alert.title);
-        
-        if (alert.actions.count == 1)
-            action = alert.preferredAction ?: alert.cancelAction;
-        else
-            action = alert.cancelAction;
-        
-        if (action != nil) {
-            [alert dismissWithAction:action completion:^{
+            NSLog(@"ALERT: %@", alert.title);
+            
+            if (alert.actions.count == 1)
+                action = alert.preferredAction ?: alert.cancelAction;
+            else
+                action = alert.cancelAction;
+            
+            if (action != nil) {
+                [alert dismissWithAction:action completion:^{
+                    [self performSelectorOnMainThread:@selector(playGame:) withObject:game waitUntilDone:NO];
+                }];
+                return;
+            }
+            else {
+                NSLog(@"CANT RUN GAME! (alert does not have a default or cancel button)");
+                return;
+            }
+        }
+        else if ([viewController isKindOfClass:[HUDViewController class]]) {
+            [viewController.presentingViewController dismissViewControllerAnimated:TRUE completion:^{
                 [self performSelectorOnMainThread:@selector(playGame:) withObject:game waitUntilDone:NO];
             }];
             return;
         }
-        else {
-            NSLog(@"CANT RUN GAME! (alert does not have a default or cancel button)");
+        else if ([viewController isKindOfClass:[ChooseGameController class]] && viewController.presentedViewController == nil) {
+            // if we are in the ChooseGame UI dismiss and run game
+            ChooseGameController* choose = (ChooseGameController*)viewController;
+            if (choose.selectGameCallback != nil)
+                choose.selectGameCallback(game);
             return;
         }
-    }
-    else if ([viewController isKindOfClass:[HUDViewController class]]) {
-        [viewController.presentingViewController dismissViewControllerAnimated:TRUE completion:^{
-            [self performSelectorOnMainThread:@selector(playGame:) withObject:game waitUntilDone:NO];
-        }];
-        return;
-    }
-    else if ([viewController isKindOfClass:[ChooseGameController class]] && viewController.presentedViewController == nil) {
-        // if we are in the ChooseGame UI dismiss and run game
-        ChooseGameController* choose = (ChooseGameController*)viewController;
-        if (choose.selectGameCallback != nil)
-            choose.selectGameCallback(game);
-        return;
-    }
-    else if (viewController != nil) {
+        
         NSLog(@"CANT RUN GAME! (%@ is active)", viewController);
         return;
     }
@@ -5787,6 +5791,11 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
 #pragma mark choose game UI
 
 -(void)chooseGame:(NSArray*)games {
+    // if we are running a benchmark, end it
+    if (g_mame_benchmark) {
+        [self endBenchmark];
+        return;
+    }
     // a Alert or Setting is up, bail
     if (self.presentedViewController != nil) {
         NSLog(@"CANT SHOW CHOOSE GAME UI: %@", self.presentedViewController);
@@ -5835,10 +5844,6 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
         }]];
         change_pause(PAUSE_INPUT);
         [self.topViewController presentViewController:alert animated:YES completion:nil];
-        return;
-    }
-    if (g_mame_benchmark) {
-        [self endBenchmark];
         return;
     }
     if (g_mame_game_error[0] != 0) {
@@ -5986,6 +5991,12 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
     NSParameterAssert(myosd_inGame && !myosd_in_menu);
     
     // TODO: eventualy run multiple benchmarks, but for now just benchmark the current game
+    NSString* title = @"Benchmark";
+    NSString* msg = g_mame_game_info.gameDescription;
+    [self showAlertWithTitle:title message:msg buttons:@[@"Cancel"] handler:^(NSUInteger button) {
+        g_mame_benchmark = FALSE;
+        [self restart];
+    }];
     g_mame_benchmark = TRUE;
     [self restart];
 }
@@ -5996,6 +6007,16 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
     NSParameterAssert(g_mame_benchmark);
     NSParameterAssert(g_mame_game_info != nil);
     
+    // first remove any benchmark status alert
+    if (self.presentedViewController != nil) {
+        NSParameterAssert([self.presentedViewController isKindOfClass:[UIAlertController class]]);
+        NSParameterAssert([[(UIAlertController*)self.presentedViewController title] isEqualToString:@"Benchmark"]);
+        [self dismissViewControllerAnimated:NO completion:^{
+            [self endBenchmark];
+        }];
+        return;
+    }
+    
     NSString* text = [@(g_mame_output_text) stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
     NSString* speed = nil;
     
@@ -6005,7 +6026,6 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
 
     if (speed != nil) {
         NSString* name = g_mame_game_info.gameName;
-        NSString* title = g_mame_game_info.gameTitle;
         NSString* description = g_mame_game_info.gameDescription;
         
         // get SYSTEM.NAME if a MESS game
@@ -6024,7 +6044,7 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
         [self logBenchmark:getDocumentPath(@"benchmark.csv") name:name title:description version:version speed:speed];
         
         NSString* msg = [NSString stringWithFormat:@"%@\n%@\n%@%%\n%@", description, name, speed, version];
-        [self showAlertWithTitle:title message:msg buttons:@[@"Ok"] handler:^(NSUInteger button) {
+        [self showAlertWithTitle:@"Benchmark Results" message:msg buttons:@[@"Ok"] handler:^(NSUInteger button) {
             g_mame_benchmark = FALSE;
             [self restart];
         }];
