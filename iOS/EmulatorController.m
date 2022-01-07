@@ -6066,7 +6066,7 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
     // find existing row, or create it
     NSInteger row = NSNotFound;
     for (NSInteger n=0; n<lines.count; n++) {
-        if ([lines[n] hasPrefix:name]) {
+        if ([[lines[n] componentsSeparatedByString:@","].firstObject isEqualToString:name]) {
             row = n;
             break;
         }
