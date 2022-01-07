@@ -1862,7 +1862,7 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
 
 -(void)buildLogoView {
     // no need to show logo in fullscreen.
-    if (g_device_is_fullscreen || TARGET_OS_TV)
+    if ((g_device_is_fullscreen || TARGET_OS_TV) && !g_mame_benchmark)
         return;
 
     // put a AirPlay logo on the iPhone screen when playing on external display
