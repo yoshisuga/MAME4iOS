@@ -47,6 +47,7 @@
 #import <GameController/GameController.h>
 #import <AVFoundation/AVFoundation.h>
 #import <CoreBluetooth/CoreBluetooth.h>
+#import <sys/utsname.h>
 
 #if TARGET_OS_IOS
 #import <Intents/Intents.h>
@@ -235,7 +236,7 @@ int g_pref_input_touch_type = TOUCH_INPUT_DSTICK;
 int g_pref_analog_DZ_value = 2;
 int g_pref_ext_control_type = 1;
 int g_pref_sound_value = 0;
-int g_pref_benchmark = 0;
+int g_pref_benchmark = 1;       // TODO: add this to Options and Settings?
 int g_pref_haptic_button_feedback = 1;
 
 int g_pref_nintendoBAYX = 0;
@@ -285,8 +286,9 @@ static BOOL g_mame_reset = FALSE;           // do a full reset (delete cfg files
 static char g_mame_system[16+1];            // system MAME should run
 static char g_mame_game[16+1];              // game MAME should run (or empty is menu)
 static char g_mame_game_error[16+16+1+1];   // name of the system/game that got an error.
-static char g_mame_output_text[4096];
+static char g_mame_output_text[4096];       // any ERROR, WARNING, or INFO text output while running game
 static BOOL g_mame_warning_shown = FALSE;
+static BOOL g_mame_benchmark = FALSE;       // if TRUE run game in benchmark mode (-bench 90)
 static BOOL g_no_roms_found = FALSE;
 
 #define OPTIONS_RELOAD_KEYS     @[@"filterClones", @"filterNotWorking", @"filterBIOS"]
@@ -328,6 +330,18 @@ void m4i_video_init(int vis_width, int vis_height, int min_width, int min_height
     g_video_reset = TRUE;
     //[sharedInstance performSelectorOnMainThread:@selector(changeUI) withObject:nil waitUntilDone:NO];
 }
+
+void m4i_video_exit(void)
+{
+    // erase the screen, we dont want the MAME UI to be left as "junk" in the frame buffer
+    if (sharedInstance != nil) {
+        @autoreleasepool {
+            UIView<ScreenView>* screenView = sharedInstance->screenView;
+            [screenView drawScreen:NULL size:CGSizeMake(640, 480)];
+        }
+    }
+}
+
 // called by the OSD layer to render the current frame
 // **NOTE** this is called on the MAME background thread, dont do anything stupid.
 // ...not doing something stupid includes not leaking autoreleased objects! use a autorelease pool if you need to!
@@ -377,6 +391,9 @@ void m4i_output(int channel, const char* text)
         strncpy(g_mame_output_text + strlen(g_mame_output_text), text, sizeof(g_mame_output_text) - strlen(g_mame_output_text) - 1);
         g_video_reset = TRUE;   // force UI reset if we get a error or warning message.
     }
+    else if (channel == MYOSD_OUTPUT_INFO) {
+        strncpy(g_mame_output_text + strlen(g_mame_output_text), text, sizeof(g_mame_output_text) - strlen(g_mame_output_text) - 1);
+    }
 }
 
 void m4i_input_init(myosd_input_state* myosd, size_t input_size);
@@ -402,6 +419,9 @@ int run_mame(char* system, char* game)
     snprintf(sound, sizeof(sound), "%d", g_pref_sound_value);
     
     BOOL is139 = myosd_get(MYOSD_VERSION) == 139;
+    
+    // dont benchmark the MAME menu!
+    BOOL bench = g_mame_benchmark && (game && game[0] != 0 && game[0] != ' ');
 
     char* argv[] = {"mame4ios",
         (system && system[0] != 0) ? system : nada,
@@ -430,8 +450,8 @@ int run_mame(char* system, char* game)
         g_pref_sound_value != 0 ? "-samplerate" : is139 ? "-nosound" : "-sound",
         g_pref_sound_value != 0 ?         sound : is139 ?       nada :   "none",
         
-        g_pref_benchmark ? "-bench" : nada,
-        g_pref_benchmark ?     "90" : nada,
+        bench ? "-bench" : nada,
+        bench ?     "90" : nada,
 #ifdef DEBUG
         "-verbose",
 #endif
@@ -442,6 +462,7 @@ int run_mame(char* system, char* game)
     myosd_callbacks callbacks = {
         .video_init = m4i_video_init,
         .video_draw = m4i_video_draw,
+        .video_exit = m4i_video_exit,
         .input_init = m4i_input_init,
         .input_poll = m4i_input_poll,
         .output_text= m4i_output,
@@ -1105,6 +1126,11 @@ HUDViewController* g_menu;
                 [self showAlertWithTitle:@PRODUCT_NAME message:message buttons:@[@"Continue"] handler:^(NSUInteger button) {
                     [self endMenu];
                 }];
+            }];
+        }
+        if (g_pref_benchmark) {
+            [menu addButton:@":stopwatch:Benchmark" style:HUDButtonStyleDefault handler:^{
+                [self runBenchmark];
             }];
         }
     }
@@ -1778,8 +1804,6 @@ UIPressType input_debounce(unsigned long pad_status, CGPoint stick) {
     }
 }
 #endif
-
-// TODO: why are we seeing the MAME UI when we run a game
 
 // hide or show the screen view
 // called from changeUI, and changeUI is called from iphone_Reset_Views() each time a new game (or menu) is started.
@@ -2847,15 +2871,15 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
     
     // make sure libmame is the right version
     NSCParameterAssert(input_size == sizeof(myosd_input_state));
-    
+
+    // g_video_reset is set when m4i_video_init or m4i_input_init is called
+     if (g_video_reset) {
+        [sharedInstance performSelectorOnMainThread:@selector(resetUI) withObject:nil waitUntilDone:NO];
+        g_video_reset = FALSE;
+    }
+
     // this is called on the MAME thread, need to be carefull and clean up!
     if (g_emulation_paused == PAUSE_FALSE) @autoreleasepool {
-        
-        // g_video_reset is set when m4i_video_init or m4i_input_init is called
-         if (g_video_reset) {
-            [sharedInstance performSelectorOnMainThread:@selector(resetUI) withObject:nil waitUntilDone:NO];
-            g_video_reset = FALSE;
-        }
         
         // set global menu state
         myosd_in_menu = myosd->input_mode == MYOSD_INPUT_MODE_MENU;
@@ -5813,6 +5837,10 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
         [self.topViewController presentViewController:alert animated:YES completion:nil];
         return;
     }
+    if (g_mame_benchmark) {
+        [self endBenchmark];
+        return;
+    }
     if (g_mame_game_error[0] != 0) {
         NSLog(@"ERROR RUNNING GAME %s", g_mame_game_error);
         
@@ -5946,6 +5974,118 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
         }
     }
 #endif
+}
+
+#pragma mark Benchmark
+
+// start a Benchmark run, called from the menu code
+- (void)runBenchmark
+{
+    NSParameterAssert(!g_mame_benchmark);
+    NSParameterAssert(g_mame_game_info != nil && !g_mame_game_info.gameIsMame);
+    NSParameterAssert(myosd_inGame && !myosd_in_menu);
+    
+    // TODO: eventualy run multiple benchmarks, but for now just benchmark the current game
+    g_mame_benchmark = TRUE;
+    [self restart];
+}
+
+// the benchmark game has ended, log (and/or display) the result, and run next game (or end benchmark mode)
+- (void)endBenchmark
+{
+    NSParameterAssert(g_mame_benchmark);
+    NSParameterAssert(g_mame_game_info != nil);
+    
+    NSString* text = [@(g_mame_output_text) stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
+    NSString* speed = nil;
+    
+    // parse "Average speed: 3359.23% (89 seconds)" to get just the speed.
+    if (g_mame_game_error[0] == 0 && [text containsString:@"speed: "])
+        speed = [[text componentsSeparatedByString:@"speed: "][1] componentsSeparatedByString:@"%"].firstObject;
+
+    if (speed != nil) {
+        NSString* name = g_mame_game_info.gameName;
+        NSString* title = g_mame_game_info.gameTitle;
+        NSString* description = g_mame_game_info.gameDescription;
+        
+        // get SYSTEM.NAME if a MESS game
+        if (g_mame_game_info.gameSystem.length != 0)
+            name = [NSString stringWithFormat:@"%@.%@", g_mame_game_info.gameSystem, name];
+        
+        // get a name for current device.
+        struct utsname systemInfo;
+        uname(&systemInfo);
+        NSString* device = @(systemInfo.machine);
+
+        // get M4i and MAME version
+        NSString* version = [NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleVersion"];
+        version = [NSString stringWithFormat:@"%@.%d %@", version, (int)myosd_get(MYOSD_VERSION), device];
+        
+        [self logBenchmark:getDocumentPath(@"benchmark.csv") name:name title:description version:version speed:speed];
+        
+        NSString* msg = [NSString stringWithFormat:@"%@\n%@\n%@%%\n%@", description, name, speed, version];
+        [self showAlertWithTitle:title message:msg buttons:@[@"Ok"] handler:^(NSUInteger button) {
+            g_mame_benchmark = FALSE;
+            [self restart];
+        }];
+    }
+    else {
+        NSLog(@"BENCHMARK FAILED: %s\n%s", g_mame_game_error, g_mame_output_text);
+        g_mame_benchmark = FALSE;
+        [self restart];
+    }
+}
+
+// write benchmark speed to csv file
+- (void)logBenchmark:(NSString*)path name:(NSString*)name title:(NSString*)title version:(NSString*)version speed:(NSString*)speed
+{
+    version = [version stringByReplacingOccurrencesOfString:@"," withString:@"_"];
+    title = [title stringByReplacingOccurrencesOfString:@"," withString:@";"];
+
+    // we dont handle commas or \n in csv items
+    NSParameterAssert(![name containsString:@","] && ![name containsString:@"\n"]);
+    NSParameterAssert(![title containsString:@","] && ![title containsString:@"\n"]);
+    NSParameterAssert(![version containsString:@","] && ![version containsString:@"\n"]);
+    NSParameterAssert(![speed containsString:@","] && ![speed containsString:@"\n"]);
+
+    // load current csv file, default to an empty one with the correct header
+    NSString* str = [NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:nil];
+    str = [str stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
+    if (![str hasPrefix:@"Game,Title"])
+        str = @"Game,Title";
+    NSMutableArray* lines = [[str componentsSeparatedByString:@"\n"] mutableCopy];
+    
+    // find the column for the version, if no column add it
+    NSArray* head = [lines.firstObject componentsSeparatedByString:@","];
+    NSInteger col = [head indexOfObject:version];
+    if (col == NSNotFound) {
+        col = head.count;
+        lines[0] = [lines[0] stringByAppendingFormat:@",%@", version];
+    }
+    
+    // find existing row, or create it
+    NSInteger row = NSNotFound;
+    for (NSInteger n=0; n<lines.count; n++) {
+        if ([lines[n] hasPrefix:name]) {
+            row = n;
+            break;
+        }
+    }
+    if (row == NSNotFound) {
+        row = lines.count;
+        [lines addObject:[NSString stringWithFormat:@"%@,%@", name, title]];
+    }
+    
+    // now add the benchmark speed to the row and column
+    NSMutableArray* cols = [[lines[row] componentsSeparatedByString:@","] mutableCopy];
+    while (cols.count <= col)
+        [cols addObject:@""];
+    cols[col] = speed;
+    lines[row] = [cols componentsJoinedByString:@","];
+    
+    // write the csv back to disk
+    str = [lines componentsJoinedByString:@"\n"];
+    [str writeToFile:path atomically:YES encoding:NSUTF8StringEncoding error:nil];
 }
 
 @end

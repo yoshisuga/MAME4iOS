@@ -38,6 +38,7 @@
 
 // a single rendering target
 static render_target *our_target;
+static int g_video_none;
 
 static const options_entry droid_mame_options[] =
 {
@@ -89,7 +90,19 @@ void osd_init(running_machine *machine)
 	if (our_target == NULL)
 		fatalerror("Error creating render target");
 
-    // TODO: handle -bench
+    // handle -bench
+    int bench = options_get_int(machine->options(), OPTION_BENCH);
+    if (bench > 0)
+    {
+        options_set_bool(machine->options(), OPTION_THROTTLE, FALSE, OPTION_PRIORITY_MAXIMUM);
+        options_set_bool(machine->options(), OPTION_SOUND, FALSE, OPTION_PRIORITY_MAXIMUM);
+        options_set_int(machine->options(), OPTION_SECONDS_TO_RUN, bench, OPTION_PRIORITY_MAXIMUM);
+        g_video_none = 1;
+    }
+    else
+    {
+        g_video_none = 0;
+    }
     
     myosd_machine_init(machine);
 	droid_ios_init_input(machine);
@@ -108,7 +121,7 @@ static void osd_exit(running_machine &machine)
 
 void osd_update(running_machine *machine, int skip_redraw)
 {
-    if (!skip_redraw && our_target!=NULL)
+    if (!skip_redraw && our_target!=NULL && g_video_none == 0)
 	{
 		droid_ios_video_render(our_target);
 	}

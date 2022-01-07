@@ -257,7 +257,7 @@ INLINE int effective_frameskip(void)
 
 INLINE int effective_throttle(running_machine *machine)
 {
-	global.throttle = myosd_throttle;
+	//global.throttle = myosd_throttle;
 
 	/* if we're paused, or if the UI is active, we always throttle */
 	if (machine->paused() || ui_is_menu_active())

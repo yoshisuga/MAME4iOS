@@ -1,5 +1,7 @@
 # Version 2022.1
 * Support for Software keyboard for machines that need keyboard input.
+* Non git-tracked `Developer.xcconfig`
+* Minimal Benchmark support, results stored in `benchmark.csv`
 
 # Version 2022.0
 * Updated to [MAME 239](https://www.mamedev.org/releases/whatsnew_0239.txt).
