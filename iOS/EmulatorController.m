@@ -6044,6 +6044,7 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
         [self logBenchmark:getDocumentPath(@"benchmark.csv") name:name title:description version:version speed:speed];
         
         NSString* msg = [NSString stringWithFormat:@"%@\n%@\n%@%%\n%@", description, name, speed, version];
+        change_pause(PAUSE_INPUT);
         [self showAlertWithTitle:@"Benchmark Results" message:msg buttons:@[@"Ok"] handler:^(NSUInteger button) {
             g_mame_benchmark = FALSE;
             [self restart];
