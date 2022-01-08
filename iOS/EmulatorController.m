@@ -422,6 +422,10 @@ int run_mame(char* system, char* game)
     
     // dont benchmark the MAME menu!
     BOOL bench = g_mame_benchmark && (game && game[0] != 0 && game[0] != ' ');
+    
+    // MAME always does a snapshot after a benchmark, so save it in the root so we dont liter snaps all over
+    if (bench)
+        strcpy(snap, "benchmark");
 
     char* argv[] = {"mame4ios",
         (system && system[0] != 0) ? system : nada,
@@ -5991,7 +5995,7 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
     NSParameterAssert(myosd_inGame && !myosd_in_menu);
     
     // TODO: eventualy run multiple benchmarks, but for now just benchmark the current game
-    NSString* title = @"Benchmark";
+    NSString* title = @"Benchmarking";
     NSString* msg = g_mame_game_info.gameDescription;
     [self showAlertWithTitle:title message:msg buttons:@[@"Cancel"] handler:^(NSUInteger button) {
         g_mame_benchmark = FALSE;
@@ -6010,7 +6014,7 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
     // first remove any benchmark status alert
     if (self.presentedViewController != nil) {
         NSParameterAssert([self.presentedViewController isKindOfClass:[UIAlertController class]]);
-        NSParameterAssert([[(UIAlertController*)self.presentedViewController title] isEqualToString:@"Benchmark"]);
+        NSParameterAssert([[(UIAlertController*)self.presentedViewController title] hasPrefix:@"Benchmark"]);
         [self dismissViewControllerAnimated:NO completion:^{
             [self endBenchmark];
         }];
