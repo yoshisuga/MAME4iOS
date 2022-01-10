@@ -47,5 +47,6 @@
 @interface KeyboardView : UIView
 
 @property (nonatomic, assign) BOOL active;
+@property (nonatomic, assign) BOOL showSoftwareKeyboard;
 
 @end

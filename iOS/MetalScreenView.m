@@ -495,6 +495,14 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
     
     BOOL first_line = TRUE;
     
+    // prim_list == NULL means erase
+    if (prim_list == NULL) {
+        VertexColor color = VertexColor(0, 0, 0, 1);
+        CGRect rect = CGRectMake(0, 0, size.width, size.height);
+        [self setShader:ShaderCopy];
+        [self drawRect:rect color:color];
+    }
+    
     // walk the primitive list and render
     for (myosd_render_primitive* prim = prim_list; prim != NULL; prim = prim->next) {
         

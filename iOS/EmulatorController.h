@@ -134,6 +134,7 @@ enum {BTN_A,BTN_B,BTN_Y,BTN_X,BTN_L1,BTN_R1,
 - (void)changeUI;
 
 - (void)runMenu;
+- (void)runMenu:(id)sender;
 - (void)runExit;
 - (void)runServer;
 - (void)runReset;

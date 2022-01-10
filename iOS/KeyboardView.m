@@ -44,6 +44,7 @@
 
 #import "KeyboardView.h"
 #import "EmulatorController.h"
+#import <GameController/GameController.h>
 #include "libmame.h"
 
 #define DebugLog 0
@@ -86,7 +87,8 @@
     {
         memset(myosd_keyboard, 0, sizeof(myosd_keyboard));
         myosd_keyboard_changed = 1;
-        [self becomeFirstResponder];
+        if (emuController.presentedViewController == nil)
+            [self becomeFirstResponder];
     }
 }
 
@@ -107,9 +109,26 @@
     }
 }
 
+- (void)setShowSoftwareKeyboard:(BOOL)showSoftwareKeyboard {
+    if (_showSoftwareKeyboard != showSoftwareKeyboard) {
+        _showSoftwareKeyboard = showSoftwareKeyboard;
+        [self setActive:_active];
+        [self reloadInputViews];
+    }
+}
 
-- (UIView*) inputView {
-    return inputView;
+// the dismiss keyboard key on iPad software keyboard will just call resignFirstResponder
+- (BOOL)resignFirstResponder {
+    if (emuController.presentingViewController == nil)
+        _showSoftwareKeyboard = NO;
+    return [super resignFirstResponder];
+}
+
+- (UIView*)inputView {
+    if (_showSoftwareKeyboard)
+        return inputView;   // TODO: return Custom keyboard, Empty Keyboard, OR return nil for Apple System on-screen keyboard
+    else
+        return inputView;
 }
 
 #pragma mark handle iCade key
@@ -598,7 +617,7 @@ int hid_to_mame(int keyCode) {
 
     static int mame_map[256];
     
-    if (mame_map[1] == 0) {
+    if (mame_map[4 /*UIKeyboardHIDUsageKeyboardA*/] == 0) {
 #ifdef __IPHONE_13_4
         /* A-Z */
         for (int i=0; i<26; i++)
@@ -619,7 +638,7 @@ int hid_to_mame(int keyCode) {
         /* special keys */
         mame_map[UIKeyboardHIDUsageKeyboardReturnOrEnter    ] = MYOSD_KEY_ENTER;
         mame_map[UIKeyboardHIDUsageKeyboardEscape           ] = MYOSD_KEY_ESC;
-        mame_map[UIKeyboardHIDUsageKeyboardDeleteOrBackspace] = MYOSD_KEY_DEL;
+        mame_map[UIKeyboardHIDUsageKeyboardDeleteOrBackspace] = MYOSD_KEY_BACKSPACE;
         mame_map[UIKeyboardHIDUsageKeyboardTab              ] = MYOSD_KEY_TAB;
         mame_map[UIKeyboardHIDUsageKeyboardSpacebar         ] = MYOSD_KEY_SPACE;
         mame_map[UIKeyboardHIDUsageKeyboardHyphen           ] = MYOSD_KEY_MINUS;
@@ -643,7 +662,7 @@ int hid_to_mame(int keyCode) {
         mame_map[UIKeyboardHIDUsageKeyboardInsert       ] = MYOSD_KEY_INSERT;
         mame_map[UIKeyboardHIDUsageKeyboardHome         ] = MYOSD_KEY_HOME;
         mame_map[UIKeyboardHIDUsageKeyboardPageUp       ] = MYOSD_KEY_PGUP;
-        mame_map[UIKeyboardHIDUsageKeyboardDeleteForward] = MYOSD_KEY_DEL_PAD;          // TODO: check
+        mame_map[UIKeyboardHIDUsageKeyboardDeleteForward] = MYOSD_KEY_DEL;              // TODO: check
         mame_map[UIKeyboardHIDUsageKeyboardEnd          ] = MYOSD_KEY_END;
         mame_map[UIKeyboardHIDUsageKeyboardPageDown     ] = MYOSD_KEY_PGDN;
         mame_map[UIKeyboardHIDUsageKeyboardRightArrow   ] = MYOSD_KEY_RIGHT;
@@ -655,11 +674,14 @@ int hid_to_mame(int keyCode) {
         mame_map[UIKeyboardHIDUsageKeyboardLeftControl  ] = MYOSD_KEY_LCONTROL;
         mame_map[UIKeyboardHIDUsageKeyboardLeftShift    ] = MYOSD_KEY_LSHIFT;
         mame_map[UIKeyboardHIDUsageKeyboardLeftAlt      ] = MYOSD_KEY_LALT;
-        mame_map[UIKeyboardHIDUsageKeyboardLeftGUI      ] = MYOSD_KEY_LCMD;
         mame_map[UIKeyboardHIDUsageKeyboardRightControl ] = MYOSD_KEY_RCONTROL;
         mame_map[UIKeyboardHIDUsageKeyboardRightShift   ] = MYOSD_KEY_RSHIFT;
         mame_map[UIKeyboardHIDUsageKeyboardRightAlt     ] = MYOSD_KEY_RALT;
-        mame_map[UIKeyboardHIDUsageKeyboardRightGUI     ] = MYOSD_KEY_RCMD;
+
+        /* command keys */
+        // dont let MAME have access to the ⌘ key, we (and macOS, and iOS) want to use it.
+        // mame_map[UIKeyboardHIDUsageKeyboardLeftGUI] = MYOSD_KEY_LCMD;
+        // mame_map[UIKeyboardHIDUsageKeyboardRightGUI] = MYOSD_KEY_RCMD;
 
         /* Keypad (numpad) keys */
         mame_map[UIKeyboardHIDUsageKeypadNumLock         ] = MYOSD_KEY_NUMLOCK;
@@ -681,16 +703,6 @@ int hid_to_mame(int keyCode) {
         mame_map[UIKeyboardHIDUsageKeypadPeriod          ] = MYOSD_KEY_STOP;
         mame_map[UIKeyboardHIDUsageKeypadEqualSign       ] = MYOSD_KEY_EQUALS;
 
-        /* Other keys */
-        mame_map[UIKeyboardHIDUsageKeyboardApplication] = MYOSD_KEY_INVALID;
-        mame_map[UIKeyboardHIDUsageKeyboardPower      ] = MYOSD_KEY_INVALID;
-        
-#ifdef DEBUG
-        // HACK: map backslash to SCRLOCK to test keyboards
-        // TODO: remove this....
-        mame_map[UIKeyboardHIDUsageKeyboardBackslash   ] = MYOSD_KEY_SCRLOCK;
-#endif
-        
 #else   // provide a minimal set of keys for Xcode < 11.4
         
         for (int i=0; i<26; i++)
@@ -771,6 +783,9 @@ int hid_to_mame(int keyCode) {
     // CMD+x special command key (ALT+ works in the simulator CMD+ does not)
     if (modifierFlags == (TARGET_OS_SIMULATOR ? UIKeyModifierAlternate : UIKeyModifierCommand))
     {
+        // CMD+DELETE => SCRLOCK (aka UIMODE)
+        if (mame_key == MYOSD_KEY_BACKSPACE)
+            mame_key = MYOSD_KEY_SCRLOCK;
         if (isKeyDown && mame_key == MYOSD_KEY_ENTER)
             return [emuController commandKey:'\r'];
         if (isKeyDown && mame_key >= MYOSD_KEY_A && mame_key <= MYOSD_KEY_Z)

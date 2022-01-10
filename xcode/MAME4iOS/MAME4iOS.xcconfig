@@ -17,8 +17,8 @@
 
 ORG_IDENTIFIER          = com.example   // CHANGE this to your Organization Identifier.
 DEVELOPMENT_TEAM        = ABC8675309    // CHANGE this to your Team ID. (or select in Xcode project editor)
-CURRENT_PROJECT_VERSION = 2022.0
-MARKETING_VERSION       = 2022.0
+CURRENT_PROJECT_VERSION = 2022.1
+MARKETING_VERSION       = 2022.1
 
 // 2. enable or disable entitlements
 //    tvOS TopShelf and iCloud import/export require special app entitlements
@@ -35,6 +35,9 @@ ENTITLEMENTS_TYPE = -Base
 MAMELIB = libmame-139u1
 // USE THIS LINE for a build of current latest MAME (via get-libmame.sh)
 // MAMELIB = libmame
+
+// let developer override with optional file.
+#include? "Developer.xcconfig"
 
 // these should not be changed.
 PRODUCT_BUNDLE_IDENTIFIER   = $(ORG_IDENTIFIER).$(PROJECT_NAME:lower)

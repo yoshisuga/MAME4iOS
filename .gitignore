@@ -6,3 +6,4 @@ xcuserdata
 obj
 .vscode/*
 xcode/dist
+Developer.xcconfig

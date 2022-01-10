@@ -178,5 +178,7 @@
 	</array>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+    <key>UIUserInterfaceStyle</key>
+    <string>Dark</string>
 </dict>
 </plist>
