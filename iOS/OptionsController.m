@@ -398,6 +398,25 @@
             }
             break;
          }
+       case kBenchmarkSection:
+       {
+           switch (indexPath.row)
+           {
+               case 0:
+               {
+                   cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
+
+                   cell.textLabel.text = @"Benchmark";
+                   cell.textLabel.textColor = [UIColor whiteColor];
+                   cell.textLabel.shadowColor = [UIColor blackColor];
+                   cell.textLabel.textAlignment = NSTextAlignmentCenter;
+                   cell.textLabel.font = [UIFont boldSystemFontOfSize:24.0];
+                   cell.backgroundColor = self.view.tintColor; // [UIColor systemBlueColor];
+                   break;
+               }
+           }
+           break;
+        }
 
    }
 
@@ -423,6 +442,7 @@
         case kImportSection: return @"Import and Export";
         case kCloudImportSection: return @"iCloud";
         case kResetSection: return @"";
+        case kBenchmarkSection: return @"";
     }
     return @"Error!";
 }
@@ -448,6 +468,8 @@
               else
                   return 0;
           case kResetSection: return 1;
+          case kBenchmarkSection:
+              return self.presentingViewController == self.emuController ? 1 : 0;
       }
     return -1;
 }
@@ -552,6 +574,13 @@
         {
             if (row==0) {
                 [self.emuController runReset];
+            }
+            break;
+        }
+        case kBenchmarkSection:
+        {
+            if (row==0) {
+                [self.emuController runBenchmark];
             }
             break;
         }

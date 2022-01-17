@@ -58,6 +58,8 @@
             return 1;
     } else if ( section == kResetSection ) {
         return 1;
+    } else if ( section == kBenchmarkSection ) {
+        return self.presentingViewController == self.emuController ? 1 : 0;
     }
     return 0;
 }
@@ -83,6 +85,9 @@
     }
     if ( section == kInputSection ) {
         return @"Input";
+    }
+    if ( section == kBenchmarkSection ) {
+        return @"Benchmark";
     }
 
     return @"";
@@ -223,6 +228,10 @@
         cell.textLabel.text = @"Reset to Defaults";
         cell.textLabel.textColor = [UIColor whiteColor];
         cell.contentView.backgroundColor = [UIColor systemRedColor];
+    } else if ( indexPath.section == kBenchmarkSection ) {
+        cell.textLabel.text = @"Run Benchmark";
+        cell.textLabel.textColor = [UIColor whiteColor];
+        cell.contentView.backgroundColor = [UIColor systemBlueColor];
     }
     return cell;
 }
@@ -283,6 +292,8 @@
         [self.navigationController pushViewController:inputController animated:YES];
     } else if ( indexPath.section == kResetSection ) {
         [self.emuController runReset];
+    } else if ( indexPath.section == kBenchmarkSection ) {
+        [self.emuController runBenchmark];
     }
 }
 

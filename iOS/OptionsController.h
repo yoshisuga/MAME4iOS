@@ -56,6 +56,7 @@ enum OptionSections
     kFullscreenSection,
     kMiscSection,
     kFilterSection,
+    kBenchmarkSection,
     kResetSection,
     kNumSections
 };

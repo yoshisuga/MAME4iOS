@@ -138,6 +138,7 @@ enum {BTN_A,BTN_B,BTN_Y,BTN_X,BTN_L1,BTN_R1,
 - (void)runExit;
 - (void)runServer;
 - (void)runReset;
+- (void)runBenchmark;
 - (void)endMenu;
 #if TARGET_OS_IOS
 - (void)runImport;

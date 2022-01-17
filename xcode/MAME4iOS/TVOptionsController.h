@@ -21,6 +21,7 @@ enum OptionSections
     kVectorSection,
     kMiscSection,
     kFilterSection,
+    kBenchmarkSection,
     kResetSection,
     kNumSections
 };

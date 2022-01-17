@@ -57,6 +57,7 @@
 #import "LayoutView.h"
 #import "FileItemProvider.h"
 #import "PopupSegmentedControl.h"
+#import "MAME4iOS-Swift.h"
 #endif
 
 #import "ChooseGameController.h"
@@ -236,7 +237,8 @@ int g_pref_input_touch_type = TOUCH_INPUT_DSTICK;
 int g_pref_analog_DZ_value = 2;
 int g_pref_ext_control_type = 1;
 int g_pref_sound_value = 0;
-int g_pref_benchmark = 1;       // TODO: add this to Options and Settings?
+int g_pref_allow_keyboard = 1;          // allow Software Keyboard even on machines that dont require one
+int g_pref_force_keyboard = 1;          // allow Software Keyboard even is a hardware keyboard is attached
 int g_pref_haptic_button_feedback = 1;
 
 int g_pref_nintendoBAYX = 0;
@@ -708,7 +710,11 @@ void m4i_game_stop()
     myosd_isLCD = NO;
 }
 
-@interface EmulatorController() {
+@interface EmulatorController()
+#if TARGET_OS_IOS
+<EmulatorKeyboardKeyPressedDelegate>
+#endif
+{
     CSToastStyle *toastStyle;
     CGPoint mouseTouchStartLocation;
     CGPoint mouseInitialLocation;
@@ -718,6 +724,9 @@ void m4i_game_stop()
     SkinManager* skinManager;
     AVPlayer_View* avPlayer;
 }
+
+@property(readwrite, nonatomic) BOOL showSoftwareKeyboard;
+
 @end
 
 @implementation EmulatorController
@@ -891,6 +900,11 @@ void mame_save_state(int slot)
                 ppc.permittedArrowDirections = UIPopoverArrowDirectionDown;
             else if (CGRectGetMaxY(safe) - CGRectGetMaxY(rect) > size.height + 16)
                 ppc.permittedArrowDirections = UIPopoverArrowDirectionUp;
+            else {
+                ppc.sourceView = self.view;
+                ppc.sourceRect = CGRectMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds), 0.0f, 0.0f);
+                ppc.permittedArrowDirections = 0; /*UIPopoverArrowDirectionNone*/
+            }
         }
     }
 #endif
@@ -1060,7 +1074,7 @@ HUDViewController* g_menu;
                     [self commandKey:'S'];
             }];
 
-            // HUD and PAUSE
+            // CONFIGURE and PAUSE
             [menu addButtons:@[
                 [NSString stringWithFormat:@":%@:Configure", getGamepadSymbol(gamepad, gamepad.buttonY)],
                 [NSString stringWithFormat:@":%@:Pause", getGamepadSymbol(gamepad, gamepad.buttonB)],
@@ -1095,25 +1109,35 @@ HUDViewController* g_menu;
                     push_mame_key(MYOSD_KEY_P);
             }];
         }
-        // RESET and SERVICE
-        [menu addButtons:@[@":power:Reset", @":wrench:Service"] style:HUDButtonStyleDefault handler:^(NSUInteger button) {
-            if (button == 0)
-                push_mame_key(MYOSD_KEY_F3);    // SOFT reset
-            else
-                push_mame_key(MYOSD_KEY_SERVICE);
-        }];
-#if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST)
-        // KEYBOARD and PASTE
-        if ((myosd_has_keyboard || DebugLog) && g_keyboards.count == 0 && gamepad == nil) {
-            BOOL can_paste = [self canPerformAction:@selector(paste:) withSender:nil];
-            [menu addButtons:@[@":keyboard:Keyboard", can_paste ? @":doc.on.clipboard:Paste" : @""] style:HUDButtonStyleDefault handler:^(NSUInteger button) {
+        BOOL put_keyboard_on_menu = (TARGET_OS_IOS && !TARGET_OS_MACCATALYST) && (myosd_has_keyboard || g_pref_allow_keyboard) && (g_keyboards.count == 0 || g_pref_force_keyboard) && gamepad == nil;
+        if (put_keyboard_on_menu) {
+            // KEYBOARD and SERVICE
+            NSString* kb = self.showSoftwareKeyboard ? @":keyboard.chevron.compact.down:Keyboard" : @":keyboard:Keyboard";
+            [menu addButtons:@[kb, @":wrench:Service"] style:HUDButtonStyleDefault handler:^(NSUInteger button) {
                 if (button == 0)
-                    self->keyboardView.showSoftwareKeyboard = !self->keyboardView.showSoftwareKeyboard;
+                    self.showSoftwareKeyboard = !self.showSoftwareKeyboard;
                 else
-                    [self paste:nil];
+                    push_mame_key(MYOSD_KEY_SERVICE);
             }];
         }
-#endif
+        else {
+            // SNAPSHOT and SERVICE
+            [menu addButtons:@[@":camera:Snapshot", @":wrench:Service"] style:HUDButtonStyleDefault handler:^(NSUInteger button) {
+                if (button == 0)
+                    push_mame_key(MYOSD_KEY_SNAP);
+                else
+                    push_mame_key(MYOSD_KEY_SERVICE);
+            }];
+        }
+        
+        // Power and Reset
+        [menu addButtons:@[@":power:Power", @":escape:Reset"] style:HUDButtonStyleDefault handler:^(NSUInteger button) {
+            if (button == 0)
+                push_mame_key(MYOSD_KEY_RESET);         // this does a HARD reset
+            else
+                push_mame_key(MYOSD_KEY_F3);            // this does a SOFT reset
+        }];
+
         // show any MAME output, usually a WARNING message, we catch errors in an other place.
         if (g_mame_output_text[0]) {
             NSString* button = @":info.circle:MAME Output";
@@ -1130,11 +1154,6 @@ HUDViewController* g_menu;
                 [self showAlertWithTitle:@PRODUCT_NAME message:message buttons:@[@"Continue"] handler:^(NSUInteger button) {
                     [self endMenu];
                 }];
-            }];
-        }
-        if (g_pref_benchmark) {
-            [menu addButton:@":stopwatch:Benchmark" style:HUDButtonStyleDefault handler:^{
-                [self runBenchmark];
             }];
         }
     }
@@ -2211,17 +2230,6 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
             else
                 push_mame_key(MYOSD_KEY_F3);            // this does a SOFT reset
         }];
-#if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST)
-        // KEYBOARD and PASTE
-        if ((myosd_has_keyboard || DebugLog) && g_keyboards.count == 0) {
-            [hudView addButtons:@[@":keyboard:Keyboard", @":doc.on.clipboard:Paste"] handler:^(NSUInteger button) {
-                if (button == 0)
-                    sharedInstance->keyboardView.showSoftwareKeyboard = !sharedInstance->keyboardView.showSoftwareKeyboard;
-                else
-                    [sharedInstance paste:nil];
-            }];
-        }
-#endif
         [hudView addButton:(myosd_inGame && myosd_in_menu==0) ? @":xmark.circle:Exit Game" : @":xmark.circle:Exit" color:UIColor.systemRedColor handler:^{
             [_self runExit:NO];
         }];
@@ -2353,6 +2361,11 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
     [self buildScreenView];
     [self buildLogoView];
+#if TARGET_OS_IOS
+    if (_showSoftwareKeyboard) {
+        [self.view bringSubviewToFront:[self getEmulatorKeyboardView]];
+    }
+#endif
     [self buildHUD];
     [self enableHDR];
     [self updateScreenView];
@@ -2985,11 +2998,12 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
     [self.view addSubview:inputView];
     
     // no touch controlls for fullscreen with a joystick
-    if (g_joy_used && g_device_is_fullscreen)
+    if (g_joy_used == JOY_USED_GAMEPAD && g_device_is_fullscreen)
         return;
    
     BOOL touch_dpad_disabled = (myosd_mouse == 1 && g_pref_touch_analog_enabled && g_pref_touch_analog_hide_dpad) ||
-                               (g_pref_touch_directional_enabled && g_pref_touch_analog_hide_dpad);
+                               (g_pref_touch_directional_enabled && g_pref_touch_analog_hide_dpad) ||
+                               (g_joy_used && g_device_is_fullscreen);
     if ( !(touch_dpad_disabled && g_device_is_fullscreen) || !myosd_inGame ) {
         //analogStickView
         analogStickView = [[AnalogStickView alloc] initWithFrame:rButton[BTN_STICK] withEmuController:self];
@@ -3007,6 +3021,8 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
     int num_buttons = g_pref_full_num_buttons;
     if (num_buttons == -1)  // -1 == Auto
         num_buttons = (myosd_num_buttons == 0) ? 2 : myosd_num_buttons;
+    if (g_joy_used && g_device_is_fullscreen)
+        num_buttons = 0;
    
     BOOL touch_buttons_disabled = myosd_mouse == 1 && g_pref_touch_analog_enabled && g_pref_touch_analog_hide_buttons;
     BOOL menu_buttons_disabled = g_pref_showHUD == HudSizeLarge;
@@ -3163,7 +3179,8 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
     NSLog(@"screenSize: %@", NSStringFromCGSize(screenSize));
     NSLog(@"windowSize: %@", NSStringFromCGSize(windowSize));
 
-    return (windowSize.width >= screenSize.width && windowSize.height >= screenSize.height);
+    // compare to 90% of screen height to handle "notch" on M1 MBPs
+    return (windowSize.width >= screenSize.width && windowSize.height >= screenSize.height * 0.90);
 }
 #endif
 
@@ -3176,7 +3193,7 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
     else
         g_device_is_fullscreen = g_pref_full_screen_port;
 
-    if (g_joy_used && g_pref_full_screen_joy)
+    if (g_joy_used == JOY_USED_GAMEPAD && g_pref_full_screen_joy)
          g_device_is_fullscreen = TRUE;
 
     if (externalView != nil)
@@ -3688,7 +3705,7 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
     {
         [layoutView handleTouches:touches withEvent: event];
     }
-    else if (g_joy_used && g_device_is_fullscreen)
+    else if (g_joy_used == JOY_USED_GAMEPAD && g_device_is_fullscreen)
     {
         // If controller is connected and display is full screen:
         // handle lightgun touches or
@@ -5093,7 +5110,7 @@ static unsigned long g_device_has_input[NUM_DEV];   // TRUE if device needs to b
 
         // update the UI if this is the first controller input
         if (g_joy_used == 0) {
-            g_joy_used = 1;
+            g_joy_used = JOY_USED_GAMEPAD;
             [self changeUI];
         }
         
@@ -5902,8 +5919,8 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
             return;
         
         [self dismissViewControllerAnimated:YES completion:^{
-            self->keyboardView.active = TRUE;
-            self->keyboardView.showSoftwareKeyboard = FALSE;
+            self->keyboardView.active = YES;    // let hardware keyboard grab firstResoonder
+            self.showSoftwareKeyboard = NO;     // new game starts out with software keyboard hidden
             [self performSelectorOnMainThread:@selector(playGame:) withObject:game waitUntilDone:FALSE];
         }];
     };
@@ -5987,12 +6004,24 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
 
 #pragma mark Benchmark
 
-// start a Benchmark run, called from the menu code
+// start a Benchmark run, called from the Setting dialog or menu
 - (void)runBenchmark
 {
     NSParameterAssert(!g_mame_benchmark);
-    NSParameterAssert(g_mame_game_info != nil && !g_mame_game_info.gameIsMame);
-    NSParameterAssert(myosd_inGame && !myosd_in_menu);
+
+    // if called from Settings end that first
+    if (self.presentedViewController) {
+        [self dismissViewControllerAnimated:YES completion:^{
+            NSParameterAssert(self.presentedViewController == nil);
+            [self endMenu];
+            [self runBenchmark];
+        }];
+        return;
+    }
+
+    // dont benchmark if there is a menu up, or at the MAME root
+    if (myosd_inGame == 0 || myosd_in_menu || g_mame_game_info == nil)
+        return;
     
     // TODO: eventualy run multiple benchmarks, but for now just benchmark the current game
     NSString* title = @"Benchmarking";
@@ -6112,5 +6141,31 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
     str = [lines componentsJoinedByString:@"\n"];
     [str writeToFile:path atomically:YES encoding:NSUTF8StringEncoding error:nil];
 }
+
+#pragma mark Software (aka onscreen) Keyboard
+
+- (void)setShowSoftwareKeyboard:(BOOL)showSoftwareKeyboard {
+    if (_showSoftwareKeyboard != showSoftwareKeyboard) {
+        _showSoftwareKeyboard = showSoftwareKeyboard;
+#if TARGET_OS_IOS
+        if (_showSoftwareKeyboard)
+            [self setupEmulatorKeyboard];
+        else
+            [self killEmulatorKeyboard];
+#endif
+        [self changeUI];
+    }
+}
+
+#if TARGET_OS_IOS
+
+#pragma mark EmulatorKeyboardPressedDelegate
+
+ -(void)keyPressedWithIsKeyDown:(BOOL)isKeyDown key:(id<KeyCoded>)key {
+     myosd_keyboard[key.keyCode] = isKeyDown ? 0x80 : 0x00;
+     myosd_keyboard_changed = 1;
+ }
+
+#endif
 
 @end

@@ -109,26 +109,13 @@
     }
 }
 
-- (void)setShowSoftwareKeyboard:(BOOL)showSoftwareKeyboard {
-    if (_showSoftwareKeyboard != showSoftwareKeyboard) {
-        _showSoftwareKeyboard = showSoftwareKeyboard;
-        [self setActive:_active];
-        [self reloadInputViews];
-    }
-}
-
 // the dismiss keyboard key on iPad software keyboard will just call resignFirstResponder
 - (BOOL)resignFirstResponder {
-    if (emuController.presentingViewController == nil)
-        _showSoftwareKeyboard = NO;
     return [super resignFirstResponder];
 }
 
 - (UIView*)inputView {
-    if (_showSoftwareKeyboard)
-        return inputView;   // TODO: return Custom keyboard, Empty Keyboard, OR return nil for Apple System on-screen keyboard
-    else
-        return inputView;
+    return inputView;
 }
 
 #pragma mark handle iCade key
@@ -603,7 +590,7 @@
     // only treat iCade as a controler when DPAD used for first time.
     if (g_joy_used == 0 && (myosd_pad_status & (MYOSD_DOWN|MYOSD_UP|MYOSD_RIGHT|MYOSD_LEFT)))
     {
-        g_joy_used = 1;
+        g_joy_used = JOY_USED_KBD;
         [emuController changeUI];
     }
     if (!(g_device_is_fullscreen && g_joy_used) || emuController.presentedViewController != nil)
@@ -810,7 +797,7 @@ int hid_to_mame(int keyCode) {
     // only treat as a controler when arrow keys used for first time.
     if (g_joy_used == 0 && (mame_key >= MYOSD_KEY_LEFT && mame_key <= MYOSD_KEY_DOWN))
     {
-        g_joy_used = 1;
+        g_joy_used = JOY_USED_KBD;
         [emuController changeUI];
     }
     
