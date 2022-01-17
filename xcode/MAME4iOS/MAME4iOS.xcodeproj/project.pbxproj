@@ -135,7 +135,7 @@
 		EF301CF1240460C5000510FD /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF301CF0240460C5000510FD /* Alert.m */; };
 		EF301CF2240460C5000510FD /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF301CF0240460C5000510FD /* Alert.m */; };
 		EF301CF3240460F3000510FD /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF27F36323F73CD400B1E50A /* ZipFile.m */; };
-		EF474B892791E42900578663 /* EmulatorController+EmulatorKeyboardSupport.swift .swift in Sources */ = {isa = PBXBuildFile; fileRef = EF474B882791E42900578663 /* EmulatorController+EmulatorKeyboardSupport.swift .swift */; };
+		EF474B892791E42900578663 /* EmulatorController+EmulatorKeyboardSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF474B882791E42900578663 /* EmulatorController+EmulatorKeyboardSupport.swift */; };
 		EF474B8B2791E4CD00578663 /* EmulatorKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF474B8A2791E4CD00578663 /* EmulatorKeyboard.swift */; };
 		EF490D91277A5C8C00407865 /* history.dat.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF490D90277A5C8C00407865 /* history.dat.zip */; };
 		EF490D92277A5C8C00407865 /* history.dat.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF490D90277A5C8C00407865 /* history.dat.zip */; };
@@ -537,7 +537,7 @@
 		EF301CEF240460C5000510FD /* Alert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Alert.h; sourceTree = "<group>"; };
 		EF301CF0240460C5000510FD /* Alert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Alert.m; sourceTree = "<group>"; };
 		EF474B872791E42900578663 /* MAME4iOS-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MAME4iOS-Bridging-Header.h"; sourceTree = "<group>"; };
-		EF474B882791E42900578663 /* EmulatorController+EmulatorKeyboardSupport.swift .swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EmulatorController+EmulatorKeyboardSupport.swift .swift"; sourceTree = "<group>"; };
+		EF474B882791E42900578663 /* EmulatorController+EmulatorKeyboardSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EmulatorController+EmulatorKeyboardSupport.swift"; sourceTree = "<group>"; };
 		EF474B8A2791E4CD00578663 /* EmulatorKeyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmulatorKeyboard.swift; sourceTree = "<group>"; };
 		EF490D90277A5C8C00407865 /* history.dat.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = history.dat.zip; path = "../../iOS-res/history.dat.zip"; sourceTree = "<group>"; };
 		EF490D94277A5E0E00407865 /* cheat.7z */ = {isa = PBXFileReference; lastKnownFileType = file; name = cheat.7z; path = "../../iOS-res/cheat.7z"; sourceTree = "<group>"; };
@@ -1018,7 +1018,7 @@
 		EF474B862791E40900578663 /* OnscreenKeyboard */ = {
 			isa = PBXGroup;
 			children = (
-				EF474B882791E42900578663 /* EmulatorController+EmulatorKeyboardSupport.swift .swift */,
+				EF474B882791E42900578663 /* EmulatorController+EmulatorKeyboardSupport.swift */,
 				EF474B8A2791E4CD00578663 /* EmulatorKeyboard.swift */,
 			);
 			path = OnscreenKeyboard;
@@ -1425,7 +1425,7 @@
 				EF8E428B249FE5410049C84C /* ulTron.metal in Sources */,
 				EF8E4283249915F30049C84C /* lineTron.metal in Sources */,
 				92A533A821EBDBAD0089FBB9 /* GCDWebServerRequest.m in Sources */,
-				EF474B892791E42900578663 /* EmulatorController+EmulatorKeyboardSupport.swift .swift in Sources */,
+				EF474B892791E42900578663 /* EmulatorController+EmulatorKeyboardSupport.swift in Sources */,
 				EFB7B21C247ACFE300AD96A4 /* MameShaders.metal in Sources */,
 				925ABCA91E46DCC500997182 /* OptionsController.m in Sources */,
 				EFE003382638ACA000E42246 /* XmlFile.m in Sources */,
