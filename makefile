@@ -556,7 +556,7 @@ CCOMFLAGS += -isysroot $(TVOSSDK) -mtvos-version-min=$(OSVERSION) -fPIC
 LDFLAGS += -lz -isysroot $(TVOSSDK) -mtvos-version-min=$(OSVERSION) -fPIC -dynamiclib
 else ifdef macCatalyst
 #macCatalyst goes here
-CCOMFLAGS += -isysroot $(MACOSSDK) -miphoneos-version-min=$(OSVERSION) -fPIC -target x86_64-apple-ios-macabi
+CCOMFLAGS += -isysroot $(MACOSSDK) -miphoneos-version-min=$(OSVERSION) -fPIC -target $(ARCH)-apple-ios$(OSVERSION)-macabi
 LDFLAGS += -lz -isysroot $(MACOSSDK) -miphoneos-version-min=$(OSVERSION) -fPIC -stdlib=libc++ -dynamiclib
 else
 #iOS goes here
