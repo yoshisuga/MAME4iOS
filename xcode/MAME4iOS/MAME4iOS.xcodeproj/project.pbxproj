@@ -137,6 +137,8 @@
 		EF301CF3240460F3000510FD /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF27F36323F73CD400B1E50A /* ZipFile.m */; };
 		EF474B892791E42900578663 /* EmulatorController+EmulatorKeyboardSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF474B882791E42900578663 /* EmulatorController+EmulatorKeyboardSupport.swift */; };
 		EF474B8B2791E4CD00578663 /* EmulatorKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF474B8A2791E4CD00578663 /* EmulatorKeyboard.swift */; };
+		EF474B972796447000578663 /* EmulatorController+EmulatorKeyboardSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF474B882791E42900578663 /* EmulatorController+EmulatorKeyboardSupport.swift */; };
+		EF474B982796447500578663 /* EmulatorKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF474B8A2791E4CD00578663 /* EmulatorKeyboard.swift */; };
 		EF490D91277A5C8C00407865 /* history.dat.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF490D90277A5C8C00407865 /* history.dat.zip */; };
 		EF490D92277A5C8C00407865 /* history.dat.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF490D90277A5C8C00407865 /* history.dat.zip */; };
 		EF490D93277A5C8C00407865 /* history.dat.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF490D90277A5C8C00407865 /* history.dat.zip */; };
@@ -1558,12 +1560,14 @@
 				EFA7A0F324B65C020009CF88 /* simpleCRT.metal in Sources */,
 				EFA7A0F424B65C020009CF88 /* Alert.m in Sources */,
 				EFA7A0F524B65C020009CF88 /* GCDWebServerDataResponse.m in Sources */,
+				EF474B982796447500578663 /* EmulatorKeyboard.swift in Sources */,
 				EFA7A0F624B65C020009CF88 /* ImageCache.m in Sources */,
 				EFA7A0F724B65C020009CF88 /* UIView+Toast.m in Sources */,
 				EFA7A0F824B65C020009CF88 /* EmulatorController.m in Sources */,
 				EF1741D8261BB2D600DE8386 /* GameInfo.m in Sources */,
 				EFA7A0F924B65C020009CF88 /* HelpController.m in Sources */,
 				EF286D36253CA930007DA6D3 /* CloudSync.m in Sources */,
+				EF474B972796447000578663 /* EmulatorController+EmulatorKeyboardSupport.swift in Sources */,
 				EFA7A0FA24B65C020009CF88 /* AnalogStick.m in Sources */,
 				EFA7A0FB24B65C020009CF88 /* Bootstrapper.m in Sources */,
 				EFA7A0FD24B65C020009CF88 /* SystemImage.m in Sources */,
@@ -1865,7 +1869,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				MTL_LANGUAGE_REVISION = UseDeploymentTarget;
@@ -1914,7 +1918,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				MTL_LANGUAGE_REVISION = UseDeploymentTarget;
@@ -1943,7 +1947,7 @@
 				);
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = "MAME4mac/MAME4mac-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../..",
@@ -1955,6 +1959,8 @@
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTS_MACCATALYST = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "MAME4iOS-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 2;
 				VALID_ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				WRAPPER_EXTENSION = app;
@@ -1973,7 +1979,7 @@
 				GCC_PREFIX_HEADER = "MAME4iOS/MAME4iOS-Prefix.pch";
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = "MAME4mac/MAME4mac-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../..",
@@ -1985,6 +1991,8 @@
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTS_MACCATALYST = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "MAME4iOS-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 2;
 				VALID_ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				WRAPPER_EXTENSION = app;

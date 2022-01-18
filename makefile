@@ -19,7 +19,7 @@ NOWERROR = 1
 
 # set minimum tvOS and iOS version for the SDK to use
 ifndef OSVERSION
-OSVERSION = 12.4
+OSVERSION = 13.4
 endif
 
 iOS = 1
@@ -556,7 +556,7 @@ CCOMFLAGS += -isysroot $(TVOSSDK) -mtvos-version-min=$(OSVERSION) -fPIC
 LDFLAGS += -lz -isysroot $(TVOSSDK) -mtvos-version-min=$(OSVERSION) -fPIC -dynamiclib
 else ifdef macCatalyst
 #macCatalyst goes here
-CCOMFLAGS += -isysroot $(MACOSSDK) -miphoneos-version-min=$(OSVERSION) -fPIC -target x86_64-apple-ios13.1-macabi
+CCOMFLAGS += -isysroot $(MACOSSDK) -miphoneos-version-min=$(OSVERSION) -fPIC -target x86_64-apple-ios-macabi
 LDFLAGS += -lz -isysroot $(MACOSSDK) -miphoneos-version-min=$(OSVERSION) -fPIC -stdlib=libc++ -dynamiclib
 else
 #iOS goes here

@@ -57,6 +57,11 @@
 #import "LayoutView.h"
 #import "FileItemProvider.h"
 #import "PopupSegmentedControl.h"
+#endif
+
+#if TARGET_OS_MACCATALYST
+#import "MAME4mac-Swift.h"
+#elif TARGET_OS_IOS
 #import "MAME4iOS-Swift.h"
 #endif
 
