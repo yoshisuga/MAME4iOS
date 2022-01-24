@@ -368,8 +368,13 @@ const char* get_documents_path(const char* file)
     if (screen != nil)
     {
         [screen setOverscanCompensation:UIScreenOverscanCompensationInsetBounds];
+
+        // yea we know setScreen is deprecated and we should use the UIWindowScene version, not today
+        #pragma clang diagnostic push
+        #pragma clang diagnostic ignored "-Wdeprecated"
         [externalWindow setScreen:screen];
-                            
+        #pragma clang diagnostic pop
+
         for (UIView *view in externalWindow.subviews)
             [view removeFromSuperview];
                             

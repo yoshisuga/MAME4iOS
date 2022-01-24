@@ -46,7 +46,6 @@
 
 @interface KeyboardView : UIView
 
-@property (nonatomic, assign) BOOL active;
-@property (nonatomic, assign) BOOL showSoftwareKeyboard;
+@property (nonatomic, assign) BOOL active;  // when set to YES will become the firstResponder
 
 @end

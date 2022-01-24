@@ -107,6 +107,9 @@ extern int g_emulation_paused;
 
 extern int g_joy_ways;
 extern int g_joy_used;
+#define JOY_USED_NONE       0   // no game controller (aka joystick) or keyboard input at all
+#define JOY_USED_GAMEPAD    1   // input from game controller
+#define JOY_USED_KBD        2   // input from keyboard or iCade
 
 extern int g_controller_opacity;
 extern int g_enable_debug_view;
