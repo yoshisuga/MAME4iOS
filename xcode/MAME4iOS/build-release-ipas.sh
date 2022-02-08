@@ -50,7 +50,7 @@ EOF
 
 declare -a SCHEMES=("MAME4iOS Release" "MAME tvOS Release" "MAME4iOS Release")
 declare -a SCHEME_NAMES=("MAME4iOS" "MAME4tvOS" "MAME4mac")
-declare -a SCHEME_OPTS=("-quiet" "-quiet" "-quiet -destination 'platform=macOS,variant=Mac Catalyst' ")
+declare -a SCHEME_DESTS=("generic/platform=iOS" "generic/platform=tvOS" "generic/platform=macOS,variant=Mac Catalyst,name=Any Mac")
 declare -a CONFIGS=("MAMELIB=libmame-139u1" "MAMELIB=libmame")
 declare -a CONFIG_NAMES=("139" "latest")
 
@@ -58,7 +58,7 @@ for i in "${!SCHEMES[@]}"
 do
   SCHEME="${SCHEMES[$i]}"
   NAME="${SCHEME_NAMES[$i]}"
-  OPT="${SCHEME_OPTS[$i]}"
+  DEST="${SCHEME_DESTS[$i]}"
   for j in "${!CONFIGS[@]}"
   do
     CONFIG="${CONFIGS[$j]}"
@@ -69,7 +69,7 @@ do
         -scheme "${SCHEME}" \
         -archivePath "../dist/${ARCHIVE_NAME}" \
         -allowProvisioningUpdates \
-        ${OPT} \
+        -destination "${DEST}" \
         ${CONFIG} \
         archive || exit -1
         
@@ -81,9 +81,9 @@ do
 
     # exportArchive will create an IPA file named: ${PRODUCT_NAME}.ipa (you can't specify the filename of the IPA)
     if [ "${NAME}" == "MAME4mac" ]; then
-        mv ../dist/MAME4iOS.app ../dist/${ARCHIVE_NAME}.app
+        mv ../dist/MAME4iOS.app ../dist/${ARCHIVE_NAME}.app || exit -1
     else
-        mv ../dist/${NAME}.ipa ../dist/${ARCHIVE_NAME}.ipa
+        mv ../dist/${NAME}.ipa ../dist/${ARCHIVE_NAME}.ipa || exit -1
     fi
   done
 done
