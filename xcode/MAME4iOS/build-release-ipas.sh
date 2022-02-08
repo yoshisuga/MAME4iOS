@@ -48,8 +48,9 @@ cat << EOF > "../dist/exportOptions.plist"
 </plist>
 EOF
 
-declare -a SCHEMES=("MAME4iOS Release" "MAME tvOS Release" "MAME4mac Release")
+declare -a SCHEMES=("MAME4iOS Release" "MAME tvOS Release" "MAME4iOS Release")
 declare -a SCHEME_NAMES=("MAME4iOS" "MAME4tvOS" "MAME4mac")
+declare -a SCHEME_OPTS=("-quiet" "-quiet" "-quiet -destination 'platform=macOS,variant=Mac Catalyst' ")
 declare -a CONFIGS=("MAMELIB=libmame-139u1" "MAMELIB=libmame")
 declare -a CONFIG_NAMES=("139" "latest")
 
@@ -57,16 +58,18 @@ for i in "${!SCHEMES[@]}"
 do
   SCHEME="${SCHEMES[$i]}"
   NAME="${SCHEME_NAMES[$i]}"
+  OPT="${SCHEME_OPTS[$i]}"
   for j in "${!CONFIGS[@]}"
   do
     CONFIG="${CONFIGS[$j]}"
     ARCHIVE_NAME="${NAME}-${VERSION}-${CONFIG_NAMES[$j]}"
-    echo "${C_BLUE}Scheme: ${SCHEME} Config: ${CONFIG} Archive: ${ARCHIVE_NAME}${C_RESET}"
+    echo "${C_BLUE}Scheme:${C_WHITE}${SCHEME} ${C_BLUE}Config:${C_WHITE}${CONFIG} ${C_BLUE}SDK:${C_WHITE}${SDK} ${C_BLUE}Archive:${C_WHITE}${ARCHIVE_NAME}${C_RESET}"
 
     xcodebuild -project MAME4iOS.xcodeproj \
         -scheme "${SCHEME}" \
         -archivePath "../dist/${ARCHIVE_NAME}" \
         -allowProvisioningUpdates \
+        ${OPT} \
         ${CONFIG} \
         archive || exit -1
         
@@ -77,8 +80,10 @@ do
         -allowProvisioningUpdates || exit -1
 
     # exportArchive will create an IPA file named: ${PRODUCT_NAME}.ipa (you can't specify the filename of the IPA)
-    mv ../dist/${NAME}.ipa ../dist/${ARCHIVE_NAME}.ipa
-    # do the mac app too
-    mv ../dist/${NAME}.app ../dist/${ARCHIVE_NAME}.app
+    if [ "${NAME}" == "MAME4mac" ]; then
+        mv ../dist/MAME4iOS.app ../dist/${ARCHIVE_NAME}.app
+    else
+        mv ../dist/${NAME}.ipa ../dist/${ARCHIVE_NAME}.ipa
+    fi
   done
 done

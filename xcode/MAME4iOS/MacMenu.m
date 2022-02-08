@@ -95,14 +95,6 @@
         [UIKeyCommand commandWithTitle:@"Exit"      image:[UIImage systemImageNamed:@"x.circle"]            action:@selector(mameExit)      input:UIKeyInputEscape modifierFlags:0  propertyList:nil],
     ]];
     [builder insertSiblingMenu:mame afterMenuForIdentifier:UIMenuFile];
-    
-#if TARGET_OS_MACCATALYST
-    UIWindowScene* scene = deviceWindow.windowScene;
-    if (scene) {
-        scene.titlebar.autoHidesToolbarInFullScreen = YES;
-        scene.titlebar.titleVisibility = UITitlebarTitleVisibilityHidden;
-    }
-#endif
 }
 
 #pragma MARK - FILE MENU

@@ -49,7 +49,6 @@
 #import "InputOptionController.h"
 #import "HelpController.h"
 #import "EmulatorController.h"
-#import "SystemImage.h"
 #import "ImageCache.h"
 #import "CloudSync.h"
 #import "Alert.h"

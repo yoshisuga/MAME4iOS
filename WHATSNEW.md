@@ -1,3 +1,8 @@
+# Version 2022.2
+* Updated to [MAME 240](https://www.mamedev.org/releases/whatsnew_0240.txt).
+* Minimum version is now iOS 13.4, tvOS 13.4, and macOS 10.15.5 (Catalina)
+* Removed MAME4mac build Target, build MAME4iOS for Catalyst instead 
+
 # Version 2022.1
 * Support for Software keyboard for machines that need keyboard input.
 * Non git-tracked `Developer.xcconfig`

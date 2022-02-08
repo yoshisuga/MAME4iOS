@@ -64,7 +64,10 @@
         self.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
     
 #if TARGET_OS_TV
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wdeprecated"
     self.tintColor = UIApplication.sharedApplication.keyWindow.tintColor;
+    #pragma clang diagnostic pop
 #endif
     
     [self addSubview:_stack];

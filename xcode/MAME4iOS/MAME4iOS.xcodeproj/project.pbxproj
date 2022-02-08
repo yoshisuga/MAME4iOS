@@ -86,32 +86,23 @@
 		E9856CF023C9A7C50071666D /* MultipeerConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E9856CEF23C9A7C50071666D /* MultipeerConnectivity.framework */; };
 		EF08EB32277A937900E4D455 /* plugins.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF08EB31277A937900E4D455 /* plugins.zip */; };
 		EF08EB33277A937900E4D455 /* plugins.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF08EB31277A937900E4D455 /* plugins.zip */; };
-		EF08EB34277A937900E4D455 /* plugins.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF08EB31277A937900E4D455 /* plugins.zip */; };
 		EF1628712627A5A800E2B2AB /* libmame-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EF1628122624ACC800E2B2AB /* libmame-ios.a */; };
 		EF1741D6261BB2D600DE8386 /* GameInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = EF1741D5261BB2D600DE8386 /* GameInfo.m */; };
 		EF1741D7261BB2D600DE8386 /* GameInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = EF1741D5261BB2D600DE8386 /* GameInfo.m */; };
-		EF1741D8261BB2D600DE8386 /* GameInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = EF1741D5261BB2D600DE8386 /* GameInfo.m */; };
 		EF1741D9261BB2D600DE8386 /* GameInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = EF1741D5261BB2D600DE8386 /* GameInfo.m */; };
 		EF19F22C235D1BDF00C8EE7F /* ChooseGameController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF19F229235D1BDF00C8EE7F /* ChooseGameController.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		EF19F22D235D1BDF00C8EE7F /* ChooseGameController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF19F229235D1BDF00C8EE7F /* ChooseGameController.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		EF1C93EE24C252C600749C69 /* SKIN_1 in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E124C252C400749C69 /* SKIN_1 */; };
-		EF1C93F024C252C600749C69 /* SKIN_1 in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E124C252C400749C69 /* SKIN_1 */; };
 		EF1C93F424C252C600749C69 /* help.md in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E324C252C400749C69 /* help.md */; };
-		EF1C93F624C252C600749C69 /* help.md in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E324C252C400749C69 /* help.md */; };
 		EF1C93F724C252C600749C69 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E424C252C400749C69 /* LICENSE */; };
 		EF1C93F824C252C600749C69 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E424C252C400749C69 /* LICENSE */; };
-		EF1C93F924C252C600749C69 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E424C252C400749C69 /* LICENSE */; };
 		EF1C93FD24C252C600749C69 /* skins in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E624C252C500749C69 /* skins */; };
-		EF1C93FF24C252C600749C69 /* skins in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E624C252C500749C69 /* skins */; };
 		EF1C940324C252C600749C69 /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E824C252C500749C69 /* Category.ini */; };
 		EF1C940424C252C600749C69 /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E824C252C500749C69 /* Category.ini */; };
-		EF1C940524C252C600749C69 /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E824C252C500749C69 /* Category.ini */; };
 		EF1C940C24C252C600749C69 /* hiscore.dat in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93EB24C252C500749C69 /* hiscore.dat */; };
 		EF1C940D24C252C600749C69 /* hiscore.dat in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93EB24C252C500749C69 /* hiscore.dat */; };
-		EF1C940E24C252C600749C69 /* hiscore.dat in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93EB24C252C500749C69 /* hiscore.dat */; };
 		EF1C941C24C2552900749C69 /* gitinfo.json.sh in Resources */ = {isa = PBXBuildFile; fileRef = EF1C941B24C2552800749C69 /* gitinfo.json.sh */; };
 		EF1C941D24C2552900749C69 /* gitinfo.json.sh in Resources */ = {isa = PBXBuildFile; fileRef = EF1C941B24C2552800749C69 /* gitinfo.json.sh */; };
-		EF1C941E24C2552900749C69 /* gitinfo.json.sh in Resources */ = {isa = PBXBuildFile; fileRef = EF1C941B24C2552800749C69 /* gitinfo.json.sh */; };
 		EF23D331243CB9CF006B3EE2 /* PopupSegmentedControl.m in Sources */ = {isa = PBXBuildFile; fileRef = EF23D330243CB9CE006B3EE2 /* PopupSegmentedControl.m */; };
 		EF23D332243CB9CF006B3EE2 /* PopupSegmentedControl.m in Sources */ = {isa = PBXBuildFile; fileRef = EF23D330243CB9CE006B3EE2 /* PopupSegmentedControl.m */; };
 		EF24933A236264DA00DD0A6C /* ImageCache.m in Sources */ = {isa = PBXBuildFile; fileRef = EF249336236264D900DD0A6C /* ImageCache.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
@@ -127,39 +118,29 @@
 		EF27F36A23F7475100B1E50A /* libcompression.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = EF27F36923F7475100B1E50A /* libcompression.tbd */; };
 		EF286D34253CA930007DA6D3 /* CloudSync.m in Sources */ = {isa = PBXBuildFile; fileRef = EF286D33253CA930007DA6D3 /* CloudSync.m */; };
 		EF286D35253CA930007DA6D3 /* CloudSync.m in Sources */ = {isa = PBXBuildFile; fileRef = EF286D33253CA930007DA6D3 /* CloudSync.m */; };
-		EF286D36253CA930007DA6D3 /* CloudSync.m in Sources */ = {isa = PBXBuildFile; fileRef = EF286D33253CA930007DA6D3 /* CloudSync.m */; };
 		EF286D59253CF171007DA6D3 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF286D58253CF171007DA6D3 /* CloudKit.framework */; };
 		EF286D5B253CF18D007DA6D3 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF286D5A253CF18D007DA6D3 /* CloudKit.framework */; };
-		EF286D5C253CF1A1007DA6D3 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF286D58253CF171007DA6D3 /* CloudKit.framework */; };
 		EF29C8822401C73A00AFFA4E /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EF29C8802401C73900AFFA4E /* Launch Screen.storyboard */; };
 		EF301CF1240460C5000510FD /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF301CF0240460C5000510FD /* Alert.m */; };
 		EF301CF2240460C5000510FD /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF301CF0240460C5000510FD /* Alert.m */; };
 		EF301CF3240460F3000510FD /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF27F36323F73CD400B1E50A /* ZipFile.m */; };
 		EF474B892791E42900578663 /* EmulatorController+EmulatorKeyboardSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF474B882791E42900578663 /* EmulatorController+EmulatorKeyboardSupport.swift */; };
 		EF474B8B2791E4CD00578663 /* EmulatorKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF474B8A2791E4CD00578663 /* EmulatorKeyboard.swift */; };
-		EF474B972796447000578663 /* EmulatorController+EmulatorKeyboardSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF474B882791E42900578663 /* EmulatorController+EmulatorKeyboardSupport.swift */; };
-		EF474B982796447500578663 /* EmulatorKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF474B8A2791E4CD00578663 /* EmulatorKeyboard.swift */; };
 		EF490D91277A5C8C00407865 /* history.dat.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF490D90277A5C8C00407865 /* history.dat.zip */; };
 		EF490D92277A5C8C00407865 /* history.dat.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF490D90277A5C8C00407865 /* history.dat.zip */; };
-		EF490D93277A5C8C00407865 /* history.dat.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF490D90277A5C8C00407865 /* history.dat.zip */; };
 		EF490D96277A5E0E00407865 /* cheat.7z in Resources */ = {isa = PBXBuildFile; fileRef = EF490D94277A5E0E00407865 /* cheat.7z */; };
 		EF490D97277A5E0E00407865 /* cheat.7z in Resources */ = {isa = PBXBuildFile; fileRef = EF490D94277A5E0E00407865 /* cheat.7z */; };
-		EF490D98277A5E0E00407865 /* cheat.7z in Resources */ = {isa = PBXBuildFile; fileRef = EF490D94277A5E0E00407865 /* cheat.7z */; };
 		EF490D99277A5E0E00407865 /* cheat.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF490D95277A5E0E00407865 /* cheat.zip */; };
 		EF490D9A277A5E0E00407865 /* cheat.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF490D95277A5E0E00407865 /* cheat.zip */; };
-		EF490D9B277A5E0E00407865 /* cheat.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF490D95277A5E0E00407865 /* cheat.zip */; };
 		EF568DB025D5D4F600092B30 /* InfoHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = EFB3C6DB248C33DF00F44780 /* InfoHUD.m */; };
-		EF67E11624B8972100AFF489 /* MacMenu.m in Sources */ = {isa = PBXBuildFile; fileRef = EF67E11524B8972100AFF489 /* MacMenu.m */; };
 		EF7B232C23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
 		EF7B232D23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
 		EF7D116527348BDD00E61BB9 /* hash.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF7D116427348BDD00E61BB9 /* hash.zip */; };
 		EF7D116627348BDD00E61BB9 /* hash.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF7D116427348BDD00E61BB9 /* hash.zip */; };
-		EF7D116727348BDD00E61BB9 /* hash.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF7D116427348BDD00E61BB9 /* hash.zip */; };
 		EF8409A2260CEFAB00FAC3CF /* AVPlayerView.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8409A1260CEFAB00FAC3CF /* AVPlayerView.m */; };
 		EF8409A3260CEFAB00FAC3CF /* AVPlayerView.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8409A1260CEFAB00FAC3CF /* AVPlayerView.m */; };
 		EF8409A9260CF3F200FAC3CF /* whiteHDR.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = EF8409A8260CF3F200FAC3CF /* whiteHDR.mp4 */; };
 		EF8409AA260CF3F200FAC3CF /* whiteHDR.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = EF8409A8260CF3F200FAC3CF /* whiteHDR.mp4 */; };
-		EF8409C0260D281000FAC3CF /* AVPlayerView.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8409A1260CEFAB00FAC3CF /* AVPlayerView.m */; };
 		EF8E427D249348220049C84C /* megaTron.metal in Sources */ = {isa = PBXBuildFile; fileRef = EF8E427C249348220049C84C /* megaTron.metal */; };
 		EF8E427E249348220049C84C /* megaTron.metal in Sources */ = {isa = PBXBuildFile; fileRef = EF8E427C249348220049C84C /* megaTron.metal */; };
 		EF8E4283249915F30049C84C /* lineTron.metal in Sources */ = {isa = PBXBuildFile; fileRef = EF8E4282249915F20049C84C /* lineTron.metal */; };
@@ -175,98 +156,19 @@
 		EF8EAA8C244F7F5D00DA02BB /* SteamControllerInput.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA83244F7F5D00DA02BB /* SteamControllerInput.m */; };
 		EF8EAA8D244F7F5D00DA02BB /* SteamControllerInput.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA83244F7F5D00DA02BB /* SteamControllerInput.m */; };
 		EF926C9B24BA36980048392B /* SkinManager.m in Sources */ = {isa = PBXBuildFile; fileRef = EF926C9A24BA36980048392B /* SkinManager.m */; };
-		EF926C9C24BA36980048392B /* SkinManager.m in Sources */ = {isa = PBXBuildFile; fileRef = EF926C9A24BA36980048392B /* SkinManager.m */; };
 		EF941F0024427D1200D58F7F /* OptionsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF941EFF24427D1200D58F7F /* OptionsTableViewController.m */; };
 		EF941F0124427D1200D58F7F /* OptionsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF941EFF24427D1200D58F7F /* OptionsTableViewController.m */; };
+		EF9C21A427B18A7200223E76 /* SystemImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF9C21A327B18A7200223E76 /* SystemImage.swift */; };
+		EF9C21A527B18A7200223E76 /* SystemImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF9C21A327B18A7200223E76 /* SystemImage.swift */; };
+		EF9C21A827B1A64E00223E76 /* Launch.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EF9C21A727B1A64E00223E76 /* Launch.storyboard */; };
 		EFA756FF2405585D00A02AAB /* mameui.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA756FE2405585D00A02AAB /* mameui.png */; };
 		EFA757002405585D00A02AAB /* mameui.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA756FE2405585D00A02AAB /* mameui.png */; };
 		EFA7570524057FD800A02AAB /* default_game_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA7570424057FD800A02AAB /* default_game_icon.png */; };
 		EFA7570624057FD800A02AAB /* default_game_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA7570424057FD800A02AAB /* default_game_icon.png */; };
 		EFA757082405B9EA00A02AAB /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA757072405B9EA00A02AAB /* AVFoundation.framework */; };
 		EFA7570A2405BA0200A02AAB /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA757092405BA0200A02AAB /* AVFoundation.framework */; };
-		EFA7570D2406D64600A02AAB /* SystemImage.m in Sources */ = {isa = PBXBuildFile; fileRef = EFA7570B2406D64600A02AAB /* SystemImage.m */; };
-		EFA7570E2406D64600A02AAB /* SystemImage.m in Sources */ = {isa = PBXBuildFile; fileRef = EFA7570B2406D64600A02AAB /* SystemImage.m */; };
 		EFA757222408488D00A02AAB /* iCadeControls.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA757212408488D00A02AAB /* iCadeControls.png */; };
-		EFA7A0E024B65C020009CF88 /* GCDWebServerConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5339021EBDBAD0089FBB9 /* GCDWebServerConnection.m */; };
-		EFA7A0E124B65C020009CF88 /* MetalViewShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B2152479FBD900AD96A4 /* MetalViewShaders.metal */; };
-		EFA7A0E224B65C020009CF88 /* KeyboardView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8D87DC1653121200685BC4 /* KeyboardView.m */; };
-		EFA7A0E324B65C020009CF88 /* GCDWebServerFileResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5339721EBDBAD0089FBB9 /* GCDWebServerFileResponse.m */; };
-		EFA7A0E424B65C020009CF88 /* OptionsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF941EFF24427D1200D58F7F /* OptionsTableViewController.m */; };
-		EFA7A0E524B65C020009CF88 /* GCDWebUploader.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A533CE21EBDDF20089FBB9 /* GCDWebUploader.m */; };
-		EFA7A0E624B65C020009CF88 /* GCDWebServerFileRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A533A221EBDBAD0089FBB9 /* GCDWebServerFileRequest.m */; };
-		EFA7A0E724B65C020009CF88 /* ListOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE90575B166A89D000653872 /* ListOptionController.m */; };
-		EFA7A0E824B65C020009CF88 /* GCDWebServerDataRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A533A121EBDBAD0089FBB9 /* GCDWebServerDataRequest.m */; };
-		EFA7A0E924B65C020009CF88 /* ulTron.metal in Sources */ = {isa = PBXBuildFile; fileRef = EF8E428A249FE5410049C84C /* ulTron.metal */; };
-		EFA7A0EA24B65C020009CF88 /* lineTron.metal in Sources */ = {isa = PBXBuildFile; fileRef = EF8E4282249915F20049C84C /* lineTron.metal */; };
-		EFA7A0EB24B65C020009CF88 /* GCDWebServerRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5338B21EBDBAD0089FBB9 /* GCDWebServerRequest.m */; };
-		EFA7A0EC24B65C020009CF88 /* MameShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B21B247ACFE300AD96A4 /* MameShaders.metal */; };
-		EFA7A0ED24B65C020009CF88 /* OptionsController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680C01635BB6100051BC2 /* OptionsController.m */; };
-		EFA7A0EE24B65C020009CF88 /* SteamControllerExtendedGamepad.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA82244F7F5D00DA02BB /* SteamControllerExtendedGamepad.m */; };
-		EFA7A0EF24B65C020009CF88 /* SteamControllerInput.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA83244F7F5D00DA02BB /* SteamControllerInput.m */; };
-		EFA7A0F024B65C020009CF88 /* GCDWebServerURLEncodedFormRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5339F21EBDBAD0089FBB9 /* GCDWebServerURLEncodedFormRequest.m */; };
-		EFA7A0F124B65C020009CF88 /* WebServer.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A533D621EE601D0089FBB9 /* WebServer.m */; };
-		EFA7A0F324B65C020009CF88 /* simpleCRT.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB3C6D524890F6200F44780 /* simpleCRT.metal */; };
-		EFA7A0F424B65C020009CF88 /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF301CF0240460C5000510FD /* Alert.m */; };
-		EFA7A0F524B65C020009CF88 /* GCDWebServerDataResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5339821EBDBAD0089FBB9 /* GCDWebServerDataResponse.m */; };
-		EFA7A0F624B65C020009CF88 /* ImageCache.m in Sources */ = {isa = PBXBuildFile; fileRef = EF249336236264D900DD0A6C /* ImageCache.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		EFA7A0F724B65C020009CF88 /* UIView+Toast.m in Sources */ = {isa = PBXBuildFile; fileRef = 92B99F0D2022706600CC44E3 /* UIView+Toast.m */; };
-		EFA7A0F824B65C020009CF88 /* EmulatorController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680B51635BB4900051BC2 /* EmulatorController.m */; };
-		EFA7A0F924B65C020009CF88 /* HelpController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680B71635BB4900051BC2 /* HelpController.m */; };
-		EFA7A0FA24B65C020009CF88 /* AnalogStick.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680AB1635BB2700051BC2 /* AnalogStick.m */; };
-		EFA7A0FB24B65C020009CF88 /* Bootstrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680AD1635BB2700051BC2 /* Bootstrapper.m */; };
-		EFA7A0FD24B65C020009CF88 /* SystemImage.m in Sources */ = {isa = PBXBuildFile; fileRef = EFA7570B2406D64600A02AAB /* SystemImage.m */; };
-		EFA7A0FE24B65C020009CF88 /* GCDWebServerFunctions.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5338E21EBDBAD0089FBB9 /* GCDWebServerFunctions.m */; };
-		EFA7A0FF24B65C020009CF88 /* GCDWebServerStreamedResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5339A21EBDBAD0089FBB9 /* GCDWebServerStreamedResponse.m */; };
-		EFA7A10024B65C020009CF88 /* MetalView.m in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B2132479FBD800AD96A4 /* MetalView.m */; };
-		EFA7A10224B65C020009CF88 /* LayoutView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE6D6E1316D8CADF00F265B7 /* LayoutView.m */; };
-		EFA7A10324B65C020009CF88 /* SteamControllerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA7F244F7F5D00DA02BB /* SteamControllerManager.m */; };
-		EFA7A10424B65C020009CF88 /* GCDWebServerResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5338821EBDBAD0089FBB9 /* GCDWebServerResponse.m */; };
-		EFA7A10724B65C020009CF88 /* InfoDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE4B6AA2453D7F80009A6F1 /* InfoDatabase.m */; };
-		EFA7A10924B65C020009CF88 /* InputOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8F08831741580100E2D5FB /* InputOptionController.m */; };
-		EFA7A10A24B65C020009CF88 /* GCDWebServerMultiPartFormRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A533A021EBDBAD0089FBB9 /* GCDWebServerMultiPartFormRequest.m */; };
-		EFA7A10B24B65C020009CF88 /* FileItemProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = EF26AE0B241AA6900078FD30 /* FileItemProvider.m */; };
-		EFA7A10D24B65C020009CF88 /* (null) in Sources */ = {isa = PBXBuildFile; };
-		EFA7A10E24B65C020009CF88 /* megaTron.metal in Sources */ = {isa = PBXBuildFile; fileRef = EF8E427C249348220049C84C /* megaTron.metal */; };
-		EFA7A10F24B65C020009CF88 /* GCDWebServerErrorResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5339521EBDBAD0089FBB9 /* GCDWebServerErrorResponse.m */; };
-		EFA7A11024B65C020009CF88 /* PopupSegmentedControl.m in Sources */ = {isa = PBXBuildFile; fileRef = EF23D330243CB9CE006B3EE2 /* PopupSegmentedControl.m */; };
-		EFA7A11124B65C020009CF88 /* MetalScreenView.m in Sources */ = {isa = PBXBuildFile; fileRef = EFF9F8292470755800DDA88C /* MetalScreenView.m */; };
-		EFA7A11224B65C020009CF88 /* ChooseGameController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF19F229235D1BDF00C8EE7F /* ChooseGameController.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		EFA7A11324B65C020009CF88 /* SteamController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA80244F7F5D00DA02BB /* SteamController.m */; };
-		EFA7A11424B65C020009CF88 /* InfoHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = EFB3C6DB248C33DF00F44780 /* InfoHUD.m */; };
-		EFA7A11524B65C020009CF88 /* GCDWebServer.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5338F21EBDBAD0089FBB9 /* GCDWebServer.m */; };
-		EFA7A11624B65C020009CF88 /* Options.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5332121EB57F00089FBB9 /* Options.m */; };
-		EFA7A11724B65C020009CF88 /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF27F36323F73CD400B1E50A /* ZipFile.m */; };
-		EFA7A11924B65C020009CF88 /* MultipeerConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E9856CEF23C9A7C50071666D /* MultipeerConnectivity.framework */; };
-		EFA7A11A24B65C020009CF88 /* libcompression.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = EF27F36923F7475100B1E50A /* libcompression.tbd */; };
-		EFA7A11B24B65C020009CF88 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFF9F82C24707EE900DDA88C /* Metal.framework */; };
-		EFA7A11C24B65C020009CF88 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA98FAE24A4CC49007B6689 /* CoreServices.framework */; };
-		EFA7A11D24B65C020009CF88 /* IntentsUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFF9F826246EE30200DDA88C /* IntentsUI.framework */; };
-		EFA7A11E24B65C020009CF88 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92A533DA21EEFDE20089FBB9 /* CFNetwork.framework */; };
-		EFA7A11F24B65C020009CF88 /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 92D96573215B03E100EFE3AE /* libc++.tbd */; };
-		EFA7A12124B65C020009CF88 /* Intents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFF9F824246EE2F800DDA88C /* Intents.framework */; };
-		EFA7A12224B65C020009CF88 /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B370F8AF1C8549010069377D /* GameController.framework */; };
-		EFA7A12324B65C020009CF88 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE8F1C5F1735199400D3F527 /* CoreBluetooth.framework */; };
-		EFA7A12424B65C020009CF88 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE680D1163BE5C400051BC2 /* CoreFoundation.framework */; };
-		EFA7A12524B65C020009CF88 /* libmame-mac.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA7A0DC24B61E6C0009CF88 /* libmame-mac.a */; };
-		EFA7A12624B65C020009CF88 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE680C9163B13AB00051BC2 /* AudioToolbox.framework */; };
-		EFA7A12724B65C020009CF88 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE680A61635BAA400051BC2 /* QuartzCore.framework */; };
-		EFA7A12824B65C020009CF88 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA98FB424A4F810007B6689 /* WebKit.framework */; };
-		EFA7A12924B65C020009CF88 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA757092405BA0200A02AAB /* AVFoundation.framework */; };
-		EFA7A12A24B65C020009CF88 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE680891635BA7000051BC2 /* UIKit.framework */; };
-		EFA7A12B24B65C020009CF88 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE6808B1635BA7000051BC2 /* Foundation.framework */; };
-		EFA7A12C24B65C020009CF88 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE6808D1635BA7000051BC2 /* CoreGraphics.framework */; };
-		EFA7A12D24B65C020009CF88 /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE9454C7172BB23100B81C32 /* GameKit.framework */; };
-		EFA7A13424B65C020009CF88 /* mame_logo.png in Resources */ = {isa = PBXBuildFile; fileRef = EF26AE07241848800078FD30 /* mame_logo.png */; };
-		EFA7A13724B65C020009CF88 /* default_game_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA7570424057FD800A02AAB /* default_game_icon.png */; };
-		EFA7A14324B65C020009CF88 /* dpad.png in Resources */ = {isa = PBXBuildFile; fileRef = 920BBDED201FC29700AE7D50 /* dpad.png */; };
-		EFA7A14424B65C020009CF88 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EF29C8802401C73900AFFA4E /* Launch Screen.storyboard */; };
-		EFA7A14924B65C020009CF88 /* menu.png in Resources */ = {isa = PBXBuildFile; fileRef = 920BBDF020210C3700AE7D50 /* menu.png */; };
-		EFA7A14E24B65C020009CF88 /* GCDWebUploader.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 92A533CC21EBDDF20089FBB9 /* GCDWebUploader.bundle */; };
-		EFA7A15024B65C020009CF88 /* mameui.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA756FE2405585D00A02AAB /* mameui.png */; };
-		EFA7A15124B65C020009CF88 /* iCadeControls.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA757212408488D00A02AAB /* iCadeControls.png */; };
-		EFA7A16624B792CE0009CF88 /* MetalPerformanceShaders.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA7A16524B792CE0009CF88 /* MetalPerformanceShaders.framework */; };
 		EFA7A16B24B7A38E0009CF88 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EFA7A16A24B7A38E0009CF88 /* Assets.xcassets */; };
-		EFA7A16D24B7A40F0009CF88 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EFA7A16C24B7A40F0009CF88 /* Assets.xcassets */; };
 		EFA98FB124A4E2BF007B6689 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA98FAE24A4CC49007B6689 /* CoreServices.framework */; };
 		EFA98FB324A4E2D5007B6689 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA98FB224A4E2D5007B6689 /* CoreServices.framework */; };
 		EFA98FB524A4F811007B6689 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA98FB424A4F810007B6689 /* WebKit.framework */; };
@@ -281,10 +183,8 @@
 		EFB7B21D247ACFE300AD96A4 /* MameShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B21B247ACFE300AD96A4 /* MameShaders.metal */; };
 		EFE003382638ACA000E42246 /* XmlFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE003362638ACA000E42246 /* XmlFile.m */; };
 		EFE003392638ACA000E42246 /* XmlFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE003362638ACA000E42246 /* XmlFile.m */; };
-		EFE0033A2638ACA000E42246 /* XmlFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE003362638ACA000E42246 /* XmlFile.m */; };
 		EFE0033D2638D97E00E42246 /* SoftwareList.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE0033C2638D97E00E42246 /* SoftwareList.m */; };
 		EFE0033E2638D97E00E42246 /* SoftwareList.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE0033C2638D97E00E42246 /* SoftwareList.m */; };
-		EFE0033F2638D97E00E42246 /* SoftwareList.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE0033C2638D97E00E42246 /* SoftwareList.m */; };
 		EFE4B6AB2453D7F80009A6F1 /* InfoDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE4B6AA2453D7F80009A6F1 /* InfoDatabase.m */; };
 		EFE4B6AC2453D7F80009A6F1 /* InfoDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE4B6AA2453D7F80009A6F1 /* InfoDatabase.m */; };
 		EFEEA4B225C9D41E00314132 /* TVServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF55DE5A2534C304004E37EF /* TVServices.framework */; };
@@ -299,7 +199,6 @@
 		EFF9F82F24707EF700DDA88C /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFF9F82E24707EF700DDA88C /* Metal.framework */; };
 		EFFBA6FE24F1C91200F8666B /* WHATSNEW.md in Resources */ = {isa = PBXBuildFile; fileRef = EFFBA6FD24F1C91200F8666B /* WHATSNEW.md */; };
 		EFFBA6FF24F1C91200F8666B /* WHATSNEW.md in Resources */ = {isa = PBXBuildFile; fileRef = EFFBA6FD24F1C91200F8666B /* WHATSNEW.md */; };
-		EFFBA70024F1C91200F8666B /* WHATSNEW.md in Resources */ = {isa = PBXBuildFile; fileRef = EFFBA6FD24F1C91200F8666B /* WHATSNEW.md */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -315,19 +214,6 @@
 				"$(DERIVED_FILE_DIR)/$(INPUT_FILE_BASE).html",
 			);
 			script = "\"$PROJECT_DIR/../../Markdown_1.1.9/Markdown.pl\" --stub \"$INPUT_FILE_PATH\" > \"$DERIVED_FILE_DIR/$INPUT_FILE_BASE.html\"\n";
-		};
-		EF79BDD324B7BEB500824BFD /* PBXBuildRule */ = {
-			isa = PBXBuildRule;
-			compilerSpec = com.apple.compilers.proxy.script;
-			filePatterns = "*.json.sh";
-			fileType = pattern.proxy;
-			inputFiles = (
-			);
-			isEditable = 1;
-			outputFiles = (
-				"$(DERIVED_FILE_DIR)/$(INPUT_FILE_BASE)",
-			);
-			script = "/bin/sh \"$INPUT_FILE_PATH\" > \"$DERIVED_FILE_DIR/$INPUT_FILE_BASE\"\n";
 		};
 		EF79BDDB24B7D75000824BFD /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
@@ -354,19 +240,6 @@
 				"$(DERIVED_FILE_DIR)/$(INPUT_FILE_BASE)",
 			);
 			script = "/bin/sh \"$INPUT_FILE_PATH\" > \"$DERIVED_FILE_DIR/$INPUT_FILE_BASE\"\n";
-		};
-		EFA7A15A24B65C020009CF88 /* PBXBuildRule */ = {
-			isa = PBXBuildRule;
-			compilerSpec = com.apple.compilers.proxy.script;
-			filePatterns = "*.md";
-			fileType = pattern.proxy;
-			inputFiles = (
-			);
-			isEditable = 1;
-			outputFiles = (
-				"$(DERIVED_FILE_DIR)/$(INPUT_FILE_BASE).html",
-			);
-			script = "\"$PROJECT_DIR/../../Markdown_1.1.9/Markdown.pl\" --stub \"$INPUT_FILE_PATH\" > \"$DERIVED_FILE_DIR/$INPUT_FILE_BASE.html\"\n";
 		};
 /* End PBXBuildRule section */
 
@@ -570,20 +443,17 @@
 		EF941EFF24427D1200D58F7F /* OptionsTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OptionsTableViewController.m; path = ../../iOS/OptionsTableViewController.m; sourceTree = "<group>"; };
 		EF950BAC24B1239F00DC9A47 /* MetalPerformanceShaders.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalPerformanceShaders.framework; path = System/Library/Frameworks/MetalPerformanceShaders.framework; sourceTree = SDKROOT; };
 		EF950BAE24B123A900DC9A47 /* MetalPerformanceShaders.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalPerformanceShaders.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS14.0.sdk/System/Library/Frameworks/MetalPerformanceShaders.framework; sourceTree = DEVELOPER_DIR; };
+		EF9C21A327B18A7200223E76 /* SystemImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SystemImage.swift; sourceTree = "<group>"; };
+		EF9C21A727B1A64E00223E76 /* Launch.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Launch.storyboard; sourceTree = "<group>"; };
 		EF9F9C9E240070E700352554 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../../README.md; sourceTree = "<group>"; };
 		EFA756FE2405585D00A02AAB /* mameui.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = mameui.png; path = "../../iOS-res/mameui.png"; sourceTree = "<group>"; };
 		EFA7570424057FD800A02AAB /* default_game_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = default_game_icon.png; path = "../../iOS-res/default_game_icon.png"; sourceTree = "<group>"; };
 		EFA757072405B9EA00A02AAB /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS13.2.sdk/System/Library/Frameworks/AVFoundation.framework; sourceTree = DEVELOPER_DIR; };
 		EFA757092405BA0200A02AAB /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
-		EFA7570B2406D64600A02AAB /* SystemImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SystemImage.m; sourceTree = "<group>"; };
-		EFA7570C2406D64600A02AAB /* SystemImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SystemImage.h; sourceTree = "<group>"; };
 		EFA757212408488D00A02AAB /* iCadeControls.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = iCadeControls.png; path = "../../iOS-res/iCadeControls.png"; sourceTree = "<group>"; };
 		EFA7A0DC24B61E6C0009CF88 /* libmame-mac.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libmame-mac.a"; path = ../../$MAMELIB_MACOS; sourceTree = "<group>"; };
-		EFA7A15E24B65C020009CF88 /* MAME4mac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MAME4mac.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		EFA7A16124B65FCC0009CF88 /* MAME4mac-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "MAME4mac-Info.plist"; sourceTree = "<group>"; };
 		EFA7A16524B792CE0009CF88 /* MetalPerformanceShaders.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalPerformanceShaders.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/System/Library/Frameworks/MetalPerformanceShaders.framework; sourceTree = DEVELOPER_DIR; };
 		EFA7A16A24B7A38E0009CF88 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		EFA7A16C24B7A40F0009CF88 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		EFA98FAE24A4CC49007B6689 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		EFA98FB224A4E2D5007B6689 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS14.0.sdk/System/Library/Frameworks/CoreServices.framework; sourceTree = DEVELOPER_DIR; };
 		EFA98FB424A4F810007B6689 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
@@ -604,8 +474,6 @@
 		EFE00340263EF5AA00E42246 /* MAME4iOS-Full.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "MAME4iOS-Full.entitlements"; sourceTree = "<group>"; };
 		EFE00341263EF83D00E42246 /* MAME4tvOS-Full.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "MAME4tvOS-Full.entitlements"; sourceTree = "<group>"; };
 		EFE00342263EF83D00E42246 /* MAME4tvOS-Base.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "MAME4tvOS-Base.entitlements"; sourceTree = "<group>"; };
-		EFE00343263EF84F00E42246 /* MAME4mac-Base.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "MAME4mac-Base.entitlements"; sourceTree = "<group>"; };
-		EFE00344263EF84F00E42246 /* MAME4mac-Full.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "MAME4mac-Full.entitlements"; sourceTree = "<group>"; };
 		EFE00345263EF86400E42246 /* MAME4iOS-Base.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "MAME4iOS-Base.entitlements"; sourceTree = "<group>"; };
 		EFE003462640472100E42246 /* TopShelf-Full.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "TopShelf-Full.entitlements"; sourceTree = "<group>"; };
 		EFE003472640472100E42246 /* TopShelf-Base.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "TopShelf-Base.entitlements"; sourceTree = "<group>"; };
@@ -676,35 +544,6 @@
 				92ECB90121EA993E00D1E3D0 /* libc++.tbd in Frameworks */,
 				EFA98FB324A4E2D5007B6689 /* CoreServices.framework in Frameworks */,
 				92ECB8FF21EA992100D1E3D0 /* libmame-tvos.a in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		EFA7A11824B65C020009CF88 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				EFA7A11924B65C020009CF88 /* MultipeerConnectivity.framework in Frameworks */,
-				EFA7A11A24B65C020009CF88 /* libcompression.tbd in Frameworks */,
-				EFA7A11B24B65C020009CF88 /* Metal.framework in Frameworks */,
-				EFA7A11C24B65C020009CF88 /* CoreServices.framework in Frameworks */,
-				EFA7A11D24B65C020009CF88 /* IntentsUI.framework in Frameworks */,
-				EFA7A11E24B65C020009CF88 /* CFNetwork.framework in Frameworks */,
-				EFA7A11F24B65C020009CF88 /* libc++.tbd in Frameworks */,
-				EFA7A12124B65C020009CF88 /* Intents.framework in Frameworks */,
-				EFA7A12224B65C020009CF88 /* GameController.framework in Frameworks */,
-				EFA7A12324B65C020009CF88 /* CoreBluetooth.framework in Frameworks */,
-				EFA7A12424B65C020009CF88 /* CoreFoundation.framework in Frameworks */,
-				EFA7A12524B65C020009CF88 /* libmame-mac.a in Frameworks */,
-				EFA7A12624B65C020009CF88 /* AudioToolbox.framework in Frameworks */,
-				EFA7A12724B65C020009CF88 /* QuartzCore.framework in Frameworks */,
-				EFA7A12824B65C020009CF88 /* WebKit.framework in Frameworks */,
-				EFA7A12924B65C020009CF88 /* AVFoundation.framework in Frameworks */,
-				EFA7A12A24B65C020009CF88 /* UIKit.framework in Frameworks */,
-				EFA7A12B24B65C020009CF88 /* Foundation.framework in Frameworks */,
-				EFA7A16624B792CE0009CF88 /* MetalPerformanceShaders.framework in Frameworks */,
-				EFA7A12C24B65C020009CF88 /* CoreGraphics.framework in Frameworks */,
-				EF286D5C253CF1A1007DA6D3 /* CloudKit.framework in Frameworks */,
-				EFA7A12D24B65C020009CF88 /* GameKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -794,6 +633,7 @@
 				EFE00342263EF83D00E42246 /* MAME4tvOS-Base.entitlements */,
 				EFE00341263EF83D00E42246 /* MAME4tvOS-Full.entitlements */,
 				92ECB8F621EA985000D1E3D0 /* Assets.xcassets */,
+				EF9C21A727B1A64E00223E76 /* Launch.storyboard */,
 				B5FAE31821FCE64D003F44D0 /* MAME_tvOS.lsr */,
 				92ECB8F821EA985000D1E3D0 /* Info.plist */,
 			);
@@ -867,7 +707,6 @@
 				92A533CB21EBDDF20089FBB9 /* GCDWebUploader */,
 				EF8EAA7D244F7F5D00DA02BB /* SteamController */,
 				CEE6808F1635BA7000051BC2 /* MAME4iOS */,
-				EFA7A16024B65E7F0009CF88 /* MAME4mac */,
 				92ECB8EC21EA984E00D1E3D0 /* MAME4tvOS */,
 				EFEEA4B325C9D41E00314132 /* TopShelf */,
 				CEE680C51635BB8500051BC2 /* Includes */,
@@ -881,7 +720,6 @@
 			children = (
 				925ABCE21E46DCC500997182 /* MAME4iOS.app */,
 				92ECB8EB21EA984D00D1E3D0 /* MAME4tvOS.app */,
-				EFA7A15E24B65C020009CF88 /* MAME4mac.app */,
 				EFEEA4B125C9D41E00314132 /* TopShelf.appex */,
 			);
 			name = Products;
@@ -1040,8 +878,7 @@
 				EF249336236264D900DD0A6C /* ImageCache.m */,
 				EF301CEF240460C5000510FD /* Alert.h */,
 				EF301CF0240460C5000510FD /* Alert.m */,
-				EFA7570C2406D64600A02AAB /* SystemImage.h */,
-				EFA7570B2406D64600A02AAB /* SystemImage.m */,
+				EF9C21A327B18A7200223E76 /* SystemImage.swift */,
 				EFE003372638ACA000E42246 /* XmlFile.h */,
 				EFE003362638ACA000E42246 /* XmlFile.m */,
 				EF27F36423F73CD400B1E50A /* ZipFile.h */,
@@ -1082,17 +919,6 @@
 				EFA757212408488D00A02AAB /* iCadeControls.png */,
 			);
 			name = help;
-			sourceTree = "<group>";
-		};
-		EFA7A16024B65E7F0009CF88 /* MAME4mac */ = {
-			isa = PBXGroup;
-			children = (
-				EFE00343263EF84F00E42246 /* MAME4mac-Base.entitlements */,
-				EFE00344263EF84F00E42246 /* MAME4mac-Full.entitlements */,
-				EFA7A16C24B7A40F0009CF88 /* Assets.xcassets */,
-				EFA7A16124B65FCC0009CF88 /* MAME4mac-Info.plist */,
-			);
-			path = MAME4mac;
 			sourceTree = "<group>";
 		};
 		EFB7B2122479FB8900AD96A4 /* ScreenView */ = {
@@ -1167,26 +993,6 @@
 			productReference = 92ECB8EB21EA984D00D1E3D0 /* MAME4tvOS.app */;
 			productType = "com.apple.product-type.application";
 		};
-		EFA7A0DE24B65C020009CF88 /* MAME4mac */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = EFA7A15B24B65C020009CF88 /* Build configuration list for PBXNativeTarget "MAME4mac" */;
-			buildPhases = (
-				EF79BDD824B7CE8100824BFD /* ShellScript */,
-				EFA7A0DF24B65C020009CF88 /* Sources */,
-				EFA7A11824B65C020009CF88 /* Frameworks */,
-				EFA7A12F24B65C020009CF88 /* Resources */,
-			);
-			buildRules = (
-				EF79BDD324B7BEB500824BFD /* PBXBuildRule */,
-				EFA7A15A24B65C020009CF88 /* PBXBuildRule */,
-			);
-			dependencies = (
-			);
-			name = MAME4mac;
-			productName = MAME4iOS;
-			productReference = EFA7A15E24B65C020009CF88 /* MAME4mac.app */;
-			productType = "com.apple.product-type.application";
-		};
 		EFEEA4B025C9D41E00314132 /* TopShelf */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = EFEEA4BD25C9D41E00314132 /* Build configuration list for PBXNativeTarget "TopShelf" */;
@@ -1222,10 +1028,8 @@
 					92ECB8EA21EA984D00D1E3D0 = {
 						CreatedOnToolsVersion = 10.1;
 						DevelopmentTeam = ABC8675309;
+						LastSwiftMigration = 1320;
 						ProvisioningStyle = Automatic;
-					};
-					EFA7A0DE24B65C020009CF88 = {
-						DevelopmentTeam = ABC8675309;
 					};
 					EFEEA4B025C9D41E00314132 = {
 						CreatedOnToolsVersion = 12.4;
@@ -1249,7 +1053,6 @@
 			targets = (
 				925ABCA41E46DCC500997182 /* MAME4iOS */,
 				92ECB8EA21EA984D00D1E3D0 /* MAME4tvOS */,
-				EFA7A0DE24B65C020009CF88 /* MAME4mac */,
 				EFEEA4B025C9D41E00314132 /* TopShelf */,
 			);
 		};
@@ -1302,41 +1105,13 @@
 				92ECB8F721EA985000D1E3D0 /* Assets.xcassets in Resources */,
 				EF1C940D24C252C600749C69 /* hiscore.dat in Resources */,
 				92A533D121EBDDF20089FBB9 /* GCDWebUploader.bundle in Resources */,
+				EF9C21A827B1A64E00223E76 /* Launch.storyboard in Resources */,
 				EF1C941D24C2552900749C69 /* gitinfo.json.sh in Resources */,
 				EF490D97277A5E0E00407865 /* cheat.7z in Resources */,
 				EF08EB33277A937900E4D455 /* plugins.zip in Resources */,
 				EFFBA6FF24F1C91200F8666B /* WHATSNEW.md in Resources */,
 				EF7D116627348BDD00E61BB9 /* hash.zip in Resources */,
 				B5FAE31921FCE64D003F44D0 /* MAME_tvOS.lsr in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		EFA7A12F24B65C020009CF88 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				EF490D9B277A5E0E00407865 /* cheat.zip in Resources */,
-				EF1C940E24C252C600749C69 /* hiscore.dat in Resources */,
-				EFA7A13424B65C020009CF88 /* mame_logo.png in Resources */,
-				EF1C93FF24C252C600749C69 /* skins in Resources */,
-				EF1C93F924C252C600749C69 /* LICENSE in Resources */,
-				EFA7A13724B65C020009CF88 /* default_game_icon.png in Resources */,
-				EF1C940524C252C600749C69 /* Category.ini in Resources */,
-				EF1C941E24C2552900749C69 /* gitinfo.json.sh in Resources */,
-				EFA7A16D24B7A40F0009CF88 /* Assets.xcassets in Resources */,
-				EF7D116727348BDD00E61BB9 /* hash.zip in Resources */,
-				EF08EB34277A937900E4D455 /* plugins.zip in Resources */,
-				EFA7A14324B65C020009CF88 /* dpad.png in Resources */,
-				EFA7A14424B65C020009CF88 /* Launch Screen.storyboard in Resources */,
-				EF490D93277A5C8C00407865 /* history.dat.zip in Resources */,
-				EFFBA70024F1C91200F8666B /* WHATSNEW.md in Resources */,
-				EFA7A14924B65C020009CF88 /* menu.png in Resources */,
-				EFA7A14E24B65C020009CF88 /* GCDWebUploader.bundle in Resources */,
-				EFA7A15024B65C020009CF88 /* mameui.png in Resources */,
-				EF490D98277A5E0E00407865 /* cheat.7z in Resources */,
-				EF1C93F024C252C600749C69 /* SKIN_1 in Resources */,
-				EFA7A15124B65C020009CF88 /* iCadeControls.png in Resources */,
-				EF1C93F624C252C600749C69 /* help.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1350,25 +1125,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		EF79BDD824B7CE8100824BFD /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# force this resource to update each build\ntouch gitinfo.json.sh\n\n# build (or download) the MAME lib\ncd ../../\nif [ \"$MAMELIB\" == \"libmame\" ]; then\n    ./get-libmame.sh mac\nelse\n    ./make-mac.sh\nfi\n";
-			showEnvVarsInLog = 0;
-		};
 		EF79BDD924B7D71800824BFD /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -1385,7 +1141,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# force this resource to update each build\ntouch gitinfo.json.sh\n\n# build (or download) the MAME lib\ncd ../../\nif [ \"$MAMELIB\" == \"libmame\" ] && [ \"$PLATFORM_NAME\" == \"iphonesimulator\" ]; then\n    ./get-libmame.sh ios-simulator\nelif [ \"$MAMELIB\" == \"libmame\" ]; then\n    ./get-libmame.sh\nelif [ \"$PLATFORM_NAME\" == \"iphonesimulator\" ]; then\n    ./make-ios.sh simulator\nelse\n    ./make-ios.sh\nfi\n";
+			shellScript = "# force this resource to update each build\ntouch gitinfo.json.sh\n\n# build (or download) the MAME lib\ncd ../../\nif [ \"$MAMELIB\" == \"libmame\" ] && [ \"$PLATFORM_NAME\" == \"iphonesimulator\" ]; then\n    ./get-libmame.sh ios-simulator\nelif [ \"$MAMELIB\" == \"libmame\" ] && [ \"$PLATFORM_NAME\" == \"macosx\" ]; then\n    ./get-libmame.sh mac\nelif [ \"$MAMELIB\" == \"libmame\" ]; then\n    ./get-libmame.sh\nelif [ \"$PLATFORM_NAME\" == \"macosx\" ]; then\n    ./make-mac.sh\nelif [ \"$PLATFORM_NAME\" == \"iphonesimulator\" ]; then\n    ./make-ios.sh simulator\nelse\n    ./make-ios.sh\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 		EF79BDDA24B7D72C00824BFD /* ShellScript */ = {
@@ -1422,6 +1178,7 @@
 				92A533D321EBDDF20089FBB9 /* GCDWebUploader.m in Sources */,
 				EF8409A2260CEFAB00FAC3CF /* AVPlayerView.m in Sources */,
 				92A533C921EBDBAD0089FBB9 /* GCDWebServerFileRequest.m in Sources */,
+				EF9C21A427B18A7200223E76 /* SystemImage.swift in Sources */,
 				925ABCA81E46DCC500997182 /* ListOptionController.m in Sources */,
 				92A533C621EBDBAD0089FBB9 /* GCDWebServerDataRequest.m in Sources */,
 				EF8E428B249FE5410049C84C /* ulTron.metal in Sources */,
@@ -1447,7 +1204,6 @@
 				EF286D34253CA930007DA6D3 /* CloudSync.m in Sources */,
 				925ABCAF1E46DCC500997182 /* AnalogStick.m in Sources */,
 				925ABCB01E46DCC500997182 /* Bootstrapper.m in Sources */,
-				EFA7570D2406D64600A02AAB /* SystemImage.m in Sources */,
 				EFE0033D2638D97E00E42246 /* SoftwareList.m in Sources */,
 				92A533AB21EBDBAD0089FBB9 /* GCDWebServerFunctions.m in Sources */,
 				92A533BD21EBDBAD0089FBB9 /* GCDWebServerStreamedResponse.m in Sources */,
@@ -1507,13 +1263,13 @@
 				EFB7B21D247ACFE300AD96A4 /* MameShaders.metal in Sources */,
 				92A533D421EBDDF20089FBB9 /* GCDWebUploader.m in Sources */,
 				92ECB91221EAA1B700D1E3D0 /* EmulatorController.m in Sources */,
+				EF9C21A527B18A7200223E76 /* SystemImage.swift in Sources */,
 				EF8EAA87244F7F5D00DA02BB /* SteamControllerManager.m in Sources */,
 				EF24BAFD24C786A900D9C55A /* SkinManager.m in Sources */,
 				92A533AC21EBDBAD0089FBB9 /* GCDWebServerFunctions.m in Sources */,
 				EF7B232D23FD0469001FF51D /* (null) in Sources */,
 				92A533AF21EBDBAD0089FBB9 /* GCDWebServer.m in Sources */,
 				EF8EAA8D244F7F5D00DA02BB /* SteamControllerInput.m in Sources */,
-				EFA7570E2406D64600A02AAB /* SystemImage.m in Sources */,
 				92A533B521EBDBAD0089FBB9 /* GCDWebServerErrorResponse.m in Sources */,
 				EFE003392638ACA000E42246 /* XmlFile.m in Sources */,
 				EFE4B6AC2453D7F80009A6F1 /* InfoDatabase.m in Sources */,
@@ -1530,71 +1286,6 @@
 				EFB3C6D724890F6200F44780 /* simpleCRT.metal in Sources */,
 				EFB7B2182479FBD900AD96A4 /* MetalView.m in Sources */,
 				EF23D332243CB9CF006B3EE2 /* PopupSegmentedControl.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		EFA7A0DF24B65C020009CF88 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				EFA7A0E024B65C020009CF88 /* GCDWebServerConnection.m in Sources */,
-				EFA7A0E124B65C020009CF88 /* MetalViewShaders.metal in Sources */,
-				EFA7A0E224B65C020009CF88 /* KeyboardView.m in Sources */,
-				EFA7A0E324B65C020009CF88 /* GCDWebServerFileResponse.m in Sources */,
-				EF8409C0260D281000FAC3CF /* AVPlayerView.m in Sources */,
-				EFA7A0E424B65C020009CF88 /* OptionsTableViewController.m in Sources */,
-				EFA7A0E524B65C020009CF88 /* GCDWebUploader.m in Sources */,
-				EFA7A0E624B65C020009CF88 /* GCDWebServerFileRequest.m in Sources */,
-				EFA7A0E724B65C020009CF88 /* ListOptionController.m in Sources */,
-				EFA7A0E824B65C020009CF88 /* GCDWebServerDataRequest.m in Sources */,
-				EFA7A0E924B65C020009CF88 /* ulTron.metal in Sources */,
-				EFA7A0EA24B65C020009CF88 /* lineTron.metal in Sources */,
-				EFA7A0EB24B65C020009CF88 /* GCDWebServerRequest.m in Sources */,
-				EFA7A0EC24B65C020009CF88 /* MameShaders.metal in Sources */,
-				EFA7A0ED24B65C020009CF88 /* OptionsController.m in Sources */,
-				EFE0033A2638ACA000E42246 /* XmlFile.m in Sources */,
-				EFA7A0EE24B65C020009CF88 /* SteamControllerExtendedGamepad.m in Sources */,
-				EFA7A0EF24B65C020009CF88 /* SteamControllerInput.m in Sources */,
-				EFA7A0F024B65C020009CF88 /* GCDWebServerURLEncodedFormRequest.m in Sources */,
-				EFA7A0F124B65C020009CF88 /* WebServer.m in Sources */,
-				EFA7A0F324B65C020009CF88 /* simpleCRT.metal in Sources */,
-				EFA7A0F424B65C020009CF88 /* Alert.m in Sources */,
-				EFA7A0F524B65C020009CF88 /* GCDWebServerDataResponse.m in Sources */,
-				EF474B982796447500578663 /* EmulatorKeyboard.swift in Sources */,
-				EFA7A0F624B65C020009CF88 /* ImageCache.m in Sources */,
-				EFA7A0F724B65C020009CF88 /* UIView+Toast.m in Sources */,
-				EFA7A0F824B65C020009CF88 /* EmulatorController.m in Sources */,
-				EF1741D8261BB2D600DE8386 /* GameInfo.m in Sources */,
-				EFA7A0F924B65C020009CF88 /* HelpController.m in Sources */,
-				EF286D36253CA930007DA6D3 /* CloudSync.m in Sources */,
-				EF474B972796447000578663 /* EmulatorController+EmulatorKeyboardSupport.swift in Sources */,
-				EFA7A0FA24B65C020009CF88 /* AnalogStick.m in Sources */,
-				EFA7A0FB24B65C020009CF88 /* Bootstrapper.m in Sources */,
-				EFA7A0FD24B65C020009CF88 /* SystemImage.m in Sources */,
-				EFE0033F2638D97E00E42246 /* SoftwareList.m in Sources */,
-				EFA7A0FE24B65C020009CF88 /* GCDWebServerFunctions.m in Sources */,
-				EFA7A0FF24B65C020009CF88 /* GCDWebServerStreamedResponse.m in Sources */,
-				EFA7A10024B65C020009CF88 /* MetalView.m in Sources */,
-				EFA7A10224B65C020009CF88 /* LayoutView.m in Sources */,
-				EFA7A10324B65C020009CF88 /* SteamControllerManager.m in Sources */,
-				EFA7A10424B65C020009CF88 /* GCDWebServerResponse.m in Sources */,
-				EFA7A10724B65C020009CF88 /* InfoDatabase.m in Sources */,
-				EF67E11624B8972100AFF489 /* MacMenu.m in Sources */,
-				EF926C9C24BA36980048392B /* SkinManager.m in Sources */,
-				EFA7A10924B65C020009CF88 /* InputOptionController.m in Sources */,
-				EFA7A10A24B65C020009CF88 /* GCDWebServerMultiPartFormRequest.m in Sources */,
-				EFA7A10B24B65C020009CF88 /* FileItemProvider.m in Sources */,
-				EFA7A10D24B65C020009CF88 /* (null) in Sources */,
-				EFA7A10E24B65C020009CF88 /* megaTron.metal in Sources */,
-				EFA7A10F24B65C020009CF88 /* GCDWebServerErrorResponse.m in Sources */,
-				EFA7A11024B65C020009CF88 /* PopupSegmentedControl.m in Sources */,
-				EFA7A11124B65C020009CF88 /* MetalScreenView.m in Sources */,
-				EFA7A11224B65C020009CF88 /* ChooseGameController.m in Sources */,
-				EFA7A11324B65C020009CF88 /* SteamController.m in Sources */,
-				EFA7A11424B65C020009CF88 /* InfoHUD.m in Sources */,
-				EFA7A11524B65C020009CF88 /* GCDWebServer.m in Sources */,
-				EFA7A11624B65C020009CF88 /* Options.m in Sources */,
-				EFA7A11724B65C020009CF88 /* ZipFile.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1647,11 +1338,12 @@
 					"$(PROJECT_DIR)",
 				);
 				OTHER_LDFLAGS = "";
-				PRODUCT_NAME = MAME4iOS;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				SUPPORTS_MACCATALYST = NO;
-				SWIFT_OBJC_BRIDGING_HEADER = "MAME4iOS-Bridging-Header.h";
+				SUPPORTS_MACCATALYST = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_NAME)-Bridging-Header.h";
+				SWIFT_OBJC_INTERFACE_HEADER_NAME = "$(PROJECT_NAME)-Swift.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VALID_ARCHS = "$(ARCHS_STANDARD_64_BIT)";
@@ -1684,11 +1376,12 @@
 					"$(PROJECT_DIR)",
 				);
 				OTHER_LDFLAGS = "";
-				PRODUCT_NAME = MAME4iOS;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				SUPPORTS_MACCATALYST = NO;
-				SWIFT_OBJC_BRIDGING_HEADER = "MAME4iOS-Bridging-Header.h";
+				SUPPORTS_MACCATALYST = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_NAME)-Bridging-Header.h";
+				SWIFT_OBJC_INTERFACE_HEADER_NAME = "$(PROJECT_NAME)-Swift.h";
 				SWIFT_VERSION = 5.0;
 				VALID_ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				WRAPPER_EXTENSION = app;
@@ -1750,11 +1443,15 @@
 				);
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
-				PRODUCT_NAME = MAME4tvOS;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_NAME)-Bridging-Header.h";
+				SWIFT_OBJC_INTERFACE_HEADER_NAME = "$(PROJECT_NAME)-Swift.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 12.4;
+				TVOS_DEPLOYMENT_TARGET = 13.4;
 				VALID_ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 			};
 			name = Debug;
@@ -1815,11 +1512,14 @@
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
-				PRODUCT_NAME = MAME4tvOS;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_NAME)-Bridging-Header.h";
+				SWIFT_OBJC_INTERFACE_HEADER_NAME = "$(PROJECT_NAME)-Swift.h";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 12.4;
+				TVOS_DEPLOYMENT_TARGET = 13.4;
 				VALID_ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 			};
 			name = Release;
@@ -1932,73 +1632,6 @@
 			};
 			name = Release;
 		};
-		EFA7A15C24B65C020009CF88 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = MacIcon;
-				CLANG_ENABLE_OBJC_ARC = YES;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				ENABLE_BITCODE = NO;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "MAME4iOS/MAME4iOS-Prefix.pch";
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				HEADER_SEARCH_PATHS = "";
-				INFOPLIST_FILE = "MAME4mac/MAME4mac-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(SRCROOT)/../..",
-					"$(PROJECT_DIR)/MAME4iOS",
-					"$(PROJECT_DIR)",
-				);
-				OTHER_LDFLAGS = "";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				SUPPORTS_MACCATALYST = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "MAME4iOS-Bridging-Header.h";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 2;
-				VALID_ARCHS = "$(ARCHS_STANDARD_64_BIT)";
-				WRAPPER_EXTENSION = app;
-			};
-			name = Debug;
-		};
-		EFA7A15D24B65C020009CF88 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = MacIcon;
-				CLANG_ENABLE_OBJC_ARC = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
-				ENABLE_BITCODE = NO;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "MAME4iOS/MAME4iOS-Prefix.pch";
-				HEADER_SEARCH_PATHS = "";
-				INFOPLIST_FILE = "MAME4mac/MAME4mac-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(SRCROOT)/../..",
-					"$(PROJECT_DIR)/MAME4iOS",
-					"$(PROJECT_DIR)",
-				);
-				OTHER_LDFLAGS = "";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				SUPPORTS_MACCATALYST = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "MAME4iOS-Bridging-Header.h";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 2;
-				VALID_ARCHS = "$(ARCHS_STANDARD_64_BIT)";
-				WRAPPER_EXTENSION = app;
-			};
-			name = Release;
-		};
 		EFEEA4BB25C9D41E00314132 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -2030,7 +1663,7 @@
 				SDKROOT = appletvos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 13.0;
+				TVOS_DEPLOYMENT_TARGET = 13.4;
 			};
 			name = Debug;
 		};
@@ -2066,7 +1699,7 @@
 				SDKROOT = appletvos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 13.0;
+				TVOS_DEPLOYMENT_TARGET = 13.4;
 			};
 			name = Release;
 		};
@@ -2096,15 +1729,6 @@
 			buildConfigurations = (
 				CEE680A11635BA7000051BC2 /* Debug */,
 				CEE680A21635BA7000051BC2 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		EFA7A15B24B65C020009CF88 /* Build configuration list for PBXNativeTarget "MAME4mac" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				EFA7A15C24B65C020009CF88 /* Debug */,
-				EFA7A15D24B65C020009CF88 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -59,11 +59,7 @@
 #import "PopupSegmentedControl.h"
 #endif
 
-#if TARGET_OS_MACCATALYST
-#import "MAME4mac-Swift.h"
-#elif TARGET_OS_IOS
 #import "MAME4iOS-Swift.h"
-#endif
 
 #import "ChooseGameController.h"
 #import "GameInfo.h"
@@ -80,7 +76,6 @@
 #import "WebServer.h"
 #import "Alert.h"
 #import "ZipFile.h"
-#import "SystemImage.h"
 #import "SteamController.h"
 #import "SkinManager.h"
 #import "CloudSync.h"
