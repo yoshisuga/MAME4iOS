@@ -712,7 +712,7 @@ void m4i_game_stop()
 
 @interface EmulatorController()
 #if TARGET_OS_IOS
-<EmulatorKeyboardKeyPressedDelegate>
+<EmulatorKeyboardKeyPressedDelegate, EmulatorKeyboardModifierPressedDelegate>
 #endif
 {
     CSToastStyle *toastStyle;
@@ -6159,12 +6159,26 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
 
 #if TARGET_OS_IOS
 
-#pragma mark EmulatorKeyboardPressedDelegate
+#pragma mark EmulatorKeyboardKeyPressedDelegate
 
  -(void)keyPressedWithIsKeyDown:(BOOL)isKeyDown key:(id<KeyCoded>)key {
+     NSLog(@"keyPressed: %d %s", (int)key.keyCode, isKeyDown ? "DOWN" : "UP");
      myosd_keyboard[key.keyCode] = isKeyDown ? 0x80 : 0x00;
      myosd_keyboard_changed = 1;
- }
+}
+
+#pragma mark EmulatorKeyboardModifierPressedDelegate
+
+-(void)modifierPressedWithKey:(id<KeyCoded>)key enable:(BOOL)enable {
+    NSLog(@"modifierPressed: %d %s", (int)key.keyCode, enable ? "ON" : "OFF");
+    myosd_keyboard[key.keyCode] = enable ? 0x80 : 0x00;
+    myosd_keyboard_changed = 1;
+}
+
+-(BOOL)isModifierEnabledWithKey:(id<KeyCoded>)key {
+    NSLog(@"isModifierPressed: %d -> %s", (int)key.keyCode, myosd_keyboard[key.keyCode] ? "ON" : "OFF");
+    return myosd_keyboard[key.keyCode] != 0;
+}
 
 #endif
 
