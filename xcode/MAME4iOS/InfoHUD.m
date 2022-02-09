@@ -119,7 +119,7 @@
 }
 - (void)setFont:(UIFont *)font {
     _font = font ?: [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-    _stack.spacing = floor(_font.lineHeight / 8.0);
+    _stack.spacing = floor(_font.lineHeight / 4.0);
 }
 
 - (void)addBlur:(UIBlurEffectStyle)style {
