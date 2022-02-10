@@ -371,13 +371,8 @@
 - (NSString*)optionAtIndex:(NSUInteger)index {
     return [self objectAtIndex:index withDefault:self.firstObject];
 }
-// find and return option index given a name, default to first if not found
-- (NSUInteger)indexOfOption:(NSString*)string {
-    NSUInteger idx = [self indexOfObject:string];
-    return (idx == NSNotFound) ? 0 : idx;
-}
 // find and return option name given a string, default to first if not found
 - (NSString*)optionFind:(NSString*)string {
-    return [self optionAtIndex:[self indexOfOption:string]];
+    return [self objectAtIndex:[self indexOfObject:string] withDefault:self.firstObject];
 }
 @end

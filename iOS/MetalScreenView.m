@@ -109,7 +109,6 @@ TIMER_INIT_END
 //      render-target-size      - size of the render target (in pixels)
 //      mame-screen-dst-rect    - the size (in pixels) of the output quad
 //      mame-screen-src-rect    - the size (in pixels) of the input SCREEN texture
-//      mame-screen-size        - the size (in pixels) of the input SCREEN texture
 //
 //  Presets are simply the @string without the key names, only numbers!
 //
