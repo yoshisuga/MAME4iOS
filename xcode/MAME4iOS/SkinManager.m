@@ -288,7 +288,7 @@ BOOL UIImageIsBlank(UIImage* image) {
     
     // add other images/etc
     [files addObjectsFromArray:@[
-            @"skin.json", @"README.md",
+            @"skin.json", @"README.txt",
             @"border", @"background",
             @"stick-U", @"stick-D", @"stick-L", @"stick-R",
             @"stick-UL", @"stick-DL", @"stick-DR", @"stick-UR",
@@ -343,7 +343,7 @@ BOOL UIImageIsBlank(UIImage* image) {
         
         if ([name isEqualToString:@"skin.json"])
             data = [NSJSONSerialization dataWithJSONObject:[self getSkinInfo:isDefault] options:NSJSONWritingPrettyPrinted error:nil];
-        else if ([name isEqualToString:@"README.md"])
+        else if ([name isEqualToString:@"README.txt"])
             data = [NSData dataWithContentsOfFile:[NSBundle.mainBundle pathForResource:[NSString stringWithFormat:@"%s/%@", BUILTIN_SKINS, name] ofType:nil]];
         else if (isDefault)
             data = UIImagePNGRepresentation([self loadImage:name]);
