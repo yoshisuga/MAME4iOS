@@ -90,6 +90,12 @@ const char* get_documents_path(const char* file)
     }];
 }
 
+static NSComparisonResult compare_file_dates(NSString* file1, NSString* file2) {
+    NSDate* date1 = [[NSFileManager.defaultManager attributesOfItemAtPath:file1 error:nil] fileModificationDate] ?: NSDate.distantPast;
+    NSDate* date2 = [[NSFileManager.defaultManager attributesOfItemAtPath:file2 error:nil] fileModificationDate] ?: NSDate.distantPast;
+    return [date1 compare:date2];
+}
+
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary<UIApplicationLaunchOptionsKey,id> *)launchOptions {
 
     chdir (get_documents_path(""));
@@ -106,33 +112,33 @@ const char* get_documents_path(const char* file)
     }
     
     // copy first-run files.
-    if (![NSFileManager.defaultManager fileExistsAtPath:getDocumentPath(@"dats/history.dat")])
+    if (compare_file_dates(getResourcePath(@"history.dat.zip"), getDocumentPath(@"dats/history.dat")) == NSOrderedDescending)
         [self extract:getResourcePath(@"history.dat.zip") to:getDocumentPath(@"dats")];
- 
-    if (myosd_get(MYOSD_VERSION) != 139 && ![NSFileManager.defaultManager fileExistsAtPath:getDocumentPath(@"plugins/hiscore/hiscore.dat")] )
+
+    if (myosd_get(MYOSD_VERSION) != 139 && compare_file_dates(getResourcePath(@"plugins.zip"), getDocumentPath(@"plugins/hiscore/hiscore.dat")) == NSOrderedDescending)
         [self extract:getResourcePath(@"plugins.zip") to:getDocumentPath(@"plugins")];
 
     // cheat.zip is the 139 version, and cheat.7z is the 2xx version
-    NSString* cheat_zip = myosd_get(MYOSD_VERSION) == 139 ? @"cheat.zip" : @"cheat.7z";
-    
     // hiscore.dat (in root) is the 139 version, and plugins/hiscore/hiscore.dat is the 2xx version
-    NSString* hiscore_dat = myosd_get(MYOSD_VERSION) == 139 ? @"hiscore.dat" : @"";
+    NSArray* files;
+    if (myosd_get(MYOSD_VERSION) == 139)
+        files = @[@"cheat.zip", @"hiscore.dat"];
+    else
+        files = @[@"cheat.7z"];
+    
+    // add in fixed pre-canned files
+    files = [files arrayByAddingObjectsFromArray:@[@"Category.ini", @"hash.zip", @"skins/README.txt", @"shaders/README.txt", @"shaders/Example.metal", @"software/README.txt"]];
 
     // copy (or update) pre-canned files.
-    for (NSString* file in @[@"Category.ini", hiscore_dat, @"hash.zip", cheat_zip])
+    for (NSString* file in files)
     {
-        if (file.length == 0)
-            continue;
-        
         NSString* fromPath = getResourcePath(file);
         NSString* toPath = getDocumentPath(file);
-        NSParameterAssert([NSFileManager.defaultManager fileExistsAtPath:fromPath]);
 
-        NSDate* fromDate = [[NSFileManager.defaultManager attributesOfItemAtPath:fromPath error:nil] fileModificationDate];
-        NSDate* toDate = [[NSFileManager.defaultManager attributesOfItemAtPath:toPath error:nil] fileModificationDate] ?: NSDate.distantPast;
-        NSParameterAssert(fromDate != nil);
+        if (file.length == 0 || ![NSFileManager.defaultManager fileExistsAtPath:fromPath])
+            continue;
 
-        if ([fromDate compare:toDate] == NSOrderedDescending) {
+        if (compare_file_dates(fromPath, toPath) == NSOrderedDescending) {
             [NSFileManager.defaultManager removeItemAtPath:toPath error:nil];
             [NSFileManager.defaultManager copyItemAtPath:fromPath toPath:toPath error:nil];
         }
