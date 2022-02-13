@@ -49,6 +49,7 @@
     NSString* key;
     NSArray<NSString*> *list;
     NSInteger value;
+    NSInteger original_value;
 }
 
 - (instancetype)initWithKey:(NSString*)keyValue list:(NSArray<NSString*>*)listValue {
@@ -92,6 +93,8 @@
         list = [@[@"None"] arrayByAddingObjectsFromArray:list];
         value = [list indexOfObject:str];
     }
+    
+    original_value = value;
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -105,6 +108,9 @@
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
+    
+   if (original_value == value)
+       return;
     
     Options *op = [[Options alloc] init];
     int value = (int)self->value;
