@@ -11,7 +11,7 @@
 #import "GameInfo.h"
 #import <CommonCrypto/CommonDigest.h>
 
-#define DebugLog 1
+#define DebugLog 0
 #if DebugLog == 0 || !defined(DEBUG)
 #define NSLog(...) (void)0
 #endif
