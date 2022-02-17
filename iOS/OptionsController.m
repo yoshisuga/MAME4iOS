@@ -86,7 +86,6 @@
    
    UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:nil];
    cell.accessoryType = UITableViewCellAccessoryNone;
-   cell.selectionStyle = UITableViewCellSelectionStyleNone;
    
    Options *op = [[Options alloc] init];
     
