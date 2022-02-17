@@ -96,9 +96,16 @@ static NSComparisonResult compare_file_dates(NSString* file1, NSString* file2) {
     return [date1 compare:date2];
 }
 
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary<UIApplicationLaunchOptionsKey,id> *)launchOptions {
+NSArray* g_import_file_types;
 
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary<UIApplicationLaunchOptionsKey,id> *)launchOptions {
+    
     chdir (get_documents_path(""));
+    
+    // read our own Info.plist to get the file types we can import.
+    NSArray* arr = [NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleDocumentTypes"];
+    g_import_file_types = [arr valueForKeyPath:@"CFBundleTypeExtensions.@unionOfArrays.self"];
+    NSParameterAssert([g_import_file_types containsObject:@"zip"]);
     
     // create directories
     for (NSString* dir in MAME_ROOT_DIRS)
@@ -211,6 +218,12 @@ static NSComparisonResult compare_file_dates(NSString* file1, NSString* file2) {
     return result;
 }
 
+- (void)moveROMS
+{
+    [self->hrViewController performSelectorOnMainThread:@selector(moveROMS) withObject:nil waitUntilDone:NO];
+}
+
+
 - (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
 {
     NSLog(@"OPEN URL: %@ %@", url, options);
@@ -258,7 +271,8 @@ static NSComparisonResult compare_file_dates(NSString* file1, NSString* file2) {
                     NSLog(@"copyItemAtURL ERROR: (%@)", error);
                 
                 [url stopAccessingSecurityScopedResource];
-                [self->hrViewController performSelectorOnMainThread:@selector(moveROMS) withObject:nil waitUntilDone:NO];
+                [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(moveROMS) object:nil];
+                [self performSelector:@selector(moveROMS) withObject:nil afterDelay:1.0];
             }];
             if (error != nil)
                 NSLog(@"coordinateReadingItemAtURL ERROR: (%@)", error);
@@ -274,7 +288,8 @@ static NSComparisonResult compare_file_dates(NSString* file1, NSString* file2) {
         if ([[[url URLByDeletingLastPathComponent] lastPathComponent] hasSuffix:@"Inbox"])
             [[NSFileManager defaultManager] removeItemAtURL:url error:nil];
         
-        [self->hrViewController performSelectorOnMainThread:@selector(moveROMS) withObject:nil waitUntilDone:NO];
+        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(moveROMS) object:nil];
+        [self performSelector:@selector(moveROMS) withObject:nil afterDelay:1.0];
     }
     
     return TRUE;
