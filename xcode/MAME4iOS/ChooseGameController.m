@@ -12,10 +12,10 @@
 #import "GameInfo.h"
 #import "SoftwareList.h"
 #import "ImageCache.h"
-#import "SystemImage.h"
 #import "InfoDatabase.h"
 #import "Alert.h"
 #import "Globals.h"
+#import "MAME4iOS-Swift.h"
 
 #if TARGET_OS_IOS
 #import <Intents/Intents.h>
@@ -303,7 +303,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     UIBarButtonItem* scope = [[UIBarButtonItem alloc] initWithCustomView:seg2];
     
 #if TARGET_OS_TV
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wdeprecated"
     UIColor* color = UIApplication.sharedApplication.keyWindow.tintColor;
+    #pragma clang diagnostic pop
     [seg2 setTitleTextAttributes:@{NSForegroundColorAttributeName:color} forState:UIControlStateNormal];
     [seg2 setTitleTextAttributes:@{NSForegroundColorAttributeName:color} forState:UIControlStateSelected];
 #endif
@@ -2427,7 +2430,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     self.backgroundView = effectView;
 }
 
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0
+#if (TARGET_OS_IOS && __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0) || (TARGET_OS_TV && __TV_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0)
 #define UIActivityIndicatorViewStyleMedium UIActivityIndicatorViewStyleWhite
 #define UIActivityIndicatorViewStyleLarge UIActivityIndicatorViewStyleWhiteLarge
 #endif

@@ -43,7 +43,7 @@ Since then, a large number of features have been added:
 
 ### Xcode
 
-Requirements: iOS 12.4 or higher, tvOS 12.4 or higher, or Mac 10.15.5 (Catalina) or higher to run.
+Requirements: iOS 13.4 or higher, tvOS 13.4 or higher, or Mac 10.15.5 (Catalina) or higher to run.
 
 Requirements: Mac 10.13.6 with Xcode 11.4 or above to bulid.
 
@@ -69,9 +69,8 @@ Even if you are not in the paid Apple Developer Program, you can sideload the ap
     - 139u1 or latest `MAME 2xx` version.
 
 5. Choose the appropriate build target in Xcode:
-    - `MAME4iOS Release` (iPhone/iPad)
+    - `MAME4iOS Release` (iPhone/iPad/macOS)
     - `MAME tvOS Release` (AppleTV)
-    - `MAME4mac Release` (Mac Catalyst)
 
 6. Build:
     1. If you are a developer: Build and `▶︎` Run on your device. _Done._

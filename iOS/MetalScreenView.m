@@ -109,8 +109,6 @@ TIMER_INIT_END
 //      render-target-size      - size of the render target (in pixels)
 //      mame-screen-dst-rect    - the size (in pixels) of the output quad
 //      mame-screen-src-rect    - the size (in pixels) of the input SCREEN texture
-//      mame-screen-size        - the size (in pixels) of the input SCREEN texture
-//      mame-screen-matrix      - matrix to convert texture coordinates (u,v) to crt (x,scanline)
 //
 //  Presets are simply the @string without the key names, only numbers!
 //
@@ -157,11 +155,11 @@ TIMER_INIT_END
              @"None", ShaderTexture,
              
 #ifdef DEBUG
-             @"Wombat1", @"mame_screen_test, mame-screen-size, frame-count, 1.0, 8.0, 8.0",
-             @"Wombat2", @"mame_screen_test, mame-screen-size, frame-count, wombat_rate=2.0, wombat_u=16.0, wombat_v=16.0",
-             @"Test (dot)", @"mame_screen_dot, mame-screen-matrix",
-             @"Test (scanline)", @"mame_screen_line, mame-screen-matrix",
-             @"Test (rainbow)", @"mame_screen_rainbow, mame-screen-matrix, frame-count, rainbow_h = 16.0 4.0 32.0 1.0, rainbow_speed = 1.0 1.0 16.0",
+             @"Wombat1", @"mame_screen_test, frame-count, 1.0, 8.0, 8.0",
+             @"Wombat2", @"mame_screen_test, frame-count, wombat_rate=2.0, wombat_u=16.0, wombat_v=16.0",
+             @"Test (dot)", @"mame_screen_dot, blend=copy",
+             @"Test (scanline)", @"mame_screen_line, blend=copy",
+             @"Test (rainbow)", @"mame_screen_rainbow, frame-count, rainbow_h = 16.0 4.0 32.0 1.0, rainbow_speed = 1.0 1.0 16.0",
              @"Test (color)", @"texture, blend=copy, color-test-pattern=1 0 1 1, test-brightness-factor=1.0 1.0 4.0",
 #endif
     ];
@@ -525,15 +523,13 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
                       format:MTLPixelFormatBGRA8Unorm
                 texture_load:^(id<MTLTexture> texture) {load_texture_prim(texture, prim);} ];
 
-            // set the shader
-            if (prim->screentex) {
+            // set the screen shader, but only if no blending is happening
+            if (prim->screentex && prim->blendmode == MYOSD_BLENDMODE_NONE) {
                 // render of the game screen, use a custom shader
                 // set the following shader variables so the shader knows the pixel size of a scanline etc....
                 //
                 //      mame-screen-dst-rect - the size (in pixels) of the output quad
                 //      mame-screen-src-rect - the size (in pixels) of the input texture
-                //      mame-screen-size     - the size (in pixels) of the input texture
-                //      mame-screen-matrix   - matrix to convert texture coordinates (u,v) to crt (x,scanline)
                 //
                 CGSize src_size = CGSizeMake((prim->texorient & MYOSD_ORIENTATION_SWAP_XY) ? prim->texture_height : prim->texture_width,
                                              (prim->texorient & MYOSD_ORIENTATION_SWAP_XY) ? prim->texture_width : prim->texture_height);
@@ -541,18 +537,9 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
                 CGRect src_rect = CGRectMake(0, 0, src_size.width, src_size.height);
                 CGRect dst_rect = CGRectMake(rect.origin.x * scale_x, rect.origin.y * scale_y, rect.size.width * scale_x, rect.size.height * scale_y);
                 
-                // create a matrix to convert texture coordinates (u,v) to crt scanlines (x,y)
-                simd_float2x2 mame_screen_matrix;
-                if (prim->texorient & MYOSD_ORIENTATION_SWAP_XY)
-                    mame_screen_matrix = (matrix_float2x2){{ {0,prim->texture_width}, {prim->texture_height,0} }};
-                else
-                    mame_screen_matrix = (matrix_float2x2){{ {prim->texture_width,0}, {0,prim->texture_height} }};
-                
                 [self setShaderVariables:@{
                     @"mame-screen-dst-rect" :@(dst_rect),
                     @"mame-screen-src-rect" :@(src_rect),
-                    @"mame-screen-size"     :@(src_size),
-                    @"mame-screen-matrix"   :[NSValue value:&mame_screen_matrix withObjCType:@encode(float[2][2])],
                 }];
                 [self setTextureFilter:_filter];
                 [self setShader:_screen_shader];

@@ -40,7 +40,7 @@ extension EmulatorController {
            ],
              [
                  EmulatorKeyboardKey(label: "SHIFT", code: Int(MYOSD_KEY_LSHIFT.rawValue), keySize: .standard, isModifier: true, imageName: "shift", imageNameHighlighted: "shift.fill"),
-              EmulatorKeyboardKey(label: "Fn", code: 9000, keySize: .standard, imageName: "fn"),
+                 EmulatorKeyboardKey(label: "Fn", code: 9000, keySize: .standard, imageName: "fn"),
                  EmulatorKeyboardKey(label: "CTRL", code: Int(MYOSD_KEY_LCONTROL.rawValue), isModifier: true, imageName: "control"),
                  EmulatorKeyboardKey(label: "Space", code: Int(MYOSD_KEY_SPACE.rawValue), keySize: .wide)
            ]
@@ -71,7 +71,7 @@ extension EmulatorController {
            ],
            [
              EmulatorKeyboardKey(label: "SHIFT", code: Int(MYOSD_KEY_LSHIFT.rawValue), keySize: .standard, isModifier: true, imageName: "shift", imageNameHighlighted: "shift.fill"),
-              EmulatorKeyboardKey(label: "Fn", code: 9000, keySize: .standard, imageName: "fn"),
+             EmulatorKeyboardKey(label: "Fn", code: 9000, keySize: .standard, imageName: "fn"),
              EmulatorKeyboardKey(label: "CTRL", code: Int(MYOSD_KEY_LCONTROL.rawValue), isModifier: true, imageName: "control"),
              EmulatorKeyboardKey(label: "Space", code: Int(MYOSD_KEY_SPACE.rawValue), keySize: .wide)
            ]
@@ -168,6 +168,10 @@ extension EmulatorController {
          )
          keyboard.rightKeyboardModel.delegate = self as? EmulatorKeyboardKeyPressedDelegate
          keyboard.leftKeyboardModel.delegate = self as? EmulatorKeyboardKeyPressedDelegate
+         
+         keyboard.rightKeyboardModel.modifierDelegate = self as? EmulatorKeyboardModifierPressedDelegate
+         keyboard.leftKeyboardModel.modifierDelegate = self as? EmulatorKeyboardModifierPressedDelegate
+
          guard let keyboardView = keyboard.view else { return }
          addChild(keyboard)
          keyboard.didMove(toParent: self)

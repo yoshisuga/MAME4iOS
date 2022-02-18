@@ -163,7 +163,6 @@
         cell = [[UITableViewCell alloc] initWithStyle:style reuseIdentifier:@"CellIdentifier"];
         
         cell.accessoryType = UITableViewCellAccessoryNone;
-        cell.selectionStyle = UITableViewCellSelectionStyleNone;
     }
     
     Options *op = [[Options alloc] init];

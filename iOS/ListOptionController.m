@@ -49,6 +49,7 @@
     NSString* key;
     NSArray<NSString*> *list;
     NSInteger value;
+    NSInteger original_value;
 }
 
 - (instancetype)initWithKey:(NSString*)keyValue list:(NSArray<NSString*>*)listValue {
@@ -72,18 +73,28 @@
     Options *op = [[Options alloc] init];
     
     id val = [op valueForKey:key];
-    
+
     if ([val isKindOfClass:[NSString class]])
-        value = [list indexOfOption:val];
+        value = [list indexOfObject:val];
     else if ([val isKindOfClass:[NSNumber class]])
         value = [val intValue];
     else
-        value = 0;
+        value = NSNotFound;
     
-    if (value == NSNotFound || value >= [list count]) {
+    if (value == NSNotFound || value < 0 || value >= [list count]) {
         NSLog(@"list value out of range, setting to 0");
         value = 0;
     }
+    
+    // move the "None" option first
+    if ([val isKindOfClass:[NSString class]] && [list containsObject:@"None"]) {
+        NSString* str = list[value];
+        list = [list filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF != %@", @"None"]];
+        list = [@[@"None"] arrayByAddingObjectsFromArray:list];
+        value = [list indexOfObject:str];
+    }
+    
+    original_value = value;
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -98,13 +109,16 @@
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
     
+   if (original_value == value)
+       return;
+    
     Options *op = [[Options alloc] init];
     int value = (int)self->value;
     
     id val = [op valueForKey:key];
 
     if ([val isKindOfClass:[NSString class]])
-        [op setValue:[list optionAtIndex:value] forKey:key];
+        [op setValue:[list objectAtIndex:value] forKey:key];
     else if ([val isKindOfClass:[NSNumber class]])
         [op setValue:@(value) forKey:key];
     
@@ -125,12 +139,22 @@
     static NSString *CheckMarkCellIdentifier = @"CheckMarkCellIdentifier";
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CheckMarkCellIdentifier];
     if (cell == nil) {
-        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CheckMarkCellIdentifier];
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CheckMarkCellIdentifier];
     }
     
     NSUInteger row = [indexPath row];
-    cell.textLabel.text = [list objectAtIndex:row];
+    NSString* text = [list objectAtIndex:row];
+    cell.textLabel.text = text;
+    cell.detailTextLabel.text = nil;
     cell.accessoryType = (row == value) ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
+
+    for (NSString* sep in @[@" - ", @" : ", @": ", @" • "]) {
+        if ([text containsString:sep]) {
+            cell.textLabel.text = [text componentsSeparatedByString:sep].firstObject;
+            cell.detailTextLabel.text = [text componentsSeparatedByString:sep].lastObject;
+        }
+    }
+
     return cell;
 }
 

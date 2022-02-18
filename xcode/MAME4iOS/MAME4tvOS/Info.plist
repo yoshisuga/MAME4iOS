@@ -44,8 +44,8 @@
 	</array>
 	<key>GCSupportsControllerUserInteraction</key>
 	<true/>
-	<key>LSApplicationCategoryType</key>
-	<string></string>
+    <key>LSApplicationCategoryType</key>
+    <string>public.app-category.arcade-games</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
@@ -59,6 +59,8 @@
 	<string>We need bluetooth for steam controllers</string>
 	<key>UIFileSharingEnabled</key>
 	<true/>
+	<key>UILaunchStoryboardName</key>
+	<string>Launch</string>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>arm64</string>

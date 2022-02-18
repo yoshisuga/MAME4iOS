@@ -41,28 +41,7 @@
     [self.topViewController presentViewController:alert animated:YES completion:nil];
 }
 
--(void)showAlertWithTitle:(NSString*)title message:(NSString*)message
-{
-    [self showAlertWithTitle:title message:message buttons:@[@"OK"] handler:nil];
-}
-
--(void)showAlertWithTitle:(NSString*)title message:(NSString*)message timeout:(NSTimeInterval)timeout
-{
-    [self showAlertWithTitle:title message:message];
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(timeout * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [self dismissAlert];
-    });
-}
-
--(void)dismissAlert
-{
-    if (![self.topViewController isKindOfClass:[UIAlertController class]])
-        return;
-    
-    [self.topViewController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
-}
-
+// get the tip-top presented controller, or self if none
 -(UIViewController*)topViewController
 {
     UIViewController* vc = self;

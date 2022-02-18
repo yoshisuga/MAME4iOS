@@ -376,7 +376,7 @@ static const NSString * CSToastQueueKey             = @"CSToastQueueKey";
 
 #pragma mark - Activity Methods
 
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0
+#if (TARGET_OS_IOS && __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0) || (TARGET_OS_TV && __TV_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0)
 #define UIActivityIndicatorViewStyleMedium UIActivityIndicatorViewStyleWhite
 #define UIActivityIndicatorViewStyleLarge UIActivityIndicatorViewStyleWhiteLarge
 #endif

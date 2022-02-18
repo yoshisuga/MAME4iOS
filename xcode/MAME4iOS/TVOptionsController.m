@@ -9,9 +9,9 @@
 #import "TVOptionsController.h"
 #import "ListOptionController.h"
 #import "TVInputOptionsController.h"
-#import "SystemImage.h"
 #import "CloudSync.h"
 #import "Alert.h"
+#import "MAME4iOS-Swift.h"
 
 @implementation TVOptionsController
 
@@ -108,7 +108,6 @@
     
     UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:nil];
 
-    cell.selectionStyle = UITableViewCellSelectionStyleNone;
     cell.accessoryType = UITableViewCellAccessoryNone;
     cell.accessoryView = nil;
     cell.textLabel.text = nil;

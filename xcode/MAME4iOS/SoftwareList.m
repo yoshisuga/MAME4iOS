@@ -87,6 +87,9 @@
 
     NSMutableArray* games = [[NSMutableArray alloc] init];
     
+    // TODO: add support for NTSC and PAL filter
+    //     <sharedfeat name="compatibility" value="NTSC"/>
+    
     for (NSString* list in [lists componentsSeparatedByString:@","]) {
         for (NSDictionary* software in [self getSoftwareList:list]) {
             [games addObject:@{
@@ -126,8 +129,8 @@
         return nil;
 
     // get SHA1 of all files in this romset
-    NSArray* hashes = getZipFileSHA1(path);
-    if (hashes.count == 0)
+    NSSet* zip_files = getZipFileHashes(path);
+    if (zip_files.count == 0)
         return nil;
 
     NSLog(@"SEARCHING SOFTWARE LISTS(%@) FOR: %@", [list_names componentsJoinedByString:@", "], name);
@@ -144,42 +147,14 @@
             
             if (![software isKindOfClass:[NSDictionary class]])
                 continue;
-
+            
             // check this software if the name matches
             if ([name isEqualToString:STR(software[kSoftwareListName]).lowercaseString]) {
                 NSLog(@"        FOUND IN %@.%@ (checking ROMs)", list_name, STR(software[kSoftwareListName]));
-
-                // now make sure all the roms (and disks) for this software are in this ZIP.
-                int rom_count = 0;
-                int zip_count = 0;
-                for (NSDictionary* part in LIST(software[@"part"])) {
-                    
-                    // look at all the ROMs and see if they are in the ZIP
-                    for (NSDictionary* area in LIST([part valueForKeyPath:@"dataarea"])) {
-                        for (NSString* hash in LIST([area valueForKeyPath:@"rom.sha1"])) {
-                            if (![hash isKindOfClass:[NSString class]] || hash.length == 0)
-                                continue;
-                            NSLog(@"            ROM:%@ %@", hash, [hashes containsObject:hash.lowercaseString] ? @"FOUND" : @"**NOT** FOUND");
-                            rom_count++;
-                            if ([hashes containsObject:hash.lowercaseString])
-                                zip_count++;
-                        }
-                    }
-                    
-                    // look at all the DISKs and see if they are in the ZIP
-                    for (NSDictionary* area in LIST([part valueForKeyPath:@"diskarea"])) {
-                        for (NSString* hash in LIST([area valueForKeyPath:@"disk.sha1"])) {
-                            if (![hash isKindOfClass:[NSString class]] || hash.length == 0)
-                                continue;
-                            NSLog(@"           DISK:%@ %@", hash, [hashes containsObject:hash.lowercaseString] ? @"FOUND" : @"**NOT** FOUND");
-                            rom_count++;
-                            if ([hashes containsObject:hash.lowercaseString])
-                                zip_count++;
-                        }
-                    }
-                }
                 
-                if (rom_count != 0 && rom_count == zip_count) {
+                NSSet* soft_files = getSoftwareHashes(software);
+                
+                if ([soft_files isSubsetOfSet:zip_files]) {
                     NSLog(@"FOUND %@ in LIST: %@", name, list_name);
                     return list_name;
                 }
@@ -261,8 +236,8 @@ static NSString* sha1(NSData* data) {
 }
 
 // get the SHA1 of all files in a ZIP, excluding hidden files and directories.
-static NSArray<NSString*>* getZipFileSHA1(NSString* path) {
-    NSMutableArray* hashes = [[NSMutableArray alloc] init];
+static NSSet<NSString*>* getZipFileHashes(NSString* path) {
+    NSMutableSet* hashes = [[NSMutableSet alloc] init];
     [ZipFile enumerate:path withOptions:(ZipFileEnumFiles | ZipFileEnumLoadData) usingBlock:^(ZipFileInfo* info) {
         [hashes addObject:sha1(info.data)];
     }];
@@ -370,6 +345,9 @@ static NSArray<NSString*>* getZipFileSHA1(NSString* path) {
     }
 }
 
+#define HASH_DB_VERSION 42
+#define HASH_DB_VERSION_KEY @"hash_db_version"
+
 // load/create software list database
 - (NSDictionary*)loadSoftwareListDatabase {
     
@@ -384,10 +362,11 @@ static NSArray<NSString*>* getZipFileSHA1(NSString* path) {
         NSDictionary* dict = [NSPropertyListSerialization propertyListWithData:data options:NSPropertyListImmutable format:nil error:nil];
         NSParameterAssert([dict isKindOfClass:[NSDictionary class]]);
 
-        if ([dict isKindOfClass:[NSDictionary class]])
+        if ([dict isKindOfClass:[NSDictionary class]] && [dict[HASH_DB_VERSION_KEY] isEqual:@(HASH_DB_VERSION)])
             return dict;
     }
     
+    NSTimeInterval time = [NSDate timeIntervalSinceReferenceDate];
     NSMutableDictionary* soft_list_db = [[NSMutableDictionary alloc] init];
     
     // walk *all* of the software lists and build up database
@@ -406,28 +385,72 @@ static NSArray<NSString*>* getZipFileSHA1(NSString* path) {
             if (![software isKindOfClass:[NSDictionary class]] || software[kSoftwareListName] == nil)
                 continue;
             
+            // add name of software
             NSString* name = STR(software[kSoftwareListName]).lowercaseString;
-            id val = soft_list_db[name];
-
-            if (val == nil)
-                soft_list_db[name] = list_name;
-            else
-                soft_list_db[name] = [LIST(val) arrayByAddingObject:list_name];
+            dict_add_list(soft_list_db, name, list_name);
+            
+            // add any software that uses a *single* file by hash
+            NSSet* files = getSoftwareHashes(software);
+            if (files.count == 1)
+            {
+                NSString* hash = [files.anyObject substringToIndex:8];
+                dict_add_list(soft_list_db, hash, list_name);
+            }
         }
     }];
     
     // SAVE the database to `HASH.DAT` for next time.
+    soft_list_db[HASH_DB_VERSION_KEY] = @(HASH_DB_VERSION);
     NSData* data = [NSPropertyListSerialization dataWithPropertyList:soft_list_db format:NSPropertyListBinaryFormat_v1_0 options:0 error:nil];
     NSParameterAssert(data != nil);
     [data writeToFile:hash_dat atomically:NO];
     
+    time = [NSDate timeIntervalSinceReferenceDate] - time;
 #if defined(DEBUG) && DebugLog != 0
-    for (NSString* key in soft_list_db.allKeys)
-        NSLog(@"    %@: %@", key, [LIST(soft_list_db[key]) componentsJoinedByString:@", "]);
-    NSLog(@"SoftwareListDatabase: %d items, HASH.DAT size=%d", (int)soft_list_db.allKeys.count, (int)[data length]);
+//    for (NSString* key in soft_list_db.allKeys)
+//        NSLog(@"    %@: %@", key, [LIST(soft_list_db[key]) componentsJoinedByString:@", "]);
+    NSLog(@"SoftwareListDatabase: %d items, HASH.DAT size=%d, took %0.3fsec", (int)soft_list_db.allKeys.count, (int)[data length], time);
 #endif
     
     return soft_list_db;
 }
 
+static void dict_add_list(NSMutableDictionary* dict, NSString* key, NSString* value) {
+    id val = dict[key];
+
+    if (val == nil) {
+        dict[key] = value;
+    }
+    else {
+        val = LIST(val);
+        if (![val containsObject:value])
+            dict[key] = [val arrayByAddingObject:value];
+    }
+}
+
+// get all the hashes of all the files used by this software
+static NSSet<NSString*>* getSoftwareHashes(NSDictionary* software)
+{
+    NSMutableSet* hashes = [[NSMutableSet alloc] init];
+    
+    for (NSDictionary* part in LIST(software[@"part"])) {
+        
+        // get all the ROMs
+        for (NSDictionary* area in LIST([part valueForKeyPath:@"dataarea"])) {
+            for (NSString* hash in LIST([area valueForKeyPath:@"rom.sha1"])) {
+                if ([hash isKindOfClass:[NSString class]] && hash.length != 0)
+                    [hashes addObject:hash];
+            }
+        }
+        
+        // get all the DISKs
+        for (NSDictionary* area in LIST([part valueForKeyPath:@"diskarea"])) {
+            for (NSString* hash in LIST([area valueForKeyPath:@"disk.sha1"])) {
+                if ([hash isKindOfClass:[NSString class]] && hash.length != 0)
+                    [hashes addObject:hash];
+            }
+        }
+    }
+    return [hashes copy];
+}
 @end

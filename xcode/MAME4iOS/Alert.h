@@ -10,12 +10,9 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface UIViewController (Alert)
-
 // replacement for old UIAlertView show (uses new UIAlertController)
 -(void)showAlertWithTitle:(NSString* __nullable)title message:(NSString* __nullable)message buttons:(NSArray*)buttons handler:(void (^ __nullable)(NSUInteger button))handler;
--(void)showAlertWithTitle:(NSString* __nullable)title message:(NSString* __nullable)message;
--(void)showAlertWithTitle:(NSString* __nullable)title message:(NSString* __nullable)message timeout:(NSTimeInterval)timeout;
--(void)dismissAlert;
+// return the top presented controller
 -(UIViewController*)topViewController;
 @end
 

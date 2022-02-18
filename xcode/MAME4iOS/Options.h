@@ -109,8 +109,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (id)objectAtIndex:(NSUInteger)index withDefault:(nullable id)defaultObject;
 // return the option at index, or default to the first one
 - (NSString*)optionAtIndex:(NSUInteger)index;
-// find and return option index given a name, default to first if not found
-- (NSUInteger)indexOfOption:(NSString*)string;
 // find and return option name given a string, default to first if not found
 - (NSString*)optionFind:(NSString*)string;
 @end
