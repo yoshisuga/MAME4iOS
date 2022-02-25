@@ -1,11 +1,71 @@
 # Version 2022.1
-* Updated to [MAME 240](https://www.mamedev.org/releases/whatsnew_0240.txt).
+* Updated to [MAME 241](https://www.mamedev.org/releases/whatsnew_0241.txt).
 * Minimum version is now iOS 13.4, tvOS 13.4, and macOS 10.15.5 (Catalina)
 * Removed MAME4mac build Target, build MAME4iOS for Catalyst instead 
 * Support for Software keyboard for machines that need keyboard input.
 * Non git-tracked `Developer.xcconfig`
 * Minimal Benchmark support, results stored in `benchmark.csv`
+    - Benchmark button at bottom of `Settings`
 * fix for `MAME` Artwork
+    - `Game & Watch` artwork issues
+* Ignore software-lists on 139
+    - dont filter `Consoles` when `Hide BIOS` option selected.
+* game controller can now be used to drive choose game UX
+    - `MENU` => `ContextMenu`
+    - `OPTION` => `Settings`
+* new `Alert` and `Action Sheet` UX
+* added `AddROMS` button to toolbar
+* show romless Arcade games, like breakout and pong
+    - see list below
+* support romless Console Machines
+    - any file in the `software` folder can be play'd via a supported Machine.
+    - see list below
+* support running non-software-list ROMs
+    - Any files in the `software` directory will be shown, and user can choose machine to run.
+    - Import most known file types automaticly
+* get info on any game, not just ones with info in `HISTORY.DAT`
+* added a `Play With...` context menu item to games that can be played on multiple machines.
+* collapse sections for clone machines and Consoles by default.
+* remember and try to restore the selected item in Choose Game UX
+* added a "Group by Software" option, this will create sections by Software List name not Machine/System
+
+## ROMless Arcade Machines
+
+Name        |Description
+------------|-----------------------
+pongf       |Pong (Rev E) [TTL]        
+pongd       |Pong Doubles [TTL]        
+rebound     |Rebound (Rev B) [TTL]   
+breakout    |Breakout [TTL]     
+
+## ROMless Console Machines
+
+The following is a list of *some* of the Consoles and file types supported by MAME4iOS "out of the box"
+
+Name    |Description                                                |Media File Types
+--------|-----------------------------------------------------------|----------------
+a2600   |Atari 2600 (NTSC)                                          |a26, bin
+a2600p  |Atari 2600 (PAL)                                           |a26, bin
+gen_nomd|Genesis Nomad (USA Genesis handheld)                       |md, smd, bin, gen
+genesis |Genesis (USA, NTSC)                                        |cmd, smd, bin, gen
+megadrij|Mega Drive (Japan, NTSC)                                   |md, smd, bin, gen
+megadriv|Mega Drive (Europe, PAL)                                   |md, smd, bin, gen
+megajet |Mega Jet (Japan Mega Drive handheld)                       |md, smd, bin, gen
+famicom |Famicom                                                    |unif, nes, unf
+fds     |Famicom (w/ Disk System add-on)                            |fds
+nes     |Nintendo Entertainment System / Famicom (NTSC)             |unif, nes, unf
+nespal  |Nintendo Entertainment System (PAL)                        |unif, nes, unf
+snes    |Super Nintendo Entertainment System / Super Famicom (NTSC) |sfc
+snespal |Super Nintendo Entertainment System (PAL)                  |sfc
+1292apvs|1292 Advanced Programmable Video System                    |rom, tvc, bin, pgm
+1392apvs|1392 Advanced Programmable Video System                    |rom, tvc, bin, pgm
+pico    |Pico (Europe, PAL)                                         |md, bin
+picoj   |Pico (Japan, NTSC)                                         |md, bin
+picou   |Pico (USA, NTSC)                                           |md, bin
+vboy    |Virtual Boy                                                |vb, bin
+sgx     |SuperGrafx                                                 |cue, gdi, toc, chd, bin, cdr, nrg, pce, iso
+pce     |PC Engine                                                  |cue, gdi, toc, chd, bin, cdr, nrg, pce, iso
+tg16    |TurboGrafx 16                                              |cue, gdi, toc, chd, bin, cdr, nrg, pce, iso
 
 # Version 2022.0
 * Updated to [MAME 239](https://www.mamedev.org/releases/whatsnew_0239.txt).

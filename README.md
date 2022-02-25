@@ -123,15 +123,71 @@ When you start MAME4iOS, you are now presented with an updated and native iOS/tv
 - Menu: Open the MAME4iOS menu
 - Exit: Exit the game
 
-## Adding ROMs to MAME
+## Adding ROMs to MAME4iOS
 
 ### iOS
 
 For iOS users, you can download ROMs using Safari and save them to the `roms` directory by choosing the "Save to Files" (go to "On My iPhone" -> MAME4iOS) option after downloading a ROM. 
 
-You can also use the "Start Server" option in the menu (from the options button or pressing Y + Menu in-game) to start the webserver, and enter the address shown on the web browser on your computer.
+You can also use the "Start Server" option in the menu to start the webserver, and enter the address shown on the web browser on your computer.
 
-Yoiu can also use the "Import ROMs" option to open up the native iOS file browser and load files that are saved locally or that exist on iCloud.
+You can also use the "Import ROMs" option to open up the native iOS file browser and load files that are saved locally or that exist on iCloud.
+
+You can use "Import from iCloud" to download ROMs previously uploaded to iCloud.
+
+### tvOS
+
+on tvOS the only options are to copy ROMs via "Start Server" or downloading via "Import from iCloud".
+
+## Adding Softare to MAME4iOS
+
+MAME4iOS supports two types of Software
+
+1. Software List (aka MESS) based software, installed via ZIP files into `roms`
+
+2. Single file based image (cart, flop, dsk, ...), installed into `software`
+
+## ROMless Machines
+
+MAME4iOS includes a set of Machines/Systems that dont need any ROMs installed to run, and can be used "out of the box".
+
+## ROMless Arcade Machines
+
+Name        |Description
+------------|-----------------------
+pongf       |Pong (Rev E) [TTL]        
+pongd       |Pong Doubles [TTL]        
+rebound     |Rebound (Rev B) [TTL]   
+breakout    |Breakout [TTL]     
+
+## ROMless Console Machines
+
+The following is a list of *some* of the Consoles and file types supported by MAME "out of the box"
+
+Name    |Description                                                |Media File Types
+--------|-----------------------------------------------------------|----------------
+a2600   |Atari 2600 (NTSC)                                          |a26, bin
+a2600p  |Atari 2600 (PAL)                                           |a26, bin
+gen_nomd|Genesis Nomad (USA Genesis handheld)                       |md, smd, bin, gen
+genesis |Genesis (USA, NTSC)                                        |cmd, smd, bin, gen
+megadrij|Mega Drive (Japan, NTSC)                                   |md, smd, bin, gen
+megadriv|Mega Drive (Europe, PAL)                                   |md, smd, bin, gen
+megajet |Mega Jet (Japan Mega Drive handheld)                       |md, smd, bin, gen
+famicom |Famicom                                                    |unif, nes, unf
+fds     |Famicom (w/ Disk System add-on)                            |fds
+nes     |Nintendo Entertainment System / Famicom (NTSC)             |unif, nes, unf
+nespal  |Nintendo Entertainment System (PAL)                        |unif, nes, unf
+snes    |Super Nintendo Entertainment System / Super Famicom (NTSC) |sfc
+snespal |Super Nintendo Entertainment System (PAL)                  |sfc
+1292apvs|1292 Advanced Programmable Video System                    |rom, tvc, bin, pgm
+1392apvs|1392 Advanced Programmable Video System                    |rom, tvc, bin, pgm
+pico    |Pico (Europe, PAL)                                         |md, bin
+picoj   |Pico (Japan, NTSC)                                         |md, bin
+picou   |Pico (USA, NTSC)                                           |md, bin
+vboy    |Virtual Boy                                                |vb, bin
+sgx     |SuperGrafx                                                 |cue, gdi, toc, chd, bin, cdr, nrg, pce, iso
+pce     |PC Engine                                                  |cue, gdi, toc, chd, bin, cdr, nrg, pce, iso
+tg16    |TurboGrafx 16                                              |cue, gdi, toc, chd, bin, cdr, nrg, pce, iso
 
 ### tvOS
 
@@ -143,8 +199,6 @@ Pair your MFi, Xbox, or Dual Shock controller with your iOS device, and it shoul
 Up to 4 controllers are supported.
 
 ### Hotkey combinations (while in-game)
-
-The following hotkey combinations are supported:
 
 | | |  
 ---------------- |-------------
@@ -161,6 +215,14 @@ MENU+DOWN  |Save State ①
 MENU+UP        |Load State ①                
 MENU+LEFT     |Save State ②                
 MENU+RIGHT  |Load State ②               
+
+### Hotkey combinations (while in choose game UX)
+
+| | |  
+---------------- |-------------
+MENU             |Game Context Menu  
+OPTION           |MAME4iOS Settings              
+A                |Play              
 
 ### Dual analog support
 
