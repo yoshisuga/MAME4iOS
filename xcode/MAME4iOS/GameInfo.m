@@ -18,9 +18,9 @@
 {
     return self[kGameInfoSystem] ?: @"";
 }
--(NSString*)gameSoftware
+-(NSString*)gameSoftwareMedia
 {
-    return self[kGameInfoSoftware] ?: @"";
+    return self[kGameInfoSoftwareMedia] ?: @"";
 }
 -(NSString*)gameSoftwareList
 {
@@ -70,9 +70,21 @@
 {
     return self[kGameInfoFile] ?: @"";
 }
+- (NSString*)gameMediaType
+{
+    return self[kGameInfoMediaType] ?: @"";
+}
 - (BOOL)gameIsSnapshot
 {
     return [self.gameType isEqualToString:kGameInfoTypeSnapshot];
+}
+- (BOOL)gameIsSoftware
+{
+    return [self.gameType isEqualToString:kGameInfoTypeSoftware];
+}
+- (BOOL)gameIsConsole
+{
+    return [self.gameType isEqualToString:kGameInfoTypeConsole];
 }
 - (BOOL)gameIsClone
 {
@@ -80,11 +92,13 @@
 }
 -(NSString*)gameTitle
 {
-    return [(self[kGameInfoDescription] ?: self[kGameInfoName] ?: @"") componentsSeparatedByString:@" ("].firstObject;
+    NSString* title = self[kGameInfoDescription] ?: self[kGameInfoName] ?: @"";
+    title = [title componentsSeparatedByString:@" ("].firstObject;
+    title = [title componentsSeparatedByString:@" ["].firstObject;
+    return title;
 }
 -(NSArray<NSURL*>*)gameImageURLs
 {
-    /// TODO: find a better Title image url source!!
     NSParameterAssert(self.gameName.length != 0);
     NSParameterAssert(![self.gameName containsString:@" "]);
     NSParameterAssert(![self.gameSystem containsString:@" "]);
@@ -107,8 +121,26 @@
             [NSURL URLWithString:[NSString stringWithFormat:@"%@/ingames/%@/%@.png", base, list, name]],
         ];
     }
-    else
+    else if (self.gameIsConsole)
     {
+        /// MESS style title url
+        /// http://adb.arcadeitalia.net/media/mame.current/cabinets/n64.png
+        /// http://adb.arcadeitalia.net/media/mame.current/titles/n64.png
+        
+        NSString* base = @"http://adb.arcadeitalia.net/media/mame.current";
+        NSString* name = self.gameName.lowercaseString;
+        
+        return @[
+            [NSURL URLWithString:[NSString stringWithFormat:@"%@/cabinets/%@.png", base, name]],
+            [NSURL URLWithString:[NSString stringWithFormat:@"%@/titles/%@.png", base, name]],
+        ];
+   }
+   else if (self.gameIsSoftware) {
+        // NOTE if software has an icon, it will have a software list name, and will get handled above
+        return @[];
+   }
+   else
+   {
         NSParameterAssert(self.gameDescription.length != 0);
 
         /// libretro title url
@@ -162,15 +194,19 @@
 #endif
     
     if (self.gameIsSnapshot)
-        return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/snap/%@", path, self.gameFile] isDirectory:NO];
+        return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/%@", path, self.gameFile] isDirectory:NO];
     else if (self.gameSoftwareList.length != 0)
         return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/titles/%@/%@.png", path, self.gameSoftwareList, name] isDirectory:NO];
+    else if (self.gameIsSoftware)
+        return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/%@.png", path, self.gameFile.stringByDeletingPathExtension] isDirectory:NO];
     else
         return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/titles/%@.png", path, name] isDirectory:NO];
 }
 -(NSURL*)gamePlayURL
 {
-    if (self.gameSystem.length != 0)
+    if (self.gameIsSoftware)
+        return [NSURL URLWithString:[NSString stringWithFormat:@"mame4ios://%@/%@:%@", self.gameSystem, self.gameMediaType, self.gameFile]];
+    else if (self.gameSystem.length != 0)
         return [NSURL URLWithString:[NSString stringWithFormat:@"mame4ios://%@/%@", self.gameSystem, self.gameName]];
     else
         return [NSURL URLWithString:[NSString stringWithFormat:@"mame4ios://%@", self.gameName]];
