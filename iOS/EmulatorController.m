@@ -3001,9 +3001,11 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
     if (g_joy_used == JOY_USED_GAMEPAD && g_device_is_fullscreen)
         return;
    
-    BOOL touch_dpad_disabled = (myosd_mouse == 1 && g_pref_touch_analog_enabled && g_pref_touch_analog_hide_dpad) ||
-                               (g_pref_touch_directional_enabled && g_pref_touch_analog_hide_dpad) ||
-                               (g_joy_used && g_device_is_fullscreen);
+    BOOL touch_dpad_disabled =
+        (myosd_mouse == 1 && g_pref_touch_analog_enabled && g_pref_touch_analog_hide_dpad) ||
+        (g_pref_touch_directional_enabled && g_pref_touch_analog_hide_dpad) ||
+        (g_joy_used && g_device_is_fullscreen) ||
+        self.showSoftwareKeyboard;
     if ( !(touch_dpad_disabled && g_device_is_fullscreen) || !myosd_inGame ) {
         //analogStickView
         analogStickView = [[AnalogStickView alloc] initWithFrame:rButton[BTN_STICK] withEmuController:self];
@@ -3024,7 +3026,7 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
     if (g_joy_used && g_device_is_fullscreen)
         num_buttons = 0;
    
-    BOOL touch_buttons_disabled = myosd_mouse == 1 && g_pref_touch_analog_enabled && g_pref_touch_analog_hide_buttons;
+    BOOL touch_buttons_disabled = (myosd_mouse == 1 && g_pref_touch_analog_enabled && g_pref_touch_analog_hide_buttons) || self.showSoftwareKeyboard;
     BOOL menu_buttons_disabled = g_pref_showHUD == HudSizeLarge;
     buttonState = 0;
     for (int i=0; i<NUM_BUTTONS; i++)
