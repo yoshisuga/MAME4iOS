@@ -143,6 +143,8 @@
                 <string>ROM</string>
                 <string>rom</string>
                 <string>cue</string>
+                <string>iso</string>
+                <string>cdr</string>
                 <string>bin</string>
                 <string>a78</string>
                 <string>a26</string>
@@ -168,6 +170,7 @@
                 <string>vb</string>
                 <string>n64</string>
                 <string>z64</string>
+                <string>v64</string>
                 <string>gen</string>
                 <string>md</string>
                 <string>gg</string>
@@ -182,6 +185,7 @@
                 <string>t64</string>
                 <string>p00</string>
                 <string>prg</string>
+                <string>pgm</string>
                 <string>crt</string>
                 <string>dsk</string>
                 <string>woz</string>
@@ -245,6 +249,8 @@
                     <string>ROM</string>
                     <string>rom</string>
                     <string>cue</string>
+                    <string>iso</string>
+                    <string>cdr</string>
                     <string>bin</string>
                     <string>a78</string>
                     <string>a26</string>
@@ -270,6 +276,7 @@
                     <string>vb</string>
                     <string>n64</string>
                     <string>z64</string>
+                    <string>v64</string>
                     <string>gen</string>
                     <string>md</string>
                     <string>gg</string>
@@ -284,6 +291,7 @@
                     <string>t64</string>
                     <string>p00</string>
                     <string>prg</string>
+                    <string>pgm</string>
                     <string>crt</string>
                     <string>dsk</string>
                     <string>woz</string>
