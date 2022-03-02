@@ -162,7 +162,7 @@ breakout    |Breakout [TTL]
 
 ## ROMless Console Machines
 
-The following is a list of *some* of the Consoles and file types supported by MAME "out of the box"
+The following is a list of *some* of the Consoles and file types supported by MAME4iOS "out of the box"
 
 Name    |Description                                                |Media File Types
 --------|-----------------------------------------------------------|----------------
@@ -173,12 +173,8 @@ genesis |Genesis (USA, NTSC)                                        |cmd, smd, b
 megadrij|Mega Drive (Japan, NTSC)                                   |md, smd, bin, gen
 megadriv|Mega Drive (Europe, PAL)                                   |md, smd, bin, gen
 megajet |Mega Jet (Japan Mega Drive handheld)                       |md, smd, bin, gen
-famicom |Famicom                                                    |unif, nes, unf
-fds     |Famicom (w/ Disk System add-on)                            |fds
 nes     |Nintendo Entertainment System / Famicom (NTSC)             |unif, nes, unf
 nespal  |Nintendo Entertainment System (PAL)                        |unif, nes, unf
-snes    |Super Nintendo Entertainment System / Super Famicom (NTSC) |sfc
-snespal |Super Nintendo Entertainment System (PAL)                  |sfc
 1292apvs|1292 Advanced Programmable Video System                    |rom, tvc, bin, pgm
 1392apvs|1392 Advanced Programmable Video System                    |rom, tvc, bin, pgm
 pico    |Pico (Europe, PAL)                                         |md, bin
@@ -188,6 +184,35 @@ vboy    |Virtual Boy                                                |vb, bin
 sgx     |SuperGrafx                                                 |cue, gdi, toc, chd, bin, cdr, nrg, pce, iso
 pce     |PC Engine                                                  |cue, gdi, toc, chd, bin, cdr, nrg, pce, iso
 tg16    |TurboGrafx 16                                              |cue, gdi, toc, chd, bin, cdr, nrg, pce, iso
+
+## Console Machines and Computers (that require BIOS)
+
+The following is a list of *some* of the Consoles, Computers, and file types supported by MAME4iOS, but BIOS files must be installed first.
+
+Name    |Description                                                |Media File Types
+--------|-----------------------------------------------------------|----------------
+a5200   |Atari 5200                                                 |rom, a52, bin, car
+a800    |Atari 800 (NTSC)                                           |rom, xfd, atr, dsk, bin, car
+a7800   |Atari 7800 (NTSC)                                          |a78
+famicom |Famicom                                                    |unif, nes, unf
+fds     |Famicom (w/ Disk System add-on)                            |fds
+snes    |Super Nintendo Entertainment System / Super Famicom (NTSC) |sfc
+snespal |Super Nintendo Entertainment System (PAL)                  |sfc
+32x     |Genesis with 32X (USA, NTSC)                               |32x, bin
+32xe    |Mega Drive with 32X (Europe, PAL)                          |32x, bin
+32xj    |Mega Drive with 32X (Japan, NTSC)                          |32x, bin
+neogeo  |Neo-Geo MV-6F                                              |neo, bin
+n64     |Nintendo 64                                                |rom, v64, n64, z64, bin
+n64dd   |Nintendo 64DD                                              |bin, 2mg, rom, n64, z64, hdv, hd, v64, chd, hdi
+c64gs   |Commodore 64 Games System (PAL)                            |a0, 80, prg, t64, e0, p00, crt
+c64     |Commodore 64 (NTSC)                                        |d64, tap, prg, a0, g64, 80, g41, g71, wav, p00, mfi, dfi, t64, e0, crt
+apple1  |Apple I                                                    |wav, snp
+apple2  |Apple ][                                                   |do, mfi, dsk, rti, edd, wav, woz, nib, dfi, po
+apple2gs|Apple IIgs (ROM03)                                         |mfi, edd, mfm, td0, 360, img, do, nib, imd, dc42, hfe, rti, ima, po, d77, ufi, woz, dsk, 2mg, cqi, dfi, cqm, d88, 1dd
+mac128k |Macintosh 128k                                             |d88, dsk, cqm, d77, img, dc42, mfm, 2mg, 1dd, cqi, imd, dfi, mfi, woz, td0, ufi, 360, ima, hfe
+ibm5150 |IBM PC 5150                                                |mfi, td0, mfm, wav, hdv, 360, img, hd, xdf, imd, hfe, 2mg, ima, hdi, d77, ufi, dsk, chd, cqi, dfi, cqm, d88, 1dd
+bbca    |BBC Micro Model A                                          |wav, uef, rom, bin, csw
+bbcb    |BBC Micro Model B                                          |adf, mfi, fsd, td0, mfm, wav, 360, ads, csw, img, rom, prn, adl, imd, bin, bbc, hfe, adm, ima, d77, dsk, ufi, uef, ssd, cqi, dfi, dsd, cqm, d88, 1dd
 
 ### tvOS
 
