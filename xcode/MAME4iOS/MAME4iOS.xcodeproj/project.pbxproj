@@ -121,9 +121,8 @@
 		EF286D59253CF171007DA6D3 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF286D58253CF171007DA6D3 /* CloudKit.framework */; };
 		EF286D5B253CF18D007DA6D3 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF286D5A253CF18D007DA6D3 /* CloudKit.framework */; };
 		EF29C8822401C73A00AFFA4E /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EF29C8802401C73900AFFA4E /* Launch Screen.storyboard */; };
-		EF301CF1240460C5000510FD /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF301CF0240460C5000510FD /* Alert.m */; };
-		EF301CF2240460C5000510FD /* Alert.m in Sources */ = {isa = PBXBuildFile; fileRef = EF301CF0240460C5000510FD /* Alert.m */; };
 		EF301CF3240460F3000510FD /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF27F36323F73CD400B1E50A /* ZipFile.m */; };
+		EF31447C27BB1E81002C3C6A /* ControllerButtonPress.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF31447B27BB1E81002C3C6A /* ControllerButtonPress.swift */; };
 		EF474B892791E42900578663 /* EmulatorController+EmulatorKeyboardSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF474B882791E42900578663 /* EmulatorController+EmulatorKeyboardSupport.swift */; };
 		EF474B8B2791E4CD00578663 /* EmulatorKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF474B8A2791E4CD00578663 /* EmulatorKeyboard.swift */; };
 		EF490D91277A5C8C00407865 /* history.dat.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF490D90277A5C8C00407865 /* history.dat.zip */; };
@@ -132,11 +131,16 @@
 		EF490D97277A5E0E00407865 /* cheat.7z in Resources */ = {isa = PBXBuildFile; fileRef = EF490D94277A5E0E00407865 /* cheat.7z */; };
 		EF490D99277A5E0E00407865 /* cheat.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF490D95277A5E0E00407865 /* cheat.zip */; };
 		EF490D9A277A5E0E00407865 /* cheat.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF490D95277A5E0E00407865 /* cheat.zip */; };
-		EF568DB025D5D4F600092B30 /* InfoHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = EFB3C6DB248C33DF00F44780 /* InfoHUD.m */; };
 		EF7B232C23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
 		EF7B232D23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
 		EF7D116527348BDD00E61BB9 /* hash.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF7D116427348BDD00E61BB9 /* hash.zip */; };
 		EF7D116627348BDD00E61BB9 /* hash.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF7D116427348BDD00E61BB9 /* hash.zip */; };
+		EF7D4AA727B6FA90002528B7 /* TVAlertController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF7D4AA627B6FA90002528B7 /* TVAlertController.swift */; };
+		EF7D4AA827B6FA90002528B7 /* TVAlertController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF7D4AA627B6FA90002528B7 /* TVAlertController.swift */; };
+		EF7D4AAA27B990AB002528B7 /* shaders in Resources */ = {isa = PBXBuildFile; fileRef = EF7D4AA927B990AA002528B7 /* shaders */; };
+		EF7D4AAB27B990AB002528B7 /* shaders in Resources */ = {isa = PBXBuildFile; fileRef = EF7D4AA927B990AA002528B7 /* shaders */; };
+		EF7D4AAD27B990BF002528B7 /* software in Resources */ = {isa = PBXBuildFile; fileRef = EF7D4AAC27B990BF002528B7 /* software */; };
+		EF7D4AAE27B990BF002528B7 /* software in Resources */ = {isa = PBXBuildFile; fileRef = EF7D4AAC27B990BF002528B7 /* software */; };
 		EF8409A2260CEFAB00FAC3CF /* AVPlayerView.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8409A1260CEFAB00FAC3CF /* AVPlayerView.m */; };
 		EF8409A3260CEFAB00FAC3CF /* AVPlayerView.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8409A1260CEFAB00FAC3CF /* AVPlayerView.m */; };
 		EF8409A9260CF3F200FAC3CF /* whiteHDR.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = EF8409A8260CF3F200FAC3CF /* whiteHDR.mp4 */; };
@@ -158,8 +162,6 @@
 		EF926C9B24BA36980048392B /* SkinManager.m in Sources */ = {isa = PBXBuildFile; fileRef = EF926C9A24BA36980048392B /* SkinManager.m */; };
 		EF941F0024427D1200D58F7F /* OptionsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF941EFF24427D1200D58F7F /* OptionsTableViewController.m */; };
 		EF941F0124427D1200D58F7F /* OptionsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF941EFF24427D1200D58F7F /* OptionsTableViewController.m */; };
-		EF9C21A427B18A7200223E76 /* SystemImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF9C21A327B18A7200223E76 /* SystemImage.swift */; };
-		EF9C21A527B18A7200223E76 /* SystemImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF9C21A327B18A7200223E76 /* SystemImage.swift */; };
 		EF9C21A827B1A64E00223E76 /* Launch.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EF9C21A727B1A64E00223E76 /* Launch.storyboard */; };
 		EFA756FF2405585D00A02AAB /* mameui.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA756FE2405585D00A02AAB /* mameui.png */; };
 		EFA757002405585D00A02AAB /* mameui.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA756FE2405585D00A02AAB /* mameui.png */; };
@@ -174,7 +176,6 @@
 		EFA98FB524A4F811007B6689 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA98FB424A4F810007B6689 /* WebKit.framework */; };
 		EFB3C6D624890F6200F44780 /* simpleCRT.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB3C6D524890F6200F44780 /* simpleCRT.metal */; };
 		EFB3C6D724890F6200F44780 /* simpleCRT.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB3C6D524890F6200F44780 /* simpleCRT.metal */; };
-		EFB3C6DD248C33DF00F44780 /* InfoHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = EFB3C6DB248C33DF00F44780 /* InfoHUD.m */; };
 		EFB7B2172479FBD900AD96A4 /* MetalView.m in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B2132479FBD800AD96A4 /* MetalView.m */; };
 		EFB7B2182479FBD900AD96A4 /* MetalView.m in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B2132479FBD800AD96A4 /* MetalView.m */; };
 		EFB7B2192479FBD900AD96A4 /* MetalViewShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B2152479FBD900AD96A4 /* MetalViewShaders.metal */; };
@@ -410,7 +411,7 @@
 		EF286D5A253CF18D007DA6D3 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS14.0.sdk/System/Library/Frameworks/CloudKit.framework; sourceTree = DEVELOPER_DIR; };
 		EF29C8802401C73900AFFA4E /* Launch Screen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		EF301CEF240460C5000510FD /* Alert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Alert.h; sourceTree = "<group>"; };
-		EF301CF0240460C5000510FD /* Alert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Alert.m; sourceTree = "<group>"; };
+		EF31447B27BB1E81002C3C6A /* ControllerButtonPress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControllerButtonPress.swift; sourceTree = "<group>"; };
 		EF474B872791E42900578663 /* MAME4iOS-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MAME4iOS-Bridging-Header.h"; sourceTree = "<group>"; };
 		EF474B882791E42900578663 /* EmulatorController+EmulatorKeyboardSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EmulatorController+EmulatorKeyboardSupport.swift"; sourceTree = "<group>"; };
 		EF474B8A2791E4CD00578663 /* EmulatorKeyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmulatorKeyboard.swift; sourceTree = "<group>"; };
@@ -421,6 +422,9 @@
 		EF55DE5A2534C304004E37EF /* TVServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = TVServices.framework; path = Library/Frameworks/TVServices.framework; sourceTree = DEVELOPER_DIR; };
 		EF67E11524B8972100AFF489 /* MacMenu.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MacMenu.m; sourceTree = "<group>"; };
 		EF7D116427348BDD00E61BB9 /* hash.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = hash.zip; path = "../../iOS-res/hash.zip"; sourceTree = "<group>"; };
+		EF7D4AA627B6FA90002528B7 /* TVAlertController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TVAlertController.swift; sourceTree = "<group>"; };
+		EF7D4AA927B990AA002528B7 /* shaders */ = {isa = PBXFileReference; lastKnownFileType = folder; name = shaders; path = "../../iOS-res/shaders"; sourceTree = "<group>"; };
+		EF7D4AAC27B990BF002528B7 /* software */ = {isa = PBXFileReference; lastKnownFileType = folder; name = software; path = "../../iOS-res/software"; sourceTree = "<group>"; };
 		EF8409A0260CEFAB00FAC3CF /* AVPlayerView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVPlayerView.h; sourceTree = "<group>"; };
 		EF8409A1260CEFAB00FAC3CF /* AVPlayerView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AVPlayerView.m; sourceTree = "<group>"; };
 		EF8409A8260CF3F200FAC3CF /* whiteHDR.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; name = whiteHDR.mp4; path = "../../iOS-res/whiteHDR.mp4"; sourceTree = "<group>"; };
@@ -443,7 +447,6 @@
 		EF941EFF24427D1200D58F7F /* OptionsTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OptionsTableViewController.m; path = ../../iOS/OptionsTableViewController.m; sourceTree = "<group>"; };
 		EF950BAC24B1239F00DC9A47 /* MetalPerformanceShaders.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalPerformanceShaders.framework; path = System/Library/Frameworks/MetalPerformanceShaders.framework; sourceTree = SDKROOT; };
 		EF950BAE24B123A900DC9A47 /* MetalPerformanceShaders.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalPerformanceShaders.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS14.0.sdk/System/Library/Frameworks/MetalPerformanceShaders.framework; sourceTree = DEVELOPER_DIR; };
-		EF9C21A327B18A7200223E76 /* SystemImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SystemImage.swift; sourceTree = "<group>"; };
 		EF9C21A727B1A64E00223E76 /* Launch.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Launch.storyboard; sourceTree = "<group>"; };
 		EF9F9C9E240070E700352554 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../../README.md; sourceTree = "<group>"; };
 		EFA756FE2405585D00A02AAB /* mameui.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = mameui.png; path = "../../iOS-res/mameui.png"; sourceTree = "<group>"; };
@@ -458,8 +461,6 @@
 		EFA98FB224A4E2D5007B6689 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS14.0.sdk/System/Library/Frameworks/CoreServices.framework; sourceTree = DEVELOPER_DIR; };
 		EFA98FB424A4F810007B6689 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		EFB3C6D524890F6200F44780 /* simpleCRT.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = simpleCRT.metal; sourceTree = "<group>"; };
-		EFB3C6DB248C33DF00F44780 /* InfoHUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = InfoHUD.m; sourceTree = "<group>"; };
-		EFB3C6DC248C33DF00F44780 /* InfoHUD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InfoHUD.h; sourceTree = "<group>"; };
 		EFB7B2132479FBD800AD96A4 /* MetalView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MetalView.m; sourceTree = "<group>"; };
 		EFB7B2142479FBD800AD96A4 /* MetalViewShaders.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MetalViewShaders.h; sourceTree = "<group>"; };
 		EFB7B2152479FBD900AD96A4 /* MetalViewShaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = MetalViewShaders.metal; sourceTree = "<group>"; };
@@ -658,6 +659,7 @@
 				EF19F229235D1BDF00C8EE7F /* ChooseGameController.m */,
 				CEE680B41635BB4900051BC2 /* EmulatorController.h */,
 				CEE680B51635BB4900051BC2 /* EmulatorController.m */,
+				EF31447B27BB1E81002C3C6A /* ControllerButtonPress.swift */,
 				CE8D87DF16541AC400685BC4 /* Globals.h */,
 				CE8D87DB1653121100685BC4 /* KeyboardView.h */,
 				CE8D87DC1653121200685BC4 /* KeyboardView.m */,
@@ -686,6 +688,8 @@
 				EF1C941624C2544A00749C69 /* content */,
 				EF1C941524C253EE00749C69 /* images */,
 				EFA7571E2408308000A02AAB /* help */,
+				EF7D4AA927B990AA002528B7 /* shaders */,
+				EF7D4AAC27B990BF002528B7 /* software */,
 				EF24BAFF24C7894700D9C55A /* skins_tvOS */,
 				EF1C93E624C252C500749C69 /* skins */,
 				EF1C93E124C252C400749C69 /* SKIN_1 */,
@@ -877,8 +881,7 @@
 				EF249337236264DA00DD0A6C /* ImageCache.h */,
 				EF249336236264D900DD0A6C /* ImageCache.m */,
 				EF301CEF240460C5000510FD /* Alert.h */,
-				EF301CF0240460C5000510FD /* Alert.m */,
-				EF9C21A327B18A7200223E76 /* SystemImage.swift */,
+				EF7D4AA627B6FA90002528B7 /* TVAlertController.swift */,
 				EFE003372638ACA000E42246 /* XmlFile.h */,
 				EFE003362638ACA000E42246 /* XmlFile.m */,
 				EF27F36423F73CD400B1E50A /* ZipFile.h */,
@@ -887,8 +890,6 @@
 				EF26AE0B241AA6900078FD30 /* FileItemProvider.m */,
 				EF23D32F243CB9CE006B3EE2 /* PopupSegmentedControl.h */,
 				EF23D330243CB9CE006B3EE2 /* PopupSegmentedControl.m */,
-				EFB3C6DC248C33DF00F44780 /* InfoHUD.h */,
-				EFB3C6DB248C33DF00F44780 /* InfoHUD.m */,
 				92B99F0C2022706600CC44E3 /* UIView+Toast.h */,
 				92B99F0D2022706600CC44E3 /* UIView+Toast.m */,
 			);
@@ -1072,12 +1073,14 @@
 				EF1C93F724C252C600749C69 /* LICENSE in Resources */,
 				EF08EB32277A937900E4D455 /* plugins.zip in Resources */,
 				EFA7570524057FD800A02AAB /* default_game_icon.png in Resources */,
+				EF7D4AAA27B990AB002528B7 /* shaders in Resources */,
 				EF1C940324C252C600749C69 /* Category.ini in Resources */,
 				EF1C941C24C2552900749C69 /* gitinfo.json.sh in Resources */,
 				EFA7A16B24B7A38E0009CF88 /* Assets.xcassets in Resources */,
 				920BBDEF201FC29700AE7D50 /* dpad.png in Resources */,
 				EF29C8822401C73A00AFFA4E /* Launch Screen.storyboard in Resources */,
 				EFFBA6FE24F1C91200F8666B /* WHATSNEW.md in Resources */,
+				EF7D4AAD27B990BF002528B7 /* software in Resources */,
 				920BBDF220210C3800AE7D50 /* menu.png in Resources */,
 				92A533D021EBDDF20089FBB9 /* GCDWebUploader.bundle in Resources */,
 				EFA756FF2405585D00A02AAB /* mameui.png in Resources */,
@@ -1096,6 +1099,7 @@
 				EF24BB0024C7894700D9C55A /* skins_tvOS in Resources */,
 				EF490D92277A5C8C00407865 /* history.dat.zip in Resources */,
 				EF26AE09241848800078FD30 /* mame_logo.png in Resources */,
+				EF7D4AAE27B990BF002528B7 /* software in Resources */,
 				EF1C940424C252C600749C69 /* Category.ini in Resources */,
 				EF490D9A277A5E0E00407865 /* cheat.zip in Resources */,
 				EF8409AA260CF3F200FAC3CF /* whiteHDR.mp4 in Resources */,
@@ -1106,6 +1110,7 @@
 				EF1C940D24C252C600749C69 /* hiscore.dat in Resources */,
 				92A533D121EBDDF20089FBB9 /* GCDWebUploader.bundle in Resources */,
 				EF9C21A827B1A64E00223E76 /* Launch.storyboard in Resources */,
+				EF7D4AAB27B990AB002528B7 /* shaders in Resources */,
 				EF1C941D24C2552900749C69 /* gitinfo.json.sh in Resources */,
 				EF490D97277A5E0E00407865 /* cheat.7z in Resources */,
 				EF08EB33277A937900E4D455 /* plugins.zip in Resources */,
@@ -1176,9 +1181,9 @@
 				92A533B721EBDBAD0089FBB9 /* GCDWebServerFileResponse.m in Sources */,
 				EF941F0024427D1200D58F7F /* OptionsTableViewController.m in Sources */,
 				92A533D321EBDDF20089FBB9 /* GCDWebUploader.m in Sources */,
+				EF7D4AA727B6FA90002528B7 /* TVAlertController.swift in Sources */,
 				EF8409A2260CEFAB00FAC3CF /* AVPlayerView.m in Sources */,
 				92A533C921EBDBAD0089FBB9 /* GCDWebServerFileRequest.m in Sources */,
-				EF9C21A427B18A7200223E76 /* SystemImage.swift in Sources */,
 				925ABCA81E46DCC500997182 /* ListOptionController.m in Sources */,
 				92A533C621EBDBAD0089FBB9 /* GCDWebServerDataRequest.m in Sources */,
 				EF8E428B249FE5410049C84C /* ulTron.metal in Sources */,
@@ -1193,7 +1198,7 @@
 				92A533C021EBDBAD0089FBB9 /* GCDWebServerURLEncodedFormRequest.m in Sources */,
 				92A533D821EE601D0089FBB9 /* WebServer.m in Sources */,
 				EFB3C6D624890F6200F44780 /* simpleCRT.metal in Sources */,
-				EF301CF1240460C5000510FD /* Alert.m in Sources */,
+				EF31447C27BB1E81002C3C6A /* ControllerButtonPress.swift in Sources */,
 				EF474B8B2791E4CD00578663 /* EmulatorKeyboard.swift in Sources */,
 				92A533BA21EBDBAD0089FBB9 /* GCDWebServerDataResponse.m in Sources */,
 				EF24933A236264DA00DD0A6C /* ImageCache.m in Sources */,
@@ -1224,7 +1229,6 @@
 				EF19F22C235D1BDF00C8EE7F /* ChooseGameController.m in Sources */,
 				EF926C9B24BA36980048392B /* SkinManager.m in Sources */,
 				EF8EAA88244F7F5D00DA02BB /* SteamController.m in Sources */,
-				EFB3C6DD248C33DF00F44780 /* InfoHUD.m in Sources */,
 				92A533AE21EBDBAD0089FBB9 /* GCDWebServer.m in Sources */,
 				92A5332321EB57F00089FBB9 /* Options.m in Sources */,
 				EF301CF3240460F3000510FD /* ZipFile.m in Sources */,
@@ -1245,7 +1249,6 @@
 				92A533C721EBDBAD0089FBB9 /* GCDWebServerDataRequest.m in Sources */,
 				926C76FF21F1C87700103EDE /* TVOptionsController.m in Sources */,
 				EF286D35253CA930007DA6D3 /* CloudSync.m in Sources */,
-				EF568DB025D5D4F600092B30 /* InfoHUD.m in Sources */,
 				EF8E427E249348220049C84C /* megaTron.metal in Sources */,
 				92A5332621EBC8D00089FBB9 /* Bootstrapper.m in Sources */,
 				92A533A921EBDBAD0089FBB9 /* GCDWebServerRequest.m in Sources */,
@@ -1263,7 +1266,6 @@
 				EFB7B21D247ACFE300AD96A4 /* MameShaders.metal in Sources */,
 				92A533D421EBDDF20089FBB9 /* GCDWebUploader.m in Sources */,
 				92ECB91221EAA1B700D1E3D0 /* EmulatorController.m in Sources */,
-				EF9C21A527B18A7200223E76 /* SystemImage.swift in Sources */,
 				EF8EAA87244F7F5D00DA02BB /* SteamControllerManager.m in Sources */,
 				EF24BAFD24C786A900D9C55A /* SkinManager.m in Sources */,
 				92A533AC21EBDBAD0089FBB9 /* GCDWebServerFunctions.m in Sources */,
@@ -1275,7 +1277,7 @@
 				EFE4B6AC2453D7F80009A6F1 /* InfoDatabase.m in Sources */,
 				EF24933B236264DA00DD0A6C /* ImageCache.m in Sources */,
 				92A5332421EB57F00089FBB9 /* Options.m in Sources */,
-				EF301CF2240460C5000510FD /* Alert.m in Sources */,
+				EF7D4AA827B6FA90002528B7 /* TVAlertController.swift in Sources */,
 				92A533CA21EBDBAD0089FBB9 /* GCDWebServerFileRequest.m in Sources */,
 				EF1741D7261BB2D600DE8386 /* GameInfo.m in Sources */,
 				EF8409A3260CEFAB00FAC3CF /* AVPlayerView.m in Sources */,
