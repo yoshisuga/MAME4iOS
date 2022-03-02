@@ -63,11 +63,9 @@
         [UIKeyCommand commandWithTitle:@"Get Info" image:[UIImage systemImageNamed:@"info.circle"] action:@selector(fileInfo) input:@"i" modifierFlags:UIKeyModifierCommand propertyList:nil],
     ]] atStartOfMenuForIdentifier:UIMenuFile];
 
-    // TODO: do we want `Export Skin...` here? or burried in `Game Input`?
     [builder insertChildMenu:[UIMenu menuWithTitle:@"FILE" image:nil identifier:nil options:UIMenuOptionsDisplayInline children:@[
         [UICommand commandWithTitle:@"Import..."     image:[UIImage systemImageNamed:@"square.and.arrow.down.on.square"]      action:@selector(fileImport) propertyList:nil],
         [UICommand commandWithTitle:@"Export..."     image:[UIImage systemImageNamed:@"square.and.arrow.up.on.square"]        action:@selector(fileExport) propertyList:nil],
-//      [UICommand commandWithTitle:@"Export Skin..."image:[UIImage systemImageNamed:@"square.and.arrow.up"]        action:@selector(fileExportSkin) propertyList:nil],
         [UICommand commandWithTitle:@"Start Server"  image:[UIImage systemImageNamed:@"arrow.up.arrow.down.circle"] action:@selector(fileStartServer) propertyList:nil],
         [UICommand commandWithTitle:@"Show Files"    image:[UIImage systemImageNamed:@"folder"] action:@selector(fileShowFiles) propertyList:nil],
     ]] atStartOfMenuForIdentifier:UIMenuFile];
