@@ -127,10 +127,12 @@
 #define LAYOUT_MODE_DEFAULT LayoutSmall
 #define SCOPE_MODE_KEY      @"ScopeMode"
 #define SCOPE_MODE_DEFAULT  @"System"
-#define ALL_SCOPES          @[@"System", @"Clones", @"Manufacturer", @"Year", @"Genre", @"Driver"]
+#define ALL_SCOPES          @[@"System", @"Software", @"Clones", @"Manufacturer", @"Year", @"Genre", @"Driver"]
 #define RECENT_GAMES_MAX    8
 
-#define SECTIONS_COLLAPSED_KEY    @"CollapsedSections"
+#define SELECTED_GAME_KEY         @"SelectedGame"
+#define SELECTED_GAME_SECTION_KEY @"SelectedGameSection"
+#define COLLAPSED_STATE_KEY       @"CollapsedSectionState"
 
 #define CLAMP(x, num) MIN(MAX(x,0), (num)-1)
 
@@ -156,6 +158,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 -(void)setBackgroundColor:(UIColor *)backgroundColor;
 -(void)setShadowColor:(UIColor*)color;
 -(void)setSelectScale:(CGFloat)scale;
+-(void)updateSelected;
 -(void)addBlur:(UIBlurEffectStyle)style;
 -(void)startWait;
 -(void)stopWait;
@@ -214,7 +217,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 @implementation ChooseGameController
 
 + (NSArray<NSString*>*) allSettingsKeys {
-    return @[LAYOUT_MODE_KEY, SCOPE_MODE_KEY, RECENT_GAMES_KEY, FAVORITE_GAMES_KEY, SECTIONS_COLLAPSED_KEY];
+    return @[LAYOUT_MODE_KEY, SCOPE_MODE_KEY, RECENT_GAMES_KEY, FAVORITE_GAMES_KEY, COLLAPSED_STATE_KEY, SELECTED_GAME_KEY, SELECTED_GAME_SECTION_KEY];
 }
 
 - (instancetype)init
@@ -247,7 +250,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 - (void)viewDidLoad
 {
 #if USE_TITLE_IMAGE
-    CGFloat height = TARGET_OS_IOS ? 44.0 : (44.0 * 2.0);
+    CGFloat height = TARGET_OS_IOS ? 42.0 : (44.0 * 2.0);
     UIImage* image = [[UIImage imageNamed:@"mame_logo"] scaledToSize:CGSizeMake(0.0, height)];
     UIImageView* title = [[UIImageView alloc] initWithImage:image];
 #else
@@ -284,10 +287,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     // layout
     height = TARGET_OS_IOS ? 16.0 : 32.0;
     UISegmentedControl* seg1 = [[PopupSegmentedControl alloc] initWithItems:@[
-        [UIImage systemImageNamed:@"square.grid.4x3.fill" withPointSize:height]    ?: @"⚏",
-        [UIImage systemImageNamed:@"rectangle.grid.2x2.fill" withPointSize:height] ?: @"☷",
-        [UIImage systemImageNamed:@"rectangle.stack.fill" withPointSize:height]    ?: @"▢",
-        [UIImage systemImageNamed:@"rectangle.grid.1x2.fill" withPointSize:height] ?: @"☰"
+        [UIImage systemImageNamed:@"square.grid.4x3.fill"    withConfiguration:[UIImageSymbolConfiguration configurationWithPointSize:height]] ?: @"⚏",
+        [UIImage systemImageNamed:@"rectangle.grid.2x2.fill" withConfiguration:[UIImageSymbolConfiguration configurationWithPointSize:height]] ?: @"☷",
+        [UIImage systemImageNamed:@"rectangle.stack.fill"    withConfiguration:[UIImageSymbolConfiguration configurationWithPointSize:height]] ?: @"▢",
+        [UIImage systemImageNamed:@"rectangle.grid.1x2.fill" withConfiguration:[UIImageSymbolConfiguration configurationWithPointSize:height]] ?: @"☰"
     ]];
     
     seg1.selectedSegmentIndex = _layoutMode;
@@ -302,6 +305,13 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     [seg2 addTarget:self action:@selector(scopeChange:) forControlEvents:UIControlEventValueChanged];
     UIBarButtonItem* scope = [[UIBarButtonItem alloc] initWithCustomView:seg2];
     
+    // on a small phone, make the group button/scope just show a icon
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wdeprecated"
+    if (UIApplication.sharedApplication.keyWindow.bounds.size.width <= 375)
+        [seg2 setImage:[UIImage systemImageNamed:@"list.dash" withConfiguration:[UIImageSymbolConfiguration configurationWithPointSize:height]] forSegmentAtIndex:UISegmentedControlNoSegment];
+    #pragma clang diagnostic pop
+
 #if TARGET_OS_TV
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wdeprecated"
@@ -312,7 +322,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 #endif
     
     // settings
-    UIImage* settingsImage = [UIImage systemImageNamed:@"gear" withPointSize:height] ?: [[UIImage imageNamed:@"menu"] scaledToSize:CGSizeMake(height, height)];
+    UIImage* settingsImage = [UIImage systemImageNamed:@"gear" withConfiguration:[UIImageSymbolConfiguration configurationWithPointSize:height]];
 #if TARGET_OS_TV
     UIBarButtonItem* settings = [[UIBarButtonItem alloc] initWithImage:settingsImage style:UIBarButtonItemStylePlain target:self action:@selector(showSettings)];
 #else
@@ -322,7 +332,18 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     UIBarButtonItem* settings = [[UIBarButtonItem alloc] initWithCustomView:seg3];
 #endif
     
-    self.navigationItem.rightBarButtonItems = @[settings, layout, scope];
+    // add roms
+    UIImage* addRomsImage = [UIImage systemImageNamed:@"plus" withConfiguration:[UIImageSymbolConfiguration configurationWithPointSize:height]];
+#if TARGET_OS_TV
+    UIBarButtonItem* addRoms = [[UIBarButtonItem alloc] initWithImage:addRomsImage style:UIBarButtonItemStylePlain target:self action:@selector(addRoms)];
+#else
+    UISegmentedControl* seg4 = [[UISegmentedControl alloc] initWithItems:@[addRomsImage]];
+    seg4.momentary = YES;
+    [seg4 addTarget:self action:@selector(addRoms) forControlEvents:UIControlEventValueChanged];
+    UIBarButtonItem* addRoms = [[UIBarButtonItem alloc] initWithCustomView:seg4];
+#endif
+    
+    self.navigationItem.rightBarButtonItems = @[addRoms, settings, layout, scope];
 
 #if TARGET_OS_IOS
     if (@available(iOS 13.0, *)) {
@@ -404,11 +425,25 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 #endif
 }
 
+-(void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+}
 -(void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
+    [self restoreSelection];
+    
+    // hide the search bar if we are at the top
     if (self.collectionView.contentOffset.y <= 0.0)
         [self scrollToTop];
+}
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    [self saveSelection];
+}
+- (void)viewDidDisappear:(BOOL)animated {
+    [super viewDidDisappear:animated];
 }
 
 #if TARGET_OS_TV
@@ -449,6 +484,12 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         _selectGameCallback(@{kGameInfoDescription:@"Settings", kGameInfoName:kGameInfoNameSettings});
 }
 
+-(void)addRoms
+{
+    if (_selectGameCallback)
+        _selectGameCallback(@{kGameInfoDescription:@"Add ROMS", kGameInfoName:kGameInfoNameAddROMS});
+}
+
 - (void)viewWillLayoutSubviews
 {
     [super viewWillLayoutSubviews];
@@ -460,29 +501,118 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     }
 }
 
-- (void)setGameList:(NSArray*)games
+- (void)addSnapshots:(NSMutableArray*)games
 {
     // remove any snapshots
-    games = [games filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"%K != %@", kGameInfoType, kGameInfoTypeSnapshot]];
+    [games filterUsingPredicate:[NSPredicate predicateWithFormat:@"%K != %@", kGameInfoType, kGameInfoTypeSnapshot]];
     
     // add all snapshots on disk
     for (NSString* snap in [NSFileManager.defaultManager enumeratorAtPath:getDocumentPath(@"snap")].allObjects) {
         
+        NSString* file = [@"snap" stringByAppendingPathComponent:snap];
+
         if (![snap.pathExtension.lowercaseString isEqualToString:@"png"] || snap.stringByDeletingLastPathComponent.length == 0)
             continue;
         
-        games = [games arrayByAddingObject:@{
+        [games addObject:@{
             kGameInfoType:kGameInfoTypeSnapshot,
-            kGameInfoFile:snap,
+            kGameInfoFile:file,
             kGameInfoManufacturer:snap.lastPathComponent.stringByDeletingPathExtension,
             kGameInfoName:snap.stringByDeletingLastPathComponent.lastPathComponent,
             kGameInfoDescription:snap.stringByDeletingLastPathComponent.lastPathComponent,
         }];
     }
+}
+
+// load the "sidecar" JSON file
+-(NSDictionary*)getSoftwareInfo:(NSString*)file
+{
+    // lookup meta data from json file
+    NSDictionary* info = nil;
+    NSString* path = [getDocumentPath(file).stringByDeletingPathExtension stringByAppendingPathExtension:@"json"];
+    NSData* data = [NSData dataWithContentsOfFile:path];
+    if (data != nil)
+        info = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+    if (![info isKindOfClass:[NSDictionary class]])
+        info = nil;
+    return info;
+}
+// save the "sidecar" JSON file
+-(BOOL)setSoftwareInfo:(NSString*)file info:(NSDictionary*)info
+{
+    NSString* path = [file.stringByDeletingPathExtension stringByAppendingPathExtension:@"json"];
+    if (info.count == 0)
+        return [NSFileManager.defaultManager removeItemAtPath:path error:nil];
+    NSData* data = [NSJSONSerialization dataWithJSONObject:info options:NSJSONWritingPrettyPrinted error:nil];
+    return [data writeToFile:path atomically:NO];
+}
+// update a value in a game, and save in sidecar too.
+-(NSDictionary*)setGame:(NSDictionary*)game value:(NSString*)value forKey:(NSString*)key
+{
+    if (game.gameFile.length != 0) {
+        NSMutableDictionary* info = [([self getSoftwareInfo:game.gameFile] ?: @{}) mutableCopy];
+        [info setValue:value forKey:key];
+        [self setSoftwareInfo:game.gameFile info:info];
+    }
+    
+    NSMutableDictionary* info = [game mutableCopy];
+    [info setValue:value forKey:key];
+    return [info copy];
+}
+
+- (void)addSoftware:(NSMutableArray*)games
+{
+    // remove any previous software
+    [games filterUsingPredicate:[NSPredicate predicateWithFormat:@"%K != %@", kGameInfoType, kGameInfoTypeSoftware]];
+    
+    // add all software on disk
+    for (NSString* soft in [NSFileManager.defaultManager enumeratorAtPath:getDocumentPath(@"software")].allObjects) {
+        
+        NSString* file = [@"software" stringByAppendingPathComponent:soft];
+
+        if (file.pathExtension.length == 0 || file.lastPathComponent.stringByDeletingPathExtension.length == 0)
+            continue;
+        
+        if ([@[@"txt", @"json", @"png"] containsObject:file.pathExtension.lowercaseString])
+            continue;
+
+        // lookup meta data from json file
+        NSDictionary* info = [self getSoftwareInfo:file];
+        
+        // construct a short name
+        NSString* name = file.lastPathComponent.stringByDeletingPathExtension;
+        name = [name componentsSeparatedByCharactersInSet:[NSCharacterSet alphanumericCharacterSet].invertedSet].firstObject;
+        
+        [games addObject:@{
+            kGameInfoType:kGameInfoTypeSoftware,
+            kGameInfoFile:file,
+            kGameInfoSystem:info[kGameInfoSystem] ?: @"",
+            kGameInfoMediaType:info[kGameInfoMediaType] ?: @"",
+            kGameInfoSoftwareList:info[kGameInfoSoftwareList] ?: @"",
+            kGameInfoName:info[kGameInfoName] ?: name,
+            kGameInfoDescription:info[kGameInfoDescription] ?: file.lastPathComponent.stringByDeletingPathExtension,
+            // TODO: do we want the concept of Clone for Software?
+            kGameInfoParent:info[kGameInfoParent] ?: @"",
+            kGameInfoManufacturer:info[kGameInfoManufacturer] ?: @"",
+            kGameInfoYear:info[kGameInfoYear] ?: @"",
+        }];
+    }
+}
+
+- (void)setGameList:(NSArray*)_games
+{
+    NSMutableArray* games = [_games mutableCopy];
+    
+    // add all snapshots on disk
+    [self addSnapshots:games];
+
+    // add any software on disk
+    [self addSoftware:games];
 
     // sort the list by description
-    _gameList = [games sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:kGameInfoDescription ascending:TRUE]]];
+    [games sortUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:kGameInfoDescription ascending:TRUE]]];
     
+    _gameList = [games copy];
     [self filterGameList];
 }
 
@@ -528,15 +658,31 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     NSString* description = [_system_description objectForKey:system];
 
     if (description == nil) {
+        
         // find the system in the gameList
         NSDictionary* game = [_gameList filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"%K = %@", kGameInfoName, system]].firstObject;
         description = game[kGameInfoDescription] ?: system;
         [_system_description setObject:description forKey:system];
+        
+        // if this system is a clone, default section to collapsed
+        if (game.gameIsClone && [self getCollapsed:description] == nil)
+            [self setCollapsed:description isCollapsed:TRUE];
     }
     
     return description;
 }
 
+// removed duplicates from an array based on key, NOTE order of array not preserved
+- (NSArray*)dedupArray:(NSArray<NSDictionary*>*)items uniqueKey:(NSString*)key {
+    NSMutableDictionary* dict = [[NSMutableDictionary alloc] init];
+    for (NSDictionary* item in items) {
+        if ([item isKindOfClass:[NSDictionary class]] && item[key] != nil)
+            dict[item[key]] = item;
+    }
+    return [dict allValues];
+}
+
+// filter (based on search text, or options) and group into sections
 - (void)filterGameList
 {
     NSArray* filteredGames = _gameList;
@@ -573,6 +719,13 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         }
     }
     
+    // remove Console root (aka BIOS) machines
+    // a Console is type=Console and System="" (ie just a machine of type Console)
+    // NOTE we dont filter out Consoles at a higher level, cuz we need them to run Software (ie let user select)
+    if (self.hideConsoles) {
+        filteredGames = [filteredGames filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"NOT (%K = %@ AND %K = nil)", kGameInfoType, kGameInfoTypeConsole, kGameInfoSystem]];
+    }
+    
     // group games by category into sections
     NSMutableDictionary* gameData = [[NSMutableDictionary alloc] init];
     NSString* key = nil;
@@ -592,6 +745,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         key = kGameInfoParent;
     if ([_gameFilterScope isEqualToString:@"System"])
         key = kGameInfoSystem;
+    if ([_gameFilterScope isEqualToString:@"Software"])
+        key = kGameInfoSoftwareList;
     if ([_gameFilterScope isEqualToString:@"Type"])
         key = kGameInfoType;
     if ((clones = [_gameFilterScope isEqualToString:@"Clones"]))
@@ -617,7 +772,13 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
         if ([section length] == 0 && key == (void*)kGameInfoSystem)
             section = game.gameType;
-        
+
+        if ([section length] != 0 && key == (void*)kGameInfoSoftwareList)
+            section = [SoftwareList.sharedInstance getSoftwareListDescription:section] ?: section;
+
+        if ([section length] == 0 && key == (void*)kGameInfoSoftwareList)
+            section = game.gameType;
+
         if ([section length] != 0 && clones && game.gameIsClone)
             section = [NSString stringWithFormat:@"%@ • Clones", section];
         
@@ -629,6 +790,12 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
             sections = [section componentsSeparatedByString:@","];
         else
             sections = @[section];
+        
+        // put software that is assigned a system in generic Software section also
+        if (key == (void*)kGameInfoSystem && game.gameIsSoftware && game.gameSystem.length != 0)
+            sections = @[section, kGameInfoTypeSoftware];
+        if (key == (void*)kGameInfoSoftwareList && game.gameIsSoftware && game.gameSoftwareList.length != 0)
+            sections = @[section, kGameInfoTypeSoftware];
 
         for (NSString* section in sections) {
             if (gameData[section] == nil)
@@ -636,15 +803,29 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
             [gameData[section] addObject:game];
         }
     }
+    
+    // if we are grouping by SoftwareList remove duplicates (multiple machines run games in a list...)
+    if (key == (void*)kGameInfoSoftwareList) {
+        for (NSString* section in gameData.allKeys) {
+            if ([@[kGameInfoTypeArcade, kGameInfoTypeSoftware, kGameInfoTypeSnapshot] containsObject:section])
+                continue;
+ 
+            // remove dups based on name, and sort
+            gameData[section] = [[self dedupArray:gameData[section] uniqueKey:kGameInfoName]
+                sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:kGameInfoDescription ascending:TRUE]]];
+         }
+    }
 
     // and sort section names
     NSArray* gameSectionTitles = [gameData.allKeys sortedArrayUsingSelector:@selector(localizedCompare:)];
     
     // move Computer(s) and Console(s) etc to the end
-    for (NSString* title in @[kGameInfoTypeConsole, kGameInfoTypeComputer, kGameInfoTypeBIOS, @"Unknown"]) {
-        if ([gameSectionTitles containsObject:title]) {
-            gameSectionTitles = [gameSectionTitles filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF != %@", title]];
-            gameSectionTitles = [gameSectionTitles arrayByAddingObject:title];
+    for (NSString* section in @[kGameInfoTypeSoftware, kGameInfoTypeConsole, kGameInfoTypeComputer, kGameInfoTypeBIOS, kGameInfoTypeSnapshot, @"Unknown"]) {
+        for (NSString* title in @[section, [NSString stringWithFormat:@"%@ • Clones", section]]) {
+            if ([gameSectionTitles containsObject:title]) {
+                gameSectionTitles = [gameSectionTitles filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF != %@", title]];
+                gameSectionTitles = [gameSectionTitles arrayByAddingObject:title];
+            }
         }
     }
 
@@ -699,6 +880,9 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
             gameData[RECENT_GAMES_TITLE] = recentGames;
         }
     }
+    
+    if (self.isViewLoaded)
+        [self saveSelection];
     
     _gameSectionTitles = gameSectionTitles;
     _gameData = gameData;
@@ -790,6 +974,54 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 {
     [self.collectionView reloadData];
     [self invalidateLayout];
+    [self restoreSelection];
+}
+
+-(NSIndexPath*)getSelection {
+#if TARGET_OS_TV
+    return _currentlyFocusedIndexPath;
+#else
+    return self.collectionView.indexPathsForSelectedItems.firstObject;
+#endif
+}
+
+-(void)setSelection:(NSIndexPath*)indexPath {
+#if TARGET_OS_TV
+    _currentlyFocusedIndexPath = indexPath;
+    [self setNeedsFocusUpdate];
+#else
+    BOOL is_vis = [self.collectionView.indexPathsForVisibleItems containsObject:indexPath];
+    [self.collectionView selectItemAtIndexPath:indexPath animated:NO scrollPosition:is_vis ? UICollectionViewScrollPositionNone : UICollectionViewScrollPositionCenteredVertically];
+#endif
+}
+-(void)saveSelection {
+    NSIndexPath* indexPath = [self getSelection];
+    if (indexPath != nil && indexPath.section < _gameSectionTitles.count) {
+        [NSUserDefaults.sharedUserDefaults setValue:_gameSectionTitles[indexPath.section] forKey:SELECTED_GAME_SECTION_KEY];
+        [NSUserDefaults.sharedUserDefaults setValue:[self getGameInfo:indexPath] forKey:SELECTED_GAME_KEY];
+    }
+}
+-(void)restoreSelection {
+    NSString* title = [NSUserDefaults.sharedUserDefaults valueForKey:SELECTED_GAME_SECTION_KEY] ?: @"";
+    NSDictionary* game = [NSUserDefaults.sharedUserDefaults valueForKey:SELECTED_GAME_KEY] ?: @{};
+    NSUInteger section = [_gameSectionTitles indexOfObject:title];
+    if (section != NSNotFound && section < [self.collectionView numberOfSections] && [self.collectionView numberOfItemsInSection:section] != 0) {
+        NSUInteger item = [_gameData[title] indexOfObject:game];
+        if (item == NSNotFound || item >= [self.collectionView numberOfItemsInSection:section])
+            item = 0;
+        NSIndexPath* indexPath = [NSIndexPath indexPathForItem:item inSection:section];
+        [self setSelection:indexPath];
+    }
+}
+
+-(void)moveSelectionForDelete:(NSIndexPath*)indexPath {
+    if (indexPath != nil) {
+        if (indexPath.item < [self.collectionView numberOfItemsInSection:indexPath.section]-1)
+            indexPath = [NSIndexPath indexPathForItem:indexPath.item+1 inSection:indexPath.section];
+        else if (indexPath.item > 0)
+            indexPath = [NSIndexPath indexPathForItem:indexPath.item-1 inSection:indexPath.section];
+        [self setSelection:indexPath];
+    }
 }
 
 -(void)updateLayout
@@ -982,10 +1214,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     [_layoutRowHeightCache removeObjectForKey:[NSIndexPath indexPathForItem:row_start inSection:section]];
 }
 
+static BOOL g_updating;
+
 -(void)updateImages
 {
-    static BOOL g_updating;
-    
     if (g_updating || self.collectionView.isDragging || self.collectionView.isTracking || self.collectionView.isDecelerating) {
         NSLog(@"updateImages: SCROLLING (will try again)");
         [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateImages) object:nil];
@@ -1030,7 +1262,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
             NSLog(@"updateImages DONE!");
             g_updating = FALSE;
             if (selectedIndexPath != nil) {
-                [self.collectionView selectItemAtIndexPath:selectedIndexPath animated:NO scrollPosition:UICollectionViewScrollPositionCenteredVertically];
+                [self.collectionView selectItemAtIndexPath:selectedIndexPath animated:NO scrollPosition:UICollectionViewScrollPositionNone];
             }
             [self kickLayout];
         }];
@@ -1040,6 +1272,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 // update all cells with this image
 -(void)updateImage:(NSURL*)url
 {
+    if (g_updating)
+        return;
     _updated_urls = _updated_urls ?: [[NSMutableSet alloc] init];
     [_updated_urls addObject:url];
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateImages) object:nil];
@@ -1049,39 +1283,38 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 #pragma mark Section collapse
 
--(BOOL)isCollapsed:(NSInteger)section
+-(id)getCollapsed:(NSString*)title
+{
+    NSDictionary* state = [NSUserDefaults.standardUserDefaults objectForKey:COLLAPSED_STATE_KEY] ?: @{};
+    return state[title];
+}
+-(BOOL)isCollapsed:(NSString*)title
 {
     if (_isSearchResults)
         return FALSE;
-    NSString* title = _gameSectionTitles[section];
-    NSArray* sections = [NSUserDefaults.standardUserDefaults objectForKey:SECTIONS_COLLAPSED_KEY] ?: @[];
-    return [sections containsObject:title];
+    return [[self getCollapsed:title] boolValue];
 }
-- (void)setCollapsed:(NSInteger)section isCollapsed:(BOOL)flag
+- (void)setCollapsed:(NSString*)title isCollapsed:(BOOL)flag
 {
-    NSString* title = _gameSectionTitles[section];
-    NSMutableArray* sections = [([NSUserDefaults.standardUserDefaults objectForKey:SECTIONS_COLLAPSED_KEY] ?: @[]) mutableCopy];
-
-    [sections removeObject:title];
-
-    if (flag)
-        [sections addObject:title];
-    
-    [NSUserDefaults.standardUserDefaults setObject:sections forKey:SECTIONS_COLLAPSED_KEY];
+    NSMutableDictionary* state = [([NSUserDefaults.standardUserDefaults objectForKey:COLLAPSED_STATE_KEY] ?: @{}) mutableCopy];
+    state[title] = @(flag);
+    [NSUserDefaults.standardUserDefaults setObject:state forKey:COLLAPSED_STATE_KEY];
 }
 
 -(void)headerTap:(UITapGestureRecognizer*)sender
 {
     NSLog(@"HEADER TAP: %d", (int)sender.view.tag);
+    if (_isSearchResults)
+        return;
     NSInteger section = sender.view.tag;
     if (section >= 0 && section < _gameSectionTitles.count)
     {
-        [self setCollapsed:section isCollapsed:![self isCollapsed:section]];
+        NSString* title = _gameSectionTitles[section];
+        [self setCollapsed:title isCollapsed:![self isCollapsed:title]];
         [self.collectionView performBatchUpdates:^{
             [self.collectionView reloadSections:[NSIndexSet indexSetWithIndex:section]];
         } completion:^(BOOL finished){
             [self kickLayout];
-            [self performSelector:@selector(reloadData) withObject:nil afterDelay:0.250];
         }];
     }
 }
@@ -1096,9 +1329,9 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 {
     if (section >= _gameSectionTitles.count)
         return 0;
-    if ([self isCollapsed:section])
-        return 0;
     NSString* title = _gameSectionTitles[section];
+    if ([self isCollapsed:title])
+        return 0;
     NSInteger num = [_gameData[title] count];
     // restrict the Recent items to a single row, always
     if ([title isEqualToString:RECENT_GAMES_TITLE])
@@ -1123,14 +1356,14 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 //  TINY        SMALL                       LARGE                       LIST
 //  ----        -----                       -----                       ----
 //  romname     short Description           Description                 Description
-//              short Manufacturer • Year   short Manufacturer • Year   Manufacturer • Year  • romname [parent-rom]
+//              short Manufacturer • Year   short Manufacturer • Year   Manufacturer • Year  • system:romname [parent-rom]
 //
 +(NSAttributedString*)getGameText:(NSDictionary*)info layoutMode:(LayoutMode)layoutMode textAlignment:(NSTextAlignment)textAlignment badge:(NSString*)badge clone:(BOOL)clone
 {
     NSString* title;
     NSString* detail;
     NSString* str;
-    
+
     if (info[kGameInfoName] == nil || info[kGameInfoDescription] == nil)
         return nil;
     
@@ -1154,14 +1387,17 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     }
     else { // LayoutList
         title = info[kGameInfoDescription];
-        detail = info[kGameInfoManufacturer];
+        detail = info[kGameInfoName];
 
-        if ((str = info[kGameInfoYear]) && [str length] > 1)
-            detail = [NSString stringWithFormat:@"%@ • %@", detail, str];
+        if ((str = info[kGameInfoSystem]) && [str length] > 1)
+            detail = [NSString stringWithFormat:@"%@:%@", str, detail];
         
-        if ((str = info[kGameInfoName]) && [str length] > 1)
-            detail = [NSString stringWithFormat:@"%@ • %@", detail, str];
+        if ((str = info[kGameInfoYear]) && [str length] > 1)
+            detail = [NSString stringWithFormat:@"%@ • %@", str, detail];
 
+        if ((str = info[kGameInfoManufacturer]) && [str length] > 1)
+            detail = [NSString stringWithFormat:@"%@ • %@", str, detail];
+        
         if ((str = info[kGameInfoParent]) && [str length] > 1)
             detail = [NSString stringWithFormat:@"%@ [%@]", detail, str];
     }
@@ -1175,8 +1411,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         NSFontAttributeName:CELL_TITLE_FONT,
         NSForegroundColorAttributeName:clone ? CELL_CLONE_COLOR : CELL_TITLE_COLOR
     }];
-
-    if (detail != nil)
+    
+    if (detail.length != 0 && ![title isEqualToString:detail])
     {
         if (text.length != 0)
             detail = [@"\n" stringByAppendingString:detail];
@@ -1195,7 +1431,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
             UIFont* badge_font = [UIFont systemFontOfSize:text_font.pointSize * 0.5];
             CGFloat dy = floor((text_font.capHeight - badge_font.capHeight) / 2);
             
-            UIImage* image = [UIImage systemImageNamed:badge withFont:badge_font];
+            UIImage* image = [UIImage systemImageNamed:badge withConfiguration:[UIImageSymbolConfiguration configurationWithFont:badge_font]];
             NSTextAttachment* att = [[NSTextAttachment alloc] init];
             att.image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
             NSMutableAttributedString* badge_text = [[NSAttributedString attributedStringWithAttachment:att] mutableCopy];
@@ -1324,6 +1560,35 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     }];
 }
 
+// make a default icon if we cant find one
+-(UIImage*)makeIcon:(NSDictionary*)game
+{
+    if (game.gameFile.pathExtension.length == 0)
+        return nil;
+    
+    UIImage* image = _defaultImage;
+    CGSize size = image.size;
+
+    NSString* text = game.gameFile.pathExtension;
+    UIFont* font =  [UIFont systemFontOfSize:size.height / 8 weight:UIFontWeightHeavy];
+    CGSize sizeText = [text sizeWithAttributes:@{NSFontAttributeName:font}];
+    CGFloat pad = font.lineHeight / 4;
+    UIColor* backColor = self.view.tintColor;
+    UIColor* textColor = UIColor.whiteColor;
+
+    return [[[UIGraphicsImageRenderer alloc] initWithSize:size] imageWithActions:^(UIGraphicsImageRendererContext * context) {
+        [image drawInRect:CGRectMake(0, 0, size.width, size.height)];
+        
+        [backColor setFill];
+        CGRect rect = CGRectMake(size.width - sizeText.width - pad * 4,
+                                 size.height - sizeText.height - pad * 4,
+                                 sizeText.width + pad * 2,
+                                 sizeText.height + pad * 2);
+        [[UIBezierPath bezierPathWithRoundedRect:rect cornerRadius:pad] fill];
+        [text drawAtPoint:CGPointMake(rect.origin.x + pad, rect.origin.y + pad) withAttributes:@{NSFontAttributeName:font, NSForegroundColorAttributeName:textColor}];
+    }];
+}
+
 // create a cell for an item.
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
 {
@@ -1375,7 +1640,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         // if this is syncronous set image and be done
         if (cell.image.image == nil) {
             
-            image = image ?: self->_defaultImage;
+            image = image ?: [self makeIcon:info] ?: self->_defaultImage;
             
             // MAME games always ran on horz or vertical CRTs so it does not matter what the PAR of
             // the title image is force a aspect of 3:4 or 4:3
@@ -1418,6 +1683,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
             [cell setImageAspect:(cell.bounds.size.width / row_height.x)];
         [cell startWait];
     }
+    [cell updateSelected];
     
     return cell;
 }
@@ -1449,7 +1715,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     UIImage* image = nil;
     NSArray* arr = [text componentsSeparatedByString:@":"];
     
-    if (arr.count != 3 || (image = [UIImage systemImageNamed:arr[1] withFont:font]) == nil)
+    if (arr.count != 3 || (image = [UIImage systemImageNamed:arr[1] withConfiguration:[UIImageSymbolConfiguration configurationWithFont:font]]) == nil)
         return [[NSAttributedString alloc] initWithString:text attributes:attributes];
     
     NSMutableAttributedString* result = [[NSMutableAttributedString alloc] initWithString:arr[0] attributes:attributes];
@@ -1467,7 +1733,8 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
 {
     GameCell* cell = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:HEADER_IDENTIFIER forIndexPath:indexPath];
     [cell setHorizontal:TRUE];
-    cell.text.text = _gameSectionTitles[indexPath.section];
+    NSString* title = _gameSectionTitles[indexPath.section];
+    cell.text.text = title;
     cell.text.font = [UIFont systemFontOfSize:cell.bounds.size.height * 0.8 weight:UIFontWeightHeavy];
     cell.text.textColor = HEADER_TEXT_COLOR;
     cell.contentView.backgroundColor = HEADER_BACKGROUND_COLOR;
@@ -1477,7 +1744,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     
     // make the section title tappable to toggle collapse/expand section
     if (@available(iOS 13.0, tvOS 13.0, *)) {
-        BOOL is_collapsed = [self isCollapsed:indexPath.section];
+        BOOL is_collapsed = [self isCollapsed:title];
         
         // dont allow collapse if we only have a single (+MAME) section
         if (!_isSearchResults && (_gameSectionTitles.count >= 2 || is_collapsed))
@@ -1501,16 +1768,10 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     NSDictionary* game = [self getGameInfo:indexPath];
     
     NSLog(@"DID SELECT ITEM[%d.%d] %@", (int)indexPath.section, (int)indexPath.item, game[kGameInfoName]);
-    
-    if (game.gameIsSnapshot)
-        return;
-    
-    // add (or move to front) of the recent game LRU list...
-    [self setRecent:game isRecent:TRUE];
-    
-    // tell the code upstream that the user had selected a game to play!
-    if (self.selectGameCallback != nil)
-        self.selectGameCallback(game);
+#if TARGET_OS_TV
+    [collectionView deselectItemAtIndexPath:indexPath animated:YES];
+#endif
+    [self play:game];
 }
 
 - (void)collectionView:(UICollectionView *)collectionView willDisplayCell:(GameCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath
@@ -1546,6 +1807,113 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     }
 }
 
+#pragma mark - play game
+
+-(void)play:(NSDictionary*)game
+{
+    if (game.gameIsSnapshot)
+        return;
+    
+    // if this is software, and no system is assigned we need to ask
+    if (game.gameIsSoftware && game.gameSystem.length == 0)
+        return [self play:game with:nil];
+    
+    // if we are sorting by software list, we also should ask.
+    if ([_gameFilterScope isEqualToString:@"Software"] && game.gameSystem.length != 0)
+        return [self play:game with:nil];
+    
+    // add or move to front of the recent game MRU list...
+    [self setRecent:game isRecent:TRUE];
+    
+    // tell the code upstream that the user had selected a game to play!
+    if (self.selectGameCallback != nil)
+        self.selectGameCallback(game);
+}
+
+-(void)play:(NSDictionary*)game with:(NSDictionary*)system
+{
+    NSLog(@"PLAY: %@ WITH: %@", game, system);
+
+    if (system == nil)
+    {
+        if (self.presentedViewController != nil) {
+            
+        }
+        NSArray* list = [self getSystemsForGame:game];
+        NSString* title = [ChooseGameController getGameText:game layoutMode:LayoutSmall].string;
+
+        if (list.count == 0)
+        {
+            NSString* message = @"Cant find a System to play.";
+            [self showAlertWithTitle:title message:message buttons:@[@"Ok"] handler:nil];
+            return;
+        }
+        
+        if (list.count == 1)
+        {
+            [self play:game with:list.firstObject];
+            return;
+        }
+        
+        NSString* message = @"Select a System to play";
+        UIAlertController* alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
+        for (NSDictionary* system in list)
+        {
+            NSString* title = [NSString stringWithFormat:@"%@", system.gameDescription];
+            [alert addAction:[UIAlertAction actionWithTitle:title style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
+                [self play:game with:system];
+            }]];
+            if (game.gameSystem.length != 0 && [game.gameSystem isEqualToString:system.gameName])
+                alert.preferredAction = alert.actions.lastObject;
+        }
+        [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
+        
+        [self presentViewController:alert animated:YES completion:nil];
+        return;
+    }
+
+    // mark recent before we modify the system
+    [self setRecent:game isRecent:TRUE];
+
+    // modify the system
+    game = [self setGame:game value:system.gameName forKey:kGameInfoSystem];
+    
+    // modify the media kind
+    if (game.gameFile.length != 0) {
+        for (NSString* media in [system.gameSoftwareMedia componentsSeparatedByString:@","]) {
+            NSArray* arr = [media componentsSeparatedByString:@":"];
+            if (arr.count==2 && [arr.lastObject isEqualToString:game.gameFile.pathExtension]) {
+                game = [self setGame:game value:arr.firstObject forKey:kGameInfoMediaType];
+            }
+        }
+    }
+    
+    // tell the code upstream that the user had selected a game to play!
+    if (self.selectGameCallback != nil)
+        self.selectGameCallback(game);
+}
+
+-(NSArray*)getSystemsForGame:(NSDictionary*)game
+{
+    NSMutableArray* list = [[NSMutableArray alloc] init];
+    
+    for (NSDictionary* system in _gameList) {
+        
+        if (system.gameSoftwareMedia.length == 0)
+            continue;
+        
+        // the SoftwareMedia list is a list of two types of strings, either <software list name>, or <media kind>:<file extension>
+        for (NSString* media in [system.gameSoftwareMedia componentsSeparatedByString:@","]) {
+            NSArray* arr = [media componentsSeparatedByString:@":"];
+            if ([media isEqualToString:game.gameSoftwareList] || (arr.count==2 && [arr.lastObject isEqualToString:game.gameFile.pathExtension])) {
+                [list addObject:system];
+                break;
+            }
+        }
+    }
+    return list;
+}
+
 #pragma mark - game context menu actions...
 
 // get the files associated with a game, if allFiles is NO only the settings files are returned.
@@ -1558,6 +1926,14 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
         name = [game.gameSoftwareList stringByAppendingPathComponent:name];
     
     NSMutableArray* files = [[NSMutableArray alloc] init];
+    
+    if (game.gameIsSoftware) {
+        if (all) {
+            for (NSString* ext in @[@"png", @"json", game.gameFile.pathExtension])
+                [files addObject:[NSString stringWithFormat:@"%@.%@",game.gameFile.stringByDeletingPathExtension, ext]];
+        }
+        return files;
+    }
     
     for (NSString* file in @[@"titles/%@.png", @"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@/1.sta", @"sta/%@/2.sta", @"hi/%@.hi", @"hiscore/%@.hi",
                              @"nvram/%@.nv", @"inp/%@.inp", @"snap/%@.png", @"snap/%@.mng", @"snap/%@.avi", @"snap/%@/"])
@@ -1778,25 +2154,6 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
 
 #pragma mark - Context Menu
 
-// on iOS 13 create a UIAction for use in a UIContextMenu, on pre-iOS 13 create a UIAlertAction for use in a UIAlertController
-- (id)actionWithTitle:(NSString*)title image:(UIImage*)image destructive:(BOOL)destructive handler:(void (^)(id action))handler {
-    if (NSClassFromString(@"UIContextMenuConfiguration") != nil) {
-        if (@available(iOS 13.0, tvOS 13.0, *)) {
-            UIAction* action = [UIAction actionWithTitle:title image:image identifier:nil handler:handler];
-            action.attributes = destructive ? UIMenuElementAttributesDestructive : 0;
-            return action;
-        }
-        return nil;
-    }
-    else
-    {
-        UIAlertAction* action = [UIAlertAction actionWithTitle:title
-                                                         style:(destructive ? UIAlertActionStyleDestructive : UIAlertActionStyleDefault)
-                                                       handler:handler];
-        return action;
-    }
-}
-
 // get the items in the ContextMenu for a item
 - (NSArray*)menuActionsForItemAtIndexPath:(NSIndexPath *)indexPath {
     NSDictionary* game = [self getGameInfo:indexPath];
@@ -1812,7 +2169,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     
     if (game.gameIsSnapshot) {
         return @[
-            [self actionWithTitle:@"Use as Title Image" image:[UIImage systemImageNamed:@"photo"] destructive:NO handler:^(id action) {
+            [UIAlertAction actionWithTitle:@"Use as Title Image" symbol:@"photo" style:UIAlertActionStyleDefault handler:^(id action) {
                 NSString* src = game.gameLocalImageURL.path;
                 NSString* dst = [NSString stringWithFormat:@"%@/%@.png", getDocumentPath(@"titles"), game.gameFile.stringByDeletingLastPathComponent];
                 [NSFileManager.defaultManager removeItemAtPath:dst error:nil];
@@ -1821,7 +2178,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
                 [self updateImage:[NSURL fileURLWithPath:dst]];
             }],
 #if TARGET_OS_IOS
-            [self actionWithTitle:@"Share" image:[UIImage systemImageNamed:@"square.and.arrow.up"] destructive:NO handler:^(id action) {
+            [UIAlertAction actionWithTitle:@"Share" symbol:@"square.and.arrow.up" style:UIAlertActionStyleDefault handler:^(id action) {
                 NSURL* url = game.gameLocalImageURL;
                 UIActivityViewController* activity = [[UIActivityViewController alloc] initWithActivityItems:@[url] applicationActivities:nil];
                 activity.popoverPresentationController.sourceView = self.view;
@@ -1830,46 +2187,57 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
                 [self presentViewController:activity animated:YES completion:nil];
             }],
 #endif
-            [self actionWithTitle:@"Delete" image:[UIImage systemImageNamed:@"trash"] destructive:YES handler:^(id action) {
+            [UIAlertAction actionWithTitle:@"Delete" symbol:@"trash" style:UIAlertActionStyleDefault handler:^(id action) {
+                [self moveSelectionForDelete:indexPath];
                 [NSFileManager.defaultManager removeItemAtPath:game.gameLocalImageURL.path error:nil];
                 [self setGameList:self->_gameList];
             }]
         ];
     }
     
-    BOOL is_fav = [self isFavorite:game];
+    NSArray* actions = @[
+        [UIAlertAction actionWithTitle:@"Play" symbol:@"gamecontroller" style:UIAlertActionStyleDefault handler:^(id action) {
+            [self play:game];
+        }]
+    ];
     
+    if ([self getSystemsForGame:game].count > 1) {
+        actions = [actions arrayByAddingObject:
+            [UIAlertAction actionWithTitle:@"Play With..." symbol:@"ellipsis.circle" style:UIAlertActionStyleDefault handler:^(id action) {
+                [self play:game with:nil];
+            }]
+        ];
+    }
+    
+    BOOL is_fav = [self isFavorite:game];
     NSString* fav_text = is_fav ? @"Unfavorite" : @"Favorite";
     NSString* fav_icon = is_fav ? @"star.slash" : @"star";
     
-    NSArray* actions = @[
-        [self actionWithTitle:@"Play" image:[UIImage systemImageNamed:@"gamecontroller"] destructive:NO handler:^(id action) {
-            [self collectionView:self.collectionView didSelectItemAtIndexPath:indexPath];
-        }],
-        
-        [self actionWithTitle:fav_text image:[UIImage systemImageNamed:fav_icon] destructive:NO handler:^(id action) {
+    actions = [actions arrayByAddingObject:
+        [UIAlertAction actionWithTitle:fav_text symbol:fav_icon style:UIAlertActionStyleDefault handler:^(id action) {
+            if ([self->_gameSectionTitles[indexPath.section] isEqualToString:FAVORITE_GAMES_TITLE])
+                [self moveSelectionForDelete:indexPath];
             [self setFavorite:game isFavorite:!is_fav];
             [self filterGameList];
-        }],
+        }]
     ];
     
     if ([self isRecent:game]) {
         actions = [actions arrayByAddingObjectsFromArray:@[
-            [self actionWithTitle:@"Remove from Recently Played" image:[UIImage systemImageNamed:@"minus.circle"] destructive:NO handler:^(id action) {
+            [UIAlertAction actionWithTitle:@"Remove from Recently Played" symbol:@"minus.circle" style:UIAlertActionStyleDefault handler:^(id action) {
+                if ([self->_gameSectionTitles[indexPath.section] isEqualToString:RECENT_GAMES_TITLE])
+                    [self moveSelectionForDelete:indexPath];
                 [self setRecent:game isRecent:NO];
                 [self filterGameList];
             }]
         ]];
     }
     
-    if ([_history boolForKey:game.gameName]   || [_mameinfo boolForKey:game.gameName] ||
-        [_history boolForKey:game.gameParent] || [_mameinfo boolForKey:game.gameParent]) {
-        actions = [actions arrayByAddingObjectsFromArray:@[
-            [self actionWithTitle:@"Info" image:[UIImage systemImageNamed:@"info.circle"] destructive:NO handler:^(id action) {
-                [self info:game];
-            }]
-        ]];
-    }
+    actions = [actions arrayByAddingObjectsFromArray:@[
+        [UIAlertAction actionWithTitle:@"Info" symbol:@"info.circle" style:UIAlertActionStyleDefault handler:^(id action) {
+            [self info:game];
+        }]
+    ]];
     
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
     if (@available(iOS 12.0, *)) {
@@ -1877,7 +2245,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
         INVoiceShortcut* shortcut = [self getVoiceShortcut:activity];
         if (activity != nil) {
             actions = [actions arrayByAddingObjectsFromArray:@[
-                [self actionWithTitle:@"Add to Siri" image:[UIImage systemImageNamed:shortcut ? @"checkmark.circle" : @"plus.circle"] destructive:NO handler:^(id action) {
+                [UIAlertAction actionWithTitle:@"Add to Siri" symbol:(shortcut ? @"checkmark.circle" : @"plus.circle") style:UIAlertActionStyleDefault handler:^(id action) {
                     [self siri:game activity:activity shortcut:shortcut];
                 }]
             ]];
@@ -1888,17 +2256,37 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     if (!game.gameIsFake) {
         actions = [actions arrayByAddingObjectsFromArray:@[
 #if TARGET_OS_IOS
-            [self actionWithTitle:@"Share" image:[UIImage systemImageNamed:@"square.and.arrow.up"] destructive:NO handler:^(id action) {
+            [UIAlertAction actionWithTitle:@"Share" symbol:@"square.and.arrow.up" style:UIAlertActionStyleDefault handler:^(id action) {
                 [self share:game];
             }],
 #endif
-            [self actionWithTitle:@"Delete" image:[UIImage systemImageNamed:@"trash"] destructive:YES handler:^(id action) {
+            [UIAlertAction actionWithTitle:@"Delete" symbol:@"trash" style:UIAlertActionStyleDestructive handler:^(id action) {
+                [self moveSelectionForDelete:indexPath];
                 [self delete:game];
             }]
         ]];
     }
     return actions;
 }
+
+-(UIViewController*)menuForItemAtIndexPath:(NSIndexPath *)indexPath {
+    
+    NSArray* actions = [self menuActionsForItemAtIndexPath:indexPath];
+    NSString* title = [self menuTitleForItemAtIndexPath:indexPath];
+
+    if ([actions count] == 0)
+        return nil;
+
+    UIAlertController* alert = [UIAlertController alertControllerWithTitle:title message:nil preferredStyle:UIAlertControllerStyleActionSheet];
+
+    for (UIAlertAction* action in actions)
+        [alert addAction:action];
+
+    [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
+ 
+    return alert;
+ }
+
 
 // get the title for the ContextMenu
 - (NSString*)menuTitleForGame:(NSDictionary *)game {
@@ -1913,37 +2301,19 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
 #if TARGET_OS_IOS
 
 - (UIContextMenuConfiguration *)collectionView:(UICollectionView *)collectionView contextMenuConfigurationForItemAtIndexPath:(NSIndexPath *)indexPath point:(CGPoint)point API_AVAILABLE(ios(13.0)) {
-    [self.collectionView selectItemAtIndexPath:indexPath animated:YES scrollPosition:UICollectionViewScrollPositionNone];
-
-    NSArray* actions = [self menuActionsForItemAtIndexPath:indexPath];
-    NSString* title = [self menuTitleForItemAtIndexPath:indexPath];
-
-    if ([actions count] == 0)
-        return nil;
     
-    self.view.window.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
+    [self.collectionView selectItemAtIndexPath:indexPath animated:NO scrollPosition:UICollectionViewScrollPositionNone];
+    
+    UIViewController* menu = [self menuForItemAtIndexPath:indexPath];
     
     return [UIContextMenuConfiguration configurationWithIdentifier:indexPath
             previewProvider:^UIViewController* () {
                 return nil;     // use default
             }
             actionProvider:^UIMenu* (NSArray* suggestedActions) {
-                return [UIMenu menuWithTitle:title children:actions];
+                return [(UIAlertController*)menu convertToMenu];
             }
     ];
-}
-
-- (void)collectionView:(UICollectionView *)collectionView willPerformPreviewActionForMenuWithConfiguration:(UIContextMenuConfiguration *)configuration animator:(id<UIContextMenuInteractionCommitAnimating>)animator API_AVAILABLE(ios(13.0))
-{
-    NSIndexPath* indexPath = (id)configuration.identifier;
-    
-    if (indexPath == nil || ![indexPath isKindOfClass:[NSIndexPath class]])
-        return;
-    
-    animator.preferredCommitStyle = UIContextMenuInteractionCommitStyleDismiss;
-    [animator addCompletion:^{
-        [self collectionView:collectionView didSelectItemAtIndexPath:indexPath];
-    }];
 }
 #endif
 
@@ -1954,27 +2324,19 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     if (indexPath == nil)
         return;
     
-    NSArray* actions = [self menuActionsForItemAtIndexPath:indexPath];
-    NSString* title = [self menuTitleForItemAtIndexPath:indexPath];
+    UIViewController* menu = [self menuForItemAtIndexPath:indexPath];
     
-    if ([actions count] == 0)
+    if (menu == nil)
         return;
-    
-    UIAlertController* alert = [UIAlertController alertControllerWithTitle:title message:nil preferredStyle:UIAlertControllerStyleActionSheet];
-    
-    for (UIAlertAction* action in actions)
-        [alert addAction:action];
-    
-    [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
 
-    if (alert.popoverPresentationController != nil) {
+    if (menu.popoverPresentationController != nil) {
         UIView* view = [self.collectionView cellForItemAtIndexPath:indexPath] ?: self.view;
-        alert.popoverPresentationController.sourceView = view;
-        alert.popoverPresentationController.sourceRect = view.bounds;
-        alert.popoverPresentationController.permittedArrowDirections = UIPopoverArrowDirectionAny;
+        menu.popoverPresentationController.sourceView = view;
+        menu.popoverPresentationController.sourceRect = view.bounds;
+        menu.popoverPresentationController.permittedArrowDirections = UIPopoverArrowDirectionAny;
     }
 
-    [self presentViewController:alert animated:YES completion:nil];
+    [self presentViewController:menu animated:YES completion:nil];
 }
 
 - (void)collectionView:(UICollectionView *)collectionView didUpdateFocusInContext:(UICollectionViewFocusUpdateContext *)context withAnimationCoordinator:(UIFocusAnimationCoordinator *)coordinator {
@@ -1983,8 +2345,19 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
         NSLog(@"didUpdateFocusInContext: %d.%d", (int)context.nextFocusedIndexPath.section, (int)context.nextFocusedIndexPath.item);
     else
         NSLog(@"didUpdateFocusInContext: %@", NSStringFromClass(context.nextFocusedItem.class));
+    
+    if (context.nextFocusedIndexPath == nil)
+        [self saveSelection];
 
     _currentlyFocusedIndexPath = context.nextFocusedIndexPath;
+}
+
+- (nullable NSIndexPath *)indexPathForPreferredFocusedViewInCollectionView:(UICollectionView *)collectionView {
+    
+    if (_currentlyFocusedIndexPath == nil)
+        [self restoreSelection];
+    
+    return _currentlyFocusedIndexPath;
 }
 
 - (BOOL)collectionView:(UICollectionView *)collectionView canFocusItemAtIndexPath:(NSIndexPath *)indexPath {
@@ -2039,16 +2412,6 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
 #pragma mark Keyboard and Game Controller navigation
 
 #if TARGET_OS_IOS
-- (void)onCommandExit  { }
-- (void)onCommandUp    { [self onCommandMove:-1 * _layoutCollums]; }
-- (void)onCommandDown  { [self onCommandMove:+1 * _layoutCollums]; }
-- (void)onCommandLeft  { [self onCommandMove:-1]; }
-- (void)onCommandRight { [self onCommandMove:+1]; }
-- (void)onCommandSelect {
-    NSIndexPath* indexPath = self.collectionView.indexPathsForSelectedItems.firstObject;
-    if (indexPath != nil)
-        [self collectionView:self.collectionView didSelectItemAtIndexPath:indexPath];
-}
 - (void)onCommandMove:(NSInteger)delta {
 
     if (delta < 0)
@@ -2100,19 +2463,32 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
 
 // called when input happens on a gamecontroller, keyboard, or touch screen
 // check for input related to moving and selecting.
--(void)handleButtonPress:(UIPressType)type
+-(void)handleButtonPress:(ButtonPressType)type
 {
     switch (type) {
-        case UIPressTypeUpArrow:
-            return [self onCommandUp];
-        case UIPressTypeDownArrow:
-            return [self onCommandDown];
-        case UIPressTypeLeftArrow:
-            return [self onCommandLeft];
-        case UIPressTypeRightArrow:
-            return [self onCommandRight];
-        case UIPressTypeSelect:
-            return [self onCommandSelect];
+        case ButtonPressTypeUp:
+            return [self onCommandMove:-1 * _layoutCollums];
+        case ButtonPressTypeDown:
+            return [self onCommandMove:+1 * _layoutCollums];
+        case ButtonPressTypeLeft:
+            return [self onCommandMove:-1];
+        case ButtonPressTypeRight:
+            return [self onCommandMove:+1];
+        case ButtonPressTypeSelect:
+        {
+            NSIndexPath* indexPath = self.collectionView.indexPathsForSelectedItems.firstObject;
+            if (indexPath != nil)
+                [self collectionView:self.collectionView didSelectItemAtIndexPath:indexPath];
+            break;
+        }
+        case ButtonPressTypeMenu:
+        {
+            NSIndexPath* indexPath = self.collectionView.indexPathsForSelectedItems.firstObject;
+            [self runMenu:indexPath];
+            break;
+        }
+        case ButtonPressTypeOptions:
+            return [self showSettings];
         default:
             break;
     }
@@ -2121,20 +2497,35 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
 - (BOOL)canBecomeFirstResponder {
     return YES;
 }
+
+// just forward key input to EmulatorController and let it dispatch it.
+- (void)onCommandUp    { [(id)self.presentingViewController handleButtonPress:(UIPressType)ButtonPressTypeUp]; }
+- (void)onCommandDown  { [(id)self.presentingViewController handleButtonPress:(UIPressType)ButtonPressTypeDown]; }
+- (void)onCommandLeft  { [(id)self.presentingViewController handleButtonPress:(UIPressType)ButtonPressTypeLeft]; }
+- (void)onCommandRight { [(id)self.presentingViewController handleButtonPress:(UIPressType)ButtonPressTypeRight]; }
+- (void)onCommandSelect{ [(id)self.presentingViewController handleButtonPress:(UIPressType)ButtonPressTypeSelect]; }
+- (void)onCommandMenu  { [(id)self.presentingViewController handleButtonPress:(UIPressType)ButtonPressTypeMenu]; }
+- (void)onCommandEsc   { [(id)self.presentingViewController handleButtonPress:(UIPressType)ButtonPressTypeBack]; }
+
 - (NSArray*)keyCommands {
     
-    if (_searchController.isActive || self.presentedViewController != nil)
-        return @[];
+    if (_searchController.isActive)
+        return nil;
+    
+    // forward key input to EmulatorController and let it dispatch it.
+    if (![self.presentingViewController respondsToSelector:@selector(handleButtonPress:)])
+        return nil;
     
     if (_key_commands == nil) {
         _key_commands = @[
             // standard keyboard
             [UIKeyCommand keyCommandWithInput:@"\r"                 modifierFlags:0 action:@selector(onCommandSelect)],
+            [UIKeyCommand keyCommandWithInput:@"`"                  modifierFlags:0 action:@selector(onCommandMenu)],
             [UIKeyCommand keyCommandWithInput:UIKeyInputUpArrow     modifierFlags:0 action:@selector(onCommandUp)],
             [UIKeyCommand keyCommandWithInput:UIKeyInputDownArrow   modifierFlags:0 action:@selector(onCommandDown)],
             [UIKeyCommand keyCommandWithInput:UIKeyInputLeftArrow   modifierFlags:0 action:@selector(onCommandLeft)],
             [UIKeyCommand keyCommandWithInput:UIKeyInputRightArrow  modifierFlags:0 action:@selector(onCommandRight)],
-            [UIKeyCommand keyCommandWithInput:UIKeyInputEscape      modifierFlags:0 action:@selector(onCommandExit)],
+            [UIKeyCommand keyCommandWithInput:UIKeyInputEscape      modifierFlags:0 action:@selector(onCommandEsc)],
             // iCade
             [UIKeyCommand keyCommandWithInput:@"y" modifierFlags:0 action:@selector(onCommandSelect)], // SELECT
             [UIKeyCommand keyCommandWithInput:@"h" modifierFlags:0 action:@selector(onCommandSelect)], // START
@@ -2143,9 +2534,11 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
             [UIKeyCommand keyCommandWithInput:@"x" modifierFlags:0 action:@selector(onCommandDown)],
             [UIKeyCommand keyCommandWithInput:@"a" modifierFlags:0 action:@selector(onCommandLeft)],
             [UIKeyCommand keyCommandWithInput:@"d" modifierFlags:0 action:@selector(onCommandRight)],
+            
         ];
         
 #ifdef __IPHONE_15_0
+        // make sure the focus system on iOS 15 does not harsh our mellow
         if (@available(iOS 15.0, *)) {
             for (UIKeyCommand* key_command in _key_commands)
                 key_command.wantsPriorityOverSystemBehavior = YES;
@@ -2166,7 +2559,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
             NSLog(@"MENU PRESS: DISSMIS MENU");
             [(UIAlertController*)self.topViewController dismissWithCancel];
         }
-        else if (_currentlyFocusedIndexPath != nil) {
+        else if (_currentlyFocusedIndexPath != nil && self.topViewController == nil) {
             NSLog(@"MENU PRESS: SHOW MENU");
             [self runMenu:_currentlyFocusedIndexPath];
         } else {
@@ -2502,7 +2895,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
         [_image.layer setBorderWidth:selected ? CELL_SELECTED_BORDER_WIDTH : 0.0];
         [_image.layer setBorderColor:(selected ? CELL_SELECTED_BORDER_COLOR : UIColor.clearColor).CGColor];
     }
-    CGFloat scale = selected ? _scale : self.highlighted ? (2.0 - _scale) : 1.0;
+    CGFloat scale = self.highlighted ? (2.0 - _scale) : (selected ? _scale : 1.0);
     _stackView.transform = CGAffineTransformMakeScale(scale, scale);
 #if TARGET_OS_TV
     if (selected)
@@ -2532,10 +2925,10 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     return [super canBecomeFocused];
 }
 - (void)didHintFocusMovement:(UIFocusMovementHint *)hint {
-    NSLog(@"didHintFocusMovement(%@): dir=%@", [self.text.text stringByReplacingOccurrencesOfString:@"\n" withString:@" • "],
-          NSStringFromCGVector(hint.movementDirection));
     if (_image.image == nil)
         return;
+    NSLog(@"didHintFocusMovement(%@): dir=%@", [self.text.text stringByReplacingOccurrencesOfString:@"\n" withString:@" • "],
+          NSStringFromCGVector(hint.movementDirection));
     [self updateSelected];
     _stackView.transform = CGAffineTransformConcat(CGAffineTransformMakeTranslation(hint.translation.dx, hint.translation.dy), _stackView.transform);
 }
@@ -2612,7 +3005,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     [self.collectionView registerClass:[GameCell class] forCellWithReuseIdentifier:CELL_IDENTIFIER];
     
     self.collectionView.backgroundColor = INFO_BACKGROUND_COLOR;
-    self.collectionView.allowsSelection = TARGET_OS_IOS ? NO : YES;
+    self.clearsSelectionOnViewWillAppear = NO;
     
 #if TARGET_OS_IOS
     if (@available(iOS 13.0, tvOS 13.0, *))
@@ -2639,6 +3032,8 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
 }
 #if TARGET_OS_TV
 - (void)pan:(UIPanGestureRecognizer*)pan {
+    
+    NSLog(@"PAN: %@", pan);
 
     GameCell* cell = (GameCell*)UIScreen.mainScreen.focusedView;
     if (![cell isKindOfClass:[GameCell class]])
@@ -2661,6 +3056,9 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
         [textView setContentOffset:contentOffset animated:NO];
     }
 }
+- (BOOL)collectionView:(UICollectionView *)collectionView canFocusItemAtIndexPath:(NSIndexPath *)indexPath {
+    return indexPath.item != 0;
+}
 #endif
 - (void)viewWillLayoutSubviews {
     [super viewWillLayoutSubviews];
@@ -2680,7 +3078,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     rect.size.height -= self.collectionView.safeAreaInsets.top;
     rect.size.width  -= self.collectionView.safeAreaInsets.left + self.collectionView.safeAreaInsets.right;
     
-    UIImage* image = [[ImageCache sharedInstance] getImage:_game.gameImageURLs.firstObject size:CGSizeZero];
+    UIImage* image = [UIImage imageWithContentsOfFile:_game.gameLocalImageURL.path] ?: [UIImage imageNamed:@"default_game_icon"];
     CGFloat aspect = [_game.gameScreen containsString:kGameInfoScreenVertical] ? 3.0/4.0 : 4.0/3.0;
 
     CGSize image_size = CGSizeMake(INFO_IMAGE_WIDTH, INFO_IMAGE_WIDTH / aspect);
@@ -2741,35 +3139,81 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
     return 3;   // Image+Metadata, History, MAME Info
 }
+// get text that displays all the meta data for game as key value pairs, skip some keys that are alreay in the title
+- (NSMutableAttributedString*)getMetaText {
+    NSDictionary* valAttr = @{
+        NSFontAttributeName:INFO_BODY_FONT,
+        NSForegroundColorAttributeName:INFO_BODY_COLOR
+    };
+    NSDictionary* keyAttr = @{
+        NSFontAttributeName:INFO_HEAD_FONT,
+        NSForegroundColorAttributeName:INFO_HEAD_COLOR
+    };
+
+    NSMutableAttributedString* text = [[NSMutableAttributedString alloc] init];
+    CGFloat keyWidth = 0.0;
+    for (NSString* key in _game) {
+        if (![_game[key] isKindOfClass:[NSString class]] || [_game[key] length] == 0)
+            continue;
+        if ([@[kGameInfoDescription /*, kGameInfoYear, kGameInfoManufacturer*/] containsObject:key])
+            continue;
+        NSString* keyText = [key stringByAppendingString:@"\t"];
+        NSString* valText = [_game[key] stringByAppendingString:@"\n"];
+        if ([valText containsString:@","] && ![valText containsString:@", "])
+            valText = [valText stringByReplacingOccurrencesOfString:@"," withString:@", "];
+        NSAttributedString* keyAttrText = [[NSAttributedString alloc] initWithString:keyText attributes:keyAttr];
+        NSAttributedString* valAttrText = [[NSAttributedString alloc] initWithString:valText attributes:valAttr];
+        [text appendAttributedString:keyAttrText];
+        [text appendAttributedString:valAttrText];
+        keyWidth = MAX(keyWidth, ceil([keyAttrText size].width));
+    }
+
+    keyWidth += 4.0;
+    NSMutableParagraphStyle *para;
+    para = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+    para.tabStops = @[[[NSTextTab alloc] initWithTextAlignment:NSTextAlignmentLeft location:keyWidth options:@{}]];
+    para.defaultTabInterval = keyWidth;
+    para.headIndent = keyWidth;
+    para.firstLineHeadIndent = 0;
+    para.paragraphSpacing = INFO_BODY_FONT.lineHeight * 0.0;
+    
+    [text addAttributes:@{NSParagraphStyleAttributeName: para} range:NSMakeRange(0, text.length)];
+    
+    return text;
+}
+
 - (NSAttributedString*)getText:(NSIndexPath*)indexPath {
     
     if (indexPath.item == 0)
-        return [ChooseGameController getGameText:_game layoutMode:LayoutList];
+        return [ChooseGameController getGameText:_game];
+
+    NSMutableAttributedString* text = [[NSMutableAttributedString alloc] init];
     
-    NSAttributedString* text = _game[indexPath.item == 1 ? kGameInfoHistory : kGameInfoMameInfo];
+    if (indexPath.item == 1) {
+        [text appendAttributedString:[self getMetaText]];
+        [text appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n"]];
+    }
     
-    // add a title to the top of the text
-    if (text != nil) {
+    NSAttributedString* info = _game[indexPath.item == 1 ? kGameInfoHistory : kGameInfoMameInfo];
+    
+    if (info != nil) {
+        // add a title to the top of the text, then append
         NSString* title = indexPath.item == 1 ? @"History" : @"MAME Info";
         
         NSMutableParagraphStyle *paragraph = [[NSMutableParagraphStyle alloc] init];
         paragraph.alignment = NSTextAlignmentCenter;
         paragraph.paragraphSpacing = 4.0;
 
-        NSMutableAttributedString* new_text = [[NSMutableAttributedString alloc] initWithString:[title stringByAppendingString:@"\n"] attributes:@{
+        [text appendAttributedString:[[NSMutableAttributedString alloc] initWithString:[title stringByAppendingString:@"\n"] attributes:@{
             NSFontAttributeName:INFO_TITLE_FONT,
             NSForegroundColorAttributeName:INFO_TITLE_COLOR,
             NSParagraphStyleAttributeName: paragraph
-        }];
+        }]];
         
-        [new_text appendAttributedString:text];
-        text = new_text;
+        [text appendAttributedString:info];
     }
     
     return text;
-}
-- (BOOL)collectionView:(UICollectionView *)collectionView canFocusItemAtIndexPath:(NSIndexPath *)indexPath {
-    return indexPath.item != 0;
 }
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewFlowLayout *)layout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
     
