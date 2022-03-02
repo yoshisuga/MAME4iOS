@@ -696,17 +696,6 @@ void m4i_game_list(myosd_game_info* game_info, int game_count)
             [games addObjectsFromArray:software];
         }
         
-        /*
-        [games addObject:@{
-            kGameInfoType:kGameInfoTypeArcade,
-            kGameInfoName:@"breakout",
-            kGameInfoParent:@"",
-            kGameInfoDescription:@"Breakout!",
-            kGameInfoYear:@"1976",
-            kGameInfoManufacturer:@"Atari",
-        }];
-        */
-        
         NSString* mame_version = [@((const char *)myosd_get(MYOSD_VERSION_STRING) ?: "") componentsSeparatedByString:@" ("].firstObject;
 
         // add a *special* system game that will run the DOS MAME menu.
