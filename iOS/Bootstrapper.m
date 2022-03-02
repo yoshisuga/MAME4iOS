@@ -218,17 +218,11 @@ NSArray* g_import_file_types;
     return result;
 }
 
-- (void)moveROMS
-{
-    [self->hrViewController performSelectorOnMainThread:@selector(moveROMS) withObject:nil waitUntilDone:NO];
-}
-
-
 - (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
 {
     NSLog(@"OPEN URL: %@ %@", url, options);
     
-    // handle our own scheme mame4ios://game OR mame4ios://system/game
+    // handle our own scheme mame4ios://game OR mame4ios://system/game OR mame4ios://system/type:file
     if ([url.scheme isEqualToString:@"mame4ios"] && [url.host length] != 0 && [url.query length] == 0) {
         NSDictionary* game;
         
@@ -271,8 +265,11 @@ NSArray* g_import_file_types;
                     NSLog(@"copyItemAtURL ERROR: (%@)", error);
                 
                 [url stopAccessingSecurityScopedResource];
-                [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(moveROMS) object:nil];
-                [self performSelector:@selector(moveROMS) withObject:nil afterDelay:1.0];
+
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [NSObject cancelPreviousPerformRequestsWithTarget:self->hrViewController selector:@selector(moveROMS) object:nil];
+                    [self->hrViewController performSelector:@selector(moveROMS) withObject:nil afterDelay:1.0];
+                });
             }];
             if (error != nil)
                 NSLog(@"coordinateReadingItemAtURL ERROR: (%@)", error);
@@ -287,9 +284,9 @@ NSArray* g_import_file_types;
         
         if ([[[url URLByDeletingLastPathComponent] lastPathComponent] hasSuffix:@"Inbox"])
             [[NSFileManager defaultManager] removeItemAtURL:url error:nil];
-        
-        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(moveROMS) object:nil];
-        [self performSelector:@selector(moveROMS) withObject:nil afterDelay:1.0];
+
+        [NSObject cancelPreviousPerformRequestsWithTarget:self->hrViewController selector:@selector(moveROMS) object:nil];
+        [self->hrViewController performSelector:@selector(moveROMS) withObject:nil afterDelay:1.0];
     }
     
     return TRUE;
