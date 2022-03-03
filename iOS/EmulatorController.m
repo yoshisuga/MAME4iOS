@@ -292,6 +292,7 @@ static char g_mame_game_error[64+256];      // name of the system/game that got 
 static char g_mame_output_text[4096];       // any ERROR, WARNING, or INFO text output while running game
 static BOOL g_mame_warning_shown = FALSE;
 static BOOL g_mame_benchmark = FALSE;       // if TRUE run game in benchmark mode (-bench 90)
+static BOOL g_mame_first_boot = FALSE;      // TRUE the first time MAME runs
 static BOOL g_no_roms_found = FALSE;
 static BOOL g_no_roms_found_canceled = FALSE;
 
@@ -833,6 +834,7 @@ void m4i_game_stop()
     TIMER_STOP(load_cat);
     NSLog(@"load_category_ini took %0.3fsec", TIMER_TIME(load_cat));
 
+    g_mame_first_boot = TRUE;
     g_mame_game_info = [EmulatorController getCurrentGame];
     NSString* name = g_mame_game_info[kGameInfoFile] ?: g_mame_game_info[kGameInfoName] ?: @"";
     NSString* type = g_mame_game_info[kGameInfoMediaType] ?: @"";
@@ -1985,8 +1987,8 @@ ButtonPressType input_debounce(unsigned long pad_status, CGPoint stick) {
 }
 
 -(void)buildLogoView {
-    // no need to show logo in fullscreen.
-    if ((g_device_is_fullscreen || TARGET_OS_TV) && !g_mame_benchmark)
+    // no need to show logo in fullscreen. (unless benchmark or first boot)
+    if ((g_device_is_fullscreen || TARGET_OS_TV) && !g_mame_benchmark && !(g_mame_first_boot && g_mame_game_info.gameName.length == 0))
         return;
 
     // put a AirPlay logo on the iPhone screen when playing on external display
@@ -5958,6 +5960,20 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
             [self performSelector:_cmd withObject:games afterDelay:1.0];
         }
         return;
+    }
+    
+    if (g_mame_first_boot) {
+        g_mame_first_boot = FALSE;
+#if defined(DEBUG) && DebugLog
+        NSString* title = @PRODUCT_NAME;
+        NSString* msg = [NSString stringWithFormat:@"First Boot took %0.3fsec", TIMER_TIME(mame_boot)];
+        
+        change_pause(PAUSE_INPUT);
+        [self showAlertWithTitle:title message:msg buttons:@[@"Ok"] handler:^(NSUInteger button) {
+            [self performSelectorOnMainThread:@selector(chooseGame:) withObject:games waitUntilDone:FALSE];
+        }];
+        return;
+#endif
     }
 
     NSLog(@"ROMS: %@", [NSFileManager.defaultManager enumeratorAtPath:getDocumentPath(@"roms")].allObjects);
