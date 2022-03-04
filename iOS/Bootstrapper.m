@@ -48,6 +48,7 @@
 #import "Bootstrapper.h"
 #import "Globals.h"
 #import "libmame.h"     // to get the MAME version
+#import "GameInfo.h"
 
 #import "EmulatorController.h"
 #import <GameController/GameController.h>
@@ -225,11 +226,14 @@ NSArray* g_import_file_types;
     // handle our own scheme mame4ios://game OR mame4ios://system/game OR mame4ios://system/type:file
     if ([url.scheme isEqualToString:@"mame4ios"] && [url.host length] != 0 && [url.query length] == 0) {
         NSDictionary* game;
+        NSArray* arr = [url.path componentsSeparatedByString:@":"];
         
-        if ([url.path length] != 0)
-            game = @{@"name":url.path, @"system":url.host};
+        if (arr.count == 2)
+            game = @{kGameInfoSystem:url.host, kGameInfoMediaType:arr.firstObject, kGameInfoFile:arr.lastObject};
+        else if ([url.path length] != 0)
+            game = @{kGameInfoSystem:url.host, kGameInfoName:url.path};
         else
-            game = @{@"name":url.host};
+            game = @{kGameInfoName:url.host};
         
         [hrViewController performSelectorOnMainThread:@selector(playGame:) withObject:game waitUntilDone:NO];
         return TRUE;
