@@ -1437,7 +1437,7 @@ UIViewController* g_menu;
 -(void)dismissViewControllerAnimated:(BOOL)flag completion:(void (^)(void))completion {
     NSLog(@"DISMISS VIEWCONTROLLER: %@", [self presentedViewController]);
     // if the HUD has focus, keep controllerUserInteractionEnabled YES
-    if (g_pref_showHUD && g_menu != self)
+    if (g_menu != self)
         self.controllerUserInteractionEnabled = NO;
     [super dismissViewControllerAnimated:flag completion:completion];
 }
