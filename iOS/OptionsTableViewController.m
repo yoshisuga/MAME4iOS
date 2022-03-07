@@ -184,6 +184,7 @@
 #else
     // tvOS does not need a Done button, that is what the MENU button is for.
     self.navigationController.navigationBar.titleTextAttributes = @{NSForegroundColorAttributeName : UIColor.whiteColor};
+    self.navigationController.navigationBar.backgroundColor = [UIColor colorWithWhite:0.111 alpha:0.8];
 #endif
     [self.tableView reloadData];
 }
@@ -290,33 +291,6 @@
     //NSLog(@"toggleOptionSwitch: %@ = %d", key, val);
     sender.text = val ? @"On" : @"Off";
     [sender sizeToFit];
-}
-#endif
-
-#pragma mark - ESCAPE key to dimiss
-
-#if TARGET_OS_IOS
-
-- (BOOL)canBecomeFirstResponder {
-    return YES;
-}
-
-- (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
-#ifdef __IPHONE_13_4
-    if (@available(iOS 13.4, tvOS 13.4, *)) {
-        for (UIPress* press in presses) {
-            NSLog(@"KEY: %@", press.key);
-            if (press.key.keyCode == UIKeyboardHIDUsageKeyboardEscape || press.key.charactersIgnoringModifiers == UIKeyInputEscape) {
-                if (self.navigationController.viewControllers.firstObject == self)
-                    [self.emuController done:nil];
-                else
-                    [self.navigationController popViewControllerAnimated:TRUE];
-                return;
-            }
-        }
-    }
-#endif
-    [super pressesBegan:presses withEvent:event];
 }
 #endif
 

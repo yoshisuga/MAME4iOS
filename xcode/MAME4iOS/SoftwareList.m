@@ -9,6 +9,7 @@
 #import "XmlFile.h"
 #import "ZipFile.h"
 #import "GameInfo.h"
+#import "Globals.h" // for getDocumentPath()
 #import <CommonCrypto/CommonDigest.h>
 
 #define DebugLog 0
@@ -45,7 +46,21 @@
     return self;
 }
 
+- (instancetype)init
+{
+    return [self initWithPath:getDocumentPath(@"")];
+}
+
 #pragma mark Public methods
+
+// singleton, uses the document root
++ (instancetype)sharedInstance {
+    NSParameterAssert(NSThread.isMainThread);
+    static SoftwareList* g_shared;
+    if (g_shared == nil)
+        g_shared = [[SoftwareList alloc] init];
+    return g_shared;
+}
 
 // get software list names
 - (NSArray*)getSoftwareListNames {
@@ -59,6 +74,11 @@
         }
         return list; 
     }
+}
+
+// get software list description
+- (NSString*)getSoftwareListDescription:(NSString*)name {
+    return [[self getSoftwareList:name].firstObject valueForKey:kSoftwareListDescription];
 }
 
 // get software list, from cache, or load and validate the ROMs
@@ -79,7 +99,7 @@
 // get games for a system
 - (NSArray<NSDictionary*>*)getGamesForSystem:(NSDictionary*)system {
 
-    NSString* lists = system.gameSoftware; // this can be a comma separated list of softlist names
+    NSString* lists = system.gameSoftwareMedia; // this can be a comma separated list of softlist names and media
     
     NSParameterAssert(![lists containsString:@" "]);
     if (lists.length == 0)
@@ -90,10 +110,18 @@
     // TODO: add support for NTSC and PAL filter
     //     <sharedfeat name="compatibility" value="NTSC"/>
     
-    for (NSString* list in [lists componentsSeparatedByString:@","]) {
-        for (NSDictionary* software in [self getSoftwareList:list]) {
+    for (NSString* list_name in [lists componentsSeparatedByString:@","]) {
+
+        // if this is not a softlist name, get out quick.
+        if ([list_name containsString:@":"])
+            continue;;
+
+        for (NSDictionary* software in [self getSoftwareList:list_name]) {
+            // first entry will have only a description, and we want to skip that
+            if (![software isKindOfClass:[NSDictionary class]] || software[kSoftwareListName] == nil)
+                continue;
             [games addObject:@{
-                kGameInfoSoftwareList:list,
+                kGameInfoSoftwareList:list_name,
                 kGameInfoSystem:      system.gameName,
                 kGameInfoDriver:      system.gameDriver,
                 kGameInfoName:        STR(software[kSoftwareListName]),
@@ -122,48 +150,11 @@
     if (name.length == 0)
         name = path.lastPathComponent.stringByDeletingPathExtension.lowercaseString;
     
-    // get subset of software lists to search
-    NSDictionary* soft_list_db = [self getSoftwareListDatabase];
-    NSArray* list_names = LIST(soft_list_db[name]);
-    if (list_names.count == 0)
+    NSDictionary* info = [self searchSoftwareList:name name:name files:getZipFileHashes(path)];
+    if (info == nil)
         return nil;
-
-    // get SHA1 of all files in this romset
-    NSSet* zip_files = getZipFileHashes(path);
-    if (zip_files.count == 0)
-        return nil;
-
-    NSLog(@"SEARCHING SOFTWARE LISTS(%@) FOR: %@", [list_names componentsJoinedByString:@", "], name);
-
-    // figure out if this zip file is a SOFTWARE romset, by looking for it in *all* the installed software lists
-    for (NSString* list_name in list_names) @autoreleasepool {
-        
-        NSLog(@"    SEARCHING LIST(%@) FOR: %@", list_name, name);
-
-        NSDictionary* dict = [self getSoftwareListXML:list_name];
-
-        // walk all software in this list looking for a name match, then if names match check ROMs and DISKs
-        for (NSDictionary* software in LIST([dict valueForKeyPath:@"softwarelist.software"])) {
-            
-            if (![software isKindOfClass:[NSDictionary class]])
-                continue;
-            
-            // check this software if the name matches
-            if ([name isEqualToString:STR(software[kSoftwareListName]).lowercaseString]) {
-                NSLog(@"        FOUND IN %@.%@ (checking ROMs)", list_name, STR(software[kSoftwareListName]));
-                
-                NSSet* soft_files = getSoftwareHashes(software);
-                
-                if ([soft_files isSubsetOfSet:zip_files]) {
-                    NSLog(@"FOUND %@ in LIST: %@", name, list_name);
-                    return list_name;
-                }
-            }
-        }
-    }
     
-    NSLog(@"DID NOT FIND %@ in *any* SOFTWARE LIST", name);
-    return nil;
+    return info.gameSoftwareList;
 }
 
 // if this a merged romset, extract clones as empty zip files so they show up as Available
@@ -178,7 +169,7 @@
 //
 - (BOOL)extractClones:(NSString*)path {
     
-    NSLog(@"EXTRACT CLONES: %@", path);
+    NSLog(@"EXTRACT CLONES: %@", path.lastPathComponent);
     
     // get directory names of all files in this romset
     NSSet* clones = [NSSet setWithArray:[getZipFileNames(path) valueForKeyPath:@"stringByDeletingLastPathComponent.lowercaseString"]];
@@ -201,6 +192,34 @@
         }
     }
     return TRUE;
+}
+
+// a standalone rom file just got installed, see if we cant find a match in the software lists
+- (BOOL)installSoftware:(NSString*)path {
+    
+    NSData* data = [NSData dataWithContentsOfFile:path];
+
+    if (data == nil)
+        return FALSE;
+    
+    NSString* hash = sha1(data);
+    NSDictionary* info = [self searchSoftwareList:[hash substringToIndex:8] name:nil files:[NSSet setWithObject:hash]];
+    
+    if (info != nil)
+    {
+        NSLog(@"installSoftware:%@, found: %@ in %@:%@ ", path.lastPathComponent, info.gameDescription, info.gameSoftwareList, info.gameName);
+        
+        // TODO: should we overwrite any current metadata? it might be customized....
+        path = [path.stringByDeletingPathExtension stringByAppendingPathExtension:@"json"];
+        data = [NSJSONSerialization dataWithJSONObject:info options:NSJSONWritingPrettyPrinted error:nil];
+        [data writeToFile:path atomically:NO];
+    }
+    else
+    {
+        NSLog(@"installSoftware:%@ NOT found", path.lastPathComponent);
+    }
+    
+    return info != nil;
 }
 
 // discard any cached data, forcing a re-load from disk. (called after moveROMs does an import)
@@ -298,11 +317,11 @@ static NSSet<NSString*>* getZipFileHashes(NSString* path) {
     NSDictionary* dict = [self loadSoftwareListXML:list_name];
     
     // get all the software in the list
-    NSArray* list = LIST([dict valueForKeyPath:@"softwarelist.software"]);
+    NSMutableArray* list = [LIST([dict valueForKeyPath:@"softwarelist.software"]) mutableCopy];
     NSString* soft_dir = [roms_dir stringByAppendingPathComponent:list_name];
     
     // filter list (validate romsets exist)
-    list = [list filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(NSDictionary* software, NSDictionary* bindings) {
+    [list filterUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(NSDictionary* software, NSDictionary* bindings) {
         if (![software isKindOfClass:[NSDictionary class]])
             return FALSE;
 
@@ -320,13 +339,17 @@ static NSSet<NSString*>* getZipFileHashes(NSString* path) {
         return FALSE;
     }]];
     
+    // add the description of the software list itself as the first item.
+    NSString* description = STR([dict valueForKeyPath:@"softwarelist.description"]);
+    [list insertObject:@{kSoftwareListDescription:description} atIndex:0];
+    
 #if defined(DEBUG) && DebugLog != 0
     NSLog(@"LOADING SOFTWARE LIST: %@ \"%@\" %d items, %0.3fsec", [dict valueForKeyPath:@"softwarelist.name"], [dict valueForKeyPath:@"softwarelist.description"], (int)list.count, [NSDate timeIntervalSinceReferenceDate] - time);
     for (NSDictionary* software in list)
         NSLog(@"    %@, %@, %@, \"%@\"", software[kSoftwareListName], software[kSoftwareListYear], software[kSoftwareListPublisher], software[kSoftwareListDescription]);
 #endif
     
-    return list;
+    return [list copy];
 }
 
 // get database that maps romset name to possible software lists
@@ -453,4 +476,62 @@ static NSSet<NSString*>* getSoftwareHashes(NSDictionary* software)
     }
     return [hashes copy];
 }
+
+// search software lists looking for software with a set of files (passed as hashes)
+// the first match is returned
+//
+// FYI not *all* software lists are searched, only the ones in HASH.DAT under the passed key
+// if name != nil then all software in a given list will be tested, else only ones matching name
+//
+- (nullable NSDictionary*)searchSoftwareList:(NSString*)search_key name:(nullable NSString*)name files:(NSSet<NSString*>*)files {
+
+    if (search_key == nil || files.count == 0)
+        return nil;
+    
+    // get subset of software lists to search
+    NSDictionary* soft_list_db = [self getSoftwareListDatabase];
+    NSArray* list_names = LIST(soft_list_db[search_key]);
+    if (list_names.count == 0)
+        return nil;
+
+    NSLog(@"SEARCHING SOFTWARE LISTS(%@) FOR: %@", [list_names componentsJoinedByString:@", "], name ?: search_key);
+
+    for (NSString* list_name in list_names) @autoreleasepool {
+        
+        NSLog(@"    SEARCHING LIST(%@) FOR: %@", list_name, name ?: search_key);
+
+        NSDictionary* dict = [self getSoftwareListXML:list_name];
+
+        // walk all software in this list looking for match
+        for (NSDictionary* software in LIST([dict valueForKeyPath:@"softwarelist.software"])) {
+            
+            if (![software isKindOfClass:[NSDictionary class]])
+                continue;
+            
+            NSString* soft_name = STR(software[kSoftwareListName]).lowercaseString;
+            
+            // check this software only if the name matches
+            if (name.length != 0 && ![name isEqualToString:soft_name])
+                continue;
+            
+            NSSet* soft_files = getSoftwareHashes(software);
+            
+            if ([soft_files isSubsetOfSet:files]) {
+                NSLog(@"    FOUND %@ in LIST: %@:%@", name ?: search_key, list_name, soft_name);
+                return @{
+                    kGameInfoSoftwareList:list_name,
+                    kGameInfoName:        STR(software[kSoftwareListName]),
+                    kGameInfoParent:      STR(software[kSoftwareListParent]),
+                    kGameInfoDescription: STR(software[kSoftwareListDescription]),
+                    kGameInfoYear:        STR(software[kSoftwareListYear]),
+                    kGameInfoManufacturer:STR(software[kSoftwareListPublisher]),
+                 };
+            }
+        }
+    }
+    
+    NSLog(@"DID NOT FIND %@ in *any* SOFTWARE LIST", name ?: search_key);
+    return nil;
+}
+
 @end

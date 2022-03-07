@@ -27,15 +27,25 @@
 #define kGameInfoCategory       @"category"
 #define kGameInfoHistory        @"history"
 #define kGameInfoMameInfo       @"mameinfo"
-#define kGameInfoSoftware       @"software"         // list of supported software for system
+#define kGameInfoSoftwareMedia  @"software"         // list of supported software, and media for system
 #define kGameInfoSoftwareList   @"softlist"         // this game is *from* a software list
 #define kGameInfoFile           @"file"
+#define kGameInfoMediaType      @"media"
 
 #define kGameInfoTypeArcade     @"Arcade"
 #define kGameInfoTypeConsole    @"Console"
 #define kGameInfoTypeComputer   @"Computer"
 #define kGameInfoTypeBIOS       @"BIOS"
 #define kGameInfoTypeSnapshot   @"Snapshot"
+#define kGameInfoTypeSoftware   @"Software"
+
+#define kGameInfoMediaCartridge @"cart"
+#define kGameInfoMediaMemcard   @"memc"
+#define kGameInfoMediaFloppy    @"flop"
+#define kGameInfoMediaHard      @"hard"
+#define kGameInfoMediaCassette  @"cass"
+#define kGameInfoMediaQuick     @"quik"
+#define kGameInfoMediaCDROM     @"cdrm"
 
 #define kGameInfoScreenHorizontal   @"Horizontal"
 #define kGameInfoScreenVertical     @"Vertical"
@@ -45,6 +55,7 @@
 // special "fake" (aka built-in) games
 #define kGameInfoNameSettings   @"settings"
 #define kGameInfoNameMameMenu   @"mameui"
+#define kGameInfoNameAddROMS    @"settings-add-roms"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -60,9 +71,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) NSString* gameDriver;
 @property (nonatomic, strong, readonly) NSString* gameScreen;
 @property (nonatomic, strong, readonly) NSString* gameCategory;
-@property (nonatomic, strong, readonly) NSString* gameSoftware;
+@property (nonatomic, strong, readonly) NSString* gameSoftwareMedia;
 @property (nonatomic, strong, readonly) NSString* gameSoftwareList;
 @property (nonatomic, strong, readonly) NSString* gameFile;
+@property (nonatomic, strong, readonly) NSString* gameMediaType;
 
 @property (nonatomic, strong, readonly) NSString* gameTitle;
 @property (nonatomic, strong, readonly) NSURL* gameImageURL;
@@ -74,6 +86,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) BOOL gameIsMame;
 @property (nonatomic, readonly) BOOL gameIsSnapshot;
 @property (nonatomic, readonly) BOOL gameIsClone;
+@property (nonatomic, readonly) BOOL gameIsConsole;
+@property (nonatomic, readonly) BOOL gameIsSoftware;
 
 @end
 

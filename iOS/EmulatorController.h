@@ -82,7 +82,6 @@ extern NSArray* g_import_file_types;
   UIImageView	    * imageOverlay;
   UIImageView       * imageExternalDisplay;
   UIImageView       * imageLogo;
-  InfoHUD           * hudView;
 #if TARGET_OS_IOS
   AnalogStickView   * analogStickView;
   LayoutView        * layoutView;

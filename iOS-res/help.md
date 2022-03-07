@@ -314,6 +314,13 @@ MENU+UP        |Load State ①
 MENU+LEFT     |Save State ②                
 MENU+RIGHT  |Load State ②               
 
+### Hotkey combinations (while in choose game UX)
+
+| | |  
+---------------- |-------------
+MENU             |Game Context Menu  
+OPTION           |MAME4iOS Settings              
+A                |Play              
 
 ## Multiplayer game start using game controllers
 
@@ -396,22 +403,28 @@ Some `romsets` are not compatible between MAME 139 and newer versions, the best 
 `artwork/` | Artwork directory
 `titles/` | Title images directory
 `cfg/` | MAME configuration files directory
-`hi/` | Hiscores directory
+`hi/` | Hiscores directory (MAME 139)
+`hiscore/` | Hiscores directory
 `nvram/` | NVRAM files directory
 `roms/ `| ROMs directory
+`software/ `| Software directory
 `samples/` | Samples directory
 `snap/` | Screen snapshots directory
 `sta/` | Save states directory
 
 ## SUPPORTED GAMES
 
-MAME4iOS Reloaded uses only '0.139u1' [romset](https://archive.org/details/MAME_2010_full_nonmerged_romsets).
+The 139 version of `MAME4iOS` requires '0.139u1' compatible [romsets](https://archive.org/details/MAME_2010_full_nonmerged_romsets). 
 
-Games have to be copied into the `roms/` folder.
+The latest version of `MAME4iOS` requires romsets compatible with the latest `MAME` version.
+
+You can find `MAME` version `MAME4iOS` is using by opening `Settings`.
+
+Games (zip files) have to be imported into the `roms/` folder.
 
 ## ROM NAMES
 
-Romsets have to be MAME 0.139u1 ones (September 2010).  **NOTE** File and directory names in iOS are case-sensitive. Put all file and directory names using low case!.
+**NOTE** File and directory names in iOS are case-sensitive. Put all file and directory names using lower case!.
 
 ## SOUND SAMPLES
 
@@ -421,9 +434,7 @@ The sound samples are used to get complete sound in some of the oldest games. Th
 
 Starting with the release of MAME 0.107 in July 2006, thanks to Aaron Giles, MAME supports hi-resolution artwork for bezels, backdrops, overlays, marquees, control panels, instruction cards, etc., and includes a new file format for the layout (.lay)
 
-Save these files to your MAME4iOS artwork directory, or import via AirDrop.  To use them at a higher resolution change the emulated resolution (instead of auto) in Settings. This *may* hurt performance
-
-http://mameworld.info/mrdo/mame_artwork.php
+Save these [files](http://mameworld.info/mrdo/mame_artwork.php) to your MAME4iOS `artwork` directory, or import via AirDrop.
 
 ## ORIGINAL CREDITS
 

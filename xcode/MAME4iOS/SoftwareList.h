@@ -21,10 +21,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithPath:(NSString*)root;
 
+// singleton, uses the document root
++ (instancetype)sharedInstance;
+
 // get names of all software lists
 - (NSArray<NSString*>*)getSoftwareListNames;
 
-// get software list by name, filtered to only Available
+// get software list description
+- (nullable NSString*)getSoftwareListDescription:(NSString*)name;
+
+// get software list by name, filtered to only Available, first item has the description for the list itself.
 - (NSArray<NSDictionary*>*)getSoftwareList:(NSString*)name;
 
 // get games for a system, filtered to only Available
@@ -35,6 +41,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 // if this a merged romset, extract clones as empty zip files so they show up as Available
 - (BOOL)extractClones:(NSString*)path;
+
+// try to find metadata for this software file.
+- (BOOL)installSoftware:(NSString*)path;
 
 // discard any cached data, forcing a re-load from disk.
 - (void)reload;

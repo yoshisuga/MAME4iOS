@@ -94,14 +94,8 @@
 }
 
 // helper to get a systemImage to use in the UI
-// HACK: on tvOS 13.x an image in a UITableViewCell will overhand on the left edge of the cell and look ugly, so add a space!
 - (UIImage*)systemImageNamed:(NSString*)name withFont:(UIFont*)font {
-    if (@available(tvOS 14.0, *))
-        return [UIImage systemImageNamed:name withFont:font];
-    else if (@available(tvOS 13.0, *))
-        return [UIImage imageWithString:[NSString stringWithFormat:@" :%@:", name] withFont:font];
-    else
-        return nil;
+    return [UIImage systemImageNamed:name withConfiguration:[UIImageSymbolConfiguration configurationWithFont:font]];
 }
     
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -226,11 +220,15 @@
     } else if ( indexPath.section == kResetSection ) {
         cell.textLabel.text = @"Reset to Defaults";
         cell.textLabel.textColor = [UIColor whiteColor];
-        cell.contentView.backgroundColor = [UIColor systemRedColor];
+        cell.backgroundView = [[UIView alloc] init];
+        cell.backgroundView.backgroundColor = [UIColor systemRedColor];
+        cell.backgroundView.layer.cornerRadius = 8.0;
     } else if ( indexPath.section == kBenchmarkSection ) {
         cell.textLabel.text = @"Run Benchmark";
         cell.textLabel.textColor = [UIColor whiteColor];
-        cell.contentView.backgroundColor = [UIColor systemBlueColor];
+        cell.backgroundView = [[UIView alloc] init];
+        cell.backgroundView.backgroundColor = [UIColor systemBlueColor];
+        cell.backgroundView.layer.cornerRadius = 8.0;
     }
     return cell;
 }

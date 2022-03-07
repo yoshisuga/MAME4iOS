@@ -783,7 +783,7 @@ int hid_to_mame(int keyCode) {
     
     // handle ESC key without sending to MAME, so we can present UI
     // TODO: handle ESC different for machines that use direct keyboard
-    if (mame_key == MYOSD_KEY_ESC && isKeyDown)
+    if (mame_key == MYOSD_KEY_ESC && isKeyDown && emuController.presentedViewController == nil)
         return [emuController runExit];
     
     // dont let ALT+TAB or CMD+TAB get down to MAME, let the system have it.

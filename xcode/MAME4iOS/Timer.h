@@ -50,6 +50,8 @@ typedef struct _TIMER {
         if (__timers[i].name) \
             NSLog(@" %-20s: %4ld %0.3lfs total, %0.3lfms average", __timers[i].name, __timers[i].count, __timers[i].time, __timers[i].count != 0 ? (__timers[i].time * 1000.0 / __timers[i].count) : 0); \
     }
+#define TIMER_ZERO(t) \
+    __timers[TIMER_##t].time = __timers[TIMER_##t].count = 0;
 #define TIMER_RESET() \
     for (int i=0; i<TIMER_COUNT; i++) {__timers[i].time = __timers[i].count = 0;}
 #else
@@ -60,6 +62,7 @@ typedef struct _TIMER {
 #define TIMER_STOP(t) (void)0
 #define TIMER_COUNT(t) 0
 #define TIMER_TIME(t) 0
+#define TIMER_ZERO(t) 0
 #define TIMER_DUMP() (void)0
 #define TIMER_RESET() (void)0
 #endif
