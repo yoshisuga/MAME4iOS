@@ -65,7 +65,11 @@ private let _animateDuration = 0.150
     private let _maxHeightF:CGFloat = 0.85
 #else
     private let _blurFullscreen = true
-    private let _font = UIFont.preferredFont(forTextStyle: .body)
+    #if targetEnvironment(macCatalyst)
+        private let _font = UIFont.systemFont(ofSize: 24.0)
+    #else
+        private let _font = UIFont.preferredFont(forTextStyle: .body)
+    #endif
     private let _inset = UIEdgeInsets(top:16, left:16, bottom:16, right:16)
     private let _minWidthF:CGFloat = 0.222
     private let _maxWidthF:CGFloat = 0.333
@@ -371,8 +375,7 @@ final class TVAlertController: UIViewController {
     override var popoverPresentationController: UIPopoverPresentationController? {
         
         // if caller is asking for a ppc, they must want a popover!
-        let tc = self.window?.traitCollection
-        if tc?.userInterfaceIdiom == .pad && tc?.horizontalSizeClass == .regular &&
+        if UITraitCollection.current.userInterfaceIdiom == .pad && UITraitCollection.current.horizontalSizeClass == .regular &&
             (self.modalPresentationStyle == .formSheet || self.modalPresentationStyle == .overFullScreen) {
             self.modalPresentationStyle = .popover
         }
@@ -393,10 +396,16 @@ final class TVAlertController: UIViewController {
     }
 
     private var maxWidth: CGFloat {
-        let width = self.window?.bounds.width ?? UIScreen.main.bounds.width
+        let width = self.windowSize.width
+
+        #if targetEnvironment(macCatalyst)
+            if self.windowSize.width < self.windowSize.height {
+                return width * _maxCompactWidthF
+            }
+        #endif
 
         #if os(iOS)
-            if self.window?.traitCollection.horizontalSizeClass == .compact {
+            if UITraitCollection.current.horizontalSizeClass == .compact {
                 return width * _maxCompactWidthF
             }
         #endif
@@ -405,12 +414,12 @@ final class TVAlertController: UIViewController {
     }
 
     private var minWidth: CGFloat {
-        let width = self.window?.bounds.width ?? UIScreen.main.bounds.width
+        let width = self.windowSize.width
         return isFullscreen ? width * _minWidthF : 0.0
     }
 
     private var maxHeight: CGFloat {
-        let height = self.window?.bounds.height ?? UIScreen.main.bounds.height
+        let height = self.windowSize.height
         return height * _maxHeightF
     }
 
@@ -633,7 +642,7 @@ final class TVAlertController: UIViewController {
         // get the content view, dont animate if we are in a popover
         if let content = view.subviews.last, isFullscreen {
             let size = preferredContentSize
-            let wind = self.window?.bounds.size ?? UIScreen.main.bounds.size
+            let wind = self.windowSize
             let scale = min(1.0, min(wind.width * 0.95 / size.width, wind.height * 0.95 / size.height))
             
             content.transform = CGAffineTransform(scaleX:0.001, y:0.001)
@@ -1424,16 +1433,24 @@ extension UIAlertController {
     @objc func setProgress(_ value:Double) { fatalError() }
 }
 
-// MARK: UIViewController - window
+// MARK: UIViewController - windowSize
 
 private extension UIViewController {
-    // get the window that this UIViewController is part of, if called before view is on-screen fallback to app keyWindow
-    var window : UIWindow? {
+    // get the window that this UIViewController is part of and return window size, if not on screen yet return screen size
+    var windowSize : CGSize {
+        #if targetEnvironment(macCatalyst)
+        if let window = self.presentingViewController?.view.window {
+            return window.bounds.size
+        }
+        #endif
         if self.isViewLoaded, let window = self.view.window {
-            return window
+            return window.bounds.size
         }
         // use value(forKey:) instead of property to avoid deprecation warning
-        return UIApplication.shared.value(forKey:"keyWindow") as? UIWindow
+        if let window = UIApplication.shared.value(forKey:"keyWindow") as? UIWindow {
+            return window.bounds.size
+        }
+        return UIScreen.main.bounds.size
     }
 }
 
