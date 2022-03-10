@@ -77,7 +77,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) NSString* gameMediaType;
 
 @property (nonatomic, strong, readonly) NSString* gameTitle;
-@property (nonatomic, strong, readonly) NSURL* gameImageURL;
 @property (nonatomic, strong, readonly) NSURL* gameLocalImageURL;
 @property (nonatomic, strong, readonly) NSURL* gamePlayURL;
 @property (nonatomic, strong, readonly) NSArray<NSURL*>* gameImageURLs;

@@ -117,6 +117,7 @@
         NSString* name = self.gameName.lowercaseString;
         
         return @[
+            [NSURL URLWithString:[NSString stringWithFormat:@"%@/covers/%@/%@.png", base, list, name]],
             [NSURL URLWithString:[NSString stringWithFormat:@"%@/titles/%@/%@.png", base, list, name]],
             [NSURL URLWithString:[NSString stringWithFormat:@"%@/ingames/%@/%@.png", base, list, name]],
         ];
@@ -167,15 +168,6 @@
 
         return @[libretro_url, arcadeitalia_url];
     }
-}
-// only the tvOS TopShelf should use this, use gameImageURLs
--(NSURL*)gameImageURL
-{
-    // HACK for tvOS TopShelf and Atari 2600
-    if ([self.gameSoftwareList hasPrefix:@"a2600"])
-        return [self gameImageURLs].lastObject;
-
-    return [self gameImageURLs].firstObject;
 }
 -(NSURL*)gameLocalImageURL
 {
