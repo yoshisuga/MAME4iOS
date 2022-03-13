@@ -4909,8 +4909,8 @@ BOOL is_roms_dir(NSString* dir) {
 }
 
 - (void)runImport {
-    // TODO: we might need to export the `org.7-zip.7-zip-archive` type in Info.plist??
-    UIDocumentPickerViewController* documentPicker = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:@[@"public.zip-archive", @"org.7-zip.7-zip-archive", @"org.mamedev.disk-image", @"org.mamedev.rom-image"] inMode:UIDocumentPickerModeImport];
+    // we use "public.data" to open any file, in addition to zip
+    UIDocumentPickerViewController* documentPicker = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:@[@"public.zip-archive", @"org.7-zip.7-zip-archive", @"public.data"] inMode:UIDocumentPickerModeImport];
     documentPicker.modalPresentationStyle = UIModalPresentationFormSheet;
     documentPicker.delegate = (id<UIDocumentPickerDelegate>)self;
     documentPicker.allowsMultipleSelection = YES;
