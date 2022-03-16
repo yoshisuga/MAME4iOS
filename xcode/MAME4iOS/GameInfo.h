@@ -95,6 +95,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) BOOL gameIsConsole;
 @property (nonatomic, readonly) BOOL gameIsSoftware;
 
+@property (nonatomic, strong, readonly) NSString* gameMetadataFile;
+-(GameInfoDictionary*)gameSetValue:(NSString*)value forKey:(NSString*)key;
+-(GameInfoDictionary*)gameLoadMetadata;
+
 @end
 
 NS_ASSUME_NONNULL_END
