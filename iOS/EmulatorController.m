@@ -283,11 +283,12 @@ static SoftwareList* g_softlist;
 #define kHUDPositionPortKey  @"hud_rect_port"
 #define kHUDScalePortKey     @"hud_scale_port"
 #define kSelectedGameInfoKey @"selected_game_info"
-static NSDictionary* g_mame_game_info;
+static GameInfoDictionary* g_mame_game_info;
 static BOOL g_mame_reset = FALSE;           // do a full reset (delete cfg files) before running MAME
 static char g_mame_system[64];              // system MAME should run
 static char g_mame_type[16];                // game type (-cart, -flop, ...) or empty
 static char g_mame_game[256];               // game (or file) MAME should run (or empty is menu)
+static char g_mame_options[1024];           // extra options to pass to MAME
 static char g_mame_game_error[64+256];      // name of the system/game that got an error.
 static char g_mame_output_text[4096];       // any ERROR, WARNING, or INFO text output while running game
 static BOOL g_mame_warning_shown = FALSE;
@@ -408,11 +409,8 @@ void m4i_game_start(myosd_game_info* game_info);
 void m4i_game_stop(void);
 
 // run MAME (or pass NULL for main menu)
-int run_mame(char* system, char* type, char* game)
+int run_mame(char* system, char* type, char* game, char* options)
 {
-    // use -nocoinlock as a do-nothing option
-    char* nada = "-nocoinlock";
-
     char speed[16];
     snprintf(speed, sizeof(speed), "%0.2f", (float)g_pref_speed / 100.0);
     
@@ -431,43 +429,71 @@ int run_mame(char* system, char* type, char* game)
     // MAME always does a snapshot after a benchmark, so save it in the root so we dont liter snaps all over
     if (bench)
         strcpy(snap, "benchmark");
-
-    char* argv[] = {"mame4ios",
-        (system && system[0] != 0) ? system : nada,
-        (type && type[0] != 0) ? type : nada,
-        (game && game[0] != 0 && game[0] != ' ') ? game : nada,
-        "-nocoinlock",
-        g_pref_cheat ? "-cheat" : "-nocheat",
-        g_pref_autosave ? "-autosave" : "-noautosave",      // TODO: this is not connected to any UI
-        g_pref_showINFO ? "-noskip_gameinfo" : "-skip_gameinfo",
-        "-speed", speed,
-        
-        // TODO: change the useDRC default if the arm64 version starts working.
-        is139 ? nada : (g_pref_drc ? "-drc" : "-nodrc"),
-
-        // 139: -hiscore OR -nohiscore
-        // 2xx: -plugin hiscore OR nada
-        g_pref_hiscore ? (is139 ? "-hiscore" : "-plugin") : (is139 ? "-nohiscore" : nada),
-        g_pref_hiscore ? (is139 ?       nada : "hiscore") : (is139 ?         nada : nada),
-
-        "-flicker", g_pref_vector_flicker ? "0.4" : "0.0",
-        "-beam", g_pref_vector_beam2x ? "2.5" : "1.0",
-        "-pause_brightness", "1.0",  // to debug shaders
-        "-snapname", snap,
-        
-        // 139: -samplerate XXX OR -nosound
-        // 2xx: -samplerate XXX OR -sound none
-        g_pref_sound_value != 0 ? "-samplerate" : is139 ? "-nosound" : "-sound",
-        g_pref_sound_value != 0 ?         sound : is139 ?       nada :   "none",
-        
-        bench ? "-bench" : nada,
-        bench ?     "90" : nada,
-#ifdef DEBUG
-        "-verbose",
-#endif
-        };
     
-    int argc = sizeof(argv) / sizeof(argv[0]);
+    int argc = 1;
+    char* argv[256] = {"mame4ios"};
+    #define ARG(arg) (argv[argc++] = arg)
+    #define ARG2(arg1,arg2) (ARG(arg1), ARG(arg2))
+
+    if (system && system[0] != 0)
+        ARG(system);
+
+    if (type && type[0] != 0)
+        ARG(type);
+
+    if (game && game[0] != 0 && game[0] != ' ')
+        ARG(game);
+
+    ARG("-nocoinlock");
+    ARG(g_pref_cheat ? "-cheat" : "-nocheat");
+    
+    ARG(g_pref_autosave ? "-autosave" : "-noautosave"); // TODO: this is not connected to any UI
+    ARG(g_pref_showINFO ? "-noskip_gameinfo" : "-skip_gameinfo");
+    
+    ARG2("-speed", speed);
+        
+    // TODO: change the useDRC default if the arm64 version starts working.
+    if (!is139)
+        ARG(g_pref_drc ? "-drc" : "-nodrc");
+    
+    // 139: -hiscore OR -nohiscore
+    // 2xx: -plugin hiscore OR nada
+    if (is139)
+        ARG(g_pref_hiscore ? "-hiscore" : "-nohiscore");
+    else if (g_pref_hiscore)
+        ARG2("-plugin", "hiscore");
+         
+    ARG2("-flicker", g_pref_vector_flicker ? "0.4" : "0.0");
+    ARG2("-beam", g_pref_vector_beam2x ? "2.5" : "1.0");
+    
+    ARG2("-pause_brightness", "1.0");  // to debug shaders
+    ARG2("-snapname", snap);
+        
+    // 139: -samplerate XXX OR -nosound
+    // 2xx: -samplerate XXX OR -sound none
+    if (g_pref_sound_value != 0)
+        ARG2("-samplerate", sound);
+    else if (is139)
+        ARG("-nosound");
+    else
+        ARG2("-sound", "none");
+    
+    if (bench)
+        ARG2("-bench", "90");
+    
+#ifdef DEBUG
+    ARG("-verbose");
+#endif
+    
+    NSCParameterAssert(argc < sizeof(argv) / sizeof(argv[0]));
+    
+    // add in any custom command line
+    // TODO: should these be at the end, I think soo
+    for (char* tok = strtok(options, " "); tok != NULL; tok = strtok(NULL, " ")) {
+        if (argc >= sizeof(argv) / sizeof(argv[0]))
+            break;
+        ARG(tok);
+    }
     
     myosd_callbacks callbacks = {
         .video_init = m4i_video_init,
@@ -484,6 +510,9 @@ int run_mame(char* system, char* type, char* game)
     TIMER_ZERO(mame_boot);
     TIMER_START(mame_boot);
     return myosd_main(argc,argv,&callbacks,sizeof(callbacks));
+    
+    #undef ARG
+    #undef ARG2
 }
 
 static void init_pause()
@@ -506,6 +535,32 @@ static void check_pause()
     while (g_emulation_paused == PAUSE_THREAD)
         [g_emulation_paused_cond wait];
     [g_emulation_paused_cond unlock];
+}
+
+// setup the globals the MAME thread uses to run the next game, or pass nil to run without params (aka main menu)
+void set_mame_globals(GameInfoDictionary* game)
+{
+    if (game != nil)
+    {
+        // please only call this on main-thread
+        NSCParameterAssert(NSThread.isMainThread);
+
+        NSString* name = game[kGameInfoFile] ?: game[kGameInfoName] ?: @"";
+        if ([name isEqualToString:kGameInfoNameMameMenu])
+            name = @" ";
+        strncpy(g_mame_game, name.UTF8String, sizeof(g_mame_game));
+        strncpy(g_mame_system, game.gameSystem.UTF8String, sizeof(g_mame_system));
+        strncpy(g_mame_type, game.gameMediaType.UTF8String, sizeof(g_mame_type));
+        strncpy(g_mame_options, game.gameCustomCmdline.UTF8String, sizeof(g_mame_options));
+        g_mame_game_error[0] = 0;
+    }
+    else
+    {
+        g_mame_game[0] = 0;
+        g_mame_system[0] = 0;
+        g_mame_type[0] = 0;
+        g_mame_options[0] = 0;
+    }
 }
 
 void* app_Thread_Start(void* args)
@@ -532,11 +587,15 @@ void* app_Thread_Start(void* args)
         char mame_system[sizeof(g_mame_system)];    // system MAME should run
         char mame_game[sizeof(g_mame_game)];        // game MAME should run (or empty is menu)
         char mame_type[sizeof(g_mame_type)];        // type of game (cart, flop, etc)
+        char mame_options[sizeof(g_mame_options)];  // custom options
         strncpy(mame_system, g_mame_system, sizeof(mame_system));
         strncpy(mame_game, g_mame_game, sizeof(mame_game));
+        strncpy(mame_options, g_mame_options, sizeof(mame_options));
         strncpy(mame_type+1, g_mame_type, sizeof(mame_type)-1);
         mame_type[0] = g_mame_type[0] ? '-' : 0;        // we want to pass -cart, -flop, etc
-        g_mame_game[0] = g_mame_system[0] = g_mame_type[0] = 0;
+        
+        // clear globals so we run the MENU next time, or incase MAME crashes or fails.
+        set_mame_globals(nil);
         
         BOOL running_game = mame_game[0] != 0;
         
@@ -544,12 +603,13 @@ void* app_Thread_Start(void* args)
         if (running_game)
             g_mame_output_text[0] = 0;
         
-        if (run_mame(mame_system, mame_type, mame_game) != 0 && running_game) {
+        if (run_mame(mame_system, mame_type, mame_game, mame_options) != 0 && running_game) {
             if (mame_system[0] == 0)
                 strncpy(g_mame_game_error, mame_game, sizeof(g_mame_game_error));
             else
                 snprintf(g_mame_game_error, sizeof(g_mame_game_error), "%s %s %s", mame_system, mame_type, mame_game);
-            g_mame_game[0] = g_mame_system[0] = g_mame_type[0] = 0;
+
+            set_mame_globals(nil);
         }
     }
     NSLog(@"thread exit");
@@ -836,14 +896,7 @@ void m4i_game_stop()
 
     g_mame_first_boot = TRUE;
     g_mame_game_info = [EmulatorController getCurrentGame];
-    NSString* name = g_mame_game_info[kGameInfoFile] ?: g_mame_game_info[kGameInfoName] ?: @"";
-    NSString* type = g_mame_game_info[kGameInfoMediaType] ?: @"";
-    if ([name isEqualToString:kGameInfoNameMameMenu])
-        name = @" ";
-    strncpy(g_mame_system, g_mame_game_info.gameSystem.UTF8String, sizeof(g_mame_system));
-    strncpy(g_mame_type, type.UTF8String, sizeof(g_mame_type));
-    strncpy(g_mame_game, name.UTF8String, sizeof(g_mame_game));
-    g_mame_game_error[0] = 0;
+    set_mame_globals(g_mame_game_info);
     
     // delete the UserDefaults, this way if we crash we wont try this game next boot
     [EmulatorController setCurrentGame:nil];
@@ -1263,7 +1316,7 @@ UIViewController* g_menu;
     else if (myosd_inGame && myosd_in_menu == 0)
     {
         if (!g_mame_game_info.gameIsMame) {
-            g_mame_game[0] = g_mame_system[0] = g_mame_type[0] = 0;
+            set_mame_globals(nil);
             g_mame_game_info = nil;
         }
         myosd_exitGame = 1;
@@ -1274,7 +1327,7 @@ UIViewController* g_menu;
     }
     else
     {
-        g_mame_game[0] = g_mame_system[0] = g_mame_type[0] = 0;
+        set_mame_globals(nil);
         g_mame_game_info = nil;
         myosd_exitGame = 1;
     }
@@ -5916,21 +5969,14 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
         return;
     }
     
-    NSString* name = game[kGameInfoFile] ?: game[kGameInfoName];
-    NSString* type = game[kGameInfoMediaType] ?: @"";
-
-    if (name.length != 0) {
-        if ([name isEqualToString:kGameInfoNameMameMenu])
-            name = @" ";
+    if (game.gameName.length != 0) {
         g_mame_game_info = game;
-        strncpy(g_mame_system, game.gameSystem.UTF8String, sizeof(g_mame_system));
-        strncpy(g_mame_type, type.UTF8String, sizeof(g_mame_type));
-        strncpy(g_mame_game, name.UTF8String, sizeof(g_mame_game));
+        set_mame_globals(game);
         [self updateUserActivity:game];
     }
     else {
+        set_mame_globals(nil);
         g_mame_game_info = nil;
-        g_mame_game[0] = g_mame_system[0] = g_mame_type[0] = 0;     // run the MENU
         [self updateUserActivity:nil];
     }
 
@@ -6009,7 +6055,7 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
             msg = @"ERROR RUNNING GAME";
         
         g_mame_game_error[0] = 0;
-        g_mame_game[0] = g_mame_system[0] = g_mame_type[0] = 0;
+        set_mame_globals(nil);
         g_mame_game_info = nil;
         
         change_pause(PAUSE_INPUT);

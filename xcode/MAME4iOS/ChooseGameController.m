@@ -529,7 +529,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 {
     // lookup meta data from json file
     NSDictionary* info = nil;
-    NSString* path = [getDocumentPath(file).stringByDeletingPathExtension stringByAppendingPathExtension:@"json"];
+    NSString* path = [getDocumentPath(file) stringByAppendingPathExtension:@"json"];
     NSData* data = [NSData dataWithContentsOfFile:path];
     if (data != nil)
         info = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
@@ -540,7 +540,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 // save the "sidecar" JSON file
 -(BOOL)setSoftwareInfo:(NSString*)file info:(NSDictionary*)info
 {
-    NSString* path = [file.stringByDeletingPathExtension stringByAppendingPathExtension:@"json"];
+    NSString* path = [file stringByAppendingPathExtension:@"json"];
     if (info.count == 0)
         return [NSFileManager.defaultManager removeItemAtPath:path error:nil];
     NSData* data = [NSJSONSerialization dataWithJSONObject:info options:NSJSONWritingPrettyPrinted error:nil];
@@ -1825,6 +1825,9 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     // add or move to front of the recent game MRU list...
     [self setRecent:game isRecent:TRUE];
     
+    // add any custom options
+    game = [self addCustomOptions:game];
+    
     // tell the code upstream that the user had selected a game to play!
     if (self.selectGameCallback != nil)
         self.selectGameCallback(game);
@@ -1888,9 +1891,29 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
         }
     }
     
+    // add any custom options
+    game = [self addCustomOptions:game];
+    
     // tell the code upstream that the user had selected a game to play!
     if (self.selectGameCallback != nil)
         self.selectGameCallback(game);
+}
+
+-(GameInfoDictionary*) addCustomOptions:(GameInfoDictionary*)game
+{
+// TODO: this is a test, get custom cmd line somewhere
+#if defined(DEBUG)
+    // pass a custom command line as a test
+    if (TRUE)
+    {
+        game = [self setGame:game value:@"-flipx -flipy" forKey:kGameInfoCustomCmdline];
+    }
+    else
+    {
+        game = [self setGame:game value:@"" forKey:kGameInfoCustomCmdline];
+    }
+#endif
+    return game;
 }
 
 -(NSArray*)getSystemsForGame:(NSDictionary*)game
@@ -1928,10 +1951,10 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     NSMutableArray* files = [[NSMutableArray alloc] init];
     
     if (game.gameIsSoftware) {
-        if (all) {
-            for (NSString* ext in @[@"png", @"json", game.gameFile.pathExtension])
-                [files addObject:[NSString stringWithFormat:@"%@.%@",game.gameFile.stringByDeletingPathExtension, ext]];
-        }
+        for (NSString* ext in @[@"png", @"json"])
+            [files addObject:[game.gameFile stringByAppendingPathExtension:ext]];
+        if (all)
+            [files addObject:game.gameFile];
         return files;
     }
     

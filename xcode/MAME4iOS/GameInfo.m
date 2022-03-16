@@ -74,6 +74,10 @@
 {
     return self[kGameInfoMediaType] ?: @"";
 }
+- (NSString*)gameCustomCmdline
+{
+    return self[kGameInfoCustomCmdline] ?: @"";
+}
 - (BOOL)gameIsSnapshot
 {
     return [self.gameType isEqualToString:kGameInfoTypeSnapshot];
@@ -195,10 +199,10 @@
     
     if (self.gameIsSnapshot)
         return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/%@", path, self.gameFile] isDirectory:NO];
+    else if (self.gameIsSoftware)
+        return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/%@.png", path, self.gameFile] isDirectory:NO];
     else if (self.gameSoftwareList.length != 0)
         return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/titles/%@/%@.png", path, self.gameSoftwareList, name] isDirectory:NO];
-    else if (self.gameIsSoftware)
-        return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/%@.png", path, self.gameFile.stringByDeletingPathExtension] isDirectory:NO];
     else
         return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/titles/%@.png", path, name] isDirectory:NO];
 }
@@ -211,4 +215,5 @@
     else
         return [NSURL URLWithString:[NSString stringWithFormat:@"mame4ios://%@", self.gameName]];
 }
+
 @end
