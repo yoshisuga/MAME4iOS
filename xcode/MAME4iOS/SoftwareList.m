@@ -104,22 +104,65 @@
     NSParameterAssert(![lists containsString:@" "]);
     if (lists.length == 0)
         return @[];
+    
+    // get a filter keyword
+    //
+    // NOTE in a perfect world we would get this from the MAME core, but libmame does not currently pass it to us.
+    // .....so we figure it out from the description of the system, we only support NTSC and PAL, these are the most used.
+    //
+    //          Atari 2600 (PAL)
+    //          Atari 2600 (NTSC)
+    //          Sega CD with 32X (USA, NTSC)
+    //          Dreamcast (Japan, NTSC)
+    //
+    NSString* filter = nil;
+    NSString* desc = system.gameDescription;
+    if ([desc hasSuffix:@")"] && [desc containsString:@" ("]) {
+        desc = [desc componentsSeparatedByString:@" ("].lastObject;
+
+        // TODO: this is not perfect we only look for "PAL" or "NTSC" in the description
+        // TODO: other filters are NTSC-U, NTSC-J, NTSC-K, and other non-NTSC/PAL related
+        if ([desc containsString:@"NTSC"])
+            filter = @"NTSC";
+        
+        if ([desc containsString:@"PAL"])
+            filter = @"PAL";
+    }
 
     NSMutableArray* games = [[NSMutableArray alloc] init];
     
-    // TODO: add support for NTSC and PAL filter
-    //     <sharedfeat name="compatibility" value="NTSC"/>
-    
     for (NSString* list_name in [lists componentsSeparatedByString:@","]) {
 
-        // if this is not a softlist name, get out quick.
+        // if this is not a plain softlist name, get out quick.
         if ([list_name containsString:@":"])
             continue;;
 
         for (NSDictionary* software in [self getSoftwareList:list_name]) {
+            
             // first entry will have only a description, and we want to skip that
             if (![software isKindOfClass:[NSDictionary class]] || software[kSoftwareListName] == nil)
                 continue;
+            
+            // check for NTSC and PAL compatibility
+            //     <sharedfeat name="compatibility" value="NTSC"/>
+            //     <sharedfeat name="compatibility" value="PAL"/>
+            //     <sharedfeat name="compatibility" value="NTSC,PAL"/>
+            //     <sharedfeat name="compatibility" value="NTSC-J,NTSC-K,NTSC-U"/>
+            if (filter != nil && [STR([software valueForKeyPath:@"sharedfeat.name"]) isEqualToString:@"compatibility"]) {
+                NSString* value = STR([software valueForKeyPath:@"sharedfeat.value"]);
+                // skip this software if the filter keyword is not in compatibility list
+                if (value.length != 0 && ![value containsString:filter])
+                    continue;
+            }
+            
+            // check for TMSS incompatibility (only megadriv.xml)
+            //      <sharedfeat name="incompatibility" value="TMSS"/>
+            if ([STR([software valueForKeyPath:@"sharedfeat.name"]) isEqualToString:@"incompatibility"]) {
+                NSString* value = STR([software valueForKeyPath:@"sharedfeat.value"]);
+                if (value.length != 0 && [system.gameDescription containsString:value])
+                    continue;
+            }
+            
             [games addObject:@{
                 kGameInfoSoftwareList:list_name,
                 kGameInfoSystem:      system.gameName,
