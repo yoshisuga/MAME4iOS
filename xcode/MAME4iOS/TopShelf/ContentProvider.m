@@ -22,6 +22,22 @@
     return [[NSUserDefaults alloc] initWithSuiteName:name];
 }
 
+// see if a URL is home (ie non 404)
+- (BOOL)testURL:(NSURL*)url {
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    [request setHTTPMethod:@"HEAD"];
+    
+    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+    __block NSInteger status_code = 404;
+    [[NSURLSession.sharedSession dataTaskWithRequest:request completionHandler:^(NSData* data, NSURLResponse* response, NSError* error) {
+        if (error == nil && [response isKindOfClass:[NSHTTPURLResponse class]])
+            status_code = [(NSHTTPURLResponse*)response statusCode];
+        dispatch_semaphore_signal(semaphore);
+    }] resume];
+    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+    return status_code == 200;
+}
+
 // get a TopSelf item from game info
 -(TVTopShelfSectionedItem*)getGameItem:(NSDictionary*)game {
 
@@ -31,13 +47,22 @@
     // the MAME UI does not have a Title image, so exclude it.
     if ([game.gameName isEqualToString:kGameInfoNameMameMenu])
         return nil;
-
-    TVTopShelfSectionedItem* item = [[TVTopShelfSectionedItem alloc] initWithIdentifier:game.gameName];
+    
+    if (game.gameImageURLs.count == 0 || game.gamePlayURL == nil)
+        return nil;
+    
+    NSString* identifier = game.gamePlayURL.absoluteString;
+    TVTopShelfSectionedItem* item = [[TVTopShelfSectionedItem alloc] initWithIdentifier:identifier];
     item.title = game.gameTitle;
+    
+    for (NSURL* url in game.gameImageURLs) {
+        if ([self testURL:url]) {
+            item.imageShape = TVTopShelfSectionedItemImageShapePoster;
+            [item setImageURL:url forTraits:TVTopShelfItemImageTraitScreenScale1x];
+            break;
+        }
+    }
 
-    item.imageShape = TVTopShelfSectionedItemImageShapePoster;
-    [item setImageURL:game.gameImageURL forTraits:TVTopShelfItemImageTraitScreenScale1x];
-     
     item.playAction = [[TVTopShelfAction alloc] initWithURL:game.gamePlayURL];
     item.displayAction = item.playAction;
 
@@ -48,9 +73,9 @@
 
     NSMutableArray* items = [games mutableCopy];
     
+    // do the equiv of a compactMap
     for (int i=0; i<items.count; i++)
         items[i] = [self getGameItem:items[i]] ?: NSNull.null;
-    
     [items removeObjectIdenticalTo:NSNull.null];
      
     TVTopShelfItemCollection* section = [[TVTopShelfItemCollection alloc] initWithItems:items];

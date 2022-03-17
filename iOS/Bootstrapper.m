@@ -226,12 +226,17 @@ NSArray* g_import_file_types;
     // handle our own scheme mame4ios://game OR mame4ios://system/game OR mame4ios://system/type:file
     if ([url.scheme isEqualToString:@"mame4ios"] && [url.host length] != 0 && [url.query length] == 0) {
         NSDictionary* game;
-        NSArray* arr = [url.path componentsSeparatedByString:@":"];
+        
+        NSString* path = url.path;
+        if ([path hasPrefix:@"/"])
+            path = [path substringFromIndex:1];
+        
+        NSArray* arr = [path componentsSeparatedByString:@":"];
         
         if (arr.count == 2)
             game = @{kGameInfoSystem:url.host, kGameInfoMediaType:arr.firstObject, kGameInfoFile:arr.lastObject};
-        else if ([url.path length] != 0)
-            game = @{kGameInfoSystem:url.host, kGameInfoName:url.path};
+        else if ([path length] != 0)
+            game = @{kGameInfoSystem:url.host, kGameInfoName:path};
         else
             game = @{kGameInfoName:url.host};
         
