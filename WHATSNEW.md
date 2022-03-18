@@ -32,6 +32,9 @@
 * remember and try to restore the selected item in Choose Game UX
 * added a "Group by Software" option, this will create sections by Software List name not Machine/System name
 * HUD on tvOS works with any game controller, when HUD is enabled in-game menu is the HUD.
+* Filter NTSC and PAL Software Lists.
+    - uses adhoc method based on Machine description.
+* Added "Paste Image" to set the title image used in Choose Game UX.
 
 ## ROMless Arcade Machines
 

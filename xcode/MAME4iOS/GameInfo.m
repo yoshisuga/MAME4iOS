@@ -74,6 +74,10 @@
 {
     return self[kGameInfoMediaType] ?: @"";
 }
+- (NSString*)gameCustomCmdline
+{
+    return self[kGameInfoCustomCmdline] ?: @"";
+}
 - (BOOL)gameIsSnapshot
 {
     return [self.gameType isEqualToString:kGameInfoTypeSnapshot];
@@ -187,10 +191,10 @@
     
     if (self.gameIsSnapshot)
         return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/%@", path, self.gameFile] isDirectory:NO];
+    else if (self.gameIsSoftware)
+        return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/%@.png", path, self.gameFile] isDirectory:NO];
     else if (self.gameSoftwareList.length != 0)
         return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/titles/%@/%@.png", path, self.gameSoftwareList, name] isDirectory:NO];
-    else if (self.gameIsSoftware)
-        return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/%@.png", path, self.gameFile.stringByDeletingPathExtension] isDirectory:NO];
     else
         return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/titles/%@.png", path, name] isDirectory:NO];
 }
@@ -203,4 +207,64 @@
     else
         return [NSURL URLWithString:[NSString stringWithFormat:@"mame4ios://%@", self.gameName]];
 }
+
+// MARK: Metadata
+
+// get the sidecar file used to store custom metadata/info
+-(NSString*) gameMetadataFile
+{
+    // only do custom metadata for "software" (aka non-MESS, non-Arcade)
+    // TODO: maybe have a sidecar for Arcade and MESS
+    if (self.gameFile.length == 0)
+        return @"";
+    
+#if TARGET_OS_IOS
+    NSString *root = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).firstObject;
+#elif TARGET_OS_TV
+    NSString *root = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES).firstObject;
+#endif
+    
+    return [[root stringByAppendingPathComponent:self.gameFile] stringByAppendingPathExtension:@"json"];
+}
+// load any on-disk metadata json
+-(GameInfoDictionary*) gameMetadata
+{
+    if (self.gameMetadataFile.length == 0)
+        return nil;
+    GameInfoDictionary* info = nil;
+    NSData* data = [NSData dataWithContentsOfFile:self.gameMetadataFile];
+    if (data != nil)
+        info = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+    if (![info isKindOfClass:[NSDictionary class]])
+        info = nil;
+    return info;
+}
+// modify custom metadata key, and save to sidecar, return modified game
+-(GameInfoDictionary*)gameSetValue:(NSString*)value forKey:(NSString*)key
+{
+    if ([value isEqualToString:(self[key] ?: @"")])
+        return self;
+    
+    if (self.gameMetadataFile.length != 0)
+    {
+        NSMutableDictionary* info = [(self.gameMetadata ?: @{}) mutableCopy];
+        [info setValue:value forKey:key];
+        NSData* data = [NSJSONSerialization dataWithJSONObject:info options:NSJSONWritingPrettyPrinted error:nil];
+        [data writeToFile:self.gameMetadataFile atomically:NO];
+    }
+    NSMutableDictionary* game = [self mutableCopy];
+    [game setValue:value forKey:key];
+    return [game copy];
+}
+// load and merge any on-disk metadata for this game
+-(GameInfoDictionary*) gameLoadMetadata
+{
+    GameInfoDictionary* info = self.gameMetadata;
+    if (info.count == 0)
+        return self;
+    NSMutableDictionary* game = [self mutableCopy];
+    [game addEntriesFromDictionary:info];
+    return [game copy];
+}
+
 @end

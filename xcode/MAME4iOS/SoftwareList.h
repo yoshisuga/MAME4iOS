@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "GameInfo.h"
 
 // keys used in a software list xml
 #define kSoftwareListName           @"name"
@@ -19,10 +20,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface SoftwareList : NSObject
 
-- (instancetype)initWithPath:(NSString*)root;
-
 // singleton, uses the document root
-+ (instancetype)sharedInstance;
+@property (class, readonly, strong) SoftwareList* sharedInstance NS_SWIFT_NAME(shared);
+
+- (instancetype)initWithPath:(NSString*)root;
 
 // get names of all software lists
 - (NSArray<NSString*>*)getSoftwareListNames;
@@ -31,10 +32,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable NSString*)getSoftwareListDescription:(NSString*)name;
 
 // get software list by name, filtered to only Available, first item has the description for the list itself.
-- (NSArray<NSDictionary*>*)getSoftwareList:(NSString*)name;
+- (NSArray<NSDictionary<NSString*,NSString*>*>*)getSoftwareList:(NSString*)name;
 
 // get games for a system, filtered to only Available
-- (NSArray<NSDictionary*>*)getGamesForSystem:(NSDictionary*)system;
+- (NSArray<GameInfoDictionary*>*)getGamesForSystem:(GameInfoDictionary*)system;
 
 // get name of software list for a romset, used to know where to install.
 - (nullable NSString*)getSoftwareListNameForRomset:(NSString*)path named:(NSString*)name;
