@@ -524,43 +524,6 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     }
 }
 
-// load the "sidecar" JSON file
--(NSDictionary*)getSoftwareInfo:(NSString*)file
-{
-    // lookup meta data from json file
-    NSDictionary* info = nil;
-    NSString* path = [getDocumentPath(file).stringByDeletingPathExtension stringByAppendingPathExtension:@"json"];
-    NSData* data = [NSData dataWithContentsOfFile:path];
-    if (data != nil)
-        info = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-    if (![info isKindOfClass:[NSDictionary class]])
-        info = nil;
-    return info;
-}
-// save the "sidecar" JSON file
--(BOOL)setSoftwareInfo:(NSString*)file info:(NSDictionary*)info
-{
-    NSString* path = [file.stringByDeletingPathExtension stringByAppendingPathExtension:@"json"];
-    if (info.count == 0)
-        return [NSFileManager.defaultManager removeItemAtPath:path error:nil];
-    NSData* data = [NSJSONSerialization dataWithJSONObject:info options:NSJSONWritingPrettyPrinted error:nil];
-    return [data writeToFile:path atomically:NO];
-}
-// update a value in a game, and save in sidecar too.
-// Yoshi notes: (called when Play with... is selected)
--(NSDictionary*)setGame:(NSDictionary*)game value:(NSString*)value forKey:(NSString*)key
-{
-    if (game.gameFile.length != 0) {
-        NSMutableDictionary* info = [([self getSoftwareInfo:game.gameFile] ?: @{}) mutableCopy];
-        [info setValue:value forKey:key];
-        [self setSoftwareInfo:game.gameFile info:info];
-    }
-    
-    NSMutableDictionary* info = [game mutableCopy];
-    [info setValue:value forKey:key];
-    return [info copy];
-}
-
 - (void)addSoftware:(NSMutableArray*)games
 {
     // remove any previous software
@@ -577,26 +540,21 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         if ([@[@"txt", @"json", @"png"] containsObject:file.pathExtension.lowercaseString])
             continue;
 
-        // lookup meta data from json file
-        NSDictionary* info = [self getSoftwareInfo:file];
-        
         // construct a short name
         NSString* name = file.lastPathComponent.stringByDeletingPathExtension;
         name = [name componentsSeparatedByCharactersInSet:[NSCharacterSet alphanumericCharacterSet].invertedSet].firstObject;
-        
-        [games addObject:@{
+
+        GameInfoDictionary* game = @{
             kGameInfoType:kGameInfoTypeSoftware,
             kGameInfoFile:file,
-            kGameInfoSystem:info[kGameInfoSystem] ?: @"",
-            kGameInfoMediaType:info[kGameInfoMediaType] ?: @"",
-            kGameInfoSoftwareList:info[kGameInfoSoftwareList] ?: @"",
-            kGameInfoName:info[kGameInfoName] ?: name,
-            kGameInfoDescription:info[kGameInfoDescription] ?: file.lastPathComponent.stringByDeletingPathExtension,
-            // TODO: do we want the concept of Clone for Software?
-            kGameInfoParent:info[kGameInfoParent] ?: @"",
-            kGameInfoManufacturer:info[kGameInfoManufacturer] ?: @"",
-            kGameInfoYear:info[kGameInfoYear] ?: @"",
-        }];
+            kGameInfoName:name,
+            kGameInfoDescription:file.lastPathComponent.stringByDeletingPathExtension
+        };
+        
+        // add any user custom metadata from sidecar
+        game = [game gameLoadMetadata];
+    
+        [games addObject:game];
     }
 }
 
@@ -615,6 +573,11 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     
     _gameList = [games copy];
     [self filterGameList];
+}
+
+- (void)reload
+{
+    [self setGameList:_gameList];
 }
 
 + (void)reset
@@ -1550,6 +1513,9 @@ static BOOL g_updating;
 // load image from *one* of a list of urls
 -(void)getImage:(NSArray*)urls localURL:(NSURL*)localURL completionHandler:(void (^)(UIImage* image))handler
 {
+    if (urls.count == 0 && localURL != nil)
+        return handler([UIImage imageWithContentsOfFile:localURL.path]);
+
     if (urls.count == 0)
         return handler(nil);
     
@@ -1826,6 +1792,9 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     // add or move to front of the recent game MRU list...
     [self setRecent:game isRecent:TRUE];
     
+    // add any custom options
+    game = [self addCustomOptions:game];
+    
     // tell the code upstream that the user had selected a game to play!
     if (self.selectGameCallback != nil)
         self.selectGameCallback(game);
@@ -1837,9 +1806,6 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
 
     if (system == nil)
     {
-        if (self.presentedViewController != nil) {
-            
-        }
         NSArray* list = [self getSystemsForGame:game];
         NSString* title = [ChooseGameController getGameText:game layoutMode:LayoutSmall].string;
 
@@ -1877,21 +1843,41 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     [self setRecent:game isRecent:TRUE];
 
     // modify the system
-    game = [self setGame:game value:system.gameName forKey:kGameInfoSystem];
+    game = [game gameSetValue:system.gameName forKey:kGameInfoSystem];
     
     // modify the media kind
     if (game.gameFile.length != 0) {
         for (NSString* media in [system.gameSoftwareMedia componentsSeparatedByString:@","]) {
             NSArray* arr = [media componentsSeparatedByString:@":"];
             if (arr.count==2 && [arr.lastObject isEqualToString:game.gameFile.pathExtension]) {
-                game = [self setGame:game value:arr.firstObject forKey:kGameInfoMediaType];
+                game = [game gameSetValue:arr.firstObject forKey:kGameInfoMediaType];
             }
         }
     }
+
+    // add any custom options
+    game = [self addCustomOptions:game];
     
     // tell the code upstream that the user had selected a game to play!
     if (self.selectGameCallback != nil)
         self.selectGameCallback(game);
+}
+
+-(GameInfoDictionary*) addCustomOptions:(GameInfoDictionary*)game
+{
+// TODO: this is a test, get custom cmd line somewhere
+#if defined(DEBUG)
+    // pass a custom command line as a test
+    if (TRUE)
+    {
+        game = [game gameSetValue:@"-flipx -flipy" forKey:kGameInfoCustomCmdline];
+    }
+    else
+    {
+        game = [game gameSetValue:@"" forKey:kGameInfoCustomCmdline];
+    }
+#endif
+    return game;
 }
 
 -(NSArray*)getSystemsForGame:(NSDictionary*)game
@@ -1929,10 +1915,10 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     NSMutableArray* files = [[NSMutableArray alloc] init];
     
     if (game.gameIsSoftware) {
-        if (all) {
-            for (NSString* ext in @[@"png", @"json", game.gameFile.pathExtension])
-                [files addObject:[NSString stringWithFormat:@"%@.%@",game.gameFile.stringByDeletingPathExtension, ext]];
-        }
+        for (NSString* ext in @[@"png", @"json"])
+            [files addObject:[game.gameFile stringByAppendingPathExtension:ext]];
+        if (all)
+            [files addObject:game.gameFile];
         return files;
     }
     
@@ -2002,6 +1988,9 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
                     self.selectGameCallback(nil);
             }
         }
+        else {
+            [self reload];
+        }
     }];
 }
 
@@ -2011,6 +2000,10 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
 -(void)share:(NSDictionary*)game
 {
     NSString* title = [NSString stringWithFormat:@"%@ (%@)",game.gameTitle, game.gameName];
+    
+    // prevent non-file system characters, and duplicate title and name
+    if ([title containsString:@"/"] || [title containsString:@":"] || [game.gameTitle isEqualToString:game.gameName])
+        title = game.gameName;
     
     FileItemProvider* item = [[FileItemProvider alloc] initWithTitle:title typeIdentifier:@"public.zip-archive" saveHandler:^BOOL(NSURL* url, FileItemProviderProgressHandler progressHandler) {
         NSString *rootPath = [NSString stringWithUTF8String:get_documents_path("")];
@@ -2097,59 +2090,6 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     }
     return activity;
 }
--(INVoiceShortcut*)getVoiceShortcut:(NSUserActivity*)activity API_AVAILABLE(ios(12.0)) {
-    __block INVoiceShortcut* found_shortcut = nil;
-    __block NSTimeInterval time = [NSDate timeIntervalSinceReferenceDate];
-    dispatch_group_t group = dispatch_group_create();
-    
-    dispatch_group_enter(group);
-    [INVoiceShortcutCenter.sharedCenter getAllVoiceShortcutsWithCompletion:^(NSArray<INVoiceShortcut*>* shortcuts, NSError* error) {
-        time = [NSDate timeIntervalSinceReferenceDate] - time;
-        NSLog(@"getAllVoiceShortcuts took %0.3fsec", time);
-        for (INVoiceShortcut* shortcut in shortcuts) {
-            NSLog(@"    SHORTCUT: %@", shortcut);
-            if ([shortcut.shortcut.userActivity.activityType isEqual:activity.activityType] &&
-                [shortcut.shortcut.userActivity.persistentIdentifier isEqual:activity.persistentIdentifier]) {
-                NSLog(@"    **** FOUND ACTIVITY: %@", activity);
-                found_shortcut = shortcut;
-            }
-        }
-        dispatch_group_leave(group);
-    }];
-    dispatch_group_wait(group, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.200 * NSEC_PER_SEC)));
-    return found_shortcut;
-}
--(void)siri:(NSDictionary*)game activity:(NSUserActivity*)activity shortcut:(INVoiceShortcut*)shortcut API_AVAILABLE(ios(12.0)){
-    UIViewController* viewController;
-    
-    if (shortcut == nil) {
-        INShortcut* shortcut = [[INShortcut alloc] initWithUserActivity:activity];
-        viewController = [[INUIAddVoiceShortcutViewController alloc] initWithShortcut:shortcut];
-    }
-    else {
-        viewController = [[INUIEditVoiceShortcutViewController alloc] initWithVoiceShortcut:shortcut];
-    }
-    viewController.modalPresentationStyle = UIModalPresentationFormSheet;
-    [(id)viewController setDelegate:self];
-    [self presentViewController:viewController animated:YES completion:nil];
-}
-// INUIAddVoiceShortcutViewControllerDelegate
-- (void)addVoiceShortcutViewController:(INUIAddVoiceShortcutViewController *)controller didFinishWithVoiceShortcut:(INVoiceShortcut *)voiceShortcut error:(NSError *) error API_AVAILABLE(ios(12.0)) {
-    [self dismissViewControllerAnimated:YES completion:nil];
-}
-- (void)addVoiceShortcutViewControllerDidCancel:(INUIAddVoiceShortcutViewController *)controller API_AVAILABLE(ios(12.0)) {
-    [self dismissViewControllerAnimated:YES completion:nil];
-}
-// INUIEditVoiceShortcutViewControllerDelegate
-- (void)editVoiceShortcutViewController:(INUIEditVoiceShortcutViewController *)controller didUpdateVoiceShortcut:(INVoiceShortcut *)voiceShortcut error: (NSError *)error API_AVAILABLE(ios(12.0)) {
-    [self dismissViewControllerAnimated:YES completion:nil];
-}
-- (void)editVoiceShortcutViewController:(INUIEditVoiceShortcutViewController *)controller didDeleteVoiceShortcutWithIdentifier:(NSUUID *)deletedVoiceShortcutIdentifier API_AVAILABLE(ios(12.0)) {
-    [self dismissViewControllerAnimated:YES completion:nil];
-}
-- (void)editVoiceShortcutViewControllerDidCancel:(INUIEditVoiceShortcutViewController *)controller API_AVAILABLE(ios(12.0)) {
-    [self dismissViewControllerAnimated:YES completion:nil];
-}
 #endif
 
 
@@ -2172,7 +2112,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
         return @[
             [UIAlertAction actionWithTitle:@"Use as Title Image" symbol:@"photo" style:UIAlertActionStyleDefault handler:^(id action) {
                 NSString* src = game.gameLocalImageURL.path;
-                NSString* dst = [NSString stringWithFormat:@"%@/%@.png", getDocumentPath(@"titles"), game.gameFile.stringByDeletingLastPathComponent];
+                NSString* dst = [[src.stringByDeletingLastPathComponent stringByReplacingOccurrencesOfString:@"/snap/" withString:@"/titles/"] stringByAppendingPathExtension:@"png"];
                 [NSFileManager.defaultManager removeItemAtPath:dst error:nil];
                 [NSFileManager.defaultManager copyItemAtPath:src toPath:dst error:nil];
                 [ImageCache.sharedInstance flush];
@@ -2191,7 +2131,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
             [UIAlertAction actionWithTitle:@"Delete" symbol:@"trash" style:UIAlertActionStyleDefault handler:^(id action) {
                 [self moveSelectionForDelete:indexPath];
                 [NSFileManager.defaultManager removeItemAtPath:game.gameLocalImageURL.path error:nil];
-                [self setGameList:self->_gameList];
+                [self reload];
             }]
         ];
     }
@@ -2240,19 +2180,23 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
         }]
     ]];
     
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
-    if (@available(iOS 12.0, *)) {
-        NSUserActivity* activity = [ChooseGameController userActivityForGame:game];
-        INVoiceShortcut* shortcut = [self getVoiceShortcut:activity];
-        if (activity != nil) {
-            actions = [actions arrayByAddingObjectsFromArray:@[
-                [UIAlertAction actionWithTitle:@"Add to Siri" symbol:(shortcut ? @"checkmark.circle" : @"plus.circle") style:UIAlertActionStyleDefault handler:^(id action) {
-                    [self siri:game activity:activity shortcut:shortcut];
-                }]
-            ]];
-        }
+    // Paste image
+    if (!game.gameIsFake && UIPasteboard.generalPasteboard.hasImages) {
+        actions = [actions arrayByAddingObjectsFromArray:@[
+            [UIAlertAction actionWithTitle:@"Paste Image" symbol:@"photo" style:UIAlertActionStyleDefault handler:^(id action) {
+                UIImage* image = UIPasteboard.generalPasteboard.image;
+                if (image == nil)
+                    return;
+                NSData* data = UIImagePNGRepresentation(image);
+                if (data == nil)
+                    return;
+            
+                [data writeToURL:game.gameLocalImageURL atomically:YES];
+                [ImageCache.sharedInstance flush];
+                [self updateImage:game.gameLocalImageURL];
+            }]
+        ]];
     }
-#endif
     
     CommandLineArgsHelper *cmdLineArgsHelper = [[CommandLineArgsHelper alloc] initWithGameInfo:game];
     NSString *cmdLineActionTitle = [cmdLineArgsHelper commandLineArgs] != nil ? @"Edit Arguments..." : @"Add Arguments...";
@@ -3164,8 +3108,6 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     CGFloat keyWidth = 0.0;
     for (NSString* key in _game) {
         if (![_game[key] isKindOfClass:[NSString class]] || [_game[key] length] == 0)
-            continue;
-        if ([@[kGameInfoDescription /*, kGameInfoYear, kGameInfoManufacturer*/] containsObject:key])
             continue;
         NSString* keyText = [key stringByAppendingString:@"\t"];
         NSString* valText = [_game[key] stringByAppendingString:@"\n"];

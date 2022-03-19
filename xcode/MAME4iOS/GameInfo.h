@@ -14,6 +14,10 @@
 #define RECENT_GAMES_KEY        @"RecentGames"
 #define RECENT_GAMES_TITLE      @"Recently Played"
 
+// GameInfo is just a dictionary
+typedef NSDictionary<NSString*, NSString*> GameInfoDictionary;
+typedef GameInfoDictionary* GameInfo;
+
 // keys used in a GameInfo dictionary
 #define kGameInfoType           @"type"
 #define kGameInfoSystem         @"system"
@@ -31,6 +35,7 @@
 #define kGameInfoSoftwareList   @"softlist"         // this game is *from* a software list
 #define kGameInfoFile           @"file"
 #define kGameInfoMediaType      @"media"
+#define kGameInfoCustomCmdline  @"cmdline"
 
 #define kGameInfoTypeArcade     @"Arcade"
 #define kGameInfoTypeConsole    @"Console"
@@ -77,13 +82,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) NSString* gameSoftwareList;
 @property (nonatomic, strong, readonly) NSString* gameFile;
 @property (nonatomic, strong, readonly) NSString* gameMediaType;
+@property (nonatomic, strong, readonly) NSString* gameCustomCmdline;
 
 @property (nonatomic, strong, readonly) NSString* gameTitle;
-@property (nonatomic, strong, readonly) NSURL* gameImageURL;
 @property (nonatomic, strong, readonly) NSURL* gameLocalImageURL;
 @property (nonatomic, strong, readonly) NSURL* gamePlayURL;
 @property (nonatomic, strong, readonly) NSArray<NSURL*>* gameImageURLs;
-@property (nonatomic, strong, readonly) NSString* additionalCommandLineArgs;
 
 @property (nonatomic, readonly) BOOL gameIsFake;
 @property (nonatomic, readonly) BOOL gameIsMame;
@@ -91,6 +95,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) BOOL gameIsClone;
 @property (nonatomic, readonly) BOOL gameIsConsole;
 @property (nonatomic, readonly) BOOL gameIsSoftware;
+
+@property (nonatomic, strong, readonly) NSString* gameMetadataFile;
+-(GameInfoDictionary*)gameSetValue:(NSString*)value forKey:(NSString*)key;
+-(GameInfoDictionary*)gameLoadMetadata;
 
 @end
 

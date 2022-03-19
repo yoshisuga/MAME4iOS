@@ -20,27 +20,6 @@ extension NSDictionary {
         self.gameInfo = gameInfo
     }
     
-    // Convert from [String] to C array of strings
-    func mameBinaryArguments() -> UnsafePointer<UnsafePointer<CChar>>? {
-        let mameArgs = mame_cmdline_args() ?? [String]()
-        let gameArgs = gameInfo.additionalCommandLineArgs.split(separator: " ").map { String($0) }
-        let combinedArgs = mameArgs + gameArgs
-        let stringArray: [UnsafePointer<CChar>] = combinedArgs.compactMap{ str in
-            guard let cString = str.cString(using: .utf8) else {
-                return nil
-            }
-            let cStringCopy = UnsafeMutableBufferPointer<CChar>.allocate(capacity: cString.count)
-            _ = cStringCopy.initialize(from: cString)
-            return UnsafePointer(cStringCopy.baseAddress)
-        }
-        let buffer: UnsafeMutableBufferPointer<UnsafePointer<CChar>> = .allocate(capacity: combinedArgs.count)
-        _ = buffer.initialize(from: stringArray)
-        guard let bufferAddr = buffer.baseAddress else {
-            return nil
-        }
-        return UnsafePointer(bufferAddr)
-    }
-    
     func commandLineArgs() -> String? {
         return UserDefaults.standard.string(forKey: gameInfo.gameInfoCommandLineArgsTitle)
     }
