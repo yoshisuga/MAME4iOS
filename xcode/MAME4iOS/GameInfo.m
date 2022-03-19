@@ -211,4 +211,9 @@
     else
         return [NSURL URLWithString:[NSString stringWithFormat:@"mame4ios://%@", self.gameName]];
 }
+
+-(NSString*)additionalCommandLineArgs
+{
+    return self[kGameInfoCommandLineArgs] ?: @"";
+}
 @end

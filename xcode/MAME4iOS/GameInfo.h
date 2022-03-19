@@ -52,6 +52,8 @@
 #define kGameInfoScreenVector       @"Vector"
 #define kGameInfoScreenLCD          @"LCD"
 
+#define kGameInfoCommandLineArgs    @"CmdLineArgs"
+
 // special "fake" (aka built-in) games
 #define kGameInfoNameSettings   @"settings"
 #define kGameInfoNameMameMenu   @"mameui"
@@ -81,6 +83,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) NSURL* gameLocalImageURL;
 @property (nonatomic, strong, readonly) NSURL* gamePlayURL;
 @property (nonatomic, strong, readonly) NSArray<NSURL*>* gameImageURLs;
+@property (nonatomic, strong, readonly) NSString* additionalCommandLineArgs;
 
 @property (nonatomic, readonly) BOOL gameIsFake;
 @property (nonatomic, readonly) BOOL gameIsMame;

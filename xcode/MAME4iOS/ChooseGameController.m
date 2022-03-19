@@ -547,6 +547,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     return [data writeToFile:path atomically:NO];
 }
 // update a value in a game, and save in sidecar too.
+// Yoshi notes: (called when Play with... is selected)
 -(NSDictionary*)setGame:(NSDictionary*)game value:(NSString*)value forKey:(NSString*)key
 {
     if (game.gameFile.length != 0) {
@@ -2252,7 +2253,16 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
         }
     }
 #endif
-
+    
+    CommandLineArgsHelper *cmdLineArgsHelper = [[CommandLineArgsHelper alloc] initWithGameInfo:game];
+    NSString *cmdLineActionTitle = [cmdLineArgsHelper commandLineArgs] != nil ? @"Edit Arguments..." : @"Add Arguments...";
+    actions = [actions arrayByAddingObjectsFromArray:@[
+        [UIAlertAction actionWithTitle:cmdLineActionTitle symbol:@"text.and.command.macwindow" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        UIViewController *vc = [CommandLineArgsViewController navigationControllerWithCommandLineArgsHelper:cmdLineArgsHelper];
+        [self presentViewController:vc animated:true completion:nil];
+    }]
+    ]];
+    
     if (!game.gameIsFake) {
         actions = [actions arrayByAddingObjectsFromArray:@[
 #if TARGET_OS_IOS
