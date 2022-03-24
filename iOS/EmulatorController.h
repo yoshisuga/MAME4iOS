@@ -181,10 +181,3 @@ extern NSArray* g_import_file_types;
 #endif
 
 @end
-
-// Define some external facing functions so they can be called from Swift
-char* get_mame_system(void);
-char* get_mame_type(void);
-char* get_mame_game(void);
-int get_pref_speed(void);
-NSArray<NSString*>* mame_cmdline_args(void);

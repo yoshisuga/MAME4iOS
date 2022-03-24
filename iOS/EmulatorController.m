@@ -312,22 +312,6 @@ static const int buttonNextPressCycles = 32;
 
 static BOOL g_video_reset = FALSE;
 
-char* get_mame_system(void) {
-    return g_mame_system;
-}
-
-char* get_mame_type(void) {
-    return g_mame_type;
-}
-
-char* get_mame_game(void) {
-    return g_mame_game;
-}
-
-int get_pref_speed(void) {
-    return g_pref_speed;
-}
-
 // called by the OSD layer when redner target changes size
 // **NOTE** this is called on the MAME background thread, dont do anything stupid.
 void m4i_video_init(int vis_width, int vis_height, int min_width, int min_height)
