@@ -296,7 +296,6 @@ static BOOL g_mame_benchmark = FALSE;       // if TRUE run game in benchmark mod
 static BOOL g_mame_first_boot = FALSE;      // TRUE the first time MAME runs
 static BOOL g_no_roms_found = FALSE;
 static BOOL g_no_roms_found_canceled = FALSE;
-static char* g_mame_game_cmdline_args[100];  // Additional command line arguments to add for a game/software title
 
 #define OPTIONS_RELOAD_KEYS     @[@"filterClones", @"filterNotWorking", @"filterBIOS"]
 #define OPTIONS_RESTART_KEYS    @[@"cheats", @"autosave", @"hiscore", @"vbean2x", @"vflicker", @"soundValue", @"useDRC"]
@@ -424,75 +423,6 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size);
 void m4i_game_list(myosd_game_info* game_info, int game_count);
 void m4i_game_start(myosd_game_info* game_info);
 void m4i_game_stop(void);
-
-NSArray<NSString*>* mame_cmdline_args(void) {
-    // copy the system+game we should run, and set globals so we run the menu next time.
-    NSString *system = [NSString stringWithUTF8String:g_mame_system];
-    NSString *game = [NSString stringWithUTF8String:g_mame_game];
-    NSString *type = [NSString stringWithUTF8String:g_mame_type];
-    if (g_mame_type[0]) {
-        // we want to pass -cart, -flop, etc - prepend a hyphen?
-        type = [NSString stringWithFormat:@"-%@",type];
-    }
-    g_mame_game[0] = g_mame_system[0] = g_mame_type[0] = 0;
-
-    // use -nocoinlock as a do-nothing option
-    NSString* nada = @"-nocoinlock";
-    NSString* speed = [NSString stringWithFormat:@"%0.2f", (float)g_pref_speed / 100.0];
-    NSString* snap = [NSString stringWithFormat:@"%@/%@/%%i", system, game];
-    
-//    char snap[64] = {"%g/%i"};
-//    if (system[0] != 0 && game[0] != 0)
-//        snprintf(snap, sizeof(snap), "%s/%s/%%i", system, game);
-    
-    NSString* sound = [NSString stringWithFormat:@"%d", g_pref_sound_value];
-    
-    BOOL is139 = myosd_get(MYOSD_VERSION) == 139;
-    
-    // dont benchmark the MAME menu!
-    BOOL bench = g_mame_benchmark && game != nil && ![game isEqualToString:@" "];
-    
-    // MAME always does a snapshot after a benchmark, so save it in the root so we dont liter snaps all over
-    if (bench)
-        snap = @"benchmark";
-
-    NSArray<NSString*>* argv = @[
-        @"mame4ios",
-        system != nil ? system : nada,
-        type != nil ? type : nada,
-        game != nil && ![game isEqualToString:@" "] ? game : nada,
-        @"-nocoinlock",
-        g_pref_cheat ? @"-cheat" : @"-nocheat",
-        g_pref_autosave ? @"-autosave" : @"-noautosave",      // TODO: this is not connected to any UI
-        g_pref_showINFO ? @"-noskip_gameinfo" : @"-skip_gameinfo",
-        @"-speed", speed,
-        
-        // TODO: change the useDRC default if the arm64 version starts working.
-        is139 ? nada : (g_pref_drc ? @"-drc" : @"-nodrc"),
-
-        // 139: -hiscore OR -nohiscore
-        // 2xx: -plugin hiscore OR nada
-        g_pref_hiscore ? (is139 ? @"-hiscore" : @"-plugin") : (is139 ? @"-nohiscore" : nada),
-        g_pref_hiscore ? (is139 ?       nada : @"hiscore") : (is139 ?         nada : nada),
-
-        @"-flicker", g_pref_vector_flicker ? @"0.4" : @"0.0",
-        @"-beam", g_pref_vector_beam2x ? @"2.5" : @"1.0",
-        @"-pause_brightness", @"1.0",  // to debug shaders
-        @"-snapname", snap,
-        
-        // 139: -samplerate XXX OR -nosound
-        // 2xx: -samplerate XXX OR -sound none
-        g_pref_sound_value != 0 ? @"-samplerate" : is139 ? @"-nosound" : @"-sound",
-        g_pref_sound_value != 0 ?         sound : is139 ?       nada :   @"none",
-        
-        bench ? @"-bench" : nada,
-        bench ?     @"90" : nada,
-#ifdef DEBUG
-        @"-verbose",
-#endif
-        ];
-    return argv;
-}
 
 // run MAME (or pass NULL for main menu)
 int run_mame(char* system, char* type, char* game, char* options)
@@ -678,7 +608,6 @@ void* app_Thread_Start(void* args)
         strncpy(mame_game, g_mame_game, sizeof(mame_game));
         strncpy(mame_options, g_mame_options, sizeof(mame_options));
         strncpy(mame_type+1, g_mame_type, sizeof(mame_type)-1);
-        memcpy(mame_cmdline_args, g_mame_game_cmdline_args, sizeof(mame_cmdline_args));
         mame_type[0] = g_mame_type[0] ? '-' : 0;        // we want to pass -cart, -flop, etc
         
         // clear globals so we run the MENU next time, or incase MAME crashes or fails.

@@ -57,8 +57,6 @@ typedef GameInfoDictionary* GameInfo;
 #define kGameInfoScreenVector       @"Vector"
 #define kGameInfoScreenLCD          @"LCD"
 
-#define kGameInfoCommandLineArgs    @"CmdLineArgs"
-
 // special "fake" (aka built-in) games
 #define kGameInfoNameSettings   @"settings"
 #define kGameInfoNameMameMenu   @"mameui"
