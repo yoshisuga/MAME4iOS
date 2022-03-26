@@ -41,7 +41,7 @@ extension NSDictionary {
     }
 }
 
-@objcMembers class CommandLineArgsViewController: UIViewController {
+class CommandLineArgsViewController: UIViewController {
     let commandLineArgsHelper: CommandLineArgsHelper
 
     let helpLabel: UILabel = {
