@@ -31,6 +31,10 @@ extension NSDictionary {
         }
         UserDefaults.standard.set(args, forKey: gameInfo.gameInfoCommandLineArgsTitle)
     }
+    
+    func delete() {
+        UserDefaults.standard.removeObject(forKey: gameInfo.gameInfoCommandLineArgsTitle)
+    }
 }
 
 @objcMembers class CommandLineArgsViewController: UIViewController {

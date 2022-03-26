@@ -1985,6 +1985,8 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
         else {
             [self reload];
         }
+        
+        [[[CommandLineArgsHelper alloc] initWithGameInfo:game] delete];
     }];
 }
 
