@@ -35,6 +35,7 @@
 * Filter NTSC and PAL Software Lists.
     - uses adhoc method based on Machine description.
 * Added "Paste Image" to set the title image used in Choose Game UX.
+* Support adding additional command line arguments for a game/software title. Long tapping a game/title will now show a "Add Arguments..." in the context menu that will let you add command line arguments. Use with caution and only if you know what you are doing :)
 
 ## ROMless Arcade Machines
 
