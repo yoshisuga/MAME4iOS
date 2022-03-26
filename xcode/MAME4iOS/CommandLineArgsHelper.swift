@@ -35,6 +35,10 @@ extension NSDictionary {
     func delete() {
         UserDefaults.standard.removeObject(forKey: gameInfo.gameInfoCommandLineArgsTitle)
     }
+    
+    var viewController: UIViewController {
+        return UINavigationController(rootViewController: CommandLineArgsViewController(commandLineArgsHelper: self))
+    }
 }
 
 @objcMembers class CommandLineArgsViewController: UIViewController {
@@ -74,11 +78,6 @@ extension NSDictionary {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-    
-    static func navigationController(commandLineArgsHelper: CommandLineArgsHelper) -> UIViewController {
-        let navController = UINavigationController(rootViewController: CommandLineArgsViewController(commandLineArgsHelper: commandLineArgsHelper))
-        return navController
     }
     
     override func viewDidLoad() {

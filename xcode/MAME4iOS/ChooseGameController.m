@@ -2198,8 +2198,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     NSString *cmdLineActionTitle = [cmdLineArgsHelper commandLineArgs] != nil ? @"Edit Arguments..." : @"Add Arguments...";
     actions = [actions arrayByAddingObjectsFromArray:@[
         [UIAlertAction actionWithTitle:cmdLineActionTitle symbol:@"text.and.command.macwindow" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        UIViewController *vc = [CommandLineArgsViewController navigationControllerWithCommandLineArgsHelper:cmdLineArgsHelper];
-        [self presentViewController:vc animated:true completion:nil];
+        [self presentViewController:cmdLineArgsHelper.viewController animated:true completion:nil];
     }]
     ]];
     
