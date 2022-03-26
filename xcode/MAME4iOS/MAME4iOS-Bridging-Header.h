@@ -4,3 +4,4 @@
 
 #import "EmulatorController.h"
 #import "libmame.h"
+#import "GameInfo.h"

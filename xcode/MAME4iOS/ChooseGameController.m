@@ -1865,18 +1865,12 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
 
 -(GameInfoDictionary*) addCustomOptions:(GameInfoDictionary*)game
 {
-// TODO: this is a test, get custom cmd line somewhere
-#if defined(DEBUG)
-    // pass a custom command line as a test
-    if (TRUE)
+    CommandLineArgsHelper *cmdLineArgsHelper = [[CommandLineArgsHelper alloc] initWithGameInfo:game];
+    NSString *customArgs = [cmdLineArgsHelper commandLineArgs];
+    if (customArgs)
     {
-        game = [game gameSetValue:@"-flipx -flipy" forKey:kGameInfoCustomCmdline];
+        game = [game gameSetValue:customArgs forKey:kGameInfoCustomCmdline];
     }
-    else
-    {
-        game = [game gameSetValue:@"" forKey:kGameInfoCustomCmdline];
-    }
-#endif
     return game;
 }
 
@@ -1991,6 +1985,8 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
         else {
             [self reload];
         }
+        
+        [[[CommandLineArgsHelper alloc] initWithGameInfo:game] delete];
     }];
 }
 
@@ -2197,6 +2193,14 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
             }]
         ]];
     }
+    
+    CommandLineArgsHelper *cmdLineArgsHelper = [[CommandLineArgsHelper alloc] initWithGameInfo:game];
+    NSString *cmdLineActionTitle = [cmdLineArgsHelper commandLineArgs] != nil ? @"Edit Arguments..." : @"Add Arguments...";
+    actions = [actions arrayByAddingObjectsFromArray:@[
+        [UIAlertAction actionWithTitle:cmdLineActionTitle symbol:@"text.and.command.macwindow" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [self presentViewController:cmdLineArgsHelper.viewController animated:true completion:nil];
+    }]
+    ]];
     
     if (!game.gameIsFake) {
         actions = [actions arrayByAddingObjectsFromArray:@[
