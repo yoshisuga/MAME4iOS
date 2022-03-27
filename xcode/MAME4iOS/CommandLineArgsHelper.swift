@@ -6,6 +6,8 @@
 //  Copyright © 2022 MAME4iOS Team. All rights reserved.
 //
 
+import Darwin
+
 extension NSDictionary {
     var gameInfoCommandLineArgsTitle: String {
         "\(gameName)-\(gameDriver)"
@@ -58,7 +60,11 @@ class CommandLineArgsViewController: UIViewController {
         textView.layer.borderWidth = 1.0
         textView.layer.borderColor = UIColor.label.cgColor
         textView.layer.cornerRadius = 12.0
+        #if os(tvOS)
+        textView.font = UIFont(name: "Courier-Bold", size: 18)
+        #else
         textView.font = UIFont(name: "Courier-Bold", size: UIFont.systemFontSize)
+        #endif
         textView.textColor = .label
         textView.textContainerInset = UIEdgeInsets(top: 16, left: 8, bottom: 16, right: 8)
         textView.autocorrectionType = .no
@@ -92,7 +98,11 @@ class CommandLineArgsViewController: UIViewController {
     }
     
     private func setupViews() {
+        #if os(tvOS)
+        view.backgroundColor = .black
+        #else
         view.backgroundColor = .systemBackground
+        #endif
         view.addSubview(helpLabel)
         helpLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20).isActive = true
         helpLabel.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16).isActive = true

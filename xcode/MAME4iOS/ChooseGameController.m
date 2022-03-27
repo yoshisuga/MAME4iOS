@@ -2177,6 +2177,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     ]];
     
     // Paste image
+#if !TARGET_OS_TV
     if (!game.gameIsFake && UIPasteboard.generalPasteboard.hasImages) {
         actions = [actions arrayByAddingObjectsFromArray:@[
             [UIAlertAction actionWithTitle:@"Paste Image" symbol:@"photo" style:UIAlertActionStyleDefault handler:^(id action) {
@@ -2193,6 +2194,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
             }]
         ]];
     }
+#endif
     
     CommandLineArgsHelper *cmdLineArgsHelper = [[CommandLineArgsHelper alloc] initWithGameInfo:game];
     NSString *cmdLineActionTitle = [cmdLineArgsHelper commandLineArgs] != nil ? @"Edit Arguments..." : @"Add Arguments...";
