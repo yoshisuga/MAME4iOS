@@ -133,6 +133,8 @@
 		EF490D97277A5E0E00407865 /* cheat.7z in Resources */ = {isa = PBXBuildFile; fileRef = EF490D94277A5E0E00407865 /* cheat.7z */; };
 		EF490D99277A5E0E00407865 /* cheat.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF490D95277A5E0E00407865 /* cheat.zip */; };
 		EF490D9A277A5E0E00407865 /* cheat.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF490D95277A5E0E00407865 /* cheat.zip */; };
+		EF72F8E927FA24AD00157065 /* ui.bdf in Resources */ = {isa = PBXBuildFile; fileRef = EF72F8E827FA24AD00157065 /* ui.bdf */; };
+		EF72F8EA27FA24AD00157065 /* ui.bdf in Resources */ = {isa = PBXBuildFile; fileRef = EF72F8E827FA24AD00157065 /* ui.bdf */; };
 		EF7B232C23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
 		EF7B232D23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
 		EF7D116527348BDD00E61BB9 /* hash.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF7D116427348BDD00E61BB9 /* hash.zip */; };
@@ -424,6 +426,7 @@
 		EF55DE312533C21E004E37EF /* MAME4iOS.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = MAME4iOS.xcconfig; sourceTree = "<group>"; };
 		EF55DE5A2534C304004E37EF /* TVServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = TVServices.framework; path = Library/Frameworks/TVServices.framework; sourceTree = DEVELOPER_DIR; };
 		EF67E11524B8972100AFF489 /* MacMenu.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MacMenu.m; sourceTree = "<group>"; };
+		EF72F8E827FA24AD00157065 /* ui.bdf */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = ui.bdf; path = "../../iOS-res/ui.bdf"; sourceTree = "<group>"; };
 		EF7D116427348BDD00E61BB9 /* hash.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = hash.zip; path = "../../iOS-res/hash.zip"; sourceTree = "<group>"; };
 		EF7D4AA627B6FA90002528B7 /* TVAlertController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TVAlertController.swift; sourceTree = "<group>"; };
 		EF7D4AA927B990AA002528B7 /* shaders */ = {isa = PBXFileReference; lastKnownFileType = folder; name = shaders; path = "../../iOS-res/shaders"; sourceTree = "<group>"; };
@@ -836,6 +839,7 @@
 				EF1C93EB24C252C500749C69 /* hiscore.dat */,
 				EF08EB31277A937900E4D455 /* plugins.zip */,
 				EF1C93E824C252C500749C69 /* Category.ini */,
+				EF72F8E827FA24AD00157065 /* ui.bdf */,
 			);
 			name = content;
 			sourceTree = "<group>";
@@ -1068,6 +1072,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EF72F8E927FA24AD00157065 /* ui.bdf in Resources */,
 				EF1C940C24C252C600749C69 /* hiscore.dat in Resources */,
 				EF26AE08241848800078FD30 /* mame_logo.png in Resources */,
 				EF7D116527348BDD00E61BB9 /* hash.zip in Resources */,
@@ -1118,6 +1123,7 @@
 				EF1C941D24C2552900749C69 /* gitinfo.json.sh in Resources */,
 				EF490D97277A5E0E00407865 /* cheat.7z in Resources */,
 				EF08EB33277A937900E4D455 /* plugins.zip in Resources */,
+				EF72F8EA27FA24AD00157065 /* ui.bdf in Resources */,
 				EFFBA6FF24F1C91200F8666B /* WHATSNEW.md in Resources */,
 				EF7D116627348BDD00E61BB9 /* hash.zip in Resources */,
 				B5FAE31921FCE64D003F44D0 /* MAME_tvOS.lsr in Resources */,
