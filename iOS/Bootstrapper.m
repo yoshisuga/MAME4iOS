@@ -135,7 +135,7 @@ NSArray* g_import_file_types;
         files = @[@"cheat.7z"];
     
     // add in fixed pre-canned files
-    files = [files arrayByAddingObjectsFromArray:@[@"Category.ini", @"hash.zip", @"skins/README.txt", @"shaders/README.txt", @"shaders/Example.metal", @"software/README.txt"]];
+    files = [files arrayByAddingObjectsFromArray:@[@"ui.bdf", @"Category.ini", @"hash.zip", @"skins/README.txt", @"shaders/README.txt", @"shaders/Example.metal", @"software/README.txt"]];
 
     // copy (or update) pre-canned files.
     for (NSString* file in files)

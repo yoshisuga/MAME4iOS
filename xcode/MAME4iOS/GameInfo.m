@@ -120,6 +120,8 @@
         NSString* list = self.gameSoftwareList;
         NSString* name = self.gameName.lowercaseString;
         
+        name = [name stringByAddingPercentEncodingWithAllowedCharacters:NSCharacterSet.URLPathAllowedCharacterSet];
+        
         return @[
             [NSURL URLWithString:[NSString stringWithFormat:@"%@/covers/%@/%@.png", base, list, name]],
             [NSURL URLWithString:[NSString stringWithFormat:@"%@/titles/%@/%@.png", base, list, name]],
@@ -134,6 +136,8 @@
         
         NSString* base = @"http://adb.arcadeitalia.net/media/mame.current";
         NSString* name = self.gameName.lowercaseString;
+        
+        name = [name stringByAddingPercentEncodingWithAllowedCharacters:NSCharacterSet.URLPathAllowedCharacterSet];
         
         return @[
             [NSURL URLWithString:[NSString stringWithFormat:@"%@/cabinets/%@.png", base, name]],
