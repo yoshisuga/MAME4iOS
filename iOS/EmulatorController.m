@@ -802,8 +802,7 @@ void m4i_game_stop()
 #endif
 {
     CSToastStyle *toastStyle;
-    CGPoint mouseTouchStartLocation;
-    CGPoint mouseInitialLocation;
+    CGPoint touchDirectionalInitialLocation;
     CGPoint touchDirectionalMoveStartLocation;
     CGPoint touchDirectionalMoveInitialLocation;
     CGSize  layoutSize;
@@ -1902,8 +1901,7 @@ ButtonPressType input_debounce(unsigned long pad_status, CGPoint stick) {
     toastStyle.messageColor = [UIColor whiteColor];
     toastStyle.imageSize = CGSizeMake(toastStyle.messageFont.lineHeight, toastStyle.messageFont.lineHeight);
     
-    mouseInitialLocation = CGPointMake(9111, 9111);
-    mouseTouchStartLocation = mouseInitialLocation;
+    touchDirectionalInitialLocation = CGPointMake(9111, 9111);
 }
 
 -(void)viewWillAppear:(BOOL)animated {
@@ -4228,7 +4226,7 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
 }
 
 -(void) handleTouchMovementTouchesMoved:(NSSet *)touches {
-    if ( screenView.window != nil && !CGPointEqualToPoint(touchDirectionalMoveStartLocation, mouseInitialLocation) ) {
+    if ( screenView.window != nil && !CGPointEqualToPoint(touchDirectionalMoveStartLocation, touchDirectionalInitialLocation) ) {
         myosd_pad_status &= ~MYOSD_DOWN;
         myosd_pad_status &= ~MYOSD_UP;
         myosd_pad_status &= ~MYOSD_LEFT;

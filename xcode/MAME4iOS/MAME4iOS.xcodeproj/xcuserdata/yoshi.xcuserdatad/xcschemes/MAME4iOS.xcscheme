@@ -27,15 +27,6 @@
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "925ABCA41E46DCC500997182"
-            BuildableName = "MAME4iOS.app"
-            BlueprintName = "MAME4iOS 64-bit"
-            ReferencedContainer = "container:MAME4iOS.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
       <Testables>
       </Testables>
    </TestAction>
@@ -55,7 +46,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "925ABCA41E46DCC500997182"
             BuildableName = "MAME4iOS.app"
-            BlueprintName = "MAME4iOS 64-bit"
+            BlueprintName = "MAME4iOS"
             ReferencedContainer = "container:MAME4iOS.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
