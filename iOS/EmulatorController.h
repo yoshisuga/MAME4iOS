@@ -70,6 +70,7 @@ extern NSArray* g_import_file_types;
 #if TARGET_OS_IOS
 @class AnalogStickView;
 @class LayoutView;
+@class EmulatorTouchMouseHandler;
 #endif
 
 @class InfoHUD;
@@ -178,6 +179,7 @@ extern NSArray* g_import_file_types;
 #if TARGET_OS_IOS
 @property (strong, nonatomic) UIImpactFeedbackGenerator* impactFeedback;
 @property (strong, nonatomic) UISelectionFeedbackGenerator* selectionFeedback;
+@property (strong, nonatomic) EmulatorTouchMouseHandler* touchMouseHandler;
 #endif
 
 @end
