@@ -258,11 +258,11 @@ final class TVAlertController: UIViewController {
     // MARK: grab
 
     private func addGrab(_ view:UIView) {
-        inset.left += _grabHandleSize * 2
+        inset.left += CGFloat(_grabHandleSize * 2.0)
         let grab = UIView()
         grab.tag = tagGrab
         grab.backgroundColor = _grabHandleColor
-        grab.layer.cornerRadius = _grabHandleSize/2
+        grab.layer.cornerRadius = CGFloat(_grabHandleSize * 0.5)
         view.addSubview(grab)
     }
     
@@ -270,7 +270,7 @@ final class TVAlertController: UIViewController {
         if let grab = view.viewWithTag(tagGrab) {
             let height = view.bounds.height
             let h = min(height * 0.5, 64.0)
-            let w = _grabHandleSize
+            let w = CGFloat(_grabHandleSize)
             grab.frame = CGRect(x:(inset.left - w)/2, y:(height - h)/2, width:w, height:h)
         }
     }
@@ -463,7 +463,7 @@ final class TVAlertController: UIViewController {
         content.center = CGPoint(x: safe.midX, y: safe.midY)
         
         if _borderWidth != 0.0 && isFullscreen {
-            content.layer.borderWidth = _borderWidth
+            content.layer.borderWidth = CGFloat(_borderWidth)
             content.layer.borderColor = view.tintColor.cgColor
         }
     }
@@ -562,7 +562,7 @@ final class TVAlertController: UIViewController {
     private func makeText(_ text:String, align:NSTextAlignment = .left, isTitle:Bool = false, tag:Int = 0) -> UIView {
         let label = UILabel()
         label.tag = tag
-        label.font = isTitle ? .boldSystemFont(ofSize: font.pointSize * _fontTitleF) : font
+        label.font = isTitle ? .boldSystemFont(ofSize: font.pointSize * CGFloat(_fontTitleF)) : font
         label.numberOfLines = 0
         label.textAlignment = align
         label.preferredMaxLayoutWidth = maxWidth
@@ -610,7 +610,7 @@ final class TVAlertController: UIViewController {
         guard let content = view.subviews.last, modalPresentationStyle == .none else {return}
         
         if context.nextFocusedView?.isDescendant(of: self.view) == true {
-            content.layer.borderWidth = _borderWidth
+            content.layer.borderWidth = CGFloat(_borderWidth)
             content.layer.borderColor = view.tintColor.cgColor
         }
         else {
@@ -1090,10 +1090,10 @@ private class TVToolbar : UISegmentedControl {
         switch type {
         case .leftArrow:
             _selectedSegmentIndex = max(_selectedSegmentIndex - 1, 0)
-            self.isSelected = self.isSelected
+            self.isSelected = (self.isSelected == true)
         case .rightArrow:
             _selectedSegmentIndex = min(_selectedSegmentIndex + 1, self.numberOfSegments-1)
-            self.isSelected = self.isSelected
+            self.isSelected = (self.isSelected == true)
         default:
             break
         }

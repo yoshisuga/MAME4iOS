@@ -109,7 +109,7 @@
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .vertical
         stackView.distribution = .equalCentering
-        stackView.spacing = EmulatorKeyboardView.rowSpacing
+        stackView.spacing = CGFloat(EmulatorKeyboardView.rowSpacing)
         return stackView
      }()
 
@@ -118,7 +118,7 @@
          stackView.translatesAutoresizingMaskIntoConstraints = false
          stackView.axis = .vertical
          stackView.distribution = .equalCentering
-         stackView.spacing = EmulatorKeyboardView.rowSpacing
+         stackView.spacing = CGFloat(EmulatorKeyboardView.rowSpacing)
          stackView.isHidden = true
          return stackView
      }()
@@ -158,7 +158,7 @@
 
      private func commonInit() {
          backgroundColor = EmulatorKeyboardView.keyboardBackgroundColor
-         layer.cornerRadius = EmulatorKeyboardView.keyboardCornerRadius
+         layer.cornerRadius = CGFloat(EmulatorKeyboardView.keyboardCornerRadius)
          layoutMargins = UIEdgeInsets(top: 16, left: 4, bottom: 16, right: 4)
          insetsLayoutMarginsFromSafeArea = false
          addSubview(keyRowsStackView)
@@ -183,12 +183,12 @@
              // make a "stand-in" for our key, and scale up key
              let view = UIView()
              view.backgroundColor = EmulatorKeyboardView.keyPressedBackgroundColor
-             view.layer.cornerRadius = EmulatorKeyboardView.keyCornerRadius
+             view.layer.cornerRadius = CGFloat(EmulatorKeyboardView.keyCornerRadius)
              view.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
              view.frame = sender.convert(sender.bounds, to: self)
              addSubview(view)
              
-             var tx = 0.0
+             var tx = CGFloat.zero
              let ty = sender.bounds.height * -1.20
              
              if let window = self.window {
@@ -284,9 +284,9 @@
          key.widthAnchor.constraint(equalToConstant: (25 * CGFloat(keyCoded.keySize.rawValue))).isActive = true
          key.heightAnchor.constraint(equalToConstant: 35).isActive = true
          key.backgroundColor = EmulatorKeyboardView.keyNormalBackgroundColor
-         key.layer.borderWidth = EmulatorKeyboardView.keyBorderWidth
+         key.layer.borderWidth = CGFloat(EmulatorKeyboardView.keyBorderWidth)
          key.layer.borderColor = EmulatorKeyboardView.keyNormalBorderColor.cgColor
-         key.layer.cornerRadius = EmulatorKeyboardView.keyCornerRadius
+         key.layer.cornerRadius = CGFloat(EmulatorKeyboardView.keyCornerRadius)
          key.addTarget(self, action: #selector(keyPressed(_:)), for: .touchDown)
          key.addTarget(self, action: #selector(keyReleased(_:)), for: .touchUpInside)
          key.addTarget(self, action: #selector(keyReleased(_:)), for: .touchUpOutside)
@@ -313,7 +313,7 @@
          let stack = UIStackView(arrangedSubviews: subviews)
          stack.axis = .horizontal
          stack.distribution = .fill
-         stack.spacing = EmulatorKeyboardView.keySpacing
+         stack.spacing = CGFloat(EmulatorKeyboardView.keySpacing)
          return stack
      }
  }
