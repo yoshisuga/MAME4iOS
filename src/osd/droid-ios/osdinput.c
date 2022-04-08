@@ -191,6 +191,27 @@ void my_poll_ports(running_machine *machine)
                     }
                 }
                 
+                // walk the input seq and look for highest analog device/joystick
+                if (field->type >= __ipt_analog_start && field->type <= __ipt_analog_end)
+                {
+                    const input_seq* seq = input_field_seq(field, SEQ_TYPE_STANDARD);
+                    
+//                    astring str;
+//                    input_seq_name(machine, str, seq);
+//                    mame_printf_debug("    SEQ: %s\n", str.text);
+                
+                    for (int i=0; i<ARRAY_LENGTH(seq->code) && seq->code[i] != SEQCODE_END; i++)
+                    {
+                        input_code code = seq->code[i];
+                        if (INPUT_CODE_DEVCLASS(code) == DEVICE_CLASS_JOYSTICK && INPUT_CODE_DEVINDEX(code) >= myosd_input.num_inputs)
+                            myosd_input.num_inputs = INPUT_CODE_DEVINDEX(code)+1;
+                        if (INPUT_CODE_DEVCLASS(code) == DEVICE_CLASS_MOUSE && INPUT_CODE_DEVINDEX(code) >= myosd_input.num_mouse)
+                            myosd_input.num_mouse = INPUT_CODE_DEVINDEX(code)+1;
+                        if (INPUT_CODE_DEVCLASS(code) == DEVICE_CLASS_LIGHTGUN && INPUT_CODE_DEVINDEX(code) >= myosd_input.num_lightgun)
+                            myosd_input.num_lightgun = INPUT_CODE_DEVINDEX(code)+1;
+                    }
+                }
+
                 // count the number of COIN buttons.
                 if (field->type == IPT_COIN2 && myosd_input.num_coins < 2)
                     myosd_input.num_coins = 2;
@@ -238,12 +259,11 @@ void my_poll_ports(running_machine *machine)
                     way8=1;
 
                 // detect if mouse or lightgun input is wanted.
-                if(field->type == IPT_DIAL   || field->type == IPT_PADDLE   || field->type == IPT_POSITIONAL   || field->type == IPT_TRACKBALL_X ||
-                   field->type == IPT_DIAL_V || field->type == IPT_PADDLE_V || field->type == IPT_POSITIONAL_V || field->type == IPT_TRACKBALL_Y)
+                if(myosd_input.num_mouse == 0 && (
+                   field->type == IPT_DIAL   || field->type == IPT_PADDLE   || field->type == IPT_POSITIONAL   || field->type == IPT_TRACKBALL_X || field->type == IPT_MOUSE_X ||
+                   field->type == IPT_DIAL_V || field->type == IPT_PADDLE_V || field->type == IPT_POSITIONAL_V || field->type == IPT_TRACKBALL_Y || field->type == IPT_MOUSE_Y ))
                     myosd_input.num_mouse = 1;
-                if(field->type == IPT_MOUSE_X)
-                    myosd_input.num_mouse = 1;
-                if(field->type == IPT_LIGHTGUN_X)
+                if(myosd_input.num_lightgun == 0 && field->type == IPT_LIGHTGUN_X)
                     myosd_input.num_lightgun = 1;
                 if(field->type == IPT_KEYBOARD)
                     myosd_input.num_keyboard = 1;
