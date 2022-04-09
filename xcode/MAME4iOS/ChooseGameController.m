@@ -526,6 +526,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 - (void)addSoftware:(NSMutableArray*)games
 {
+    // software not a thing on 139 (pre MESS)
+    if (myosd_get(MYOSD_VERSION) == 139)
+        return;
+    
     // remove any previous software
     [games filterUsingPredicate:[NSPredicate predicateWithFormat:@"%K != %@", kGameInfoType, kGameInfoTypeSoftware]];
     
@@ -1391,23 +1395,17 @@ static BOOL g_updating;
     {
         if (badge.length != 0)
         {
-            UIFont* text_font = [text attribute:NSFontAttributeName atIndex:0 effectiveRange:nil];
-            UIFont* badge_font = [UIFont systemFontOfSize:text_font.pointSize * 0.5];
-            CGFloat dy = floor((text_font.capHeight - badge_font.capHeight) / 2);
-            
-            UIImage* image = [UIImage systemImageNamed:badge withConfiguration:[UIImageSymbolConfiguration configurationWithFont:badge_font]];
+            UIImage* image = [UIImage systemImageNamed:badge withConfiguration:[UIImageSymbolConfiguration configurationWithScale:UIImageSymbolScaleSmall]];
             NSTextAttachment* att = [[NSTextAttachment alloc] init];
             att.image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
             NSMutableAttributedString* badge_text = [[NSAttributedString attributedStringWithAttachment:att] mutableCopy];
-            [badge_text addAttributes:@{
-                NSForegroundColorAttributeName:UIColor.systemBlueColor,
-                NSBaselineOffsetAttributeName:@(dy)} range:NSMakeRange(0, badge_text.length)];
+            [badge_text addAttributes:@{NSForegroundColorAttributeName:UIColor.systemBlueColor} range:NSMakeRange(0, badge_text.length)];
 
             [text insertAttributedString:[[NSAttributedString alloc] initWithString:@"\u2009"] atIndex:0];  // U+2009 Thin Space
             [text insertAttributedString:badge_text atIndex:0];
         }
     }
-    
+
     if (textAlignment != NSTextAlignmentLeft)
     {
         NSMutableParagraphStyle *paragraph = [[NSMutableParagraphStyle alloc] init];
@@ -1782,9 +1780,9 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
         return;
     
     // if this is software, and no system is assigned we need to ask
-    if (game.gameIsSoftware && game.gameSystem.length == 0)
+    if (game.gameIsSoftware && (game.gameSystem.length == 0 || game.gameMediaType.length == 0))
         return [self play:game with:nil];
-    
+
     // if we are sorting by software list, we also should ask.
     if ([_gameFilterScope isEqualToString:@"Software"] && game.gameSystem.length != 0)
         return [self play:game with:nil];
@@ -1849,7 +1847,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     if (game.gameFile.length != 0) {
         for (NSString* media in [system.gameSoftwareMedia componentsSeparatedByString:@","]) {
             NSArray* arr = [media componentsSeparatedByString:@":"];
-            if (arr.count==2 && [arr.lastObject isEqualToString:game.gameFile.pathExtension]) {
+            if (arr.count==2 && [arr.lastObject isEqualToString:game.gameFile.pathExtension.lowercaseString]) {
                 game = [game gameSetValue:arr.firstObject forKey:kGameInfoMediaType];
             }
         }
@@ -1886,7 +1884,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
         // the SoftwareMedia list is a list of two types of strings, either <software list name>, or <media kind>:<file extension>
         for (NSString* media in [system.gameSoftwareMedia componentsSeparatedByString:@","]) {
             NSArray* arr = [media componentsSeparatedByString:@":"];
-            if ([media isEqualToString:game.gameSoftwareList] || (arr.count==2 && [arr.lastObject isEqualToString:game.gameFile.pathExtension])) {
+            if ([media isEqualToString:game.gameSoftwareList] || (arr.count==2 && [arr.lastObject isEqualToString:game.gameFile.pathExtension.lowercaseString])) {
                 [list addObject:system];
                 break;
             }
@@ -2290,6 +2288,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     [self presentViewController:menu animated:YES completion:nil];
 }
 
+#if TARGET_OS_TV
 - (void)collectionView:(UICollectionView *)collectionView didUpdateFocusInContext:(UICollectionViewFocusUpdateContext *)context withAnimationCoordinator:(UIFocusAnimationCoordinator *)coordinator {
 
     if (context.nextFocusedIndexPath != nil)
@@ -2308,7 +2307,10 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     if (_currentlyFocusedIndexPath == nil)
         [self restoreSelection];
     
-    return _currentlyFocusedIndexPath;
+    if (_currentlyFocusedIndexPath.section < collectionView.numberOfSections && _currentlyFocusedIndexPath.item < [collectionView numberOfItemsInSection:_currentlyFocusedIndexPath.section])
+        return _currentlyFocusedIndexPath;
+    
+    return nil;
 }
 
 - (BOOL)collectionView:(UICollectionView *)collectionView canFocusItemAtIndexPath:(NSIndexPath *)indexPath {
@@ -2318,6 +2320,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     else
         return TRUE;
 }
+#endif
 
 -(void)handleLongPress:(UIGestureRecognizer*)sender {
 
@@ -3103,7 +3106,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
 
     NSMutableAttributedString* text = [[NSMutableAttributedString alloc] init];
     CGFloat keyWidth = 0.0;
-    for (NSString* key in _game) {
+    for (NSString* key in [_game.allKeys sortedArrayUsingSelector:@selector(compare:)]) {
         if (![_game[key] isKindOfClass:[NSString class]] || [_game[key] length] == 0)
             continue;
         NSString* keyText = [key stringByAppendingString:@"\t"];
