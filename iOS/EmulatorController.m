@@ -3020,8 +3020,8 @@ void m4i_input_init(myosd_input_state* myosd, size_t input_size) {
     myosd_num_players   = myosd->num_players;
     myosd_num_coins     = myosd->num_coins;
     myosd_num_inputs    = myosd->num_inputs;
-    myosd_mouse         = myosd->num_mouse;
-    myosd_light_gun     = myosd->num_lightgun;
+    myosd_mouse         = myosd->num_mouse != 0;
+    myosd_light_gun     = myosd->num_lightgun != 0;
     myosd_has_keyboard  = myosd->num_keyboard != 0;
     
     // we have input on a brand new machine, and we need to configure the UI fresh
