@@ -2526,6 +2526,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     
     [UIApplication sharedApplication].idleTimerDisabled = (myosd_inGame || g_joy_used) ? YES : NO;//so atract mode dont sleep
 
+#if TARGET_OS_IOS
     if ( prev_myosd_light_gun == 0 && myosd_light_gun == 1 && g_pref_lightgun_enabled ) {
         lightgun_x = 0.0;
         lightgun_y = 0.0;
@@ -2542,6 +2543,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     }
     [self.touchMouseHandler setEnabled:g_pref_touch_analog_enabled];
     prev_myosd_mouse = myosd_mouse;
+#endif
 
     // Show a WARNING toast, but only once, and only if MAME did not show it already
     if (g_pref_showINFO == 0 && g_mame_warning_shown == 0 && g_mame_output_text[0] && strstr(g_mame_output_text, "WARNING") != NULL) {
@@ -3890,9 +3892,7 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
             [unhandledTouches addObject:touch];
         }
     }
-    if ( g_pref_touch_analog_enabled && myosd_mouse == 1 && unhandledTouches.count > 0 ) {
-        [self.touchMouseHandler touchesBeganWithTouches:unhandledTouches];
-    }
+    [self.touchMouseHandler touchesBeganWithTouches:unhandledTouches];
     if ( g_pref_touch_directional_enabled && unhandledTouches.count > 0 ) {
         [self handleTouchMovementTouchesBegan:unhandledTouches];
     }
@@ -3908,9 +3908,7 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
             [unhandledTouches addObject:touch];
         }
     }
-    if ( g_pref_touch_analog_enabled && myosd_mouse == 1 && unhandledTouches.count > 0 ) {
-        [self.touchMouseHandler touchesMovedWithTouches:unhandledTouches];
-    }
+    [self.touchMouseHandler touchesMovedWithTouches:unhandledTouches];
     if ( g_pref_touch_directional_enabled && unhandledTouches.count > 0 ) {
         [self handleTouchMovementTouchesMoved:unhandledTouches];
     }
@@ -3926,9 +3924,7 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
             [unhandledTouches addObject:touch];
         }
     }
-    if ( g_pref_touch_analog_enabled && myosd_mouse == 1 && unhandledTouches.count > 0 ) {
-        [self.touchMouseHandler touchesCancelledWithTouches:unhandledTouches];
-    }
+    [self.touchMouseHandler touchesCancelledWithTouches:unhandledTouches];
     if ( g_pref_touch_directional_enabled && unhandledTouches.count > 0 ) {
         [self handleTouchMovementTouchesBegan:unhandledTouches];
     }
@@ -3943,11 +3939,7 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
         lightgun_status &= ~MYOSD_B;
     }
     
-    if ( g_pref_touch_analog_enabled && myosd_mouse == 1 ) {
-        [self.touchMouseHandler touchesEndedWithTouches:touches];
-        mouse_delta_x[0] = 0.0f;
-        mouse_delta_y[0] = 0.0f;
-    }
+    [self.touchMouseHandler touchesEndedWithTouches:touches];
     
     if ( g_pref_touch_directional_enabled ) {
         myosd_pad_status &= ~MYOSD_DOWN;
@@ -4193,6 +4185,7 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
 #pragma mark - EmulatorTouchMouseHandlerDelegate
 
 -(void) handleMouseClickWithIsLeftClick:(BOOL)isLeftClick isPressed:(BOOL)isPressed {
+    NSLog(@"handleMouseClick: %s %s", isLeftClick ? "LEFT" : "RIGHT", isPressed ? "DOWN" : "UP");
     if (isLeftClick) {
         mouse_status[0] = (mouse_status[0] & ~MYOSD_A) | (isPressed ? MYOSD_A : 0);
     } else {
@@ -4201,19 +4194,22 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
 }
 
 -(void) handleMouseMoveWithX:(CGFloat)x y:(CGFloat)y {
+    NSLog(@"handleMouseMove: (%f,%f)", x, y);
     [mouse_lock lock];
     mouse_delta_x[0] = x * g_pref_touch_analog_sensitivity;
     mouse_delta_y[0] = y * g_pref_touch_analog_sensitivity;
     [mouse_lock unlock];
 }
 
--(BOOL) shouldHandleMouseMoveFor:(UITouch *)touch {
-    if (screenView.window == nil) {
+-(BOOL) shouldHandleMouseTouches:(NSSet<UITouch*>*) touches {
+    
+    if (!g_pref_touch_analog_enabled || myosd_mouse == 0 || touches.count == 0)
         return NO;
-    }
-    if (g_direct_mouse_enable && !(touch.type == UITouchTypeDirect || touch.type == UITouchTypePencil)) {
+    
+    UITouch* touch = touches.anyObject;
+    if (g_direct_mouse_enable && !(touch.type == UITouchTypeDirect || touch.type == UITouchTypePencil))
         return NO;
-    }
+    
     return YES;
 }
 
@@ -5763,14 +5759,20 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
         // TODO: turns out MAME will merge mice by default, we dont need to.
 
         [mouse.mouseInput.leftButton setPressedChangedHandler:^(GCControllerButtonInput* button, float value, BOOL pressed) {
+            if (!g_direct_mouse_enable)
+                return;
             NSLog(@"MOUSE BUTTON %@", button);
             mouse_status[i] = (mouse_status[i] & ~MYOSD_A) | (pressed ? MYOSD_A : 0);
         }];
         [mouse.mouseInput.rightButton setPressedChangedHandler:^(GCControllerButtonInput* button, float value, BOOL pressed) {
+            if (!g_direct_mouse_enable)
+                return;
             NSLog(@"MOUSE BUTTON %@", button);
             mouse_status[i] = (mouse_status[i] & ~MYOSD_B) | (pressed ? MYOSD_B : 0);
         }];
         [mouse.mouseInput.middleButton setPressedChangedHandler:^(GCControllerButtonInput* button, float value, BOOL pressed) {
+            if (!g_direct_mouse_enable)
+                return;
             NSLog(@"MOUSE BUTTON %@", button);
             mouse_status[i] = (mouse_status[i] & ~MYOSD_Y) | (pressed ? MYOSD_Y : 0);
         }];

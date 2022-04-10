@@ -22,7 +22,7 @@ import UIKit
 @objc public protocol EmulatorTouchMouseHandlerDelegate: AnyObject {
     func handleMouseClick(isLeftClick: Bool, isPressed: Bool)
     func handleMouseMove(x: CGFloat, y: CGFloat)
-    func shouldHandleMouseMove(for touch: UITouch) -> Bool
+    func shouldHandleMouseTouches(_ touches: Set<UITouch>) -> Bool
 }
 
 @objcMembers public class EmulatorTouchMouseHandler: NSObject {
@@ -113,7 +113,7 @@ import UIKit
    }
    
    public func touchesBegan(touches: Set<UITouch>) {
-      guard enabled, let touch = touches.first else {
+       guard enabled, let touch = touches.first, delegate?.shouldHandleMouseTouches(touches) ?? true else {
          return
       }
       if primaryTouch == nil {
@@ -127,7 +127,7 @@ import UIKit
    }
    
    public func touchesEnded(touches: Set<UITouch>) {
-      guard enabled else { return }
+      guard enabled, delegate?.shouldHandleMouseTouches(touches) ?? true else { return }
       for touch in touches {
          if touch == primaryTouch?.touch {
             if touch.tapCount > 0 {
@@ -150,7 +150,7 @@ import UIKit
    }
    
    public func touchesMoved(touches: Set<UITouch>) {
-      guard enabled else { return }
+      guard enabled, delegate?.shouldHandleMouseTouches(touches) ?? true else { return }
       for touch in touches {
          if touch == primaryTouch?.touch {
             let a = touch.previousLocation(in: view)
@@ -158,14 +158,13 @@ import UIKit
             if primaryTouch?.holdState == .wait && (distanceBetween(pointA: a, pointB: b) > positionChangeThreshold) {
                endHold()
             }
-            guard delegate?.shouldHandleMouseMove(for: touch) ?? true else { return }
             delegate?.handleMouseMove(x: b.x-a.x, y: b.y-a.y)
          }
       }
    }
    
    public func touchesCancelled(touches: Set<UITouch>) {
-      guard enabled else { return }
+      guard enabled, delegate?.shouldHandleMouseTouches(touches) ?? true else { return }
       for touch in touches {
          if touch == primaryTouch?.touch {
             endHold()
