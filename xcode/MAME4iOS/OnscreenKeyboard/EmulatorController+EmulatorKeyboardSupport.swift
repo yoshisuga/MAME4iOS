@@ -58,13 +58,14 @@ extension EmulatorController {
              EmulatorKeyboardKey(label: "F5", code: Int(MYOSD_KEY_F5.rawValue)),
            ],
            [
-             EmulatorKeyboardKey(label: "-", code: Int(MYOSD_KEY_MINUS.rawValue)),
+             EmulatorKeyboardKey(label: "tab", code: Int(MYOSD_KEY_TAB.rawValue), imageName: "arrow.right.to.line"),
              EmulatorKeyboardKey(label: "=", code: Int(MYOSD_KEY_EQUALS.rawValue)),
              EmulatorKeyboardKey(label: "/", code: Int(MYOSD_KEY_SLASH.rawValue)),
              EmulatorKeyboardKey(label: "[", code: Int(MYOSD_KEY_OPENBRACE.rawValue)),
              EmulatorKeyboardKey(label: "]", code: Int(MYOSD_KEY_CLOSEBRACE.rawValue)),
            ],
            [
+             EmulatorKeyboardKey(label: "-", code: Int(MYOSD_KEY_MINUS.rawValue)),
              EmulatorKeyboardKey(label: ";", code: Int(MYOSD_KEY_COLON.rawValue)),
              EmulatorKeyboardKey(label: "~", code: Int(MYOSD_KEY_TILDE.rawValue)),
              EmulatorKeyboardKey(label: "'", code: Int(MYOSD_KEY_QUOTE.rawValue))
@@ -110,6 +111,7 @@ extension EmulatorController {
            ],
            [
              EmulatorKeyboardKey(label: "Alt", code: Int(MYOSD_KEY_LALT.rawValue), isModifier: true, imageName: "alt"),
+             EmulatorKeyboardKey(label: "RAlt", code: Int(MYOSD_KEY_RALT.rawValue), isModifier: true, imageName: "option"),
              EmulatorKeyboardKey(label: "tab", code: Int(MYOSD_KEY_TAB.rawValue), imageName: "arrow.right.to.line"),
              EmulatorKeyboardKey(label: "RETURN", code: Int(MYOSD_KEY_ENTER.rawValue), keySize: .wide)
            ],

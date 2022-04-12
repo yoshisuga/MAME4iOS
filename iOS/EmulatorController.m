@@ -798,12 +798,11 @@ void m4i_game_stop()
 
 @interface EmulatorController()
 #if TARGET_OS_IOS
-<EmulatorKeyboardKeyPressedDelegate, EmulatorKeyboardModifierPressedDelegate>
+<EmulatorKeyboardKeyPressedDelegate, EmulatorKeyboardModifierPressedDelegate, EmulatorTouchMouseHandlerDelegate>
 #endif
 {
     CSToastStyle *toastStyle;
-    CGPoint mouseTouchStartLocation;
-    CGPoint mouseInitialLocation;
+    CGPoint touchDirectionalInitialLocation;
     CGPoint touchDirectionalMoveStartLocation;
     CGPoint touchDirectionalMoveInitialLocation;
     CGSize  layoutSize;
@@ -1847,6 +1846,8 @@ ButtonPressType input_debounce(unsigned long pad_status, CGPoint stick) {
     [self.view addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeCenterX multiplier:1.0f constant:0.0f]];
     [self.view addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeTopMargin multiplier:1.0f constant:size / 2.0]];
     areControlsHidden = NO;
+    
+    [self setupTouchMouseSupport];
 #endif
     
     [self changeUI];
@@ -1900,8 +1901,7 @@ ButtonPressType input_debounce(unsigned long pad_status, CGPoint stick) {
     toastStyle.messageColor = [UIColor whiteColor];
     toastStyle.imageSize = CGSizeMake(toastStyle.messageFont.lineHeight, toastStyle.messageFont.lineHeight);
     
-    mouseInitialLocation = CGPointMake(9111, 9111);
-    mouseTouchStartLocation = mouseInitialLocation;
+    touchDirectionalInitialLocation = CGPointMake(9111, 9111);
 }
 
 -(void)viewWillAppear:(BOOL)animated {
@@ -2526,6 +2526,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     
     [UIApplication sharedApplication].idleTimerDisabled = (myosd_inGame || g_joy_used) ? YES : NO;//so atract mode dont sleep
 
+#if TARGET_OS_IOS
     if ( prev_myosd_light_gun == 0 && myosd_light_gun == 1 && g_pref_lightgun_enabled ) {
         lightgun_x = 0.0;
         lightgun_y = 0.0;
@@ -2540,7 +2541,9 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         [self.view makeToast:@"Touch Mouse Mode Enabled!" duration:2.0 position:CSToastPositionCenter
                        title:nil image:[UIImage systemImageNamed:@"cursorarrow.motionlines"] style:toastStyle completion:nil];
     }
+    [self.touchMouseHandler setEnabled:g_pref_touch_analog_enabled];
     prev_myosd_mouse = myosd_mouse;
+#endif
 
     // Show a WARNING toast, but only once, and only if MAME did not show it already
     if (g_pref_showINFO == 0 && g_mame_warning_shown == 0 && g_mame_output_text[0] && strstr(g_mame_output_text, "WARNING") != NULL) {
@@ -3880,7 +3883,6 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
-//    NSLog(@"👉👉👉👉👉👉 Touch Began!!! 👉👉👉👉👉👉👉");
     NSSet *handledTouches = [self touchHandler:touches withEvent:event];
     NSSet *allTouches = [event allTouches];
     NSMutableSet *unhandledTouches = [NSMutableSet set];
@@ -3890,16 +3892,13 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
             [unhandledTouches addObject:touch];
         }
     }
-    if ( g_pref_touch_analog_enabled && myosd_mouse == 1 && unhandledTouches.count > 0 ) {
-        [self handleMouseTouchesBegan:unhandledTouches];
-    }
+    [self.touchMouseHandler touchesBeganWithTouches:unhandledTouches];
     if ( g_pref_touch_directional_enabled && unhandledTouches.count > 0 ) {
         [self handleTouchMovementTouchesBegan:unhandledTouches];
     }
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
-//    NSLog(@"👋👋👋👋👋👋👋 Touch Moved!!! 👋👋👋👋👋👋👋👋");
     NSSet *handledTouches = [self touchHandler:touches withEvent:event];
     NSSet *allTouches = [event allTouches];
     NSMutableSet *unhandledTouches = [NSMutableSet set];
@@ -3909,16 +3908,13 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
             [unhandledTouches addObject:touch];
         }
     }
-    if ( g_pref_touch_analog_enabled && myosd_mouse == 1 && unhandledTouches.count > 0 ) {
-        [self handleMouseTouchesMoved:unhandledTouches];
-    }
+    [self.touchMouseHandler touchesMovedWithTouches:unhandledTouches];
     if ( g_pref_touch_directional_enabled && unhandledTouches.count > 0 ) {
         [self handleTouchMovementTouchesMoved:unhandledTouches];
     }
 }
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
-//    NSLog(@"👊👊👊👊👊👊 Touch Cancelled!!! 👊👊👊👊👊👊");
     NSSet *handledTouches = [self touchHandler:touches withEvent:event];
     NSSet *allTouches = [event allTouches];
     NSMutableSet *unhandledTouches = [NSMutableSet set];
@@ -3928,16 +3924,13 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
             [unhandledTouches addObject:touch];
         }
     }
-    if ( g_pref_touch_analog_enabled && myosd_mouse == 1 && unhandledTouches.count > 0 ) {
-        [self handleMouseTouchesBegan:unhandledTouches];
-    }
+    [self.touchMouseHandler touchesCancelledWithTouches:unhandledTouches];
     if ( g_pref_touch_directional_enabled && unhandledTouches.count > 0 ) {
         [self handleTouchMovementTouchesBegan:unhandledTouches];
     }
 }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
-//    NSLog(@"🖐🖐🖐🖐🖐🖐🖐 Touch Ended!!! 🖐🖐🖐🖐🖐🖐");
     [self touchHandler:touches withEvent:event];
     
     // light gun release?
@@ -3946,10 +3939,7 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
         lightgun_status &= ~MYOSD_B;
     }
     
-    if ( g_pref_touch_analog_enabled && myosd_mouse == 1 ) {
-        mouse_delta_x[0] = 0.0f;
-        mouse_delta_y[0] = 0.0f;
-    }
+    [self.touchMouseHandler touchesEndedWithTouches:touches];
     
     if ( g_pref_touch_directional_enabled ) {
         myosd_pad_status &= ~MYOSD_DOWN;
@@ -4167,8 +4157,6 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
         CGPoint touchLoc = [touch locationInView:screenView];
         CGFloat newX = (touchLoc.x - (screenView.bounds.size.width / 2.0f)) / (screenView.bounds.size.width / 2.0f);
         CGFloat newY = (touchLoc.y - (screenView.bounds.size.height / 2.0f)) / (screenView.bounds.size.height / 2.0f) * -1.0f;
-//        NSLog(@"touch began light gun? loc: %f, %f",touchLoc.x, touchLoc.y);
-//        NSLog(@"new loc = %f , %f",newX,newY);
         if ( touchcount > 3 ) {
             // 4 touches = insert coin
             NSLog(@"LIGHTGUN: COIN");
@@ -4194,33 +4182,35 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
     }
 }
 
-#pragma mark - Mouse Touch Support
+#pragma mark - EmulatorTouchMouseHandlerDelegate
 
--(void) handleMouseTouchesBegan:(NSSet *)touches {
-    if ( screenView.window != nil ) {
-        UITouch *touch = [[touches allObjects] objectAtIndex:0];
-        mouseTouchStartLocation = [touch locationInView:screenView];
+-(void) handleMouseClickWithIsLeftClick:(BOOL)isLeftClick isPressed:(BOOL)isPressed {
+    NSLog(@"handleMouseClick: %s %s", isLeftClick ? "LEFT" : "RIGHT", isPressed ? "DOWN" : "UP");
+    if (isLeftClick) {
+        mouse_status[0] = (mouse_status[0] & ~MYOSD_A) | (isPressed ? MYOSD_A : 0);
+    } else {
+        mouse_status[0] = (mouse_status[0] & ~MYOSD_B) | (isPressed ? MYOSD_B : 0);
     }
 }
 
-- (void) handleMouseTouchesMoved:(NSSet *)touches {
-    if ( screenView.window != nil && !CGPointEqualToPoint(mouseTouchStartLocation, mouseInitialLocation) ) {
-        UITouch *touch = [[touches allObjects] objectAtIndex:0];
+-(void) handleMouseMoveWithX:(CGFloat)x y:(CGFloat)y {
+    NSLog(@"handleMouseMove: (%f,%f)", x, y);
+    [mouse_lock lock];
+    mouse_delta_x[0] = x * g_pref_touch_analog_sensitivity;
+    mouse_delta_y[0] = y * g_pref_touch_analog_sensitivity;
+    [mouse_lock unlock];
+}
 
-        // dont handle a touch from a mouse or track pad.
-        if (g_direct_mouse_enable && !(touch.type == UITouchTypeDirect || touch.type == UITouchTypePencil))
-            return;
-
-        CGPoint currentLocation = [touch locationInView:screenView];
-        CGFloat dx = currentLocation.x - mouseTouchStartLocation.x;
-        CGFloat dy = currentLocation.y - mouseTouchStartLocation.y;
-        NSLog(@"mouse x = %f , mouse y = %f",dx,dy);
-        mouseTouchStartLocation = [touch locationInView:screenView];
-        [mouse_lock lock];
-        mouse_delta_x[0] += dx * g_pref_touch_analog_sensitivity;
-        mouse_delta_y[0] += dy * g_pref_touch_analog_sensitivity;
-        [mouse_lock unlock];
-    }
+-(BOOL) shouldHandleMouseTouches:(NSSet<UITouch*>*) touches {
+    
+    if (!g_pref_touch_analog_enabled || myosd_mouse == 0 || touches.count == 0)
+        return NO;
+    
+    UITouch* touch = touches.anyObject;
+    if (g_direct_mouse_enable && !(touch.type == UITouchTypeDirect || touch.type == UITouchTypePencil))
+        return NO;
+    
+    return YES;
 }
 
 #pragma mark - Touch Movement Support
@@ -4232,7 +4222,7 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
 }
 
 -(void) handleTouchMovementTouchesMoved:(NSSet *)touches {
-    if ( screenView.window != nil && !CGPointEqualToPoint(touchDirectionalMoveStartLocation, mouseInitialLocation) ) {
+    if ( screenView.window != nil && !CGPointEqualToPoint(touchDirectionalMoveStartLocation, touchDirectionalInitialLocation) ) {
         myosd_pad_status &= ~MYOSD_DOWN;
         myosd_pad_status &= ~MYOSD_UP;
         myosd_pad_status &= ~MYOSD_LEFT;
@@ -5769,14 +5759,20 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
         // TODO: turns out MAME will merge mice by default, we dont need to.
 
         [mouse.mouseInput.leftButton setPressedChangedHandler:^(GCControllerButtonInput* button, float value, BOOL pressed) {
+            if (!g_direct_mouse_enable)
+                return;
             NSLog(@"MOUSE BUTTON %@", button);
             mouse_status[i] = (mouse_status[i] & ~MYOSD_A) | (pressed ? MYOSD_A : 0);
         }];
         [mouse.mouseInput.rightButton setPressedChangedHandler:^(GCControllerButtonInput* button, float value, BOOL pressed) {
+            if (!g_direct_mouse_enable)
+                return;
             NSLog(@"MOUSE BUTTON %@", button);
             mouse_status[i] = (mouse_status[i] & ~MYOSD_B) | (pressed ? MYOSD_B : 0);
         }];
         [mouse.mouseInput.middleButton setPressedChangedHandler:^(GCControllerButtonInput* button, float value, BOOL pressed) {
+            if (!g_direct_mouse_enable)
+                return;
             NSLog(@"MOUSE BUTTON %@", button);
             mouse_status[i] = (mouse_status[i] & ~MYOSD_Y) | (pressed ? MYOSD_Y : 0);
         }];

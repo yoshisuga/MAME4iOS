@@ -32,6 +32,8 @@
 		926C771D21F5034100103EDE /* TVInputOptionsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 926C771C21F5034100103EDE /* TVInputOptionsController.m */; };
 		928F7B2D27D5F18E00377C40 /* CommandLineArgsHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928F7B2C27D5F18E00377C40 /* CommandLineArgsHelper.swift */; };
 		928F7B2E27F0223100377C40 /* CommandLineArgsHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928F7B2C27D5F18E00377C40 /* CommandLineArgsHelper.swift */; };
+		9296524C27FC1FF30064D1F5 /* EmulatorTouchMouse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9296524B27FC1FF30064D1F5 /* EmulatorTouchMouse.swift */; };
+		9296524E27FC20330064D1F5 /* EmulatorController+TouchMouse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9296524D27FC20330064D1F5 /* EmulatorController+TouchMouse.swift */; };
 		92A5332321EB57F00089FBB9 /* Options.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5332121EB57F00089FBB9 /* Options.m */; };
 		92A5332421EB57F00089FBB9 /* Options.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5332121EB57F00089FBB9 /* Options.m */; };
 		92A5332521EBC7F40089FBB9 /* KeyboardView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8D87DC1653121200685BC4 /* KeyboardView.m */; };
@@ -292,6 +294,8 @@
 		926C771B21F5034100103EDE /* TVInputOptionsController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVInputOptionsController.h; sourceTree = "<group>"; };
 		926C771C21F5034100103EDE /* TVInputOptionsController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TVInputOptionsController.m; sourceTree = "<group>"; };
 		928F7B2C27D5F18E00377C40 /* CommandLineArgsHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandLineArgsHelper.swift; sourceTree = "<group>"; };
+		9296524B27FC1FF30064D1F5 /* EmulatorTouchMouse.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EmulatorTouchMouse.swift; sourceTree = "<group>"; };
+		9296524D27FC20330064D1F5 /* EmulatorController+TouchMouse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EmulatorController+TouchMouse.swift"; sourceTree = "<group>"; };
 		92A5332021EB57F00089FBB9 /* Options.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Options.h; sourceTree = "<group>"; };
 		92A5332121EB57F00089FBB9 /* Options.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Options.m; sourceTree = "<group>"; };
 		92A5338621EBDBAD0089FBB9 /* GCDWebServerFunctions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDWebServerFunctions.h; sourceTree = "<group>"; };
@@ -565,6 +569,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		9296524A27FC1FF30064D1F5 /* TouchMouse */ = {
+			isa = PBXGroup;
+			children = (
+				9296524B27FC1FF30064D1F5 /* EmulatorTouchMouse.swift */,
+				9296524D27FC20330064D1F5 /* EmulatorController+TouchMouse.swift */,
+			);
+			path = TouchMouse;
+			sourceTree = "<group>";
+		};
 		92A5338421EBDBAD0089FBB9 /* GCDWebServer */ = {
 			isa = PBXGroup;
 			children = (
@@ -654,6 +667,7 @@
 				EFB7B2122479FB8900AD96A4 /* ScreenView */,
 				EF1EC8A82441074400CC743D /* Options */,
 				EF474B862791E40900578663 /* OnscreenKeyboard */,
+				9296524A27FC1FF30064D1F5 /* TouchMouse */,
 				CEE680AA1635BB2700051BC2 /* AnalogStick.h */,
 				CEE680AB1635BB2700051BC2 /* AnalogStick.m */,
 				CEE680AC1635BB2700051BC2 /* Bootstrapper.h */,
@@ -1191,6 +1205,7 @@
 				92A533B721EBDBAD0089FBB9 /* GCDWebServerFileResponse.m in Sources */,
 				EF941F0024427D1200D58F7F /* OptionsTableViewController.m in Sources */,
 				92A533D321EBDDF20089FBB9 /* GCDWebUploader.m in Sources */,
+				9296524E27FC20330064D1F5 /* EmulatorController+TouchMouse.swift in Sources */,
 				EF7D4AA727B6FA90002528B7 /* TVAlertController.swift in Sources */,
 				EF8409A2260CEFAB00FAC3CF /* AVPlayerView.m in Sources */,
 				92A533C921EBDBAD0089FBB9 /* GCDWebServerFileRequest.m in Sources */,
@@ -1213,6 +1228,7 @@
 				92A533BA21EBDBAD0089FBB9 /* GCDWebServerDataResponse.m in Sources */,
 				EF24933A236264DA00DD0A6C /* ImageCache.m in Sources */,
 				92B99F0F2022706600CC44E3 /* UIView+Toast.m in Sources */,
+				9296524C27FC1FF30064D1F5 /* EmulatorTouchMouse.swift in Sources */,
 				925ABCAD1E46DCC500997182 /* EmulatorController.m in Sources */,
 				EF1741D6261BB2D600DE8386 /* GameInfo.m in Sources */,
 				925ABCAE1E46DCC500997182 /* HelpController.m in Sources */,
