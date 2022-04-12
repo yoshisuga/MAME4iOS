@@ -551,7 +551,7 @@ final class TVAlertController: UIViewController {
         let label = UILabel()
         label.tag = tag
         label.font = isTitle ? .boldSystemFont(ofSize: font.pointSize * CGFloat(_fontTitleF)) : font
-        label.numberOfLines = isTitle ? 0 : Int(self.windowSize.height * 0.5 / font.pointSize)
+        label.numberOfLines = Int(self.windowSize.height * 0.5 / font.pointSize)
         label.textAlignment = align
         label.preferredMaxLayoutWidth = maxWidth
         label.text = text
