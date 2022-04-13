@@ -254,9 +254,9 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     self.backgroundColor = UIColor.orangeColor;
 #endif
     
-    // set our framerate
-    self.preferredFramesPerSecond = 60;
-    
+    // NOTE dont limit the frame rate, let MAME draw as fast or slow as it wants
+    // self.preferredFramesPerSecond = 60;
+
     // enable filtering (default to Linear)
     NSString* filter_string = _options[kScreenViewFilter];
 
