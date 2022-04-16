@@ -371,18 +371,6 @@ final class TVAlertController: UIViewController {
             return super.modalPresentationStyle
         }
     }
-    #if os(iOS)
-    override var popoverPresentationController: UIPopoverPresentationController? {
-        
-        // if caller is asking for a ppc, they must want a popover!
-        if UITraitCollection.current.userInterfaceIdiom == .pad && UITraitCollection.current.horizontalSizeClass == .regular &&
-            (self.modalPresentationStyle == .formSheet || self.modalPresentationStyle == .overFullScreen) {
-            self.modalPresentationStyle = .popover
-        }
-
-        return super.popoverPresentationController
-    }
-    #endif
     
     // MARK: layout and size
     
@@ -563,7 +551,7 @@ final class TVAlertController: UIViewController {
         let label = UILabel()
         label.tag = tag
         label.font = isTitle ? .boldSystemFont(ofSize: font.pointSize * CGFloat(_fontTitleF)) : font
-        label.numberOfLines = 0
+        label.numberOfLines = Int(self.windowSize.height * 0.5 / font.pointSize)
         label.textAlignment = align
         label.preferredMaxLayoutWidth = maxWidth
         label.text = text
