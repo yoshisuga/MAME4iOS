@@ -1101,6 +1101,7 @@ private class TVSlider : UIControl {
     private var pan_start_value = Float.zero
     #else
     private let slider = UISlider()
+    private var _switch:UISwitch? = nil
     #endif
     
     private var minimumValue:Float = 0
@@ -1154,16 +1155,30 @@ private class TVSlider : UIControl {
         #if os(iOS)
             slider.minimumValue = min
             slider.maximumValue = max
-            slider.addTarget(self, action: #selector(valueChanged(_:)), for: .valueChanged)
+            slider.addTarget(self, action: #selector(valueChanged(slider:)), for: .valueChanged)
         #endif
         
+        #if os(iOS)
+            // use a UISwitch if the value is binary
+            if min == 0.0 && max == 1.0 && step == 1.0 {
+                slider.removeFromSuperview()
+                _switch = UISwitch()
+                _switch!.addTarget(self, action: #selector(valueChanged(_switch:)), for: .valueChanged)
+                stack.axis = .horizontal
+                stack.addArrangedSubview(_switch!)
+            }
+        #endif
+
         setup()
         update()
     }
     
     #if os(iOS)
-    @objc func valueChanged(_ slider:UISlider) {
+    @objc func valueChanged(slider:UISlider) {
         setValue(slider.value)
+    }
+    @objc func valueChanged(_switch:UISwitch) {
+        setValue(_switch.isOn ? 1.0 : 0.0)
     }
     #endif
     
@@ -1173,6 +1188,7 @@ private class TVSlider : UIControl {
             if !slider.isTracking {
                 slider.value = value
             }
+            _switch?.isOn = value != 0.0
         #else
             slider.progress = (value - minimumValue) / (maximumValue - minimumValue)
         #endif
@@ -1188,6 +1204,11 @@ private class TVSlider : UIControl {
             slider.setThumbImage(UIImage.dot(size:thumbSize, color:selected ? tintColor : .white), for:.normal)
             slider.constraints.forEach {slider.removeConstraint($0)}
             slider.addConstraint(NSLayoutConstraint(item:slider, attribute:.height, relatedBy:.equal, toItem:nil, attribute:.notAnAttribute, multiplier:1.0, constant:thumbSize.height * 2))
+            if let sw = _switch {
+                let scale =  font.lineHeight / sw.sizeThatFits(.zero).height
+                sw.transform = CGAffineTransform(scaleX: scale, y: scale);
+                sw.onTintColor = selected ? tintColor : tintColor.withAlphaComponent(0.5)
+            }
         #else
             slider.progressTintColor = selected ? tintColor : .white
             slider.trackTintColor = selected ? tintColor.withAlphaComponent(0.2) : nil
