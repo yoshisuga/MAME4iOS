@@ -181,6 +181,7 @@ __attribute__((objc_direct_members))
         
         _wideColor = _window.screen.traitCollection.displayGamut == UIDisplayGamutP3;
         
+        // TODO: this only has meaning for aTV
         @try {
             _hdr = [[_window.screen valueForKeyPath:@"displayConfiguration.currentMode.hdrMode"] intValue] != 0;
         }
@@ -235,6 +236,22 @@ __attribute__((objc_direct_members))
 - (void)textureCacheFlush {
     _textureCacheFlush = TRUE;
 }
+
+#pragma mark - EDR
+
+// iOS 15 CAMetalLayer now supports wantsExtendedDynamicRangeContent, so check for support
+
+- (BOOL)wantsExtendedDynamicRangeContent {
+    if ([_layer respondsToSelector:@selector(wantsExtendedDynamicRangeContent)])
+        return [(id)_layer wantsExtendedDynamicRangeContent];
+    else
+        return NO;
+}
+- (void)setWantsExtendedDynamicRangeContent:(BOOL)flag {
+    if ([_layer respondsToSelector:@selector(wantsExtendedDynamicRangeContent)])
+        return [(id)_layer setWantsExtendedDynamicRangeContent:flag];
+}
+
 
 #pragma mark - device init
 
@@ -415,7 +432,7 @@ __attribute__((objc_direct_members))
         @"frame-count": @(_frameCount),
         @"render-target-size": @(size),
         @"render-target-depth": @(depth),
-        @"render-target-hdr": @(_hdr),
+        @"render-target-hdr": @(_hdr),      // TODO: this only has meaning for aTV
     }];
     
     return TRUE;

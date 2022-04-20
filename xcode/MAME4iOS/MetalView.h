@@ -44,6 +44,7 @@ static Shader const ShaderTextureMultiply = @"texture, blend=mul";
 @property(readonly, nonatomic) MTLPixelFormat pixelFormat;
 
 @property(readwrite, nonatomic) NSInteger preferredFramesPerSecond;
+@property(readwrite, nonatomic) BOOL wantsExtendedDynamicRangeContent;
 
 // thread safe versions of bounds and drawable size.
 @property(readonly, nonatomic) CGSize drawableSize;
