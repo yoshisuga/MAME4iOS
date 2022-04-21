@@ -27,6 +27,8 @@
 //          - uses a UISlider, UISwitch on iOS. and a UIProgressView on tvOS
 //      * handleButtonPress
 //          - supports focus system "like" navigation on iOS
+//      * convertToMenu
+//          - convert a UIAlertController to a UIMenu so it can be used as a context menu
 //
 //  TVAlertController can be presented three ways
 //      * fullscreen        - set modalPresentationStyle = .fullscreen, .overFullscreen
@@ -36,6 +38,10 @@
 //  UIViewController helpers
 //      * showAlert         - simple alert with buttons
 //      * topViewController - get topmost preseented ViewController, or self if none
+//
+//  UIAlertAction helpers
+//      * init with symbol  - create a UIAlertAction with a symbol
+//      * init with image   - create a UIAlertAction with a image
 //
 //  Created by Todd Laney on 22/01/2022.
 //
