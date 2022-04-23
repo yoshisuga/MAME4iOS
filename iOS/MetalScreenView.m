@@ -160,7 +160,7 @@ TIMER_INIT_END
              @"Test (dot)", @"mame_screen_dot, blend=copy",
              @"Test (scanline)", @"mame_screen_line, blend=copy",
              @"Test (rainbow)", @"mame_screen_rainbow, frame-count, rainbow_h = 16.0 4.0 32.0 1.0, rainbow_speed = 1.0 1.0 16.0",
-             @"Test (color)", @"texture, blend=copy, color-test-pattern=1 0 1 1, test-brightness-factor=1.0 1.0 4.0",
+             @"Test (color)", @"texture, blend=copy, color-test-pattern=1 0 1 1, test-brightness-factor=1.0 1.0 2.0",
 #endif
     ];
 }
@@ -256,6 +256,9 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     
     // NOTE dont limit the frame rate, let MAME draw as fast or slow as it wants
     // self.preferredFramesPerSecond = 60;
+    
+    // we always want to use this (iff supported)
+    self.wantsExtendedDynamicRangeContent = YES;
 
     // enable filtering (default to Linear)
     NSString* filter_string = _options[kScreenViewFilter];

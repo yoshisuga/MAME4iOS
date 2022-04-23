@@ -79,7 +79,6 @@
 #import "SteamController.h"
 #import "SkinManager.h"
 #import "CloudSync.h"
-#import "AVPlayerView.h"
 #import "SoftwareList.h"
 
 #import "Timer.h"
@@ -807,7 +806,6 @@ void m4i_game_stop()
     CGPoint touchDirectionalMoveInitialLocation;
     CGSize  layoutSize;
     SkinManager* skinManager;
-    AVPlayer_View* avPlayer;
     TVAlertController * hudViewController;
 }
 
@@ -2020,25 +2018,6 @@ ButtonPressType input_debounce(unsigned long pad_status, CGPoint stick) {
     hudViewController.view.alpha *= alpha;
 }
 
-// if we are on a device that does wideColor then "play" a HDR video to enable HDR output.
-// idea from https://kidi.ng/wanna-see-a-whiter-white/
--(void)enableHDR {
-
-    // no HDR on macOS, at least not yet
-    if (IsRunningOnMac() || self.view.window.screen.traitCollection.displayGamut != UIDisplayGamutP3)
-        return;
-
-    if (avPlayer == nil) {
-        NSURL* url = [NSBundle.mainBundle URLForResource:@"whiteHDR" withExtension:@"mp4"];
-        NSAssert(url != nil, @"missing whiteHDR resource");
-        avPlayer = [[AVPlayer_View alloc] initWithURL:url];
-        [self.view addSubview:avPlayer];
-    }
-    avPlayer.frame = CGRectMake(0, 0, 1, 1);
-    avPlayer.center = CGPointMake(self.view.safeAreaInsets.left, self.view.safeAreaInsets.top);
-    [self.view sendSubviewToBack:avPlayer];
-}
-
 -(void)buildLogoView {
     // no need to show logo in fullscreen. (unless benchmark or first boot)
     if ((g_device_is_fullscreen || TARGET_OS_TV) && !g_mame_benchmark && !(g_mame_first_boot && g_mame_game_info.gameName.length == 0))
@@ -2513,7 +2492,6 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     }
 #endif
     [self buildHUD];
-    [self enableHDR];
     [self updateScreenView];
     
     if ( g_joy_used ) {
