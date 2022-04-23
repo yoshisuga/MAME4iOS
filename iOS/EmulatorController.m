@@ -3388,11 +3388,10 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
         if (g_device_is_fullscreen)
             safeArea.bottom = 0.0;
 
-#if TARGET_OS_MACCATALYST
-        // in macApp, we dont want to correct for the top inset, if we have hidden the titlebar and want to go edge to edge.
-        if (self.view.window.windowScene.titlebar.titleVisibility == UITitlebarTitleVisibilityHidden && self.view.window.windowScene.titlebar.toolbar == nil)
-            safeArea.top = 0.0;
-#endif
+        // if the user has selected to ignore the aspect ratio, use all of the screen
+        if (!g_pref_keep_aspect_ratio && g_device_is_fullscreen)
+            safeArea = UIEdgeInsetsZero;
+            
         r = CGRectIntersection(r, UIEdgeInsetsInsetRect(self.view.bounds, safeArea));
     }
 #elif TARGET_OS_TV
@@ -4322,10 +4321,11 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
     
     // if we are fullscreen portrait, we need to move the command buttons to the top of screen
     if (g_device_is_fullscreen && !g_device_is_landscape) {
-        CGFloat x = 0, y = 0;
+        UIEdgeInsets safe = self.view.safeAreaInsets;
+        CGFloat x = safe.right, y = safe.top;
         rInput[BTN_SELECT].origin = rButton[BTN_SELECT].origin = CGPointMake(x, y);
         rInput[BTN_EXIT].origin   = rButton[BTN_EXIT].origin   = CGPointMake(x + rButton[BTN_SELECT].size.width, y);
-        x = self.view.bounds.size.width - rButton[BTN_START].size.width;
+        x = self.view.bounds.size.width - safe.left - rButton[BTN_START].size.width;
         rInput[BTN_START].origin  = rButton[BTN_START].origin = CGPointMake(x, y);
         rInput[BTN_OPTION].origin = rButton[BTN_OPTION].origin  = CGPointMake(x - rButton[BTN_OPTION].size.width, y);
     }
