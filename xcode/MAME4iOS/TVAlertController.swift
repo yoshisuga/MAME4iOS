@@ -27,6 +27,8 @@
 //          - uses a UISlider, UISwitch on iOS. and a UIProgressView on tvOS
 //      * handleButtonPress
 //          - supports focus system "like" navigation on iOS
+//      * convertToMenu
+//          - convert a UIAlertController to a UIMenu so it can be used as a context menu
 //
 //  TVAlertController can be presented three ways
 //      * fullscreen        - set modalPresentationStyle = .fullscreen, .overFullscreen
@@ -36,6 +38,10 @@
 //  UIViewController helpers
 //      * showAlert         - simple alert with buttons
 //      * topViewController - get topmost preseented ViewController, or self if none
+//
+//  UIAlertAction helpers
+//      * init with symbol  - create a UIAlertAction with a symbol
+//      * init with image   - create a UIAlertAction with a image
 //
 //  Created by Todd Laney on 22/01/2022.
 //
@@ -1101,6 +1107,7 @@ private class TVSlider : UIControl {
     private var pan_start_value = Float.zero
     #else
     private let slider = UISlider()
+    private var toggle:UISwitch? = nil
     #endif
     
     private var minimumValue:Float = 0
@@ -1154,16 +1161,30 @@ private class TVSlider : UIControl {
         #if os(iOS)
             slider.minimumValue = min
             slider.maximumValue = max
-            slider.addTarget(self, action: #selector(valueChanged(_:)), for: .valueChanged)
+            slider.addTarget(self, action: #selector(valueChanged(slider:)), for: .valueChanged)
         #endif
         
+        #if os(iOS)
+            // use a UISwitch if the value is binary
+            if min == 0.0 && max == 1.0 && step == 1.0 {
+                slider.removeFromSuperview()
+                toggle = UISwitch()
+                toggle!.addTarget(self, action: #selector(valueChanged(toggle:)), for: .valueChanged)
+                stack.axis = .horizontal
+                stack.addArrangedSubview(toggle!)
+            }
+        #endif
+
         setup()
         update()
     }
     
     #if os(iOS)
-    @objc func valueChanged(_ slider:UISlider) {
+    @objc func valueChanged(slider:UISlider) {
         setValue(slider.value)
+    }
+    @objc func valueChanged(toggle:UISwitch) {
+        setValue(toggle.isOn ? 1.0 : 0.0)
     }
     #endif
     
@@ -1173,6 +1194,7 @@ private class TVSlider : UIControl {
             if !slider.isTracking {
                 slider.value = value
             }
+            toggle?.isOn = value != 0.0
         #else
             slider.progress = (value - minimumValue) / (maximumValue - minimumValue)
         #endif
@@ -1188,6 +1210,11 @@ private class TVSlider : UIControl {
             slider.setThumbImage(UIImage.dot(size:thumbSize, color:selected ? tintColor : .white), for:.normal)
             slider.constraints.forEach {slider.removeConstraint($0)}
             slider.addConstraint(NSLayoutConstraint(item:slider, attribute:.height, relatedBy:.equal, toItem:nil, attribute:.notAnAttribute, multiplier:1.0, constant:thumbSize.height * 2))
+            if let toggle = toggle {
+                let scale =  font.lineHeight / toggle.sizeThatFits(.zero).height
+                toggle.transform = CGAffineTransform(scaleX: scale, y: scale);
+                toggle.onTintColor = selected ? tintColor : tintColor.withAlphaComponent(0.5)
+            }
         #else
             slider.progressTintColor = selected ? tintColor : .white
             slider.trackTintColor = selected ? tintColor.withAlphaComponent(0.2) : nil
@@ -1239,6 +1266,7 @@ private class TVSlider : UIControl {
             // HACK copy our tags to our children so TVAlertController.action(for:) can work
             label.tag = tag
             slider.tag = tag
+            toggle?.tag = tag
         }
     }
     override var isSelected: Bool {
