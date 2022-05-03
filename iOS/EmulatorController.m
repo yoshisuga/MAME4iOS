@@ -480,6 +480,12 @@ int run_mame(char* system, char* type, char* game, char* options)
     if (bench)
         ARG2("-bench", "90");
     
+    // HACK: iOS app on macOS: MAME will deadlock or crash if more than one worker thread is used....
+    // HACK: ....terminating with `uncaught exception of type emu_fatalerror: discrete_task::process: available samples are negative`
+    // TODO: ...investigate this and fix!
+    if (myosd_get(MYOSD_VERSION) >= 243 && !TARGET_OS_MACCATALYST && IsRunningOnMac())
+        ARG2("-numprocessors", "1");
+    
 #ifdef DEBUG
     ARG("-verbose");
 #endif
@@ -948,6 +954,10 @@ void mame_save_state(int slot)
 
 - (void)presentPopup:(UIViewController *)viewController from:(UIView*)view animated:(BOOL)flag completion:(void (^)(void))completion {
 #if TARGET_OS_IOS // UIPopoverPresentationController does not exist on tvOS.
+
+    if (view != nil)
+        viewController.modalPresentationStyle = UIModalPresentationPopover;
+    
     UIPopoverPresentationController *ppc = viewController.popoverPresentationController;
     if ( ppc != nil ) {
         if (view == nil || view.hidden || CGRectIsEmpty(view.bounds)) {
@@ -1075,15 +1085,6 @@ UIViewController* g_menu;
         menu.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
     else
         menu.font = [UIFont systemFontOfSize:32.0 weight:UIFontWeightRegular];
-
-#if TARGET_OS_IOS
-    if (view != nil)
-        menu.modalPresentationStyle = UIModalPresentationPopover;
-    else
-        menu.modalPresentationStyle = UIModalPresentationOverFullScreen;
-#else
-    menu.modalPresentationStyle = UIModalPresentationOverFullScreen;
-#endif
 
     if (controller != nil && controller_count > 1 && myosd_num_players > 1)
         menu.title = [NSString stringWithFormat:@"Player %d", player+1];
@@ -1838,7 +1839,7 @@ ButtonPressType input_debounce(unsigned long pad_status, CGPoint stick) {
     hideShowControlsForLightgun.alpha = ((float)g_controller_opacity / 100.0f) * 0.5;
     hideShowControlsForLightgun.translatesAutoresizingMaskIntoConstraints = NO;
     CGFloat size = UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPad ? 32.0f : 24.0f;
-    [hideShowControlsForLightgun addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:size]];
+    [hideShowControlsForLightgun addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:size * 3]];
     [hideShowControlsForLightgun addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:size]];
     [self.view addSubview:hideShowControlsForLightgun];
     [self.view addConstraint:[NSLayoutConstraint constraintWithItem:hideShowControlsForLightgun attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeCenterX multiplier:1.0f constant:0.0f]];
@@ -1922,7 +1923,10 @@ ButtonPressType input_debounce(unsigned long pad_status, CGPoint stick) {
 #if TARGET_OS_IOS
 - (UIRectEdge)preferredScreenEdgesDeferringSystemGestures
 {
-    return UIRectEdgeBottom;
+    if (g_device_is_fullscreen)
+        return UIRectEdgeAll;
+    else
+        return UIRectEdgeNone;
 }
 - (BOOL)prefersStatusBarHidden
 {
@@ -3350,6 +3354,7 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
     [self buildBackgroundImage];
     
     [self setNeedsUpdateOfHomeIndicatorAutoHidden];
+    [self setNeedsUpdateOfScreenEdgesDeferringSystemGestures];
 
     if (externalView != nil)
         r = externalView.window.screen.bounds;
@@ -3911,7 +3916,7 @@ void m4i_input_poll(myosd_input_state* myosd, size_t input_size) {
     [self touchHandler:touches withEvent:event];
     
     // light gun release?
-    if ( myosd_light_gun == 1 && g_pref_lightgun_enabled ) {
+    if ( g_pref_lightgun_enabled ) {
         lightgun_status &= ~MYOSD_A;
         lightgun_status &= ~MYOSD_B;
     }
