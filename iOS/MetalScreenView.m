@@ -61,6 +61,7 @@ TIMER_INIT(texture_load)
 TIMER_INIT(texture_load_pal16)
 TIMER_INIT(texture_load_rgb32)
 TIMER_INIT(texture_load_rgb15)
+TIMER_INIT(texture_load_yuv16)
 TIMER_INIT(line_prim)
 TIMER_INIT(quad_prim)
 TIMER_INIT_END
@@ -351,6 +352,91 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     }
 }
 
+#pragma mark - YUV texture conversion
+
+static inline uint32_t ycc_to_rgb(uint8_t y, uint8_t cb, uint8_t cr)
+{
+    /* original equations:
+
+        C = Y - 16
+        D = Cb - 128
+        E = Cr - 128
+
+        R = clip(( 298 * C           + 409 * E + 128) >> 8)
+        G = clip(( 298 * C - 100 * D - 208 * E + 128) >> 8)
+        B = clip(( 298 * C + 516 * D           + 128) >> 8)
+
+        R = clip(( 298 * (Y - 16)                    + 409 * (Cr - 128) + 128) >> 8)
+        G = clip(( 298 * (Y - 16) - 100 * (Cb - 128) - 208 * (Cr - 128) + 128) >> 8)
+        B = clip(( 298 * (Y - 16) + 516 * (Cb - 128)                    + 128) >> 8)
+
+        R = clip(( 298 * Y - 298 * 16                        + 409 * Cr - 409 * 128 + 128) >> 8)
+        G = clip(( 298 * Y - 298 * 16 - 100 * Cb + 100 * 128 - 208 * Cr + 208 * 128 + 128) >> 8)
+        B = clip(( 298 * Y - 298 * 16 + 516 * Cb - 516 * 128                        + 128) >> 8)
+
+        R = clip(( 298 * Y - 298 * 16                        + 409 * Cr - 409 * 128 + 128) >> 8)
+        G = clip(( 298 * Y - 298 * 16 - 100 * Cb + 100 * 128 - 208 * Cr + 208 * 128 + 128) >> 8)
+        B = clip(( 298 * Y - 298 * 16 + 516 * Cb - 516 * 128                        + 128) >> 8)
+    */
+    int r, g, b, common;
+
+    common = 298 * y - 298 * 16;
+    r = (common +                        409 * cr - 409 * 128 + 128) >> 8;
+    g = (common - 100 * cb + 100 * 128 - 208 * cr + 208 * 128 + 128) >> 8;
+    b = (common + 516 * cb - 516 * 128                        + 128) >> 8;
+
+    if (r < 0) r = 0;
+    else if (r > 255) r = 255;
+    if (g < 0) g = 0;
+    else if (g > 255) g = 255;
+    if (b < 0) b = 0;
+    else if (b > 255) b = 255;
+    
+    return (255 << 24) | (r << 16) | (g << 8) | b;
+}
+
+//============================================================
+//  yuy16_to_argb
+//============================================================
+
+static void yuy16_to_argb(uint32_t *dst, const uint16_t *src, int width, int height, int pitch, const uint32_t *palette)
+{
+    NSCParameterAssert(width % 2 == 0);
+
+    if (palette != NULL) // palette (really RGB map) case
+    {
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width / 2; x++)
+            {
+                uint16_t srcpix0 = *src++;
+                uint16_t srcpix1 = *src++;
+                uint8_t cb = srcpix0 & 0xff;
+                uint8_t cr = srcpix1 & 0xff;
+                *dst++ = ycc_to_rgb(palette[0x000 + (srcpix0 >> 8)], cb, cr);
+                *dst++ = ycc_to_rgb(palette[0x000 + (srcpix1 >> 8)], cb, cr);
+            }
+            src += pitch - width;
+        }
+    }
+    else // direct case
+    {
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x += 2)
+            {
+                uint16_t srcpix0 = *src++;
+                uint16_t srcpix1 = *src++;
+                uint8_t cb = srcpix0 & 0xff;
+                uint8_t cr = srcpix1 & 0xff;
+                *dst++ = ycc_to_rgb(srcpix0 >> 8, cb, cr);
+                *dst++ = ycc_to_rgb(srcpix1 >> 8, cb, cr);
+            }
+            src += pitch - width;
+        }
+    }
+}
+
 #pragma mark - texture conversion
 
 static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* prim) {
@@ -452,8 +538,11 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
         }
         case MYOSD_TEXFORMAT_YUY16:
         {
-            // this texture format is only used for AVI files and LaserDisc player!
-            NSCParameterAssert(FALSE);
+            TIMER_START(texture_load_yuv16);
+            yuy16_to_argb((uint32_t*)temp_buffer, prim->texture_base, (int)width, (int)height, prim->texture_rowpixels, prim->texture_palette);
+            TIMER_STOP(texture_load_yuv16);
+            
+            [texture replaceRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0 withBytes:temp_buffer bytesPerRow:width*4];
             break;
         }
         default:
@@ -873,7 +962,7 @@ simd_float4 ColorMatch(CGColorSpaceRef destColorSpace, CGColorSpaceRef sourceCol
 //      [X] RGB15                       megaplay, streets of rage II
 //      [X] RGB32                       neogeo
 //      [X] ARGB32                      MAME menu (text)
-//      [-] YUY16                       N/A
+//      [X] YUY16                       firefox
 //      [X] RGB15 with PALETTE          megaplay
 //      [X] RGB32 with PALETTE          neogeo
 //      [-] ARGB32 with PALETTE         N/A
@@ -964,7 +1053,7 @@ simd_float4 ColorMatch(CGColorSpaceRef destColorSpace, CGColorSpaceRef sourceCol
             if (fmt == MYOSD_TEXFORMAT_ARGB32 && prim->texture_palette == NULL)
                 assert(TRUE);
             if (fmt == MYOSD_TEXFORMAT_YUY16 && prim->texture_palette == NULL)
-                assert(FALSE);
+                assert(TRUE);
 
             if (fmt == MYOSD_TEXFORMAT_PALETTE16 && prim->texture_palette != NULL)
                 assert(TRUE);
