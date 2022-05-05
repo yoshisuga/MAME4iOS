@@ -538,6 +538,9 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
         }
         case MYOSD_TEXFORMAT_YUY16:
         {
+            // TODO: maybe we should do this conversion with a performance shader?
+            // TODO: ...profile this case
+            
             TIMER_START(texture_load_yuv16);
             yuy16_to_argb((uint32_t*)temp_buffer, prim->texture_base, (int)width, (int)height, prim->texture_rowpixels, prim->texture_palette);
             TIMER_STOP(texture_load_yuv16);
