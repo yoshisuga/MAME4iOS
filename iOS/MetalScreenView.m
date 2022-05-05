@@ -407,7 +407,7 @@ static void yuy16_to_argb(uint32_t *dst, const uint16_t *src, int width, int hei
     {
         for (int y = 0; y < height; y++)
         {
-            for (int x = 0; x < width / 2; x++)
+            for (int x = 0; x < width; x += 2)
             {
                 uint16_t srcpix0 = *src++;
                 uint16_t srcpix1 = *src++;
@@ -419,7 +419,30 @@ static void yuy16_to_argb(uint32_t *dst, const uint16_t *src, int width, int hei
             src += pitch - width;
         }
     }
-    else // direct case
+    else if (width % 4 == 0)
+    {
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x += 4)
+            {
+                uint16_t srcpix0 = *src++;
+                uint16_t srcpix1 = *src++;
+                uint8_t cb = srcpix0 & 0xff;
+                uint8_t cr = srcpix1 & 0xff;
+                *dst++ = ycc_to_rgb(srcpix0 >> 8, cb, cr);
+                *dst++ = ycc_to_rgb(srcpix1 >> 8, cb, cr);
+
+                srcpix0 = *src++;
+                srcpix1 = *src++;
+                cb = srcpix0 & 0xff;
+                cr = srcpix1 & 0xff;
+                *dst++ = ycc_to_rgb(srcpix0 >> 8, cb, cr);
+                *dst++ = ycc_to_rgb(srcpix1 >> 8, cb, cr);
+            }
+            src += pitch - width;
+        }
+    }
+    else
     {
         for (int y = 0; y < height; y++)
         {
@@ -538,9 +561,6 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
         }
         case MYOSD_TEXFORMAT_YUY16:
         {
-            // TODO: maybe we should do this conversion with a performance shader?
-            // TODO: ...profile this case
-            
             TIMER_START(texture_load_yuv16);
             yuy16_to_argb((uint32_t*)temp_buffer, prim->texture_base, (int)width, (int)height, prim->texture_rowpixels, prim->texture_palette);
             TIMER_STOP(texture_load_yuv16);
@@ -730,6 +750,15 @@ static void load_texture_prim(id<MTLTexture> texture, myosd_render_primitive* pr
     
     [self drawEnd];
     TIMER_STOP(draw_screen);
+    
+#ifdef WANT_TIMERS
+    #undef NSLog
+    if ([self frameCount] % 120 == 0) {
+        TIMER_DUMP();
+        TIMER_RESET();
+    }
+#endif
+    
 }
 
 #pragma mark - TEST PATTERN
@@ -969,7 +998,7 @@ simd_float4 ColorMatch(CGColorSpaceRef destColorSpace, CGColorSpaceRef sourceCol
 //      [X] RGB15 with PALETTE          megaplay
 //      [X] RGB32 with PALETTE          neogeo
 //      [-] ARGB32 with PALETTE         N/A
-//      [-] YUY16 with PALETTE          N/A
+//      [X] YUY16 with PALETTE          firefox
 //
 - (void)drawScreenDebug:(void*)prim_list {
     
@@ -1069,7 +1098,7 @@ simd_float4 ColorMatch(CGColorSpaceRef destColorSpace, CGColorSpaceRef sourceCol
             if (fmt == MYOSD_TEXFORMAT_ARGB32 && prim->texture_palette != NULL)
                 assert(TRUE);
             if (fmt == MYOSD_TEXFORMAT_YUY16 && prim->texture_palette != NULL)
-                assert(FALSE);
+                assert(TRUE);
         }
     }
 }
