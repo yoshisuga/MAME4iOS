@@ -135,6 +135,8 @@
 		EF490D97277A5E0E00407865 /* cheat.7z in Resources */ = {isa = PBXBuildFile; fileRef = EF490D94277A5E0E00407865 /* cheat.7z */; };
 		EF490D99277A5E0E00407865 /* cheat.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF490D95277A5E0E00407865 /* cheat.zip */; };
 		EF490D9A277A5E0E00407865 /* cheat.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF490D95277A5E0E00407865 /* cheat.zip */; };
+		EF51444328249E44001457B1 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF51444228249E44001457B1 /* Accelerate.framework */; };
+		EF51444528249E4C001457B1 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF51444428249E4C001457B1 /* Accelerate.framework */; };
 		EF72F8E927FA24AD00157065 /* ui.bdf in Resources */ = {isa = PBXBuildFile; fileRef = EF72F8E827FA24AD00157065 /* ui.bdf */; };
 		EF72F8EA27FA24AD00157065 /* ui.bdf in Resources */ = {isa = PBXBuildFile; fileRef = EF72F8E827FA24AD00157065 /* ui.bdf */; };
 		EF7B232C23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
@@ -423,6 +425,8 @@
 		EF490D90277A5C8C00407865 /* history.dat.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = history.dat.zip; path = "../../iOS-res/history.dat.zip"; sourceTree = "<group>"; };
 		EF490D94277A5E0E00407865 /* cheat.7z */ = {isa = PBXFileReference; lastKnownFileType = file; name = cheat.7z; path = "../../iOS-res/cheat.7z"; sourceTree = "<group>"; };
 		EF490D95277A5E0E00407865 /* cheat.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = cheat.zip; path = "../../iOS-res/cheat.zip"; sourceTree = "<group>"; };
+		EF51444228249E44001457B1 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS15.4.sdk/System/Library/Frameworks/Accelerate.framework; sourceTree = DEVELOPER_DIR; };
+		EF51444428249E4C001457B1 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/System/Library/Frameworks/Accelerate.framework; sourceTree = DEVELOPER_DIR; };
 		EF55DE312533C21E004E37EF /* MAME4iOS.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = MAME4iOS.xcconfig; sourceTree = "<group>"; };
 		EF55DE5A2534C304004E37EF /* TVServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = TVServices.framework; path = Library/Frameworks/TVServices.framework; sourceTree = DEVELOPER_DIR; };
 		EF67E11524B8972100AFF489 /* MacMenu.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MacMenu.m; sourceTree = "<group>"; };
@@ -504,6 +508,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EF51444528249E4C001457B1 /* Accelerate.framework in Frameworks */,
 				EF1628712627A5A800E2B2AB /* libmame-ios.a in Frameworks */,
 				E9856CF023C9A7C50071666D /* MultipeerConnectivity.framework in Frameworks */,
 				EF27F36A23F7475100B1E50A /* libcompression.tbd in Frameworks */,
@@ -533,6 +538,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EF51444328249E44001457B1 /* Accelerate.framework in Frameworks */,
 				EF286D5B253CF18D007DA6D3 /* CloudKit.framework in Frameworks */,
 				92A533DF21EEFE520089FBB9 /* CFNetwork.framework in Frameworks */,
 				92ECB91021EA99B600D1E3D0 /* GameKit.framework in Frameworks */,
@@ -745,6 +751,8 @@
 		CEE680881635BA7000051BC2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				EF51444228249E44001457B1 /* Accelerate.framework */,
+				EF51444428249E4C001457B1 /* Accelerate.framework */,
 				EF1628122624ACC800E2B2AB /* libmame-ios.a */,
 				EF286D5A253CF18D007DA6D3 /* CloudKit.framework */,
 				EF286D58253CF171007DA6D3 /* CloudKit.framework */,

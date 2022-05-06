@@ -4,6 +4,7 @@
 * use the entire screen (ignore safe area) if `Keep Aspect Ratio` is `OFF`
 * better touch mouse support, tap is LEFT button, two finger tap is RIGHT button.
     - touch mouse can be enabled or disabled in `Settings` > `Input Options` > `Touch Analog`
+* Support for YUV textures used by Laserdisc based games (Dragon's Lair, Fire Fox, etc)
 
 # Version 2022.1
 * Updated to [MAME 241](https://www.mamedev.org/releases/whatsnew_0241.txt).
