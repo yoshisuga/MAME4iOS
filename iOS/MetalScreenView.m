@@ -42,6 +42,7 @@
  * under a MAME license, as set out in http://mamedev.org/
  */
 #import <Metal/Metal.h>
+#import <Accelerate/Accelerate.h>
 #import "MetalScreenView.h"
 #import "libmame.h"
 
@@ -421,26 +422,33 @@ static void yuy16_to_argb(uint32_t *dst, const uint16_t *src, int width, int hei
     }
     else if (width % 4 == 0)
     {
-        for (int y = 0; y < height; y++)
-        {
-            for (int x = 0; x < width; x += 4)
-            {
-                uint16_t srcpix0 = *src++;
-                uint16_t srcpix1 = *src++;
-                uint8_t cb = srcpix0 & 0xff;
-                uint8_t cr = srcpix1 & 0xff;
-                *dst++ = ycc_to_rgb(srcpix0 >> 8, cb, cr);
-                *dst++ = ycc_to_rgb(srcpix1 >> 8, cb, cr);
+        vImage_YpCbCrPixelRange pixelRange = {
+            .Yp_bias = 16,
+            .CbCr_bias = 128,
+            .YpRangeMax = 235,
+            .CbCrRangeMax = 240,
+            .YpMax = 255,
+            .YpMin = 0,
+            .CbCrMax = 255,
+            .CbCrMin = 1
+        };
 
-                srcpix0 = *src++;
-                srcpix1 = *src++;
-                cb = srcpix0 & 0xff;
-                cr = srcpix1 & 0xff;
-                *dst++ = ycc_to_rgb(srcpix0 >> 8, cb, cr);
-                *dst++ = ycc_to_rgb(srcpix1 >> 8, cb, cr);
-            }
-            src += pitch - width;
-        }
+        vImage_YpCbCrToARGB info;
+        vImageConvert_YpCbCrToARGB_GenerateConversion(kvImage_YpCbCrToARGBMatrix_ITU_R_601_4,
+                                                               &pixelRange,
+                                                               &info,
+                                                               kvImage422CbYpCrYp8,
+                                                               kvImageARGB8888,
+                                                               kvImageNoFlags);
+
+        vImage_Buffer srcBuffer = {
+            .width = width, .height = height, .rowBytes = pitch*2, .data = (void*)src
+        };
+        vImage_Buffer dstBuffer = {
+            .width = width, .height = height, .rowBytes = width*4, .data = (void*)dst
+        };
+        const uint8_t permuteMap[4] = {3, 2, 1, 0};
+        vImageConvert_422CbYpCrYp8ToARGB8888(&srcBuffer, &dstBuffer, &info, permuteMap, 255, kvImageNoFlags);
     }
     else
     {
