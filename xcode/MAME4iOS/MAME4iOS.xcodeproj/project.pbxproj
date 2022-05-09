@@ -137,6 +137,8 @@
 		EF490D9A277A5E0E00407865 /* cheat.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF490D95277A5E0E00407865 /* cheat.zip */; };
 		EF51444328249E44001457B1 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF51444228249E44001457B1 /* Accelerate.framework */; };
 		EF51444528249E4C001457B1 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF51444428249E4C001457B1 /* Accelerate.framework */; };
+		EF514447282815E4001457B1 /* GameInfoController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF514446282815E4001457B1 /* GameInfoController.swift */; };
+		EF514448282815E4001457B1 /* GameInfoController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF514446282815E4001457B1 /* GameInfoController.swift */; };
 		EF72F8E927FA24AD00157065 /* ui.bdf in Resources */ = {isa = PBXBuildFile; fileRef = EF72F8E827FA24AD00157065 /* ui.bdf */; };
 		EF72F8EA27FA24AD00157065 /* ui.bdf in Resources */ = {isa = PBXBuildFile; fileRef = EF72F8E827FA24AD00157065 /* ui.bdf */; };
 		EF7B232C23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
@@ -427,6 +429,7 @@
 		EF490D95277A5E0E00407865 /* cheat.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = cheat.zip; path = "../../iOS-res/cheat.zip"; sourceTree = "<group>"; };
 		EF51444228249E44001457B1 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS15.4.sdk/System/Library/Frameworks/Accelerate.framework; sourceTree = DEVELOPER_DIR; };
 		EF51444428249E4C001457B1 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/System/Library/Frameworks/Accelerate.framework; sourceTree = DEVELOPER_DIR; };
+		EF514446282815E4001457B1 /* GameInfoController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameInfoController.swift; sourceTree = "<group>"; };
 		EF55DE312533C21E004E37EF /* MAME4iOS.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = MAME4iOS.xcconfig; sourceTree = "<group>"; };
 		EF55DE5A2534C304004E37EF /* TVServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = TVServices.framework; path = Library/Frameworks/TVServices.framework; sourceTree = DEVELOPER_DIR; };
 		EF67E11524B8972100AFF489 /* MacMenu.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MacMenu.m; sourceTree = "<group>"; };
@@ -674,6 +677,7 @@
 				EF67E11524B8972100AFF489 /* MacMenu.m */,
 				EF1741D4261BB2D600DE8386 /* GameInfo.h */,
 				EF1741D5261BB2D600DE8386 /* GameInfo.m */,
+				EF514446282815E4001457B1 /* GameInfoController.swift */,
 				EF19F22E235D1C0300C8EE7F /* ChooseGameController.h */,
 				EF19F229235D1BDF00C8EE7F /* ChooseGameController.m */,
 				CEE680B41635BB4900051BC2 /* EmulatorController.h */,
@@ -1204,6 +1208,7 @@
 				9296524E27FC20330064D1F5 /* EmulatorController+TouchMouse.swift in Sources */,
 				EF7D4AA727B6FA90002528B7 /* TVAlertController.swift in Sources */,
 				92A533C921EBDBAD0089FBB9 /* GCDWebServerFileRequest.m in Sources */,
+				EF514447282815E4001457B1 /* GameInfoController.swift in Sources */,
 				925ABCA81E46DCC500997182 /* ListOptionController.m in Sources */,
 				92A533C621EBDBAD0089FBB9 /* GCDWebServerDataRequest.m in Sources */,
 				EF8E428B249FE5410049C84C /* ulTron.metal in Sources */,
@@ -1290,6 +1295,7 @@
 				92A533D421EBDDF20089FBB9 /* GCDWebUploader.m in Sources */,
 				92ECB91221EAA1B700D1E3D0 /* EmulatorController.m in Sources */,
 				EF8EAA87244F7F5D00DA02BB /* SteamControllerManager.m in Sources */,
+				EF514448282815E4001457B1 /* GameInfoController.swift in Sources */,
 				EF24BAFD24C786A900D9C55A /* SkinManager.m in Sources */,
 				92A533AC21EBDBAD0089FBB9 /* GCDWebServerFunctions.m in Sources */,
 				EF7B232D23FD0469001FF51D /* (null) in Sources */,

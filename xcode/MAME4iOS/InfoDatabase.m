@@ -7,9 +7,6 @@
 //
 #import <UIKit/UIKit.h>
 #import "InfoDatabase.h"
-#ifdef DEBUG
-#import "EmulatorController.h"  // to get list of all ROMs
-#endif
 
 #define DebugLog 0
 #if DebugLog == 0
@@ -212,20 +209,34 @@
 
 - (void)loadIndex
 {
-    // TODO: I was gonna cache the index on disk, and rebuild it if file changed, but I am seeing at most 2sec to create index, SO SHIP IT!
+    NSString* dat_path = _path;
+    NSString* idx_path = [dat_path.stringByDeletingPathExtension stringByAppendingPathExtension:@"idx"];
+    
+    NSDate* dat_date = [[NSFileManager.defaultManager attributesOfItemAtPath:dat_path error:nil] fileModificationDate];
+    NSDate* idx_date = [[NSFileManager.defaultManager attributesOfItemAtPath:idx_path error:nil] fileModificationDate] ?: NSDate.distantPast;
 
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND,0), ^{
-        NSDictionary* index = [self createIndex];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            self->_index = index;
-#ifdef DEBUG    // write out a filtered HISTORY.DAT for only the 139u1 ROMS.
-            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND,0), ^{
-                NSString* path = [self->_path stringByReplacingOccurrencesOfString:@".dat" withString:@"0139.dat"];
-                [self saveDatabaseToPath:path keys:[EmulatorController romList]];
-            });
-#endif
-        });
-    });
+    if (dat_date == nil)
+        return;
+        
+    // load .IDX if it is not older than .DAT otherwise build it.
+    if ([dat_date compare:idx_date] != NSOrderedDescending) {
+        NSData* data = [NSData dataWithContentsOfFile:idx_path] ?: [[NSData alloc] init];
+        NSDictionary* dict = [NSPropertyListSerialization propertyListWithData:data options:NSPropertyListImmutable format:nil error:nil];
+        NSParameterAssert([dict isKindOfClass:[NSDictionary class]]);
+
+        if ([dict isKindOfClass:[NSDictionary class]]) {
+            self->_index = dict;
+            return;
+        }
+    }
+    
+    // CREATE index
+    self->_index = [self createIndex] ?: @{};
+    
+    // SAVE the index to `<path>.IDX` for next time.
+    NSData* data = [NSPropertyListSerialization dataWithPropertyList:self->_index format:NSPropertyListBinaryFormat_v1_0 options:0 error:nil];
+    NSParameterAssert(data != nil);
+    [data writeToFile:idx_path atomically:YES];
 }
 
 - (NSDictionary*)createIndex
@@ -282,67 +293,6 @@
     fclose(file);
     return index;
 }
-
-
-#pragma mark - Save a custom .DAT file for a set of ROMs
-
-#ifdef DEBUG
-
-static void write_string(NSFileHandle* file, NSString* string) {
-    [file writeData:[[string stringByAppendingString:@"\n"] dataUsingEncoding:NSUTF8StringEncoding]];
-}
-    
--(void)saveDatabaseToPath:(NSString*)path keys:(NSArray*)keys {
-
-    if (_index.count == 0)
-        return;
-    
-    if (keys == nil)
-        keys = [self allKeys];
-
-    NSLog(@"%d KEYS, %d TOTAL", (int)keys.count, (int)self.allKeys.count);
-    
-    NSMutableSet* output_keys = [[NSMutableSet alloc] init];
-    NSInteger output_count = 0;
-    NSInteger output_size = 0;
-
-    [NSFileManager.defaultManager createFileAtPath:path contents:nil attributes:nil];
-    NSFileHandle* file = [NSFileHandle fileHandleForWritingAtPath:path];
-    
-    for (NSString* key in keys) @autoreleasepool {{
-        
-        if ([output_keys containsObject:key])
-            continue;
-        
-        if (![self boolForKey:key]) {
-            NSLog(@"*** INFO FOR %@ NOT FOUND", key);
-            continue;
-        }
-        NSMutableSet* duplicate_keys = [[NSMutableSet alloc] init];
-        NSString* text = [self stringForKey:key];
-        uint64_t text_id  = [self intForKey:key];
- 
-        // walk the whole list again looking for duplicates, can you say O(N^2)!
-        for (NSString* key in keys) @autoreleasepool {{
-            if ([self intForKey:key] == text_id)
-                [duplicate_keys addObject:key];
-        }}
-        
-        [output_keys unionSet:duplicate_keys];
-        output_count += 1;
-        output_size += text.length;
-        
-        NSLog(@"    INFO: %@", [duplicate_keys.allObjects componentsJoinedByString:@","]);
-        
-        write_string(file, [NSString stringWithFormat:@"$info=%@,", [duplicate_keys.allObjects componentsJoinedByString:@","]]);
-        write_string(file, @"$bio");
-        write_string(file, text);
-        write_string(file, @"$end");
-    }}
-    
-    NSLog(@"INFO: %d keys, %d entries, %d size",(int)output_keys.count, (int)output_count, (int)output_size);
-}
-#endif
 
 @end
 
