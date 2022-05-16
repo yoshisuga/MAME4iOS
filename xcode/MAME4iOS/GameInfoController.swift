@@ -27,17 +27,21 @@ import UIKit
         ]
     ]
     
-    private var game:GameInfo!
+    private let game:GameInfo
     
     private let textView = UITextView()
     
-    convenience init(game:GameInfo) {
-        self.init(nibName:nil, bundle:nil)
+    init(game:GameInfo) {
         self.game = game
+        super.init(nibName:nil, bundle:nil)
+        self.title = "Info"
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     override func viewDidLoad() {
-        guard let game = self.game else { return }
         super.viewDidLoad()
         
         #if os(iOS)
