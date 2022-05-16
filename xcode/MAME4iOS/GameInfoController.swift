@@ -27,21 +27,25 @@ import UIKit
         ]
     ]
     
-    private var game:GameInfo!
+    private let game:GameInfo
     
     private let textView = UITextView()
     
-    convenience init(game:GameInfo) {
-        self.init(nibName:nil, bundle:nil)
+    init(game:GameInfo) {
         self.game = game
+        super.init(nibName: nil, bundle: nil)
+        title = "Info"
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     override func viewDidLoad() {
-        guard let game = self.game else { return }
         super.viewDidLoad()
-        
+        view.backgroundColor = UIColor.systemBackground
         #if os(iOS)
-            self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem:.done, target:self, action:#selector(done))
+            navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem:.done, target:self, action:#selector(done))
             textView.isEditable = false
             textView.isSelectable = false
         #else
@@ -58,7 +62,8 @@ import UIKit
         
         textView.isScrollEnabled = true
         textView.backgroundColor = .init(white: 0.111, alpha: 1.0)
-        self.view.addSubview(textView)
+        view.addSubview(textView)
+        setupConstraints()
 
         let text = NSMutableAttributedString(string:"")
         
@@ -87,19 +92,19 @@ import UIKit
         textView.attributedText = text
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        textView.contentOffset.y = -textView.adjustedContentInset.top
-    }
-    
-    override func viewWillLayoutSubviews() {
-        super.viewWillLayoutSubviews()
-        textView.frame = view.bounds
+    private func setupConstraints() {
+        textView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            textView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            textView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            textView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            textView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+        ])
     }
     
 #if os(iOS)
     @objc func done() {
-        self.presentingViewController?.dismiss(animated: true)
+        presentingViewController?.dismiss(animated: true)
     }
 #else
     @objc func pan(_ pan:UIPanGestureRecognizer) {
