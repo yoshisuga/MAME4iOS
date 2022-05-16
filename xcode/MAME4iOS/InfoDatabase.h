@@ -6,6 +6,7 @@
 //  Copyright © 2020 Seleuco. All rights reserved.
 //
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -40,7 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable NSString*)stringForKey:(NSString*)key;
 
 // load and return the text data with basic formating applied.
-- (nullable NSAttributedString*)attributedStringForKey:(NSString*)key attributes:(nullable NSDictionary*)attrs;
+- (nullable NSAttributedString*)attributedStringForKey:(NSString*)key attributes:(nullable NSDictionary<UIFontTextStyle, NSDictionary<NSAttributedStringKey, id> *> *)attrs;
 
 @end
 

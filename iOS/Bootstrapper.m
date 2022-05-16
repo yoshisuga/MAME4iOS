@@ -78,6 +78,17 @@ const char* get_documents_path(const char* file)
     return documents_path;
 }
 
+// versions of get_resource_path and get_documents_path that take (gasp!) an NSString*
+NSString* getResourcePath(NSString* str)
+{
+    return @(get_resource_path(str.UTF8String));
+}
+NSString* getDocumentPath(NSString* str)
+{
+    return @(get_documents_path(str.UTF8String));
+}
+
+
 @implementation Bootstrapper
 
 - (BOOL)extract:(NSString*)path to:(NSString*)dir {

@@ -139,11 +139,15 @@ enum { TOUCH_INPUT_DPAD=0,TOUCH_INPUT_DSTICK=1, TOUCH_INPUT_ANALOG=2};
 
 enum { EXT_CONTROL_NONE=0,EXT_CONTROL_ICADE=1,EXT_CONTROL_ICP=2,EXT_CONTROL_IMPULSE=3};
 
+NS_ASSUME_NONNULL_BEGIN
+
 extern const char* get_resource_path(const char* file);
 extern const char* get_documents_path(const char* file);
 
 // versions of get_resource_path and get_documents_path that take (gasp!) an NSString*
-#define getResourcePath(str)    @(get_resource_path(str.UTF8String))
-#define getDocumentPath(str)    @(get_documents_path(str.UTF8String))
+extern NSString* getResourcePath(NSString* str);
+extern NSString* getDocumentPath(NSString* str);
+
+NS_ASSUME_NONNULL_END
 
 #endif
