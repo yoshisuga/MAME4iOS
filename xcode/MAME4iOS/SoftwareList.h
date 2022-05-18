@@ -35,7 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray<NSDictionary<NSString*,NSString*>*>*)getSoftwareList:(NSString*)name;
 
 // get games for a system, filtered to only Available
-- (NSArray<GameInfoDictionary*>*)getGamesForSystem:(GameInfoDictionary*)system;
+- (NSArray<GameInfo*>*)getGamesForSystem:(GameInfo*)system;
 
 // get name of software list for a romset, used to know where to install.
 - (nullable NSString*)getSoftwareListNameForRomset:(NSString*)path named:(NSString*)name;

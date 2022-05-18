@@ -139,6 +139,11 @@
 		EF51444528249E4C001457B1 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF51444428249E4C001457B1 /* Accelerate.framework */; };
 		EF514447282815E4001457B1 /* GameInfoController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF514446282815E4001457B1 /* GameInfoController.swift */; };
 		EF514448282815E4001457B1 /* GameInfoController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF514446282815E4001457B1 /* GameInfoController.swift */; };
+		EF51444A282C5C68001457B1 /* GameInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF514449282C5C68001457B1 /* GameInfo.swift */; };
+		EF51444B282C5C68001457B1 /* GameInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF514449282C5C68001457B1 /* GameInfo.swift */; };
+		EF51444C282C5C68001457B1 /* GameInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF514449282C5C68001457B1 /* GameInfo.swift */; };
+		EF51444E28305E36001457B1 /* GameInfoCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF51444D28305E35001457B1 /* GameInfoCell.swift */; };
+		EF51444F28305E36001457B1 /* GameInfoCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF51444D28305E35001457B1 /* GameInfoCell.swift */; };
 		EF72F8E927FA24AD00157065 /* ui.bdf in Resources */ = {isa = PBXBuildFile; fileRef = EF72F8E827FA24AD00157065 /* ui.bdf */; };
 		EF72F8EA27FA24AD00157065 /* ui.bdf in Resources */ = {isa = PBXBuildFile; fileRef = EF72F8E827FA24AD00157065 /* ui.bdf */; };
 		EF7B232C23FD0469001FF51D /* (null) in Sources */ = {isa = PBXBuildFile; };
@@ -430,6 +435,8 @@
 		EF51444228249E44001457B1 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS15.4.sdk/System/Library/Frameworks/Accelerate.framework; sourceTree = DEVELOPER_DIR; };
 		EF51444428249E4C001457B1 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/System/Library/Frameworks/Accelerate.framework; sourceTree = DEVELOPER_DIR; };
 		EF514446282815E4001457B1 /* GameInfoController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameInfoController.swift; sourceTree = "<group>"; };
+		EF514449282C5C68001457B1 /* GameInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameInfo.swift; sourceTree = "<group>"; };
+		EF51444D28305E35001457B1 /* GameInfoCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameInfoCell.swift; sourceTree = "<group>"; };
 		EF55DE312533C21E004E37EF /* MAME4iOS.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = MAME4iOS.xcconfig; sourceTree = "<group>"; };
 		EF55DE5A2534C304004E37EF /* TVServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = TVServices.framework; path = Library/Frameworks/TVServices.framework; sourceTree = DEVELOPER_DIR; };
 		EF67E11524B8972100AFF489 /* MacMenu.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MacMenu.m; sourceTree = "<group>"; };
@@ -677,6 +684,8 @@
 				EF67E11524B8972100AFF489 /* MacMenu.m */,
 				EF1741D4261BB2D600DE8386 /* GameInfo.h */,
 				EF1741D5261BB2D600DE8386 /* GameInfo.m */,
+				EF514449282C5C68001457B1 /* GameInfo.swift */,
+				EF51444D28305E35001457B1 /* GameInfoCell.swift */,
 				EF514446282815E4001457B1 /* GameInfoController.swift */,
 				EF19F22E235D1C0300C8EE7F /* ChooseGameController.h */,
 				EF19F229235D1BDF00C8EE7F /* ChooseGameController.m */,
@@ -1228,6 +1237,7 @@
 				92A533BA21EBDBAD0089FBB9 /* GCDWebServerDataResponse.m in Sources */,
 				EF24933A236264DA00DD0A6C /* ImageCache.m in Sources */,
 				92B99F0F2022706600CC44E3 /* UIView+Toast.m in Sources */,
+				EF51444E28305E36001457B1 /* GameInfoCell.swift in Sources */,
 				9296524C27FC1FF30064D1F5 /* EmulatorTouchMouse.swift in Sources */,
 				925ABCAD1E46DCC500997182 /* EmulatorController.m in Sources */,
 				EF1741D6261BB2D600DE8386 /* GameInfo.m in Sources */,
@@ -1257,6 +1267,7 @@
 				EF926C9B24BA36980048392B /* SkinManager.m in Sources */,
 				EF8EAA88244F7F5D00DA02BB /* SteamController.m in Sources */,
 				92A533AE21EBDBAD0089FBB9 /* GCDWebServer.m in Sources */,
+				EF51444A282C5C68001457B1 /* GameInfo.swift in Sources */,
 				92A5332321EB57F00089FBB9 /* Options.m in Sources */,
 				EF301CF3240460F3000510FD /* ZipFile.m in Sources */,
 			);
@@ -1281,6 +1292,7 @@
 				92A533A921EBDBAD0089FBB9 /* GCDWebServerRequest.m in Sources */,
 				EF8EAA8B244F7F5D00DA02BB /* SteamControllerExtendedGamepad.m in Sources */,
 				EFF9F82B2470755800DDA88C /* MetalScreenView.m in Sources */,
+				EF51444F28305E36001457B1 /* GameInfoCell.swift in Sources */,
 				92A533B221EBDBAD0089FBB9 /* GCDWebServerConnection.m in Sources */,
 				92A533B821EBDBAD0089FBB9 /* GCDWebServerFileResponse.m in Sources */,
 				92A533C121EBDBAD0089FBB9 /* GCDWebServerURLEncodedFormRequest.m in Sources */,
@@ -1298,6 +1310,7 @@
 				EF514448282815E4001457B1 /* GameInfoController.swift in Sources */,
 				EF24BAFD24C786A900D9C55A /* SkinManager.m in Sources */,
 				92A533AC21EBDBAD0089FBB9 /* GCDWebServerFunctions.m in Sources */,
+				EF51444B282C5C68001457B1 /* GameInfo.swift in Sources */,
 				EF7B232D23FD0469001FF51D /* (null) in Sources */,
 				92A533AF21EBDBAD0089FBB9 /* GCDWebServer.m in Sources */,
 				EF8EAA8D244F7F5D00DA02BB /* SteamControllerInput.m in Sources */,
@@ -1325,6 +1338,7 @@
 			files = (
 				EFEEA4CA25C9D4B700314132 /* ContentProvider.m in Sources */,
 				EF1741D9261BB2D600DE8386 /* GameInfo.m in Sources */,
+				EF51444C282C5C68001457B1 /* GameInfo.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1489,6 +1503,7 @@
 		92ECB8FC21EA985000D1E3D0 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "Launch Image";
 				CLANG_ANALYZER_NONNULL = YES;
@@ -1692,6 +1707,8 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 13.4;
 			};
@@ -1728,6 +1745,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
 				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 13.4;
 			};

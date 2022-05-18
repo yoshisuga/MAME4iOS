@@ -39,15 +39,16 @@
 }
 
 // get a TopSelf item from game info
--(TVTopShelfSectionedItem*)getGameItem:(NSDictionary*)game {
-
-    if (![game isKindOfClass:[NSDictionary class]] || game[kGameInfoName] == nil || game[kGameInfoDescription] == nil)
-        return nil;
-
-    // the MAME UI does not have a Title image, so exclude it.
-    if ([game.gameName isEqualToString:kGameInfoNameMameMenu])
-        return nil;
+-(TVTopShelfSectionedItem*)getGameItem:(NSDictionary*)dict {
     
+    if (![dict isKindOfClass:[NSDictionary class]])
+        return nil;
+
+    GameInfo* game = [[GameInfo alloc] initWithDictionary:dict];
+
+    if (game.gameName.length == 0 || game.gameDescription.length == 0 || game.gameIsMame)
+        return nil;
+
     if (game.gameImageURLs.count == 0 || game.gamePlayURL == nil)
         return nil;
     
@@ -86,11 +87,11 @@
 - (void)loadTopShelfContentWithCompletionHandler:(void (^) (id<TVTopShelfContent> content))completionHandler {
     NSUserDefaults* defaults = [self sharedUserDefaults];
     
-    NSArray* recent_games = [defaults objectForKey:RECENT_GAMES_KEY];
-    NSArray* favorite_games = [defaults objectForKey:FAVORITE_GAMES_KEY];
+    NSArray* recent_games = [defaults arrayForKey:RECENT_GAMES_KEY] ?: @[];
+    NSArray* favorite_games = [defaults arrayForKey:FAVORITE_GAMES_KEY] ?: @[];
     
     // if we dont have any content to show, let tvOS show the default image.
-    if (![recent_games isKindOfClass:[NSArray class]] || ![favorite_games isKindOfClass:[NSArray class]] || (recent_games.count + favorite_games.count) == 0) {
+    if (recent_games.count + favorite_games.count == 0) {
         return completionHandler(nil);
     }
     

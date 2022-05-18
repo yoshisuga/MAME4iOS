@@ -8,7 +8,7 @@
 
 import Darwin
 
-extension NSDictionary {
+extension GameInfo {
     var gameInfoCommandLineArgsTitle: String {
         "\(gameName)-\(gameDriver)"
     }
@@ -16,9 +16,9 @@ extension NSDictionary {
 
 @objcMembers class CommandLineArgsHelper: NSObject {
     
-    let gameInfo: NSDictionary
+    let gameInfo: GameInfo
     
-    init(gameInfo: NSDictionary) {
+    init(gameInfo: GameInfo) {
         self.gameInfo = gameInfo
     }
     
@@ -72,7 +72,7 @@ class CommandLineArgsViewController: UIViewController {
     }()
     let saveButton = UIButton(type: .custom)
     
-    init(gameInfo: NSDictionary) {
+    init(gameInfo: GameInfo) {
         self.commandLineArgsHelper = CommandLineArgsHelper(gameInfo: gameInfo)
         super.init(nibName: nil, bundle: nil)
     }

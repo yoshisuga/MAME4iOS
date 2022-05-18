@@ -14,9 +14,7 @@
 #define RECENT_GAMES_KEY        @"RecentGames"
 #define RECENT_GAMES_TITLE      @"Recently Played"
 
-// GameInfo is just a dictionary
-typedef NSDictionary<NSString*, NSString*> GameInfoDictionary;
-typedef GameInfoDictionary* GameInfo;
+// TODO: find a way to remove these keys, or make them avail from ObjC from Swift.
 
 // keys used in a GameInfo dictionary
 #define kGameInfoType           @"type"
@@ -58,14 +56,22 @@ typedef GameInfoDictionary* GameInfo;
 #define kGameInfoScreenLCD          @"LCD"
 
 // special "fake" (aka built-in) games
-#define kGameInfoNameSettings   @"settings"
 #define kGameInfoNameMameMenu   @"mameui"
-#define kGameInfoNameAddROMS    @"settings-add-roms"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface NSDictionary (GameInfo)
+@interface GameInfo : NSObject
 
+// create from a NSDictionary
+- (instancetype)initWithDictionary:(NSDictionary<NSString*,NSString*>*)dict;
+
+// create from a URL
+- (nullable instancetype)initWithURL:(NSURL*)url;
+
+// convert to a NSDictionary
+@property (nonatomic, strong, readonly) NSDictionary<NSString*,NSString*>* gameDictionary;
+
+// game properties
 @property (nonatomic, strong, readonly) NSString* gameType;
 @property (nonatomic, strong, readonly) NSString* gameSystem;
 @property (nonatomic, strong, readonly) NSString* gameName;
@@ -87,16 +93,16 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) NSURL* gamePlayURL;
 @property (nonatomic, strong, readonly) NSArray<NSURL*>* gameImageURLs;
 
-@property (nonatomic, readonly) BOOL gameIsFake;
 @property (nonatomic, readonly) BOOL gameIsMame;
 @property (nonatomic, readonly) BOOL gameIsSnapshot;
 @property (nonatomic, readonly) BOOL gameIsClone;
 @property (nonatomic, readonly) BOOL gameIsConsole;
 @property (nonatomic, readonly) BOOL gameIsSoftware;
 
+// game Metadata
 @property (nonatomic, strong, readonly) NSString* gameMetadataFile;
--(GameInfoDictionary*)gameSetValue:(NSString*)value forKey:(NSString*)key;
--(GameInfoDictionary*)gameLoadMetadata;
+-(void)gameSetValue:(NSString*)value forKey:(NSString*)key;
+-(void)gameLoadMetadata;
 
 @end
 

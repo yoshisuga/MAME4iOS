@@ -282,7 +282,7 @@ static SoftwareList* g_softlist;
 #define kHUDPositionPortKey  @"hud_rect_port"
 #define kHUDScalePortKey     @"hud_scale_port"
 #define kSelectedGameInfoKey @"selected_game_info"
-static GameInfoDictionary* g_mame_game_info;
+static GameInfo* g_mame_game_info;
 static BOOL g_mame_reset = FALSE;           // do a full reset (delete cfg files) before running MAME
 static char g_mame_system[64];              // system MAME should run
 static char g_mame_type[16];                // game type (-cart, -flop, ...) or empty
@@ -543,14 +543,16 @@ static void check_pause()
 }
 
 // setup the globals the MAME thread uses to run the next game, or pass nil to run without params (aka main menu)
-void set_mame_globals(GameInfoDictionary* game)
+void set_mame_globals(GameInfo* game)
 {
     if (game != nil)
     {
         // please only call this on main-thread
         NSCParameterAssert(NSThread.isMainThread);
 
-        NSString* name = game[kGameInfoFile] ?: game[kGameInfoName] ?: @"";
+        NSString* name = game.gameName;
+        if (game.gameFile.length != 0)
+            name = game.gameFile;
         if ([name isEqualToString:kGameInfoNameMameMenu])
             name = @" ";
         strncpy(g_mame_game, name.UTF8String, sizeof(g_mame_game));
@@ -733,29 +735,40 @@ void m4i_game_list(myosd_game_info* game_info, int game_count)
             NSString* type = types[game_info[i].type];
             if ((game_info[i].flags & MYOSD_GAME_INFO_BIOS) && myosd_get(MYOSD_VERSION) == 139)
                 type = kGameInfoTypeBIOS;
+            
+            NSString* parent = @(game_info[i].parent ?: "");
+            if ([parent isEqualToString:@"0"])
+                parent = @"";
 
-            NSDictionary* game = @{
+            NSString* year = @(game_info[i].year ?: "");
+            if ([year isEqualToString:@"0"])
+                year = @"";
+
+            GameInfo* game = [[GameInfo alloc] initWithDictionary:@{
                 kGameInfoType:        type,
                 kGameInfoName:        @(game_info[i].name),
                 kGameInfoDescription: @(game_info[i].description),
-                kGameInfoYear:        @(game_info[i].year),
-                kGameInfoParent:      @(game_info[i].parent ?: ""),
+                kGameInfoYear:        year,
+                kGameInfoParent:      parent,
                 kGameInfoManufacturer:@(game_info[i].manufacturer),
-                kGameInfoCategory:    find_category(@(game_info[i].name), @(game_info[i].parent ?: "")),
+                kGameInfoCategory:    find_category(@(game_info[i].name), parent),
                 kGameInfoDriver:      [@(game_info[i].source_file ?: "").lastPathComponent stringByDeletingPathExtension],
                 kGameInfoSoftwareMedia:software_list,
                 kGameInfoScreen:      screens[(game_info[i].flags & MYOSD_GAME_INFO_VERTICAL) ? 1 : 0 +
                                               (game_info[i].flags & MYOSD_GAME_INFO_VECTOR)   ? 2 : 0 +
                                               (game_info[i].flags & MYOSD_GAME_INFO_LCD)      ? 4 : 0 ]
-            };
-       
+            }];
+            
+#ifdef DEBUG
+            XGameInfo* xgame = [[XGameInfo alloc] initWithDictionary:game.gameDictionary];
+#endif
             NSArray* software = @[];
             if (software_list.length != 0)
             {
                 software = [g_softlist getGamesForSystem:game] ?: @[];
             
                 if (g_pref_filter_clones)
-                    software = [software filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"%K == ''", kGameInfoParent]];
+                    software = [software filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"gameParent == ''"]];
             }
             
             [games addObject:game];
@@ -765,14 +778,14 @@ void m4i_game_list(myosd_game_info* game_info, int game_count)
         NSString* mame_version = [@((const char *)myosd_get(MYOSD_VERSION_STRING) ?: "") componentsSeparatedByString:@" ("].firstObject;
 
         // add a *special* system game that will run the DOS MAME menu.
-        [games addObject:@{
+        [games addObject:[[GameInfo alloc] initWithDictionary:@{
             kGameInfoType:kGameInfoTypeComputer,
             kGameInfoName:kGameInfoNameMameMenu,
             kGameInfoParent:@"",
             kGameInfoDescription:[NSString stringWithFormat:@"MAME %@", mame_version],
             kGameInfoYear:@"1996",
             kGameInfoManufacturer:@"MAMEDev and contributors",
-        }];
+        }]];
 
         // give the list to the main thread to display to user
         [sharedInstance performSelectorOnMainThread:@selector(chooseGame:) withObject:games waitUntilDone:FALSE];
@@ -865,16 +878,13 @@ void m4i_game_stop()
 
 #endif
 
-+ (NSArray*)romList {
-    return [g_category_dict allKeys];
-}
-
-+ (void)setCurrentGame:(NSDictionary*)game {
-    [[NSUserDefaults standardUserDefaults] setObject:(game ?: @{}) forKey:kSelectedGameInfoKey];
++ (void)setCurrentGame:(GameInfo*)game {
+    [[NSUserDefaults standardUserDefaults] setObject:(game.gameDictionary ?: @{}) forKey:kSelectedGameInfoKey];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
-+ (NSDictionary*)getCurrentGame {
-    return [[NSUserDefaults standardUserDefaults] objectForKey:kSelectedGameInfoKey] ?: @{};
++ (GameInfo*)getCurrentGame {
+    NSDictionary* info = [[NSUserDefaults standardUserDefaults] objectForKey:kSelectedGameInfoKey] ?: @{};
+    return [[GameInfo alloc] initWithDictionary:info];
 }
 
 + (EmulatorController*)sharedInstance {
@@ -1441,7 +1451,7 @@ UIViewController* g_menu;
     [self updatePointerLocked];
 }
 
-- (void)runAddROMS {
+- (void)runAddROMS:(id)from {
     NSString* title = g_no_roms_found ? @"Welcome to " PRODUCT_NAME_LONG : @"Add ROMs";
 #if TARGET_OS_TV
     NSString* message = @"To transfer ROMs from your computer, Start Web Server or Import ROMs.";
@@ -1450,9 +1460,6 @@ UIViewController* g_menu;
 #endif
     
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
-    [alert addAction:[UIAlertAction actionWithTitle:@"Start Web Server" symbol:@"arrow.up.arrow.down.circle" style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
-        [self runServer];
-    }]];
 #if TARGET_OS_IOS
     [alert addAction:[UIAlertAction actionWithTitle:@"Import ROMs" symbol:@"square.and.arrow.down" style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
         [self runImport];
@@ -1469,6 +1476,9 @@ UIViewController* g_menu;
         [self runShowFiles];
     }]];
 #endif
+    [alert addAction:[UIAlertAction actionWithTitle:@"Start Web Server" symbol:@"arrow.up.arrow.down.circle" style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
+        [self runServer];
+    }]];
     [alert addAction:[UIAlertAction actionWithTitle:@"Reload ROMs" symbol:@"arrow.2.circlepath.circle" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
         [self reload];  /* exit mame menu and re-scan ROMs*/
     }]];
@@ -1477,6 +1487,14 @@ UIViewController* g_menu;
         if (self.presentedViewController == nil)
             [self reload];  /* exit mame menu and re-scan ROMs*/
     }]];
+#if TARGET_OS_IOS
+    if ([from isKindOfClass:[UIView class]]) {
+        UIView* view = from;
+        alert.modalPresentationStyle = UIModalPresentationPopover;
+        alert.popoverPresentationController.sourceView = view;
+        alert.popoverPresentationController.sourceRect = view.bounds;
+    }
+#endif
     [self.topViewController presentViewController:alert animated:YES completion:nil];
 }
 
@@ -1911,7 +1929,7 @@ ButtonPressType input_debounce(unsigned long pad_status, CGPoint stick) {
 {
     [super viewDidAppear:animated];
 
-    if (g_mame_game_info.gameName.length != 0 && !g_mame_game_info.gameIsFake)
+    if (g_mame_game_info.gameName.length != 0)
         [self updateUserActivity:g_mame_game_info];
 
     [self scanForDevices];
@@ -2324,7 +2342,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     
     if (g_pref_showHUD == HudSizeInfo) {
         // add game info
-        if (g_mame_game_info != nil && g_mame_game_info[kGameInfoName] != nil)
+        if (g_mame_game_info != nil && g_mame_game_info.gameName.length != 0)
             [hudViewController addAttributedText:[ChooseGameController getGameText:g_mame_game_info]];
         
         // add FPS display
@@ -4863,7 +4881,7 @@ BOOL is_roms_dir(NSString* dir) {
         // TODO: 7z for artwork and samples?
         // TODO: we specificaly *DONT* save CHDs
         // "hi" is the 139 dir, and "hiscore" is the 2xx dir
-        NSArray* paths = @[@"roms/%@.zip", @"roms/%@.7z", @"artwork/%@.zip", @"samples/%@.zip", @"titles/%@.png", @"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@/1.sta", @"sta/%@/2.sta", @"hi/%@.hi", @"hiscore/%@.hi"];
+        NSArray* paths = @[@"roms/%@.zip", @"roms/%@.7z", @"roms/%@.json", @"artwork/%@.zip", @"samples/%@.zip", @"titles/%@.png", @"cfg/%@.cfg", @"ini/%@.ini", @"sta/%@/1.sta", @"sta/%@/2.sta", @"hi/%@.hi", @"hiscore/%@.hi"];
 
         for (NSString* path in paths) {
             NSString* file = [NSString stringWithFormat:path, rom.stringByDeletingPathExtension];
@@ -5887,7 +5905,7 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
 // NOTE we cant run a game in all situations, for example if the user is deep
 // into the Settings dialog, we just give up, to complex to try to back out.
 //
--(void)playGame:(NSDictionary*)game {
+-(void)playGame:(GameInfo*)game {
     NSLog(@"PLAY: %@", game);
     
     // if we are not presenting anything, we can just "run" the game
@@ -6022,7 +6040,7 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
         }
         
         change_pause(PAUSE_INPUT);
-        [self runAddROMS];
+        [self runAddROMS:nil];
         return;
     }
     if (g_mame_game_error[0] != 0) {
@@ -6069,17 +6087,7 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
     choose.hideConsoles = g_pref_filter_bios;
     [choose setGameList:games];
     change_pause(PAUSE_INPUT);
-    choose.selectGameCallback = ^(NSDictionary* game) {
-        if ([game[kGameInfoName] isEqualToString:kGameInfoNameSettings]) {
-            [self runSettings];
-            return;
-        }
-        
-        if ([game[kGameInfoName] isEqualToString:kGameInfoNameAddROMS]) {
-            [self runAddROMS];
-            return;
-        }
-        
+    choose.selectGameCallback = ^(GameInfo* game) {
         if (self.presentedViewController.isBeingDismissed)
             return;
         
@@ -6089,6 +6097,13 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
             [self performSelectorOnMainThread:@selector(playGame:) withObject:game waitUntilDone:FALSE];
         }];
     };
+    choose.settingsCallback = ^(id from) {
+        [self runSettings];
+    };
+    choose.romsCallback = ^(id from) {
+        [self runAddROMS:from];
+    };
+
     UINavigationController* nav = [[UINavigationController alloc] initWithRootViewController:choose];
     nav.modalPresentationStyle = UIModalPresentationFullScreen;
     if (@available(iOS 13.0, tvOS 13.0, *)) {
@@ -6155,7 +6170,7 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
 
 #pragma mark NSUserActivty
 
--(void)updateUserActivity:(NSDictionary*)game
+-(void)updateUserActivity:(GameInfo*)game
 {
 #if TARGET_OS_IOS
     if (game != nil)

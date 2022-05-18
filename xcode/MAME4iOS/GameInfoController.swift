@@ -27,23 +27,29 @@ import UIKit
         ]
     ]
     
-    private var game:GameInfo!
+    private let game:GameInfo
     
     private let textView = UITextView()
     
-    convenience init(game:GameInfo) {
-        self.init(nibName:nil, bundle:nil)
+    init(game:GameInfo) {
         self.game = game
+        super.init(nibName:nil, bundle:nil)
+        title = "Info"
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     override func viewDidLoad() {
-        guard let game = self.game else { return }
         super.viewDidLoad()
         
         #if os(iOS)
-            self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem:.done, target:self, action:#selector(done))
+            navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem:.done, target:self, action:#selector(done))
             textView.isEditable = false
             textView.isSelectable = false
+            textView.textContainerInset.left = 8
+            textView.textContainerInset.right = 8
         #else
             let dx = UIScreen.main.bounds.width/4
             textView.textContainerInset.left = dx
@@ -58,18 +64,23 @@ import UIKit
         
         textView.isScrollEnabled = true
         textView.backgroundColor = .init(white: 0.111, alpha: 1.0)
-        self.view.addSubview(textView)
+        textView.contentInsetAdjustmentBehavior = .always
+        view.addSubview(textView)
 
         let text = NSMutableAttributedString(string:"")
-        
-        if let image = UIImage(contentsOfFile:game.gameLocalImageURL.path) {
-            // TODO: scale the image if it is too big?
-            text.append(NSAttributedString(image:image).centered)
-            text.append(NSAttributedString(string:"\n\n"))
+
+        // get the title image for the game, and scale it down if it is too big.
+        var image = ChooseGameController.getGameIcon(game)
+        if let window = (UIApplication.shared.value(forKey:"keyWindow") as? UIWindow) {
+            let maxWidth = window.bounds.size.width - (textView.textContainerInset.left + textView.textContainerInset.right + 16)
+            if image.size.width > maxWidth {
+                image = image.resize(to: CGSize(width:maxWidth, height:0))
+            }
         }
+        text.append(NSAttributedString(image:image).centered)
+        text.append(NSAttributedString(string:"\n\n"))
         
-        // TODO: swiftify GameInfo so we dont need a ugly cast to [String:String]
-        text.append(ChooseGameController.getGameText(game as? [String:String]))
+        text.append(ChooseGameController.getGameText(game))
         text.append(NSAttributedString(string:"\n\n"))
 
         text.append(getMetaText())
@@ -89,7 +100,9 @@ import UIKit
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        textView.contentOffset.y = -textView.adjustedContentInset.top
+        if (textView.contentOffset.y == 0) {
+            textView.contentOffset.y = -textView.adjustedContentInset.top
+        }
     }
     
     override func viewWillLayoutSubviews() {
@@ -99,7 +112,7 @@ import UIKit
     
 #if os(iOS)
     @objc func done() {
-        self.presentingViewController?.dismiss(animated: true)
+        presentingViewController?.dismiss(animated: true)
     }
 #else
     @objc func pan(_ pan:UIPanGestureRecognizer) {
@@ -128,9 +141,9 @@ private extension GameInfoController {
         let text = NSMutableAttributedString()
         
         var keyWidth = 0.0
-        let keys = (game.allKeys as? [String]) ?? []
-        for key in keys.sorted(by:<) {
-            guard var val = game[key] as? String, !val.isEmpty else { continue }
+        let dict = game.gameDictionary
+        for key in dict.keys.sorted(by:<) {
+            guard var val = dict[key], !val.isEmpty else { continue }
             if val.contains(",") && !val.contains(", ") {
                 val = val.replacingOccurrences(of: ",", with: ", ")
             }
@@ -184,6 +197,30 @@ private extension NSAttributedString {
         let text = NSMutableAttributedString(attributedString:self)
         text.addAttribute(.paragraphStyle, value:NSParagraphStyle.center, range:NSRange(location:0, length:text.length))
         return text
+    }
+}
+
+// TODO: put this somewhere else? ImageCache?
+private extension UIImage {
+    /**
+    resize UIImage to given size in points.
+    if size == (0,0) no resizing will be done.
+    if width or height is 0 it is computed via aspect ratio.
+    */
+    func resize(to size:CGSize) -> UIImage {
+        var size = size
+        
+        if size.width == 0 && size.height == 0 {
+            return self
+        } else if size.width == 0 {
+            size.width = floor(size.height * self.size.width / self.size.height)
+        } else if size.height == 0 {
+            size.height = floor(size.width * self.size.height / self.size.width)
+        }
+        
+        return UIGraphicsImageRenderer(size:size).image { ctx in
+            self.draw(in: CGRect(origin:.zero, size:size))
+        }
     }
 }
 
