@@ -1079,7 +1079,7 @@ simd_float4 ColorMatch(CGColorSpaceRef destColorSpace, CGColorSpaceRef sourceCol
             if (orient == MYOSD_ORIENTATION_SWAP_XY)
                 assert(TRUE);
             if (orient == (MYOSD_ORIENTATION_SWAP_XY | MYOSD_ORIENTATION_FLIP_X | MYOSD_ORIENTATION_FLIP_Y))
-                assert(FALSE);
+                assert(TRUE);
 
             if (wrap == 0)
                 assert(TRUE);
