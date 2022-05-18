@@ -45,12 +45,14 @@ import UIKit
         super.viewDidLoad()
         
         #if os(iOS)
+            view.backgroundColor = UIColor.systemBackground
             navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem:.done, target:self, action:#selector(done))
             textView.isEditable = false
             textView.isSelectable = false
             textView.textContainerInset.left = 8
             textView.textContainerInset.right = 8
         #else
+            view.backgroundColor = UIColor(white: 0.111, alpha: 1.0)
             let dx = UIScreen.main.bounds.width/4
             textView.textContainerInset.left = dx
             textView.textContainerInset.right = dx
@@ -63,9 +65,10 @@ import UIKit
         #endif
         
         textView.isScrollEnabled = true
-        textView.backgroundColor = .init(white: 0.111, alpha: 1.0)
-        textView.contentInsetAdjustmentBehavior = .always
+        textView.contentInsetAdjustmentBehavior = .never
+        textView.backgroundColor = nil
         view.addSubview(textView)
+        setupConstraints()
 
         let text = NSMutableAttributedString(string:"")
 
@@ -98,16 +101,14 @@ import UIKit
         textView.attributedText = text
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        if (textView.contentOffset.y == 0) {
-            textView.contentOffset.y = -textView.adjustedContentInset.top
-        }
-    }
-    
-    override func viewWillLayoutSubviews() {
-        super.viewWillLayoutSubviews()
-        textView.frame = view.bounds
+    private func setupConstraints() {
+      textView.translatesAutoresizingMaskIntoConstraints = false
+      NSLayoutConstraint.activate([
+          textView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+          textView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+          textView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+          textView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+      ])
     }
     
 #if os(iOS)
