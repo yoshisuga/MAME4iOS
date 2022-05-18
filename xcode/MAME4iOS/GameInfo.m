@@ -8,59 +8,89 @@
 
 #import "GameInfo.h"
 
-@implementation NSDictionary (GameInfo)
+@implementation GameInfo
+{
+    NSDictionary<NSString*, NSString*>* dict;
+}
+
+// create from a NSDictionary
+- (instancetype)initWithDictionary:(NSDictionary<NSString*,NSString*>*)info
+{
+    self = [super init];
+    dict = info;
+    return self;
+}
+
+// convert to a NSDictionary
+-(NSDictionary<NSString*,NSString*>*) gameDictionary
+{
+    return dict;
+}
+
+- (BOOL)isEqual:(id)other
+{
+    if (other == self)
+        return YES;
+    if (other == nil)
+        return NO;
+    if (![other isKindOfClass:[GameInfo class]])
+        return NO;
+    
+    return [dict isEqualToDictionary:[(GameInfo*)other gameDictionary]];
+}
+
+- (NSUInteger)hash
+{
+    return dict.hash;
+}
 
 -(NSString*)gameType
 {
-    return self[kGameInfoType] ?: kGameInfoTypeArcade;
+    return dict[kGameInfoType] ?: kGameInfoTypeArcade;
 }
 -(NSString*)gameSystem
 {
-    return self[kGameInfoSystem] ?: @"";
+    return dict[kGameInfoSystem] ?: @"";
 }
 -(NSString*)gameSoftwareMedia
 {
-    return self[kGameInfoSoftwareMedia] ?: @"";
+    return dict[kGameInfoSoftwareMedia] ?: @"";
 }
 -(NSString*)gameSoftwareList
 {
-    return self[kGameInfoSoftwareList] ?: self[kGameInfoSystem] ?: @"";
+    return dict[kGameInfoSoftwareList] ?: @"";
 }
 -(NSString*)gameName
 {
-    return self[kGameInfoName] ?: @"";
+    return dict[kGameInfoName] ?: @"";
 }
 -(NSString*)gameParent
 {
-    return self[kGameInfoParent] ?: @"";
+    return dict[kGameInfoParent] ?: @"";
 }
 -(NSString*)gameYear
 {
-    return self[kGameInfoYear] ?: @"";
+    return dict[kGameInfoYear] ?: @"";
 }
 -(NSString*)gameDescription
 {
-    return self[kGameInfoDescription] ?: @"";
+    return dict[kGameInfoDescription] ?: @"";
 }
 -(NSString*)gameManufacturer
 {
-    return self[kGameInfoManufacturer] ?: @"";
+    return dict[kGameInfoManufacturer] ?: @"";
 }
 -(NSString*)gameDriver
 {
-    return self[kGameInfoDriver] ?: @"";
+    return dict[kGameInfoDriver] ?: @"";
 }
 -(NSString*)gameScreen
 {
-    return self[kGameInfoScreen] ?: kGameInfoScreenHorizontal;
+    return dict[kGameInfoScreen] ?: kGameInfoScreenHorizontal;
 }
 -(NSString*)gameCategory
 {
-    return self[kGameInfoCategory] ?: @"";
-}
-- (BOOL)gameIsFake
-{
-    return [@[kGameInfoNameMameMenu, kGameInfoNameSettings] containsObject:self[kGameInfoName]];
+    return dict[kGameInfoCategory] ?: @"";
 }
 - (BOOL)gameIsMame
 {
@@ -68,15 +98,15 @@
 }
 - (NSString*)gameFile
 {
-    return self[kGameInfoFile] ?: @"";
+    return dict[kGameInfoFile] ?: @"";
 }
 - (NSString*)gameMediaType
 {
-    return self[kGameInfoMediaType] ?: @"";
+    return dict[kGameInfoMediaType] ?: @"";
 }
 - (NSString*)gameCustomCmdline
 {
-    return self[kGameInfoCustomCmdline] ?: @"";
+    return dict[kGameInfoCustomCmdline] ?: @"";
 }
 - (BOOL)gameIsSnapshot
 {
@@ -96,19 +126,22 @@
 }
 -(NSString*)gameTitle
 {
-    NSString* title = self[kGameInfoDescription] ?: self[kGameInfoName] ?: @"";
+    NSString* title = dict[kGameInfoDescription] ?: dict[kGameInfoName] ?: @"";
     title = [title componentsSeparatedByString:@" ("].firstObject;
     title = [title componentsSeparatedByString:@" ["].firstObject;
     return title;
 }
+
+// MARK: Image URL
+
 -(NSArray<NSURL*>*)gameImageURLs
 {
     NSParameterAssert(self.gameName.length != 0);
     NSParameterAssert(![self.gameName containsString:@" "]);
     NSParameterAssert(![self.gameSystem containsString:@" "]);
     
-    if (self.gameIsFake || self.gameIsSnapshot) {
-        return @[self.gameLocalImageURL];
+    if (self.gameIsMame || self.gameIsSnapshot) {
+        return @[];
     }
     else if (self.gameSoftwareList.length != 0)
     {
@@ -184,7 +217,7 @@
     if (name.length == 0)
         return nil;
     
-    if (self.gameIsFake)
+    if (self.gameIsMame)
         return [[NSBundle mainBundle] URLForResource:name withExtension:@"png"];
     
 #if TARGET_OS_IOS
@@ -202,6 +235,9 @@
     else
         return [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/titles/%@.png", path, name] isDirectory:NO];
 }
+
+// MARK: Play URL
+
 -(NSURL*)gamePlayURL
 {
     if (self.gameIsSoftware)
@@ -211,43 +247,70 @@
     else
         return [NSURL URLWithString:[NSString stringWithFormat:@"mame4ios://%@", self.gameName]];
 }
+// create from a URL
+// handle our own scheme mame4ios://game OR mame4ios://system/game OR mame4ios://system/type:file
+- (instancetype)initWithURL:(NSURL*)url
+{
+    if (![url.scheme isEqualToString:@"mame4ios"] || [url.host length] == 0 || [url.query length] != 0)
+        return nil;
+
+    NSDictionary* dict;
+    
+    NSString* path = url.path;
+    if ([path hasPrefix:@"/"])
+        path = [path substringFromIndex:1];
+    
+    NSArray* arr = [path componentsSeparatedByString:@":"];
+    
+    if (arr.count == 2)
+        dict = @{kGameInfoSystem:url.host, kGameInfoMediaType:arr.firstObject, kGameInfoFile:arr.lastObject};
+    else if ([path length] != 0)
+        dict = @{kGameInfoSystem:url.host, kGameInfoName:path};
+    else
+        dict = @{kGameInfoName:url.host};
+    
+    return [self initWithDictionary:dict];
+}
 
 // MARK: Metadata
 
 // get the sidecar file used to store custom metadata/info
 -(NSString*) gameMetadataFile
 {
-    // only do custom metadata for "software" (aka non-MESS, non-Arcade)
-    // TODO: maybe have a sidecar for Arcade and MESS
-    if (self.gameFile.length == 0)
-        return @"";
-    
 #if TARGET_OS_IOS
     NSString *root = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).firstObject;
 #elif TARGET_OS_TV
     NSString *root = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES).firstObject;
 #endif
-    
-    return [[root stringByAppendingPathComponent:self.gameFile] stringByAppendingPathExtension:@"json"];
+    if (self.gameFile.length != 0)
+        return [NSString stringWithFormat:@"%@/%@.json", root, self.gameFile];
+    else if (self.gameSoftwareList.length != 0)
+        return [NSString stringWithFormat:@"%@/roms/%@/%@.json", root, self.gameSoftwareList, self.gameName];
+    else
+        return [NSString stringWithFormat:@"%@/roms/%@.json", root, self.gameName];
 }
 // load any on-disk metadata json
--(GameInfoDictionary*) gameMetadata
+-(NSDictionary*) gameMetadata
 {
-    if (self.gameMetadataFile.length == 0)
+    NSString* path = self.gameMetadataFile;
+    if (path.length == 0)
         return nil;
-    GameInfoDictionary* info = nil;
-    NSData* data = [NSData dataWithContentsOfFile:self.gameMetadataFile];
-    if (data != nil)
-        info = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+    
+    NSData* data = [NSData dataWithContentsOfFile:path];
+    if (data == nil)
+        return nil;
+    
+    NSDictionary* info = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
     if (![info isKindOfClass:[NSDictionary class]])
-        info = nil;
+        return nil;
+    
     return info;
 }
 // modify custom metadata key, and save to sidecar, return modified game
--(GameInfoDictionary*)gameSetValue:(NSString*)value forKey:(NSString*)key
+-(void)gameSetValue:(NSString*)value forKey:(NSString*)key
 {
-    if ([value isEqualToString:(self[key] ?: @"")])
-        return self;
+    if ([value isEqualToString:(dict[key] ?: @"")])
+        return;
     
     if (self.gameMetadataFile.length != 0)
     {
@@ -256,19 +319,20 @@
         NSData* data = [NSJSONSerialization dataWithJSONObject:info options:NSJSONWritingPrettyPrinted error:nil];
         [data writeToFile:self.gameMetadataFile atomically:NO];
     }
-    NSMutableDictionary* game = [self mutableCopy];
-    [game setValue:value forKey:key];
-    return [game copy];
+
+    NSMutableDictionary* mdict = [dict mutableCopy];
+    [mdict setValue:value forKey:key];
+    dict = [mdict copy];
 }
 // load and merge any on-disk metadata for this game
--(GameInfoDictionary*) gameLoadMetadata
+-(void)gameLoadMetadata
 {
-    GameInfoDictionary* info = self.gameMetadata;
+    NSDictionary* info = self.gameMetadata;
     if (info.count == 0)
-        return self;
-    NSMutableDictionary* game = [self mutableCopy];
-    [game addEntriesFromDictionary:info];
-    return [game copy];
+        return;
+    NSMutableDictionary* mdict = [dict mutableCopy];
+    [mdict addEntriesFromDictionary:info];
+    dict = [mdict copy];
 }
 
 @end
