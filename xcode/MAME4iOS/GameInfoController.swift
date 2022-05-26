@@ -106,8 +106,8 @@ class TVOSScrollView: UIScrollView {
         #if os(tvOS)
         let scrollViewTopConstraint = scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20)
         let labelHorizontalConstraints = [
-            label.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
-            label.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+            label.leadingAnchor.constraint(equalTo: view.readableContentGuide.leadingAnchor),
+            label.trailingAnchor.constraint(equalTo: view.readableContentGuide.trailingAnchor)
         ]
         #else
         let scrollViewTopConstraint = scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor)
