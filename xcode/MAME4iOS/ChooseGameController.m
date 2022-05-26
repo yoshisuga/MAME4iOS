@@ -1412,7 +1412,12 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 +(UIImage*)getGameIcon:(GameInfo*)game
 {
-    return [UIImage imageWithContentsOfFile:game.gameLocalImageURL.path] ?: [self makeIcon:game];
+    UIImage* image = [UIImage imageWithContentsOfFile:game.gameLocalImageURL.path];
+    if (image) {
+        CGFloat aspect =  [game.gameScreen containsString:kGameInfoScreenVertical] ? (3.0 / 4.0) : (4.0 / 3.0);
+        image = [image scaledToSize:CGSizeMake(image.size.width, image.size.width / aspect)];
+    }
+    return image ?: [self makeIcon:game];
 }
 
 // get size of an item
