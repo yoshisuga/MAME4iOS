@@ -15,6 +15,71 @@ class TVOSScrollView: UIScrollView {
 }
 #endif
 
+public class ScaleAspectFitImageView : UIImageView {
+    private var heightConstraint: NSLayoutConstraint?
+
+  required public init?(coder aDecoder: NSCoder) {
+    super.init(coder:aDecoder)
+    self.setup()
+  }
+
+  public override init(frame:CGRect) {
+    super.init(frame:frame)
+    self.setup()
+  }
+
+  public override init(image: UIImage!) {
+    super.init(image:image)
+    self.setup()
+  }
+
+  public override init(image: UIImage!, highlightedImage: UIImage?) {
+    super.init(image:image,highlightedImage:highlightedImage)
+    self.setup()
+  }
+
+  override public var image: UIImage? {
+    didSet {
+      self.updateHeightConstraint()
+    }
+  }
+
+  private func setup() {
+    self.contentMode = .scaleAspectFit
+    self.updateHeightConstraint()
+  }
+
+    public override func layoutSubviews() {
+        super.layoutSubviews()
+        updateHeightConstraint()
+    }
+
+  /// Removes any pre-existing aspect ratio constraint, and adds a new one based on the current image
+  private func updateHeightConstraint() {
+      // remove any existing aspect ratio constraint
+      if let c = self.heightConstraint {
+          self.removeConstraint(c)
+      }
+      self.heightConstraint = nil
+      
+      if let imageSize = image?.size, frame.size.width < imageSize.width {
+          let aspectratio = imageSize.height / imageSize.width
+          let heightConstraint = NSLayoutConstraint(
+            item: self,
+            attribute: .height,
+            relatedBy: .equal,
+            toItem: self,
+            attribute: .width,
+            multiplier: aspectratio,
+            constant: 0
+          )
+          addConstraint(heightConstraint)
+          self.heightConstraint = heightConstraint
+      }
+  }
+}
+
+
 @objcMembers class GameInfoController : UIViewController {
 
     private let attributes : [UIFont.TextStyle:[NSAttributedString.Key:Any]] = [
@@ -41,7 +106,7 @@ class TVOSScrollView: UIScrollView {
     private let scrollView = UIScrollView()
     #endif
     private let contentView = UIView()
-    private let imageView = UIImageView()
+    private let imageView = ScaleAspectFitImageView()
     private let label = UILabel()
         
     init(game:GameInfo) {
@@ -67,8 +132,14 @@ class TVOSScrollView: UIScrollView {
         scrollView.addSubview(contentView)
         imageView.contentMode = .scaleAspectFit
         contentView.addSubview(imageView)
+        #if os(tvOS)
+        label.backgroundColor = UIColor.black
+        #else
         label.backgroundColor = .init(white: 0.111, alpha: 1.0)
+        #endif
+        
         label.numberOfLines = 0
+        label.lineBreakMode = .byWordWrapping
         contentView.addSubview(label)
         setupConstraints()
 
@@ -105,19 +176,11 @@ class TVOSScrollView: UIScrollView {
         
         #if os(tvOS)
         let scrollViewTopConstraint = scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20)
-        let labelHorizontalConstraints = [
-            label.leadingAnchor.constraint(equalTo: view.readableContentGuide.leadingAnchor),
-            label.trailingAnchor.constraint(equalTo: view.readableContentGuide.trailingAnchor)
-        ]
         #else
         let scrollViewTopConstraint = scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor)
-        let labelHorizontalConstraints = [
-            label.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            label.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-        ]
         #endif
         
-        var constraints = [
+        NSLayoutConstraint.activate([
             scrollViewTopConstraint,
             scrollView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
@@ -128,14 +191,14 @@ class TVOSScrollView: UIScrollView {
             contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
             contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
             imageView.topAnchor.constraint(equalTo: contentView.topAnchor),
-            imageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            imageView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            imageView.heightAnchor.constraint(equalToConstant: 400),
+            imageView.leadingAnchor.constraint(equalTo: contentView.readableContentGuide.leadingAnchor),
+            imageView.trailingAnchor.constraint(equalTo: contentView.readableContentGuide.trailingAnchor),
+            imageView.heightAnchor.constraint(lessThanOrEqualTo: view.heightAnchor, multiplier: 0.8),
             label.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 8),
-            label.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
-        ]
-        constraints.append(contentsOf: labelHorizontalConstraints)
-        NSLayoutConstraint.activate(constraints)
+            label.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            label.leadingAnchor.constraint(equalTo: view.readableContentGuide.leadingAnchor),
+            label.trailingAnchor.constraint(equalTo: view.readableContentGuide.trailingAnchor)
+        ])
     }
     
 #if os(iOS)
