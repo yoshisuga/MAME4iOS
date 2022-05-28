@@ -1413,6 +1413,8 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 +(UIImage*)getGameIcon:(GameInfo*)game
 {
     UIImage* image = [UIImage imageWithContentsOfFile:game.gameLocalImageURL.path];
+    // force the image to be 4:3 or 3:4, to correct for any anamorphic
+    // TODO: maybe dont do this for *large* or *square* art, ie not a CRT screenshot
     if (image) {
         CGFloat aspect =  [game.gameScreen containsString:kGameInfoScreenVertical] ? (3.0 / 4.0) : (4.0 / 3.0);
         image = [image scaledToSize:CGSizeMake(image.size.width, image.size.width / aspect)];
