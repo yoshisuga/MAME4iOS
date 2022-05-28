@@ -9,6 +9,77 @@
 import Foundation
 import UIKit
 
+#if os(tvOS)
+class TVOSScrollView: UIScrollView {
+    override var canBecomeFocused: Bool { true }
+}
+#endif
+
+public class ScaleAspectFitImageView : UIImageView {
+    private var heightConstraint: NSLayoutConstraint?
+
+  required public init?(coder aDecoder: NSCoder) {
+    super.init(coder:aDecoder)
+    self.setup()
+  }
+
+  public override init(frame:CGRect) {
+    super.init(frame:frame)
+    self.setup()
+  }
+
+  public override init(image: UIImage!) {
+    super.init(image:image)
+    self.setup()
+  }
+
+  public override init(image: UIImage!, highlightedImage: UIImage?) {
+    super.init(image:image,highlightedImage:highlightedImage)
+    self.setup()
+  }
+
+  override public var image: UIImage? {
+    didSet {
+      self.updateHeightConstraint()
+    }
+  }
+
+  private func setup() {
+    self.contentMode = .scaleAspectFit
+    self.updateHeightConstraint()
+  }
+
+    public override func layoutSubviews() {
+        super.layoutSubviews()
+        updateHeightConstraint()
+    }
+
+  /// Removes any pre-existing aspect ratio constraint, and adds a new one based on the current image
+  private func updateHeightConstraint() {
+      // remove any existing aspect ratio constraint
+      if let c = self.heightConstraint {
+          self.removeConstraint(c)
+      }
+      self.heightConstraint = nil
+      
+      if let imageSize = image?.size, frame.size.width < imageSize.width {
+          let aspectratio = imageSize.height / imageSize.width
+          let heightConstraint = NSLayoutConstraint(
+            item: self,
+            attribute: .height,
+            relatedBy: .equal,
+            toItem: self,
+            attribute: .width,
+            multiplier: aspectratio,
+            constant: 0
+          )
+          addConstraint(heightConstraint)
+          self.heightConstraint = heightConstraint
+      }
+  }
+}
+
+
 @objcMembers class GameInfoController : UIViewController {
 
     private let attributes : [UIFont.TextStyle:[NSAttributedString.Key:Any]] = [
@@ -27,45 +98,55 @@ import UIKit
         ]
     ]
     
-    private var game:GameInfo!
+    private let game:GameInfo
     
-    private let textView = UITextView()
-    
-    convenience init(game:GameInfo) {
-        self.init(nibName:nil, bundle:nil)
+    #if os(tvOS)
+    private let scrollView = TVOSScrollView()
+    #else
+    private let scrollView = UIScrollView()
+    #endif
+    private let contentView = UIView()
+    private let imageView = ScaleAspectFitImageView()
+    private let label = UILabel()
+        
+    init(game:GameInfo) {
         self.game = game
+        super.init(nibName: nil, bundle: nil)
+        title = "Info"
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     override func viewDidLoad() {
-        guard let game = self.game else { return }
         super.viewDidLoad()
-        
         #if os(iOS)
-            self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem:.done, target:self, action:#selector(done))
-            textView.isEditable = false
-            textView.isSelectable = false
+            view.backgroundColor = UIColor.systemBackground
+            navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem:.done, target:self, action:#selector(done))
         #else
-            let dx = UIScreen.main.bounds.width/4
-            textView.textContainerInset.left = dx
-            textView.textContainerInset.right = dx
-        
-            // TODO: I tried and tried to get the focus engine to give focus to the UITextView
-            // but I gave up, and am just gonna do a manual pan gesture handler and scroll myself!!
-            let pan = UIPanGestureRecognizer(target:self, action:#selector(pan(_:)))
-            pan.allowedTouchTypes = [NSNumber(value:UITouch.TouchType.indirect.rawValue)]
-            view.addGestureRecognizer(pan)
+        scrollView.panGestureRecognizer.allowedTouchTypes = [NSNumber(value: UITouch.TouchType.indirect.rawValue)]
+        view.backgroundColor = UIColor.black
+        #endif
+        view.addSubview(scrollView)
+        scrollView.addSubview(contentView)
+        imageView.contentMode = .scaleAspectFit
+        contentView.addSubview(imageView)
+        #if os(tvOS)
+        label.backgroundColor = UIColor.black
+        #else
+        label.backgroundColor = .init(white: 0.111, alpha: 1.0)
         #endif
         
-        textView.isScrollEnabled = true
-        textView.backgroundColor = .init(white: 0.111, alpha: 1.0)
-        self.view.addSubview(textView)
+        label.numberOfLines = 0
+        label.lineBreakMode = .byWordWrapping
+        contentView.addSubview(label)
+        setupConstraints()
 
         let text = NSMutableAttributedString(string:"")
         
         if let image = UIImage(contentsOfFile:game.gameLocalImageURL.path) {
-            // TODO: scale the image if it is too big?
-            text.append(NSAttributedString(image:image).centered)
-            text.append(NSAttributedString(string:"\n\n"))
+            imageView.image = image
         }
         
         // TODO: swiftify GameInfo so we dont need a ugly cast to [String:String]
@@ -84,39 +165,45 @@ import UIKit
             text.append(info)
         }
             
-        textView.attributedText = text
+        label.attributedText = text
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        textView.contentOffset.y = -textView.adjustedContentInset.top
-    }
-    
-    override func viewWillLayoutSubviews() {
-        super.viewWillLayoutSubviews()
-        textView.frame = view.bounds
+    private func setupConstraints() {
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        label.translatesAutoresizingMaskIntoConstraints = false
+        
+        #if os(tvOS)
+        let scrollViewTopConstraint = scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20)
+        #else
+        let scrollViewTopConstraint = scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor)
+        #endif
+        
+        NSLayoutConstraint.activate([
+            scrollViewTopConstraint,
+            scrollView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
+            contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
+            contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
+            contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
+            contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
+            imageView.topAnchor.constraint(equalTo: contentView.topAnchor),
+            imageView.leadingAnchor.constraint(equalTo: contentView.readableContentGuide.leadingAnchor),
+            imageView.trailingAnchor.constraint(equalTo: contentView.readableContentGuide.trailingAnchor),
+            imageView.heightAnchor.constraint(lessThanOrEqualTo: view.heightAnchor, multiplier: 0.8),
+            label.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 8),
+            label.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            label.leadingAnchor.constraint(equalTo: view.readableContentGuide.leadingAnchor),
+            label.trailingAnchor.constraint(equalTo: view.readableContentGuide.trailingAnchor)
+        ])
     }
     
 #if os(iOS)
     @objc func done() {
-        self.presentingViewController?.dismiss(animated: true)
-    }
-#else
-    @objc func pan(_ pan:UIPanGestureRecognizer) {
-        let translation = pan.translation(in:view)
-        pan.setTranslation(.zero, in:view)
-        
-        guard abs(translation.y) >= abs(translation.x) else { return }
-        
-        var contentOffset = textView.contentOffset
-        contentOffset.y -= translation.y;
-        if (pan.state == .ended) {
-            contentOffset.y = max(0.0, min(textView.contentSize.height - textView.bounds.size.height, contentOffset.y))
-            textView.setContentOffset(contentOffset, animated:true)
-        }
-        else {
-            textView.setContentOffset(contentOffset, animated:false)
-        }
+        presentingViewController?.dismiss(animated: true)
     }
 #endif
 }

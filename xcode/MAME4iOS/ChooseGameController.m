@@ -1990,7 +1990,6 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
 -(void)info:(GameInfoDictionary*)game
 {
     GameInfoController* gameInfoController = [[GameInfoController alloc] initWithGame:game];
-    gameInfoController.title = @"Info";
 
 #if TARGET_OS_IOS
     UINavigationController* nav = [[UINavigationController alloc] initWithRootViewController:gameInfoController];
