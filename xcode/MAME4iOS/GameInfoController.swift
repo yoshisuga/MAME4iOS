@@ -122,8 +122,8 @@ public class ScaleAspectFitImageView : UIImageView {
     override func viewDidLoad() {
         super.viewDidLoad()
         #if os(iOS)
-            view.backgroundColor = UIColor.systemBackground
-            navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem:.done, target:self, action:#selector(done))
+        view.backgroundColor = UIColor.systemBackground
+        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem:.done, target:self, action:#selector(done))
         #else
         scrollView.panGestureRecognizer.allowedTouchTypes = [NSNumber(value: UITouch.TouchType.indirect.rawValue)]
         view.backgroundColor = UIColor.black
@@ -132,11 +132,7 @@ public class ScaleAspectFitImageView : UIImageView {
         scrollView.addSubview(contentView)
         imageView.contentMode = .scaleAspectFit
         contentView.addSubview(imageView)
-        #if os(tvOS)
-        label.backgroundColor = UIColor.black
-        #else
-        label.backgroundColor = .init(white: 0.111, alpha: 1.0)
-        #endif
+        label.backgroundColor = view.backgroundColor
         
         label.numberOfLines = 0
         label.lineBreakMode = .byWordWrapping
