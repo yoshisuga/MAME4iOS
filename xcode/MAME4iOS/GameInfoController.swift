@@ -210,7 +210,7 @@ private extension GameInfoController {
         
         let text = NSMutableAttributedString()
         
-        var keyWidth = 0.0
+        var keyWidth = CGFloat.zero
         let keys = (game.allKeys as? [String]) ?? []
         for key in keys.sorted(by:<) {
             guard var val = game[key] as? String, !val.isEmpty else { continue }
