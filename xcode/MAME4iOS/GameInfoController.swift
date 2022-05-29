@@ -141,12 +141,9 @@ public class ScaleAspectFitImageView : UIImageView {
 
         let text = NSMutableAttributedString(string:"")
         
-        if let image = UIImage(contentsOfFile:game.gameLocalImageURL.path) {
-            imageView.image = image
-        }
+        imageView.image = ChooseGameController.getGameIcon(game)
         
-        // TODO: swiftify GameInfo so we dont need a ugly cast to [String:String]
-        text.append(ChooseGameController.getGameText(game as? [String:String]))
+        text.append(ChooseGameController.getGameText(game))
         text.append(NSAttributedString(string:"\n\n"))
 
         text.append(getMetaText())
@@ -210,10 +207,10 @@ private extension GameInfoController {
         
         let text = NSMutableAttributedString()
         
-        var keyWidth = CGFloat.zero
-        let keys = (game.allKeys as? [String]) ?? []
-        for key in keys.sorted(by:<) {
-            guard var val = game[key] as? String, !val.isEmpty else { continue }
+        var keyWidth = 0.0
+        let dict = game.gameDictionary
+        for key in dict.keys.sorted(by:<) {
+            guard var val = dict[key], !val.isEmpty else { continue }
             if val.contains(",") && !val.contains(", ") {
                 val = val.replacingOccurrences(of: ",", with: ", ")
             }

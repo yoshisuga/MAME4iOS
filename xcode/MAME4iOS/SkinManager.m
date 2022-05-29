@@ -49,8 +49,9 @@ static NSArray* g_skin_list;
     path = [NSString stringWithUTF8String:get_documents_path(USER_SKINS)];
     files = [files arrayByAddingObjectsFromArray:[[NSFileManager.defaultManager enumeratorAtPath:path] allObjects]];
     
-    NSArray* roms = [EmulatorController romList];
-    
+    NSArray* roms = [NSFileManager.defaultManager contentsOfDirectoryAtPath:getDocumentPath(@"roms") error:nil];
+    roms = [roms valueForKeyPath:@"stringByDeletingPathExtension.lowercaseString"];
+
     for (NSString* file in files) {
         // dont let user select as the default Skin a ROM specific one.
         if ([roms containsObject:file.stringByDeletingPathExtension.lowercaseString])

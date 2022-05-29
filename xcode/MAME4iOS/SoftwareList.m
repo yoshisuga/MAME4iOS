@@ -97,7 +97,7 @@
 }
 
 // get games for a system
-- (NSArray<NSDictionary*>*)getGamesForSystem:(NSDictionary*)system {
+- (NSArray<GameInfo*>*)getGamesForSystem:(GameInfo*)system {
 
     NSString* lists = system.gameSoftwareMedia; // this can be a comma separated list of softlist names and media
     
@@ -163,7 +163,7 @@
                     continue;
             }
             
-            [games addObject:@{
+            [games addObject:[[GameInfo alloc] initWithDictionary:@{
                 kGameInfoSoftwareList:list_name,
                 kGameInfoSystem:      system.gameName,
                 kGameInfoDriver:      system.gameDriver,
@@ -172,7 +172,7 @@
                 kGameInfoDescription: STR(software[kSoftwareListDescription]),
                 kGameInfoYear:        STR(software[kSoftwareListYear]),
                 kGameInfoManufacturer:STR(software[kSoftwareListPublisher]),
-             }];
+             }]];
         }
     }
 
@@ -193,7 +193,7 @@
     if (name.length == 0)
         name = path.lastPathComponent.stringByDeletingPathExtension.lowercaseString;
     
-    NSDictionary* info = [self searchSoftwareList:name name:name files:getZipFileHashes(path)];
+    GameInfo* info = [self searchSoftwareList:name name:name files:getZipFileHashes(path)];
     if (info == nil)
         return nil;
     
@@ -246,14 +246,14 @@
         return FALSE;
     
     NSString* hash = sha1(data);
-    NSDictionary* info = [self searchSoftwareList:[hash substringToIndex:8] name:nil files:[NSSet setWithObject:hash]];
+    GameInfo* game = [self searchSoftwareList:[hash substringToIndex:8] name:nil files:[NSSet setWithObject:hash]];
     
-    if (info != nil)
+    if (game != nil)
     {
         NSLog(@"installSoftware:%@, found: %@ in %@:%@ ", path.lastPathComponent, info.gameDescription, info.gameSoftwareList, info.gameName);
         
         path = [path stringByAppendingPathExtension:@"json"];
-        data = [NSJSONSerialization dataWithJSONObject:info options:NSJSONWritingPrettyPrinted error:nil];
+        data = [NSJSONSerialization dataWithJSONObject:game.gameDictionary options:NSJSONWritingPrettyPrinted error:nil];
         [data writeToFile:path atomically:NO];
     }
     else
@@ -261,7 +261,7 @@
         NSLog(@"installSoftware:%@ NOT found", path.lastPathComponent);
     }
     
-    return info != nil;
+    return game != nil;
 }
 
 // discard any cached data, forcing a re-load from disk. (called after moveROMs does an import)
@@ -525,7 +525,7 @@ static NSSet<NSString*>* getSoftwareHashes(NSDictionary* software)
 // FYI not *all* software lists are searched, only the ones in HASH.DAT under the passed key
 // if name != nil then all software in a given list will be tested, else only ones matching name
 //
-- (nullable NSDictionary*)searchSoftwareList:(NSString*)search_key name:(nullable NSString*)name files:(NSSet<NSString*>*)files {
+- (nullable GameInfo*)searchSoftwareList:(NSString*)search_key name:(nullable NSString*)name files:(NSSet<NSString*>*)files {
 
     if (search_key == nil || files.count == 0)
         return nil;
@@ -560,14 +560,14 @@ static NSSet<NSString*>* getSoftwareHashes(NSDictionary* software)
             
             if ([soft_files isSubsetOfSet:files]) {
                 NSLog(@"    FOUND %@ in LIST: %@:%@", name ?: search_key, list_name, soft_name);
-                return @{
+                return [[GameInfo alloc] initWithDictionary:@{
                     kGameInfoSoftwareList:list_name,
                     kGameInfoName:        STR(software[kSoftwareListName]),
                     kGameInfoParent:      STR(software[kSoftwareListParent]),
                     kGameInfoDescription: STR(software[kSoftwareListDescription]),
                     kGameInfoYear:        STR(software[kSoftwareListYear]),
                     kGameInfoManufacturer:STR(software[kSoftwareListPublisher]),
-                 };
+                 }];
             }
         }
     }

@@ -173,6 +173,9 @@ final class TVAlertController: UIViewController {
             //let idx = (stack.viewWithTag(tagTitle) != nil) ? 1 : 0
             let idx = (tag == tagTitle) ? 0 : stack.arrangedSubviews.count
             stack.insertArrangedSubview(label, at:idx)
+            if stack === stack0 {
+                label.layoutMargins = UIEdgeInsets(top:0, left:inset.left, bottom:0, right: inset.right)
+            }
         }
     }
     private func getText(_ stack:UIStackView, _ tag:Int) -> String? {
@@ -402,6 +405,9 @@ final class TVAlertController: UIViewController {
             if UITraitCollection.current.horizontalSizeClass == .compact {
                 return width * _maxCompactWidthF
             }
+            if UITraitCollection.current.userInterfaceIdiom == .pad && width < UIScreen.main.bounds.width {
+                return width * _maxCompactWidthF
+            }
         #endif
         
         return width * _maxWidthF
@@ -554,7 +560,7 @@ final class TVAlertController: UIViewController {
     }
     
     private func makeText(_ text:String, align:NSTextAlignment = .left, isTitle:Bool = false, tag:Int = 0) -> UIView {
-        let label = UILabel()
+        let label = TVLabel()
         label.tag = tag
         label.font = isTitle ? .boldSystemFont(ofSize: font.pointSize * CGFloat(_fontTitleF)) : font
         label.numberOfLines = Int(self.windowSize.height * 0.5 / font.pointSize)
@@ -1541,6 +1547,39 @@ private extension UIImage {
         }
     }
 }
+
+// MARK: TVLabel - a subclass of UILabel that insets the text by layoutMargins
+
+class TVLabel: UILabel {
+    
+    override func drawText(in rect:CGRect) {
+        let rect = rect.inset(by:layoutMargins)
+        // verticaly align to top, normal UILabel default is to verticaly center
+        // rect.size.height = textRect(forBounds:rect, limitedToNumberOfLines:numberOfLines).height
+        super.drawText(in:rect)
+    }
+    override var preferredMaxLayoutWidth:CGFloat {
+        get {return super.preferredMaxLayoutWidth + (layoutMargins.left + layoutMargins.right)}
+        set {super.preferredMaxLayoutWidth = newValue - (layoutMargins.left + layoutMargins.right)}
+    }
+    override var intrinsicContentSize:CGSize  {
+        var size = super.intrinsicContentSize
+        if (size.width != 0 && size.height != 0) {
+            size.width += layoutMargins.left + layoutMargins.right
+            size.height += layoutMargins.top + layoutMargins.bottom
+        }
+        return size
+    }
+    override func sizeThatFits(_ size: CGSize) -> CGSize {
+        var size = super.sizeThatFits(size)
+        if (size.width != 0 && size.height != 0) {
+            size.width += layoutMargins.left + layoutMargins.right
+            size.height += layoutMargins.top + layoutMargins.bottom
+        }
+        return size
+    }
+}
+
 
 
 

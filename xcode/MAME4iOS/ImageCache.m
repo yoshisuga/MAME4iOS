@@ -7,9 +7,8 @@
 
 #import "ImageCache.h"
 
-#define ImageCacheDebug 0
 #define ImageCacheLog 0
-#if !(ImageCacheLog || ImageCacheDebug)
+#if ImageCacheLog == 0
 #define NSLog(...) (void)0
 #endif
 
@@ -56,88 +55,65 @@ static ImageCache* sharedInstance = nil;
     [cache removeAllObjects];
 }
 
-- (void)flush:(NSURL*)url size:(CGSize)size
+- (void)flush:(NSURL*)url
 {
-    [cache removeObjectForKey:[self getKey:url size:size]];
+    [cache removeObjectForKey:url];
 }
 
 - (void)getData:(NSURL*)url localURL:(NSURL*)localURL completionHandler:(void (^)(NSData* data, NSError* error))handler
 {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
-        if (localURL != nil && ImageCacheDebug == 0)
-        {
-            NSData* data = [NSData dataWithContentsOfURL:localURL];
-            
-            if (data != nil)
-                return handler(data, nil);
-        }
-        
-        if (url == nil)
-            return handler(nil, nil);
-        
-        NSURLSession* session = [NSURLSession sharedSession];
-        NSURLRequest* request = [NSURLRequest requestWithURL:url];
-        
-#if ImageCacheDebug
-        // randomly force a timeout to test code....
-        if (arc4random_uniform(10) == 0) {
-            NSLog(@"TESTING A NETWORK ERROR: %@", url);
-            request = [NSURLRequest requestWithURL:[NSURL URLWithString:@"http://www.example.com:81/wombat.png"]];
-        }
-#endif
-        NSURLSessionDataTask* task = [session dataTaskWithRequest:request
-            completionHandler:^(NSData* data, NSURLResponse* response, NSError* error) {
-
-            NSInteger status = [(NSHTTPURLResponse*)response statusCode];
-
-            if (error != nil)
-                NSLog(@"GET DATA\n\tURL:%@\n\tERROR:%@", url, error);
-
-            if (status != 200)
-            {
-                NSLog(@"GET DATA: BAD RESPONSE (%d)\n\tURL:%@\n\tBODY:%@",
-                      (int)status, url, [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-                data = nil;
-            }
-
-            if (localURL != nil && data != nil && error == nil) {
-                if (![data writeToURL:localURL atomically:YES]) {
-                    // if we failed to write data, create directory and try again.
-                    [NSFileManager.defaultManager createDirectoryAtURL:localURL.URLByDeletingLastPathComponent withIntermediateDirectories:YES attributes:nil error:nil];
-                    if (![data writeToURL:localURL atomically:YES])
-                        NSLog(@"ERROR WRITING LOCAL IMAGE DATA: %@", localURL.path);
-                }
-            }
-
-            handler(data, error);
-        }];
-        [task resume];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            NSParameterAssert([NSThread isMainThread]);
-            self->task_dict[url] = task;
-        });
-    });
-}
-
-- (NSString*)getKey:(NSURL*)url size:(CGSize)size
-{
     NSParameterAssert(url != nil);
-    if (size.width == 0.0 && size.height == 0.0)
-        return url.path;
-    else
-        return [NSString stringWithFormat:@"%@[%f,%f]", url.path, size.width, size.height];
+    NSParameterAssert(localURL == nil || localURL.isFileURL);
+
+    NSURLSession* session = [NSURLSession sharedSession];
+    NSURLRequest* request = [NSURLRequest requestWithURL:url];
+    
+    NSURLSessionDataTask* task = [session dataTaskWithRequest:request
+        completionHandler:^(NSData* data, NSURLResponse* response, NSError* error) {
+
+        NSInteger status = [(NSHTTPURLResponse*)response statusCode];
+
+        if (error != nil)
+            NSLog(@"GET DATA\n\tURL:%@\n\tERROR:%@", url, error);
+
+        if (status != 200)
+        {
+            NSLog(@"GET DATA: BAD RESPONSE (%d)\n\tURL:%@\n\tBODY:%@",
+                  (int)status, url, [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+            data = nil;
+        }
+
+        if (localURL != nil && data != nil && error == nil) {
+            if (![data writeToURL:localURL atomically:YES]) {
+                // if we failed to write data, create directory and try again.
+                [NSFileManager.defaultManager createDirectoryAtURL:localURL.URLByDeletingLastPathComponent withIntermediateDirectories:YES attributes:nil error:nil];
+                if (![data writeToURL:localURL atomically:YES])
+                    NSLog(@"ERROR WRITING LOCAL IMAGE DATA: %@", localURL.path);
+            }
+        }
+
+        handler(data, error);
+    }];
+    [task resume];
+    
+    NSParameterAssert([NSThread isMainThread]);
+    self->task_dict[url] = task;
 }
 
-- (void)getImage:(NSURL*)url size:(CGSize)size localURL:(NSURL*)localURL completionHandler:(ImageCacheCallback)handler
+- (void)getImage:(NSURL*)url localURL:(NSURL*)localURL completionHandler:(ImageCacheCallback)handler
 {
     NSParameterAssert([NSThread isMainThread]);
     NSParameterAssert(handler != nil);
     NSParameterAssert(localURL == nil || [localURL isFileURL]);
 
-    NSLog(@"IMAGE CACHE: getImage: %@ [%f,%f]", url.path, size.width, size.height);
+    NSLog(@"IMAGE CACHE: getImage: %@", url.path);
     
-    NSString* key = [self getKey:url size:size];
-    id val = [cache objectForKey:key];
+    if (url == nil) {
+        NSLog(@"....URL is NIL");
+        return handler(nil);
+    }
+    
+    id val = [cache objectForKey:url];
     
     if ([val isKindOfClass:[UIImage class]])
     {
@@ -170,43 +146,36 @@ static ImageCache* sharedInstance = nil;
     
     // if we have a local copy on disk, and we dont need to resize, get the image synchronously.
     // this prevents showing default icons unless we need to go to the net, at expense of a little scrolling perf.
-    if (localURL != nil && (size.width == 0 && size.height == 0) && ImageCacheDebug == 0)
+    if (localURL != nil)
     {
         if ([[NSFileManager defaultManager] fileExistsAtPath:localURL.path])
         {
             NSLog(@"....IMAGE LOCAL CACHE HIT");
             UIImage* image = [UIImage imageWithData:[NSData dataWithContentsOfURL:localURL]];
-            [cache setObject:(image ?: [NSNull null]) forKey:key];
+            [cache setObject:(image ?: [NSNull null]) forKey:url];
             return handler(image);
         }
     }
     
     NSLog(@"....IMAGE CACHE MISS");
     NSParameterAssert(val == nil);
-    [cache setObject:[NSMutableArray arrayWithObject:handler] forKey:key];
+    [cache setObject:[NSMutableArray arrayWithObject:handler] forKey:url];
     
     [self getData:url localURL:localURL completionHandler:^(NSData *data, NSError* error) {
         NSLog(@"IMAGE CACHE DATA: %d bytes", (int)[data length]);
         UIImage* image = [UIImage imageWithData:data];
-        NSLog(@"IMAGE IMAGE: %@", image);
-        image = [image scaledToSize:size];
-        NSLog(@"IMAGE SCALE IMAGE: %@", image);
 
-#if ImageCacheDebug
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, arc4random_uniform(5000) * USEC_PER_SEC), dispatch_get_main_queue(), ^{
-#else
         dispatch_async(dispatch_get_main_queue(), ^{
-#endif
             self->task_dict[url] = nil;
-            NSArray* callbacks = [self->cache objectForKey:key];
+            NSArray* callbacks = [self->cache objectForKey:url];
             
             if (![callbacks isKindOfClass:[NSArray class]]) {
                 NSLog(@"IMAGE LOAD CANCELED: %@", url.lastPathComponent);
-                [self->cache removeObjectForKey:key];
+                [self->cache removeObjectForKey:url];
             }
             else if (image == nil && error != nil && [error.domain isEqualToString:NSURLErrorDomain] && error.code == NSURLErrorCancelled) {
                 NSLog(@"IMAGE LOAD CANCELED: %@ [%d clients]", url.lastPathComponent, (int)[callbacks count]);
-                [self->cache removeObjectForKey:key];
+                [self->cache removeObjectForKey:url];
             }
             else {
                 //  * if we got an error, put the current date in the cache
@@ -218,9 +187,9 @@ static ImageCache* sharedInstance = nil;
                 //    or be a bad image. put a NSNull in the cache.
                 //
                 if (image == nil && error != nil)
-                    [self->cache setObject:[NSDate date] forKey:key];
+                    [self->cache setObject:[NSDate date] forKey:url];
                 else
-                    [self->cache setObject:(image ?: [NSNull null]) forKey:key];
+                    [self->cache setObject:(image ?: [NSNull null]) forKey:url];
                 
                 NSLog(@"IMAGE START CALLBACKS for %@ [%d clients]", url.lastPathComponent, (int)[callbacks count]);
                 for (ImageCacheCallback callback in callbacks) {
@@ -233,29 +202,37 @@ static ImageCache* sharedInstance = nil;
     }];
 }
 
-- (void)getImage:(NSURL*)url size:(CGSize)size completionHandler:(ImageCacheCallback)handler
-{
-    [self getImage:url size:size localURL:nil completionHandler:handler];
-}
-
 - (void)getImage:(NSURL*)url completionHandler:(ImageCacheCallback)handler
 {
-    [self getImage:url size:CGSizeZero completionHandler:handler];
+    [self getImage:url localURL:nil completionHandler:handler];
 }
-     
+
 // get a image from the cache without loading.
-- (UIImage*)getImage:(NSURL*)url size:(CGSize)size
+- (UIImage*)getImage:(NSURL*)url
 {
     NSParameterAssert([NSThread isMainThread]);
 
-    NSString* key = [self getKey:url size:size];
-    id val = [cache objectForKey:key];
+    id val = [cache objectForKey:url];
 
     if ([val isKindOfClass:[UIImage class]])
         return val;
     
     return nil;
 }
+     
+ // get count of people waiting for URL to load
+ - (NSInteger)getLoadingCount:(NSURL*)url
+ {
+     NSParameterAssert([NSThread isMainThread]);
+
+     id val = [cache objectForKey:url];
+
+     if ([val isKindOfClass:[NSArray class]])
+         return [(id)val count];
+     
+     return 0;
+ }
+
                        
 - (void)cancelImage:(NSURL*)url
 {
@@ -270,69 +247,10 @@ static ImageCache* sharedInstance = nil;
 
 @end
                        
-#define lerp(a,b,f) ((a)*(1-(f)) + (b)*(f))
-
-static CGColorRef blend(CGColorRef c0, CGColorRef c1, CGFloat f)
-{
-    NSCParameterAssert(CGColorGetColorSpace(c0) == CGColorGetColorSpace(c1));
-    
-    const CGFloat* cc0 = CGColorGetComponents(c0);
-    const CGFloat* cc1 = CGColorGetComponents(c1);
-    CGFloat rgba[4] = {lerp(cc0[0],cc1[0],f),lerp(cc0[1],cc1[1],f),lerp(cc0[2],cc1[2],f),lerp(cc0[3],cc1[3],f)};
-    
-    return CGColorCreate(CGColorGetColorSpace(c0), rgba);
-}
-
-// compute/create a average color from a bunch of raw RGBA pixels
-static CGColorRef averageColorRGBA(uint32_t* image_ptr, NSInteger image_width, NSInteger image_height, CGColorSpaceRef colorSpace, CGImageAlphaInfo alpha, NSInteger x, NSInteger y, NSInteger dx, NSInteger dy)
-{
-   y = image_height-(y+dy);    // CoreGraphics images are stored bottom up, not top down
-   image_ptr += (image_width * y) + x;
-
-   NSUInteger vec[4] = {0,0,0,0};
-   for (NSInteger y = 0; y < dy; y++) {
-      for (NSInteger x = 0; x < dx; x++) {
-          NSUInteger pixel = OSSwapHostToLittleInt32(*image_ptr++);
-          vec[0] += ((pixel >>  0) & 0xFF);
-          vec[1] += ((pixel >>  8) & 0xFF);
-          vec[2] += ((pixel >> 16) & 0xFF);
-          vec[3] += ((pixel >> 24) & 0xFF);
-      }
-      image_ptr += (image_width - dx);
-   }
-  
-   CGFloat f = 1.0 / (255.0 * dx * dy);
-   CGFloat r = vec[0] * f;
-   CGFloat g = vec[1] * f;
-   CGFloat b = vec[2] * f;
-   CGFloat a = vec[3] * f;
-   
-   if (alpha == kCGImageAlphaFirst || alpha == kCGImageAlphaPremultipliedFirst || alpha == kCGImageAlphaNoneSkipFirst) {
-       CGFloat t = r;
-       r = g;
-       g = b;
-       b = a;
-       a = t;
-   }
-
-   if ((alpha == kCGImageAlphaPremultipliedLast || alpha == kCGImageAlphaPremultipliedFirst) && a != 0.0) {
-       r /= a;
-       g /= a;
-       b /= a;
-   }
-   
-   if (alpha == kCGImageAlphaNoneSkipLast || alpha == kCGImageAlphaNoneSkipFirst) {
-       a = 1.0;
-   }
-   
-   CGFloat rgba[] = {r,g,b,a};
-   return CGColorCreate(colorSpace, rgba);
-}
-                       
 //
 // background safe image resize
 //
-static UIImage* resizeImage(UIImage* image, CGFloat aspect, CGFloat width, CGFloat height, UIViewContentMode mode)
+static UIImage* resizeImage(UIImage* image, CGFloat width, CGFloat height, UIViewContentMode mode)
 {
     CGRect src;
     CGRect dst;
@@ -346,9 +264,8 @@ static UIImage* resizeImage(UIImage* image, CGFloat aspect, CGFloat width, CGFlo
 
     CGFloat image_width = image.size.width;
     CGFloat image_height = image.size.height;
-
-    if (aspect == 0.0)
-        aspect = image_width / image_height;
+    
+    CGFloat aspect = image_width / image_height;
         
     if (width == 0.0)
         width = floor(height * aspect);
@@ -425,6 +342,13 @@ static UIImage* resizeImage(UIImage* image, CGFloat aspect, CGFloat width, CGFlo
     CGContextRef bitmap = CGBitmapContextCreate(NULL, width, height, 8, 4 * width, colorSpace, alphaInfo);
     CGContextSetInterpolationQuality(bitmap, kCGInterpolationHigh);
     
+    // in the AspectFit case fill background with black
+    if (!CGRectEqualToRect(dst, CGRectMake(0,0,width,height)))
+    {
+        CGContextSetFillColorWithColor(bitmap, UIColor.blackColor.CGColor);
+        CGContextFillRect(bitmap, CGRectMake(0, 0, width,height));
+    }
+    
     if (mode == UIViewContentModeScaleAspectFill && !CGRectEqualToRect(src, CGRectMake(0,0,image_width,image_height)))
     {
         CGImageRef source = CGImageCreateWithImageInRect(imageRef, src);
@@ -434,40 +358,6 @@ static UIImage* resizeImage(UIImage* image, CGFloat aspect, CGFloat width, CGFlo
     else
     {
         CGContextDrawImage(bitmap, dst, imageRef);
-    }
-    
-    // in the AspectFit case fill in the top/bottom or left/right with a average color from the image.
-    if (!CGRectEqualToRect(dst, CGRectMake(0,0,width,height)))
-    {
-        uint32_t* image_ptr = CGBitmapContextGetData(bitmap);
-        NSInteger w = 1; // number of scanline/rows to average
-
-        if (dst.origin.x > 0.0)
-        {
-            CGColorRef left = averageColorRGBA(image_ptr, width, height, colorSpace, alphaInfo, dst.origin.x, dst.origin.y, w, dst.size.height);
-            CGColorRef right = averageColorRGBA(image_ptr, width, height, colorSpace, alphaInfo, dst.origin.x + dst.size.width - w, dst.origin.y, w, dst.size.height);
-            CGColorRef color = blend(left, right, 0.5);
-
-            CGContextSetFillColorWithColor(bitmap, color);
-            CGContextFillRect(bitmap, CGRectMake(0, 0, dst.origin.x, height));
-            CGContextFillRect(bitmap, CGRectMake(dst.origin.x + dst.size.width, 0, width - (dst.origin.x + dst.size.width), height));
-            CGColorRelease(left);
-            CGColorRelease(right);
-            CGColorRelease(color);
-        }
-        else
-        {
-            CGColorRef top = averageColorRGBA(image_ptr, width, height, colorSpace, alphaInfo, dst.origin.x, dst.origin.y, dst.size.width, w);
-            CGColorRef bot = averageColorRGBA(image_ptr, width, height, colorSpace, alphaInfo, dst.origin.x, dst.origin.y + dst.size.height - w, dst.size.width, w);
-            CGColorRef color = blend(top, bot, 0.5);
-
-            CGContextSetFillColorWithColor(bitmap, color);
-            CGContextFillRect(bitmap, CGRectMake(0, 0, width, dst.origin.y));
-            CGContextFillRect(bitmap, CGRectMake(0, dst.origin.y + dst.size.height, width, height - (dst.origin.y + dst.size.height)));
-            CGColorRelease(top);
-            CGColorRelease(bot);
-            CGColorRelease(color);
-        }
     }
     
     CGImageRef newImageRef = CGBitmapContextCreateImage(bitmap);
@@ -487,13 +377,9 @@ static UIImage* resizeImage(UIImage* image, CGFloat aspect, CGFloat width, CGFlo
 }
 
 @implementation UIImage (Resize)
-- (UIImage*)scaledToSize:(CGSize)size aspect:(CGFloat)aspect mode:(UIViewContentMode)mode
-{
-    return resizeImage(self, aspect, size.width, size.height, mode);
-}
 - (UIImage*)scaledToSize:(CGSize)size mode:(UIViewContentMode)mode
 {
-    return resizeImage(self, 0.0, size.width, size.height, mode);
+    return resizeImage(self, size.width, size.height, mode);
 }
 - (UIImage*)scaledToSize:(CGSize)size
 {
