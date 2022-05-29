@@ -683,6 +683,7 @@
 				CEE680B41635BB4900051BC2 /* EmulatorController.h */,
 				CEE680B51635BB4900051BC2 /* EmulatorController.m */,
 				EF31447B27BB1E81002C3C6A /* ControllerButtonPress.swift */,
+				928F7B2C27D5F18E00377C40 /* CommandLineArgsHelper.swift */,
 				CE8D87DF16541AC400685BC4 /* Globals.h */,
 				CE8D87DB1653121100685BC4 /* KeyboardView.h */,
 				CE8D87DC1653121200685BC4 /* KeyboardView.m */,
@@ -699,7 +700,6 @@
 				EF286D32253CA930007DA6D3 /* CloudSync.h */,
 				EF286D33253CA930007DA6D3 /* CloudSync.m */,
 				CEBFBC0E163C5BD300A05CD0 /* resources */,
-				928F7B2C27D5F18E00377C40 /* CommandLineArgsHelper.swift */,
 			);
 			name = RELOADED;
 			sourceTree = "<group>";
