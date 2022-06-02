@@ -102,7 +102,7 @@
 #define SCOPE_MODE_KEY      @"ScopeMode"
 #define SCOPE_MODE_DEFAULT  @"System"
 #define ALL_SCOPES          @[@"System", @"Software", @"Clones", @"Manufacturer", @"Year", @"Genre", @"Driver"]
-#define RECENT_GAMES_MAX    8
+#define RECENT_GAMES_MAX    100
 
 #define SELECTED_GAME_KEY         @"SelectedGame"
 #define SELECTED_GAME_SECTION_KEY @"SelectedGameSection"
@@ -330,11 +330,13 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     // collection view
     [self.collectionView registerClass:[GameInfoCell class] forCellWithReuseIdentifier:CELL_IDENTIFIER];
     [self.collectionView registerClass:[GameInfoHeader class] forSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:HEADER_IDENTIFIER];
+    [self.collectionView registerClass:[RecentlyPlayedCell class] forCellWithReuseIdentifier:@"RecentlyPlayedCell"];
     
     self.collectionView.backgroundColor = BACKGROUND_COLOR;
     self.collectionView.allowsMultipleSelection = NO;
     self.collectionView.allowsSelection = YES;
     self.collectionView.alwaysBounceVertical = YES;
+    self.collectionView.prefetchDataSource = self;
 
 #if TARGET_OS_IOS
     // we do our own navigation via game controllers
@@ -811,6 +813,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     }
 }
 
+-(BOOL)hasRecentlyPlayed {
+    return [_gameData objectForKey:RECENT_GAMES_TITLE] != nil;
+}
+
 #pragma mark - UISearchResultsUpdating
 
 - (void)updateSearchResultsForSearchController:(UISearchController *)searchController
@@ -1160,13 +1166,13 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     NSString* title = _gameSectionTitles[section];
     if ([self isCollapsed:title])
         return 0;
+    if ([self hasRecentlyPlayed] && section == 0)
+        return 1;
     NSInteger num = [_gameData[title] count];
-    // restrict the Recent items to a single row, always
-    if ([title isEqualToString:RECENT_GAMES_TITLE])
-        num = MIN(num, _layoutCollums);
     return num;
 }
--(GameInfo*)getGameInfo:(NSIndexPath*)indexPath
+
+-( GameInfo* _Nullable)getGameInfo:(NSIndexPath*)indexPath
 {
     if (indexPath.section >= _gameSectionTitles.count)
         return nil;
@@ -1293,15 +1299,16 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
                                clone:game.gameParent.length != 0];
 }
 
-// compute the size(s) of a single item. returns: (x = image_height, y = text_height)
-- (CGPoint)heightForItemAtIndexPath:(NSIndexPath *)indexPath
-{
-    UICollectionViewFlowLayout* layout = (UICollectionViewFlowLayout*)self.collectionView.collectionViewLayout;
-    GameInfo* game = [self getGameInfo:indexPath];
+// compute the size(s) of a single game. returns: (x = image_height, y = text_height)
+-(CGPoint)heightForGameInfo:(GameInfo*)game usingLayout:(nullable UICollectionViewLayout*)layout {
+    UICollectionViewFlowLayout *flowLayout = (UICollectionViewFlowLayout*)self.collectionView.collectionViewLayout;
+    if (layout) {
+        flowLayout = (UICollectionViewFlowLayout*)layout;
+    }
     NSAttributedString* text = [self getGameText:game];
     
     // start with the (itemSize.width,0.0)
-    CGFloat item_width = layout.itemSize.width;
+    CGFloat item_width = flowLayout.itemSize.width;
     CGFloat image_height, text_height;
     
     // get the screen, assume the game is 4:3 if we dont know.
@@ -1329,6 +1336,14 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     
     NSLog(@"heightForItemAtIndexPath: %d.%d %@ -> %@", (int)indexPath.section, (int)indexPath.item, game.gameName, NSStringFromCGSize(CGSizeMake(image_height, text_height)));
     return CGPointMake(image_height, text_height);
+}
+
+// compute the size(s) of a single item. returns: (x = image_height, y = text_height)
+- (CGPoint)heightForItemAtIndexPath:(NSIndexPath *)indexPath
+{
+    UICollectionViewFlowLayout* layout = (UICollectionViewFlowLayout*)self.collectionView.collectionViewLayout;
+    GameInfo* game = [self getGameInfo:indexPath];
+    return [self heightForGameInfo:game usingLayout:layout];
 }
 
 // compute (or return from cache) the height(s) of a single row.
@@ -1422,9 +1437,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     return image ?: [self makeIcon:game];
 }
 
-// get size of an item
-- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewFlowLayout *)layout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-
+-(CGSize)getGameInfoItemSizeFor:(UICollectionViewFlowLayout*)layout at:(NSIndexPath*)indexPath {
     if (_layoutMode == LayoutList || _layoutCollums == 0)
         return layout.itemSize;
 
@@ -1432,18 +1445,26 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     return CGSizeMake(layout.itemSize.width, row_height.x + row_height.y);
 }
 
+// get size of an item
+- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewFlowLayout *)layout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
+    if ([self hasRecentlyPlayed] && indexPath.section == 0) {
+        NSArray *items = _gameData[_gameSectionTitles[0]];
+        CGFloat maxHeight = 0;
+        for (GameInfo *game in items) {
+            CGPoint heightInfo = [self heightForGameInfo:game usingLayout:layout];
+            maxHeight = MAX(maxHeight, heightInfo.x + heightInfo.y);
+        }
+        return CGSizeMake(collectionView.frame.size.width, maxHeight);
+    }
+    return [self getGameInfoItemSizeFor:layout at:indexPath];
+}
+
 // convert an IndexPath to a non-zero NSInteger, and back
 #define INDEXPATH_TO_INT(indexPath) ((indexPath.section << 24) | (indexPath.item+1))
 #define INT_TO_INDEXPATH(i) [NSIndexPath indexPathForItem:((i) & 0xFFFFFF)-1 inSection:(i) >> 24]
 
-// create a cell for an item.
-- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
-{
-    NSLog(@"cellForItemAtIndexPath: %d.%d %@", (int)indexPath.section, (int)indexPath.item, [self getGameInfo:indexPath].gameName);
-    
+-(void)setupGameInfoCell:(GameInfoCell*)cell forIndexPath:(NSIndexPath*)indexPath {
     GameInfo* game = [self getGameInfo:indexPath];
-    
-    GameInfoCell* cell = [collectionView dequeueReusableCellWithReuseIdentifier:CELL_IDENTIFIER forIndexPath:indexPath];
     [cell setBackgroundColor:CELL_BACKGROUND_COLOR];
     
     cell.text.attributedText = [self getGameText:game];
@@ -1472,8 +1493,14 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     [cell setHorizontal:_layoutMode == LayoutList];
     [cell setTextInsets:UIEdgeInsetsMake(CELL_INSET_Y, CELL_INSET_X, CELL_INSET_Y, CELL_INSET_X)];
     
+    BOOL isRecentlyPlayedSection = [self hasRecentlyPlayed] && indexPath.section == 0;
+    
     CGFloat image_height = 0.0;
-    if (_layoutMode != LayoutList && _layoutCollums > 1) {
+    if (isRecentlyPlayedSection) {
+        // For the recently played section, don't use the layout-based cached image heights
+        CGPoint heightInfo = [self heightForGameInfo:game usingLayout:layout];
+        image_height = heightInfo.x;
+    } else if (_layoutMode != LayoutList && _layoutCollums > 1) {
         image_height = [self heightForRowAtIndexPath:indexPath].x;
     }
     
@@ -1549,13 +1576,41 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
             [cell setImageAspect:(cell.bounds.size.width / image_height)];
         [cell startWait];
     }
-    
 #if TARGET_OS_IOS
     if ([self getSelection] == indexPath) {
         cell.selected = YES;
     }
 #endif
+}
 
+// create a cell for an item.
+- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
+{
+    NSLog(@"cellForItemAtIndexPath: %d.%d %@", (int)indexPath.section, (int)indexPath.item, [self getGameInfo:indexPath].gameName);
+    
+    if ([self hasRecentlyPlayed] && indexPath.section == 0) {
+        RecentlyPlayedCell *recentCell = [collectionView dequeueReusableCellWithReuseIdentifier:@"RecentlyPlayedCell" forIndexPath:indexPath];
+        NSArray *items = _gameData[_gameSectionTitles[0]];
+        recentCell.setupCellClosure = ^(GameInfoCell* gameInfoCell, NSIndexPath* indexPath) {
+            [self setupGameInfoCell:gameInfoCell forIndexPath:indexPath];
+        };
+        recentCell.selectItemClosure = ^(NSIndexPath* indexPath) {
+            [self didSelectItemAtIndexPath:indexPath];
+        };
+        recentCell.contextMenuClosure = ^UIContextMenuConfiguration * _Nullable(NSIndexPath * _Nonnull indexPath) {
+            return [self setupGameInfoContextMenuAtIndexPath:indexPath];
+        };
+        recentCell.heightForGameInfoClosure = ^CGPoint(GameInfo * _Nonnull gameInfo, UICollectionViewLayout * _Nonnull layout) {
+            return [self heightForGameInfo:gameInfo usingLayout:layout];
+        };
+        UICollectionViewFlowLayout *layout = (UICollectionViewFlowLayout*) collectionView.collectionViewLayout;
+        recentCell.itemSize = layout.itemSize;
+        recentCell.items = items;
+        return recentCell;
+    }
+
+    GameInfoCell* cell = [collectionView dequeueReusableCellWithReuseIdentifier:CELL_IDENTIFIER forIndexPath:indexPath];
+    [self setupGameInfoCell:cell forIndexPath:indexPath];
     return cell;
 }
 
@@ -1606,7 +1661,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     [cell setHorizontal:TRUE];
     NSString* title = _gameSectionTitles[indexPath.section];
     cell.text.text = title;
-    cell.text.font = [UIFont systemFontOfSize:cell.bounds.size.height * 0.8 weight:UIFontWeightHeavy];
+    cell.text.font = [UIFont systemFontOfSize:cell.bounds.size.height * 0.8 weight:UIFontWeightBold];
     cell.text.textColor = HEADER_TEXT_COLOR;
     cell.backgroundColor = HEADER_BACKGROUND_COLOR;
     [cell setTextInsets:UIEdgeInsetsMake(2.0, self.view.safeAreaInsets.left + 2.0, 2.0, self.view.safeAreaInsets.right + 2.0)];
@@ -1632,8 +1687,8 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
         
     return cell;
 }
-- (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath
-{
+
+-(void)didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
     GameInfo* game = [self getGameInfo:indexPath];
     
     NSLog(@"DID SELECT ITEM[%d.%d] %@", (int)indexPath.section, (int)indexPath.item, game.gameName);
@@ -1641,6 +1696,11 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     [collectionView deselectItemAtIndexPath:indexPath animated:YES];
 #endif
     [self play:game];
+}
+
+- (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath
+{
+    [self didSelectItemAtIndexPath:indexPath];
 }
 
 #pragma mark - play game
@@ -2108,8 +2168,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
 
 #if TARGET_OS_IOS
 
-- (UIContextMenuConfiguration *)collectionView:(UICollectionView *)collectionView contextMenuConfigurationForItemAtIndexPath:(NSIndexPath *)indexPath point:(CGPoint)point API_AVAILABLE(ios(13.0)) {
-    
+-(UIContextMenuConfiguration *)setupGameInfoContextMenuAtIndexPath:(NSIndexPath*)indexPath {
     [self.collectionView selectItemAtIndexPath:indexPath animated:NO scrollPosition:UICollectionViewScrollPositionNone];
     
     UIViewController* menu = [self menuForItemAtIndexPath:indexPath];
@@ -2122,6 +2181,10 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
                 return [(UIAlertController*)menu convertToMenu];
             }
     ];
+}
+
+- (UIContextMenuConfiguration *)collectionView:(UICollectionView *)collectionView contextMenuConfigurationForItemAtIndexPath:(NSIndexPath *)indexPath point:(CGPoint)point API_AVAILABLE(ios(13.0)) {
+    return [self setupGameInfoContextMenuAtIndexPath:indexPath];
 }
 #endif
 
