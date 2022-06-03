@@ -1137,6 +1137,11 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     [NSUserDefaults.standardUserDefaults setObject:state forKey:COLLAPSED_STATE_KEY];
 }
 
+-(void)headerTap:(UITapGestureRecognizer*)sender {
+    NSInteger section = sender.view.tag;
+    [self headerTapForSection:section];
+}
+
 -(void)headerTapForSection:(NSInteger)section
 {
     if (_isSearchResults)
@@ -1701,6 +1706,9 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
         // only show a chevron if collapsed?
         [cell.expandCollapseButton setHidden:NO];
         [cell.expandCollapseButton setSelected:is_collapsed];
+        // install tap handler to toggle collapsed
+        cell.tag = indexPath.section;
+        [cell addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(headerTap:)]];
         cell.didToggleClosure = ^{
             [self headerTapForSection:indexPath.section];
         };

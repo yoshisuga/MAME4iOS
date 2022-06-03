@@ -137,7 +137,7 @@ class GameInfoCell : UICollectionViewCell {
     override func layoutSubviews() {
         super.layoutSubviews()
         
-        var rect = bounds
+        var rect = bounds.inset(by: UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 32))
         
         if let size = image.image?.size, size != .zero {
             // use imageAspect unless it is zero
@@ -268,7 +268,7 @@ class GameInfoHeader : GameInfoCell {
         super.init(frame: frame)
         contentView.addSubview(expandCollapseButton)
         NSLayoutConstraint.activate([
-            expandCollapseButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -4),
+            expandCollapseButton.trailingAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.trailingAnchor, constant: -8),
             expandCollapseButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
         ])
         expandCollapseButton.addTarget(self, action: #selector(expandCollapseButtonPressed(_:)), for: .touchUpInside)
