@@ -330,7 +330,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     // collection view
     [self.collectionView registerClass:[GameInfoCell class] forCellWithReuseIdentifier:CELL_IDENTIFIER];
     [self.collectionView registerClass:[GameInfoHeader class] forSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:HEADER_IDENTIFIER];
-    [self.collectionView registerClass:[RecentlyPlayedCell class] forCellWithReuseIdentifier:@"RecentlyPlayedCell"];
+    [self.collectionView registerClass:[RecentlyPlayedCell class] forCellWithReuseIdentifier:[RecentlyPlayedCell identifier]];
     
     self.collectionView.backgroundColor = BACKGROUND_COLOR;
     self.collectionView.allowsMultipleSelection = NO;
@@ -1614,7 +1614,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     NSLog(@"cellForItemAtIndexPath: %d.%d %@", (int)indexPath.section, (int)indexPath.item, [self getGameInfo:indexPath].gameName);
     
     if ([self hasRecentlyPlayed] && indexPath.section == 0) {
-        RecentlyPlayedCell *recentCell = [collectionView dequeueReusableCellWithReuseIdentifier:@"RecentlyPlayedCell" forIndexPath:indexPath];
+        RecentlyPlayedCell *recentCell = [collectionView dequeueReusableCellWithReuseIdentifier:[RecentlyPlayedCell identifier] forIndexPath:indexPath];
         NSArray *items = _gameData[_gameSectionTitles[0]];
         recentCell.setupCellClosure = ^(GameInfoCell* gameInfoCell, NSIndexPath* indexPath) {
             [self setupGameInfoCell:gameInfoCell forIndexPath:indexPath];
