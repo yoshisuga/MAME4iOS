@@ -1137,12 +1137,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     [NSUserDefaults.standardUserDefaults setObject:state forKey:COLLAPSED_STATE_KEY];
 }
 
--(void)headerTap:(UITapGestureRecognizer*)sender
+-(void)headerTapForSection:(NSInteger)section
 {
-    NSLog(@"HEADER TAP: %d", (int)sender.view.tag);
     if (_isSearchResults)
         return;
-    NSInteger section = sender.view.tag;
     if (section >= 0 && section < _gameSectionTitles.count)
     {
         NSString* title = _gameSectionTitles[section];
@@ -1445,13 +1443,36 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     return CGSizeMake(layout.itemSize.width, row_height.x + row_height.y);
 }
 
+-(UICollectionViewFlowLayout*)layoutForRecentlyPlayedCell {
+    if (_layoutMode != LayoutList) {
+        return (UICollectionViewFlowLayout*) self.collectionView.collectionViewLayout;
+    }
+    UICollectionViewFlowLayout *layout = [[UICollectionViewFlowLayout alloc] init];
+    layout.scrollDirection = UICollectionViewScrollDirectionVertical;
+    layout.sectionInset = UIEdgeInsetsMake(SECTION_INSET_Y, SECTION_INSET_X, SECTION_INSET_Y, SECTION_INSET_X);
+    layout.minimumLineSpacing = SECTION_LINE_SPACING;
+    layout.minimumInteritemSpacing = SECTION_ITEM_SPACING;
+    layout.sectionHeadersPinToVisibleBounds = YES;
+#if TARGET_OS_MACCATALYST
+    CGFloat height = [UIFont preferredFontForTextStyle:UIFontTextStyleLargeTitle].pointSize * 1.5;
+#elif TARGET_OS_IOS
+    CGFloat height = [UIFont preferredFontForTextStyle:UIFontTextStyleLargeTitle].pointSize;
+#else
+    CGFloat height = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline].pointSize * 1.5;
+#endif
+    layout.headerReferenceSize = CGSizeMake(height, height);
+    layout.sectionInsetReference = UICollectionViewFlowLayoutSectionInsetFromSafeArea;
+    layout.itemSize = CGSizeMake(CELL_SMALL_WIDTH, height);
+    return layout;
+}
+
 // get size of an item
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewFlowLayout *)layout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
     if ([self hasRecentlyPlayed] && indexPath.section == 0) {
         NSArray *items = _gameData[_gameSectionTitles[0]];
         CGFloat maxHeight = 0;
         for (GameInfo *game in items) {
-            CGPoint heightInfo = [self heightForGameInfo:game usingLayout:layout];
+            CGPoint heightInfo = [self heightForGameInfo:game usingLayout:[self layoutForRecentlyPlayedCell]];
             maxHeight = MAX(maxHeight, heightInfo.x + heightInfo.y);
         }
         return CGSizeMake(collectionView.frame.size.width, maxHeight);
@@ -1464,6 +1485,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 #define INT_TO_INDEXPATH(i) [NSIndexPath indexPathForItem:((i) & 0xFFFFFF)-1 inSection:(i) >> 24]
 
 -(void)setupGameInfoCell:(GameInfoCell*)cell forIndexPath:(NSIndexPath*)indexPath {
+    BOOL isRecentlyPlayedSection = [self hasRecentlyPlayed] && indexPath.section == 0;
     GameInfo* game = [self getGameInfo:indexPath];
     [cell setBackgroundColor:CELL_BACKGROUND_COLOR];
     
@@ -1478,7 +1500,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         cell.text.numberOfLines = CELL_MAX_LINES;
         cell.text.lineBreakMode = NSLineBreakByTruncatingTail;
     }
-    if (_layoutMode == LayoutTiny || _layoutMode == LayoutList) {
+    if ((_layoutMode == LayoutTiny || _layoutMode == LayoutList) && !isRecentlyPlayedSection) {
         [cell setCornerRadius:CELL_CORNER_RADIUS / 2];
     }
     else {
@@ -1490,15 +1512,13 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     CGFloat scale = 1.0 + (space * 1.5 / cell.bounds.size.width);
     [cell setSelectScale:scale];
 
-    [cell setHorizontal:_layoutMode == LayoutList];
+    [cell setHorizontal:isRecentlyPlayedSection ? NO : _layoutMode == LayoutList];
     [cell setTextInsets:UIEdgeInsetsMake(CELL_INSET_Y, CELL_INSET_X, CELL_INSET_Y, CELL_INSET_X)];
-    
-    BOOL isRecentlyPlayedSection = [self hasRecentlyPlayed] && indexPath.section == 0;
     
     CGFloat image_height = 0.0;
     if (isRecentlyPlayedSection) {
         // For the recently played section, don't use the layout-based cached image heights
-        CGPoint heightInfo = [self heightForGameInfo:game usingLayout:layout];
+        CGPoint heightInfo = [self heightForGameInfo:game usingLayout:[self layoutForRecentlyPlayedCell]];
         image_height = heightInfo.x;
     } else if (_layoutMode != LayoutList && _layoutCollums > 1) {
         image_height = [self heightForRowAtIndexPath:indexPath].x;
@@ -1547,7 +1567,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         // the title image is force a aspect of 3:4 or 4:3
         
         BOOL is_vert = [game.gameScreen containsString:kGameInfoScreenVertical];
-        if (self->_layoutMode == LayoutList) {
+        if (self->_layoutMode == LayoutList && !isRecentlyPlayedSection) {
             CGFloat aspect = 4.0 / 3.0;
             [cell setImageAspect:aspect];
             cell.image.contentMode = is_vert ? UIViewContentModeScaleAspectFill : UIViewContentModeScaleToFill;
@@ -1604,7 +1624,11 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
             return [self heightForGameInfo:gameInfo usingLayout:layout];
         };
         UICollectionViewFlowLayout *layout = (UICollectionViewFlowLayout*) collectionView.collectionViewLayout;
-        recentCell.itemSize = layout.itemSize;
+        if (_layoutMode == LayoutList) {
+            recentCell.itemSize = CGSizeMake(CELL_SMALL_WIDTH, layout.itemSize.height);
+        } else {
+            recentCell.itemSize = layout.itemSize;
+        }
         recentCell.items = items;
         return recentCell;
     }
@@ -1667,22 +1691,19 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     [cell setTextInsets:UIEdgeInsetsMake(2.0, self.view.safeAreaInsets.left + 2.0, 2.0, self.view.safeAreaInsets.right + 2.0)];
     
     // make the section title tappable to toggle collapse/expand section
-    if (@available(iOS 13.0, tvOS 13.0, *)) {
-        BOOL is_collapsed = [self isCollapsed:title];
-        
-        // dont allow collapse if we only have a single (+MAME) section
-        if (!_isSearchResults && (_gameSectionTitles.count >= 2 || is_collapsed))
-        {
-            // only show a chevron if collapsed?
-            if (is_collapsed)
-            {
-                NSString* str = [NSString stringWithFormat:@"%@ :%@:", cell.text.text, is_collapsed ? @"chevron.right" : @"chevron.down"];
-                cell.text.attributedText = attributedString(str, cell.text.font, cell.text.textColor);
-            }
-            // install tap handler to toggle collapsed
-            cell.tag = indexPath.section;
-            [cell addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(headerTap:)]];
-        }
+    BOOL is_collapsed = [self isCollapsed:title];
+    
+    [cell.expandCollapseButton setHidden:YES];
+    
+    // dont allow collapse if we only have a single (+MAME) section
+    if (!_isSearchResults && (_gameSectionTitles.count >= 2 || is_collapsed))
+    {
+        // only show a chevron if collapsed?
+        [cell.expandCollapseButton setHidden:NO];
+        [cell.expandCollapseButton setSelected:is_collapsed];
+        cell.didToggleClosure = ^{
+            [self headerTapForSection:indexPath.section];
+        };
     }
         
     return cell;
