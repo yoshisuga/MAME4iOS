@@ -1,3 +1,9 @@
+# Version 2022.3
+* The Recently Played section now scrolls horizontally and supports up to 100 entries.
+* Updated the expanding/collapsing UI so that it can be expanded/collapsed using a +/- button on the right side, instead of a chevron in the header. You can still tap the header to expand/collapse as well.
+* Added prefetching support: images are now cached using prefetching for improved performance. 
+* Changed font of header to be Bold instead of Heavy
+
 # Version 2022.2
 * Updated to [MAME 244](https://www.mamedev.org/releases/whatsnew_0244.txt).
 * hi-res font for `MAME` Config Menu.

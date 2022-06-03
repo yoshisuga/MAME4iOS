@@ -32,6 +32,10 @@
 		926C771D21F5034100103EDE /* TVInputOptionsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 926C771C21F5034100103EDE /* TVInputOptionsController.m */; };
 		928F7B2D27D5F18E00377C40 /* CommandLineArgsHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928F7B2C27D5F18E00377C40 /* CommandLineArgsHelper.swift */; };
 		928F7B2E27F0223100377C40 /* CommandLineArgsHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928F7B2C27D5F18E00377C40 /* CommandLineArgsHelper.swift */; };
+		9293C61D284681E3002729B4 /* ChooseGameController+Prefetching.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9293C61C284681E3002729B4 /* ChooseGameController+Prefetching.swift */; };
+		9293C61E284681E3002729B4 /* ChooseGameController+Prefetching.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9293C61C284681E3002729B4 /* ChooseGameController+Prefetching.swift */; };
+		9293C62028475AB4002729B4 /* Collection+Safe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9293C61F28475AB4002729B4 /* Collection+Safe.swift */; };
+		9293C62128475AB4002729B4 /* Collection+Safe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9293C61F28475AB4002729B4 /* Collection+Safe.swift */; };
 		9296524C27FC1FF30064D1F5 /* EmulatorTouchMouse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9296524B27FC1FF30064D1F5 /* EmulatorTouchMouse.swift */; };
 		9296524E27FC20330064D1F5 /* EmulatorController+TouchMouse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9296524D27FC20330064D1F5 /* EmulatorController+TouchMouse.swift */; };
 		92A5332321EB57F00089FBB9 /* Options.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5332121EB57F00089FBB9 /* Options.m */; };
@@ -73,6 +77,8 @@
 		92A533DB21EEFDE20089FBB9 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92A533DA21EEFDE20089FBB9 /* CFNetwork.framework */; };
 		92A533DF21EEFE520089FBB9 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92A533DE21EEFE520089FBB9 /* CFNetwork.framework */; };
 		92B99F0F2022706600CC44E3 /* UIView+Toast.m in Sources */ = {isa = PBXBuildFile; fileRef = 92B99F0D2022706600CC44E3 /* UIView+Toast.m */; };
+		92C4164D284495AC00085A4B /* RecentlyPlayedCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C4164C284495AC00085A4B /* RecentlyPlayedCell.swift */; };
+		92C4164E284495AC00085A4B /* RecentlyPlayedCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C4164C284495AC00085A4B /* RecentlyPlayedCell.swift */; };
 		92D96574215B03E100EFE3AE /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 92D96573215B03E100EFE3AE /* libc++.tbd */; };
 		92ECB8F721EA985000D1E3D0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92ECB8F621EA985000D1E3D0 /* Assets.xcassets */; };
 		92ECB8FF21EA992100D1E3D0 /* libmame-tvos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 92ECB8FE21EA992100D1E3D0 /* libmame-tvos.a */; };
@@ -299,6 +305,8 @@
 		926C771B21F5034100103EDE /* TVInputOptionsController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVInputOptionsController.h; sourceTree = "<group>"; };
 		926C771C21F5034100103EDE /* TVInputOptionsController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TVInputOptionsController.m; sourceTree = "<group>"; };
 		928F7B2C27D5F18E00377C40 /* CommandLineArgsHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandLineArgsHelper.swift; sourceTree = "<group>"; };
+		9293C61C284681E3002729B4 /* ChooseGameController+Prefetching.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ChooseGameController+Prefetching.swift"; sourceTree = "<group>"; };
+		9293C61F28475AB4002729B4 /* Collection+Safe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Collection+Safe.swift"; sourceTree = "<group>"; };
 		9296524B27FC1FF30064D1F5 /* EmulatorTouchMouse.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EmulatorTouchMouse.swift; sourceTree = "<group>"; };
 		9296524D27FC20330064D1F5 /* EmulatorController+TouchMouse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EmulatorController+TouchMouse.swift"; sourceTree = "<group>"; };
 		92A5332021EB57F00089FBB9 /* Options.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Options.h; sourceTree = "<group>"; };
@@ -342,6 +350,7 @@
 		92A533E021EEFE570089FBB9 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.1.sdk/System/Library/Frameworks/MobileCoreServices.framework; sourceTree = DEVELOPER_DIR; };
 		92B99F0C2022706600CC44E3 /* UIView+Toast.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+Toast.h"; sourceTree = "<group>"; };
 		92B99F0D2022706600CC44E3 /* UIView+Toast.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+Toast.m"; sourceTree = "<group>"; };
+		92C4164C284495AC00085A4B /* RecentlyPlayedCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentlyPlayedCell.swift; sourceTree = "<group>"; };
 		92D96573215B03E100EFE3AE /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 		92D96575215B041300EFE3AE /* crt1.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; name = crt1.o; path = usr/lib/crt1.o; sourceTree = SDKROOT; };
 		92D96577215B048900EFE3AE /* crt1.3.1.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; name = crt1.3.1.o; path = usr/lib/crt1.3.1.o; sourceTree = SDKROOT; };
@@ -689,6 +698,7 @@
 				EF514446282815E4001457B1 /* GameInfoController.swift */,
 				EF19F22E235D1C0300C8EE7F /* ChooseGameController.h */,
 				EF19F229235D1BDF00C8EE7F /* ChooseGameController.m */,
+				9293C61C284681E3002729B4 /* ChooseGameController+Prefetching.swift */,
 				CEE680B41635BB4900051BC2 /* EmulatorController.h */,
 				CEE680B51635BB4900051BC2 /* EmulatorController.m */,
 				EF31447B27BB1E81002C3C6A /* ControllerButtonPress.swift */,
@@ -709,6 +719,8 @@
 				EF286D32253CA930007DA6D3 /* CloudSync.h */,
 				EF286D33253CA930007DA6D3 /* CloudSync.m */,
 				CEBFBC0E163C5BD300A05CD0 /* resources */,
+				92C4164C284495AC00085A4B /* RecentlyPlayedCell.swift */,
+				9293C61F28475AB4002729B4 /* Collection+Safe.swift */,
 			);
 			name = RELOADED;
 			sourceTree = "<group>";
@@ -1228,11 +1240,13 @@
 				925ABCA91E46DCC500997182 /* OptionsController.m in Sources */,
 				EFE003382638ACA000E42246 /* XmlFile.m in Sources */,
 				EF8EAA8A244F7F5D00DA02BB /* SteamControllerExtendedGamepad.m in Sources */,
+				92C4164D284495AC00085A4B /* RecentlyPlayedCell.swift in Sources */,
 				EF8EAA8C244F7F5D00DA02BB /* SteamControllerInput.m in Sources */,
 				92A533C021EBDBAD0089FBB9 /* GCDWebServerURLEncodedFormRequest.m in Sources */,
 				92A533D821EE601D0089FBB9 /* WebServer.m in Sources */,
 				EFB3C6D624890F6200F44780 /* simpleCRT.metal in Sources */,
 				EF31447C27BB1E81002C3C6A /* ControllerButtonPress.swift in Sources */,
+				9293C61D284681E3002729B4 /* ChooseGameController+Prefetching.swift in Sources */,
 				EF474B8B2791E4CD00578663 /* EmulatorKeyboard.swift in Sources */,
 				92A533BA21EBDBAD0089FBB9 /* GCDWebServerDataResponse.m in Sources */,
 				EF24933A236264DA00DD0A6C /* ImageCache.m in Sources */,
@@ -1260,6 +1274,7 @@
 				EF7B232C23FD0469001FF51D /* (null) in Sources */,
 				EF8E427D249348220049C84C /* megaTron.metal in Sources */,
 				92A533B421EBDBAD0089FBB9 /* GCDWebServerErrorResponse.m in Sources */,
+				9293C62028475AB4002729B4 /* Collection+Safe.swift in Sources */,
 				928F7B2D27D5F18E00377C40 /* CommandLineArgsHelper.swift in Sources */,
 				EF23D331243CB9CF006B3EE2 /* PopupSegmentedControl.m in Sources */,
 				EFF9F82A2470755800DDA88C /* MetalScreenView.m in Sources */,
@@ -1297,18 +1312,21 @@
 				92A533B821EBDBAD0089FBB9 /* GCDWebServerFileResponse.m in Sources */,
 				92A533C121EBDBAD0089FBB9 /* GCDWebServerURLEncodedFormRequest.m in Sources */,
 				92ECB91921EAD57900D1E3D0 /* UIView+Toast.m in Sources */,
+				9293C61E284681E3002729B4 /* ChooseGameController+Prefetching.swift in Sources */,
 				EF19F22D235D1BDF00C8EE7F /* ChooseGameController.m in Sources */,
 				928F7B2E27F0223100377C40 /* CommandLineArgsHelper.swift in Sources */,
 				EF8EAA89244F7F5D00DA02BB /* SteamController.m in Sources */,
 				92A533A621EBDBAD0089FBB9 /* GCDWebServerResponse.m in Sources */,
 				92A533D921EE601D0089FBB9 /* WebServer.m in Sources */,
 				EFE0033E2638D97E00E42246 /* SoftwareList.m in Sources */,
+				92C4164E284495AC00085A4B /* RecentlyPlayedCell.swift in Sources */,
 				EFB7B21D247ACFE300AD96A4 /* MameShaders.metal in Sources */,
 				92A533D421EBDDF20089FBB9 /* GCDWebUploader.m in Sources */,
 				92ECB91221EAA1B700D1E3D0 /* EmulatorController.m in Sources */,
 				EF8EAA87244F7F5D00DA02BB /* SteamControllerManager.m in Sources */,
 				EF514448282815E4001457B1 /* GameInfoController.swift in Sources */,
 				EF24BAFD24C786A900D9C55A /* SkinManager.m in Sources */,
+				9293C62128475AB4002729B4 /* Collection+Safe.swift in Sources */,
 				92A533AC21EBDBAD0089FBB9 /* GCDWebServerFunctions.m in Sources */,
 				EF51444B282C5C68001457B1 /* GameInfo.swift in Sources */,
 				EF7B232D23FD0469001FF51D /* (null) in Sources */,

@@ -7,6 +7,7 @@
 #import "InfoDatabase.h"
 #import "ChooseGameController.h"
 #import "EmulatorController.h"
+#import "ImageCache.h"
 
 // Globals.h stuff needed from Swift
 NS_ASSUME_NONNULL_BEGIN

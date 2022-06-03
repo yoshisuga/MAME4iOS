@@ -30,6 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 +(NSAttributedString*)getGameText:(GameInfo*)game;
 +(UIImage*)getGameIcon:(GameInfo*)game;
+-( GameInfo* _Nullable)getGameInfo:(NSIndexPath*)indexPath;
 
 @end
 

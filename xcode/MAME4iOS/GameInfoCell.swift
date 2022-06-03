@@ -137,7 +137,7 @@ class GameInfoCell : UICollectionViewCell {
     override func layoutSubviews() {
         super.layoutSubviews()
         
-        var rect = bounds
+        var rect = bounds.inset(by: UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 32))
         
         if let size = image.image?.size, size != .zero {
             // use imageAspect unless it is zero
@@ -243,11 +243,45 @@ class GameInfoCell : UICollectionViewCell {
 // MARK: GameInfoHeader - same as GameInfoCell
 
 class GameInfoHeader : GameInfoCell {
+    let expandCollapseButton: UIButton = {
+       let button = UIButton(type: .custom)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.contentMode = .scaleAspectFill
+        button.contentHorizontalAlignment = .fill
+        button.contentVerticalAlignment = .fill
+        button.setImage(UIImage(systemName: "minus.square"), for: .normal)
+        button.setImage(UIImage(systemName: "plus.square"), for: .selected)
+        button.heightAnchor.constraint(equalToConstant: 28).isActive = true
+        button.widthAnchor.constraint(equalTo: button.heightAnchor).isActive = true
+        return button
+    }()
+    
     #if os(tvOS)
     override var canBecomeFocused: Bool {
         return true
     }
     #endif
+    
+    var didToggleClosure: (() -> Void)?
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        contentView.addSubview(expandCollapseButton)
+        NSLayoutConstraint.activate([
+            expandCollapseButton.trailingAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.trailingAnchor, constant: -8),
+            expandCollapseButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
+        ])
+        expandCollapseButton.addTarget(self, action: #selector(expandCollapseButtonPressed(_:)), for: .touchUpInside)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    @objc func expandCollapseButtonPressed(_ sender: UIButton) {
+        sender.isSelected.toggle()
+        didToggleClosure?()
+    }
 }
 
 // MARK: GameInfoCellLayout - a subclass that will invalidate the layout (for real) on a size change
