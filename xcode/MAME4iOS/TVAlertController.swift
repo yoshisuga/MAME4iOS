@@ -707,7 +707,7 @@ extension TVAlertController: UIPopoverPresentationControllerDelegate {
     
     // if the device rotates when popover is up, just center
     func popoverPresentationController(_ popoverPresentationController: UIPopoverPresentationController, willRepositionPopoverTo rectPtr: UnsafeMutablePointer<CGRect>, in viewPtr: AutoreleasingUnsafeMutablePointer<UIView>) {
-        guard let view = self.presentingViewController?.view else { return }
+        guard !self.isBeingPresented, let view = self.presentingViewController?.view else { return }
         popoverPresentationController.permittedArrowDirections = []
         viewPtr.pointee = view
         rectPtr.pointee = CGRect(x:view.bounds.width/2, y:view.bounds.height/2, width:0, height:0)
