@@ -429,6 +429,7 @@
 		EF474B872791E42900578663 /* MAME4iOS-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MAME4iOS-Bridging-Header.h"; sourceTree = "<group>"; };
 		EF474B882791E42900578663 /* EmulatorController+EmulatorKeyboardSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EmulatorController+EmulatorKeyboardSupport.swift"; sourceTree = "<group>"; };
 		EF474B8A2791E4CD00578663 /* EmulatorKeyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmulatorKeyboard.swift; sourceTree = "<group>"; };
+		EF47838528D38F0A00DA4A56 /* Developer.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Developer.xcconfig; sourceTree = "<group>"; };
 		EF490D90277A5C8C00407865 /* history.dat.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = history.dat.zip; path = "../../iOS-res/history.dat.zip"; sourceTree = "<group>"; };
 		EF490D94277A5E0E00407865 /* cheat.7z */ = {isa = PBXFileReference; lastKnownFileType = file; name = cheat.7z; path = "../../iOS-res/cheat.7z"; sourceTree = "<group>"; };
 		EF490D95277A5E0E00407865 /* cheat.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = cheat.zip; path = "../../iOS-res/cheat.zip"; sourceTree = "<group>"; };
@@ -734,6 +735,7 @@
 			isa = PBXGroup;
 			children = (
 				EF55DE312533C21E004E37EF /* MAME4iOS.xcconfig */,
+				EF47838528D38F0A00DA4A56 /* Developer.xcconfig */,
 				EF9F9C9E240070E700352554 /* README.md */,
 				EFFBA6FD24F1C91200F8666B /* WHATSNEW.md */,
 				EFE0036C264C0B0D00E42246 /* TODO.md */,
