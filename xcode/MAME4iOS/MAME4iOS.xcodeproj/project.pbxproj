@@ -430,6 +430,7 @@
 		EF474B882791E42900578663 /* EmulatorController+EmulatorKeyboardSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EmulatorController+EmulatorKeyboardSupport.swift"; sourceTree = "<group>"; };
 		EF474B8A2791E4CD00578663 /* EmulatorKeyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmulatorKeyboard.swift; sourceTree = "<group>"; };
 		EF47838528D38F0A00DA4A56 /* Developer.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Developer.xcconfig; sourceTree = "<group>"; };
+		EF47838628D3B64B00DA4A56 /* mame-src */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "mame-src"; path = ../../src; sourceTree = "<group>"; };
 		EF490D90277A5C8C00407865 /* history.dat.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = history.dat.zip; path = "../../iOS-res/history.dat.zip"; sourceTree = "<group>"; };
 		EF490D94277A5E0E00407865 /* cheat.7z */ = {isa = PBXFileReference; lastKnownFileType = file; name = cheat.7z; path = "../../iOS-res/cheat.7z"; sourceTree = "<group>"; };
 		EF490D95277A5E0E00407865 /* cheat.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = cheat.zip; path = "../../iOS-res/cheat.zip"; sourceTree = "<group>"; };
@@ -747,6 +748,7 @@
 				CEE6808F1635BA7000051BC2 /* MAME4iOS */,
 				92ECB8EC21EA984E00D1E3D0 /* MAME4tvOS */,
 				EFEEA4B325C9D41E00314132 /* TopShelf */,
+				EF47838628D3B64B00DA4A56 /* mame-src */,
 				CEE680C51635BB8500051BC2 /* Includes */,
 				CEE680881635BA7000051BC2 /* Frameworks */,
 				CEE680861635BA7000051BC2 /* Products */,
