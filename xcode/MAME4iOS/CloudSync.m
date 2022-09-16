@@ -27,6 +27,15 @@
 #import "EmulatorController.h"
 #import "Alert.h"
 
+#if TARGET_OS_MACCATALYST
+#import <Security/SecTask.h>
+#else
+// declare *just* the Security APIs we need to check for entitlments on iOS
+typedef CFTypeRef SecTaskRef;
+extern SecTaskRef SecTaskCreateFromSelf(CFAllocatorRef allocator);
+extern CFTypeRef SecTaskCopyValueForEntitlement(SecTaskRef task, CFStringRef entitlement, CFErrorRef *error);
+#endif
+
 #define DebugLog 1
 #if DebugLog == 0 || !defined(DEBUG)
 #define NSLog(...) (void)0
@@ -62,16 +71,32 @@ static CKDatabase*     _database;
     return [NSString stringWithFormat:@"iCloud.%@", NSBundle.mainBundle.bundleIdentifier];
 }
 
+// use the Security framework to see if we have the iCloud entitlement
++(BOOL)isEntitled {
+    SecTaskRef task = SecTaskCreateFromSelf(NULL);
+    if (task == NULL)
+        return FALSE;
+    CFTypeRef val = SecTaskCopyValueForEntitlement(task, CFSTR("com.apple.developer.icloud-services"), NULL);
+    CFRelease(task);
+    if (val == NULL)
+        return FALSE;
+    CFRelease(val);
+    return TRUE;
+}
+
 +(void)updateCloudStatus {
     
     if (_container == nil) {
-        @try {
-            // **NOTE** CKContainer.defaultContainer will throw a uncatchable exception, dont use it.
-            //_container = CKContainer.defaultContainer;
-            _container = [CKContainer containerWithIdentifier:[self cloudIdentifier]];
-        }
-        @catch (id exception) {
-            NSLog(@"CLOUD STATUS: %@", exception);
+
+        if ([self isEntitled]) {
+            @try {
+                // **NOTE** CKContainer.defaultContainer will throw a uncatchable exception, dont use it.
+                //_container = CKContainer.defaultContainer;
+                _container = [CKContainer containerWithIdentifier:[self cloudIdentifier]];
+            }
+            @catch (id exception) {
+                NSLog(@"CLOUD STATUS: %@", exception);
+            }
         }
         if (_container == nil) {
             NSLog(@"CLOUD STATUS: NO ENTITLEMENT");
