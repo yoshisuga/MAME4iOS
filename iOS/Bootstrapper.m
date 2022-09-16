@@ -224,9 +224,17 @@ NSArray* g_import_file_types;
 #endif
     
     NSError *audioSessionError = nil;
-    [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryAmbient error:&audioSessionError];
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+    [AVAudioSession.sharedInstance setCategory:AVAudioSessionCategoryAmbient withOptions:AVAudioSessionCategoryOptionDefaultToSpeaker error:&audioSessionError];
+#else
+    [AVAudioSession.sharedInstance setCategory:AVAudioSessionCategoryAmbient error:&audioSessionError];
+#endif
     if (audioSessionError != nil) {
         NSLog(@"Could not set audio session category: %@",audioSessionError.localizedDescription);
+    }
+    [AVAudioSession.sharedInstance setActive:YES error:&audioSessionError];
+    if (audioSessionError != nil) {
+        NSLog(@"Could not activate audio session: %@",audioSessionError.localizedDescription);
     }
 
     return result;
