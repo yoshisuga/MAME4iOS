@@ -1,3 +1,6 @@
+# Version 2022.3
+* iOS 16 support
+
 # Version 2022.2
 * Updated to [MAME 244](https://www.mamedev.org/releases/whatsnew_0244.txt).
 * hi-res font for `MAME` Config Menu.
