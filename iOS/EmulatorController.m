@@ -494,6 +494,7 @@ int run_mame(char* system, char* type, char* game, char* options)
     
     // add in any custom command line
     // TODO: should these be at the end, I think soo
+    // TODO: this code does not support quotes!!!
     for (char* tok = strtok(options, " "); tok != NULL; tok = strtok(NULL, " ")) {
         if (argc >= sizeof(argv) / sizeof(argv[0]))
             break;

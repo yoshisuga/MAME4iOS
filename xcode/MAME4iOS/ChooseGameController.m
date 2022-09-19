@@ -1720,6 +1720,8 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
             NSArray* arr = [media componentsSeparatedByString:@":"];
             if (arr.count==2 && [arr.lastObject isEqualToString:game.gameFile.pathExtension.lowercaseString]) {
                 [game gameSetValue:arr.firstObject forKey:kGameInfoMediaType];
+                // stop after we find the first media that matches, this way we will use "-flop1" and *not* "-flop4" etc.
+                break;
             }
         }
     }
