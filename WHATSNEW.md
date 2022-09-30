@@ -1,3 +1,7 @@
+# Version 2022.4
+* Updated to [MAME 248](https://www.mamedev.org/releases/whatsnew_0248.txt).
+* use first media type (ie -flop1 over -flop4)
+
 # Version 2022.3
 * iOS 16 support
 
