@@ -10,7 +10,7 @@
 
 ///
 /// a subclass of UISegmentedControl that only shows the currently selected item, and lets the user change
-/// the currently selected item in a popup window on iOS. on tvOS the SegmentedControl will grow/shrink
+/// the currently selected item in a popup window on iOS, or an Alert on tvOS.
 ///
 /// - the main use for this controll is in a UIBarButtonItem in a UINavigationBar or a UIToolBar
 ///
@@ -21,6 +21,8 @@
 ///  You can force a Vertical popup always by setting UIViewAutoresizingFlexibleHeight
 ///
 /// - changing the list of items after init is currently not supported.
+///
+/// - accessibilityLabel is used as the Alert title on tvOS, and as text for UIImage items
 ///
 @interface PopupSegmentedControl : UISegmentedControl
 
