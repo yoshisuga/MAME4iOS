@@ -43,6 +43,11 @@
 - (void)webUploader:(GCDWebUploader*)uploader didDownloadFileAtPath:(NSString*)path;
 
 /**
+ *  This method is called while a file is being uploaded.
+ */
+- (void)webUploader:(GCDWebUploader*)uploader didUploadFile:(NSString*)fileName progress:(float)progress;
+
+/**
  *  This method is called whenever a file has been uploaded.
  */
 - (void)webUploader:(GCDWebUploader*)uploader didUploadFileAtPath:(NSString*)path;

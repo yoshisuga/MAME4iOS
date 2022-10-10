@@ -55,6 +55,8 @@
 }
 @end
 
+GCDWebUploader* __unsafe_unretained g_server;
+
 @implementation GCDWebUploader (Methods)
 
 // Must match implementation in GCDWebDAVServer
@@ -283,6 +285,48 @@
 
 @end
 
+@interface GCDWebServerMultiPartFormRequestWithProgress : GCDWebServerMultiPartFormRequest
+@end
+@implementation GCDWebServerMultiPartFormRequestWithProgress {
+    NSInteger _totalBytes;
+    NSString* _fileName;
+}
+- (BOOL)open:(NSError**)error {
+    _totalBytes = 0;
+    _fileName = nil;
+    return [super open:error];
+}
+
+- (BOOL)writeData:(NSData*)data error:(NSError**)error {
+    BOOL result = [super writeData:data error:error];
+
+    if (_totalBytes == 0 && _fileName == nil) {
+        @try {
+            // HACK: grab the fileName from the internal parser state, after we process the first data (aka header)
+            //       we could parse the data ourself, but this is quick and we have a fallback.
+            _fileName = [self valueForKeyPath:@"_parser._fileName"];
+        }
+        @catch (id exception) {
+            _fileName = @"";
+        }
+    }
+    
+    _totalBytes += data.length;
+
+    if ([g_server.delegate respondsToSelector:@selector(webUploader:didUploadFile:progress:)]) {
+      dispatch_async(dispatch_get_main_queue(), ^{
+          [g_server.delegate webUploader:g_server didUploadFile:self->_fileName progress:(float)self->_totalBytes / self.contentLength];
+      });
+    }
+
+    return result;
+}
+
+- (BOOL)close:(NSError**)error {
+    return [super close:error];
+}
+@end
+
 @implementation GCDWebUploader
 
 @synthesize uploadDirectory=_uploadDirectory, allowedFileExtensions=_allowedExtensions, allowHiddenItems=_allowHidden,
@@ -303,6 +347,7 @@
 #else
     __block GCDWebUploader* server = self;
 #endif
+      g_server = self;
     
     // Resource files
     [self addGETHandlerForBasePath:@"/" directoryPath:[siteBundle resourcePath] indexFilename:nil cacheAge:3600 allowRangeRequests:NO];
@@ -378,7 +423,7 @@
     }];
     
     // File upload
-    [self addHandlerForMethod:@"POST" path:@"/upload" requestClass:[GCDWebServerMultiPartFormRequest class] processBlock:^GCDWebServerResponse *(GCDWebServerRequest* request) {
+    [self addHandlerForMethod:@"POST" path:@"/upload" requestClass:[GCDWebServerMultiPartFormRequestWithProgress class] processBlock:^GCDWebServerResponse *(GCDWebServerRequest* request) {
       return [server uploadFile:(GCDWebServerMultiPartFormRequest*)request];
     }];
     
@@ -401,9 +446,9 @@
   return self;
 }
 
-#if !__has_feature(objc_arc)
-
 - (void)dealloc {
+  g_server = nil;
+#if !__has_feature(objc_arc)
   [_uploadDirectory release];
   [_allowedExtensions release];
   [_title release];
@@ -413,9 +458,8 @@
   [_footer release];
   
   [super dealloc];
-}
-
 #endif
+}
 
 @end
 
