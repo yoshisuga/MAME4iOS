@@ -5859,6 +5859,17 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
     [self webServerShowAlert:server];
 }
 
+- (void)webUploader:(GCDWebUploader*)uploader didUploadFile:(NSString*)file progress:(float)progress {
+    NSLog(@"FILE UPLOAD: %@ (%d%%)", file, (int)(progress * 100));
+    UIAlertController* alert = (UIAlertController*)self.topViewController;
+    if ([alert isKindOfClass:[UIAlertController class]])
+        [alert setProgress:progress text:file];
+}
+
+- (void)webUploader:(GCDWebUploader*)uploader didUploadFileAtPath:(NSString*)path {
+    NSLog(@"FILE UPLOADED: %@", path);
+}
+
 - (void)webServerShowAlert:(GCDWebServer*)server {
     // dont bring up this WebServer alert multiple times, for example the server will stop and restart when app goes into background.
     static BOOL g_web_server_alert = FALSE;
@@ -5875,7 +5886,7 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
         [servers appendString:@"\n\n"];
     }
     if ( server.bonjourServerURL != nil ) {
-        [servers appendString:[NSString stringWithFormat:@"%@",server.bonjourServerURL]];
+        [servers appendString:[NSString stringWithFormat:@"%@\n\n",server.bonjourServerURL]];
     }
     NSString* welcome = @"Welcome to " PRODUCT_NAME_LONG;
     NSString* message = [NSString stringWithFormat:@"To transfer ROMs from your computer go to one of these addresses in your web browser:\n\n%@",servers];
@@ -5883,6 +5894,7 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
     NSString* done  = g_no_roms_found ? @"Reload ROMs" : @"Stop Server";
 
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
+    [alert setProgress:0.0 text:@""];
     [alert addAction:[UIAlertAction actionWithTitle:done style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
         g_web_server_alert = FALSE;
         [[WebServer sharedInstance] webUploader].delegate = nil;
