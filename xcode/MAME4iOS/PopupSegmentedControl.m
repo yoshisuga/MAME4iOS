@@ -124,32 +124,39 @@
 }
 
 #if TARGET_OS_TV
-- (void)didUpdateFocusInContext:(UIFocusUpdateContext *)context withAnimationCoordinator:(UIFocusAnimationCoordinator *)coordinator
-{
-    [super didUpdateFocusInContext:context withAnimationCoordinator:coordinator];
-    if (context.previouslyFocusedItem == self)
-        [self shrink];
-}
--(void)grow {
-    if (super.numberOfSegments > 1)
-        return;
-    [super removeAllSegments];
-    for (id item in _items) {
-        if ([item isKindOfClass:[UIImage class]])
-            [super insertSegmentWithImage:item atIndex:self.numberOfSegments animated:NO];
-        else
-            [super insertSegmentWithTitle:item atIndex:self.numberOfSegments animated:NO];
-    }
-    super.selectedSegmentIndex = _selectedSegmentIndex;
-    [self sizeToFit];
-}
--(void)shrink {
-    if (super.numberOfSegments <= 1)
-        return;
-    _selectedSegmentIndex = super.selectedSegmentIndex;
-    [super removeAllSegments];
-    [super insertSegmentWithTitle:@"" atIndex:0 animated:NO];
-    [self update];
+// create a UIAlertViewController and show it.
+-(void)showMenuAlert {
+
+    UIAlertController* alert = [UIAlertController alertControllerWithTitle:self.accessibilityLabel message:nil preferredStyle:UIAlertControllerStyleActionSheet];
+    
+    for (NSInteger i=0; i<_items.count; i++) {
+        id item = _items[i];
+        NSString* str = [item isKindOfClass:[NSString class]] ? item : nil;
+        UIImage* img = [item isKindOfClass:[UIImage class]] ? item : nil;
+
+        if (str == nil)
+            str = img.accessibilityLabel ?: @"";
+
+        UIAlertAction* action = [UIAlertAction actionWithTitle:str style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
+            self.selectedSegmentIndex = i;
+            [self sendActionsForControlEvents:UIControlEventValueChanged];
+        }];
+        
+        if (img && [action respondsToSelector:@selector(image)])
+            [action setValue:img forKey:@"image"];
+
+         if (_selectedSegmentIndex == i)
+            [alert setPreferredAction:action];
+
+        [alert addAction:action];
+   }
+
+    [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
+    
+    UIViewController* vc = self.window.rootViewController;
+    while (vc.presentedViewController != nil)
+        vc = vc.presentedViewController;
+    [vc presentViewController:alert animated:YES completion:nil];
 }
 #endif
 
@@ -290,10 +297,7 @@ UIColor* getBackgroundColor(UIView* view) {
     else
         [self showMenuHorz];
 #else
-    if (super.numberOfSegments <= 1)
-        [self grow];
-    else
-        [self shrink];
+    [self showMenuAlert];
 #endif
 }
 @end
