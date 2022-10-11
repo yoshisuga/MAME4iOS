@@ -31,6 +31,18 @@ if [ "$1" == "clean" ]; then
     exit
 fi
 
+# get the latest MAME version
+MAMELIB="../../libmame-ios.a"
+
+if [ ! -f $MAMELIB ]; then
+    pushd ../..
+    ./get-libmame.sh
+    popd
+fi
+
+# look for the version string inside the MAMELIB ie "0.248 (mame0248-96-gc00e10bd5de)"
+MAMELIB_VERSION=`strings $MAMELIB | grep -e "^0\.[0-9]* (mame0" | cut -w -f1 | cut -d . -f2`
+
 # create a exportOptions.plist with the correct DEVELOPMENT_TEAM
 [ -d ../dist ] || mkdir ../dist
 cat << EOF > "../dist/exportOptions.plist"
@@ -62,7 +74,12 @@ do
   for j in "${!CONFIGS[@]}"
   do
     CONFIG="${CONFIGS[$j]}"
-    ARCHIVE_NAME="${NAME}-${VERSION}-${CONFIG_NAMES[$j]}"
+    CONFIG_NAME="${CONFIG_NAMES[$j]}"
+    if [ "$CONFIG_NAME" == "latest" ] && [ "$MAMELIB_VERSION" != "" ]; then
+        CONFIG_NAME="$MAMELIB_VERSION"
+    fi
+    
+    ARCHIVE_NAME="${NAME}-${VERSION}-${CONFIG_NAME}"
     echo "${C_BLUE}Scheme:${C_WHITE}${SCHEME} ${C_BLUE}Config:${C_WHITE}${CONFIG} ${C_BLUE}SDK:${C_WHITE}${SDK} ${C_BLUE}Archive:${C_WHITE}${ARCHIVE_NAME}${C_RESET}"
 
     xcodebuild -project MAME4iOS.xcodeproj \
