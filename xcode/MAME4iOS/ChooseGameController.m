@@ -2022,15 +2022,23 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
         }]
     ];
     
-    if ([self isRecent:game]) {
-        actions = [actions arrayByAddingObjectsFromArray:@[
+    if (is_fav && indexPath.row != 0 && [self->_gameSectionTitles[indexPath.section] isEqualToString:FAVORITE_GAMES_TITLE]) {
+        actions = [actions  arrayByAddingObject:
+            [UIAlertAction actionWithTitle:@"Make First Favorite" symbol:@"1.circle" style:UIAlertActionStyleDefault handler:^(id action) {
+                [self setFavorite:game isFavorite:YES];
+                [self filterGameList];
+            }]
+        ];
+    }
+    
+    if ([self isRecent:game] && [self->_gameSectionTitles[indexPath.section] isEqualToString:RECENT_GAMES_TITLE]) {
+        actions = [actions arrayByAddingObject:
             [UIAlertAction actionWithTitle:@"Remove from Recently Played" symbol:@"minus.circle" style:UIAlertActionStyleDefault handler:^(id action) {
-                if ([self->_gameSectionTitles[indexPath.section] isEqualToString:RECENT_GAMES_TITLE])
-                    [self moveSelectionForDelete:indexPath];
+                [self moveSelectionForDelete:indexPath];
                 [self setRecent:game isRecent:NO];
                 [self filterGameList];
             }]
-        ]];
+        ];
     }
     
     actions = [actions arrayByAddingObjectsFromArray:@[

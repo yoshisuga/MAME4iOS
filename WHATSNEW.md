@@ -1,3 +1,9 @@
+# Version 2022.5
+* Updated to [MAME 250](https://www.mamedev.org/releases/whatsnew_0250.txt).
+* tvOS UX: use a Alert instead of a inline Segmented Control.
+* Show upload feedback in Web Server UX.
+* Added `Make First Favorite` to game context menu.
+
 # Version 2022.4
 * Updated to [MAME 248](https://www.mamedev.org/releases/whatsnew_0248.txt).
 * use first media type (ie -flop1 over -flop4)
