@@ -6040,22 +6040,24 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
     // NOTE: MAME 2xx has a bunch of "no-rom" arcade games, we need to check if `roms` is empty too
     NSInteger roms_count = [NSFileManager.defaultManager enumeratorAtPath:getDocumentPath(@"roms")].allObjects.count +
                            [NSFileManager.defaultManager enumeratorAtPath:getDocumentPath(@"software")].allObjects.count;
-    
-    g_no_roms_found = [games count] <= 1 || roms_count <= 1; // software dir has a single .txt file when empty
-    if (g_no_roms_found && !g_no_roms_found_canceled) {
-        NSLog(@"NO GAMES, ASK USER WHAT TO DO....");
-        
-        // if iCloud is still initializing give it a litte time.
-        if ([CloudSync status] == CloudSyncStatusUnknown) {
-            NSLog(@"....WAITING FOR iCloud");
-            [self performSelector:_cmd withObject:games afterDelay:1.0];
-            return;
-        }
-        
-        change_pause(PAUSE_INPUT);
-        [self runAddROMS:nil];
-        return;
-    }
+  
+  // 4/14/24 TODO: commenting this out for App Store release since games are bundled - create a build config for App Store
+  
+//    g_no_roms_found = [games count] <= 1 || roms_count <= 1; // software dir has a single .txt file when empty
+//    if (g_no_roms_found && !g_no_roms_found_canceled) {
+//        NSLog(@"NO GAMES, ASK USER WHAT TO DO....");
+//        
+//        // if iCloud is still initializing give it a litte time.
+//        if ([CloudSync status] == CloudSyncStatusUnknown) {
+//            NSLog(@"....WAITING FOR iCloud");
+//            [self performSelector:_cmd withObject:games afterDelay:1.0];
+//            return;
+//        }
+//        
+//        change_pause(PAUSE_INPUT);
+//        [self runAddROMS:nil];
+//        return;
+//    }
     if (g_mame_game_error[0] != 0) {
         NSLog(@"ERROR RUNNING GAME %s", g_mame_game_error);
         

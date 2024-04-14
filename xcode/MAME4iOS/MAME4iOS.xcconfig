@@ -15,7 +15,7 @@
 //    you can also set the Development Team via the drop down in the Xcode project editor, for each Target.
 //    you can find your TeamID [here](https://developer.apple.com/account/#/membership)
 
-ORG_IDENTIFIER          = com.example   // CHANGE this to your Organization Identifier.
+ORG_IDENTIFIER          = com.yoshisuga   // CHANGE this to your Organization Identifier.
 DEVELOPMENT_TEAM        = ABC8675309    // CHANGE this to your Team ID. (or select in Xcode project editor)
 CURRENT_PROJECT_VERSION = 2022.5
 MARKETING_VERSION       = 2022.5

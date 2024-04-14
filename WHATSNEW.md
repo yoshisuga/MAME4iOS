@@ -22,7 +22,7 @@
 # Version 2022.1
 * Updated to [MAME 241](https://www.mamedev.org/releases/whatsnew_0241.txt).
 * Minimum version is now iOS 13.4, tvOS 13.4, and macOS 10.15.5 (Catalina)
-* Removed MAME4mac build Target, build MAME4iOS for Catalyst instead 
+* Removed MAME4mac build Target, build $(TARGET) for Catalyst instead 
 * Support for Software keyboard for machines that need keyboard input.
 * Non git-tracked `Developer.xcconfig`
 * Minimal Benchmark support, results stored in `benchmark.csv`
@@ -69,7 +69,7 @@ breakout    |Breakout [TTL]
 
 ## ROMless Console Machines
 
-The following is a list of *some* of the Consoles and file types supported by MAME4iOS "out of the box"
+The following is a list of *some* of the Consoles and file types supported by $(TARGET) "out of the box"
 
 Name    |Description                                                |Media File Types
 --------|-----------------------------------------------------------|----------------
@@ -94,7 +94,7 @@ tg16    |TurboGrafx 16                                              |cue, gdi, t
 
 ## Console Machines and Computers (that require BIOS)
 
-The following is a list of *some* of the Consoles, Computers, and file types supported by MAME4iOS, but BIOS files must be installed first.
+The following is a list of *some* of the Consoles, Computers, and file types supported by $(TARGET), but BIOS files must be installed first.
 
 Name    |Description                                                |Media File Types
 --------|-----------------------------------------------------------|----------------
@@ -144,7 +144,7 @@ bbcb    |BBC Micro Model B                                          |adf, mfi, f
 * added `Use DRC` Option. disable the use of `DRC` on `MAME 2xx`, for some games.
 
 # Version 2021.7
-**NOTE** `MAME4iOS` 2021.7 comes in two versions, one that uses `MAME 139u1`, and one that uses the latest `MAME` (currently 234).  Make sure you download the version that is compatible with your ROMs, You can get the current version from the `Settings` page. If you want to use software based (ie cartridge, etc) romsets, please read the **Software Lists** section in the HELP or README.
+**NOTE** `$(TARGET)` 2021.7 comes in two versions, one that uses `MAME 139u1`, and one that uses the latest `MAME` (currently 234).  Make sure you download the version that is compatible with your ROMs, You can get the current version from the `Settings` page. If you want to use software based (ie cartridge, etc) romsets, please read the **Software Lists** section in the HELP or README.
 
 * `OSD` changes.
 * Ability to build with latest `MAME` version
@@ -156,7 +156,7 @@ bbcb    |BBC Micro Model B                                          |adf, mfi, f
 * Collapsable sections in `ChooseGameUI`
 * Snapshot button on `HUD` and ability to use a Snapshot as Title image.
 * handle import of `7z` files.
-    - 139 version of `MAME4iOS` will ignore `7z` romsets
+    - 139 version of `$(TARGET)` will ignore `7z` romsets
 * Support for new `Apple Remote` with tvOS 14.6
 * Added ability to group Clones in a different section in `ChooseGameUI`
 
@@ -183,7 +183,7 @@ bbcb    |BBC Micro Model B                                          |adf, mfi, f
 
 | | |  
 ---------------- |-------------
-MENU             |Open MAME4iOS MENU   
+MENU             |Open $(TARGET) MENU   
 MENU+L1       |Player Coin                 
 MENU+R1       |Player Start               
 MENU+L2       |Player 2 Coin                
@@ -207,7 +207,7 @@ MENU+RIGHT  |Load State ②
 * Game Controllers with more than two menu buttons (Xbox, DualShock, Xinput, Nimbus+, new MFi)
     - Left menu button is always `SELECT`
     - Right menu button is always `START`
-    - `SELECT` + `START` will bring up MAME4iOS menu
+    - `SELECT` + `START` will bring up $(TARGET) menu
     - holding down `SELECT` or `START` will show a *quick help HUD*
 * on iOS 14+ (not on tvOS) the XBox `GUIDE` button, and the DualShock `PS` button can be used instead of `SELECT`+`START`
 
@@ -306,7 +306,7 @@ MENU+RIGHT  |Load State ②
 * Added in iCade support for tvOS 
 * Steam Controller support, controller must be in [bluetooth mode and paired](https://support.steampowered.com/kb_article.php?ref=7728-QESJ-4420)
 * Fixed issue where audio would stop when playing back content from another source or being interrupted by a phone call.
-* Set the audio catefory to `AVAudioSessionCategoryAmbient` so MAME4iOS will play nice with other audio apps.
+* Set the audio catefory to `AVAudioSessionCategoryAmbient` so $(TARGET) will play nice with other audio apps.
 * Make the 🅐 🅑 🅧 🅨 layout consistent across iPhone and iPad.
 * Added a `Nintendo Button Layout` option.  if enabled the 🅐 🅑 and 🅧 🅨 buttons will be swapped to match a Nintendo layout.  This option has no effect on a custom layout, or a physical game controller.
 * Better handling for 2 Player games, a 1 Player and a 2 Player Start option will be on the in-game menu.  We try to detect how many Players, Inputs, and Coins the current game is looking for and try to adapt to that.
