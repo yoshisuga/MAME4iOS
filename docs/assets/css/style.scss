@@ -1,0 +1,60 @@
+---
+---
+
+// Headers
+$header-heading-color: #fff !default;
+$header-bg-color: #221e1f;
+$header-bg-color-secondary: #221e1f;
+//$header-bg-color-secondary: #1d1d1c;
+
+// Text
+$section-headings-color: #dccd4f;
+$body-text-color: #606c71 !default;
+$body-link-color: #1e6bb8 !default;
+$blockquote-text-color: #819198 !default;
+
+@import "{{ site.theme }}";
+
+.page-header {
+    color: $header-heading-color;
+    text-align: center;
+    background-color: $header-bg-color;
+    //background-image: linear-gradient(90deg, $header-bg-color-secondary, $header-bg-color);
+    padding: 0.5em;
+}
+
+.site-footer {
+    color: $header-heading-color;
+    text-align: center;
+    //background-color: $header-bg-color;
+    //background-image: linear-gradient(90deg, $header-bg-color-secondary, $header-bg-color);
+    padding: 0.5em;
+}
+
+.btn.current {
+    font-weight: bold;
+    color: #ffffff;
+}
+
+.btn {
+    display: inline-block;
+    width: auto;
+}
+
+@media screen and (max-width: 42em) {
+    .btn {
+        padding: 0.5rem;
+        font-size: 0.85rem;
+    }
+}
+
+.main-content .btn {
+    color: #FFF;
+    background-color: rgba($section-headings-color, 0.8);
+    padding: 0.25em 0.5em;
+    margin: 0 0.25em 0.25em 0;
+}
+.main-content .btn:hover {
+    background-color: $section-headings-color;
+}
+

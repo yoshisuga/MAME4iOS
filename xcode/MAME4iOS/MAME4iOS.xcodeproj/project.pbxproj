@@ -479,6 +479,7 @@
 		EFA98FAE24A4CC49007B6689 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		EFA98FB224A4E2D5007B6689 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS14.0.sdk/System/Library/Frameworks/CoreServices.framework; sourceTree = DEVELOPER_DIR; };
 		EFA98FB424A4F810007B6689 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		EFB336022BCF2AAF0066113E /* docs */ = {isa = PBXFileReference; lastKnownFileType = folder; name = docs; path = ../../docs; sourceTree = "<group>"; };
 		EFB3C6D524890F6200F44780 /* simpleCRT.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = simpleCRT.metal; sourceTree = "<group>"; };
 		EFB7B2132479FBD800AD96A4 /* MetalView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MetalView.m; sourceTree = "<group>"; };
 		EFB7B2142479FBD800AD96A4 /* MetalViewShaders.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MetalViewShaders.h; sourceTree = "<group>"; };
@@ -748,6 +749,7 @@
 				CEE6808F1635BA7000051BC2 /* MAME4iOS */,
 				92ECB8EC21EA984E00D1E3D0 /* MAME4tvOS */,
 				EFEEA4B325C9D41E00314132 /* TopShelf */,
+				EFB336022BCF2AAF0066113E /* docs */,
 				EF47838628D3B64B00DA4A56 /* mame-src */,
 				CEE680C51635BB8500051BC2 /* Includes */,
 				CEE680881635BA7000051BC2 /* Frameworks */,
