@@ -1158,7 +1158,13 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 
 - (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView
 {
-    return [_gameSectionTitles count];
+  NSInteger count =  [_gameSectionTitles count];
+  if (count == 0) {
+    [self.collectionView showZeroState];
+  } else {
+    self.collectionView.backgroundView = nil;
+  }
+  return count;
 }
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
 {
@@ -1168,6 +1174,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     if ([self isCollapsed:title])
         return 0;
     NSInteger num = [_gameData[title] count];
+  
     // restrict the Recent items to a single row, always
     if ([title isEqualToString:RECENT_GAMES_TITLE])
         num = MIN(num, _layoutCollums);

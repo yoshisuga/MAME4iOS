@@ -50,7 +50,9 @@ enum OptionSections
     kSupportSection = 0,
     kOtherSection,
     kImportSection,
+#if 0
     kCloudImportSection,
+#endif
     kVideoSection,
     kVectorSection,
     kFullscreenSection,

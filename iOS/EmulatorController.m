@@ -78,7 +78,9 @@
 #import "ZipFile.h"
 #import "SteamController.h"
 #import "SkinManager.h"
+#if 0
 #import "CloudSync.h"
+#endif
 #import "SoftwareList.h"
 
 #import "Timer.h"
@@ -744,7 +746,13 @@ void m4i_game_list(myosd_game_info* game_info, int game_count)
             NSString* year = @(game_info[i].year ?: "");
             if ([year isEqualToString:@"0"])
                 year = @"";
+            NSString *driver = [@(game_info[i].source_file ?: "").lastPathComponent stringByDeletingPathExtension];
 
+            // App Store release: don't include pong/breakout to avoid copyright issues
+          if ( [driver isEqualToString:@"pong"] || [driver isEqualToString:@"breakout"]) {
+            continue;
+          }
+          
             GameInfo* game = [[GameInfo alloc] initWithDictionary:@{
                 kGameInfoType:        type,
                 kGameInfoName:        @(game_info[i].name),
@@ -753,7 +761,7 @@ void m4i_game_list(myosd_game_info* game_info, int game_count)
                 kGameInfoParent:      parent,
                 kGameInfoManufacturer:@(game_info[i].manufacturer),
                 kGameInfoCategory:    find_category(@(game_info[i].name), parent),
-                kGameInfoDriver:      [@(game_info[i].source_file ?: "").lastPathComponent stringByDeletingPathExtension],
+                kGameInfoDriver:      driver,
                 kGameInfoSoftwareMedia:software_list,
                 kGameInfoScreen:      screens[(game_info[i].flags & MYOSD_GAME_INFO_VERTICAL) ? 1 : 0 +
                                               (game_info[i].flags & MYOSD_GAME_INFO_VECTOR)   ? 2 : 0 +
@@ -778,6 +786,7 @@ void m4i_game_list(myosd_game_info* game_info, int game_count)
         
         NSString* mame_version = [@((const char *)myosd_get(MYOSD_VERSION_STRING) ?: "") componentsSeparatedByString:@" ("].firstObject;
 
+#if 0
         // add a *special* system game that will run the DOS MAME menu.
         [games addObject:[[GameInfo alloc] initWithDictionary:@{
             kGameInfoType:kGameInfoTypeComputer,
@@ -787,6 +796,7 @@ void m4i_game_list(myosd_game_info* game_info, int game_count)
             kGameInfoYear:@"1996",
             kGameInfoManufacturer:@"MAMEDev and contributors",
         }]];
+#endif
 
         // give the list to the main thread to display to user
         [sharedInstance performSelectorOnMainThread:@selector(chooseGame:) withObject:games waitUntilDone:FALSE];
@@ -1466,12 +1476,16 @@ UIViewController* g_menu;
         [self runImport];
     }]];
 #endif
+  
+#if 0
     if (CloudSync.status == CloudSyncStatusAvailable)
     {
         [alert addAction:[UIAlertAction actionWithTitle:@"Import from iCloud" symbol:@"icloud.and.arrow.down" style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
             [CloudSync import];
         }]];
     }
+#endif
+
 #if TARGET_OS_IOS
     [alert addAction:[UIAlertAction actionWithTitle:@"Show Files" symbol:@"folder" style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
         [self runShowFiles];
@@ -6041,23 +6055,27 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
     NSInteger roms_count = [NSFileManager.defaultManager enumeratorAtPath:getDocumentPath(@"roms")].allObjects.count +
                            [NSFileManager.defaultManager enumeratorAtPath:getDocumentPath(@"software")].allObjects.count;
   
-  // 4/14/24 TODO: commenting this out for App Store release since games are bundled - create a build config for App Store
+  // 4/14/24 TODO: commenting this out for App Store release since games are bundled - create a build config for App Store  
+#if 0
+    g_no_roms_found = [games count] <= 1 || roms_count <= 1; // software dir has a single .txt file when empty
+    if (g_no_roms_found && !g_no_roms_found_canceled) {
+        NSLog(@"NO GAMES, ASK USER WHAT TO DO....");
+
+#if 0
+        // if iCloud is still initializing give it a litte time.
+        if ([CloudSync status] == CloudSyncStatusUnknown) {
+            NSLog(@"....WAITING FOR iCloud");
+            [self performSelector:_cmd withObject:games afterDelay:1.0];
+            return;
+        }
+#endif
+        
+        change_pause(PAUSE_INPUT);
+        [self runAddROMS:nil];
+        return;
+    }
+#endif
   
-//    g_no_roms_found = [games count] <= 1 || roms_count <= 1; // software dir has a single .txt file when empty
-//    if (g_no_roms_found && !g_no_roms_found_canceled) {
-//        NSLog(@"NO GAMES, ASK USER WHAT TO DO....");
-//        
-//        // if iCloud is still initializing give it a litte time.
-//        if ([CloudSync status] == CloudSyncStatusUnknown) {
-//            NSLog(@"....WAITING FOR iCloud");
-//            [self performSelector:_cmd withObject:games afterDelay:1.0];
-//            return;
-//        }
-//        
-//        change_pause(PAUSE_INPUT);
-//        [self runAddROMS:nil];
-//        return;
-//    }
     if (g_mame_game_error[0] != 0) {
         NSLog(@"ERROR RUNNING GAME %s", g_mame_game_error);
         

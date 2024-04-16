@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		920BBDEF201FC29700AE7D50 /* dpad.png in Resources */ = {isa = PBXBuildFile; fileRef = 920BBDED201FC29700AE7D50 /* dpad.png */; };
 		920BBDF220210C3800AE7D50 /* menu.png in Resources */ = {isa = PBXBuildFile; fileRef = 920BBDF020210C3700AE7D50 /* menu.png */; };
+		920D975A2BCECB410038F00B /* UICollectionView+ZeroState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920D97592BCECB410038F00B /* UICollectionView+ZeroState.swift */; };
+		920D975B2BCECB410038F00B /* UICollectionView+ZeroState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920D97592BCECB410038F00B /* UICollectionView+ZeroState.swift */; };
 		925ABCA61E46DCC500997182 /* KeyboardView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8D87DC1653121200685BC4 /* KeyboardView.m */; };
 		925ABCA81E46DCC500997182 /* ListOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE90575B166A89D000653872 /* ListOptionController.m */; };
 		925ABCA91E46DCC500997182 /* OptionsController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680C01635BB6100051BC2 /* OptionsController.m */; };
@@ -120,7 +122,6 @@
 		EF26AE0C241AA6900078FD30 /* FileItemProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = EF26AE0B241AA6900078FD30 /* FileItemProvider.m */; };
 		EF27F36823F73CD400B1E50A /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF27F36323F73CD400B1E50A /* ZipFile.m */; };
 		EF27F36A23F7475100B1E50A /* libcompression.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = EF27F36923F7475100B1E50A /* libcompression.tbd */; };
-		EF286D34253CA930007DA6D3 /* CloudSync.m in Sources */ = {isa = PBXBuildFile; fileRef = EF286D33253CA930007DA6D3 /* CloudSync.m */; };
 		EF286D35253CA930007DA6D3 /* CloudSync.m in Sources */ = {isa = PBXBuildFile; fileRef = EF286D33253CA930007DA6D3 /* CloudSync.m */; };
 		EF286D59253CF171007DA6D3 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF286D58253CF171007DA6D3 /* CloudKit.framework */; };
 		EF286D5B253CF18D007DA6D3 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF286D5A253CF18D007DA6D3 /* CloudKit.framework */; };
@@ -292,6 +293,7 @@
 /* Begin PBXFileReference section */
 		920BBDED201FC29700AE7D50 /* dpad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = dpad.png; path = "../../iOS-res/dpad.png"; sourceTree = "<group>"; };
 		920BBDF020210C3700AE7D50 /* menu.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = menu.png; path = "../../iOS-res/menu.png"; sourceTree = "<group>"; };
+		920D97592BCECB410038F00B /* UICollectionView+ZeroState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UICollectionView+ZeroState.swift"; sourceTree = "<group>"; };
 		925ABCE21E46DCC500997182 /* MAME.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MAME.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		925ABCE41E46DD6E00997182 /* libmame.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmame.a; path = ../../libmame.a; sourceTree = "<group>"; };
 		926C76FD21F1C87700103EDE /* TVOptionsController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVOptionsController.h; sourceTree = "<group>"; };
@@ -711,6 +713,7 @@
 				EF286D32253CA930007DA6D3 /* CloudSync.h */,
 				EF286D33253CA930007DA6D3 /* CloudSync.m */,
 				CEBFBC0E163C5BD300A05CD0 /* resources */,
+				920D97592BCECB410038F00B /* UICollectionView+ZeroState.swift */,
 			);
 			name = RELOADED;
 			sourceTree = "<group>";
@@ -1246,7 +1249,6 @@
 				925ABCAD1E46DCC500997182 /* EmulatorController.m in Sources */,
 				EF1741D6261BB2D600DE8386 /* GameInfo.m in Sources */,
 				925ABCAE1E46DCC500997182 /* HelpController.m in Sources */,
-				EF286D34253CA930007DA6D3 /* CloudSync.m in Sources */,
 				925ABCAF1E46DCC500997182 /* AnalogStick.m in Sources */,
 				925ABCB01E46DCC500997182 /* Bootstrapper.m in Sources */,
 				EFE0033D2638D97E00E42246 /* SoftwareList.m in Sources */,
@@ -1261,6 +1263,7 @@
 				925ABCB61E46DCC500997182 /* InputOptionController.m in Sources */,
 				92A533C321EBDBAD0089FBB9 /* GCDWebServerMultiPartFormRequest.m in Sources */,
 				EF26AE0C241AA6900078FD30 /* FileItemProvider.m in Sources */,
+				920D975A2BCECB410038F00B /* UICollectionView+ZeroState.swift in Sources */,
 				EF7B232C23FD0469001FF51D /* (null) in Sources */,
 				EF8E427D249348220049C84C /* megaTron.metal in Sources */,
 				92A533B421EBDBAD0089FBB9 /* GCDWebServerErrorResponse.m in Sources */,
@@ -1286,6 +1289,7 @@
 				92A533BE21EBDBAD0089FBB9 /* GCDWebServerStreamedResponse.m in Sources */,
 				EF8E4284249915F30049C84C /* lineTron.metal in Sources */,
 				92A533C421EBDBAD0089FBB9 /* GCDWebServerMultiPartFormRequest.m in Sources */,
+				920D975B2BCECB410038F00B /* UICollectionView+ZeroState.swift in Sources */,
 				EFB7B21A2479FBD900AD96A4 /* MetalViewShaders.metal in Sources */,
 				926C770A21F271A700103EDE /* ListOptionController.m in Sources */,
 				92A533C721EBDBAD0089FBB9 /* GCDWebServerDataRequest.m in Sources */,
