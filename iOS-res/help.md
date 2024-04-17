@@ -9,7 +9,7 @@ MAME stands for Multi Arcade Machine Emulator, and lets you play arcade games fr
 
 More than 8000 games are supported, and the currently supported romsets are 0.250 (December 2022).
 
-MAME for iOS was originally developed by David Valdeita (Seleuco), and is currently maintained by a dedicated enthusiasts (Yoshi Sugawara and Todd Laney).
+MAME for iOS was originally developed by David Valdeita (Seleuco), and is currently maintained and enhanced by dedicated enthusiasts (Yoshi Sugawara and Todd Laney).
 
 Since the original version, a large number of features have been added, including:
 
@@ -71,7 +71,7 @@ The emulator controls are the following ones:
 
 **Full Screen** Uses all available screen or shows the emulator windowed.
 
-**Full Screen with Controler** automaticly enters Full Screen when a controler, keyboard, iCade is detected.
+**Full Screen with Controller** automaticly enters Full Screen when a controler, keyboard, iCade is detected.
 
 **Keep Aspect Ratio** 'Enabled' keeps the aspect ratio; 'Disabled' will use all available screen.
 
@@ -391,7 +391,7 @@ MAME 0.139u1 original version by Nicola Salmoria and the MAME Team.
 
 ## PORT CREDITS
 
-Port to iOS by David Valdeita (Seleuco)
+Original port to iOS by David Valdeita (Seleuco)
 
 Ongoing maintenance, enhancements and modernization by: Yoshi Sugawara and Todd Laney
 
