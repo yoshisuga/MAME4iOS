@@ -1,0 +1,10 @@
+title: MAME4iOS
+description: Multi Arcade Machine Emulator for iOS
+show_downloads: false
+theme: jekyll-theme-cayman
+
+image: images/mame_logo.png
+
+github:
+  is_project_page: false
+
