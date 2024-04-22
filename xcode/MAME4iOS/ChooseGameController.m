@@ -314,6 +314,10 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     // put search in navbar...
     self.navigationItem.searchController = _searchController;
     self.navigationItem.hidesSearchBarWhenScrolling = TRUE;
+    // keep the searchbar out of the main navbar area on iPad
+    if (@available(iOS 16.0, *)) {
+        self.navigationItem.preferredSearchBarPlacement = UINavigationItemSearchBarPlacementStacked;
+    }
 #else   // tvOS
     if (self.navigationController != nil) {
         // force light-mode so our buttons look good in navbar

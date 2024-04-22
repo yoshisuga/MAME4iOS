@@ -523,7 +523,7 @@ int run_mame(char* system, char* type, char* game, char* options)
     #undef ARG2
 }
 
-static void init_pause()
+static void init_pause(void)
 {
     g_emulation_paused_cond = [[NSCondition alloc] init];
 }
@@ -537,7 +537,7 @@ static void change_pause(int pause)
     [g_emulation_paused_cond unlock];
 }
 
-static void check_pause()
+static void check_pause(void)
 {
     [g_emulation_paused_cond lock];
     while (g_emulation_paused == PAUSE_THREAD)
@@ -770,6 +770,7 @@ void m4i_game_list(myosd_game_info* game_info, int game_count)
             
 #ifdef DEBUG
             XGameInfo* xgame = [[XGameInfo alloc] initWithDictionary:game.gameDictionary];
+            #pragma unused(xgame)
 #endif
             NSArray* software = @[];
             if (software_list.length != 0)
@@ -784,9 +785,9 @@ void m4i_game_list(myosd_game_info* game_info, int game_count)
             [games addObjectsFromArray:software];
         }
         
+#if 0
         NSString* mame_version = [@((const char *)myosd_get(MYOSD_VERSION_STRING) ?: "") componentsSeparatedByString:@" ("].firstObject;
 
-#if 0
         // add a *special* system game that will run the DOS MAME menu.
         [games addObject:[[GameInfo alloc] initWithDictionary:@{
             kGameInfoType:kGameInfoTypeComputer,
@@ -816,7 +817,7 @@ void m4i_game_start(myosd_game_info* info)
     myosd_isLCD = (info->flags & MYOSD_GAME_INFO_LCD) != 0;
 }
 
-void m4i_game_stop()
+void m4i_game_stop(void)
 {
     NSLog(@"GAME STOP");
     myosd_inGame = 0;
@@ -2490,7 +2491,6 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
 - (void)resetUI {
     NSLog(@"RESET UI (MAME VIDEO MODE CHANGE)");
-    g_joy_used = 0;     // use the touch ui, until a countroller is used.
     [self changeUI];
 }
 
@@ -2617,7 +2617,7 @@ static void push_mame_keys(NSUInteger key1, NSUInteger key2, NSUInteger key3, NS
 }
 
 // flush any pending keys or buttons
-static void push_mame_flush()
+static void push_mame_flush(void)
 {
     [g_mame_buttons_lock lock];
     [g_mame_buttons removeAllObjects];
@@ -2671,8 +2671,7 @@ static int handle_buttons(myosd_input_state* myosd)
 
         if (myosd->keyboard[key] == 0) {
             myosd->keyboard[key] = 0x80;
-            if (g_mame_key != MYOSD_KEY_ESC)
-                g_mame_buttons_tick = buttonPressReleaseCycles;  // keep key DOWN for this long.
+            g_mame_buttons_tick = buttonPressReleaseCycles;  // keep key DOWN for this long.
         }
         else {
             if (key != MYOSD_KEY_LSHIFT && key != MYOSD_KEY_LCONTROL) {
@@ -4590,7 +4589,7 @@ BOOL is_roms_dir(NSString* dir) {
     int __block numWAV = 0;
     int __block numFiles = 0;
     BOOL result = TRUE;
-    
+
     if ([ZIP_FILE_TYPES containsObject:romExt])
     {
         result = [ZipFile enumerate:romPath withOptions:ZipFileEnumFiles usingBlock:^(ZipFileInfo* info) {
@@ -4609,6 +4608,13 @@ BOOL is_roms_dir(NSString* dir) {
             if ([skin_files containsObject:info.name.lastPathComponent])
                 numSKIN++;
         }];
+        
+        // TODO: 7z support currenty broken, we cant look into 7z archives, but will just assume they are ROMSETs not software
+        if (!result && [romExt isEqualToString:@"7z"])
+        {
+            NSLog(@"%@ is a 7Z (assuming valid, will treat as ROMSET)", romPath);
+            result = TRUE;
+        }
     }
     
     NSString* toPath = nil;
@@ -6051,12 +6057,12 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
     NSLog(@"ROMS: %@", [NSFileManager.defaultManager enumeratorAtPath:getDocumentPath(@"roms")].allObjects);
     NSLog(@"SOFTWARE: %@", [NSFileManager.defaultManager enumeratorAtPath:getDocumentPath(@"software")].allObjects);
 
+    // 4/14/24 TODO: commenting this out for App Store release since games are bundled - create a build config for App Store
+#if 0
     // NOTE: MAME 2xx has a bunch of "no-rom" arcade games, we need to check if `roms` is empty too
     NSInteger roms_count = [NSFileManager.defaultManager enumeratorAtPath:getDocumentPath(@"roms")].allObjects.count +
                            [NSFileManager.defaultManager enumeratorAtPath:getDocumentPath(@"software")].allObjects.count;
   
-  // 4/14/24 TODO: commenting this out for App Store release since games are bundled - create a build config for App Store  
-#if 0
     g_no_roms_found = [games count] <= 1 || roms_count <= 1; // software dir has a single .txt file when empty
     if (g_no_roms_found && !g_no_roms_found_canceled) {
         NSLog(@"NO GAMES, ASK USER WHAT TO DO....");
