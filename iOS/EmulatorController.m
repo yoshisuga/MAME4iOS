@@ -971,7 +971,7 @@ void mame_load_state(int slot)
 void mame_save_state(int slot)
 {
     NSCParameterAssert(slot == 1 || slot == 2);
-    push_mame_keys(MYOSD_KEY_LSHIFT, MYOSD_KEY_LOADSAVE, (slot == 1) ? MYOSD_KEY_1 : MYOSD_KEY_2, 0);
+    push_mame_keys(MYOSD_KEY_F6, (slot == 1) ? MYOSD_KEY_1 : MYOSD_KEY_2, 0, 0);
 }
 
 - (void)presentPopup:(UIViewController *)viewController from:(UIView*)view animated:(BOOL)flag completion:(void (^)(void))completion {
