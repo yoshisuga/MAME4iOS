@@ -76,7 +76,6 @@
 #import "WebServer.h"
 #import "Alert.h"
 #import "ZipFile.h"
-#import "SteamController.h"
 #import "SkinManager.h"
 #import "CloudSync.h"
 #import "SoftwareList.h"
@@ -302,8 +301,6 @@ static NSInteger g_settings_roms_count;
 static NSInteger g_settings_file_count;
 static Options*  g_settings_options;
 
-static BOOL g_bluetooth_enabled;
-
 static EmulatorController *sharedInstance = nil;
 
 static const int buttonPressReleaseCycles = 2;
@@ -521,7 +518,7 @@ int run_mame(char* system, char* type, char* game, char* options)
     #undef ARG2
 }
 
-static void init_pause()
+static void init_pause(void)
 {
     g_emulation_paused_cond = [[NSCondition alloc] init];
 }
@@ -535,7 +532,7 @@ static void change_pause(int pause)
     [g_emulation_paused_cond unlock];
 }
 
-static void check_pause()
+static void check_pause(void)
 {
     [g_emulation_paused_cond lock];
     while (g_emulation_paused == PAUSE_THREAD)
@@ -744,7 +741,14 @@ void m4i_game_list(myosd_game_info* game_info, int game_count)
             NSString* year = @(game_info[i].year ?: "");
             if ([year isEqualToString:@"0"])
                 year = @"";
+            NSString *driver = [@(game_info[i].source_file ?: "").lastPathComponent stringByDeletingPathExtension];
 
+#if TARGET_APPSTORE
+            // App Store release: don't include pong/breakout to avoid copyright issues
+            if ( [driver isEqualToString:@"pong"] || [driver isEqualToString:@"breakout"])
+                continue;
+#endif
+          
             GameInfo* game = [[GameInfo alloc] initWithDictionary:@{
                 kGameInfoType:        type,
                 kGameInfoName:        @(game_info[i].name),
@@ -753,7 +757,7 @@ void m4i_game_list(myosd_game_info* game_info, int game_count)
                 kGameInfoParent:      parent,
                 kGameInfoManufacturer:@(game_info[i].manufacturer),
                 kGameInfoCategory:    find_category(@(game_info[i].name), parent),
-                kGameInfoDriver:      [@(game_info[i].source_file ?: "").lastPathComponent stringByDeletingPathExtension],
+                kGameInfoDriver:      driver,
                 kGameInfoSoftwareMedia:software_list,
                 kGameInfoScreen:      screens[(game_info[i].flags & MYOSD_GAME_INFO_VERTICAL) ? 1 : 0 +
                                               (game_info[i].flags & MYOSD_GAME_INFO_VECTOR)   ? 2 : 0 +
@@ -762,6 +766,7 @@ void m4i_game_list(myosd_game_info* game_info, int game_count)
             
 #ifdef DEBUG
             XGameInfo* xgame = [[XGameInfo alloc] initWithDictionary:game.gameDictionary];
+            #pragma unused(xgame)
 #endif
             NSArray* software = @[];
             if (software_list.length != 0)
@@ -775,7 +780,8 @@ void m4i_game_list(myosd_game_info* game_info, int game_count)
             [games addObject:game];
             [games addObjectsFromArray:software];
         }
-        
+
+#if !TARGET_APPSTORE
         NSString* mame_version = [@((const char *)myosd_get(MYOSD_VERSION_STRING) ?: "") componentsSeparatedByString:@" ("].firstObject;
 
         // add a *special* system game that will run the DOS MAME menu.
@@ -787,6 +793,7 @@ void m4i_game_list(myosd_game_info* game_info, int game_count)
             kGameInfoYear:@"1996",
             kGameInfoManufacturer:@"MAMEDev and contributors",
         }]];
+#endif
 
         // give the list to the main thread to display to user
         [sharedInstance performSelectorOnMainThread:@selector(chooseGame:) withObject:games waitUntilDone:FALSE];
@@ -806,7 +813,7 @@ void m4i_game_start(myosd_game_info* info)
     myosd_isLCD = (info->flags & MYOSD_GAME_INFO_LCD) != 0;
 }
 
-void m4i_game_stop()
+void m4i_game_stop(void)
 {
     NSLog(@"GAME STOP");
     myosd_inGame = 0;
@@ -960,7 +967,7 @@ void mame_load_state(int slot)
 void mame_save_state(int slot)
 {
     NSCParameterAssert(slot == 1 || slot == 2);
-    push_mame_keys(MYOSD_KEY_LSHIFT, MYOSD_KEY_LOADSAVE, (slot == 1) ? MYOSD_KEY_1 : MYOSD_KEY_2, 0);
+    push_mame_keys(MYOSD_KEY_F6, (slot == 1) ? MYOSD_KEY_1 : MYOSD_KEY_2, 0, 0);
 }
 
 - (void)presentPopup:(UIViewController *)viewController from:(UIView*)view animated:(BOOL)flag completion:(void (^)(void))completion {
@@ -1876,17 +1883,6 @@ ButtonPressType input_debounce(unsigned long pad_status, CGPoint stick) {
     // always enable Keyboard for hardware keyboard support
     keyboardView.active = YES;
     
-    // see if bluetooth is enabled...
-    
-    if (@available(iOS 13.1, tvOS 13.0, *))
-        g_bluetooth_enabled = CBCentralManager.authorization == CBManagerAuthorizationAllowedAlways;
-    else if (@available(iOS 13.0, *))
-        g_bluetooth_enabled = FALSE; // authorization is not in iOS 13.0, so no bluetooth for you.
-    else
-        g_bluetooth_enabled = TRUE;  // pre-iOS 13.0, bluetooth allways.
-    
-    NSLog(@"BLUETOOTH ENABLED: %@", g_bluetooth_enabled ? @"YES" : @"NO");
-    
     [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(gameControllerConnected:) name:GCControllerDidConnectNotification object:nil];
     [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(gameControllerDisconnected:) name:GCControllerDidDisconnectNotification object:nil];
 
@@ -2476,7 +2472,6 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
 - (void)resetUI {
     NSLog(@"RESET UI (MAME VIDEO MODE CHANGE)");
-    g_joy_used = 0;     // use the touch ui, until a countroller is used.
     [self changeUI];
 }
 
@@ -2603,7 +2598,7 @@ static void push_mame_keys(NSUInteger key1, NSUInteger key2, NSUInteger key3, NS
 }
 
 // flush any pending keys or buttons
-static void push_mame_flush()
+static void push_mame_flush(void)
 {
     [g_mame_buttons_lock lock];
     [g_mame_buttons removeAllObjects];
@@ -2657,8 +2652,7 @@ static int handle_buttons(myosd_input_state* myosd)
 
         if (myosd->keyboard[key] == 0) {
             myosd->keyboard[key] = 0x80;
-            if (g_mame_key != MYOSD_KEY_ESC)
-                g_mame_buttons_tick = buttonPressReleaseCycles;  // keep key DOWN for this long.
+            g_mame_buttons_tick = buttonPressReleaseCycles;  // keep key DOWN for this long.
         }
         else {
             if (key != MYOSD_KEY_LSHIFT && key != MYOSD_KEY_LCONTROL) {
@@ -4576,7 +4570,7 @@ BOOL is_roms_dir(NSString* dir) {
     int __block numWAV = 0;
     int __block numFiles = 0;
     BOOL result = TRUE;
-    
+
     if ([ZIP_FILE_TYPES containsObject:romExt])
     {
         result = [ZipFile enumerate:romPath withOptions:ZipFileEnumFiles usingBlock:^(ZipFileInfo* info) {
@@ -4595,6 +4589,13 @@ BOOL is_roms_dir(NSString* dir) {
             if ([skin_files containsObject:info.name.lastPathComponent])
                 numSKIN++;
         }];
+        
+        // TODO: 7z support currenty broken, we cant look into 7z archives, but will just assume they are ROMSETs not software
+        if (!result && [romExt isEqualToString:@"7z"])
+        {
+            NSLog(@"%@ is a 7Z (assuming valid, will treat as ROMSET)", romPath);
+            result = TRUE;
+        }
     }
     
     NSString* toPath = nil;
@@ -5172,13 +5173,6 @@ static unsigned long g_device_has_input[NUM_DEV];   // TRUE if device needs to b
             [controllers addObject:controler];
     }
     
-    // now add any Steam Controllers, these should always have a extendedGamepad profile
-    if (g_bluetooth_enabled) {
-        for (GCController* controler in SteamControllerManager.sharedManager.controllers) {
-            if (controler.extendedGamepad != nil)
-                [controllers addObject:controler];
-        }
-    }
     // only handle upto NUM_JOY (non Siri Remote) controllers
     if (controllers.count > MYOSD_NUM_JOY) {
         [controllers removeObjectsInRange:NSMakeRange(MYOSD_NUM_JOY,controllers.count - MYOSD_NUM_JOY)];
@@ -5675,8 +5669,6 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
 
 -(void)scanForDevices{
     [GCController startWirelessControllerDiscoveryWithCompletionHandler:nil];
-    if (g_bluetooth_enabled)
-        [[SteamControllerManager sharedManager] scanForControllers];
 }
 
 -(void)gameControllerConnected:(NSNotification*)notif{
@@ -6037,14 +6029,16 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
     NSLog(@"ROMS: %@", [NSFileManager.defaultManager enumeratorAtPath:getDocumentPath(@"roms")].allObjects);
     NSLog(@"SOFTWARE: %@", [NSFileManager.defaultManager enumeratorAtPath:getDocumentPath(@"software")].allObjects);
 
+    // 4/14/24 TODO: commenting this out for App Store release since games are bundled
+#if !TARGET_APPSTORE
     // NOTE: MAME 2xx has a bunch of "no-rom" arcade games, we need to check if `roms` is empty too
     NSInteger roms_count = [NSFileManager.defaultManager enumeratorAtPath:getDocumentPath(@"roms")].allObjects.count +
                            [NSFileManager.defaultManager enumeratorAtPath:getDocumentPath(@"software")].allObjects.count;
-    
+  
     g_no_roms_found = [games count] <= 1 || roms_count <= 1; // software dir has a single .txt file when empty
     if (g_no_roms_found && !g_no_roms_found_canceled) {
         NSLog(@"NO GAMES, ASK USER WHAT TO DO....");
-        
+
         // if iCloud is still initializing give it a litte time.
         if ([CloudSync status] == CloudSyncStatusUnknown) {
             NSLog(@"....WAITING FOR iCloud");
@@ -6056,6 +6050,8 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
         [self runAddROMS:nil];
         return;
     }
+#endif
+  
     if (g_mame_game_error[0] != 0) {
         NSLog(@"ERROR RUNNING GAME %s", g_mame_game_error);
         
@@ -6081,14 +6077,6 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
     if (myosd_inGame) {
         NSLog(@"RUNNING GAME, DONT BRING UP UI.");
         return;
-    }
-    
-    // now that we have passed the startup phase, check on and maybe re-enable bluetooth.
-    if (@available(iOS 13.1, tvOS 13.0, *)) {
-        if (!g_bluetooth_enabled && CBCentralManager.authorization == CBManagerAuthorizationNotDetermined) {
-            g_bluetooth_enabled = TRUE;
-            [self performSelectorOnMainThread:@selector(scanForDevices) withObject:nil waitUntilDone:NO];
-        }
     }
     
     [self updateUserActivity:nil];

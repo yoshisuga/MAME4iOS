@@ -61,7 +61,7 @@
     #define PRODUCT_NAME_LONG   "MAME for iOS"
 #endif
 
-static inline BOOL IsRunningOnMac() {
+static inline BOOL IsRunningOnMac(void) {
 #if TARGET_OS_MACCATALYST
     return TRUE;
 #elif TARGET_OS_IOS && defined(__IPHONE_14_0)

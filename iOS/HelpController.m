@@ -151,6 +151,9 @@ code {background-color:lightgray; width:100%; overflow-x:scroll; padding:.2em .4
     //
     NSString* version = [NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleVersion"];
     HTMLData = [HTMLData stringByReplacingOccurrencesOfString:@"$(APP_VERSION)" withString:version];
+  
+    NSString *targetName = [[NSBundle.mainBundle infoDictionary] objectForKey:@"CFBundleName"];
+    HTMLData = [HTMLData stringByReplacingOccurrencesOfString:@"$(TARGET)" withString:targetName];
 
     // this last date Info.plist was modifed, if you do a clean build, or change the version, it is the build date.
 #if TARGET_OS_MACCATALYST

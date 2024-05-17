@@ -17,8 +17,8 @@
 
 ORG_IDENTIFIER          = com.example   // CHANGE this to your Organization Identifier.
 DEVELOPMENT_TEAM        = ABC8675309    // CHANGE this to your Team ID. (or select in Xcode project editor)
-CURRENT_PROJECT_VERSION = 2022.5
-MARKETING_VERSION       = 2022.5
+CURRENT_PROJECT_VERSION = 2024.1
+MARKETING_VERSION       = 2024.1
 
 // 2. enable or disable entitlements
 //    tvOS TopShelf and iCloud import/export require special app entitlements
@@ -35,6 +35,9 @@ ENTITLEMENTS_TYPE = -Base
 MAMELIB = libmame-139u1
 // USE THIS LINE for a build of current latest MAME (via get-libmame.sh)
 // MAMELIB = libmame
+
+// AppStore build
+TARGET_APPSTORE = 0             // 1=AppStore build, 0=not
 
 // let developer override with optional file.
 #include? "Developer.xcconfig"
@@ -54,3 +57,8 @@ MAMELIB_TVOS[sdk=appletvsimulator*] = $(MAMELIB)-tvos-simulator.a
 
 PRODUCT_BUNDLE_NAME = $(TARGET_NAME)
 PRODUCT_BUNDLE_NAME[sdk=macosx*] = MAME4mac
+
+// set special #defines
+GCC_PREPROCESSOR_DEFINITIONS = $(inherited) TARGET_APPSTORE=$(TARGET_APPSTORE)
+GCC_PREPROCESSOR_DEFINITIONS = $(inherited) ENTITLEMENTS_TYPE=$(ENTITLEMENTS_TYPE)
+
