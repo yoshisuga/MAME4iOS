@@ -1336,7 +1336,6 @@
 				);
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = "MAME4iOS/MAME4iOS-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1374,7 +1373,6 @@
 				GCC_PREFIX_HEADER = "MAME4iOS/MAME4iOS-Prefix.pch";
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = "MAME4iOS/MAME4iOS-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1461,7 +1459,6 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 15.6;
 				VALID_ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 			};
 			name = Debug;
@@ -1530,7 +1527,6 @@
 				SWIFT_OBJC_INTERFACE_HEADER_NAME = "$(PROJECT_NAME)-Swift.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 15.6;
 				VALID_ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 			};
 			name = Release;
@@ -1587,6 +1583,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				TVOS_DEPLOYMENT_TARGET = 13.4;
 				VALIDATE_PRODUCT = YES;
 				VALID_ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 			};
@@ -1638,6 +1635,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				TVOS_DEPLOYMENT_TARGET = 13.4;
 				VALIDATE_PRODUCT = YES;
 				VALID_ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 			};
@@ -1676,7 +1674,6 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 15.6;
 			};
 			name = Debug;
 		};
@@ -1713,7 +1710,6 @@
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 15.6;
 			};
 			name = Release;
 		};
