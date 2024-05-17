@@ -50,10 +50,7 @@
 #import "HelpController.h"
 #import "EmulatorController.h"
 #import "ImageCache.h"
-
-#if 0
 #import "CloudSync.h"
-#endif
 
 #import "Alert.h"
 
@@ -346,7 +343,6 @@
            }
            break;
         }
-#if 0
         case kCloudImportSection:
         {
             switch (indexPath.row)
@@ -382,7 +378,6 @@
             }
             break;
         }
-#endif
         case kResetSection:
         {
             switch (indexPath.row)
@@ -444,9 +439,7 @@
         case kFilterSection: return @"Game Filter";
         case kOtherSection: return @""; // @"Other";
         case kImportSection: return @"Import and Export";
-#if 0
         case kCloudImportSection: return @"iCloud";
-#endif
         case kResetSection: return @"";
         case kBenchmarkSection: return @"";
     }
@@ -466,7 +459,6 @@
           case kMiscSection: return 8;
           case kFilterSection: return 3;
           case kImportSection: return 4;
-#if 0
           case kCloudImportSection:
               if (CloudSync.status == CloudSyncStatusAvailable)
                   return 4;
@@ -474,7 +466,6 @@
                   return 1;
               else
                   return 0;
-#endif
           case kResetSection: return 1;
           case kBenchmarkSection:
               return self.presentingViewController == self.emuController ? 1 : 0;
@@ -559,7 +550,6 @@
             }
             break;
         }
-#if 0
         case kCloudImportSection:
         {
             if (row==0) {
@@ -579,7 +569,6 @@
             }
             break;
         }
-#endif
         case kResetSection:
         {
             if (row==0) {

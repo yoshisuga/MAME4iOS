@@ -57,8 +57,8 @@
     #define PRODUCT_NAME        "MAME4sim"
     #define PRODUCT_NAME_LONG   "MAME for Simulator"
 #else
-    #define PRODUCT_NAME        "MAME"
-    #define PRODUCT_NAME_LONG   "MAME"
+    #define PRODUCT_NAME        "MAME4iOS"
+    #define PRODUCT_NAME_LONG   "MAME for iOS"
 #endif
 
 static inline BOOL IsRunningOnMac(void) {

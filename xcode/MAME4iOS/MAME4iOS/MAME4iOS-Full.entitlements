@@ -16,9 +16,7 @@
 	<array>
 		<string>$(APP_GROUP_IDENTIFIER)</string>
 	</array>
-    <key>com.apple.security.app-sandbox</key>
-    <true/>
-	<key>com.apple.security.device.bluetooth</key>
+	<key>com.apple.security.app-sandbox</key>
 	<true/>
 	<key>com.apple.security.files.downloads.read-only</key>
 	<true/>

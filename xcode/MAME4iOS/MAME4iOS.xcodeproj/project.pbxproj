@@ -128,6 +128,7 @@
 		EF29C8822401C73A00AFFA4E /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EF29C8802401C73900AFFA4E /* Launch Screen.storyboard */; };
 		EF301CF3240460F3000510FD /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF27F36323F73CD400B1E50A /* ZipFile.m */; };
 		EF31447C27BB1E81002C3C6A /* ControllerButtonPress.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF31447B27BB1E81002C3C6A /* ControllerButtonPress.swift */; };
+		EF3D60262BF6B0870028C7C4 /* CloudSync.m in Sources */ = {isa = PBXBuildFile; fileRef = EF286D33253CA930007DA6D3 /* CloudSync.m */; };
 		EF474B892791E42900578663 /* EmulatorController+EmulatorKeyboardSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF474B882791E42900578663 /* EmulatorController+EmulatorKeyboardSupport.swift */; };
 		EF474B8B2791E4CD00578663 /* EmulatorKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF474B8A2791E4CD00578663 /* EmulatorKeyboard.swift */; };
 		EF490D91277A5C8C00407865 /* history.dat.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF490D90277A5C8C00407865 /* history.dat.zip */; };
@@ -163,14 +164,6 @@
 		EF8E4284249915F30049C84C /* lineTron.metal in Sources */ = {isa = PBXBuildFile; fileRef = EF8E4282249915F20049C84C /* lineTron.metal */; };
 		EF8E428B249FE5410049C84C /* ulTron.metal in Sources */ = {isa = PBXBuildFile; fileRef = EF8E428A249FE5410049C84C /* ulTron.metal */; };
 		EF8E428C249FE5410049C84C /* ulTron.metal in Sources */ = {isa = PBXBuildFile; fileRef = EF8E428A249FE5410049C84C /* ulTron.metal */; };
-		EF8EAA86244F7F5D00DA02BB /* SteamControllerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA7F244F7F5D00DA02BB /* SteamControllerManager.m */; };
-		EF8EAA87244F7F5D00DA02BB /* SteamControllerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA7F244F7F5D00DA02BB /* SteamControllerManager.m */; };
-		EF8EAA88244F7F5D00DA02BB /* SteamController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA80244F7F5D00DA02BB /* SteamController.m */; };
-		EF8EAA89244F7F5D00DA02BB /* SteamController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA80244F7F5D00DA02BB /* SteamController.m */; };
-		EF8EAA8A244F7F5D00DA02BB /* SteamControllerExtendedGamepad.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA82244F7F5D00DA02BB /* SteamControllerExtendedGamepad.m */; };
-		EF8EAA8B244F7F5D00DA02BB /* SteamControllerExtendedGamepad.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA82244F7F5D00DA02BB /* SteamControllerExtendedGamepad.m */; };
-		EF8EAA8C244F7F5D00DA02BB /* SteamControllerInput.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA83244F7F5D00DA02BB /* SteamControllerInput.m */; };
-		EF8EAA8D244F7F5D00DA02BB /* SteamControllerInput.m in Sources */ = {isa = PBXBuildFile; fileRef = EF8EAA83244F7F5D00DA02BB /* SteamControllerInput.m */; };
 		EF926C9B24BA36980048392B /* SkinManager.m in Sources */ = {isa = PBXBuildFile; fileRef = EF926C9A24BA36980048392B /* SkinManager.m */; };
 		EF941F0024427D1200D58F7F /* OptionsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF941EFF24427D1200D58F7F /* OptionsTableViewController.m */; };
 		EF941F0124427D1200D58F7F /* OptionsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF941EFF24427D1200D58F7F /* OptionsTableViewController.m */; };
@@ -294,7 +287,7 @@
 		920BBDED201FC29700AE7D50 /* dpad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = dpad.png; path = "../../iOS-res/dpad.png"; sourceTree = "<group>"; };
 		920BBDF020210C3700AE7D50 /* menu.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = menu.png; path = "../../iOS-res/menu.png"; sourceTree = "<group>"; };
 		920D97592BCECB410038F00B /* UICollectionView+ZeroState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UICollectionView+ZeroState.swift"; sourceTree = "<group>"; };
-		925ABCE21E46DCC500997182 /* MAME.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MAME.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		925ABCE21E46DCC500997182 /* MAME4iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MAME4iOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		925ABCE41E46DD6E00997182 /* libmame.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmame.a; path = ../../libmame.a; sourceTree = "<group>"; };
 		926C76FD21F1C87700103EDE /* TVOptionsController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVOptionsController.h; sourceTree = "<group>"; };
 		926C76FE21F1C87700103EDE /* TVOptionsController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TVOptionsController.m; sourceTree = "<group>"; };
@@ -452,16 +445,6 @@
 		EF8E427C249348220049C84C /* megaTron.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = megaTron.metal; sourceTree = "<group>"; };
 		EF8E4282249915F20049C84C /* lineTron.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = lineTron.metal; sourceTree = "<group>"; };
 		EF8E428A249FE5410049C84C /* ulTron.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = ulTron.metal; sourceTree = "<group>"; };
-		EF8EAA7E244F7F5D00DA02BB /* SteamControllerExtendedGamepad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SteamControllerExtendedGamepad.h; sourceTree = "<group>"; };
-		EF8EAA7F244F7F5D00DA02BB /* SteamControllerManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SteamControllerManager.m; sourceTree = "<group>"; };
-		EF8EAA80244F7F5D00DA02BB /* SteamController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SteamController.m; sourceTree = "<group>"; };
-		EF8EAA81244F7F5D00DA02BB /* SteamControllerInput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SteamControllerInput.h; sourceTree = "<group>"; };
-		EF8EAA82244F7F5D00DA02BB /* SteamControllerExtendedGamepad.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SteamControllerExtendedGamepad.m; sourceTree = "<group>"; };
-		EF8EAA83244F7F5D00DA02BB /* SteamControllerInput.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SteamControllerInput.m; sourceTree = "<group>"; };
-		EF8EAA84244F7F5D00DA02BB /* SteamController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SteamController.h; sourceTree = "<group>"; };
-		EF8EAA85244F7F5D00DA02BB /* SteamControllerManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SteamControllerManager.h; sourceTree = "<group>"; };
-		EF8EAA8E244F822C00DA02BB /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		EF8EAA8F244F822C00DA02BB /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		EF926C9924BA36980048392B /* SkinManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SkinManager.h; sourceTree = "<group>"; };
 		EF926C9A24BA36980048392B /* SkinManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SkinManager.m; sourceTree = "<group>"; };
 		EF941EFE24427D1200D58F7F /* OptionsTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OptionsTableViewController.h; path = ../../iOS/OptionsTableViewController.h; sourceTree = "<group>"; };
@@ -747,7 +730,6 @@
 				EF8E427B24900FE40049C84C /* UIKit Classes */,
 				92A5338421EBDBAD0089FBB9 /* GCDWebServer */,
 				92A533CB21EBDDF20089FBB9 /* GCDWebUploader */,
-				EF8EAA7D244F7F5D00DA02BB /* SteamController */,
 				CEE6808F1635BA7000051BC2 /* MAME4iOS */,
 				92ECB8EC21EA984E00D1E3D0 /* MAME4tvOS */,
 				EFEEA4B325C9D41E00314132 /* TopShelf */,
@@ -761,7 +743,7 @@
 		CEE680861635BA7000051BC2 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				925ABCE21E46DCC500997182 /* MAME.app */,
+				925ABCE21E46DCC500997182 /* MAME4iOS.app */,
 				92ECB8EB21EA984D00D1E3D0 /* MAME4tvOS.app */,
 				EFEEA4B125C9D41E00314132 /* TopShelf.appex */,
 			);
@@ -936,23 +918,6 @@
 			name = "UIKit Classes";
 			sourceTree = "<group>";
 		};
-		EF8EAA7D244F7F5D00DA02BB /* SteamController */ = {
-			isa = PBXGroup;
-			children = (
-				EF8EAA8E244F822C00DA02BB /* README.md */,
-				EF8EAA8F244F822C00DA02BB /* LICENSE */,
-				EF8EAA7E244F7F5D00DA02BB /* SteamControllerExtendedGamepad.h */,
-				EF8EAA7F244F7F5D00DA02BB /* SteamControllerManager.m */,
-				EF8EAA80244F7F5D00DA02BB /* SteamController.m */,
-				EF8EAA81244F7F5D00DA02BB /* SteamControllerInput.h */,
-				EF8EAA82244F7F5D00DA02BB /* SteamControllerExtendedGamepad.m */,
-				EF8EAA83244F7F5D00DA02BB /* SteamControllerInput.m */,
-				EF8EAA84244F7F5D00DA02BB /* SteamController.h */,
-				EF8EAA85244F7F5D00DA02BB /* SteamControllerManager.h */,
-			);
-			path = SteamController;
-			sourceTree = "<group>";
-		};
 		EFA7571E2408308000A02AAB /* help */ = {
 			isa = PBXGroup;
 			children = (
@@ -992,9 +957,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		925ABCA41E46DCC500997182 /* MAME */ = {
+		925ABCA41E46DCC500997182 /* MAME4iOS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 925ABCDF1E46DCC500997182 /* Build configuration list for PBXNativeTarget "MAME" */;
+			buildConfigurationList = 925ABCDF1E46DCC500997182 /* Build configuration list for PBXNativeTarget "MAME4iOS" */;
 			buildPhases = (
 				EF79BDD924B7D71800824BFD /* ShellScript */,
 				925ABCA51E46DCC500997182 /* Sources */,
@@ -1008,9 +973,9 @@
 			);
 			dependencies = (
 			);
-			name = MAME;
+			name = MAME4iOS;
 			productName = MAME4iOS;
-			productReference = 925ABCE21E46DCC500997182 /* MAME.app */;
+			productReference = 925ABCE21E46DCC500997182 /* MAME4iOS.app */;
 			productType = "com.apple.product-type.application";
 		};
 		92ECB8EA21EA984D00D1E3D0 /* MAME4tvOS */ = {
@@ -1092,7 +1057,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				925ABCA41E46DCC500997182 /* MAME */,
+				925ABCA41E46DCC500997182 /* MAME4iOS */,
 				92ECB8EA21EA984D00D1E3D0 /* MAME4tvOS */,
 				EFEEA4B025C9D41E00314132 /* TopShelf */,
 			);
@@ -1215,6 +1180,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EF3D60262BF6B0870028C7C4 /* CloudSync.m in Sources */,
 				92A533B121EBDBAD0089FBB9 /* GCDWebServerConnection.m in Sources */,
 				EFB7B2192479FBD900AD96A4 /* MetalViewShaders.metal in Sources */,
 				925ABCA61E46DCC500997182 /* KeyboardView.m in Sources */,
@@ -1234,8 +1200,6 @@
 				EFB7B21C247ACFE300AD96A4 /* MameShaders.metal in Sources */,
 				925ABCA91E46DCC500997182 /* OptionsController.m in Sources */,
 				EFE003382638ACA000E42246 /* XmlFile.m in Sources */,
-				EF8EAA8A244F7F5D00DA02BB /* SteamControllerExtendedGamepad.m in Sources */,
-				EF8EAA8C244F7F5D00DA02BB /* SteamControllerInput.m in Sources */,
 				92A533C021EBDBAD0089FBB9 /* GCDWebServerURLEncodedFormRequest.m in Sources */,
 				92A533D821EE601D0089FBB9 /* WebServer.m in Sources */,
 				EFB3C6D624890F6200F44780 /* simpleCRT.metal in Sources */,
@@ -1257,7 +1221,6 @@
 				EFB7B2172479FBD900AD96A4 /* MetalView.m in Sources */,
 				925ABCB21E46DCC500997182 /* LayoutView.m in Sources */,
 				EFEEA4ED25CC8A2F00314132 /* MacMenu.m in Sources */,
-				EF8EAA86244F7F5D00DA02BB /* SteamControllerManager.m in Sources */,
 				92A533A521EBDBAD0089FBB9 /* GCDWebServerResponse.m in Sources */,
 				EFE4B6AB2453D7F80009A6F1 /* InfoDatabase.m in Sources */,
 				925ABCB61E46DCC500997182 /* InputOptionController.m in Sources */,
@@ -1272,7 +1235,6 @@
 				EFF9F82A2470755800DDA88C /* MetalScreenView.m in Sources */,
 				EF19F22C235D1BDF00C8EE7F /* ChooseGameController.m in Sources */,
 				EF926C9B24BA36980048392B /* SkinManager.m in Sources */,
-				EF8EAA88244F7F5D00DA02BB /* SteamController.m in Sources */,
 				92A533AE21EBDBAD0089FBB9 /* GCDWebServer.m in Sources */,
 				EF51444A282C5C68001457B1 /* GameInfo.swift in Sources */,
 				92A5332321EB57F00089FBB9 /* Options.m in Sources */,
@@ -1298,7 +1260,6 @@
 				EF8E427E249348220049C84C /* megaTron.metal in Sources */,
 				92A5332621EBC8D00089FBB9 /* Bootstrapper.m in Sources */,
 				92A533A921EBDBAD0089FBB9 /* GCDWebServerRequest.m in Sources */,
-				EF8EAA8B244F7F5D00DA02BB /* SteamControllerExtendedGamepad.m in Sources */,
 				EFF9F82B2470755800DDA88C /* MetalScreenView.m in Sources */,
 				EF51444F28305E36001457B1 /* GameInfoCell.swift in Sources */,
 				92A533B221EBDBAD0089FBB9 /* GCDWebServerConnection.m in Sources */,
@@ -1307,21 +1268,18 @@
 				92ECB91921EAD57900D1E3D0 /* UIView+Toast.m in Sources */,
 				EF19F22D235D1BDF00C8EE7F /* ChooseGameController.m in Sources */,
 				928F7B2E27F0223100377C40 /* CommandLineArgsHelper.swift in Sources */,
-				EF8EAA89244F7F5D00DA02BB /* SteamController.m in Sources */,
 				92A533A621EBDBAD0089FBB9 /* GCDWebServerResponse.m in Sources */,
 				92A533D921EE601D0089FBB9 /* WebServer.m in Sources */,
 				EFE0033E2638D97E00E42246 /* SoftwareList.m in Sources */,
 				EFB7B21D247ACFE300AD96A4 /* MameShaders.metal in Sources */,
 				92A533D421EBDDF20089FBB9 /* GCDWebUploader.m in Sources */,
 				92ECB91221EAA1B700D1E3D0 /* EmulatorController.m in Sources */,
-				EF8EAA87244F7F5D00DA02BB /* SteamControllerManager.m in Sources */,
 				EF514448282815E4001457B1 /* GameInfoController.swift in Sources */,
 				EF24BAFD24C786A900D9C55A /* SkinManager.m in Sources */,
 				92A533AC21EBDBAD0089FBB9 /* GCDWebServerFunctions.m in Sources */,
 				EF51444B282C5C68001457B1 /* GameInfo.swift in Sources */,
 				EF7B232D23FD0469001FF51D /* (null) in Sources */,
 				92A533AF21EBDBAD0089FBB9 /* GCDWebServer.m in Sources */,
-				EF8EAA8D244F7F5D00DA02BB /* SteamControllerInput.m in Sources */,
 				92A533B521EBDBAD0089FBB9 /* GCDWebServerErrorResponse.m in Sources */,
 				EFE003392638ACA000E42246 /* XmlFile.m in Sources */,
 				EFE4B6AC2453D7F80009A6F1 /* InfoDatabase.m in Sources */,
@@ -1367,7 +1325,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
-				CODE_SIGN_ENTITLEMENTS = "MAME4iOS/MAME4iOS$(ENTITLEMENTS_TYPE).entitlements";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				ENABLE_BITCODE = NO;
@@ -1379,8 +1336,7 @@
 				);
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = "MAME4iOS/MAME4iOS-Info.plist";
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1411,7 +1367,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
-				CODE_SIGN_ENTITLEMENTS = "MAME4iOS/MAME4iOS$(ENTITLEMENTS_TYPE).entitlements";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				ENABLE_BITCODE = NO;
@@ -1419,8 +1374,7 @@
 				GCC_PREFIX_HEADER = "MAME4iOS/MAME4iOS-Prefix.pch";
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = "MAME4iOS/MAME4iOS-Info.plist";
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1507,7 +1461,7 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 13.4;
+				TVOS_DEPLOYMENT_TARGET = 15.6;
 				VALID_ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 			};
 			name = Debug;
@@ -1576,7 +1530,7 @@
 				SWIFT_OBJC_INTERFACE_HEADER_NAME = "$(PROJECT_NAME)-Swift.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 13.4;
+				TVOS_DEPLOYMENT_TARGET = 15.6;
 				VALID_ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 			};
 			name = Release;
@@ -1631,7 +1585,6 @@
 				MTL_FAST_MATH = YES;
 				MTL_LANGUAGE_REVISION = UseDeploymentTarget;
 				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = "$(ORG_IDENTIFIER).mame";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
@@ -1682,7 +1635,6 @@
 				MTL_LANGUAGE_REVISION = UseDeploymentTarget;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
-				PRODUCT_BUNDLE_IDENTIFIER = "$(ORG_IDENTIFIER).mame";
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1724,7 +1676,7 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 13.4;
+				TVOS_DEPLOYMENT_TARGET = 15.6;
 			};
 			name = Debug;
 		};
@@ -1761,14 +1713,14 @@
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 13.4;
+				TVOS_DEPLOYMENT_TARGET = 15.6;
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		925ABCDF1E46DCC500997182 /* Build configuration list for PBXNativeTarget "MAME" */ = {
+		925ABCDF1E46DCC500997182 /* Build configuration list for PBXNativeTarget "MAME4iOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				925ABCE01E46DCC500997182 /* Debug */,

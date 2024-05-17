@@ -11,6 +11,8 @@ import UIKit
 extension UICollectionView {
   
   @objc func showZeroState() {
+    guard self.backgroundView == nil else { return }
+
     let backgroundView = UIView()
     let titleLabel = UILabel()
     titleLabel.translatesAutoresizingMaskIntoConstraints = false

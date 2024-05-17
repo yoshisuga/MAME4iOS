@@ -8,7 +8,7 @@
 #import "ZipFile.h"
 #import <compression.h>
 
-#define SEVEN_ZIP_SUPPORT   0   // minimal support for reading and creating empty 7z files.
+#define SEVEN_ZIP_SUPPORT   1   // minimal support for reading and creating empty 7z files.
 
 #if !__has_feature(objc_arc)
 #error("This file assumes ARC")
