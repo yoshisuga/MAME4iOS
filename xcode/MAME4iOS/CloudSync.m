@@ -62,12 +62,16 @@ static CKDatabase*     _database;
     return [NSString stringWithFormat:@"iCloud.%@", NSBundle.mainBundle.bundleIdentifier];
 }
 
+
+#define str(x) #x
+#define xstr(x) str(x)
+
 +(BOOL)isEntitled {
-#if ENTITLEMENTS_TYPE == -Full
-    return TRUE;
-#else
-    return FALSE;
-#endif
+    // ENTITLEMENTS_TYPE is defined on command line as "-Full" or "-Base", check if it is equal to full entitlements
+    if (strcmp(xstr(ENTITLEMENTS_TYPE), "-Full") == 0)
+        return TRUE;
+    else
+        return FALSE;
 }
 
 +(void)updateCloudStatus {
