@@ -50,7 +50,7 @@
 #import "HelpController.h"
 #import "EmulatorController.h"
 #import "ImageCache.h"
-#import "CloudSync.h"
+//#import "CloudSync.h"
 
 #import "Alert.h"
 
@@ -343,41 +343,41 @@
            }
            break;
         }
-        case kCloudImportSection:
-        {
-            switch (indexPath.row)
-            {
-                case 0:
-                {
-                    cell.textLabel.text = @"Export to iCloud";
-                    cell.imageView.image = [UIImage systemImageNamed:@"icloud.and.arrow.up"];
-                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                    break;
-                }
-                case 1:
-                {
-                    cell.textLabel.text = @"Import from iCloud";
-                    cell.imageView.image = [UIImage systemImageNamed:@"icloud.and.arrow.down"];
-                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                    break;
-                }
-                case 2:
-                {
-                    cell.textLabel.text = @"Sync with iCloud";
-                    cell.imageView.image = [UIImage systemImageNamed:@"arrow.clockwise.icloud"];
-                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                    break;
-                }
-                case 3:
-                {
-                    cell.textLabel.text = @"Erase iCloud";
-                    cell.imageView.image = [UIImage systemImageNamed:@"xmark.icloud"];
-                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                    break;
-                }
-            }
-            break;
-        }
+//        case kCloudImportSection:
+//        {
+//            switch (indexPath.row)
+//            {
+//                case 0:
+//                {
+//                    cell.textLabel.text = @"Export to iCloud";
+//                    cell.imageView.image = [UIImage systemImageNamed:@"icloud.and.arrow.up"];
+//                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+//                    break;
+//                }
+//                case 1:
+//                {
+//                    cell.textLabel.text = @"Import from iCloud";
+//                    cell.imageView.image = [UIImage systemImageNamed:@"icloud.and.arrow.down"];
+//                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+//                    break;
+//                }
+//                case 2:
+//                {
+//                    cell.textLabel.text = @"Sync with iCloud";
+//                    cell.imageView.image = [UIImage systemImageNamed:@"arrow.clockwise.icloud"];
+//                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+//                    break;
+//                }
+//                case 3:
+//                {
+//                    cell.textLabel.text = @"Erase iCloud";
+//                    cell.imageView.image = [UIImage systemImageNamed:@"xmark.icloud"];
+//                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+//                    break;
+//                }
+//            }
+//            break;
+//        }
         case kResetSection:
         {
             switch (indexPath.row)
@@ -439,7 +439,7 @@
         case kFilterSection: return @"Game Filter";
         case kOtherSection: return @""; // @"Other";
         case kImportSection: return @"Import and Export";
-        case kCloudImportSection: return @"iCloud";
+//        case kCloudImportSection: return @"iCloud";
         case kResetSection: return @"";
         case kBenchmarkSection: return @"";
     }
@@ -459,13 +459,13 @@
           case kMiscSection: return 8;
           case kFilterSection: return 3;
           case kImportSection: return 4;
-          case kCloudImportSection:
-              if (CloudSync.status == CloudSyncStatusAvailable)
-                  return 4;
-              else if (CloudSync.status == CloudSyncStatusEmpty)
-                  return 1;
-              else
-                  return 0;
+//          case kCloudImportSection:
+//              if (CloudSync.status == CloudSyncStatusAvailable)
+//                  return 4;
+//              else if (CloudSync.status == CloudSyncStatusEmpty)
+//                  return 1;
+//              else
+//                  return 0;
           case kResetSection: return 1;
           case kBenchmarkSection:
               return self.presentingViewController == self.emuController ? 1 : 0;
@@ -550,25 +550,25 @@
             }
             break;
         }
-        case kCloudImportSection:
-        {
-            if (row==0) {
-                [CloudSync export];
-            }
-            if (row==1) {
-                [CloudSync import];
-            }
-            if (row==2) {
-                [CloudSync sync];
-            }
-            if (row==3) {
-                [self showAlertWithTitle:@"Erase iCloud?" message:nil buttons:@[@"Erase", @"Cancel"] handler:^(NSUInteger button) {
-                    if (button == 0)
-                        [CloudSync delete];
-                }];
-            }
-            break;
-        }
+//        case kCloudImportSection:
+//        {
+//            if (row==0) {
+//                [CloudSync export];
+//            }
+//            if (row==1) {
+//                [CloudSync import];
+//            }
+//            if (row==2) {
+//                [CloudSync sync];
+//            }
+//            if (row==3) {
+//                [self showAlertWithTitle:@"Erase iCloud?" message:nil buttons:@[@"Erase", @"Cancel"] handler:^(NSUInteger button) {
+//                    if (button == 0)
+//                        [CloudSync delete];
+//                }];
+//            }
+//            break;
+//        }
         case kResetSection:
         {
             if (row==0) {
