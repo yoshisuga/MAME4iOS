@@ -75,6 +75,7 @@
 		92A533DB21EEFDE20089FBB9 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92A533DA21EEFDE20089FBB9 /* CFNetwork.framework */; };
 		92A533DF21EEFE520089FBB9 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92A533DE21EEFE520089FBB9 /* CFNetwork.framework */; };
 		92B99F0F2022706600CC44E3 /* UIView+Toast.m in Sources */ = {isa = PBXBuildFile; fileRef = 92B99F0D2022706600CC44E3 /* UIView+Toast.m */; };
+		92B9EB992D8DC79A00790AA8 /* arcademaniaspacemania.zip in Resources */ = {isa = PBXBuildFile; fileRef = 92B9EB982D8DC79A00790AA8 /* arcademaniaspacemania.zip */; };
 		92D96574215B03E100EFE3AE /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 92D96573215B03E100EFE3AE /* libc++.tbd */; };
 		92ECB8F721EA985000D1E3D0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92ECB8F621EA985000D1E3D0 /* Assets.xcassets */; };
 		92ECB8FF21EA992100D1E3D0 /* libmame-tvos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 92ECB8FE21EA992100D1E3D0 /* libmame-tvos.a */; };
@@ -88,6 +89,114 @@
 		92ECB91021EA99B600D1E3D0 /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92ECB90F21EA99B600D1E3D0 /* GameKit.framework */; };
 		92ECB91221EAA1B700D1E3D0 /* EmulatorController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680B51635BB4900051BC2 /* EmulatorController.m */; };
 		92ECB91921EAD57900D1E3D0 /* UIView+Toast.m in Sources */ = {isa = PBXBuildFile; fileRef = 92B99F0D2022706600CC44E3 /* UIView+Toast.m */; };
+		92F6231C2C88D81A00E2579B /* CloudSync.m in Sources */ = {isa = PBXBuildFile; fileRef = EF286D33253CA930007DA6D3 /* CloudSync.m */; };
+		92F6231D2C88D81A00E2579B /* GCDWebServerConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5339021EBDBAD0089FBB9 /* GCDWebServerConnection.m */; };
+		92F6231E2C88D81A00E2579B /* MetalViewShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B2152479FBD900AD96A4 /* MetalViewShaders.metal */; };
+		92F6231F2C88D81A00E2579B /* KeyboardView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8D87DC1653121200685BC4 /* KeyboardView.m */; };
+		92F623202C88D81A00E2579B /* GCDWebServerFileResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5339721EBDBAD0089FBB9 /* GCDWebServerFileResponse.m */; };
+		92F623212C88D81A00E2579B /* OptionsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF941EFF24427D1200D58F7F /* OptionsTableViewController.m */; };
+		92F623222C88D81A00E2579B /* GCDWebUploader.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A533CE21EBDDF20089FBB9 /* GCDWebUploader.m */; };
+		92F623232C88D81A00E2579B /* EmulatorController+TouchMouse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9296524D27FC20330064D1F5 /* EmulatorController+TouchMouse.swift */; };
+		92F623242C88D81A00E2579B /* TVAlertController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF7D4AA627B6FA90002528B7 /* TVAlertController.swift */; };
+		92F623252C88D81A00E2579B /* GCDWebServerFileRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A533A221EBDBAD0089FBB9 /* GCDWebServerFileRequest.m */; };
+		92F623262C88D81A00E2579B /* GameInfoController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF514446282815E4001457B1 /* GameInfoController.swift */; };
+		92F623272C88D81A00E2579B /* ListOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE90575B166A89D000653872 /* ListOptionController.m */; };
+		92F623282C88D81A00E2579B /* GCDWebServerDataRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A533A121EBDBAD0089FBB9 /* GCDWebServerDataRequest.m */; };
+		92F623292C88D81A00E2579B /* ulTron.metal in Sources */ = {isa = PBXBuildFile; fileRef = EF8E428A249FE5410049C84C /* ulTron.metal */; };
+		92F6232A2C88D81A00E2579B /* lineTron.metal in Sources */ = {isa = PBXBuildFile; fileRef = EF8E4282249915F20049C84C /* lineTron.metal */; };
+		92F6232B2C88D81A00E2579B /* GCDWebServerRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5338B21EBDBAD0089FBB9 /* GCDWebServerRequest.m */; };
+		92F6232C2C88D81A00E2579B /* EmulatorController+EmulatorKeyboardSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF474B882791E42900578663 /* EmulatorController+EmulatorKeyboardSupport.swift */; };
+		92F6232D2C88D81A00E2579B /* MameShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B21B247ACFE300AD96A4 /* MameShaders.metal */; };
+		92F6232E2C88D81A00E2579B /* OptionsController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680C01635BB6100051BC2 /* OptionsController.m */; };
+		92F6232F2C88D81A00E2579B /* XmlFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE003362638ACA000E42246 /* XmlFile.m */; };
+		92F623302C88D81A00E2579B /* GCDWebServerURLEncodedFormRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5339F21EBDBAD0089FBB9 /* GCDWebServerURLEncodedFormRequest.m */; };
+		92F623312C88D81A00E2579B /* WebServer.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A533D621EE601D0089FBB9 /* WebServer.m */; };
+		92F623322C88D81A00E2579B /* simpleCRT.metal in Sources */ = {isa = PBXBuildFile; fileRef = EFB3C6D524890F6200F44780 /* simpleCRT.metal */; };
+		92F623332C88D81A00E2579B /* ControllerButtonPress.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF31447B27BB1E81002C3C6A /* ControllerButtonPress.swift */; };
+		92F623342C88D81A00E2579B /* EmulatorKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF474B8A2791E4CD00578663 /* EmulatorKeyboard.swift */; };
+		92F623352C88D81A00E2579B /* GCDWebServerDataResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5339821EBDBAD0089FBB9 /* GCDWebServerDataResponse.m */; };
+		92F623362C88D81A00E2579B /* ImageCache.m in Sources */ = {isa = PBXBuildFile; fileRef = EF249336236264D900DD0A6C /* ImageCache.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		92F623372C88D81A00E2579B /* UIView+Toast.m in Sources */ = {isa = PBXBuildFile; fileRef = 92B99F0D2022706600CC44E3 /* UIView+Toast.m */; };
+		92F623382C88D81A00E2579B /* GameInfoCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF51444D28305E35001457B1 /* GameInfoCell.swift */; };
+		92F623392C88D81A00E2579B /* EmulatorTouchMouse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9296524B27FC1FF30064D1F5 /* EmulatorTouchMouse.swift */; };
+		92F6233A2C88D81A00E2579B /* EmulatorController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680B51635BB4900051BC2 /* EmulatorController.m */; };
+		92F6233B2C88D81A00E2579B /* GameInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = EF1741D5261BB2D600DE8386 /* GameInfo.m */; };
+		92F6233C2C88D81A00E2579B /* HelpController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680B71635BB4900051BC2 /* HelpController.m */; };
+		92F6233D2C88D81A00E2579B /* AnalogStick.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680AB1635BB2700051BC2 /* AnalogStick.m */; };
+		92F6233E2C88D81A00E2579B /* Bootstrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680AD1635BB2700051BC2 /* Bootstrapper.m */; };
+		92F6233F2C88D81A00E2579B /* SoftwareList.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE0033C2638D97E00E42246 /* SoftwareList.m */; };
+		92F623402C88D81A00E2579B /* GCDWebServerFunctions.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5338E21EBDBAD0089FBB9 /* GCDWebServerFunctions.m */; };
+		92F623412C88D81A00E2579B /* GCDWebServerStreamedResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5339A21EBDBAD0089FBB9 /* GCDWebServerStreamedResponse.m */; };
+		92F623422C88D81A00E2579B /* MetalView.m in Sources */ = {isa = PBXBuildFile; fileRef = EFB7B2132479FBD800AD96A4 /* MetalView.m */; };
+		92F623432C88D81A00E2579B /* LayoutView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE6D6E1316D8CADF00F265B7 /* LayoutView.m */; };
+		92F623442C88D81A00E2579B /* MacMenu.m in Sources */ = {isa = PBXBuildFile; fileRef = EF67E11524B8972100AFF489 /* MacMenu.m */; };
+		92F623452C88D81A00E2579B /* GCDWebServerResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5338821EBDBAD0089FBB9 /* GCDWebServerResponse.m */; };
+		92F623462C88D81A00E2579B /* InfoDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = EFE4B6AA2453D7F80009A6F1 /* InfoDatabase.m */; };
+		92F623472C88D81A00E2579B /* InputOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8F08831741580100E2D5FB /* InputOptionController.m */; };
+		92F623482C88D81A00E2579B /* GCDWebServerMultiPartFormRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A533A021EBDBAD0089FBB9 /* GCDWebServerMultiPartFormRequest.m */; };
+		92F623492C88D81A00E2579B /* FileItemProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = EF26AE0B241AA6900078FD30 /* FileItemProvider.m */; };
+		92F6234A2C88D81A00E2579B /* UICollectionView+ZeroState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920D97592BCECB410038F00B /* UICollectionView+ZeroState.swift */; };
+		92F6234B2C88D81A00E2579B /* (null) in Sources */ = {isa = PBXBuildFile; };
+		92F6234C2C88D81A00E2579B /* megaTron.metal in Sources */ = {isa = PBXBuildFile; fileRef = EF8E427C249348220049C84C /* megaTron.metal */; };
+		92F6234D2C88D81A00E2579B /* GCDWebServerErrorResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5339521EBDBAD0089FBB9 /* GCDWebServerErrorResponse.m */; };
+		92F6234E2C88D81A00E2579B /* CommandLineArgsHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 928F7B2C27D5F18E00377C40 /* CommandLineArgsHelper.swift */; };
+		92F6234F2C88D81A00E2579B /* PopupSegmentedControl.m in Sources */ = {isa = PBXBuildFile; fileRef = EF23D330243CB9CE006B3EE2 /* PopupSegmentedControl.m */; };
+		92F623502C88D81A00E2579B /* MetalScreenView.m in Sources */ = {isa = PBXBuildFile; fileRef = EFF9F8292470755800DDA88C /* MetalScreenView.m */; };
+		92F623512C88D81A00E2579B /* ChooseGameController.m in Sources */ = {isa = PBXBuildFile; fileRef = EF19F229235D1BDF00C8EE7F /* ChooseGameController.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		92F623522C88D81A00E2579B /* SkinManager.m in Sources */ = {isa = PBXBuildFile; fileRef = EF926C9A24BA36980048392B /* SkinManager.m */; };
+		92F623532C88D81A00E2579B /* GCDWebServer.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5338F21EBDBAD0089FBB9 /* GCDWebServer.m */; };
+		92F623542C88D81A00E2579B /* GameInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF514449282C5C68001457B1 /* GameInfo.swift */; };
+		92F623552C88D81A00E2579B /* Options.m in Sources */ = {isa = PBXBuildFile; fileRef = 92A5332121EB57F00089FBB9 /* Options.m */; };
+		92F623562C88D81A00E2579B /* ZipFile.m in Sources */ = {isa = PBXBuildFile; fileRef = EF27F36323F73CD400B1E50A /* ZipFile.m */; };
+		92F623582C88D81A00E2579B /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF51444428249E4C001457B1 /* Accelerate.framework */; };
+		92F623592C88D81A00E2579B /* libmame-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EF1628122624ACC800E2B2AB /* libmame-ios.a */; };
+		92F6235A2C88D81A00E2579B /* MultipeerConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E9856CEF23C9A7C50071666D /* MultipeerConnectivity.framework */; };
+		92F6235B2C88D81A00E2579B /* libcompression.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = EF27F36923F7475100B1E50A /* libcompression.tbd */; };
+		92F6235C2C88D81A00E2579B /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFF9F82C24707EE900DDA88C /* Metal.framework */; };
+		92F6235D2C88D81A00E2579B /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA98FAE24A4CC49007B6689 /* CoreServices.framework */; };
+		92F6235E2C88D81A00E2579B /* IntentsUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFF9F826246EE30200DDA88C /* IntentsUI.framework */; };
+		92F6235F2C88D81A00E2579B /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92A533DA21EEFDE20089FBB9 /* CFNetwork.framework */; };
+		92F623602C88D81A00E2579B /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 92D96573215B03E100EFE3AE /* libc++.tbd */; };
+		92F623612C88D81A00E2579B /* Intents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFF9F824246EE2F800DDA88C /* Intents.framework */; };
+		92F623622C88D81A00E2579B /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B370F8AF1C8549010069377D /* GameController.framework */; };
+		92F623632C88D81A00E2579B /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE8F1C5F1735199400D3F527 /* CoreBluetooth.framework */; };
+		92F623642C88D81A00E2579B /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE680D1163BE5C400051BC2 /* CoreFoundation.framework */; };
+		92F623652C88D81A00E2579B /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE680C9163B13AB00051BC2 /* AudioToolbox.framework */; };
+		92F623662C88D81A00E2579B /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE680A61635BAA400051BC2 /* QuartzCore.framework */; };
+		92F623672C88D81A00E2579B /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA98FB424A4F810007B6689 /* WebKit.framework */; };
+		92F623682C88D81A00E2579B /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EFA757092405BA0200A02AAB /* AVFoundation.framework */; };
+		92F623692C88D81A00E2579B /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE680891635BA7000051BC2 /* UIKit.framework */; };
+		92F6236A2C88D81A00E2579B /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE6808B1635BA7000051BC2 /* Foundation.framework */; };
+		92F6236B2C88D81A00E2579B /* MetalPerformanceShaders.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF950BAC24B1239F00DC9A47 /* MetalPerformanceShaders.framework */; };
+		92F6236C2C88D81A00E2579B /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE6808D1635BA7000051BC2 /* CoreGraphics.framework */; };
+		92F6236D2C88D81A00E2579B /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EF286D58253CF171007DA6D3 /* CloudKit.framework */; };
+		92F6236E2C88D81A00E2579B /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE9454C7172BB23100B81C32 /* GameKit.framework */; };
+		92F623702C88D81A00E2579B /* ui.bdf in Resources */ = {isa = PBXBuildFile; fileRef = EF72F8E827FA24AD00157065 /* ui.bdf */; };
+		92F623712C88D81A00E2579B /* hiscore.dat in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93EB24C252C500749C69 /* hiscore.dat */; };
+		92F623722C88D81A00E2579B /* mame_logo.png in Resources */ = {isa = PBXBuildFile; fileRef = EF26AE07241848800078FD30 /* mame_logo.png */; };
+		92F623732C88D81A00E2579B /* hash.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF7D116427348BDD00E61BB9 /* hash.zip */; };
+		92F623742C88D81A00E2579B /* skins in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E624C252C500749C69 /* skins */; };
+		92F623752C88D81A00E2579B /* cheat.7z in Resources */ = {isa = PBXBuildFile; fileRef = EF490D94277A5E0E00407865 /* cheat.7z */; };
+		92F623762C88D81A00E2579B /* cheat.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF490D95277A5E0E00407865 /* cheat.zip */; };
+		92F623772C88D81A00E2579B /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E424C252C400749C69 /* LICENSE */; };
+		92F623782C88D81A00E2579B /* LaunchArcadeMania.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 92F623172C88D3F500E2579B /* LaunchArcadeMania.storyboard */; };
+		92F623792C88D81A00E2579B /* plugins.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF08EB31277A937900E4D455 /* plugins.zip */; };
+		92F6237A2C88D81A00E2579B /* default_game_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA7570424057FD800A02AAB /* default_game_icon.png */; };
+		92F6237B2C88D81A00E2579B /* shaders in Resources */ = {isa = PBXBuildFile; fileRef = EF7D4AA927B990AA002528B7 /* shaders */; };
+		92F6237C2C88D81A00E2579B /* Category.ini in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E824C252C500749C69 /* Category.ini */; };
+		92F6237D2C88D81A00E2579B /* gitinfo.json.sh in Resources */ = {isa = PBXBuildFile; fileRef = EF1C941B24C2552800749C69 /* gitinfo.json.sh */; };
+		92F6237E2C88D81A00E2579B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EFA7A16A24B7A38E0009CF88 /* Assets.xcassets */; };
+		92F6237F2C88D81A00E2579B /* dpad.png in Resources */ = {isa = PBXBuildFile; fileRef = 920BBDED201FC29700AE7D50 /* dpad.png */; };
+		92F623802C88D81A00E2579B /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EF29C8802401C73900AFFA4E /* Launch Screen.storyboard */; };
+		92F623812C88D81A00E2579B /* WHATSNEW.md in Resources */ = {isa = PBXBuildFile; fileRef = EFFBA6FD24F1C91200F8666B /* WHATSNEW.md */; };
+		92F623822C88D81A00E2579B /* software in Resources */ = {isa = PBXBuildFile; fileRef = EF7D4AAC27B990BF002528B7 /* software */; };
+		92F623832C88D81A00E2579B /* menu.png in Resources */ = {isa = PBXBuildFile; fileRef = 920BBDF020210C3700AE7D50 /* menu.png */; };
+		92F623842C88D81A00E2579B /* GCDWebUploader.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 92A533CC21EBDDF20089FBB9 /* GCDWebUploader.bundle */; };
+		92F623852C88D81A00E2579B /* mameui.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA756FE2405585D00A02AAB /* mameui.png */; };
+		92F623862C88D81A00E2579B /* history.dat.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF490D90277A5C8C00407865 /* history.dat.zip */; };
+		92F623872C88D81A00E2579B /* SKIN_1 in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E124C252C400749C69 /* SKIN_1 */; };
+		92F623882C88D81A00E2579B /* iCadeControls.png in Resources */ = {isa = PBXBuildFile; fileRef = EFA757212408488D00A02AAB /* iCadeControls.png */; };
+		92F623892C88D81A00E2579B /* help.md in Resources */ = {isa = PBXBuildFile; fileRef = EF1C93E324C252C400749C69 /* help.md */; };
 		B5FAE31921FCE64D003F44D0 /* MAME_tvOS.lsr in Resources */ = {isa = PBXBuildFile; fileRef = B5FAE31821FCE64D003F44D0 /* MAME_tvOS.lsr */; };
 		E9856CF023C9A7C50071666D /* MultipeerConnectivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E9856CEF23C9A7C50071666D /* MultipeerConnectivity.framework */; };
 		EF08EB32277A937900E4D455 /* plugins.zip in Resources */ = {isa = PBXBuildFile; fileRef = EF08EB31277A937900E4D455 /* plugins.zip */; };
@@ -208,6 +317,32 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
+		92F6238B2C88D81A00E2579B /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.json.sh";
+			fileType = pattern.proxy;
+			inputFiles = (
+			);
+			isEditable = 1;
+			outputFiles = (
+				"$(DERIVED_FILE_DIR)/$(INPUT_FILE_BASE)",
+			);
+			script = "/bin/sh \"$INPUT_FILE_PATH\" > \"$DERIVED_FILE_DIR/$INPUT_FILE_BASE\"\n";
+		};
+		92F6238C2C88D81A00E2579B /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.md";
+			fileType = pattern.proxy;
+			inputFiles = (
+			);
+			isEditable = 1;
+			outputFiles = (
+				"$(DERIVED_FILE_DIR)/$(INPUT_FILE_BASE).html",
+			);
+			script = "\"$PROJECT_DIR/../../Markdown_1.1.9/Markdown.pl\" --stub \"$INPUT_FILE_PATH\" > \"$DERIVED_FILE_DIR/$INPUT_FILE_BASE.html\"\n";
+		};
 		EF0E08AF2401853D00E98F01 /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
 			compilerSpec = com.apple.compilers.proxy.script;
@@ -260,6 +395,16 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		92F6238A2C88D81A00E2579B /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		EF55DE662534C304004E37EF /* Embed App Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -337,6 +482,7 @@
 		92A533E021EEFE570089FBB9 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.1.sdk/System/Library/Frameworks/MobileCoreServices.framework; sourceTree = DEVELOPER_DIR; };
 		92B99F0C2022706600CC44E3 /* UIView+Toast.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+Toast.h"; sourceTree = "<group>"; };
 		92B99F0D2022706600CC44E3 /* UIView+Toast.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+Toast.m"; sourceTree = "<group>"; };
+		92B9EB982D8DC79A00790AA8 /* arcademaniaspacemania.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = arcademaniaspacemania.zip; sourceTree = "<group>"; };
 		92D96573215B03E100EFE3AE /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 		92D96575215B041300EFE3AE /* crt1.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; name = crt1.o; path = usr/lib/crt1.o; sourceTree = SDKROOT; };
 		92D96577215B048900EFE3AE /* crt1.3.1.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; name = crt1.3.1.o; path = usr/lib/crt1.3.1.o; sourceTree = SDKROOT; };
@@ -352,6 +498,9 @@
 		92ECB90B21EA999C00D1E3D0 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.1.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		92ECB90D21EA99A200D1E3D0 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.1.sdk/System/Library/Frameworks/CoreGraphics.framework; sourceTree = DEVELOPER_DIR; };
 		92ECB90F21EA99B600D1E3D0 /* GameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameKit.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.1.sdk/System/Library/Frameworks/GameKit.framework; sourceTree = DEVELOPER_DIR; };
+		92F623172C88D3F500E2579B /* LaunchArcadeMania.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchArcadeMania.storyboard; sourceTree = "<group>"; };
+		92F623902C88D81A00E2579B /* ArcadeMania.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ArcadeMania.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		92F623912C88D81A00E2579B /* ArcadeMania.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = ArcadeMania.plist; path = /Users/yoshi/Code/personal/MAME4iOS/xcode/MAME4iOS/ArcadeMania.plist; sourceTree = "<absolute>"; };
 		B370F8AF1C8549010069377D /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = System/Library/Frameworks/GameController.framework; sourceTree = SDKROOT; };
 		B5FAE31821FCE64D003F44D0 /* MAME_tvOS.lsr */ = {isa = PBXFileReference; lastKnownFileType = file; path = MAME_tvOS.lsr; sourceTree = "<group>"; };
 		CE6D6E1216D8CADF00F265B7 /* LayoutView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LayoutView.h; path = ../../iOS/LayoutView.h; sourceTree = "<group>"; };
@@ -555,6 +704,36 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		92F623572C88D81A00E2579B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				92F623582C88D81A00E2579B /* Accelerate.framework in Frameworks */,
+				92F623592C88D81A00E2579B /* libmame-ios.a in Frameworks */,
+				92F6235A2C88D81A00E2579B /* MultipeerConnectivity.framework in Frameworks */,
+				92F6235B2C88D81A00E2579B /* libcompression.tbd in Frameworks */,
+				92F6235C2C88D81A00E2579B /* Metal.framework in Frameworks */,
+				92F6235D2C88D81A00E2579B /* CoreServices.framework in Frameworks */,
+				92F6235E2C88D81A00E2579B /* IntentsUI.framework in Frameworks */,
+				92F6235F2C88D81A00E2579B /* CFNetwork.framework in Frameworks */,
+				92F623602C88D81A00E2579B /* libc++.tbd in Frameworks */,
+				92F623612C88D81A00E2579B /* Intents.framework in Frameworks */,
+				92F623622C88D81A00E2579B /* GameController.framework in Frameworks */,
+				92F623632C88D81A00E2579B /* CoreBluetooth.framework in Frameworks */,
+				92F623642C88D81A00E2579B /* CoreFoundation.framework in Frameworks */,
+				92F623652C88D81A00E2579B /* AudioToolbox.framework in Frameworks */,
+				92F623662C88D81A00E2579B /* QuartzCore.framework in Frameworks */,
+				92F623672C88D81A00E2579B /* WebKit.framework in Frameworks */,
+				92F623682C88D81A00E2579B /* AVFoundation.framework in Frameworks */,
+				92F623692C88D81A00E2579B /* UIKit.framework in Frameworks */,
+				92F6236A2C88D81A00E2579B /* Foundation.framework in Frameworks */,
+				92F6236B2C88D81A00E2579B /* MetalPerformanceShaders.framework in Frameworks */,
+				92F6236C2C88D81A00E2579B /* CoreGraphics.framework in Frameworks */,
+				92F6236D2C88D81A00E2579B /* CloudKit.framework in Frameworks */,
+				92F6236E2C88D81A00E2579B /* GameKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		EFEEA4AE25C9D41E00314132 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -723,6 +902,7 @@
 			isa = PBXGroup;
 			children = (
 				EF55DE312533C21E004E37EF /* MAME4iOS.xcconfig */,
+				92F623172C88D3F500E2579B /* LaunchArcadeMania.storyboard */,
 				EF47838528D38F0A00DA4A56 /* Developer.xcconfig */,
 				EF9F9C9E240070E700352554 /* README.md */,
 				EFFBA6FD24F1C91200F8666B /* WHATSNEW.md */,
@@ -739,6 +919,8 @@
 				CEE680C51635BB8500051BC2 /* Includes */,
 				CEE680881635BA7000051BC2 /* Frameworks */,
 				CEE680861635BA7000051BC2 /* Products */,
+				92F623912C88D81A00E2579B /* ArcadeMania.plist */,
+				92B9EB982D8DC79A00790AA8 /* arcademaniaspacemania.zip */,
 			);
 			sourceTree = "<group>";
 		};
@@ -748,6 +930,7 @@
 				925ABCE21E46DCC500997182 /* MAME4iOS.app */,
 				92ECB8EB21EA984D00D1E3D0 /* MAME4tvOS.app */,
 				EFEEA4B125C9D41E00314132 /* TopShelf.appex */,
+				92F623902C88D81A00E2579B /* ArcadeMania.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1001,6 +1184,27 @@
 			productReference = 92ECB8EB21EA984D00D1E3D0 /* MAME4tvOS.app */;
 			productType = "com.apple.product-type.application";
 		};
+		92F623192C88D81A00E2579B /* ArcadeMania */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 92F6238D2C88D81A00E2579B /* Build configuration list for PBXNativeTarget "ArcadeMania" */;
+			buildPhases = (
+				92F6231A2C88D81A00E2579B /* ShellScript */,
+				92F6231B2C88D81A00E2579B /* Sources */,
+				92F623572C88D81A00E2579B /* Frameworks */,
+				92F6236F2C88D81A00E2579B /* Resources */,
+				92F6238A2C88D81A00E2579B /* Embed App Extensions */,
+			);
+			buildRules = (
+				92F6238B2C88D81A00E2579B /* PBXBuildRule */,
+				92F6238C2C88D81A00E2579B /* PBXBuildRule */,
+			);
+			dependencies = (
+			);
+			name = ArcadeMania;
+			productName = MAME4iOS;
+			productReference = 92F623902C88D81A00E2579B /* ArcadeMania.app */;
+			productType = "com.apple.product-type.application";
+		};
 		EFEEA4B025C9D41E00314132 /* TopShelf */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = EFEEA4BD25C9D41E00314132 /* Build configuration list for PBXNativeTarget "TopShelf" */;
@@ -1062,6 +1266,7 @@
 				925ABCA41E46DCC500997182 /* MAME4iOS */,
 				92ECB8EA21EA984D00D1E3D0 /* MAME4tvOS */,
 				EFEEA4B025C9D41E00314132 /* TopShelf */,
+				92F623192C88D81A00E2579B /* ArcadeMania */,
 			);
 		};
 /* End PBXProject section */
@@ -1127,6 +1332,40 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		92F6236F2C88D81A00E2579B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				92F623702C88D81A00E2579B /* ui.bdf in Resources */,
+				92F623712C88D81A00E2579B /* hiscore.dat in Resources */,
+				92F623722C88D81A00E2579B /* mame_logo.png in Resources */,
+				92F623732C88D81A00E2579B /* hash.zip in Resources */,
+				92F623742C88D81A00E2579B /* skins in Resources */,
+				92F623752C88D81A00E2579B /* cheat.7z in Resources */,
+				92F623762C88D81A00E2579B /* cheat.zip in Resources */,
+				92F623772C88D81A00E2579B /* LICENSE in Resources */,
+				92B9EB992D8DC79A00790AA8 /* arcademaniaspacemania.zip in Resources */,
+				92F623782C88D81A00E2579B /* LaunchArcadeMania.storyboard in Resources */,
+				92F623792C88D81A00E2579B /* plugins.zip in Resources */,
+				92F6237A2C88D81A00E2579B /* default_game_icon.png in Resources */,
+				92F6237B2C88D81A00E2579B /* shaders in Resources */,
+				92F6237C2C88D81A00E2579B /* Category.ini in Resources */,
+				92F6237D2C88D81A00E2579B /* gitinfo.json.sh in Resources */,
+				92F6237E2C88D81A00E2579B /* Assets.xcassets in Resources */,
+				92F6237F2C88D81A00E2579B /* dpad.png in Resources */,
+				92F623802C88D81A00E2579B /* Launch Screen.storyboard in Resources */,
+				92F623812C88D81A00E2579B /* WHATSNEW.md in Resources */,
+				92F623822C88D81A00E2579B /* software in Resources */,
+				92F623832C88D81A00E2579B /* menu.png in Resources */,
+				92F623842C88D81A00E2579B /* GCDWebUploader.bundle in Resources */,
+				92F623852C88D81A00E2579B /* mameui.png in Resources */,
+				92F623862C88D81A00E2579B /* history.dat.zip in Resources */,
+				92F623872C88D81A00E2579B /* SKIN_1 in Resources */,
+				92F623882C88D81A00E2579B /* iCadeControls.png in Resources */,
+				92F623892C88D81A00E2579B /* help.md in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		EFEEA4AF25C9D41E00314132 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1137,6 +1376,25 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		92F6231A2C88D81A00E2579B /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 12;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# force this resource to update each build\ntouch gitinfo.json.sh\n\n# build (or download) the MAME lib\ncd ../../\nif [ \"$MAMELIB\" == \"libmame\" ] && [ \"$PLATFORM_NAME\" == \"iphonesimulator\" ]; then\n    ./get-libmame.sh ios-simulator\nelif [ \"$MAMELIB\" == \"libmame\" ] && [ \"$PLATFORM_NAME\" == \"macosx\" ]; then\n    ./get-libmame.sh mac\nelif [ \"$MAMELIB\" == \"libmame\" ]; then\n    ./get-libmame.sh\nelif [ \"$PLATFORM_NAME\" == \"macosx\" ]; then\n    ./make-mac.sh\nelif [ \"$PLATFORM_NAME\" == \"iphonesimulator\" ]; then\n    ./make-ios.sh simulator\nelse\n    ./make-ios.sh\nfi\n";
+			showEnvVarsInLog = 0;
+		};
 		EF79BDD924B7D71800824BFD /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -1300,6 +1558,72 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		92F6231B2C88D81A00E2579B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				92F6231C2C88D81A00E2579B /* CloudSync.m in Sources */,
+				92F6231D2C88D81A00E2579B /* GCDWebServerConnection.m in Sources */,
+				92F6231E2C88D81A00E2579B /* MetalViewShaders.metal in Sources */,
+				92F6231F2C88D81A00E2579B /* KeyboardView.m in Sources */,
+				92F623202C88D81A00E2579B /* GCDWebServerFileResponse.m in Sources */,
+				92F623212C88D81A00E2579B /* OptionsTableViewController.m in Sources */,
+				92F623222C88D81A00E2579B /* GCDWebUploader.m in Sources */,
+				92F623232C88D81A00E2579B /* EmulatorController+TouchMouse.swift in Sources */,
+				92F623242C88D81A00E2579B /* TVAlertController.swift in Sources */,
+				92F623252C88D81A00E2579B /* GCDWebServerFileRequest.m in Sources */,
+				92F623262C88D81A00E2579B /* GameInfoController.swift in Sources */,
+				92F623272C88D81A00E2579B /* ListOptionController.m in Sources */,
+				92F623282C88D81A00E2579B /* GCDWebServerDataRequest.m in Sources */,
+				92F623292C88D81A00E2579B /* ulTron.metal in Sources */,
+				92F6232A2C88D81A00E2579B /* lineTron.metal in Sources */,
+				92F6232B2C88D81A00E2579B /* GCDWebServerRequest.m in Sources */,
+				92F6232C2C88D81A00E2579B /* EmulatorController+EmulatorKeyboardSupport.swift in Sources */,
+				92F6232D2C88D81A00E2579B /* MameShaders.metal in Sources */,
+				92F6232E2C88D81A00E2579B /* OptionsController.m in Sources */,
+				92F6232F2C88D81A00E2579B /* XmlFile.m in Sources */,
+				92F623302C88D81A00E2579B /* GCDWebServerURLEncodedFormRequest.m in Sources */,
+				92F623312C88D81A00E2579B /* WebServer.m in Sources */,
+				92F623322C88D81A00E2579B /* simpleCRT.metal in Sources */,
+				92F623332C88D81A00E2579B /* ControllerButtonPress.swift in Sources */,
+				92F623342C88D81A00E2579B /* EmulatorKeyboard.swift in Sources */,
+				92F623352C88D81A00E2579B /* GCDWebServerDataResponse.m in Sources */,
+				92F623362C88D81A00E2579B /* ImageCache.m in Sources */,
+				92F623372C88D81A00E2579B /* UIView+Toast.m in Sources */,
+				92F623382C88D81A00E2579B /* GameInfoCell.swift in Sources */,
+				92F623392C88D81A00E2579B /* EmulatorTouchMouse.swift in Sources */,
+				92F6233A2C88D81A00E2579B /* EmulatorController.m in Sources */,
+				92F6233B2C88D81A00E2579B /* GameInfo.m in Sources */,
+				92F6233C2C88D81A00E2579B /* HelpController.m in Sources */,
+				92F6233D2C88D81A00E2579B /* AnalogStick.m in Sources */,
+				92F6233E2C88D81A00E2579B /* Bootstrapper.m in Sources */,
+				92F6233F2C88D81A00E2579B /* SoftwareList.m in Sources */,
+				92F623402C88D81A00E2579B /* GCDWebServerFunctions.m in Sources */,
+				92F623412C88D81A00E2579B /* GCDWebServerStreamedResponse.m in Sources */,
+				92F623422C88D81A00E2579B /* MetalView.m in Sources */,
+				92F623432C88D81A00E2579B /* LayoutView.m in Sources */,
+				92F623442C88D81A00E2579B /* MacMenu.m in Sources */,
+				92F623452C88D81A00E2579B /* GCDWebServerResponse.m in Sources */,
+				92F623462C88D81A00E2579B /* InfoDatabase.m in Sources */,
+				92F623472C88D81A00E2579B /* InputOptionController.m in Sources */,
+				92F623482C88D81A00E2579B /* GCDWebServerMultiPartFormRequest.m in Sources */,
+				92F623492C88D81A00E2579B /* FileItemProvider.m in Sources */,
+				92F6234A2C88D81A00E2579B /* UICollectionView+ZeroState.swift in Sources */,
+				92F6234B2C88D81A00E2579B /* (null) in Sources */,
+				92F6234C2C88D81A00E2579B /* megaTron.metal in Sources */,
+				92F6234D2C88D81A00E2579B /* GCDWebServerErrorResponse.m in Sources */,
+				92F6234E2C88D81A00E2579B /* CommandLineArgsHelper.swift in Sources */,
+				92F6234F2C88D81A00E2579B /* PopupSegmentedControl.m in Sources */,
+				92F623502C88D81A00E2579B /* MetalScreenView.m in Sources */,
+				92F623512C88D81A00E2579B /* ChooseGameController.m in Sources */,
+				92F623522C88D81A00E2579B /* SkinManager.m in Sources */,
+				92F623532C88D81A00E2579B /* GCDWebServer.m in Sources */,
+				92F623542C88D81A00E2579B /* GameInfo.swift in Sources */,
+				92F623552C88D81A00E2579B /* Options.m in Sources */,
+				92F623562C88D81A00E2579B /* ZipFile.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		EFEEA4AD25C9D41E00314132 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1386,6 +1710,7 @@
 					"$(PROJECT_DIR)",
 				);
 				OTHER_LDFLAGS = "";
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.mame4ios;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1530,6 +1855,86 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				VALID_ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+			};
+			name = Release;
+		};
+		92F6238E2C88D81A00E2579B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIconAM;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_ENTITLEMENTS = "MAME4iOS/MAME4iOS$(ENTITLEMENTS_TYPE).entitlements";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				ENABLE_BITCODE = NO;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "MAME4iOS/MAME4iOS-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				HEADER_SEARCH_PATHS = "";
+				INFOPLIST_FILE = ArcadeMania.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../..",
+					"$(PROJECT_DIR)/MAME4iOS",
+					"$(PROJECT_DIR)",
+				);
+				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTS_MACCATALYST = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_NAME)-Bridging-Header.h";
+				SWIFT_OBJC_INTERFACE_HEADER_NAME = "$(PROJECT_NAME)-Swift.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				VALID_ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		92F6238F2C88D81A00E2579B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIconAM;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_ENTITLEMENTS = "MAME4iOS/MAME4iOS$(ENTITLEMENTS_TYPE).entitlements";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				ENABLE_BITCODE = NO;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "MAME4iOS/MAME4iOS-Prefix.pch";
+				HEADER_SEARCH_PATHS = "";
+				INFOPLIST_FILE = ArcadeMania.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../..",
+					"$(PROJECT_DIR)/MAME4iOS",
+					"$(PROJECT_DIR)",
+				);
+				OTHER_LDFLAGS = "";
+				PRODUCT_BUNDLE_IDENTIFIER = com.yoshisuga.mame;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTS_MACCATALYST = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_NAME)-Bridging-Header.h";
+				SWIFT_OBJC_INTERFACE_HEADER_NAME = "$(PROJECT_NAME)-Swift.h";
+				SWIFT_VERSION = 5.0;
+				VALID_ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
 		};
@@ -1732,6 +2137,15 @@
 			buildConfigurations = (
 				92ECB8FB21EA985000D1E3D0 /* Debug */,
 				92ECB8FC21EA985000D1E3D0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		92F6238D2C88D81A00E2579B /* Build configuration list for PBXNativeTarget "ArcadeMania" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				92F6238E2C88D81A00E2579B /* Debug */,
+				92F6238F2C88D81A00E2579B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

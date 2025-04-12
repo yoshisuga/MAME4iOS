@@ -1,3 +1,7 @@
+# Version 2024.1
+
+* Updated to [MAME 269](https://www.mamedev.org/releases/whatsnew_0269.txt)
+
 # Version 2022.5
 * Updated to [MAME 250](https://www.mamedev.org/releases/whatsnew_0250.txt).
 * tvOS UX: use a Alert instead of a inline Segmented Control.

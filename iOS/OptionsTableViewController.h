@@ -51,6 +51,7 @@
 
 - (instancetype)initWithEmuController:(EmulatorController*)emulatorController;
 
+- (NSString*) applicationVersionInfoRelease;
 - (NSString*)applicationVersionInfo;
 
 // create a switch that will toggle the option identified by `key`

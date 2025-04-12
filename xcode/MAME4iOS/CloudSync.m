@@ -71,7 +71,7 @@ static CKDatabase*     _database;
 }
 
 +(void)updateCloudStatus {
-    
+#if !TARGET_APPSTORE
     if (_container == nil) {
         if ([self isEntitled]) {
             @try {
@@ -141,6 +141,7 @@ static CKDatabase*     _database;
             }];
         }
     }];
+#endif
 }
 
 // Create a initial CKRecord so just-in-time-schema kicks in.

@@ -4,6 +4,11 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
+		<key>ArcadeMania.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>9</integer>
+		</dict>
 		<key>Gridlee.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
@@ -67,7 +72,7 @@
 		<key>TopShelf.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>9</integer>
+			<integer>10</integer>
 		</dict>
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
@@ -78,6 +83,11 @@
 			<true/>
 		</dict>
 		<key>92ECB8EA21EA984D00D1E3D0</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>92F623192C88D81A00E2579B</key>
 		<dict>
 			<key>primary</key>
 			<true/>

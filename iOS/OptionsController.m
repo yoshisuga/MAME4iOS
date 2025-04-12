@@ -62,12 +62,21 @@
     
     UILabel* pad = [[UILabel alloc] init];
     pad.text = @" ";
-    
-    UIImageView* logo = [[UIImageView alloc] initWithImage:[[UIImage imageNamed:@"mame_logo"] scaledToSize:CGSizeMake(300, 0)]];
+
+#if TARGET_APPSTORE
+    UIImageView* logo = [[UIImageView alloc] initWithImage:[[UIImage imageNamed:@"AppLogo"] scaledToSize:CGSizeMake(300, 0)]];
+#else
+  UIImageView* logo = [[UIImageView alloc] initWithImage:[[UIImage imageNamed:@"mame_logo"] scaledToSize:CGSizeMake(300, 0)]];
+#endif
+  
     logo.contentMode = UIViewContentModeScaleAspectFit;
     
     UILabel* info = [[UILabel alloc] init];
-    info.text = [self.applicationVersionInfo stringByAppendingString:@"\n"];
+#if TARGET_APPSTORE
+    info.text = [self.applicationVersionInfoRelease stringByAppendingString:@"\n"];
+#else
+  info.text = [self.applicationVersionInfo stringByAppendingString:@"\n"];
+#endif
     info.textAlignment = NSTextAlignmentCenter;
     info.numberOfLines = 0;
     
@@ -451,7 +460,7 @@
    
       switch (section)
       {
-          case kSupportSection: return 2;
+          case kSupportSection: return 0;
           case kFullscreenSection: return 3;
           case kOtherSection: return 1;
           case kVideoSection: return 7;
