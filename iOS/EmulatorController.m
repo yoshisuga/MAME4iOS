@@ -77,7 +77,11 @@
 #import "Alert.h"
 #import "ZipFile.h"
 #import "SkinManager.h"
-//#import "CloudSync.h"
+
+#if !TARGET_APPSTORE
+#import "CloudSync.h"
+#endif
+
 #import "SoftwareList.h"
 
 #import "Timer.h"
@@ -1510,12 +1514,16 @@ UIViewController* g_menu;
         [self runImport];
     }]];
 #endif
-//    if (CloudSync.status == CloudSyncStatusAvailable)
-//    {
-//        [alert addAction:[UIAlertAction actionWithTitle:@"Import from iCloud" symbol:@"icloud.and.arrow.down" style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
-//            [CloudSync import];
-//        }]];
-//    }
+
+#if !TARGET_APPSTORE
+    if (CloudSync.status == CloudSyncStatusAvailable)
+    {
+        [alert addAction:[UIAlertAction actionWithTitle:@"Import from iCloud" symbol:@"icloud.and.arrow.down" style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
+            [CloudSync import];
+        }]];
+    }
+#endif
+  
 #if TARGET_OS_IOS
     [alert addAction:[UIAlertAction actionWithTitle:@"Show Files" symbol:@"folder" style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
         [self runShowFiles];

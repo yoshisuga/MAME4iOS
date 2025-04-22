@@ -1,15 +1,15 @@
 # $(TARGET)
 ### Version $(APP_VERSION) ($(APP_DATE)) 
 
-<!-- <img src="mame_logo.png" width="60%"> -->
+<img src="mame_logo.png" width="60%">
 
 ## INTRODUCTION
 
-ArcadeMania uses MAME for its core to let you play arcade games from the past 30+ years on your iOS device.
+MAME stands for Multi Arcade Machine Emulator, and lets you play arcade games from the past 30+ years on your iOS device.
 
-MAME stands for Multi Arcade Machine Emulator. More than 8000 games are supported, and the currently supported romsets are 0.250 (December 2022).
+More than 8000 games are supported, and the currently supported romsets are 0.250 (December 2022).
 
-The original version of ArcadeMania was called MAME4iOS, and was originally developed by David Valdeita (Seleuco). ArcadeMania is currently maintained and enhanced by dedicated enthusiasts (Yoshi Sugawara and Todd Laney).
+MAME for iOS was originally developed by David Valdeita (Seleuco), and is currently maintained and enhanced by dedicated enthusiasts (Yoshi Sugawara and Todd Laney).
 
 Since the original version, a large number of features have been added, including:
 
@@ -33,7 +33,7 @@ The emulator controls are the following ones:
 
 **Buttons B,X,A,Y,L,R** Buttons A,B,C,D,E,F.
 
-**Buttons START+COIN** (pressed simultaneously) Access to the ArcadeMania menu.
+**Buttons START+COIN** (pressed simultaneously) Access to the MAME menu.
 
 **Button COIN** Insert credits (UP+COIN = 2P credits, RIGHT+COIN = 3P credits, DOWN+COIN = 4P credits).
 
@@ -43,7 +43,7 @@ The emulator controls are the following ones:
 
 **Button MENU** Open $(TARGET) menu, global settings.
 
-**NOTE** To type OK when ArcadeMania requires it, press LEFT and then RIGHT.
+**NOTE** To type OK when MAME requires it, press LEFT and then RIGHT.
 
 ## GLOBAL OPTIONS
 
@@ -115,7 +115,7 @@ The emulator controls are the following ones:
 
 **Show FPS** Shows ON/OFF fps.
 
-**Force Pixel Aspect** Enable it to force pixel aspect ratio bypassing ArcadeMania video selection.
+**Force Pixel Aspect** Enable it to force pixel aspect ratio bypassing MAME video selection.
 
 **Show Info/Warnings** Shows Game Info and any warnings when a game is selected.
 
@@ -168,10 +168,10 @@ below is a list of a small subset of the keys supported by $(TARGET), for a full
      2               | Player 2 START
      5               | Player 1 COIN
      6               | Player 2 COIN
-     TAB             | ArcadeMania UI MENU
-     ESC or ⌘+.      | ArcadeMania UI EXIT
-     ⌘+DELETE        | ArcadeMania toggle UI MODE (aka SCRLOCK)
-     RETURN          | ArcadeMania UI SELECT (aka 🅐)
+     TAB             | MAME UI MENU
+     ESC or ⌘+.      | MAME UI EXIT
+     ⌘+DELETE        | MAME toggle UI MODE (aka SCRLOCK)
+     RETURN          | MAME UI SELECT (aka 🅐)
 
 These keys are specific to `$(TARGET)`
 
@@ -275,9 +275,9 @@ MENU+R1     |Player Start
 MENU+L2     |Player 2 Coin                
 MENU+R2     |Player 2 Start               
 MENU+A       |Speed 2x            
-MENU+B       |Pause ArcadeMania   
+MENU+B       |Pause MAME   
 MENU+X       |Exit Game                 
-MENU+Y       |Open ArcadeMania Configure menu   
+MENU+Y       |Open MAME Configure menu   
 MENU+DOWN  |Save State ①               
 MENU+UP        |Load State ①                
 MENU+LEFT     |Save State ②                
@@ -358,7 +358,7 @@ Use the Files app to manually add ROM files to the `roms` folder in the $(TARGET
 -|-
 `artwork/` | Artwork directory
 `titles/` | Title images directory
-`cfg/` | ArcadeMania configuration files directory
+`cfg/` | MAME configuration files directory
 `hiscore/` | Hiscores directory
 `nvram/` | NVRAM files directory
 `roms/ `| ROMs directory
