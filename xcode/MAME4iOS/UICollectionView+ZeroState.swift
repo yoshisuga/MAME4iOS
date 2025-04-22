@@ -16,13 +16,21 @@ extension UICollectionView {
     let backgroundView = UIView()
     let titleLabel = UILabel()
     titleLabel.translatesAutoresizingMaskIntoConstraints = false
+    #if TARGET_APPSTORE
     titleLabel.text = "Welcome to ArcadeMania!"
+    #else
+    titleLabel.text = "Welcome to ArcadeMania!"
+    #endif
     titleLabel.font = UIFont.boldSystemFont(ofSize: 24)
     backgroundView.addSubview(titleLabel)
     let messageLabel = UILabel()
     messageLabel.translatesAutoresizingMaskIntoConstraints = false
     messageLabel.font = UIFont.systemFont(ofSize: 18)
+    #if TARGET_APPSTORE
     messageLabel.text = "ROMs are needed to use ArcadeMania.\nUse the ➕ button to import ROMs from Files.\n\nYou can start by downloading ROMs available for free at mamedev.org."
+    #else
+    messageLabel.text = "ROMs are needed to use MAME.\nUse the ➕ button to import ROMs from Files.\n\nYou can start by downloading ROMs available for free at mamedev.org."
+    #endif
     messageLabel.numberOfLines = 0
     backgroundView.addSubview(messageLabel)
     messageLabel.centerXAnchor.constraint(equalTo: backgroundView.centerXAnchor).isActive = true

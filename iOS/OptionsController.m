@@ -460,7 +460,12 @@
    
       switch (section)
       {
+#if TARGET_APPSTORE
+          // Don't show the support section for App Store version for now because of all the references to MAME
           case kSupportSection: return 0;
+#else
+          case kSupportSection: return 2;
+#endif
           case kFullscreenSection: return 3;
           case kOtherSection: return 1;
           case kVideoSection: return 7;
