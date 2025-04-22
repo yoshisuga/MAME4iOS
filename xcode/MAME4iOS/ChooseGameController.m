@@ -189,7 +189,11 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 {
 #if USE_TITLE_IMAGE
     CGFloat height = TARGET_OS_IOS ? 42.0 : (44.0 * 2.0);
+#if TARGET_APPSTORE
+    UIImage* image = [[UIImage imageNamed:@"AppLogo"] scaledToSize:CGSizeMake(0.0, height)];
+#else
     UIImage* image = [[UIImage imageNamed:@"mame_logo"] scaledToSize:CGSizeMake(0.0, height)];
+#endif
     UIImageView* title = [[UIImageView alloc] initWithImage:image];
 #else
     UILabel* title = [[UILabel alloc] init];
@@ -698,6 +702,13 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
         
         if ([section length] != 0 && key == (void*)kGameInfoSystem)
             section = [self getSystemDescription:section];
+      
+#if TARGET_APPSTORE
+        // Make a special section for the test ROM
+      if ([game.gameName isEqualToString:@"roms/arcademaniaspacemania.zip"]) {
+        section = @"ArcadeMania Test ROMs";
+      }
+#endif
 
         if ([section length] == 0 && key == (void*)kGameInfoSystem)
             section = game.gameType;
@@ -1401,7 +1412,11 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 // make a default icon if we cant find one
 +(UIImage*)makeIcon:(GameInfo*)game
 {
+#if TARGET_APPSTORE
+    UIImage* image = [UIImage imageNamed:@"gameIconDefault"];
+#else
     UIImage* image = [UIImage imageNamed:@"default_game_icon"];
+#endif
 
     if (game.gameFile.pathExtension.length == 0)
         return image;

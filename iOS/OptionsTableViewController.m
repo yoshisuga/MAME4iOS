@@ -68,6 +68,17 @@
     return self;
 }
 
+-(NSString *)applicationVersionInfoRelease {
+  NSString *version = @"";
+  const char * myosd_version = (const char *)myosd_get(MYOSD_VERSION_STRING) ?: "";
+  // get the mame version from MYOSD, and remove any date in ()s
+  NSString* mame_version = [@(myosd_version) componentsSeparatedByString:@" ("].firstObject;
+  
+  if (mame_version.length != 0)
+      version = [NSString stringWithFormat:@"Core Version: %@", mame_version];
+  return version;
+}
+
 - (NSString*)applicationVersionInfo {
     
     NSString* bundle_ident = NSBundle.mainBundle.bundleIdentifier;

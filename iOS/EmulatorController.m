@@ -77,7 +77,11 @@
 #import "Alert.h"
 #import "ZipFile.h"
 #import "SkinManager.h"
+
+#if !TARGET_APPSTORE
 #import "CloudSync.h"
+#endif
+
 #import "SoftwareList.h"
 
 #import "Timer.h"
@@ -794,9 +798,46 @@ void m4i_game_list(myosd_game_info* game_info, int game_count)
             kGameInfoManufacturer:@"MAMEDev and contributors",
         }]];
 #endif
+      
+#if TARGET_APPSTORE
+      // Add custom game for app store review
+      GameInfo* spaceManiaGame = [[GameInfo alloc] initWithDictionary:@{
+          kGameInfoType:        kGameInfoTypeConsole,
+          kGameInfoName:        @"roms/arcademaniaspacemania.zip",
+          kGameInfoDescription: @"ArcadeMania Space Adventure",
+          kGameInfoYear:        @"2025",
+          kGameInfoParent:      @"",
+          kGameInfoManufacturer:@"Yoshi Sugawara",
+          kGameInfoCategory:    @"Shooter",
+          kGameInfoDriver:      @"nes",
+          kGameInfoSystem:      @"nes",
+          kGameInfoMediaType:   @"cart",
+          kGameInfoScreen:      kGameInfoScreenHorizontal
+      }];
+      
+      NSString* romPath = [NSString stringWithUTF8String:get_documents_path("roms/arcademaniaspacemania.zip")];
+      NSString* bundledRomPath = [[NSBundle mainBundle] pathForResource:@"arcademaniaspacemania" ofType:@"zip"];
 
-        // give the list to the main thread to display to user
-        [sharedInstance performSelectorOnMainThread:@selector(chooseGame:) withObject:games waitUntilDone:FALSE];
+      // Check if this is first app launch
+      static NSString* const kFirstLaunchKey = @"HasLaunchedBeforeKey";
+      BOOL hasLaunchedBefore = [[NSUserDefaults standardUserDefaults] boolForKey:kFirstLaunchKey];
+      
+      if (!hasLaunchedBefore && bundledRomPath != nil && ![NSFileManager.defaultManager fileExistsAtPath:romPath]) {
+          NSString* romDir = [romPath stringByDeletingLastPathComponent];
+          if (![NSFileManager.defaultManager fileExistsAtPath:romDir]) {
+              [NSFileManager.defaultManager createDirectoryAtPath:romDir withIntermediateDirectories:YES attributes:nil error:nil];
+          }
+          [NSFileManager.defaultManager copyItemAtPath:bundledRomPath toPath:romPath error:nil];
+          [[NSUserDefaults standardUserDefaults] setBool:YES forKey:kFirstLaunchKey];
+          [[NSUserDefaults standardUserDefaults] synchronize];
+      }
+      
+      // Add to top of list so it appears first
+      [games insertObject:spaceManiaGame atIndex:0];
+#endif
+
+      // give the list to the main thread to display to user
+      [sharedInstance performSelectorOnMainThread:@selector(chooseGame:) withObject:games waitUntilDone:FALSE];
     }
 }
 
@@ -1473,12 +1514,16 @@ UIViewController* g_menu;
         [self runImport];
     }]];
 #endif
+
+#if !TARGET_APPSTORE
     if (CloudSync.status == CloudSyncStatusAvailable)
     {
         [alert addAction:[UIAlertAction actionWithTitle:@"Import from iCloud" symbol:@"icloud.and.arrow.down" style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
             [CloudSync import];
         }]];
     }
+#endif
+  
 #if TARGET_OS_IOS
     [alert addAction:[UIAlertAction actionWithTitle:@"Show Files" symbol:@"folder" style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
         [self runShowFiles];
@@ -2052,7 +2097,11 @@ ButtonPressType input_debounce(unsigned long pad_status, CGPoint stick) {
     }
 
     // create a logo view to show when no-game is displayed. (place on external display, or in app.)
+#if TARGET_APPSTORE
+  imageLogo = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"AppLogo"]];
+#else
     imageLogo = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"mame_logo"]];
+#endif
     imageLogo.contentMode = UIViewContentModeScaleAspectFit;
     if (externalView != nil)
         imageLogo.frame = externalView.bounds;

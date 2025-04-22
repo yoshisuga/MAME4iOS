@@ -50,7 +50,10 @@
 #import "HelpController.h"
 #import "EmulatorController.h"
 #import "ImageCache.h"
+
+#if !TARGET_APPSTORE
 #import "CloudSync.h"
+#endif
 
 #import "Alert.h"
 
@@ -62,12 +65,21 @@
     
     UILabel* pad = [[UILabel alloc] init];
     pad.text = @" ";
-    
-    UIImageView* logo = [[UIImageView alloc] initWithImage:[[UIImage imageNamed:@"mame_logo"] scaledToSize:CGSizeMake(300, 0)]];
+
+#if TARGET_APPSTORE
+    UIImageView* logo = [[UIImageView alloc] initWithImage:[[UIImage imageNamed:@"AppLogo"] scaledToSize:CGSizeMake(300, 0)]];
+#else
+  UIImageView* logo = [[UIImageView alloc] initWithImage:[[UIImage imageNamed:@"mame_logo"] scaledToSize:CGSizeMake(300, 0)]];
+#endif
+  
     logo.contentMode = UIViewContentModeScaleAspectFit;
     
     UILabel* info = [[UILabel alloc] init];
-    info.text = [self.applicationVersionInfo stringByAppendingString:@"\n"];
+#if TARGET_APPSTORE
+    info.text = [self.applicationVersionInfoRelease stringByAppendingString:@"\n"];
+#else
+  info.text = [self.applicationVersionInfo stringByAppendingString:@"\n"];
+#endif
     info.textAlignment = NSTextAlignmentCenter;
     info.numberOfLines = 0;
     
@@ -343,6 +355,7 @@
            }
            break;
         }
+#if !TARGET_APPSTORE
         case kCloudImportSection:
         {
             switch (indexPath.row)
@@ -378,6 +391,7 @@
             }
             break;
         }
+#endif
         case kResetSection:
         {
             switch (indexPath.row)
@@ -439,7 +453,9 @@
         case kFilterSection: return @"Game Filter";
         case kOtherSection: return @""; // @"Other";
         case kImportSection: return @"Import and Export";
+#if !TARGET_APPSTORE
         case kCloudImportSection: return @"iCloud";
+#endif
         case kResetSection: return @"";
         case kBenchmarkSection: return @"";
     }
@@ -451,7 +467,12 @@
    
       switch (section)
       {
+#if TARGET_APPSTORE
+          // Don't show the support section for App Store version for now because of all the references to MAME
+          case kSupportSection: return 0;
+#else
           case kSupportSection: return 2;
+#endif
           case kFullscreenSection: return 3;
           case kOtherSection: return 1;
           case kVideoSection: return 7;
@@ -459,6 +480,7 @@
           case kMiscSection: return 8;
           case kFilterSection: return 3;
           case kImportSection: return 4;
+#if !TARGET_APPSTORE
           case kCloudImportSection:
               if (CloudSync.status == CloudSyncStatusAvailable)
                   return 4;
@@ -466,6 +488,7 @@
                   return 1;
               else
                   return 0;
+#endif
           case kResetSection: return 1;
           case kBenchmarkSection:
               return self.presentingViewController == self.emuController ? 1 : 0;
@@ -550,6 +573,7 @@
             }
             break;
         }
+#if !TARGET_APPSTORE
         case kCloudImportSection:
         {
             if (row==0) {
@@ -569,6 +593,7 @@
             }
             break;
         }
+#endif
         case kResetSection:
         {
             if (row==0) {
