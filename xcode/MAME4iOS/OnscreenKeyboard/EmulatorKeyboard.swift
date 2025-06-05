@@ -16,10 +16,10 @@
      // MARK: - Functions
      override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
          let newArea = CGRect(
-             x: self.bounds.origin.x - 5.0,
-             y: self.bounds.origin.y - 5.0,
-             width: self.bounds.size.width + 20.0,
-             height: self.bounds.size.height + 20.0
+             x: self.bounds.origin.x - 10.0,
+             y: self.bounds.origin.y - 10.0,
+             width: self.bounds.size.width + 30.0,
+             height: self.bounds.size.height + 30.0
          )
          return newArea.contains(point)
      }
@@ -77,11 +77,17 @@
      static var keyCornerRadius = 6.0
      static var keyBorderWidth = 1.0
      
-     static var rowSpacing = 12.0
-     static var keySpacing = 8.0
+     static var rowSpacing = 6.0
+     static var keySpacing = 10.0
 
-     static var keyNormalFont = UIFont.systemFont(ofSize: 12)
-     static var keyPressedFont = UIFont.boldSystemFont(ofSize: 24)
+     static var keyNormalFont = UIFont.systemFont(ofSize: 16)
+     static var keyPressedFont = UIFont.boldSystemFont(ofSize: 26)
+   
+     // Portrait mode sizes
+     static var portraitKeyNormalFont = UIFont.systemFont(ofSize: 14)
+     static var portraitKeyPressedFont = UIFont.boldSystemFont(ofSize: 22)
+     static var portraitRowSpacing = 4.0
+     static var portraitKeySpacing = 6.0
 
      static var keyNormalBackgroundColor = UIColor.systemGray4.withAlphaComponent(0.5)
      static var keyNormalBorderColor = keyNormalBackgroundColor
@@ -101,6 +107,14 @@
          }
      }
      var modifierButtons = Set<KeyboardButton>()
+   
+     var isPortraitMode: Bool = false {
+       didSet {
+         if oldValue != isPortraitMode {
+           updateLayoutForOrientation()
+         }
+       }
+     }
 
      weak var delegate: EmulatorKeyboardViewDelegate?
 
@@ -174,6 +188,72 @@
          dragMeView.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
      }
 
+   private func updateLayoutForOrientation() {
+     // Update stack view spacing
+     let spacing = isPortraitMode ? EmulatorKeyboardView.portraitRowSpacing : EmulatorKeyboardView.rowSpacing
+     keyRowsStackView.spacing = CGFloat(spacing)
+     alternateKeyRowsStackView.spacing = CGFloat(spacing)
+     
+     // Update key spacing in each row
+     let keySpacing = isPortraitMode ? EmulatorKeyboardView.portraitKeySpacing : EmulatorKeyboardView.keySpacing
+     for arrangedSubview in keyRowsStackView.arrangedSubviews {
+       if let stackView = arrangedSubview as? UIStackView {
+         stackView.spacing = CGFloat(keySpacing)
+       }
+     }
+     for arrangedSubview in alternateKeyRowsStackView.arrangedSubviews {
+       if let stackView = arrangedSubview as? UIStackView {
+         stackView.spacing = CGFloat(keySpacing)
+       }
+     }
+     
+     // Update layout margins
+     if isPortraitMode {
+       layoutMargins = UIEdgeInsets(top: 12, left: 2, bottom: 12, right: 2)
+     } else {
+       layoutMargins = UIEdgeInsets(top: 16, left: 4, bottom: 16, right: 4)
+     }
+     
+     // Update all key buttons
+     updateAllKeyButtons()
+     
+     // Force layout update
+     setNeedsLayout()
+     layoutIfNeeded()
+   }
+   
+   private func updateAllKeyButtons() {
+     let font = isPortraitMode ? EmulatorKeyboardView.portraitKeyNormalFont : EmulatorKeyboardView.keyNormalFont
+     
+     // Update buttons in main stack view
+     updateKeyButtonsInStackView(keyRowsStackView, font: font)
+     // Update buttons in alternate stack view
+     updateKeyButtonsInStackView(alternateKeyRowsStackView, font: font)
+   }
+   
+   private func updateKeyButtonsInStackView(_ stackView: UIStackView, font: UIFont) {
+     for arrangedSubview in stackView.arrangedSubviews {
+       if let rowStackView = arrangedSubview as? UIStackView {
+         for view in rowStackView.arrangedSubviews {
+           if let button = view as? KeyboardButton {
+             button.titleLabel?.font = font
+             
+             // Update button size constraints
+             let widthMultiplier: CGFloat = isPortraitMode ? 0.8 : 1.0
+             let heightConstant: CGFloat = isPortraitMode ? 36 : 45
+             
+             for constraint in button.constraints {
+               if constraint.firstAttribute == .width {
+                 constraint.constant = (40 * CGFloat(button.key.keySize.rawValue)) * widthMultiplier
+               } else if constraint.firstAttribute == .height {
+                 constraint.constant = heightConstant
+               }
+             }
+           }
+         }
+       }
+     }
+   }
 
      @objc private func keyPressed(_ sender: KeyboardButton) {
          if sender.key.keyCode == 9000 { // hack for now
@@ -195,15 +275,15 @@
                  let rect = sender.convert(sender.bounds, to:window)
                  
                  if rect.maxX > window.bounds.width * 0.9 {
-                     tx = sender.bounds.width * -0.5
+                     tx = sender.bounds.width * -0.2
                  }
                  if rect.minX < window.bounds.width * 0.1 {
-                     tx = sender.bounds.width * 0.5
+                     tx = sender.bounds.width * 0.2
                  }
              }
 
              sender.superview!.bringSubviewToFront(sender)
-             sender.transform = CGAffineTransform(translationX:tx, y:ty).scaledBy(x:2, y:2)
+           sender.transform = CGAffineTransform(translationX:tx, y:ty).scaledBy(x:1.3, y:1.3)
              
              pressedKeyViews[sender] = view
          }
@@ -281,8 +361,8 @@
          }
 
          key.translatesAutoresizingMaskIntoConstraints = false
-         key.widthAnchor.constraint(equalToConstant: (25 * CGFloat(keyCoded.keySize.rawValue))).isActive = true
-         key.heightAnchor.constraint(equalToConstant: 35).isActive = true
+         key.widthAnchor.constraint(equalToConstant: (40 * CGFloat(keyCoded.keySize.rawValue))).isActive = true
+         key.heightAnchor.constraint(equalToConstant: 45).isActive = true
          key.backgroundColor = EmulatorKeyboardView.keyNormalBackgroundColor
          key.layer.borderWidth = CGFloat(EmulatorKeyboardView.keyBorderWidth)
          key.layer.borderColor = EmulatorKeyboardView.keyNormalBorderColor.cgColor
@@ -474,7 +554,13 @@
          return view
      }()
      var keyboardConstraints = [NSLayoutConstraint]()
-
+   
+   // Size constraints for orientation changes
+   private var leftKeyboardWidthConstraint: NSLayoutConstraint!
+   private var leftKeyboardHeightConstraint: NSLayoutConstraint!
+   private var rightKeyboardWidthConstraint: NSLayoutConstraint!
+   private var rightKeyboardHeightConstraint: NSLayoutConstraint!
+   
     @objc init(leftKeyboardModel: EmulatorKeyboardViewModel, rightKeyboardModel: EmulatorKeyboardViewModel) {
        self.leftKeyboardModel = leftKeyboardModel
        self.rightKeyboardModel = rightKeyboardModel
@@ -495,29 +581,94 @@
          let panGestureRightKeyboard = UIPanGestureRecognizer(target: self, action: #selector(draggedView(_:)))
          rightKeyboardView.dragMeView.isUserInteractionEnabled = true
          rightKeyboardView.dragMeView.addGestureRecognizer(panGestureRightKeyboard)
+       
+         // Register for orientation change notifications
+         NotificationCenter.default.addObserver(
+             self,
+             selector: #selector(orientationDidChange),
+             name: UIDevice.orientationDidChangeNotification,
+             object: nil
+         )
+         
+         // Set initial orientation
+         updateKeyboardsForOrientation()
      }
 
-     func setupView() {
-         NSLayoutConstraint.deactivate(keyboardConstraints)
-         keyboardConstraints.removeAll()
-         leftKeyboardView.translatesAutoresizingMaskIntoConstraints = false
-         view.addSubview(leftKeyboardView)
-         leftKeyboardView.heightAnchor.constraint(equalToConstant: 270).isActive = true
-         leftKeyboardView.widthAnchor.constraint(equalToConstant: 180).isActive = true
-         keyboardConstraints.append(contentsOf: [
-             leftKeyboardView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-             leftKeyboardView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
-         ])
-         rightKeyboardView.translatesAutoresizingMaskIntoConstraints = false
-         view.addSubview(rightKeyboardView)
-         keyboardConstraints.append(contentsOf: [
-             rightKeyboardView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-             rightKeyboardView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
-         ])
-         rightKeyboardView.heightAnchor.constraint(equalToConstant: 270).isActive = true
-         rightKeyboardView.widthAnchor.constraint(equalToConstant: 180).isActive = true
-         NSLayoutConstraint.activate(keyboardConstraints)
+   deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+   @objc private func orientationDidChange() {
+       updateKeyboardsForOrientation()
+   }
+   
+   private func updateKeyboardsForOrientation() {
+     let isPortrait = UIDevice.current.orientation.isPortrait ||
+     (!UIDevice.current.orientation.isLandscape && view.bounds.width < view.bounds.height)
+     
+     leftKeyboardView.isPortraitMode = isPortrait
+     rightKeyboardView.isPortraitMode = isPortrait
+     
+     // Update keyboard sizes
+     let (width, height) = getKeyboardDimensions(isPortrait: isPortrait)
+     
+     leftKeyboardWidthConstraint.constant = width
+     leftKeyboardHeightConstraint.constant = height
+     rightKeyboardWidthConstraint.constant = width
+     rightKeyboardHeightConstraint.constant = height
+     
+     UIView.animate(withDuration: 0.3) {
+       self.view.layoutIfNeeded()
      }
+   }
+   
+   private func getKeyboardDimensions(isPortrait: Bool) -> (width: CGFloat, height: CGFloat) {
+       if isPortrait {
+           // Smaller dimensions for portrait
+           return (width: 200, height: 240)
+       } else {
+           // Original dimensions for landscape
+           return (width: 260, height: 310)
+       }
+   }
+
+   func setupView() {
+     NSLayoutConstraint.deactivate(keyboardConstraints)
+     keyboardConstraints.removeAll()
+     
+     leftKeyboardView.translatesAutoresizingMaskIntoConstraints = false
+     view.addSubview(leftKeyboardView)
+     
+     // Create size constraints
+     let (width, height) = getKeyboardDimensions(isPortrait: UIDevice.current.orientation.isPortrait)
+     leftKeyboardHeightConstraint = leftKeyboardView.heightAnchor.constraint(equalToConstant: height)
+     leftKeyboardWidthConstraint = leftKeyboardView.widthAnchor.constraint(equalToConstant: width)
+     
+     leftKeyboardHeightConstraint.isActive = true
+     leftKeyboardWidthConstraint.isActive = true
+     
+     keyboardConstraints.append(contentsOf: [
+      leftKeyboardView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+      leftKeyboardView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+     ])
+     
+     rightKeyboardView.translatesAutoresizingMaskIntoConstraints = false
+     view.addSubview(rightKeyboardView)
+     
+     // Create size constraints for right keyboard
+     rightKeyboardHeightConstraint = rightKeyboardView.heightAnchor.constraint(equalToConstant: height)
+     rightKeyboardWidthConstraint = rightKeyboardView.widthAnchor.constraint(equalToConstant: width)
+     
+     rightKeyboardHeightConstraint.isActive = true
+     rightKeyboardWidthConstraint.isActive = true
+     
+     keyboardConstraints.append(contentsOf: [
+      rightKeyboardView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+      rightKeyboardView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+     ])
+     
+     NSLayoutConstraint.activate(keyboardConstraints)
+   }
 
      func setupViewFrames() {
          // initial placement on the bottom corners
