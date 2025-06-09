@@ -362,6 +362,8 @@
 #pragma mark - safe access to options array list
 
 @implementation NSArray (optionAtIndex)
+
+
 - (id)objectAtIndex:(NSUInteger)index withDefault:(id)defaultObject {
     if (index != NSNotFound && index >= 0 && index < [self count])
         return [self objectAtIndex:index];
@@ -369,10 +371,32 @@
         return defaultObject;
 }
 - (NSString*)optionAtIndex:(NSUInteger)index {
-    return [self objectAtIndex:index withDefault:self.firstObject];
+  NSString *option = [self objectAtIndex:index withDefault:self.firstObject];
+  NSDictionary *localizationMap = @{
+    @"Default": NSLocalizedString(@"Default", @"Default"),
+    @"On (11 KHz)": NSLocalizedString(@"On (11 KHz)", @"On (11 KHz)"),
+    @"On (22 KHz)": NSLocalizedString(@"On (22 KHz)", @"On (22 KHz)"),
+    @"On (33 KHz)": NSLocalizedString(@"On (33 KHz)", @"On (33 KHz)"),
+    @"On (44 KHz)": NSLocalizedString(@"On (44 KHz)", @"On (44 KHz)"),
+    @"On (48 KHz)": NSLocalizedString(@"On (48 KHz)", @"On (48 KHz)")
+  };
+  return localizationMap[option] ?: option;
 }
+
 // find and return option name given a string, default to first if not found
 - (NSString*)optionFind:(NSString*)string {
-    return [self objectAtIndex:[self indexOfObject:string] withDefault:self.firstObject];
+  NSString *option = [self objectAtIndex:[self indexOfObject:string] withDefault:self.firstObject];
+  NSDictionary *localizationMap = @{
+      @"Linear": NSLocalizedString(@"Linear", @"Linear filter"),
+      @"Nearest": NSLocalizedString(@"Nearest", @"Nearest"),
+      @"Default": NSLocalizedString(@"Default", @"Default"),
+      @"Light Border": NSLocalizedString(@"Light Border", @"Light Border"),
+      @"Dark Border": NSLocalizedString(@"Dark Border", @"Dark Border"),
+      @"Off": NSLocalizedString(@"Off", @"Off"),
+      @"simpleTron": NSLocalizedString(@"simpleTron", @"simpleTron shader"),
+      @"megaTron": NSLocalizedString(@"megaTron", @"megaTron shader"),
+      @"ulTron": NSLocalizedString(@"ulTron", @"ulTron shader")
+  };
+  return localizationMap[option] ?: option;
 }
 @end

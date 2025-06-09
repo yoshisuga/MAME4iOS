@@ -50,6 +50,17 @@
     NSArray<NSString*> *list;
     NSInteger value;
     NSInteger original_value;
+    NSDictionary *localizationMap;
+}
+
+-(void)setupLocalizationMap {
+  localizationMap = @{
+    @"Shadow Mask Strong": NSLocalizedString(@"Shadow Mask Strong", @"Shadow Mask Strong"),
+    @"Vertical Games (Use Linear Filter)": NSLocalizedString(@"Vertical Games (Use Linear Filter)", @"Vertical Games (Use Linear Filter)"),
+    @"Grille Mask": NSLocalizedString(@"Grille Mask", @"Grille Mask"),
+    @"Grille Mask Lite": NSLocalizedString(@"Grille Mask Lite", @"Grille Mask Lite"),
+    @"No Shadow Mask but Blurred": NSLocalizedString(@"No Shadow Mask but Blurred", @"No Shadow Mask but Blurred")
+  };
 }
 
 - (instancetype)initWithKey:(NSString*)keyValue list:(NSArray<NSString*>*)listValue {
@@ -144,14 +155,14 @@
     
     NSUInteger row = [indexPath row];
     NSString* text = [list objectAtIndex:row];
-    cell.textLabel.text = text;
+    cell.textLabel.text = NSLocalizedString(text,@"");
     cell.detailTextLabel.text = nil;
     cell.accessoryType = (row == value) ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
 
     for (NSString* sep in @[@" - ", @" : ", @": ", @" • "]) {
         if ([text containsString:sep]) {
-            cell.textLabel.text = [text componentsSeparatedByString:sep].firstObject;
-            cell.detailTextLabel.text = [text componentsSeparatedByString:sep].lastObject;
+            cell.textLabel.text = NSLocalizedString([text componentsSeparatedByString:sep].firstObject, @"");
+            cell.detailTextLabel.text = NSLocalizedString([text componentsSeparatedByString:sep].lastObject, @"");
         }
     }
 

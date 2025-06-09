@@ -1,0 +1,1185 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    ":%@:Configure" : {
+      "comment" : "HUD Configure",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":%@:設定"
+          }
+        }
+      }
+    },
+    ":%@:Exit Game" : {
+      "comment" : "HUD Exit Game",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":%@:ゲーム終了"
+          }
+        }
+      }
+    },
+    ":%@:P%d Select" : {
+      "comment" : "HUD Gamepad Select",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : ":%1$@:P%2$d Select"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":%1$@:P %2$d セレクト"
+          }
+        }
+      }
+    },
+    ":%@:P%d Start" : {
+      "comment" : "HUD Gamepad Start",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : ":%1$@:P%2$d Start"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":%1$@:P %2$d スタート"
+          }
+        }
+      }
+    },
+    ":%@:P2 Select" : {
+      "comment" : "HUD P2 Select",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":%@:P2 セレクト"
+          }
+        }
+      }
+    },
+    ":%@:P2 Start" : {
+      "comment" : "HUD P2 Start",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":%@:P2 スタート"
+          }
+        }
+      }
+    },
+    ":%@:Pause" : {
+      "comment" : "HUD Pause",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":%@:ポーズ"
+          }
+        }
+      }
+    },
+    ":%@:Speed 2x" : {
+      "comment" : "HUD Speed 2x",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":%@:2倍速"
+          }
+        }
+      }
+    },
+    ":camera:Snapshot" : {
+      "comment" : "HUD Snapshot",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":camera:スクリーンショット"
+          }
+        }
+      }
+    },
+    ":centsign.circle:Coin+Start" : {
+      "comment" : "HUD coin+start button",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":yensign.circle:コイン+スタート"
+          }
+        }
+      }
+    },
+    ":person:1P Start" : {
+      "comment" : "HUD 1P start button",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":person:1Pスタート"
+          }
+        }
+      }
+    },
+    ":person.2:2P Start" : {
+      "comment" : "HUD 2P Start Button",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":person.2:2Pスタート"
+          }
+        }
+      }
+    },
+    ":person.3:3P Start" : {
+      "comment" : "HUD 3P start button",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":person.3:3Pスタート"
+          }
+        }
+      }
+    },
+    ":person.3:4P Start" : {
+      "comment" : "HUD 4P start button",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":person.3:4Pスタート"
+          }
+        }
+      }
+    },
+    ":wrench:Service" : {
+      "comment" : "HUD Service",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":wrench:サービス"
+          }
+        }
+      }
+    },
+    "App Version: %@\nCore Version: %@" : {
+      "comment" : "App version and core version in settings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "App Version: %1$@\nCore Version: %2$@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリVer: %1$@\nコアVer: %2$@"
+          }
+        }
+      }
+    },
+    "Arcade" : {
+      "comment" : "Arcade",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アーケード"
+          }
+        }
+      }
+    },
+    "Are you sure you want to exit?" : {
+      "comment" : "Exit confirmation text",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "終了してもよろしいですか？"
+          }
+        }
+      }
+    },
+    "Beam 2x" : {
+      "comment" : "Settings: Vector Section: Beam2x option",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ビーム2x"
+          }
+        }
+      }
+    },
+    "Benchmark" : {
+      "comment" : "Menu option to run performance benchmark test",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ベンチマーク"
+          }
+        }
+      }
+    },
+    "Cancel" : {
+      "comment" : "Cancel",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キャンセル"
+          }
+        }
+      }
+    },
+    "Cheats" : {
+      "comment" : "Enable or disable cheat codes",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "チート"
+          }
+        }
+      }
+    },
+    "Clones" : {
+      "comment" : "Clones scope",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クローン"
+          }
+        }
+      }
+    },
+    "Configure" : {
+      "comment" : "HUD Configure",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定"
+          }
+        }
+      }
+    },
+    "Console" : {
+      "comment" : "Console",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ゲーム機・パソコン"
+          }
+        }
+      }
+    },
+    "Continue" : {
+      "comment" : "HUD Continue",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コンティニュー"
+          }
+        }
+      }
+    },
+    "Dark Border" : {
+      "comment" : "Dark Border",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "黒枠"
+          }
+        }
+      }
+    },
+    "Default" : {
+      "comment" : "Default",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "標準"
+          }
+        }
+      }
+    },
+    "Driver" : {
+      "comment" : "Driver scope",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドライバー"
+          }
+        }
+      }
+    },
+    "Emulated Speed" : {
+      "comment" : "Adjust the speed of emulation",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "エミュレート速度"
+          }
+        }
+      }
+    },
+    "Exit" : {
+      "comment" : "HUD Exit",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "終了"
+          }
+        }
+      }
+    },
+    "Exit Game" : {
+      "comment" : "HUD Exit Game",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ゲーム終了"
+          }
+        }
+      }
+    },
+    "Export" : {
+      "comment" : "Menu option to export games or files",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "エクスポート"
+          }
+        }
+      }
+    },
+    "Favorite Games" : {
+      "comment" : "Favorite Games",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "お気に入り"
+          }
+        }
+      }
+    },
+    "Filter" : {
+      "comment" : "Settings: Video Section: Filter option",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フィルター"
+          }
+        }
+      }
+    },
+    "Flicker" : {
+      "comment" : "Settings: Vector Section: Flicker option",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フリッカー"
+          }
+        }
+      }
+    },
+    "Force Integer Scaling" : {
+      "comment" : "Settings: Video Section: Integer scaling option",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "整数スケーリング強制"
+          }
+        }
+      }
+    },
+    "Force Pixel Aspect" : {
+      "comment" : "Settings: Video Section: Skin option",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ピクセルアスペクト強制"
+          }
+        }
+      }
+    },
+    "Fullscreen" : {
+      "comment" : "Section header for fullscreen display options",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フルスクリーン"
+          }
+        }
+      }
+    },
+    "Fullscreen (Controller)" : {
+      "comment" : "Settings: FullScreen Section: Controller option",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フルスクリーン（コントローラー）"
+          }
+        }
+      }
+    },
+    "Fullscreen (Landscape)" : {
+      "comment" : "Settings: FullScreen Section: Landscape option",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フルスクリーン（横向き）"
+          }
+        }
+      }
+    },
+    "Fullscreen (Portrait)" : {
+      "comment" : "Settings: FullScreen Section: Portrait option",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フルスクリーン（縦向き）"
+          }
+        }
+      }
+    },
+    "Game Filter" : {
+      "comment" : "Section header for game filtering options",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ゲーム表示フィルター"
+          }
+        }
+      }
+    },
+    "Game Input" : {
+      "comment" : "Menu option for configuring game input controls",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ゲーム入力"
+          }
+        }
+      }
+    },
+    "Genre" : {
+      "comment" : "Genre scope",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ジャンル"
+          }
+        }
+      }
+    },
+    "Grille Mask" : {
+      "comment" : "Grille Mask",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "グリルマスク"
+          }
+        }
+      }
+    },
+    "Grille Mask Lite" : {
+      "comment" : "Grille Mask Lite",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "グリルマスク（ライト）"
+          }
+        }
+      }
+    },
+    "Hide BIOS" : {
+      "comment" : "Filter option to hide BIOS files from the list",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "BIOSを非表示"
+          }
+        }
+      }
+    },
+    "Hide Clones" : {
+      "comment" : "Filter option to hide clone games from the list",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クローンを非表示"
+          }
+        }
+      }
+    },
+    "Hide Not Working" : {
+      "comment" : "Filter option to hide non-functional games from the list",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "動作しないゲームを非表示"
+          }
+        }
+      }
+    },
+    "Import" : {
+      "comment" : "Menu option to import games or files",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "インポート"
+          }
+        }
+      }
+    },
+    "Import and Export" : {
+      "comment" : "Section header for import and export functions",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "インポートとエクスポート"
+          }
+        }
+      }
+    },
+    "Keep Aspect Ratio" : {
+      "comment" : "Settings: Video Section: Aspect Ratio option",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アスペクト比を維持"
+          }
+        }
+      }
+    },
+    "Keyboard" : {
+      "comment" : "HUD Keyboard",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キーボード"
+          }
+        }
+      }
+    },
+    "Light Border" : {
+      "comment" : "Light Border",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "白枠"
+          }
+        }
+      }
+    },
+    "Linear" : {
+      "comment" : "Linear filter",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リニア"
+          }
+        }
+      }
+    },
+    "Load" : {
+      "comment" : "HUD Load",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ロード"
+          }
+        }
+      }
+    },
+    "MAME Error" : {
+      "comment" : "HUD MAME Error",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MAMEエラー"
+          }
+        }
+      }
+    },
+    "MAME Output" : {
+      "comment" : "HUD MAME Output",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MAME出力"
+          }
+        }
+      }
+    },
+    "MAME Warning" : {
+      "comment" : "HUD MAME Warning",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MAME警告"
+          }
+        }
+      }
+    },
+    "Manufacturer" : {
+      "comment" : "Manufacturer scope",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メーカー"
+          }
+        }
+      }
+    },
+    "megaTron" : {
+      "comment" : "megaTron shader",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メガトロン"
+          }
+        }
+      }
+    },
+    "Nearest" : {
+      "comment" : "Nearest",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ニアレスト"
+          }
+        }
+      }
+    },
+    "No" : {
+      "comment" : "No",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "いいえ"
+          }
+        }
+      }
+    },
+    "No Shadow Mask but Blurred" : {
+      "comment" : "No Shadow Mask but Blurred",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "シャドウマスクなし（ぼかし）"
+          }
+        }
+      }
+    },
+    "None" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "なし"
+          }
+        }
+      }
+    },
+    "Off" : {
+      "comment" : "Off",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オフ"
+          }
+        }
+      }
+    },
+    "On (11 KHz)" : {
+      "comment" : "On (11 KHz)",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オン (11 kHz)"
+          }
+        }
+      }
+    },
+    "On (22 KHz)" : {
+      "comment" : "On (22 KHz)",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オン (22kHz)"
+          }
+        }
+      }
+    },
+    "On (33 KHz)" : {
+      "comment" : "On (33 KHz)",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オン (33 kHz)"
+          }
+        }
+      }
+    },
+    "On (44 KHz)" : {
+      "comment" : "On (44 KHz)",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オン (44 kHz)"
+          }
+        }
+      }
+    },
+    "On (48 KHz)" : {
+      "comment" : "On (48 KHz)",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オン (48 kHz)"
+          }
+        }
+      }
+    },
+    "Options" : {
+      "comment" : "Section header for miscellaneous settings",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オプション"
+          }
+        }
+      }
+    },
+    "Pause" : {
+      "comment" : "HUD Pause",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ポーズ"
+          }
+        }
+      }
+    },
+    "Player %d" : {
+      "comment" : "HUD Player button",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プレイヤー"
+          }
+        }
+      }
+    },
+    "Power" : {
+      "comment" : "HUD Power",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "電源"
+          }
+        }
+      }
+    },
+    "Recently Played" : {
+      "comment" : "Recently Played",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近"
+          }
+        }
+      }
+    },
+    "Reset" : {
+      "comment" : "HUD Reset",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リセット"
+          }
+        }
+      }
+    },
+    "Reset to Defaults" : {
+      "comment" : "Button to restore all settings to their default values",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "初期設定に戻す"
+          }
+        }
+      }
+    },
+    "Save" : {
+      "comment" : "HUD Save",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "セーブ"
+          }
+        }
+      }
+    },
+    "Save Hiscores" : {
+      "comment" : "Toggle to save high scores automatically",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ハイスコア保存"
+          }
+        }
+      }
+    },
+    "Screen Shader" : {
+      "comment" : "Settings: Video Section: Shader option",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "映像シェーダー"
+          }
+        }
+      }
+    },
+    "Select" : {
+      "comment" : "HUD Select button",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "セレクト"
+          }
+        }
+      }
+    },
+    "Settings" : {
+      "comment" : "Settings",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定"
+          }
+        }
+      }
+    },
+    "Shadow Mask Strong" : {
+      "comment" : "Shadow Mask Strong",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "シャドウマスク（強）"
+          }
+        }
+      }
+    },
+    "Show Files" : {
+      "comment" : "Menu option to view files in the file manager",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ファイルを表示"
+          }
+        }
+      }
+    },
+    "Show FPS" : {
+      "comment" : "Toggle to display frames per second counter",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "FPS表示"
+          }
+        }
+      }
+    },
+    "Show HUD" : {
+      "comment" : "Toggle to display heads-up display overlay",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HUD表示"
+          }
+        }
+      }
+    },
+    "Show Info/Warnings" : {
+      "comment" : "Toggle to display information messages and warnings",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "情報、警告を表示"
+          }
+        }
+      }
+    },
+    "simpleTron" : {
+      "comment" : "simpleTron shader",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "シンプルトロン"
+          }
+        }
+      }
+    },
+    "Skin" : {
+      "comment" : "Settings: Video Section: Skin option",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スキン"
+          }
+        }
+      }
+    },
+    "Software" : {
+      "comment" : "Software\nSoftware scope",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "パソコン用ソフト"
+          }
+        }
+      }
+    },
+    "Sound" : {
+      "comment" : "Audio settings and configuration",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サウンド"
+          }
+        }
+      }
+    },
+    "Start" : {
+      "comment" : "HUD Start button",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スタート"
+          }
+        }
+      }
+    },
+    "Start Web Server" : {
+      "comment" : "Menu option to start the web server for file transfers",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Webサーバー開始"
+          }
+        }
+      }
+    },
+    "System" : {
+      "comment" : "System scope",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システム"
+          }
+        }
+      }
+    },
+    "ultron" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ulTron"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ウルトロン"
+          }
+        }
+      }
+    },
+    "ulTron" : {
+      "comment" : "ulTron shader",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ウルトロン"
+          }
+        }
+      }
+    },
+    "Use DRC" : {
+      "comment" : "Enable dynamic recompilation",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DRC使用"
+          }
+        }
+      }
+    },
+    "Vector Options" : {
+      "comment" : "Section header for vector graphics settings",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ベクターオプション"
+          }
+        }
+      }
+    },
+    "Vector Shader" : {
+      "comment" : "Settings: Video Section: Vector shader option",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ベクターシェーダー"
+          }
+        }
+      }
+    },
+    "Vertical Games (Use Linear Filter)" : {
+      "comment" : "Vertical Games (Use Linear Filter)",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "縦画面ゲーム（リニアフィルター使用）"
+          }
+        }
+      }
+    },
+    "Video Options" : {
+      "comment" : "Section header for video display settings",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画像設定"
+          }
+        }
+      }
+    },
+    "Year" : {
+      "comment" : "Year scope",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "製造年"
+          }
+        }
+      }
+    },
+    "Yes" : {
+      "comment" : "Yes",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "はい"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

@@ -1146,13 +1146,16 @@ UIViewController* g_menu;
         menu.font = [UIFont systemFontOfSize:32.0 weight:UIFontWeightRegular];
 
     if (controller != nil && controller_count > 1 && myosd_num_players > 1)
-        menu.title = [NSString stringWithFormat:@"Player %d", player+1];
+        menu.title = [NSString stringWithFormat:NSLocalizedString(@"Player %d", @"HUD Player button"), player+1];
     
     if(myosd_inGame && myosd_in_menu==0)
     {
         // if there are zero Start buttons, check for a 2600  // TODO: remove this hack.
         if (myosd_num_players == 0 && [g_mame_game_info.gameSystem hasPrefix:@"a2600"]) {
-            [menu addButtons:@[@"Select", @"Start"] handler:^(NSUInteger button) {
+            [menu addButtons:@[
+              NSLocalizedString(@"Select",@"HUD Select button"),
+              NSLocalizedString(@"Start",@"HUD Start button")
+            ] handler:^(NSUInteger button) {
                 if (button == 0)
                     push_mame_key(MYOSD_KEY_1);
                 else
@@ -1163,13 +1166,13 @@ UIViewController* g_menu;
         // myosd_num_players counts the number of Start buttons, if there are zero Start buttons, we cant do anything!
         if (myosd_num_players == 1) {
             // 1P Start
-            [menu addButtons:@[@":centsign.circle:Coin+Start"] handler:^(NSUInteger button) {
+            [menu addButtons:@[NSLocalizedString(@":centsign.circle:Coin+Start", @"HUD coin+start button")] handler:^(NSUInteger button) {
                 [self startPlayer:0];
             }];
         }
         else if (myosd_num_players >= 2) {
             // 1P and 2P Start
-            [menu addButtons:@[@":person:1P Start", @":person.2:2P Start"] handler:^(NSUInteger button) {
+            [menu addButtons:@[NSLocalizedString(@":person:1P Start",@"HUD 1P start button"), NSLocalizedString(@":person.2:2P Start",@"HUD 2P Start Button") ] handler:^(NSUInteger button) {
                 [self startPlayer:(int)button];
             }];
         }
@@ -1177,7 +1180,7 @@ UIViewController* g_menu;
         // 3P and 4P Start
         if (myosd_num_players >= 3) {
             // FYI there is no person.4 symbol, so we just reuse person.3
-            [menu addButtons:@[@":person.3:3P Start", (myosd_num_players >= 4) ? @":person.3:4P Start" : @""] handler:^(NSUInteger button) {
+            [menu addButtons:@[NSLocalizedString(@":person.3:3P Start",@"HUD 3P start button"), (myosd_num_players >= 4) ? NSLocalizedString(@":person.3:4P Start",@"HUD 4P start button") : @""] handler:^(NSUInteger button) {
                 if (button+2 < myosd_num_players)
                     [self startPlayer:(int)button + 2];
             }];
@@ -1187,8 +1190,8 @@ UIViewController* g_menu;
             if (gamepad.buttonOptions != nil && gamepad.buttonMenu != nil) {
                 // Pn SELECT and START (menu buttons...)
                 [menu addButtons:@[
-                    [NSString stringWithFormat:@":%@:P%d Select", getGamepadSymbol(gamepad, gamepad.leftTrigger), player + 1],
-                    [NSString stringWithFormat:@":%@:P%d Start",  getGamepadSymbol(gamepad, gamepad.rightTrigger), player + 1]
+                    [NSString stringWithFormat:NSLocalizedString(@":%@:P%d Select",@"HUD Gamepad Select"), getGamepadSymbol(gamepad, gamepad.leftTrigger), player + 1],
+                    [NSString stringWithFormat:NSLocalizedString(@":%@:P%d Start",@"HUD Gamepad Start"),  getGamepadSymbol(gamepad, gamepad.rightTrigger), player + 1]
                 ] color:UIColor.clearColor handler:^(NSUInteger button) {
                     if (button == 0 )
                         push_mame_button((player < myosd_num_coins ? player : 0), MYOSD_SELECT);  // Player X coin
@@ -1212,8 +1215,8 @@ UIViewController* g_menu;
             // P2 SELECT and START (only on the Player 1 controller)
             if (player == 0 && myosd_num_players > 1) {
                 [menu addButtons:@[
-                    [NSString stringWithFormat:@":%@:P2 Select", getGamepadSymbol(gamepad, gamepad.leftTrigger)],
-                    [NSString stringWithFormat:@":%@:P2 Start",  getGamepadSymbol(gamepad, gamepad.rightTrigger)]
+                    [NSString stringWithFormat:NSLocalizedString(@":%@:P2 Select",@"HUD P2 Select"), getGamepadSymbol(gamepad, gamepad.leftTrigger)],
+                    [NSString stringWithFormat:NSLocalizedString(@":%@:P2 Start",@"HUD P2 Start"),  getGamepadSymbol(gamepad, gamepad.rightTrigger)]
                 ] color:UIColor.clearColor handler:^(NSUInteger button) {
                     if (button == 0 )
                         push_mame_button((1 < myosd_num_coins ? 1 : 0), MYOSD_SELECT);  // Player 2 coin
@@ -1224,8 +1227,8 @@ UIViewController* g_menu;
 
             // EXIT and MAME MENU
             [menu addButtons:@[
-                [NSString stringWithFormat:@":%@:Exit Game", getGamepadSymbol(gamepad, gamepad.buttonX)],
-                [NSString stringWithFormat:@":%@:Speed 2x", getGamepadSymbol(gamepad, gamepad.buttonA)],
+                [NSString stringWithFormat:NSLocalizedString(@":%@:Exit Game",@"HUD Exit Game"), getGamepadSymbol(gamepad, gamepad.buttonX)],
+                [NSString stringWithFormat:NSLocalizedString(@":%@:Speed 2x",@"HUD Speed 2x"), getGamepadSymbol(gamepad, gamepad.buttonA)],
             ] color:UIColor.clearColor handler:^(NSUInteger button) {
                 if (button == 0)
                     [self runExit:NO];
@@ -1235,8 +1238,8 @@ UIViewController* g_menu;
 
             // CONFIGURE and PAUSE
             [menu addButtons:@[
-                [NSString stringWithFormat:@":%@:Configure", getGamepadSymbol(gamepad, gamepad.buttonY)],
-                [NSString stringWithFormat:@":%@:Pause", getGamepadSymbol(gamepad, gamepad.buttonB)],
+                [NSString stringWithFormat:NSLocalizedString(@":%@:Configure",@"HUD Configure"), getGamepadSymbol(gamepad, gamepad.buttonY)],
+                [NSString stringWithFormat:NSLocalizedString(@":%@:Pause",@"HUD Pause"), getGamepadSymbol(gamepad, gamepad.buttonB)],
             ] color:UIColor.clearColor handler:^(NSUInteger button) {
                 if (button == 0)
                     push_mame_key(MYOSD_KEY_CONFIGURE);
@@ -1247,21 +1250,24 @@ UIViewController* g_menu;
         
         // LOAD and SAVE State
         [menu addButtons:@[
-            [NSString stringWithFormat:@":%@:Load ①", getGamepadSymbol(gamepad, gamepad.dpad.up) ?: @"bookmark"],
-            [NSString stringWithFormat:@":%@:Load ②", getGamepadSymbol(gamepad, gamepad.dpad.right) ?: @"bookmark"],
+            [NSString stringWithFormat:@":%@:%@ ①", getGamepadSymbol(gamepad, gamepad.dpad.up) ?: @"bookmark", NSLocalizedString(@"Load", @"HUD Load")],
+            [NSString stringWithFormat:@":%@:%@ ②", getGamepadSymbol(gamepad, gamepad.dpad.right) ?: @"bookmark", NSLocalizedString(@"Load", @"HUD Load")],
         ] color:(gamepad ? UIColor.clearColor : nil) handler:^(NSUInteger button) {
             mame_load_state((int)button+1);
         }];
         [menu addButtons:@[
-            [NSString stringWithFormat:@":%@:Save ①", getGamepadSymbol(gamepad, gamepad.dpad.down) ?: @"bookmark.fill"],
-            [NSString stringWithFormat:@":%@:Save ②", getGamepadSymbol(gamepad, gamepad.dpad.left) ?: @"bookmark.fill"],
+            [NSString stringWithFormat:@":%@:%@ ①", getGamepadSymbol(gamepad, gamepad.dpad.down) ?: @"bookmark.fill",NSLocalizedString(@"Save", @"HUD Save")],
+            [NSString stringWithFormat:@":%@:%@ ②", getGamepadSymbol(gamepad, gamepad.dpad.left) ?: @"bookmark.fill",NSLocalizedString(@"Save", @"HUD Save")],
         ] color:(gamepad ? UIColor.clearColor : nil) handler:^(NSUInteger button) {
             mame_save_state((int)button+1);
         }];
         
         if (gamepad == nil) {
             // CONFIGURE and PAUSE
-            [menu addButtons:@[@":slider.horizontal.3:Configure",@":pause.circle:Pause"] handler:^(NSUInteger button) {
+            [menu addButtons:@[
+              [NSString stringWithFormat:@":slider.horizontal.3:%@",NSLocalizedString(@"Configure", @"HUD Configure")],
+              [NSString stringWithFormat:@":pause.circle:%@",NSLocalizedString(@"Pause", @"HUD Pause")]
+            ] handler:^(NSUInteger button) {
                 if (button == 0)
                     push_mame_key(MYOSD_KEY_CONFIGURE);
                 else
@@ -1271,8 +1277,8 @@ UIViewController* g_menu;
         BOOL put_keyboard_on_menu = (TARGET_OS_IOS && !TARGET_OS_MACCATALYST) && (myosd_has_keyboard || g_pref_allow_keyboard) && (g_keyboards.count == 0 || g_pref_force_keyboard) && gamepad == nil;
         if (put_keyboard_on_menu) {
             // KEYBOARD and SERVICE
-            NSString* kb = self.showSoftwareKeyboard ? @":keyboard.chevron.compact.down:Keyboard" : @":keyboard:Keyboard";
-            [menu addButtons:@[kb, @":wrench:Service"] handler:^(NSUInteger button) {
+          NSString* kb = [NSString stringWithFormat: self.showSoftwareKeyboard ? @":keyboard.chevron.compact.down:%@" : @":keyboard:%@",NSLocalizedString(@"Keyboard", @"HUD Keyboard")];
+            [menu addButtons:@[kb, NSLocalizedString(@":wrench:Service", @"HUD Service")] handler:^(NSUInteger button) {
                 if (button == 0)
                     self.showSoftwareKeyboard = !self.showSoftwareKeyboard;
                 else
@@ -1281,7 +1287,10 @@ UIViewController* g_menu;
         }
         else {
             // SNAPSHOT and SERVICE
-            [menu addButtons:@[@":camera:Snapshot", @":wrench:Service"] handler:^(NSUInteger button) {
+            [menu addButtons:@[
+              NSLocalizedString(@":camera:Snapshot", @"HUD Snapshot"),
+              NSLocalizedString(@":wrench:Service", @"HUD Service")
+            ] handler:^(NSUInteger button) {
                 if (button == 0)
                     push_mame_key(MYOSD_KEY_SNAP);
                 else
@@ -1290,7 +1299,10 @@ UIViewController* g_menu;
         }
         
         // Power and Reset
-        [menu addButtons:@[@":power:Power", @":escape:Reset"] handler:^(NSUInteger button) {
+        [menu addButtons:@[
+          [NSString stringWithFormat:@":power:%@",NSLocalizedString(@"Power", @"HUD Power")],
+          [NSString stringWithFormat:@":escape:%@",NSLocalizedString(@"Reset", @"HUD Reset")]
+        ] handler:^(NSUInteger button) {
             if (button == 0)
                 push_mame_key(MYOSD_KEY_RESET);         // this does a HARD reset
             else
@@ -1299,33 +1311,33 @@ UIViewController* g_menu;
         
         // show any MAME output, usually a WARNING message, we catch errors in an other place.
         if (g_mame_output_text[0]) {
-            NSString* button = @":info.circle:MAME Output";
+          NSString* button = [NSString stringWithFormat:@":info.circle:MAME Output",NSLocalizedString(@"MAME Output", @"HUD MAME Output")];
             NSString* message = [[NSString stringWithUTF8String:g_mame_output_text] stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
 
             if ([message rangeOfString:@"WARNING" options:NSCaseInsensitiveSearch].location != NSNotFound)
-                button = @":exclamationmark.triangle:MAME Warning";
+              button = [NSString stringWithFormat:@":exclamationmark.triangle:%@",NSLocalizedString(@"MAME Warning", @"HUD MAME Warning")];
             
             if ([message rangeOfString:@"ERROR" options:NSCaseInsensitiveSearch].location != NSNotFound)
-                button = @":xmark.octagon:MAME Error";
+                button = [NSString stringWithFormat:@":xmark.octagon:MAME Error",NSLocalizedString(@"MAME Error",@"HUD MAME Error")];
             
             [menu addButton:button handler:^{
                 [self startMenu];
-                [self showAlertWithTitle:@PRODUCT_NAME message:message buttons:@[@"Continue"] handler:^(NSUInteger button) {
+                [self showAlertWithTitle:@PRODUCT_NAME message:message buttons:@[NSLocalizedString(@"Continue", @"HUD Continue")] handler:^(NSUInteger button) {
                     [self endMenu];
                 }];
             }];
         }
     }
     
-    [menu addButton:@":gear:Settings" handler:^{
+  [menu addButton:[NSString stringWithFormat:@":gear:%@",NSLocalizedString(@"Settings", @"Settings")] handler:^{
         [self runSettings];
     }];
-    [menu addButton:(myosd_inGame && myosd_in_menu==0) ? @"Exit Game" : @"Exit" style:UIAlertActionStyleDestructive handler:^{
+    [menu addButton:(myosd_inGame && myosd_in_menu==0) ? NSLocalizedString(@"Exit Game",@"HUD Exit Game") : NSLocalizedString(@"Exit",@"HUD Exit") style:UIAlertActionStyleDestructive handler:^{
         [self runExit:NO];
     }];
 
     // Cancel button wont show (cuz we are an action sheet) but we need it for auto dismiss
-    [menu addButton:@"Cancel" style:UIAlertActionStyleCancel handler:^{}];
+    [menu addButton:NSLocalizedString(@"Cancel",@"Cancel") style:UIAlertActionStyleCancel handler:^{}];
 
     [menu onDismiss:^{
         NSParameterAssert(g_menu != nil);
@@ -1349,14 +1361,14 @@ UIViewController* g_menu;
 {
     if ((!myosd_inGame || myosd_in_menu == 0) && ask_user && self.presentedViewController == nil)
     {
-        NSString* yes = (g_controllers.count > 0 && TARGET_OS_IOS) ? @"Yes Ⓐ" : @"Yes";
-        NSString* no  = (g_controllers.count > 0 && TARGET_OS_IOS) ? @"No Ⓑ" : @"No";
+        NSString* yes = [NSString stringWithFormat: (g_controllers.count > 0 && TARGET_OS_IOS) ? @"%@ Ⓐ" : @"%@", NSLocalizedString(@"Yes", @"Yes")];
+        NSString* no  = [NSString stringWithFormat:(g_controllers.count > 0 && TARGET_OS_IOS) ? @"%@ Ⓑ" : @"%@", NSLocalizedString(@"No", @"No")];
         UIAlertControllerStyle style = UIAlertControllerStyleAlert;
         
         if (view != nil && self.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular && self.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassRegular)
             style = UIAlertControllerStyleActionSheet;
 
-        UIAlertController *exitAlertController = [UIAlertController alertControllerWithTitle:@"Are you sure you want to exit?" message:nil preferredStyle:style];
+        UIAlertController *exitAlertController = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Are you sure you want to exit?",@"Exit confirmation text") message:nil preferredStyle:style];
 
         [self startMenu];
         [exitAlertController addAction:[UIAlertAction actionWithTitle:yes style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {

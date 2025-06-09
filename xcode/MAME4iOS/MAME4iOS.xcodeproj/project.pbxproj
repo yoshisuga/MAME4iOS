@@ -11,6 +11,9 @@
 		920BBDF220210C3800AE7D50 /* menu.png in Resources */ = {isa = PBXBuildFile; fileRef = 920BBDF020210C3700AE7D50 /* menu.png */; };
 		920D975A2BCECB410038F00B /* UICollectionView+ZeroState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920D97592BCECB410038F00B /* UICollectionView+ZeroState.swift */; };
 		920D975B2BCECB410038F00B /* UICollectionView+ZeroState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920D97592BCECB410038F00B /* UICollectionView+ZeroState.swift */; };
+		925235782DF213F900B0750B /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 925235772DF213F900B0750B /* Localizable.xcstrings */; };
+		925235792DF213F900B0750B /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 925235772DF213F900B0750B /* Localizable.xcstrings */; };
+		9252357A2DF213F900B0750B /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 925235772DF213F900B0750B /* Localizable.xcstrings */; };
 		925ABCA61E46DCC500997182 /* KeyboardView.m in Sources */ = {isa = PBXBuildFile; fileRef = CE8D87DC1653121200685BC4 /* KeyboardView.m */; };
 		925ABCA81E46DCC500997182 /* ListOptionController.m in Sources */ = {isa = PBXBuildFile; fileRef = CE90575B166A89D000653872 /* ListOptionController.m */; };
 		925ABCA91E46DCC500997182 /* OptionsController.m in Sources */ = {isa = PBXBuildFile; fileRef = CEE680C01635BB6100051BC2 /* OptionsController.m */; };
@@ -432,6 +435,7 @@
 		920BBDED201FC29700AE7D50 /* dpad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = dpad.png; path = "../../iOS-res/dpad.png"; sourceTree = "<group>"; };
 		920BBDF020210C3700AE7D50 /* menu.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = menu.png; path = "../../iOS-res/menu.png"; sourceTree = "<group>"; };
 		920D97592BCECB410038F00B /* UICollectionView+ZeroState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UICollectionView+ZeroState.swift"; sourceTree = "<group>"; };
+		925235772DF213F900B0750B /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		925ABCE21E46DCC500997182 /* MAME4iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MAME4iOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		925ABCE41E46DD6E00997182 /* libmame.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmame.a; path = ../../libmame.a; sourceTree = "<group>"; };
 		926C76FD21F1C87700103EDE /* TVOptionsController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TVOptionsController.h; sourceTree = "<group>"; };
@@ -901,6 +905,7 @@
 		CEE6807A1635BA6F00051BC2 = {
 			isa = PBXGroup;
 			children = (
+				925235772DF213F900B0750B /* Localizable.xcstrings */,
 				EF55DE312533C21E004E37EF /* MAME4iOS.xcconfig */,
 				92F623172C88D3F500E2579B /* LaunchArcadeMania.storyboard */,
 				EF47838528D38F0A00DA4A56 /* Developer.xcconfig */,
@@ -1257,6 +1262,7 @@
 			knownRegions = (
 				Base,
 				en,
+				ja,
 			);
 			mainGroup = CEE6807A1635BA6F00051BC2;
 			productRefGroup = CEE680861635BA7000051BC2 /* Products */;
@@ -1282,6 +1288,7 @@
 				EF7D116527348BDD00E61BB9 /* hash.zip in Resources */,
 				EF1C93FD24C252C600749C69 /* skins in Resources */,
 				EF490D96277A5E0E00407865 /* cheat.7z in Resources */,
+				925235782DF213F900B0750B /* Localizable.xcstrings in Resources */,
 				EF490D99277A5E0E00407865 /* cheat.zip in Resources */,
 				EF1C93F724C252C600749C69 /* LICENSE in Resources */,
 				EF08EB32277A937900E4D455 /* plugins.zip in Resources */,
@@ -1324,6 +1331,7 @@
 				EF7D4AAB27B990AB002528B7 /* shaders in Resources */,
 				EF1C941D24C2552900749C69 /* gitinfo.json.sh in Resources */,
 				EF490D97277A5E0E00407865 /* cheat.7z in Resources */,
+				925235792DF213F900B0750B /* Localizable.xcstrings in Resources */,
 				EF08EB33277A937900E4D455 /* plugins.zip in Resources */,
 				EF72F8EA27FA24AD00157065 /* ui.bdf in Resources */,
 				EFFBA6FF24F1C91200F8666B /* WHATSNEW.md in Resources */,
@@ -1362,6 +1370,7 @@
 				92F623862C88D81A00E2579B /* history.dat.zip in Resources */,
 				92F623872C88D81A00E2579B /* SKIN_1 in Resources */,
 				92F623882C88D81A00E2579B /* iCadeControls.png in Resources */,
+				9252357A2DF213F900B0750B /* Localizable.xcstrings in Resources */,
 				92F623892C88D81A00E2579B /* help.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1967,6 +1976,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				COPY_PHASE_STRIP = NO;
+				DEVELOPMENT_TEAM = R72X3BF4KE;
 				ENABLE_BITCODE = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -1991,6 +2001,7 @@
 				MTL_LANGUAGE_REVISION = UseDeploymentTarget;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TVOS_DEPLOYMENT_TARGET = 13.4;
 				VALIDATE_PRODUCT = YES;
@@ -2025,6 +2036,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				COPY_PHASE_STRIP = YES;
+				DEVELOPMENT_TEAM = R72X3BF4KE;
 				ENABLE_BITCODE = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -2043,6 +2055,7 @@
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TVOS_DEPLOYMENT_TARGET = 13.4;
 				VALIDATE_PRODUCT = YES;

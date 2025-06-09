@@ -102,6 +102,13 @@
 #define SCOPE_MODE_KEY      @"ScopeMode"
 #define SCOPE_MODE_DEFAULT  @"System"
 #define ALL_SCOPES          @[@"System", @"Software", @"Clones", @"Manufacturer", @"Year", @"Genre", @"Driver"]
+#define ALL_SCOPES_LOCALIZED @[NSLocalizedString(@"System", @"System scope"), \
+                              NSLocalizedString(@"Software", @"Software scope"), \
+                              NSLocalizedString(@"Clones", @"Clones scope"), \
+                              NSLocalizedString(@"Manufacturer", @"Manufacturer scope"), \
+                              NSLocalizedString(@"Year", @"Year scope"), \
+                              NSLocalizedString(@"Genre", @"Genre scope"), \
+                              NSLocalizedString(@"Driver", @"Driver scope")]
 #define RECENT_GAMES_MAX    8
 
 #define SELECTED_GAME_KEY         @"SelectedGame"
@@ -246,7 +253,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     UIBarButtonItem* layout = [[UIBarButtonItem alloc] initWithCustomView:seg1];
 
     // group/scope
-    UISegmentedControl* seg2 = [[PopupSegmentedControl alloc] initWithItems:ALL_SCOPES];
+    UISegmentedControl* seg2 = [[PopupSegmentedControl alloc] initWithItems:ALL_SCOPES_LOCALIZED];
     seg2.accessibilityLabel = @"Group Options";
     seg2.selectedSegmentIndex = [ALL_SCOPES indexOfObject:_gameFilterScope];
     seg2.apportionsSegmentWidthsByContent = TARGET_OS_IOS ? NO : YES;
@@ -421,7 +428,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
     _searchController.searchBar.delegate = resultsController;
     _searchController.obscuresBackgroundDuringPresentation = YES;
 
-    _searchController.searchBar.scopeButtonTitles = ALL_SCOPES;
+    _searchController.searchBar.scopeButtonTitles = ALL_SCOPES_LOCALIZED;
     _searchController.searchBar.placeholder = @"Search";
     _searchController.searchBar.showsScopeBar = NO;
     _searchController.hidesNavigationBarDuringPresentation = YES;
@@ -1638,7 +1645,19 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     GameInfoHeader* cell = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionHeader withReuseIdentifier:HEADER_IDENTIFIER forIndexPath:indexPath];
     [cell setHorizontal:TRUE];
     NSString* title = _gameSectionTitles[indexPath.section];
+  
     cell.text.text = title;
+    if ([title isEqualToString:FAVORITE_GAMES_TITLE]) {
+      cell.text.text = NSLocalizedString(@"Favorite Games",@"Favorite Games");
+    } else if ([title isEqualToString:kGameInfoTypeArcade]) {
+      cell.text.text = NSLocalizedString(@"Arcade",@"Arcade");
+    } else if ([title isEqualToString:kGameInfoTypeConsole]) {
+      cell.text.text = NSLocalizedString(@"Console",@"Console");
+    } else if ([title isEqualToString:kGameInfoTypeSoftware]) {
+      cell.text.text = NSLocalizedString(@"Software",@"Software");
+    } else if ([title isEqualToString:RECENT_GAMES_TITLE]) {
+      cell.text.text = NSLocalizedString(@"Recently Played",@"Recently Played");
+    }
     cell.text.font = [UIFont systemFontOfSize:cell.bounds.size.height * 0.8 weight:UIFontWeightHeavy];
     cell.text.textColor = HEADER_TEXT_COLOR;
     cell.backgroundColor = HEADER_BACKGROUND_COLOR;

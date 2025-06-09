@@ -132,47 +132,47 @@
             {
                 case 0:
                 {
-                    cell.textLabel.text = @"Filter";
+                    cell.textLabel.text = NSLocalizedString(@"Filter", @"Settings: Video Section: Filter option");
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                     cell.detailTextLabel.text = [Options.arrayFilter optionFind:op.filter];
                     break;
                 }
                 case 1:
                 {
-                    cell.textLabel.text   = @"Skin";
+                    cell.textLabel.text   = NSLocalizedString(@"Skin",@"Settings: Video Section: Skin option");
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                     cell.detailTextLabel.text = [Options.arraySkin optionFind:op.skin];
                     break;
                 }
                 case 2:
                 {
-                    cell.textLabel.text   = @"Screen Shader";
+                    cell.textLabel.text   = NSLocalizedString(@"Screen Shader", @"Settings: Video Section: Shader option");
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                     cell.detailTextLabel.text = [Options.arrayScreenShader optionFind:op.screenShader];
                     break;
                 }
                 case 3:
                 {
-                    cell.textLabel.text   = @"Vector Shader";
+                    cell.textLabel.text   = NSLocalizedString(@"Vector Shader",@"Settings: Video Section: Vector shader option");
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                     cell.detailTextLabel.text = [Options.arrayLineShader optionFind:op.lineShader];
                     break;
                 }
                case 4:
                {
-                    cell.textLabel.text   = @"Keep Aspect Ratio";
+                    cell.textLabel.text   = NSLocalizedString(@"Keep Aspect Ratio",@"Settings: Video Section: Aspect Ratio option");
                     cell.accessoryView = [self optionSwitchForKey:@"keepAspectRatio"];
                    break;
                }
                case 5:
                {
-                   cell.textLabel.text   = @"Force Integer Scaling";
+                   cell.textLabel.text   = NSLocalizedString(@"Force Integer Scaling",@"Settings: Video Section: Integer scaling option");
                    cell.accessoryView = [self optionSwitchForKey:@"integerScalingOnly"];
                    break;
                }
                case 6:
                {
-                   cell.textLabel.text   = @"Force Pixel Aspect";
+                   cell.textLabel.text   = NSLocalizedString(@"Force Pixel Aspect",@"Settings: Video Section: Skin option");
                    cell.accessoryView = [self optionSwitchForKey:@"forcepxa"];
                    break;
                }
@@ -185,13 +185,13 @@
            {
                case 0:
                 {
-                    cell.textLabel.text = @"Beam 2x";
+                    cell.textLabel.text = NSLocalizedString(@"Beam 2x", @"Settings: Vector Section: Beam2x option");
                     cell.accessoryView = [self optionSwitchForKey:@"vbean2x"];
                     break;
                 }
                 case 1:
                 {
-                    cell.textLabel.text = @"Flicker";
+                    cell.textLabel.text = NSLocalizedString(@"Flicker", @"Settings: Vector Section: Flicker option");
                     cell.accessoryView = [self optionSwitchForKey:@"vflicker"];
                     break;
                 }
@@ -204,19 +204,19 @@
            {
                case 0:
                {
-                   cell.textLabel.text   = @"Fullscreen (Portrait)";
+                   cell.textLabel.text   = NSLocalizedString(@"Fullscreen (Portrait)", @"Settings: FullScreen Section: Portrait option");
                    cell.accessoryView = [self optionSwitchForKey:@"fullscreenPortrait"];
                    break;
                }
                case 1:
                {
-                   cell.textLabel.text   = @"Fullscreen (Landscape)";
+                   cell.textLabel.text   = NSLocalizedString(@"Fullscreen (Landscape)", @"Settings: FullScreen Section: Landscape option");
                    cell.accessoryView = [self optionSwitchForKey:@"fullscreenLandscape"];
                    break;
                }
                case 2:
                {
-                   cell.textLabel.text   = @"Fullscreen (Controller)";
+                 cell.textLabel.text   = NSLocalizedString(@"Fullscreen (Controller)", @"Settings: FullScreen Section: Controller option");
                    cell.accessoryView = [self optionSwitchForKey:@"fullscreenJoystick"];
                    break;
                }
@@ -230,50 +230,50 @@
             {
                 case 0:
                 {
-                    cell.textLabel.text   = @"Show FPS";
+                    cell.textLabel.text = NSLocalizedString(@"Show FPS", @"Toggle to display frames per second counter");
                     cell.accessoryView = [self optionSwitchForKey:@"showFPS"];
                     break;
                 }
                 case 1:
                 {
-                    cell.textLabel.text   = @"Show HUD";
+                    cell.textLabel.text = NSLocalizedString(@"Show HUD", @"Toggle to display heads-up display overlay");
                     cell.accessoryView = [self optionSwitchForKey:@"showHUD"];
                     break;
                 }
                 case 2:
                 {
-                    cell.textLabel.text   = @"Show Info/Warnings";
+                    cell.textLabel.text = NSLocalizedString(@"Show Info/Warnings", @"Toggle to display information messages and warnings");
                     cell.accessoryView = [self optionSwitchForKey:@"showINFO"];
                     break;
                 }
                 case 3:
                 {
-                     cell.textLabel.text = @"Cheats";
+                    cell.textLabel.text = NSLocalizedString(@"Cheats", @"Enable or disable cheat codes");
                      cell.accessoryView = [self optionSwitchForKey:@"cheats"];
                      break;
                 }
                 case 4:
                 {
-                     cell.textLabel.text   = @"Save Hiscores";
+                     cell.textLabel.text = NSLocalizedString(@"Save Hiscores", @"Toggle to save high scores automatically");
                      cell.accessoryView = [self optionSwitchForKey:@"hiscore"];
                      break;
                 }
                 case 5:
                 {
-                     cell.textLabel.text   = @"Use DRC";
+                     cell.textLabel.text = NSLocalizedString(@"Use DRC", @"Enable dynamic recompilation");
                      cell.accessoryView = [self optionSwitchForKey:@"useDRC"];
                      break;
                 }
                 case 6:
                 {
-                     cell.textLabel.text   = @"Emulated Speed";
+                     cell.textLabel.text = NSLocalizedString(@"Emulated Speed", @"Adjust the speed of emulation");
                      cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                      cell.detailTextLabel.text = [Options.arrayEmuSpeed optionAtIndex:op.emuspeed];
                      break;
                 }
                 case 7:
                 {
-                     cell.textLabel.text   = @"Sound";
+                     cell.textLabel.text = NSLocalizedString(@"Sound", @"Audio settings and configuration");
                      cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                      cell.detailTextLabel.text = [Options.arraySoundValue optionAtIndex:op.soundValue];
                      break;
@@ -287,19 +287,19 @@
            {
                case 0:
                {
-                   cell.textLabel.text   = @"Hide Clones";
+                   cell.textLabel.text = NSLocalizedString(@"Hide Clones", @"Filter option to hide clone games from the list");
                    cell.accessoryView = [self optionSwitchForKey:@"filterClones"];
                    break;
                }
                case 1:
                {
-                   cell.textLabel.text   = @"Hide Not Working";
+                   cell.textLabel.text = NSLocalizedString(@"Hide Not Working", @"Filter option to hide non-functional games from the list");
                    cell.accessoryView = [self optionSwitchForKey:@"filterNotWorking"];
                    break;
                }
                case 2:
                {
-                   cell.textLabel.text   = @"Hide BIOS";
+                   cell.textLabel.text = NSLocalizedString(@"Hide BIOS", @"Filter option to hide BIOS files from the list");
                    cell.accessoryView = [self optionSwitchForKey:@"filterBIOS"];
                    break;
                }
@@ -312,7 +312,7 @@
             {
                 case 0:
                 {
-                    cell.textLabel.text = @"Game Input";
+                    cell.textLabel.text = NSLocalizedString(@"Game Input", @"Menu option for configuring game input controls");
                     cell.imageView.image = [UIImage systemImageNamed:@"gamecontroller"];
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                     break;
@@ -326,28 +326,28 @@
            {
                case 0:
                {
-                   cell.textLabel.text = @"Import";
+                   cell.textLabel.text = NSLocalizedString(@"Import", @"Menu option to import games or files");
                    cell.imageView.image = [UIImage systemImageNamed:@"square.and.arrow.down.on.square"];
                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                    break;
                }
                case 1:
                {
-                   cell.textLabel.text = @"Export";
+                   cell.textLabel.text = NSLocalizedString(@"Export", @"Menu option to export games or files");
                    cell.imageView.image = [UIImage systemImageNamed:@"square.and.arrow.up.on.square"];
                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                    break;
                }
                case 2:
                {
-                   cell.textLabel.text = @"Start Web Server";
+                   cell.textLabel.text = NSLocalizedString(@"Start Web Server", @"Menu option to start the web server for file transfers");
                    cell.imageView.image = [UIImage systemImageNamed:@"arrow.up.arrow.down.circle"];
                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                    break;
                }
                case 3:
                {
-                   cell.textLabel.text = @"Show Files";
+                   cell.textLabel.text = NSLocalizedString(@"Show Files", @"Menu option to view files in the file manager");
                    cell.imageView.image = [UIImage systemImageNamed:@"folder"];
                    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                    break;
@@ -400,7 +400,7 @@
                 {
                     cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
 
-                    cell.textLabel.text = @"Reset to Defaults";
+                    cell.textLabel.text = NSLocalizedString(@"Reset to Defaults", @"Button to restore all settings to their default values");
                     cell.textLabel.textColor = [UIColor whiteColor];
                     cell.textLabel.shadowColor = [UIColor blackColor];
                     cell.textLabel.textAlignment = NSTextAlignmentCenter;
@@ -418,8 +418,7 @@
                case 0:
                {
                    cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
-
-                   cell.textLabel.text = @"Benchmark";
+                   cell.textLabel.text = NSLocalizedString(@"Benchmark", @"Menu option to run performance benchmark test");
                    cell.textLabel.textColor = [UIColor whiteColor];
                    cell.textLabel.shadowColor = [UIColor blackColor];
                    cell.textLabel.textAlignment = NSTextAlignmentCenter;
@@ -445,21 +444,20 @@
 		
     switch (section)
     {
-        case kSupportSection: return nil;
-        case kFullscreenSection: return @"Fullscreen";
-        case kVideoSection: return @"Video Options";
-        case kVectorSection: return @"Vector Options";
-        case kMiscSection: return @"Options";
-        case kFilterSection: return @"Game Filter";
-        case kOtherSection: return @""; // @"Other";
-        case kImportSection: return @"Import and Export";
+      case kFullscreenSection: return NSLocalizedString(@"Fullscreen", @"Section header for fullscreen display options");
+      case kVideoSection: return NSLocalizedString(@"Video Options", @"Section header for video display settings");
+      case kVectorSection: return NSLocalizedString(@"Vector Options", @"Section header for vector graphics settings");
+      case kMiscSection: return NSLocalizedString(@"Options", @"Section header for miscellaneous settings");
+      case kFilterSection: return NSLocalizedString(@"Game Filter", @"Section header for game filtering options");
+      case kOtherSection: return @""; // @"Other";
+      case kImportSection: return NSLocalizedString(@"Import and Export", @"Section header for import and export functions");
 #if !TARGET_APPSTORE
         case kCloudImportSection: return @"iCloud";
 #endif
         case kResetSection: return @"";
         case kBenchmarkSection: return @"";
     }
-    return @"Error!";
+    return @"";
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section

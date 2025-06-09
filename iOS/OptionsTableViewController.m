@@ -79,7 +79,7 @@
 
   
   if (mame_version.length != 0)
-      version = [NSString stringWithFormat:@"App Version: %@\nCore Version: %@", app_version, mame_version];
+      version = [NSString stringWithFormat:NSLocalizedString(@"App Version: %@\nCore Version: %@",@"App version and core version in settings"), app_version, mame_version];
   return version;
 }
 
