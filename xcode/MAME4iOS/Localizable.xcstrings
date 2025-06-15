@@ -7,7 +7,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : ":%@:設定"
+            "value" : ":%@:オプション"
           }
         }
       }
@@ -101,6 +101,46 @@
         }
       }
     },
+    ":bookmark:Load ①" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":bookmark:ロード ①"
+          }
+        }
+      }
+    },
+    ":bookmark:Load ②" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":bookmark:ロード ②"
+          }
+        }
+      }
+    },
+    ":bookmark.fill:Save ①" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":bookmark.fill:セーブ ①"
+          }
+        }
+      }
+    },
+    ":bookmark.fill:Save ②" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":bookmark.fill:セーブ ②"
+          }
+        }
+      }
+    },
     ":camera:Snapshot" : {
       "comment" : "HUD Snapshot",
       "localizations" : {
@@ -119,6 +159,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : ":yensign.circle:コイン+スタート"
+          }
+        }
+      }
+    },
+    ":escape:Reset" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":escape:リセット"
+          }
+        }
+      }
+    },
+    ":pause.circle:Pause" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":pause.circle:ポーズ"
           }
         }
       }
@@ -167,6 +227,26 @@
         }
       }
     },
+    ":power:Power" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":power:電源"
+          }
+        }
+      }
+    },
+    ":slider.horizontal.3:Configure" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":slider.horizontal.3:オプション"
+          }
+        }
+      }
+    },
     ":wrench:Service" : {
       "comment" : "HUD Service",
       "localizations" : {
@@ -174,6 +254,187 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : ":wrench:サービス"
+          }
+        }
+      }
+    },
+    ":xmark.circle:Exit" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":xmark.circle:終了"
+          }
+        }
+      }
+    },
+    ":xmark.circle:Exit Game" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":xmark.circle:ゲーム終了"
+          }
+        }
+      }
+    },
+    "⚠️Game might not run correctly." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⚠️ゲームが正常に動作しない可能性があります。"
+          }
+        }
+      }
+    },
+    "0 Buttons" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "なし"
+          }
+        }
+      }
+    },
+    "1 Buttons" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "１つ"
+          }
+        }
+      }
+    },
+    "2 Buttons" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "２つ"
+          }
+        }
+      }
+    },
+    "2-Way" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2方向"
+          }
+        }
+      }
+    },
+    "3 Buttons" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3つ"
+          }
+        }
+      }
+    },
+    "4 Buttons" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4つ"
+          }
+        }
+      }
+    },
+    "4-Way" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4方向"
+          }
+        }
+      }
+    },
+    "5 Buttons" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5つ"
+          }
+        }
+      }
+    },
+    "8-Way" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "8方向"
+          }
+        }
+      }
+    },
+    "Add Arguments..." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "引数を追加..."
+          }
+        }
+      }
+    },
+    "Add ROMs" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ROMを追加"
+          }
+        }
+      }
+    },
+    "Add to Favorites" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "お気に入りに追加"
+          }
+        }
+      }
+    },
+    "All Buttons" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全ボタン"
+          }
+        }
+      }
+    },
+    "Analog Stick" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アナログスティック"
+          }
+        }
+      }
+    },
+    "Animated" : {
+      "comment" : "Animated",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アニメーション"
           }
         }
       }
@@ -206,6 +467,26 @@
         }
       }
     },
+    "ArcadeMania Space Adventure" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ArcadeMania宇宙大冒険"
+          }
+        }
+      }
+    },
+    "ArcadeMania Test ROMs" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ArcadeManiaテスト用ROM"
+          }
+        }
+      }
+    },
     "Are you sure you want to exit?" : {
       "comment" : "Exit confirmation text",
       "localizations" : {
@@ -213,6 +494,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "終了してもよろしいですか？"
+          }
+        }
+      }
+    },
+    "Auto" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動"
           }
         }
       }
@@ -239,6 +530,77 @@
         }
       }
     },
+    "Big" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "大"
+          }
+        }
+      }
+    },
+    "Bigger" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "より大きく"
+          }
+        }
+      }
+    },
+    "Bottom Screen Reload" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下画面リロード"
+          }
+        }
+      }
+    },
+    "Button A = B + X" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ボタンA = B + X"
+          }
+        }
+      }
+    },
+    "Button A as Autofire" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ボタンA連射"
+          }
+        }
+      }
+    },
+    "Buttons" : {
+      "comment" : "Buttons",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ボタン"
+          }
+        }
+      }
+    },
+    "Buttons Size" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ボタンサイズ"
+          }
+        }
+      }
+    },
     "Cancel" : {
       "comment" : "Cancel",
       "localizations" : {
@@ -246,6 +608,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "キャンセル"
+          }
+        }
+      }
+    },
+    "Change Current Layout" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "現在のレイアウト変更"
           }
         }
       }
@@ -272,13 +644,23 @@
         }
       }
     },
+    "Command Line Arguments" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コマンドライン引数"
+          }
+        }
+      }
+    },
     "Configure" : {
       "comment" : "HUD Configure",
       "localizations" : {
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "設定"
+            "value" : "オプション"
           }
         }
       }
@@ -316,6 +698,17 @@
         }
       }
     },
+    "Dead Zone" : {
+      "comment" : "Dead Zone",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デッドゾーン"
+          }
+        }
+      }
+    },
     "Default" : {
       "comment" : "Default",
       "localizations" : {
@@ -323,6 +716,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "標準"
+          }
+        }
+      }
+    },
+    "Delete" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "削除"
+          }
+        }
+      }
+    },
+    "Digital DPAD" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デジタル十字キー"
+          }
+        }
+      }
+    },
+    "Digital Stick" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デジタルスティック"
+          }
+        }
+      }
+    },
+    "Disabled" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無効"
           }
         }
       }
@@ -338,6 +771,16 @@
         }
       }
     },
+    "Edit Arguments..." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "引数を編集..."
+          }
+        }
+      }
+    },
     "Emulated Speed" : {
       "comment" : "Adjust the speed of emulation",
       "localizations" : {
@@ -345,6 +788,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "エミュレート速度"
+          }
+        }
+      }
+    },
+    "Enabled" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有効"
+          }
+        }
+      }
+    },
+    "Enter command line arguments when executing MAME. Note that this is for advanced users only." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MAME実行時のコマンドライン引数を入力してください。これは上級者向けの機能です。"
           }
         }
       }
@@ -378,6 +841,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "エクスポート"
+          }
+        }
+      }
+    },
+    "Export Skin" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スキンエクスポート"
+          }
+        }
+      }
+    },
+    "External Controller" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "外部コントローラー"
           }
         }
       }
@@ -481,6 +964,26 @@
         }
       }
     },
+    "Fullscreen Buttons" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フルスクリーン時のボタン"
+          }
+        }
+      }
+    },
+    "Fullscreen Stick Size" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フルスクリーン時のスティック"
+          }
+        }
+      }
+    },
     "Game Filter" : {
       "comment" : "Section header for game filtering options",
       "localizations" : {
@@ -536,6 +1039,16 @@
         }
       }
     },
+    "Haptic Feedback" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "触覚フィードバック"
+          }
+        }
+      }
+    },
     "Hide BIOS" : {
       "comment" : "Filter option to hide BIOS files from the list",
       "localizations" : {
@@ -569,6 +1082,26 @@
         }
       }
     },
+    "Hide Touch Buttons" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タッチボタンを隠す"
+          }
+        }
+      }
+    },
+    "Hide Touch D-Pad" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タッチ十字キーを隠す"
+          }
+        }
+      }
+    },
     "Import" : {
       "comment" : "Menu option to import games or files",
       "localizations" : {
@@ -587,6 +1120,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "インポートとエクスポート"
+          }
+        }
+      }
+    },
+    "Import ROMs" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ROMをインポート"
+          }
+        }
+      }
+    },
+    "Info" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "情報"
           }
         }
       }
@@ -635,6 +1188,17 @@
         }
       }
     },
+    "lineTron" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ライントロン"
+          }
+        }
+      }
+    },
     "Load" : {
       "comment" : "HUD Load",
       "localizations" : {
@@ -642,6 +1206,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ロード"
+          }
+        }
+      }
+    },
+    "Make First Favorite" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最初のお気に入りにする"
           }
         }
       }
@@ -712,6 +1286,16 @@
         }
       }
     },
+    "Nintendo Button Layout" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "任天堂ボタンレイアウト"
+          }
+        }
+      }
+    },
     "No" : {
       "comment" : "No",
       "localizations" : {
@@ -741,6 +1325,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "なし"
+          }
+        }
+      }
+    },
+    "Normal" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "標準"
           }
         }
       }
@@ -811,6 +1405,16 @@
         }
       }
     },
+    "Opacity (Full Screen)" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不透明度（フルスクリーン）"
+          }
+        }
+      }
+    },
     "Options" : {
       "comment" : "Section header for miscellaneous settings",
       "localizations" : {
@@ -822,6 +1426,26 @@
         }
       }
     },
+    "P1 as P2,P3,P4" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "P1をP2,P3,P4として利用"
+          }
+        }
+      }
+    },
+    "Paste Image" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画像を貼り付け"
+          }
+        }
+      }
+    },
     "Pause" : {
       "comment" : "HUD Pause",
       "localizations" : {
@@ -829,6 +1453,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ポーズ"
+          }
+        }
+      }
+    },
+    "Play" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プレイ"
+          }
+        }
+      }
+    },
+    "Play With..." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "...でプレイ"
           }
         }
       }
@@ -866,6 +1510,36 @@
         }
       }
     },
+    "Reload ROMs" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ROMを再読み込み"
+          }
+        }
+      }
+    },
+    "Remove from Favorites" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "お気に入りから削除"
+          }
+        }
+      }
+    },
+    "Remove from Recently Played" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近プレイしたものから削除"
+          }
+        }
+      }
+    },
     "Reset" : {
       "comment" : "HUD Reset",
       "localizations" : {
@@ -877,6 +1551,16 @@
         }
       }
     },
+    "Reset Current Layout to Default" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "現在のレイアウトをデフォルトにリセット"
+          }
+        }
+      }
+    },
     "Reset to Defaults" : {
       "comment" : "Button to restore all settings to their default values",
       "localizations" : {
@@ -884,6 +1568,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "初期設定に戻す"
+          }
+        }
+      }
+    },
+    "Restore Defaults" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "初期化をする"
           }
         }
       }
@@ -932,6 +1626,16 @@
         }
       }
     },
+    "Sensitivity" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "感度"
+          }
+        }
+      }
+    },
     "Settings" : {
       "comment" : "Settings",
       "localizations" : {
@@ -950,6 +1654,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "シャドウマスク（強）"
+          }
+        }
+      }
+    },
+    "Share" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "共有"
           }
         }
       }
@@ -1020,6 +1734,26 @@
         }
       }
     },
+    "Small" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "小"
+          }
+        }
+      }
+    },
+    "Smaller" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "より小さく"
+          }
+        }
+      }
+    },
     "Software" : {
       "comment" : "Software\nSoftware scope",
       "localizations" : {
@@ -1031,6 +1765,16 @@
         }
       }
     },
+    "Some games require shooting offscreen to reload" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一部のゲームはリロードに画面外への射撃が必要"
+          }
+        }
+      }
+    },
     "Sound" : {
       "comment" : "Audio settings and configuration",
       "localizations" : {
@@ -1038,6 +1782,96 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "サウンド"
+          }
+        }
+      }
+    },
+    "Speed 1" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スピード1"
+          }
+        }
+      }
+    },
+    "Speed 2" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スピード２"
+          }
+        }
+      }
+    },
+    "Speed 3" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スピード３"
+          }
+        }
+      }
+    },
+    "Speed 4" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スピード４"
+          }
+        }
+      }
+    },
+    "Speed 5" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スピード５"
+          }
+        }
+      }
+    },
+    "Speed 6" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スピード６"
+          }
+        }
+      }
+    },
+    "Speed 7" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スピード７"
+          }
+        }
+      }
+    },
+    "Speed 8" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スピード８"
+          }
+        }
+      }
+    },
+    "Speed 9" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スピード９"
           }
         }
       }
@@ -1064,6 +1898,27 @@
         }
       }
     },
+    "Stick & DPAD" : {
+      "comment" : "Stick & DPAD",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スティック & 十字キー "
+          }
+        }
+      }
+    },
+    "Stop Server" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サーバーを停止"
+          }
+        }
+      }
+    },
     "System" : {
       "comment" : "System scope",
       "localizations" : {
@@ -1071,6 +1926,131 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "システム"
+          }
+        }
+      }
+    },
+    "To transfer ROMs from your computer go to one of these addresses in your web browser:\n\n%@" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "パスコンからROMを転送するには、ウェブブラウザーで以下のアドレスのいずれかにアクセスしてください\n\n%@"
+          }
+        }
+      }
+    },
+    "To transfer ROMs from your computer, Start Web Server or Import ROMs." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "パソコンからROMを転送するには、ウェブサーバーを開始するかROMをインポートしてください。"
+          }
+        }
+      }
+    },
+    "To transfer ROMs from your computer, Start Web Server, Import ROMs, or use AirDrop." : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "パソコンからROMを転送するには、ウェブサーバーを開始、ROMをインポート、またはAirDropを使用してください。\n"
+          }
+        }
+      }
+    },
+    "Touch Analog" : {
+      "comment" : "Touch Analog",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アナログタッチ"
+          }
+        }
+      }
+    },
+    "Touch Directional Input" : {
+      "comment" : "Touch Directional Input",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タッチ方向入力"
+          }
+        }
+      }
+    },
+    "Touch Layout" : {
+      "comment" : "Touch Layout",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タッチ配置"
+          }
+        }
+      }
+    },
+    "Touch Lightgun" : {
+      "comment" : "Touch Lightgun",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タッチライトガン"
+          }
+        }
+      }
+    },
+    "Touch Lightgun Mode Enabled!" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タッチライトガンモードが有効になりました"
+          }
+        }
+      }
+    },
+    "Touch Mouse Mode Enabled!" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タッチマウスモードが有効になりました"
+          }
+        }
+      }
+    },
+    "Touch Stick" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タッチスティック"
+          }
+        }
+      }
+    },
+    "Touch Type" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タッチタイプ"
+          }
+        }
+      }
+    },
+    "Turbo Mode Toggle" : {
+      "comment" : "Turbo Mode Toggle",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ターボモード切替"
           }
         }
       }
@@ -1099,6 +2079,27 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ウルトロン"
+          }
+        }
+      }
+    },
+    "ulTron " : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ウルトロン"
+          }
+        }
+      }
+    },
+    "Use as Title Image" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タイトル画像として使用"
           }
         }
       }
@@ -1154,6 +2155,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "画像設定"
+          }
+        }
+      }
+    },
+    "Ways" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "方向"
+          }
+        }
+      }
+    },
+    "Web Server Started" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ウェブサーバーが開始されました"
           }
         }
       }

@@ -804,7 +804,7 @@ void m4i_game_list(myosd_game_info* game_info, int game_count)
       GameInfo* spaceManiaGame = [[GameInfo alloc] initWithDictionary:@{
           kGameInfoType:        kGameInfoTypeConsole,
           kGameInfoName:        @"roms/arcademaniaspacemania.zip",
-          kGameInfoDescription: @"ArcadeMania Space Adventure",
+          kGameInfoDescription: NSLocalizedString(@"ArcadeMania Space Adventure",@""),
           kGameInfoYear:        @"2025",
           kGameInfoParent:      @"",
           kGameInfoManufacturer:@"Yoshi Sugawara",
@@ -1513,16 +1513,16 @@ UIViewController* g_menu;
 }
 
 - (void)runAddROMS:(id)from {
-    NSString* title = g_no_roms_found ? @"Welcome to " PRODUCT_NAME_LONG : @"Add ROMs";
+    NSString* title = g_no_roms_found ? @"Welcome to " PRODUCT_NAME_LONG : NSLocalizedString(@"Add ROMs",@"");
 #if TARGET_OS_TV
-    NSString* message = @"To transfer ROMs from your computer, Start Web Server or Import ROMs.";
+    NSString* message = NSLocalizedString(@"To transfer ROMs from your computer, Start Web Server or Import ROMs.",@"");
 #else
-    NSString* message = @"To transfer ROMs from your computer, Start Web Server, Import ROMs, or use AirDrop.";
+    NSString* message = NSLocalizedString(@"To transfer ROMs from your computer, Start Web Server, Import ROMs, or use AirDrop.",@"");
 #endif
     
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
 #if TARGET_OS_IOS
-    [alert addAction:[UIAlertAction actionWithTitle:@"Import ROMs" symbol:@"square.and.arrow.down" style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
+    [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Import ROMs",@"") symbol:@"square.and.arrow.down" style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
         [self runImport];
     }]];
 #endif
@@ -1537,17 +1537,17 @@ UIViewController* g_menu;
 #endif
   
 #if TARGET_OS_IOS
-    [alert addAction:[UIAlertAction actionWithTitle:@"Show Files" symbol:@"folder" style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
+    [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Show Files",@"") symbol:@"folder" style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
         [self runShowFiles];
     }]];
 #endif
-    [alert addAction:[UIAlertAction actionWithTitle:@"Start Web Server" symbol:@"arrow.up.arrow.down.circle" style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
+    [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Start Web Server",@"") symbol:@"arrow.up.arrow.down.circle" style:UIAlertActionStyleDefault handler:^(UIAlertAction* action) {
         [self runServer];
     }]];
-    [alert addAction:[UIAlertAction actionWithTitle:@"Reload ROMs" symbol:@"arrow.2.circlepath.circle" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+    [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Reload ROMs",@"") symbol:@"arrow.2.circlepath.circle" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
         [self reload];  /* exit mame menu and re-scan ROMs*/
     }]];
-    [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+    [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel",@"") style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
         g_no_roms_found_canceled = TRUE; // dont ask again
         if (self.presentedViewController == nil)
             [self reload];  /* exit mame menu and re-scan ROMs*/
@@ -2410,47 +2410,47 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     
     if (g_pref_showHUD == HudSizeLarge) {
         if (myosd_num_players == 1) {
-            [hudViewController addButtons:@[@":centsign.circle:Coin+Start"] handler:^(NSUInteger button) {
+            [hudViewController addButtons:@[NSLocalizedString(@":centsign.circle:Coin+Start",@"")] handler:^(NSUInteger button) {
                 [_self startPlayer:0];
             }];
         }
         else if (myosd_num_players >= 2) {
-            [hudViewController addButtons:@[@":person:1P Start", @":person.2:2P Start"] handler:^(NSUInteger button) {
+            [hudViewController addButtons:@[NSLocalizedString(@":person:1P Start",@""), NSLocalizedString(@":person.2:2P Start",@"")] handler:^(NSUInteger button) {
                 [_self startPlayer:(int)button];
             }];
         }
         if (myosd_num_players >= 3) {
             // FYI there is no person.4 symbol, so we just reuse person.3
-            [hudViewController addButtons:@[@":person.3:3P Start", (myosd_num_players >= 4) ? @":person.3:4P Start" : @""] handler:^(NSUInteger button) {
+            [hudViewController addButtons:@[NSLocalizedString(@":person.3:3P Start",@""), (myosd_num_players >= 4) ? NSLocalizedString(@":person.3:4P Start",@"") : @""] handler:^(NSUInteger button) {
                 if (button+2 < myosd_num_players)
                     [_self startPlayer:(int)button + 2];
             }];
         }
-        [hudViewController addButtons:@[@":bookmark:Load ①", @":bookmark:Load ②"] handler:^(NSUInteger button) {
+        [hudViewController addButtons:@[NSLocalizedString(@":bookmark:Load ①",@""), NSLocalizedString(@":bookmark:Load ②",@"")] handler:^(NSUInteger button) {
             mame_load_state((int)button + 1);
         }];
-        [hudViewController addButtons:@[@":bookmark.fill:Save ①", @":bookmark.fill:Save ②"] handler:^(NSUInteger button) {
+        [hudViewController addButtons:@[NSLocalizedString(@":bookmark.fill:Save ①",@""), NSLocalizedString(@":bookmark.fill:Save ②",@"")] handler:^(NSUInteger button) {
             mame_save_state((int)button + 1);
         }];
-        [hudViewController addButtons:@[@":slider.horizontal.3:Configure",@":pause.circle:Pause"] handler:^(NSUInteger button) {
+        [hudViewController addButtons:@[NSLocalizedString(@":slider.horizontal.3:Configure",@""),NSLocalizedString(@":pause.circle:Pause",@"")] handler:^(NSUInteger button) {
             if (button == 0)
                 push_mame_key(MYOSD_KEY_CONFIGURE);
             else
                 push_mame_key(MYOSD_KEY_P);
         }];
-        [hudViewController addButtons:@[@":camera:Snapshot", @":wrench:Service"] handler:^(NSUInteger button) {
+        [hudViewController addButtons:@[NSLocalizedString(@":camera:Snapshot",@""), NSLocalizedString(@":wrench:Service",@"")] handler:^(NSUInteger button) {
             if (button == 0)
                 push_mame_key(MYOSD_KEY_SNAP);
             else
                 push_mame_key(MYOSD_KEY_SERVICE);
         }];
-        [hudViewController addButtons:@[@":power:Power", @":escape:Reset"] handler:^(NSUInteger button) {
+        [hudViewController addButtons:@[NSLocalizedString(@":power:Power",@""), NSLocalizedString(@":escape:Reset",@"")] handler:^(NSUInteger button) {
             if (button == 0)
                 push_mame_key(MYOSD_KEY_RESET);         // this does a HARD reset
             else
                 push_mame_key(MYOSD_KEY_F3);            // this does a SOFT reset
         }];
-        [hudViewController addButton:(myosd_inGame && myosd_in_menu==0) ? @":xmark.circle:Exit Game" : @":xmark.circle:Exit" color:[UIColor.systemRedColor colorWithAlphaComponent:0.5] handler:^{
+        [hudViewController addButton:(myosd_inGame && myosd_in_menu==0) ? NSLocalizedString(@":xmark.circle:Exit Game",@"") : NSLocalizedString(@":xmark.circle:Exit",@"") color:[UIColor.systemRedColor colorWithAlphaComponent:0.5] handler:^{
             if (TARGET_OS_TV && g_menu == _self)
                 [_self runMenu];
             [_self runExit:NO];
@@ -2485,7 +2485,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
         }
         
         [hudViewController addText:@" "];
-        [hudViewController addButton:@"Restore Defaults" color:[UIColor.systemPurpleColor colorWithAlphaComponent:0.5] handler:^{
+        [hudViewController addButton:NSLocalizedString(@"Restore Defaults",@"") color:[UIColor.systemPurpleColor colorWithAlphaComponent:0.5] handler:^{
             NSLog(@"RESTORE DEFAULTS");
             for (NSString* str in shader_arr) {
                 NSArray* arr = split(str, @"=");
@@ -2587,7 +2587,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     if ( prev_myosd_light_gun == 0 && myosd_light_gun == 1 && g_pref_lightgun_enabled ) {
         lightgun_x = 0.0;
         lightgun_y = 0.0;
-        [self.view makeToast:@"Touch Lightgun Mode Enabled!" duration:2.0 position:CSToastPositionCenter
+        [self.view makeToast:NSLocalizedString(@"Touch Lightgun Mode Enabled!",@"") duration:2.0 position:CSToastPositionCenter
                        title:nil image:[UIImage systemImageNamed:@"target"] style:toastStyle completion:nil];
     }
     prev_myosd_light_gun = myosd_light_gun;
@@ -2595,7 +2595,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
     if (prev_myosd_mouse == 0 && myosd_mouse == 1 && g_pref_touch_analog_enabled ) {
         mouse_delta_x[0] = 0.0;
         mouse_delta_y[0] = 0.0;
-        [self.view makeToast:@"Touch Mouse Mode Enabled!" duration:2.0 position:CSToastPositionCenter
+        [self.view makeToast:NSLocalizedString(@"Touch Mouse Mode Enabled!",@"") duration:2.0 position:CSToastPositionCenter
                        title:nil image:[UIImage systemImageNamed:@"cursorarrow.motionlines"] style:toastStyle completion:nil];
     }
     [self.touchMouseHandler setEnabled:g_pref_touch_analog_enabled];
@@ -2604,7 +2604,7 @@ static NSMutableArray* split(NSString* str, NSString* sep) {
 
     // Show a WARNING toast, but only once, and only if MAME did not show it already
     if (g_pref_showINFO == 0 && g_mame_warning_shown == 0 && g_mame_output_text[0] && strstr(g_mame_output_text, "WARNING") != NULL) {
-        [self.view makeToast:@"⚠️Game might not run correctly." duration:3.0 position:CSToastPositionBottom style:toastStyle];
+        [self.view makeToast:NSLocalizedString(@"⚠️Game might not run correctly.",@"") duration:3.0 position:CSToastPositionBottom style:toastStyle];
         g_mame_warning_shown = 1;
     }
     
@@ -5942,9 +5942,9 @@ NSString* getGamepadSymbol(GCExtendedGamepad* gamepad, GCControllerElement* elem
         [servers appendString:[NSString stringWithFormat:@"%@\n\n",server.bonjourServerURL]];
     }
     NSString* welcome = @"Welcome to " PRODUCT_NAME_LONG;
-    NSString* message = [NSString stringWithFormat:@"To transfer ROMs from your computer go to one of these addresses in your web browser:\n\n%@",servers];
-    NSString* title = g_no_roms_found ? welcome : @"Web Server Started";
-    NSString* done  = g_no_roms_found ? @"Reload ROMs" : @"Stop Server";
+    NSString* message = [NSString stringWithFormat:NSLocalizedString(@"To transfer ROMs from your computer go to one of these addresses in your web browser:\n\n%@",@""),servers];
+    NSString* title = g_no_roms_found ? welcome : NSLocalizedString(@"Web Server Started",@"");
+    NSString* done  = g_no_roms_found ? NSLocalizedString(@"Reload ROMs",@"") : NSLocalizedString(@"Stop Server",@"");
 
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
     [alert setProgress:0.0 text:@""];

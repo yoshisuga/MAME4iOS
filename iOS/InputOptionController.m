@@ -94,6 +94,40 @@
     return self;
 }
 
+-(NSDictionary*)localizationMap {
+  return @{
+    @"Digital DPAD": NSLocalizedString(@"Digital DPAD",@""),
+    @"Digital Stick": NSLocalizedString(@"Digital Stick",@""),
+    @"Analog Stick": NSLocalizedString(@"Analog Stick",@""),
+    @"Auto": NSLocalizedString(@"Auto",@""),
+    @"2-Way": NSLocalizedString(@"2-Way",@""),
+    @"4-Way": NSLocalizedString(@"4-Way",@""),
+    @"8-Way": NSLocalizedString(@"8-Way",@""),
+    @"Smaller": NSLocalizedString(@"Smaller",@""),
+    @"Small": NSLocalizedString(@"Small",@""),
+    @"Normal": NSLocalizedString(@"Normal",@""),
+    @"Big": NSLocalizedString(@"Big",@""),
+    @"Bigger": NSLocalizedString(@"Bigger",@""),
+    @"0 Buttons": NSLocalizedString(@"0 Buttons",@""),
+    @"1 Buttons": NSLocalizedString(@"1 Buttons",@""),
+    @"2 Buttons": NSLocalizedString(@"2 Buttons",@""),
+    @"3 Buttons": NSLocalizedString(@"3 Buttons",@""),
+    @"4 Buttons": NSLocalizedString(@"4 Buttons",@""),
+    @"5 Buttons": NSLocalizedString(@"5 Buttons",@""),
+    @"All Buttons": NSLocalizedString(@"All Buttons",@""),
+    @"Disabled": NSLocalizedString(@"Disabled",@""),
+    @"Speed 1": NSLocalizedString(@"Speed 1",@""),
+    @"Speed 2": NSLocalizedString(@"Speed 2",@""),
+    @"Speed 3": NSLocalizedString(@"Speed 3",@""),
+    @"Speed 4": NSLocalizedString(@"Speed 4",@""),
+    @"Speed 5": NSLocalizedString(@"Speed 5",@""),
+    @"Speed 6": NSLocalizedString(@"Speed 6",@""),
+    @"Speed 7": NSLocalizedString(@"Speed 7",@""),
+    @"Speed 8": NSLocalizedString(@"Speed 8",@""),
+    @"Speed 9": NSLocalizedString(@"Speed 9",@"")
+  };
+}
+
 - (void) viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     [self.tableView reloadData];
@@ -128,16 +162,16 @@
     switch (section)
     {
         case 0: return @"";
-        case 1: return @"Stick & DPAD";
-        case 2: return @"Buttons";
+        case 1: return NSLocalizedString(@"Stick & DPAD", @"Stick & DPAD");
+        case 2: return NSLocalizedString(@"Buttons", @"Buttons");
         case 3: return @"";
-        case 4: return @"Touch Layout";
+        case 4: return NSLocalizedString(@"Touch Layout", @"Touch Layout");
         case 5: return @"";
-        case 6: return @"Dead Zone";
-        case 7: return @"Touch Lightgun";
-        case 8: return @"Turbo Mode Toggle";
-        case 9: return @"Touch Analog";
-        case 10: return @"Touch Directional Input";
+        case 6: return NSLocalizedString(@"Dead Zone", @"Dead Zone");
+        case 7: return NSLocalizedString(@"Touch Lightgun", @"Touch Lightgun");
+        case 8: return NSLocalizedString(@"Turbo Mode Toggle", @"Turbo Mode Toggle");
+        case 9: return NSLocalizedString(@"Touch Analog", @"Touch Analog");
+        case 10: return NSLocalizedString(@"Touch Directional Input", @"Touch Directional Input");
     }
     return @"Error!";
 }
@@ -172,14 +206,14 @@
         case 0:
         {
             if ( indexPath.row == 0 ) {
-                cell.textLabel.text   = @"Animated";
+                cell.textLabel.text   = NSLocalizedString(@"Animated", @"Animated");
                 switchAnimatedButtons  = [[UISwitch alloc] initWithFrame:CGRectZero];
                 cell.accessoryView = switchAnimatedButtons ;
                 [switchAnimatedButtons setOn:[op animatedButtons] animated:NO];
                 [switchAnimatedButtons addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
                 break;
             } else if (indexPath.row == 1 ) {
-                cell.textLabel.text = @"Opacity (Full Screen)";
+                cell.textLabel.text = NSLocalizedString(@"Opacity (Full Screen)",@"");
                 sliderTouchControlsOpacity = [[UISlider alloc] initWithFrame:CGRectZero];
                 [sliderTouchControlsOpacity setMinimumValue:0.0];
                 [sliderTouchControlsOpacity setMaximumValue:100.0];
@@ -194,7 +228,7 @@
                 [sliderTouchControlsOpacity addConstraint:[NSLayoutConstraint constraintWithItem:sliderTouchControlsOpacity attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:100.0]];
                 break;
             } else if (indexPath.row == 2 ) {
-                cell.textLabel.text = @"Haptic Feedback";
+                cell.textLabel.text = NSLocalizedString(@"Haptic Feedback",@"");
                 cell.accessoryView = [self optionSwitchForKey:@"hapticButtonFeedback"];
                 break;
             }
@@ -205,25 +239,25 @@
             {
                 case 0:
                 {
-                    cell.textLabel.text   = @"Touch Type";
+                    cell.textLabel.text   = NSLocalizedString(@"Touch Type",@"");
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                    cell.detailTextLabel.text = [arrayTouchType objectAtIndex:op.touchtype];
+                    cell.detailTextLabel.text = NSLocalizedString([arrayTouchType objectAtIndex:op.touchtype],@"");
                     break;
                 }
                     
                 case 1:
                 {
-                    cell.textLabel.text   = @"Ways";
+                    cell.textLabel.text   = NSLocalizedString(@"Ways",@"");
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                    cell.detailTextLabel.text = [arrayStickType objectAtIndex:op.sticktype];
+                    cell.detailTextLabel.text = NSLocalizedString([arrayStickType objectAtIndex:op.sticktype],@"");
                     break;
                 }
                     
                 case 2:
                 {
-                    cell.textLabel.text   = @"Fullscreen Stick Size";
+                    cell.textLabel.text   = NSLocalizedString(@"Fullscreen Stick Size",@"");
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                    cell.detailTextLabel.text = [arrayStickSizeValue objectAtIndex:op.stickSize];
+                    cell.detailTextLabel.text = NSLocalizedString([arrayStickSizeValue objectAtIndex:op.stickSize],@"");
                     break;
                 }
             }
@@ -234,15 +268,15 @@
             switch (indexPath.row)
             {   case 0:
                 {
-                    cell.textLabel.text   = @"Fullscreen Buttons";
+                    cell.textLabel.text   = NSLocalizedString(@"Fullscreen Buttons",@"");
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                    cell.detailTextLabel.text = [arrayNumbuttons objectAtIndex:op.numbuttons];
+                    cell.detailTextLabel.text = NSLocalizedString([arrayNumbuttons objectAtIndex:op.numbuttons],@"");
                     break;
                 }
                     
                 case 1:
                 {
-                    cell.textLabel.text   = @"Button A = B + X";
+                    cell.textLabel.text   = NSLocalizedString(@"Button A = B + X",@"");
                     switchAplusB  = [[UISwitch alloc] initWithFrame:CGRectZero];
                     cell.accessoryView = switchAplusB ;
                     [switchAplusB setOn:[op aplusb] animated:NO];
@@ -252,21 +286,21 @@
                 case 2:
                 {
                     
-                    cell.textLabel.text   = @"Button A as Autofire";
+                    cell.textLabel.text   = NSLocalizedString(@"Button A as Autofire",@"");
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                    cell.detailTextLabel.text = [arrayAutofireValue objectAtIndex:op.autofire];
+                    cell.detailTextLabel.text = NSLocalizedString([arrayAutofireValue objectAtIndex:op.autofire],@"");
                     break;
                 }
                 case 3:
                 {
-                    cell.textLabel.text   = @"Buttons Size";
+                    cell.textLabel.text   = NSLocalizedString(@"Buttons Size",@"");
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                    cell.detailTextLabel.text = [arrayButtonSizeValue objectAtIndex:op.buttonSize];
+                    cell.detailTextLabel.text = NSLocalizedString([arrayButtonSizeValue objectAtIndex:op.buttonSize],@"");
                     break;
                 }
                 case 4:
                 {
-                    cell.textLabel.text   = @"Nintendo Button Layout";
+                    cell.textLabel.text   = NSLocalizedString(@"Nintendo Button Layout",@"");
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
                     switchBAYX  = [[UISwitch alloc] initWithFrame:CGRectZero];
                     cell.accessoryView = switchBAYX;
@@ -279,9 +313,9 @@
         }
         case 3:
         {
-            cell.textLabel.text   = @"External Controller";
+            cell.textLabel.text   = NSLocalizedString(@"External Controller",@"");
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-            cell.detailTextLabel.text = [Options.arrayControlType optionAtIndex:op.controltype];
+            cell.detailTextLabel.text = NSLocalizedString([Options.arrayControlType optionAtIndex:op.controltype],@"");
             break;
         }
             break;
@@ -291,21 +325,21 @@
             {   case 0:
                 {
                     cell.selectionStyle = UITableViewCellSelectionStyleBlue;
-                    cell.textLabel.text = @"Change Current Layout";
+                    cell.textLabel.text = NSLocalizedString(@"Change Current Layout",@"");
                     cell.textLabel.textAlignment = NSTextAlignmentCenter;
                     break;
                 }
                 case 1:
                 {
                     cell.selectionStyle = UITableViewCellSelectionStyleBlue;
-                    cell.textLabel.text = @"Reset Current Layout to Default";
+                    cell.textLabel.text = NSLocalizedString(@"Reset Current Layout to Default",@"");
                     cell.textLabel.textAlignment = NSTextAlignmentCenter;
                     break;
                 }
                 case 2:
                 {
                     cell.selectionStyle = UITableViewCellSelectionStyleBlue;
-                    cell.textLabel.text = @"Export Skin";
+                    cell.textLabel.text = NSLocalizedString(@"Export Skin",@"");
                     cell.textLabel.textAlignment = NSTextAlignmentCenter;
                     break;
                 }
@@ -314,7 +348,7 @@
         }
         case 5:
         {
-            cell.textLabel.text   = @"P1 as P2,P3,P4";
+            cell.textLabel.text   = NSLocalizedString(@"P1 as P2,P3,P4",@"");
             switchP1aspx  = [[UISwitch alloc] initWithFrame:CGRectZero];
             cell.accessoryView = switchP1aspx ;
             [switchP1aspx setOn:[op p1aspx] animated:NO];
@@ -326,9 +360,9 @@
             switch (indexPath.row)
             {   case 0:
                 {
-                    cell.textLabel.text   = @"Touch Stick";
+                    cell.textLabel.text   = NSLocalizedString(@"Touch Stick",@"");
                     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-                    cell.detailTextLabel.text = [arrayAnalogDZValue objectAtIndex:op.analogDeadZoneValue];
+                    cell.detailTextLabel.text = NSLocalizedString([arrayAnalogDZValue objectAtIndex:op.analogDeadZoneValue],@"");
                     break;
                 }
             }
@@ -340,7 +374,7 @@
             {
                 case 0:
                 {
-                    cell.textLabel.text = @"Enabled";
+                    cell.textLabel.text = NSLocalizedString(@"Enabled",@"");
                     switchLightgunEnabled = [[UISwitch alloc] initWithFrame:CGRectZero];
                     [switchLightgunEnabled setOn:[op lightgunEnabled]];
                     [switchLightgunEnabled addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
@@ -349,8 +383,8 @@
                 }
                 case 1:
                 {
-                    cell.textLabel.text = @"Bottom Screen Reload";
-                    cell.detailTextLabel.text = @"Some games require shooting offscreen to reload";
+                    cell.textLabel.text = NSLocalizedString(@"Bottom Screen Reload",@"");
+                    cell.detailTextLabel.text = NSLocalizedString(@"Some games require shooting offscreen to reload",@"");
                     switchLightgunBottomScreenReload = [[UISwitch alloc] initWithFrame:CGRectZero];
                     [switchLightgunBottomScreenReload setOn:[op lightgunBottomScreenReload]];
                     [switchLightgunBottomScreenReload addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
@@ -427,7 +461,7 @@
             {
                 case 0:
                 {
-                    cell.textLabel.text = @"Enabled";
+                    cell.textLabel.text = NSLocalizedString(@"Enabled",@"");
                     switchTouchAnalogEnabled = [[UISwitch alloc] initWithFrame:CGRectZero];
                     [switchTouchAnalogEnabled setOn:[op touchAnalogEnabled]];
                     [switchTouchAnalogEnabled addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
@@ -436,7 +470,7 @@
                 }
                 case 1:
                 {
-                    cell.textLabel.text = @"Sensitivity";
+                    cell.textLabel.text = NSLocalizedString(@"Sensitivity",@"");
                     sliderTouchAnalogSensitivity = [[UISlider alloc] initWithFrame:CGRectZero];
                     [sliderTouchAnalogSensitivity setMinimumValue:100.0];
                     [sliderTouchAnalogSensitivity setMaximumValue:1000.0];
@@ -453,7 +487,7 @@
                 }
                 case 2:
                 {
-                    cell.textLabel.text = @"Hide Touch D-Pad";
+                    cell.textLabel.text = NSLocalizedString(@"Hide Touch D-Pad",@"");
                     switchTouchAnalogHideTouchDirectionalPad = [[UISwitch alloc] initWithFrame:CGRectZero];
                     [switchTouchAnalogHideTouchDirectionalPad setOn:[op touchAnalogHideTouchDirectionalPad]];
                     [switchTouchAnalogHideTouchDirectionalPad addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
@@ -462,7 +496,7 @@
                 }
                 case 3:
                 {
-                    cell.textLabel.text = @"Hide Touch Buttons";
+                    cell.textLabel.text = NSLocalizedString(@"Hide Touch Buttons",@"");
                     switchTouchAnalogHideTouchButtons = [[UISwitch alloc] initWithFrame:CGRectZero];
                     [switchTouchAnalogHideTouchButtons setOn:[op touchAnalogHideTouchButtons]];
                     [switchTouchAnalogHideTouchButtons addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];
@@ -475,7 +509,7 @@
         }
         case 10:
         {
-            cell.textLabel.text = @"Enabled";
+            cell.textLabel.text = NSLocalizedString(@"Enabled",@"");
             switchTouchDirectionalEnabled = [[UISwitch alloc] initWithFrame:CGRectZero];
             [switchTouchDirectionalEnabled setOn:[op touchDirectionalEnabled]];
             [switchTouchDirectionalEnabled addTarget:self action:@selector(optionChanged:) forControlEvents:UIControlEventValueChanged];

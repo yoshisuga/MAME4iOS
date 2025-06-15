@@ -713,7 +713,7 @@ typedef NS_ENUM(NSInteger, LayoutMode) {
 #if TARGET_APPSTORE
         // Make a special section for the test ROM
       if ([game.gameName isEqualToString:@"roms/arcademaniaspacemania.zip"]) {
-        section = @"ArcadeMania Test ROMs";
+        section = NSLocalizedString(@"ArcadeMania Test ROMs",@"");
       }
 #endif
 
@@ -2013,7 +2013,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     
     if (game.gameIsSnapshot) {
         return @[
-            [UIAlertAction actionWithTitle:@"Use as Title Image" symbol:@"photo" style:UIAlertActionStyleDefault handler:^(id action) {
+            [UIAlertAction actionWithTitle:NSLocalizedString(@"Use as Title Image",@"") symbol:@"photo" style:UIAlertActionStyleDefault handler:^(id action) {
                 NSString* src = game.gameLocalImageURL.path;
                 // convert /snap/XXXX/YYYY/0000.png to /titles/XXXX/YYYY.png
                 NSString* dst = [[src.stringByDeletingLastPathComponent stringByReplacingOccurrencesOfString:@"/snap/" withString:@"/titles/"] stringByAppendingPathExtension:@"png"];
@@ -2023,7 +2023,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
                 [self reload];  // use a big hammer and reload everything
             }],
 #if TARGET_OS_IOS
-            [UIAlertAction actionWithTitle:@"Share" symbol:@"square.and.arrow.up" style:UIAlertActionStyleDefault handler:^(id action) {
+            [UIAlertAction actionWithTitle:NSLocalizedString(@"Share",@"") symbol:@"square.and.arrow.up" style:UIAlertActionStyleDefault handler:^(id action) {
                 NSURL* url = game.gameLocalImageURL;
                 UIActivityViewController* activity = [[UIActivityViewController alloc] initWithActivityItems:@[url] applicationActivities:nil];
                 activity.popoverPresentationController.sourceView = self.view;
@@ -2032,7 +2032,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
                 [self presentViewController:activity animated:YES completion:nil];
             }],
 #endif
-            [UIAlertAction actionWithTitle:@"Delete" symbol:@"trash" style:UIAlertActionStyleDefault handler:^(id action) {
+            [UIAlertAction actionWithTitle:NSLocalizedString(@"Delete",@"") symbol:@"trash" style:UIAlertActionStyleDefault handler:^(id action) {
                 [self moveSelectionForDelete:indexPath];
                 [NSFileManager.defaultManager removeItemAtPath:game.gameLocalImageURL.path error:nil];
                 [self reload];
@@ -2041,21 +2041,21 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     }
     
     NSArray* actions = @[
-        [UIAlertAction actionWithTitle:@"Play" symbol:@"gamecontroller" style:UIAlertActionStyleDefault handler:^(id action) {
+        [UIAlertAction actionWithTitle:NSLocalizedString(@"Play",@"") symbol:@"gamecontroller" style:UIAlertActionStyleDefault handler:^(id action) {
             [self play:game];
         }]
     ];
     
     if ([self getSystemsForGame:game].count > 1) {
         actions = [actions arrayByAddingObject:
-            [UIAlertAction actionWithTitle:@"Play With..." symbol:@"ellipsis.circle" style:UIAlertActionStyleDefault handler:^(id action) {
+            [UIAlertAction actionWithTitle:NSLocalizedString(@"Play With...",@"") symbol:@"ellipsis.circle" style:UIAlertActionStyleDefault handler:^(id action) {
                 [self play:game with:nil];
             }]
         ];
     }
     
     BOOL is_fav = [self isFavorite:game];
-    NSString* fav_text = is_fav ? @"Remove from Favorites" : @"Add to Favorites";
+    NSString* fav_text = is_fav ? NSLocalizedString(@"Remove from Favorites",@"") : NSLocalizedString(@"Add to Favorites",@"");
     NSString* fav_icon = is_fav ? @"star.slash" : @"star";
     
     actions = [actions arrayByAddingObject:
@@ -2069,7 +2069,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     
     if (is_fav && indexPath.row != 0 && [self->_gameSectionTitles[indexPath.section] isEqualToString:FAVORITE_GAMES_TITLE]) {
         actions = [actions  arrayByAddingObject:
-            [UIAlertAction actionWithTitle:@"Make First Favorite" symbol:@"1.circle" style:UIAlertActionStyleDefault handler:^(id action) {
+            [UIAlertAction actionWithTitle:NSLocalizedString(@"Make First Favorite",@"") symbol:@"1.circle" style:UIAlertActionStyleDefault handler:^(id action) {
                 [self setFavorite:game isFavorite:YES];
                 [self filterGameList];
             }]
@@ -2078,7 +2078,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     
     if ([self isRecent:game] && [self->_gameSectionTitles[indexPath.section] isEqualToString:RECENT_GAMES_TITLE]) {
         actions = [actions arrayByAddingObject:
-            [UIAlertAction actionWithTitle:@"Remove from Recently Played" symbol:@"minus.circle" style:UIAlertActionStyleDefault handler:^(id action) {
+            [UIAlertAction actionWithTitle:NSLocalizedString(@"Remove from Recently Played",@"") symbol:@"minus.circle" style:UIAlertActionStyleDefault handler:^(id action) {
                 [self moveSelectionForDelete:indexPath];
                 [self setRecent:game isRecent:NO];
                 [self filterGameList];
@@ -2087,7 +2087,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     }
     
     actions = [actions arrayByAddingObjectsFromArray:@[
-        [UIAlertAction actionWithTitle:@"Info" symbol:@"info.circle" style:UIAlertActionStyleDefault handler:^(id action) {
+        [UIAlertAction actionWithTitle:NSLocalizedString(@"Info",@"") symbol:@"info.circle" style:UIAlertActionStyleDefault handler:^(id action) {
             [self info:game];
         }]
     ]];
@@ -2096,7 +2096,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
 #if !TARGET_OS_TV
     if (!game.gameIsMame && UIPasteboard.generalPasteboard.hasImages) {
         actions = [actions arrayByAddingObjectsFromArray:@[
-            [UIAlertAction actionWithTitle:@"Paste Image" symbol:@"photo" style:UIAlertActionStyleDefault handler:^(id action) {
+            [UIAlertAction actionWithTitle:NSLocalizedString(@"Paste Image",@"") symbol:@"photo" style:UIAlertActionStyleDefault handler:^(id action) {
                 UIImage* image = UIPasteboard.generalPasteboard.image;
                 if (image == nil)
                     return;
@@ -2113,7 +2113,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
 #endif
     
     CommandLineArgsHelper *cmdLineArgsHelper = [[CommandLineArgsHelper alloc] initWithGameInfo:game];
-    NSString *cmdLineActionTitle = [cmdLineArgsHelper commandLineArgs] != nil ? @"Edit Arguments..." : @"Add Arguments...";
+    NSString *cmdLineActionTitle = [cmdLineArgsHelper commandLineArgs] != nil ? NSLocalizedString(@"Edit Arguments...",@"") : NSLocalizedString(@"Add Arguments...",@"");
     actions = [actions arrayByAddingObjectsFromArray:@[
         [UIAlertAction actionWithTitle:cmdLineActionTitle symbol:@"text.and.command.macwindow" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
         [self presentViewController:cmdLineArgsHelper.viewController animated:true completion:nil];
@@ -2126,11 +2126,11 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     if (files.count > 0) {
         actions = [actions arrayByAddingObjectsFromArray:@[
 #if TARGET_OS_IOS
-            [UIAlertAction actionWithTitle:@"Share" symbol:@"square.and.arrow.up" style:UIAlertActionStyleDefault handler:^(id action) {
+            [UIAlertAction actionWithTitle:NSLocalizedString(@"Share",@"") symbol:@"square.and.arrow.up" style:UIAlertActionStyleDefault handler:^(id action) {
                 [self share:game];
             }],
 #endif
-            [UIAlertAction actionWithTitle:@"Delete" symbol:@"trash" style:UIAlertActionStyleDestructive handler:^(id action) {
+            [UIAlertAction actionWithTitle:NSLocalizedString(@"Delete",@"") symbol:@"trash" style:UIAlertActionStyleDestructive handler:^(id action) {
                 [self moveSelectionForDelete:indexPath];
                 [self delete:game];
             }]
@@ -2152,7 +2152,7 @@ NSAttributedString* attributedString(NSString* text, UIFont* font, UIColor* colo
     for (UIAlertAction* action in actions)
         [alert addAction:action];
 
-    [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
+    [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel",@"") style:UIAlertActionStyleCancel handler:nil]];
  
     return alert;
  }

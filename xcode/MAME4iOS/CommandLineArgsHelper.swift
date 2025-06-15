@@ -50,7 +50,7 @@ class CommandLineArgsViewController: UIViewController {
        let label = UILabel()
         label.font = .systemFont(ofSize: 18)
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Enter command line arguments when executing MAME. Note that this is for advanced users only."
+        label.text = NSLocalizedString("Enter command line arguments when executing MAME. Note that this is for advanced users only.", comment: "")
         label.numberOfLines = 0
         return label
     }()
@@ -115,7 +115,7 @@ class CommandLineArgsViewController: UIViewController {
         saveButton.addTarget(self, action: #selector(saveButtonPressed(_:)), for: .touchUpInside)
         view.addSubview(saveButton)
         saveButton.setTitleColor(.label, for: .normal)
-        saveButton.setTitle("Save", for: .normal)
+        saveButton.setTitle(NSLocalizedString("Save", comment: ""), for: .normal)
         saveButton.backgroundColor = view.tintColor
         saveButton.layer.cornerRadius = 12.0
         saveButton.contentEdgeInsets = UIEdgeInsets(top: 8, left: 24, bottom: 8, right: 24)
@@ -123,7 +123,7 @@ class CommandLineArgsViewController: UIViewController {
         saveButton.topAnchor.constraint(equalTo: textView.bottomAnchor, constant: 8).isActive = true
         saveButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancelButtonPressed(_:)))
-        navigationItem.title = "Command Line Arguments"
+        navigationItem.title = NSLocalizedString("Command Line Arguments", comment: "")
     }
     
     private func loadData() {

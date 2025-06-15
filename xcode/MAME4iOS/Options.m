@@ -395,7 +395,10 @@
       @"Off": NSLocalizedString(@"Off", @"Off"),
       @"simpleTron": NSLocalizedString(@"simpleTron", @"simpleTron shader"),
       @"megaTron": NSLocalizedString(@"megaTron", @"megaTron shader"),
-      @"ulTron": NSLocalizedString(@"ulTron", @"ulTron shader")
+      @"ulTron": NSLocalizedString(@"ulTron", @""),
+      @"ulTron ": NSLocalizedString(@"ulTron", @""),
+      @"lineTron": NSLocalizedString(@"lineTron", @""),
+      @"None": NSLocalizedString(@"None", @"")
   };
   return localizationMap[option] ?: option;
 }
