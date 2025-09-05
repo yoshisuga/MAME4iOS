@@ -102,6 +102,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readwrite,assign) int useDRC;
 
+@property (readwrite,assign) int hideTestROMs;
+
 @end
 
 @interface NSArray (optionAtIndex)

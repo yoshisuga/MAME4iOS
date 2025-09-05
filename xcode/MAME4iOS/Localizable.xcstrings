@@ -1082,6 +1082,17 @@
         }
       }
     },
+    "Hide Test ROMs" : {
+      "comment" : "Hide Test ROMs section",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "テスト用ROMを非表示"
+          }
+        }
+      }
+    },
     "Hide Touch Buttons" : {
       "localizations" : {
         "ja" : {

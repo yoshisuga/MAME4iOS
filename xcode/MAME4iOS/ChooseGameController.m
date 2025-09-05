@@ -16,6 +16,7 @@
 #import "Globals.h"
 #import "MAME4iOS-Swift.h"
 #import "libmame.h"
+#import "Options.h"
 
 #if TARGET_OS_IOS
 #import <Intents/Intents.h>

@@ -278,6 +278,12 @@
                      cell.detailTextLabel.text = [Options.arraySoundValue optionAtIndex:op.soundValue];
                      break;
                 }
+              case 8:
+              {
+                cell.textLabel.text = NSLocalizedString(@"Hide Test ROMs", @"Hide Test ROMs section");
+                cell.accessoryView = [self optionSwitchForKey:@"hideTestROMs"];
+                break;
+              }
             }
             break;   
         }
@@ -475,7 +481,7 @@
           case kOtherSection: return 1;
           case kVideoSection: return 7;
           case kVectorSection: return 2;
-          case kMiscSection: return 8;
+          case kMiscSection: return 9;
           case kFilterSection: return 3;
           case kImportSection: return 4;
 #if !TARGET_APPSTORE

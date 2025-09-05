@@ -175,6 +175,7 @@
         _hapticButtonFeedback = 1;
         
         _useDRC = 0;
+        _hideTestROMs = 0;
     }
     else
     {
@@ -253,6 +254,8 @@
         _hapticButtonFeedback = [([optionsDict objectForKey:@"hapticButtonFeedback"] ?: @(1)) intValue];
         
         _useDRC = [[optionsDict objectForKey:@"useDRC"] intValue];
+      
+        _hideTestROMs = [[optionsDict objectForKey:@"hideTestROMs"] intValue];
     }
     
 }
@@ -330,7 +333,7 @@
                              [NSString stringWithFormat:@"%d", _hapticButtonFeedback], @"hapticButtonFeedback",
                                  
                              [NSString stringWithFormat:@"%d", _useDRC], @"useDRC",
-                
+                             [NSString stringWithFormat:@"%d", _hideTestROMs], @"hideTestROMs",
                              nil];
 }
 

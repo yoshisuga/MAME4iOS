@@ -228,6 +228,18 @@ NSArray* g_import_file_types;
     if (audioSessionError != nil) {
         NSLog(@"Could not set audio session category: %@",audioSessionError.localizedDescription);
     }
+  
+    AVAudioSession *session = [AVAudioSession sharedInstance];
+    NSError *error = nil;
+
+    [session setPreferredSampleRate:48000.0 error:&error];
+    [session setPreferredIOBufferDuration:0.01 error:&error]; // Target ~10 ms latency
+    [session setActive:YES error:&error];
+
+    if (error) {
+        NSLog(@"Error when setting sample rate or buffer duration: %@", error);
+    }
+
 
     return result;
 }

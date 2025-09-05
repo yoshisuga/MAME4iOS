@@ -299,7 +299,7 @@ static BOOL g_mame_first_boot = FALSE;      // TRUE the first time MAME runs
 static BOOL g_no_roms_found = FALSE;
 static BOOL g_no_roms_found_canceled = FALSE;
 
-#define OPTIONS_RELOAD_KEYS     @[@"filterClones", @"filterNotWorking", @"filterBIOS"]
+#define OPTIONS_RELOAD_KEYS     @[@"filterClones", @"filterNotWorking", @"filterBIOS", @"hideTestROMs"]
 #define OPTIONS_RESTART_KEYS    @[@"cheats", @"autosave", @"hiscore", @"vbean2x", @"vflicker", @"soundValue", @"useDRC"]
 static NSInteger g_settings_roms_count;
 static NSInteger g_settings_file_count;
@@ -717,6 +717,7 @@ void m4i_game_list(myosd_game_info* game_info, int game_count)
     @autoreleasepool {
         
         NSMutableArray* games = [[NSMutableArray alloc] init];
+        Options *options = [[Options alloc] init];
         
         for (int i=0; i<game_count; i++)
         {
@@ -800,8 +801,9 @@ void m4i_game_list(myosd_game_info* game_info, int game_count)
 #endif
       
 #if TARGET_APPSTORE
-      // Add custom game for app store review
-      GameInfo* spaceManiaGame = [[GameInfo alloc] initWithDictionary:@{
+      if (options.hideTestROMs == 0) {
+        // Add custom game for app store review
+        GameInfo* spaceManiaGame = [[GameInfo alloc] initWithDictionary:@{
           kGameInfoType:        kGameInfoTypeConsole,
           kGameInfoName:        @"roms/arcademaniaspacemania.zip",
           kGameInfoDescription: NSLocalizedString(@"ArcadeMania Space Adventure",@""),
@@ -813,27 +815,28 @@ void m4i_game_list(myosd_game_info* game_info, int game_count)
           kGameInfoSystem:      @"nes",
           kGameInfoMediaType:   @"cart",
           kGameInfoScreen:      kGameInfoScreenHorizontal
-      }];
-      
-      NSString* romPath = [NSString stringWithUTF8String:get_documents_path("roms/arcademaniaspacemania.zip")];
-      NSString* bundledRomPath = [[NSBundle mainBundle] pathForResource:@"arcademaniaspacemania" ofType:@"zip"];
-
-      // Check if this is first app launch
-      static NSString* const kFirstLaunchKey = @"HasLaunchedBeforeKey";
-      BOOL hasLaunchedBefore = [[NSUserDefaults standardUserDefaults] boolForKey:kFirstLaunchKey];
-      
-      if (!hasLaunchedBefore && bundledRomPath != nil && ![NSFileManager.defaultManager fileExistsAtPath:romPath]) {
+        }];
+        
+        NSString* romPath = [NSString stringWithUTF8String:get_documents_path("roms/arcademaniaspacemania.zip")];
+        NSString* bundledRomPath = [[NSBundle mainBundle] pathForResource:@"arcademaniaspacemania" ofType:@"zip"];
+        
+        // Check if this is first app launch
+        static NSString* const kFirstLaunchKey = @"HasLaunchedBeforeKey";
+        BOOL hasLaunchedBefore = [[NSUserDefaults standardUserDefaults] boolForKey:kFirstLaunchKey];
+        
+        if (!hasLaunchedBefore && bundledRomPath != nil && ![NSFileManager.defaultManager fileExistsAtPath:romPath]) {
           NSString* romDir = [romPath stringByDeletingLastPathComponent];
           if (![NSFileManager.defaultManager fileExistsAtPath:romDir]) {
-              [NSFileManager.defaultManager createDirectoryAtPath:romDir withIntermediateDirectories:YES attributes:nil error:nil];
+            [NSFileManager.defaultManager createDirectoryAtPath:romDir withIntermediateDirectories:YES attributes:nil error:nil];
           }
           [NSFileManager.defaultManager copyItemAtPath:bundledRomPath toPath:romPath error:nil];
           [[NSUserDefaults standardUserDefaults] setBool:YES forKey:kFirstLaunchKey];
           [[NSUserDefaults standardUserDefaults] synchronize];
+        }
+        
+        // Add to top of list so it appears first
+        [games insertObject:spaceManiaGame atIndex:0];
       }
-      
-      // Add to top of list so it appears first
-      [games insertObject:spaceManiaGame atIndex:0];
 #endif
 
       // give the list to the main thread to display to user
