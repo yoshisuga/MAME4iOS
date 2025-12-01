@@ -9,6 +9,12 @@
             "state" : "translated",
             "value" : ":%@:オプション"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":%@:设置"
+          }
         }
       }
     },
@@ -19,6 +25,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : ":%@:ゲーム終了"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":%@:退出游戏"
           }
         }
       }
@@ -37,6 +49,12 @@
             "state" : "translated",
             "value" : ":%1$@:P %2$d セレクト"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":%1$@:P%2$d 选择"
+          }
         }
       }
     },
@@ -54,6 +72,12 @@
             "state" : "translated",
             "value" : ":%1$@:P %2$d スタート"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":%1$@:P%2$d 开始"
+          }
         }
       }
     },
@@ -64,6 +88,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : ":%@:P2 セレクト"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":%@:P2 选择"
           }
         }
       }
@@ -76,6 +106,12 @@
             "state" : "translated",
             "value" : ":%@:P2 スタート"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":%@:P2 开始"
+          }
         }
       }
     },
@@ -87,6 +123,12 @@
             "state" : "translated",
             "value" : ":%@:ポーズ"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":%@:暂停"
+          }
         }
       }
     },
@@ -94,6 +136,12 @@
       "comment" : "HUD Speed 2x",
       "localizations" : {
         "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":%@:2倍速"
+          }
+        },
+        "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : ":%@:2倍速"
@@ -108,6 +156,12 @@
             "state" : "translated",
             "value" : ":bookmark:ロード ①"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":bookmark:载入 ①"
+          }
         }
       }
     },
@@ -117,6 +171,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : ":bookmark:ロード ②"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":bookmark:载入 ②"
           }
         }
       }
@@ -128,6 +188,12 @@
             "state" : "translated",
             "value" : ":bookmark.fill:セーブ ①"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":bookmark.fill:保存 ①"
+          }
         }
       }
     },
@@ -137,6 +203,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : ":bookmark.fill:セーブ ②"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":bookmark.fill:保存 ②"
           }
         }
       }
@@ -149,6 +221,12 @@
             "state" : "translated",
             "value" : ":camera:スクリーンショット"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":camera:截图"
+          }
         }
       }
     },
@@ -160,6 +238,12 @@
             "state" : "translated",
             "value" : ":yensign.circle:コイン+スタート"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":centsign.circle:投币+开始"
+          }
         }
       }
     },
@@ -170,6 +254,12 @@
             "state" : "translated",
             "value" : ":escape:リセット"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":escape:重置"
+          }
         }
       }
     },
@@ -179,6 +269,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : ":pause.circle:ポーズ"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":pause.circle:暂停"
           }
         }
       }
@@ -191,6 +287,12 @@
             "state" : "translated",
             "value" : ":person:1Pスタート"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":person:1P开始"
+          }
         }
       }
     },
@@ -201,6 +303,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : ":person.2:2Pスタート"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":person.2:2P开始"
           }
         }
       }
@@ -213,6 +321,12 @@
             "state" : "translated",
             "value" : ":person.3:3Pスタート"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":person.3:3P开始"
+          }
         }
       }
     },
@@ -224,6 +338,12 @@
             "state" : "translated",
             "value" : ":person.3:4Pスタート"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":person.3:4P开始"
+          }
         }
       }
     },
@@ -234,6 +354,12 @@
             "state" : "translated",
             "value" : ":power:電源"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":power:电源"
+          }
         }
       }
     },
@@ -243,6 +369,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : ":slider.horizontal.3:オプション"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":slider.horizontal.3:设置"
           }
         }
       }
@@ -255,6 +387,12 @@
             "state" : "translated",
             "value" : ":wrench:サービス"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":wrench:服务"
+          }
         }
       }
     },
@@ -264,6 +402,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : ":xmark.circle:終了"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":xmark.circle:退出"
           }
         }
       }
@@ -275,6 +419,12 @@
             "state" : "translated",
             "value" : ":xmark.circle:ゲーム終了"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ":xmark.circle:退出游戏"
+          }
         }
       }
     },
@@ -284,6 +434,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "⚠️ゲームが正常に動作しない可能性があります。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⚠️游戏可能无法正常运行。"
           }
         }
       }
@@ -295,6 +451,12 @@
             "state" : "translated",
             "value" : "なし"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无按钮"
+          }
         }
       }
     },
@@ -304,6 +466,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "１つ"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1个按钮"
           }
         }
       }
@@ -315,12 +483,24 @@
             "state" : "translated",
             "value" : "２つ"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2个按钮"
+          }
         }
       }
     },
     "2-Way" : {
       "localizations" : {
         "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2方向"
+          }
+        },
+        "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "2方向"
@@ -335,6 +515,12 @@
             "state" : "translated",
             "value" : "3つ"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3个按钮"
+          }
         }
       }
     },
@@ -345,12 +531,24 @@
             "state" : "translated",
             "value" : "4つ"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4个按钮"
+          }
         }
       }
     },
     "4-Way" : {
       "localizations" : {
         "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4方向"
+          }
+        },
+        "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "4方向"
@@ -365,12 +563,24 @@
             "state" : "translated",
             "value" : "5つ"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5个按钮"
+          }
         }
       }
     },
     "8-Way" : {
       "localizations" : {
         "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "8方向"
+          }
+        },
+        "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "8方向"
@@ -385,6 +595,12 @@
             "state" : "translated",
             "value" : "引数を追加..."
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加参数..."
+          }
         }
       }
     },
@@ -394,6 +610,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ROMを追加"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加ROM"
           }
         }
       }
@@ -405,6 +627,12 @@
             "state" : "translated",
             "value" : "お気に入りに追加"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加到收藏"
+          }
         }
       }
     },
@@ -414,6 +642,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "全ボタン"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All 按钮"
           }
         }
       }
@@ -425,6 +659,12 @@
             "state" : "translated",
             "value" : "アナログスティック"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "模拟 摇杆"
+          }
         }
       }
     },
@@ -435,6 +675,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "アニメーション"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "动画"
           }
         }
       }
@@ -453,6 +699,12 @@
             "state" : "translated",
             "value" : "アプリVer: %1$@\nコアVer: %2$@"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "应用版本: %1$@\n核心版本: %2$@"
+          }
         }
       }
     },
@@ -464,6 +716,12 @@
             "state" : "translated",
             "value" : "アーケード"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "街机"
+          }
         }
       }
     },
@@ -474,6 +732,12 @@
             "state" : "translated",
             "value" : "ArcadeMania宇宙大冒険"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ArcadeMania 太空冒险"
+          }
         }
       }
     },
@@ -483,6 +747,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ArcadeManiaテスト用ROM"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ArcadeMania测试ROM"
           }
         }
       }
@@ -495,6 +765,12 @@
             "state" : "translated",
             "value" : "終了してもよろしいですか？"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你确定要退出吗?"
+          }
         }
       }
     },
@@ -504,6 +780,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "自動"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自动"
           }
         }
       }
@@ -516,6 +798,12 @@
             "state" : "translated",
             "value" : "ビーム2x"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "光束 2倍"
+          }
         }
       }
     },
@@ -527,12 +815,24 @@
             "state" : "translated",
             "value" : "ベンチマーク"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "基准测试"
+          }
         }
       }
     },
     "Big" : {
       "localizations" : {
         "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "大"
+          }
+        },
+        "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "大"
@@ -547,6 +847,12 @@
             "state" : "translated",
             "value" : "より大きく"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更大"
+          }
         }
       }
     },
@@ -556,6 +862,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "下画面リロード"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "底部屏幕重新加载"
           }
         }
       }
@@ -567,6 +879,12 @@
             "state" : "translated",
             "value" : "ボタンA = B + X"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按钮 A = B + X"
+          }
         }
       }
     },
@@ -576,6 +894,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ボタンA連射"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按钮A连射"
           }
         }
       }
@@ -588,6 +912,12 @@
             "state" : "translated",
             "value" : "ボタン"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按钮"
+          }
         }
       }
     },
@@ -597,6 +927,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ボタンサイズ"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按钮大小"
           }
         }
       }
@@ -609,6 +945,12 @@
             "state" : "translated",
             "value" : "キャンセル"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取消"
+          }
         }
       }
     },
@@ -618,6 +960,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "現在のレイアウト変更"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更改当前布局"
           }
         }
       }
@@ -630,6 +978,12 @@
             "state" : "translated",
             "value" : "チート"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "作弊码"
+          }
         }
       }
     },
@@ -641,6 +995,12 @@
             "state" : "translated",
             "value" : "クローン"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "克隆版"
+          }
         }
       }
     },
@@ -650,6 +1010,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "コマンドライン引数"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "命令行参数"
           }
         }
       }
@@ -662,6 +1028,12 @@
             "state" : "translated",
             "value" : "オプション"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设置"
+          }
         }
       }
     },
@@ -672,6 +1044,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ゲーム機・パソコン"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "控制台"
           }
         }
       }
@@ -684,6 +1062,12 @@
             "state" : "translated",
             "value" : "コンティニュー"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "继续"
+          }
         }
       }
     },
@@ -694,6 +1078,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "黒枠"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暗边框"
           }
         }
       }
@@ -706,6 +1096,12 @@
             "state" : "translated",
             "value" : "デッドゾーン"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "死区"
+          }
         }
       }
     },
@@ -717,6 +1113,12 @@
             "state" : "translated",
             "value" : "標準"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "默认"
+          }
         }
       }
     },
@@ -726,6 +1128,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "削除"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "删除"
           }
         }
       }
@@ -737,6 +1145,12 @@
             "state" : "translated",
             "value" : "デジタル十字キー"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "数字 方向键"
+          }
         }
       }
     },
@@ -747,6 +1161,12 @@
             "state" : "translated",
             "value" : "デジタルスティック"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "数字 摇杆"
+          }
         }
       }
     },
@@ -756,6 +1176,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "無効"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "禁用"
           }
         }
       }
@@ -768,6 +1194,12 @@
             "state" : "translated",
             "value" : "ドライバー"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "驱动"
+          }
         }
       }
     },
@@ -777,6 +1209,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "引数を編集..."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "编辑参数..."
           }
         }
       }
@@ -789,6 +1227,12 @@
             "state" : "translated",
             "value" : "エミュレート速度"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "模拟速度"
+          }
         }
       }
     },
@@ -799,6 +1243,12 @@
             "state" : "translated",
             "value" : "有効"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "启用"
+          }
         }
       }
     },
@@ -808,6 +1258,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "MAME実行時のコマンドライン引数を入力してください。これは上級者向けの機能です。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "执行MAME时输入命令行参数。请注意，这仅适用于高级用户。"
           }
         }
       }
@@ -820,6 +1276,12 @@
             "state" : "translated",
             "value" : "終了"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "退出"
+          }
         }
       }
     },
@@ -830,6 +1292,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ゲーム終了"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "退出游戏"
           }
         }
       }
@@ -842,6 +1310,12 @@
             "state" : "translated",
             "value" : "エクスポート"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "导出"
+          }
         }
       }
     },
@@ -852,6 +1326,12 @@
             "state" : "translated",
             "value" : "スキンエクスポート"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "导出 Skin"
+          }
         }
       }
     },
@@ -861,6 +1341,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "外部コントローラー"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "外部控制器"
           }
         }
       }
@@ -873,6 +1359,12 @@
             "state" : "translated",
             "value" : "お気に入り"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "收藏的游戏"
+          }
         }
       }
     },
@@ -883,6 +1375,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "フィルター"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "滤镜"
           }
         }
       }
@@ -895,6 +1393,12 @@
             "state" : "translated",
             "value" : "フリッカー"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "闪烁"
+          }
         }
       }
     },
@@ -905,6 +1409,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "整数スケーリング強制"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "强制整数缩放"
           }
         }
       }
@@ -917,6 +1427,12 @@
             "state" : "translated",
             "value" : "ピクセルアスペクト強制"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "强制像素宽高比"
+          }
         }
       }
     },
@@ -927,6 +1443,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "フルスクリーン"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全屏"
           }
         }
       }
@@ -939,6 +1461,12 @@
             "state" : "translated",
             "value" : "フルスクリーン（コントローラー）"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全屏（控制器）"
+          }
         }
       }
     },
@@ -949,6 +1477,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "フルスクリーン（横向き）"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全屏（横屏）"
           }
         }
       }
@@ -961,6 +1495,12 @@
             "state" : "translated",
             "value" : "フルスクリーン（縦向き）"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全屏（竖屏）"
+          }
         }
       }
     },
@@ -971,6 +1511,12 @@
             "state" : "translated",
             "value" : "フルスクリーン時のボタン"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全屏按钮"
+          }
         }
       }
     },
@@ -980,6 +1526,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "フルスクリーン時のスティック"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全屏摇杆大小"
           }
         }
       }
@@ -992,6 +1544,12 @@
             "state" : "translated",
             "value" : "ゲーム表示フィルター"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Game 滤镜"
+          }
         }
       }
     },
@@ -1002,6 +1560,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ゲーム入力"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "游戏 输入"
           }
         }
       }
@@ -1014,6 +1578,12 @@
             "state" : "translated",
             "value" : "ジャンル"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "类型"
+          }
         }
       }
     },
@@ -1024,6 +1594,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "グリルマスク"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "栅格遮罩"
           }
         }
       }
@@ -1036,6 +1612,12 @@
             "state" : "translated",
             "value" : "グリルマスク（ライト）"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "栅格遮罩精简版"
+          }
         }
       }
     },
@@ -1045,6 +1627,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "触覚フィードバック"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "触觉反馈"
           }
         }
       }
@@ -1057,6 +1645,12 @@
             "state" : "translated",
             "value" : "BIOSを非表示"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隐藏 BIOS"
+          }
         }
       }
     },
@@ -1067,6 +1661,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "クローンを非表示"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隐藏 克隆版"
           }
         }
       }
@@ -1079,6 +1679,12 @@
             "state" : "translated",
             "value" : "動作しないゲームを非表示"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隐藏不可用"
+          }
         }
       }
     },
@@ -1090,6 +1696,12 @@
             "state" : "translated",
             "value" : "テスト用ROMを非表示"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隐藏测试ROM"
+          }
         }
       }
     },
@@ -1100,6 +1712,12 @@
             "state" : "translated",
             "value" : "タッチボタンを隠す"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隐藏触摸按钮"
+          }
         }
       }
     },
@@ -1109,6 +1727,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "タッチ十字キーを隠す"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隐藏触摸方向键"
           }
         }
       }
@@ -1121,6 +1745,12 @@
             "state" : "translated",
             "value" : "インポート"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "导入"
+          }
         }
       }
     },
@@ -1132,6 +1762,12 @@
             "state" : "translated",
             "value" : "インポートとエクスポート"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "导入和导出"
+          }
         }
       }
     },
@@ -1142,6 +1778,12 @@
             "state" : "translated",
             "value" : "ROMをインポート"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "导入ROM"
+          }
         }
       }
     },
@@ -1151,6 +1793,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "情報"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "信息"
           }
         }
       }
@@ -1163,6 +1811,12 @@
             "state" : "translated",
             "value" : "アスペクト比を維持"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保持宽高比"
+          }
         }
       }
     },
@@ -1173,6 +1827,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "キーボード"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "键盘"
           }
         }
       }
@@ -1185,6 +1845,12 @@
             "state" : "translated",
             "value" : "白枠"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "亮边框"
+          }
         }
       }
     },
@@ -1195,6 +1861,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "リニア"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "线性"
           }
         }
       }
@@ -1207,6 +1879,12 @@
             "state" : "translated",
             "value" : "ライントロン"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "线创"
+          }
         }
       }
     },
@@ -1218,6 +1896,12 @@
             "state" : "translated",
             "value" : "ロード"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "载入"
+          }
         }
       }
     },
@@ -1227,6 +1911,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "最初のお気に入りにする"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设为第一收藏"
           }
         }
       }
@@ -1239,6 +1929,12 @@
             "state" : "translated",
             "value" : "MAMEエラー"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MAME 错误"
+          }
         }
       }
     },
@@ -1249,6 +1945,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "MAME出力"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MAME输出"
           }
         }
       }
@@ -1261,6 +1963,12 @@
             "state" : "translated",
             "value" : "MAME警告"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MAME 警告"
+          }
         }
       }
     },
@@ -1271,6 +1979,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "メーカー"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "制造商"
           }
         }
       }
@@ -1283,6 +1997,12 @@
             "state" : "translated",
             "value" : "メガトロン"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "巨创"
+          }
         }
       }
     },
@@ -1294,6 +2014,12 @@
             "state" : "translated",
             "value" : "ニアレスト"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近邻"
+          }
         }
       }
     },
@@ -1303,6 +2029,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "任天堂ボタンレイアウト"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nintendo 按钮 Layout"
           }
         }
       }
@@ -1315,6 +2047,12 @@
             "state" : "translated",
             "value" : "いいえ"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "否"
+          }
         }
       }
     },
@@ -1325,6 +2063,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "シャドウマスクなし（ぼかし）"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无阴影遮罩但模糊"
           }
         }
       }
@@ -1337,6 +2081,12 @@
             "state" : "translated",
             "value" : "なし"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无"
+          }
         }
       }
     },
@@ -1346,6 +2096,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "標準"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正常"
           }
         }
       }
@@ -1358,6 +2114,12 @@
             "state" : "translated",
             "value" : "オフ"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关"
+          }
         }
       }
     },
@@ -1368,6 +2130,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "オン (11 kHz)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开 (11 KHz)"
           }
         }
       }
@@ -1380,6 +2148,12 @@
             "state" : "translated",
             "value" : "オン (22kHz)"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开 (22 KHz)"
+          }
         }
       }
     },
@@ -1390,6 +2164,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "オン (33 kHz)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开 (33 KHz)"
           }
         }
       }
@@ -1402,6 +2182,12 @@
             "state" : "translated",
             "value" : "オン (44 kHz)"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开 (44 KHz)"
+          }
         }
       }
     },
@@ -1413,6 +2199,12 @@
             "state" : "translated",
             "value" : "オン (48 kHz)"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开 (48 KHz)"
+          }
         }
       }
     },
@@ -1422,6 +2214,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "不透明度（フルスクリーン）"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全屏不透明度"
           }
         }
       }
@@ -1434,6 +2232,12 @@
             "state" : "translated",
             "value" : "オプション"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选项"
+          }
         }
       }
     },
@@ -1444,6 +2248,12 @@
             "state" : "translated",
             "value" : "P1をP2,P3,P4として利用"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "P1 作为 P2,P3,P4"
+          }
         }
       }
     },
@@ -1453,6 +2263,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "画像を貼り付け"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "粘贴图片"
           }
         }
       }
@@ -1465,6 +2281,12 @@
             "state" : "translated",
             "value" : "ポーズ"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂停"
+          }
         }
       }
     },
@@ -1475,6 +2297,12 @@
             "state" : "translated",
             "value" : "プレイ"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "播放"
+          }
         }
       }
     },
@@ -1484,6 +2312,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "...でプレイ"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "与...一起玩"
           }
         }
       }
@@ -1496,6 +2330,12 @@
             "state" : "translated",
             "value" : "プレイヤー"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "玩家 %d"
+          }
         }
       }
     },
@@ -1506,6 +2346,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "電源"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "电源"
           }
         }
       }
@@ -1518,6 +2364,12 @@
             "state" : "translated",
             "value" : "最近"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近游玩"
+          }
         }
       }
     },
@@ -1527,6 +2379,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ROMを再読み込み"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重新载入ROM"
           }
         }
       }
@@ -1538,6 +2396,12 @@
             "state" : "translated",
             "value" : "お気に入りから削除"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "从收藏夹移除"
+          }
         }
       }
     },
@@ -1547,6 +2411,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "最近プレイしたものから削除"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "从最近游玩移除"
           }
         }
       }
@@ -1559,6 +2429,12 @@
             "state" : "translated",
             "value" : "リセット"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重置"
+          }
         }
       }
     },
@@ -1568,6 +2444,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "現在のレイアウトをデフォルトにリセット"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "将当前布局重置为默认"
           }
         }
       }
@@ -1580,6 +2462,12 @@
             "state" : "translated",
             "value" : "初期設定に戻す"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "置为默认"
+          }
         }
       }
     },
@@ -1589,6 +2477,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "初期化をする"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "恢复默认设置"
           }
         }
       }
@@ -1601,6 +2495,12 @@
             "state" : "translated",
             "value" : "セーブ"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存"
+          }
         }
       }
     },
@@ -1611,6 +2511,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ハイスコア保存"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存最高分"
           }
         }
       }
@@ -1623,6 +2529,12 @@
             "state" : "translated",
             "value" : "映像シェーダー"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "屏幕 着色器"
+          }
         }
       }
     },
@@ -1634,6 +2546,12 @@
             "state" : "translated",
             "value" : "セレクト"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择"
+          }
         }
       }
     },
@@ -1643,6 +2561,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "感度"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "灵敏度"
           }
         }
       }
@@ -1655,6 +2579,12 @@
             "state" : "translated",
             "value" : "設定"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设置"
+          }
         }
       }
     },
@@ -1666,6 +2596,12 @@
             "state" : "translated",
             "value" : "シャドウマスク（強）"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "阴影遮罩加强"
+          }
         }
       }
     },
@@ -1675,6 +2611,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "共有"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分享"
           }
         }
       }
@@ -1687,6 +2629,12 @@
             "state" : "translated",
             "value" : "ファイルを表示"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "显示文件"
+          }
         }
       }
     },
@@ -1697,6 +2645,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "FPS表示"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "显示 FPS"
           }
         }
       }
@@ -1709,6 +2663,12 @@
             "state" : "translated",
             "value" : "HUD表示"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "显示 HUD"
+          }
         }
       }
     },
@@ -1719,6 +2679,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "情報、警告を表示"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "显示信息/警告"
           }
         }
       }
@@ -1731,6 +2697,12 @@
             "state" : "translated",
             "value" : "シンプルトロン"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "简创"
+          }
         }
       }
     },
@@ -1742,12 +2714,24 @@
             "state" : "translated",
             "value" : "スキン"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "皮肤"
+          }
         }
       }
     },
     "Small" : {
       "localizations" : {
         "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "小"
+          }
+        },
+        "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "小"
@@ -1762,6 +2746,12 @@
             "state" : "translated",
             "value" : "より小さく"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : " 更小"
+          }
         }
       }
     },
@@ -1773,6 +2763,12 @@
             "state" : "translated",
             "value" : "パソコン用ソフト"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "软件"
+          }
         }
       }
     },
@@ -1782,6 +2778,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "一部のゲームはリロードに画面外への射撃が必要"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "某些游戏需要向屏幕外射击以重新装弹"
           }
         }
       }
@@ -1794,6 +2796,12 @@
             "state" : "translated",
             "value" : "サウンド"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "声音"
+          }
         }
       }
     },
@@ -1803,6 +2811,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "スピード1"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "速度 1"
           }
         }
       }
@@ -1814,6 +2828,12 @@
             "state" : "translated",
             "value" : "スピード２"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "速度 2"
+          }
         }
       }
     },
@@ -1823,6 +2843,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "スピード３"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "速度 3"
           }
         }
       }
@@ -1834,6 +2860,12 @@
             "state" : "translated",
             "value" : "スピード４"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "速度 4"
+          }
         }
       }
     },
@@ -1843,6 +2875,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "スピード５"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "速度 5"
           }
         }
       }
@@ -1854,6 +2892,12 @@
             "state" : "translated",
             "value" : "スピード６"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "速度 6"
+          }
         }
       }
     },
@@ -1863,6 +2907,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "スピード７"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "速度 7"
           }
         }
       }
@@ -1874,6 +2924,12 @@
             "state" : "translated",
             "value" : "スピード８"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "速度 8"
+          }
         }
       }
     },
@@ -1883,6 +2939,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "スピード９"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "速度 9"
           }
         }
       }
@@ -1895,6 +2957,12 @@
             "state" : "translated",
             "value" : "スタート"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开始"
+          }
         }
       }
     },
@@ -1905,6 +2973,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Webサーバー開始"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "启动Web服务器"
           }
         }
       }
@@ -1917,6 +2991,12 @@
             "state" : "translated",
             "value" : "スティック & 十字キー "
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "摇杆 & 方向键"
+          }
         }
       }
     },
@@ -1926,6 +3006,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "サーバーを停止"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "停止服务器"
           }
         }
       }
@@ -1938,6 +3024,12 @@
             "state" : "translated",
             "value" : "システム"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "系统"
+          }
         }
       }
     },
@@ -1947,6 +3039,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "パスコンからROMを転送するには、ウェブブラウザーで以下のアドレスのいずれかにアクセスしてください\n\n%@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "要从计算机传输ROM，请在网络浏览器中访问以下地址之一：\n\n%@"
           }
         }
       }
@@ -1958,6 +3056,12 @@
             "state" : "translated",
             "value" : "パソコンからROMを転送するには、ウェブサーバーを開始するかROMをインポートしてください。"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "要从计算机传输ROM，请启动Web服务器或导入ROM。"
+          }
         }
       }
     },
@@ -1967,6 +3071,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "パソコンからROMを転送するには、ウェブサーバーを開始、ROMをインポート、またはAirDropを使用してください。\n"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "要从计算机传输ROM，请启动Web服务器、导入ROM或使用AirDrop。"
           }
         }
       }
@@ -1979,6 +3089,12 @@
             "state" : "translated",
             "value" : "アナログタッチ"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "触摸模拟"
+          }
         }
       }
     },
@@ -1989,6 +3105,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "タッチ方向入力"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "触摸方向输入"
           }
         }
       }
@@ -2001,6 +3123,12 @@
             "state" : "translated",
             "value" : "タッチ配置"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "触摸布局"
+          }
         }
       }
     },
@@ -2012,6 +3140,12 @@
             "state" : "translated",
             "value" : "タッチライトガン"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "触摸光枪"
+          }
         }
       }
     },
@@ -2021,6 +3155,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "タッチライトガンモードが有効になりました"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "触摸光枪模式已启用！"
           }
         }
       }
@@ -2032,6 +3172,12 @@
             "state" : "translated",
             "value" : "タッチマウスモードが有効になりました"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "触摸鼠标模式已启用！"
+          }
         }
       }
     },
@@ -2041,6 +3187,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "タッチスティック"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "触摸摇杆"
           }
         }
       }
@@ -2052,6 +3204,12 @@
             "state" : "translated",
             "value" : "タッチタイプ"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "触摸类型"
+          }
         }
       }
     },
@@ -2062,6 +3220,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ターボモード切替"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "涡轮模式切换"
           }
         }
       }
@@ -2080,6 +3244,12 @@
             "state" : "translated",
             "value" : "ウルトロン"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "超创"
+          }
         }
       }
     },
@@ -2090,6 +3260,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ウルトロン"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "超创"
           }
         }
       }
@@ -2102,6 +3278,12 @@
             "state" : "translated",
             "value" : "ウルトロン"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "超创 "
+          }
         }
       }
     },
@@ -2111,6 +3293,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "タイトル画像として使用"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用作标题图片"
           }
         }
       }
@@ -2123,6 +3311,12 @@
             "state" : "translated",
             "value" : "DRC使用"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用DRC"
+          }
         }
       }
     },
@@ -2133,6 +3327,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ベクターオプション"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "矢量选项"
           }
         }
       }
@@ -2145,6 +3345,12 @@
             "state" : "translated",
             "value" : "ベクターシェーダー"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "矢量着色器"
+          }
         }
       }
     },
@@ -2155,6 +3361,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "縦画面ゲーム（リニアフィルター使用）"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "纵向游戏（使用线性滤镜）"
           }
         }
       }
@@ -2167,12 +3379,24 @@
             "state" : "translated",
             "value" : "画像設定"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "视频选项"
+          }
         }
       }
     },
     "Ways" : {
       "localizations" : {
         "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "方向"
+          }
+        },
+        "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "方向"
@@ -2187,6 +3411,12 @@
             "state" : "translated",
             "value" : "ウェブサーバーが開始されました"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Web服务器已启动"
+          }
         }
       }
     },
@@ -2198,6 +3428,12 @@
             "state" : "translated",
             "value" : "製造年"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "年份"
+          }
         }
       }
     },
@@ -2208,6 +3444,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "はい"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "是"
           }
         }
       }

@@ -1263,6 +1263,7 @@
 				Base,
 				en,
 				ja,
+				"zh-Hans",
 			);
 			mainGroup = CEE6807A1635BA6F00051BC2;
 			productRefGroup = CEE680861635BA7000051BC2 /* Products */;
