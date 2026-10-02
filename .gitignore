@@ -7,3 +7,10 @@ obj
 .vscode/*
 xcode/dist
 Developer.xcconfig
+
+# Web leaderboard
+node_modules
+.next
+next-env.d.ts
+*.tsbuildinfo
+.env*.local

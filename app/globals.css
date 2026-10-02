@@ -1,0 +1,25 @@
+@import 'tailwindcss' source(none);
+@source '../app';
+@source '../components';
+
+@theme inline {
+  --color-background: #07070d;
+  --color-surface: #11111c;
+  --color-border: #262638;
+  --color-foreground: #ededf2;
+  --color-muted: #8b8ba3;
+  --color-primary: #ff2e88;
+  --color-accent: #22d3ee;
+  --color-gold: #facc15;
+  --font-display: var(--font-press-start);
+  --font-mono: var(--font-jetbrains);
+}
+
+html {
+  background: var(--color-background);
+  color-scheme: dark;
+}
+
+body {
+  font-family: var(--font-mono), ui-monospace, monospace;
+}
